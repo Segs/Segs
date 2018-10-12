@@ -21,6 +21,7 @@ Some other useful links:
 * Our [Discord](https://discord.segs.io/)
 * Our [wiki](https://github.com/Segs/Segs/wiki)
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
+* How Can I Help? [Specific Tasks to Help](https://github.com/Segs/Segs/issues/519)
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide)
 
 Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.io/developers
@@ -110,7 +111,7 @@ BUILD SEGS
 **1. Start QTCreator and Clone Git Repository**
 
 Start QTCreator and select New Project. The _New Project_ dialog box will appear. From the list on the left, select `Import Project`, and from the middle column `Git Clone`, then press the `Choose...` button at the bottom right of the dialog window.
-![New Project Dialog Screenshot](https://segs.nemerle.eu/user/pages/02.developers/newProject.png "New Project Dialog Screenshot")
+![New Project Dialog Screenshot](https://segs.io/user/pages/02.developers/newProject.png "New Project Dialog Screenshot")
 
 The dialog box will change to show the _Git Clone_ dialog, which contains configuration options for importing a project from Git. 
 
@@ -128,7 +129,7 @@ Next, QTCreator will ask you to configuration your project. This is where you'll
 > QTCreator uses kits to group various settings for building and running projects.
 
 Begin by selecting MinGW 32bit.
-![Project Configuration](https://segs.nemerle.eu/user/pages/02.developers/ProjectConfiguration.png "Project Configuration")
+![Project Configuration](https://segs.io/user/pages/02.developers/ProjectConfiguration.png "Project Configuration")
 
 You may select the `Details` button next to MinGW if you'd like to customize the paths where QTCreator will store temporary build files.
 
@@ -168,6 +169,7 @@ Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to
 
 * Our GitHub: https://github.com/Segs/Segs
 * The Issue Queue: https://github.com/Segs/Segs/issues
+* How Can I Help Issue: https://github.com/Segs/Segs/issues/519
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide))
 * Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 

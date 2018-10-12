@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -14,7 +14,7 @@
 class MapRef
 {
 public:
-    int         m_idx;
+    int         m_idx=0;
     bool        reduced_transform;
     glm::mat4x3 m_matrix;
     TransformStruct m_transforms;
@@ -31,7 +31,7 @@ public:
         reduced_transform=true;
         m_transforms=TransformStruct(pos,rot,glm::vec3(),true,true,false);
     }
-    MapRef(): m_idx(0),m_name(""){}
+    MapRef(): m_name(""){}
     void serializefrom(BitStream &src)
     {
         m_idx = src.GetPackedBits(1);
@@ -51,7 +51,12 @@ public:
         {
             storeTransformMatrix(tgt,m_matrix);
         }
+    }
 
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_idx,reduced_transform,m_matrix,m_transforms,m_name);
     }
 
 };

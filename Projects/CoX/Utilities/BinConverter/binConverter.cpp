@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -28,14 +28,16 @@
 #include "Common/GameData/npc_serializers.h"
 #include "Common/GameData/trick_definitions.h"
 #include "Common/GameData/trick_serializers.h"
+#include "Common/GameData/fx_definitions.h"
+#include "Common/GameData/fx_serializers.h"
 #include "Common/GameData/charclass_definitions.h"
 #include "Common/GameData/charclass_serializers.h"
-//#include "Common/GameData/seq_serializers.h"
 #include "Common/GameData/def_serializers.h"
 #include "Common/GameData/other_definitions.h"
 #include "Common/GameData/origin_definitions.h"
-#include "Common/GameData/serialization_common.h"
-//#include "Common/GameData/particlesys_serializers.h"
+#include "serialization_common.h"
+#include "Common/GameData/particlesys_serializers.h"
+#include "Common/GameData/particle_definitions.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -67,13 +69,15 @@ enum BinType {
     eTrickDefinitions,
     ePowerDefinitions,
     eNpcDefinitions,
+    eFxBehavior_Definitions,
+    eFxInfo_Definitions,
 };
 
 const QHash<uint32_t,BinType> knownSerializers = {
     {levelsdebts_i0_requiredCrc         , eLevelsDebts},
-//    {combining_i0_requiredCrc           , eCombineChances},
-//    {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
-//    {particlesystems_i0_requiredCrc     , eParticleSystems},
+    {combining_i0_requiredCrc           , eCombineChances},
+    {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
+    {particlesystems_i0_requiredCrc     , eParticleSystems},
     {shoplist_i0_requiredCrc            , eShops},
     {shopitems_i0_requiredCrc           , eShopItems},
     {shopdepts_i0_requiredCrc           , eShopDepts},
@@ -92,6 +96,8 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {origins_i0_requiredCrc             , eEntityOrigins},
     {powers_i0_requiredCrc              , ePowerDefinitions},
     {npccostumesets_i0_requiredCrc      , eNpcDefinitions},
+    {fxbehaviors_i0_requiredCrc         , eFxBehavior_Definitions},
+    {fxinfos_i0_requiredCrc             , eFxInfo_Definitions},
 };
 
 BinType getLoader(const QString &fname)
@@ -142,6 +148,7 @@ void showSupportedBinTypes()
 {
     qDebug()<<"Currently supported file types ";
     qDebug()<<"   I0<"<<QString::number(levelsdebts_i0_requiredCrc,16)<<"> Experience data - 'experience.bin'";
+    qDebug()<<"   I0<"<<QString::number(particlesystems_i0_requiredCrc,16)<<"> Particle system definitions - 'particles.bin'";
     qDebug()<<"   I0<"<<QString::number(shoplist_i0_requiredCrc,16)<<"> Shops data - 'stores.bin'";
     qDebug()<<"   I0<"<<QString::number(shopitems_i0_requiredCrc,16)<<"> Shops items- 'items.bin'";
     qDebug()<<"   I0<"<<QString::number(shopdepts_i0_requiredCrc,16)<<"> Shop department names data - 'depts.bin'";
@@ -158,6 +165,8 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(origins_i0_requiredCrc,16)<<"> Entity origin definitions- 'origins.bin' or 'villain_origins.bin'";
     qDebug()<<"   I0<"<<QString::number(powers_i0_requiredCrc,16)<<"> Power definitions- 'powers.bin'";
     qDebug()<<"   I0<"<<QString::number(npccostumesets_i0_requiredCrc,16)<<"> NPC definitions - 'VillainCostume.bin'";
+    qDebug()<<"   I0<"<<QString::number(fxbehaviors_i0_requiredCrc,16)<<"> FxBehavior definitions - 'behaviors.bin'";
+    qDebug()<<"   I0<"<<QString::number(fxinfos_i0_requiredCrc,16)<<"> FxInfo definitions - 'fxinfo.bin'";
     qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
 }
 } // end of anonymous namespace
@@ -179,7 +188,7 @@ int main(int argc,char **argv)
     binfile.open(argv[1],0);
     QString target_basename=QFileInfo(argv[1]).baseName();
     bool json_output=true;
- 
+
     try // handle possible cereal::RapidJSONException
     {
       if(app.arguments().size()>2)
@@ -188,9 +197,9 @@ int main(int argc,char **argv)
       switch(bin_type)
       {
           case eLevelsDebts:    doConvert(doLoadRef<LevelExpAndDebt>(&binfile),target_basename,json_output); break;
-//        case eCombineChances: doConvert(doLoad<Parse_Combining>(&binfile),target_basename,json_output); break;
-//        case eBoostEffectiveness: doConvert(doLoad<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
-//        case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
+          case eCombineChances: doConvert(doLoadRef<Parse_Combining>(&binfile),target_basename,json_output); break;
+          case eBoostEffectiveness: doConvert(doLoadRef<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
+          case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
           case eShops:        doConvert(doLoadRef<AllShops_Data>(&binfile),target_basename,json_output); break;
           case eShopItems:    doConvert(doLoad<AllShopItems_Data>(&binfile),target_basename,json_output); break;
           case eShopDepts:    doConvert(doLoad<AllShopDepts_Data>(&binfile),target_basename,json_output); break;
@@ -207,7 +216,28 @@ int main(int argc,char **argv)
           case eEntityClasses: doConvert(doLoadRef<Parse_AllCharClasses>(&binfile),target_basename,json_output); break;
           case eEntityOrigins: doConvert(doLoadRef<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
           case ePowerDefinitions: doConvert(doLoadRef<AllPowerCategories>(&binfile),target_basename,json_output); break;
-          case eNpcDefinitions: doConvert(doLoadRef<AllNpcs_Data>(&binfile),target_basename,json_output); break;
+          case eNpcDefinitions:
+         {
+            auto data = doLoadRef<AllNpcs_Data>(&binfile);
+            if (qApp->arguments().size() > 2)
+            {
+                QString name_to_find = app.arguments()[2];
+                std::sort(data->begin(), data->end(), [](const Parse_NPC &a, const Parse_NPC &b) -> bool {
+                    return a.m_Name.compare(b.m_Name, Qt::CaseInsensitive) < 0;
+                });
+                auto iter = std::find_if(data->begin(), data->end(), [name_to_find](const Parse_NPC &n) -> bool {
+                    if (n.m_Name == name_to_find)
+                        return true;
+                    return false;
+                });
+                qDebug() << iter - data->begin();
+            } else
+                doConvert(data, target_basename, json_output);
+        }
+
+          break;
+          case eFxBehavior_Definitions: doConvert(doLoadRef<Fx_AllBehaviors>(&binfile),target_basename,json_output); break;
+          case eFxInfo_Definitions: doConvert(doLoadRef<Fx_AllInfos>(&binfile),target_basename,json_output); break;
           default:
               break;
       }

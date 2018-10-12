@@ -71,6 +71,8 @@ IF(MSVC)
 
     SET(QT_PATH "${QT_VERSION}/msvc${QT_MSVC}")
     SET(QT_MISSING False)
+    file(TO_NATIVE_PATH "${QT_PATH}/bin" QT_BIN_DIR_WINDOWS)
+    set(CMAKE_MSVCIDE_RUN_PATH "${QT_BIN_DIR_WINDOWS}" CACHE STATIC "MSVC IDE Run path" FORCE)
 ENDIF()
 
 # use Qt_DIR approach so you can find Qt after cmake has been invoked
@@ -80,6 +82,42 @@ IF(NOT QT_MISSING)
     SET(Qt5Test_DIR "${QT_PATH}/lib/cmake/Qt5Test")
 ENDIF()
 find_package(Qt5 COMPONENTS Core Sql REQUIRED)
+if(ENABLE_TESTS)
+    enable_testing()
+    find_package(Qt5 COMPONENTS Test REQUIRED)
+    # Event registration support functionality
+    macro(add_segs_test testname) # followed by a list of directories to scan
+        add_executable(${testname} ${testname}.cpp)
+        add_test(${testname} ${testname})
+
+        target_link_libraries(${testname}
+            Qt5::Test
+            ${ARGN}
+        )
+    endmacro()
+endif()
+##############################################
+# Event registration support functionality
+macro(scan_event_types group) # followed by a list of directories to scan
+    set(all_headers)
+    foreach(path ${ARGN})
+        message("Scanning ${path} for events")
+        file(GLOB headers ${path}/*.h)
+        list(APPEND all_headers ${headers})
+    endforeach()
+
+    add_custom_command(
+        COMMAND event_gen scan_events ${group} ${CMAKE_CURRENT_BINARY_DIR}/ ${ARGN}
+        OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/${group}.gen.cpp
+        DEPENDS event_gen ${all_headers}
+        COMMENT "Generating ${group} implementation source"
+    )
+endmacro()
+macro(add_event_sources group tgt_var)
+    list(APPEND ${tgt_var} ${CMAKE_CURRENT_BINARY_DIR}/${group}.gen.cpp)
+    message("adding ${group} to sources")
+endmacro()
+##############################################
 
 link_directories(${ThirdParty_Install_Dir}/lib)
 include_directories(SYSTEM ${ThirdParty_Install_Dir}/include)
@@ -90,5 +128,27 @@ include_directories(Components)
 add_subdirectory(Components)
 add_subdirectory(Utilities)
 add_subdirectory(Projects)
+
 file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/data)
 
+set(MAPNAMES
+  City_00_01
+  City_01_01 City_01_02 City_01_03
+  City_02_01 City_02_02
+  City_03_01 City_03_02
+  City_04_01 City_04_02
+  City_05_01
+  Hazard_01_01
+  Hazard_02_01
+  Hazard_03_01
+  Hazard_04_01 Hazard_04_02
+  Hazard_05_01
+  Trial_01_01 Trial_01_02
+  Trial_02_01
+  Trial_03_01
+  Trial_04_01 Trial_04_02
+  Trial_05_01
+  )
+foreach(MAPDIR ${MAPNAMES})
+  file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/DefaultMapInstances/${MAPDIR})
+endforeach(MAPDIR)

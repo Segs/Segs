@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -11,6 +11,8 @@
  */
 
 #include "SaveClientOptions.h"
+
+using namespace SEGSEvents;
 
 void SaveClientOptions::serializefrom(BitStream & bs)
 {
@@ -58,39 +60,5 @@ void SaveClientOptions::serializeto(BitStream &tgt) const
     tgt.StoreBits(3,data.m_show_assist_reticles);
     tgt.StoreBits(5,data.m_chat_font_size);
 }
-
-#define CLIENT_OPT(type,var)\
-    ClientOption {#var,{{type,&var}} }
-
-void ClientOptions::init()
-{
-    m_opts = {
-        CLIENT_OPT(ClientOption::t_int,control_debug),
-        CLIENT_OPT(ClientOption::t_int,no_strafe),
-        CLIENT_OPT(ClientOption::t_int,alwaysmobile),
-        CLIENT_OPT(ClientOption::t_int,repredict),
-        CLIENT_OPT(ClientOption::t_int,neterrorcorrection),
-        CLIENT_OPT(ClientOption::t_float,speed_scale),
-        CLIENT_OPT(ClientOption::t_int,svr_lag),
-        CLIENT_OPT(ClientOption::t_int,svr_lag_vary),
-        CLIENT_OPT(ClientOption::t_int,svr_pl),
-        CLIENT_OPT(ClientOption::t_int,svr_oo_packets),
-        CLIENT_OPT(ClientOption::t_int,client_pos_id),
-        CLIENT_OPT(ClientOption::t_int,atest0),
-        CLIENT_OPT(ClientOption::t_int,atest1),
-        CLIENT_OPT(ClientOption::t_int,atest2),
-        CLIENT_OPT(ClientOption::t_int,atest3),
-        CLIENT_OPT(ClientOption::t_int,atest4),
-        CLIENT_OPT(ClientOption::t_int,atest5),
-        CLIENT_OPT(ClientOption::t_int,atest6),
-        CLIENT_OPT(ClientOption::t_int,atest7),
-        CLIENT_OPT(ClientOption::t_int,atest8),
-        CLIENT_OPT(ClientOption::t_int,atest9),
-        CLIENT_OPT(ClientOption::t_int,predict),
-        CLIENT_OPT(ClientOption::t_int,notimeout),
-        CLIENT_OPT(ClientOption::t_int,selected_ent_server_index),
-    };
-}
-#undef ADD_OPT
 
 //! @}

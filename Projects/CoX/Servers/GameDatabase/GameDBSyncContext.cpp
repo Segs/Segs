@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -29,6 +29,8 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QString>
+
+using namespace SEGSEvents;
 
 namespace
 {
@@ -124,6 +126,7 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_account_insert = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_account_select = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_entity_select = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_entity_select_by_name = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_char_select = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_char_exists = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_char_insert = std::make_unique<QSqlQuery>(*m_db);
@@ -134,6 +137,16 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_get_char_slots = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_options_update = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_player_update = std::make_unique<QSqlQuery>(*m_db);
+
+    // emails
+    m_prepared_email_insert = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_mark_as_read = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_update_sender_id_on_char_delete = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_update_recipient_id_on_char_delete = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_delete = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_select = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_select_all = std::make_unique<QSqlQuery>(*m_db);
+    m_prepared_email_fill_recipient_id = std::make_unique<QSqlQuery>(*m_db);
 
     // TO-DO: prepQuery for playerUpdate
 
@@ -173,10 +186,34 @@ bool GameDbSyncContext::loadAndConfigure()
                 "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
                 "(:id,:costume_index,:skin_color,:parts)");
     prepQuery(*m_prepared_entity_select,"SELECT * FROM characters WHERE id=:id");
+    prepQuery(*m_prepared_entity_select_by_name, "SELECT id FROM characters WHERE char_name=:char_name");
     prepQuery(*m_prepared_char_select,"SELECT * FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_char_exists,"SELECT exists (SELECT 1 FROM characters WHERE char_name = ? LIMIT 1)");
     prepQuery(*m_prepared_char_delete,"DELETE FROM characters WHERE account_id=? AND slot_index=?");
     prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
+
+    // email prepQueries
+
+
+    prepQuery(*m_prepared_email_insert, "INSERT INTO emails (id, sender_id, recipient_id, email_data)"
+                                        "VALUES (:id, :sender_id, :recipient_id, :email_data)");
+
+
+    // new_id is either sender_id or 0 (deleted chara and/or account, could separate this tho)
+
+    prepQuery(*m_prepared_email_mark_as_read, "UPDATE emails SET "
+                                        "email_data=:email_data "
+                                        "WHERE id=:id");
+
+    prepQuery(*m_prepared_email_update_sender_id_on_char_delete, "UPDATE emails SET "
+              "sender_id='0' WHERE sender_id=:deleted_id");
+    prepQuery(*m_prepared_email_update_recipient_id_on_char_delete, "UPDATE emails SET "
+              "recipient_id='0' WHERE recipient_id=:deleted_id");
+
+    prepQuery(*m_prepared_email_delete, "DELETE FROM emails WHERE id=?");
+    prepQuery(*m_prepared_email_select, "SELECT * FROM emails WHERE id=?");
+    prepQuery(*m_prepared_email_select_all, "SELECT * FROM emails");
+    prepQuery(*m_prepared_email_fill_recipient_id, "SELECT id FROM characters WHERE char_name=:recipient_name");
 
     return true;
 }
@@ -234,7 +271,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
             return false;
     }
     result.m_game_server_acc_id = data.m_auth_account_id;
-    result.m_max_slots = m_prepared_account_select->value("max_slots").toULongLong();
+    result.m_max_slots = m_prepared_account_select->value("max_slots").toUInt();
     result.m_characters.resize(result.m_max_slots);
     int idx=0;
     m_prepared_char_select->bindValue(0,quint64(result.m_game_server_acc_id));
@@ -255,6 +292,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_name =  name.isEmpty() ? "EMPTY" : name;
         character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
         character.m_serialized_player_data = m_prepared_char_select->value("player_data").toString();
+        character.m_serialized_entity_data = m_prepared_char_select->value("entitydata").toString();
 
         GameAccountResponseCostumeData costume;
         // appearance related.
@@ -374,7 +412,7 @@ bool GameDbSyncContext::createNewChar(const CreateNewCharacterRequestData &data,
 
 bool GameDbSyncContext::getEntity(const GetEntityRequestData &data, GetEntityResponseData &result)
 {
-    m_prepared_entity_select->bindValue(0,data.m_char_id);
+    m_prepared_entity_select->bindValue(0, data.m_char_id);
     if(!doIt(*m_prepared_entity_select))
         return false;
     if(!m_prepared_entity_select->next())
@@ -384,14 +422,125 @@ bool GameDbSyncContext::getEntity(const GetEntityRequestData &data, GetEntityRes
     return true;
 }
 
+bool GameDbSyncContext::getEntityByName(const GetEntityByNameRequestData &data, GetEntityByNameResponseData &result)
+{
+    m_prepared_entity_select_by_name->bindValue(0, data.m_char_name);
+
+    if(!doIt(*m_prepared_entity_select_by_name))
+        return false;
+    if(!m_prepared_entity_select_by_name->next())
+        return false;
+
+    result.m_supergroup_id = m_prepared_entity_select_by_name->value("supergroup_id").toUInt();
+    result.m_ent_data = m_prepared_entity_select_by_name->value("entitydata").toString();
+    return true;
+}
+
 // Update Client Options/Keybinds
 bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
 {
-    m_prepared_options_update->bindValue(":id", (quint64)data.m_client_id); // for WHERE statement only
+    m_prepared_options_update->bindValue(":id", data.m_client_id); // for WHERE statement only
     m_prepared_options_update->bindValue(":options", data.m_options);
     m_prepared_options_update->bindValue(":keybinds", data.m_keybinds);
     if (!doIt(*m_prepared_options_update))
         return false;
+    return true;
+}
+
+bool GameDbSyncContext::createEmail(const EmailCreateRequestData &data, EmailCreateResponseData &result)
+{
+    //DbTransactionGuard grd(*m_db);
+
+    m_prepared_email_insert->bindValue(":sender_id", data.m_sender_id);
+    m_prepared_email_insert->bindValue(":recipient_id", data.m_recipient_id);
+    m_prepared_email_insert->bindValue(":email_data", data.m_email_data);
+
+    if (!doIt(*m_prepared_email_insert))
+        return false;
+
+    assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
+
+    result.m_email_id = m_prepared_email_insert->lastInsertId().toUInt();
+    result.m_sender_id = data.m_sender_id;
+    result.m_recipient_id = data.m_recipient_id;
+    result.m_cerealized_email_data = data.m_email_data;
+
+    // grd.commit();
+    return true;
+}
+
+bool GameDbSyncContext::markEmailAsRead(const EmailMarkAsReadData &data)
+{
+    m_prepared_email_mark_as_read->bindValue(":id", data.m_email_id);
+    m_prepared_email_mark_as_read->bindValue(":email_data", data.m_email_data);
+    return doIt(*m_prepared_email_mark_as_read);
+}
+
+bool GameDbSyncContext::updateEmailOnCharDelete(const EmailUpdateOnCharDeleteData &data)
+{
+    m_prepared_email_update_sender_id_on_char_delete->bindValue(":deleted_id", data.m_deleted_char_id);
+    m_prepared_email_update_recipient_id_on_char_delete->bindValue(":deleted_id", data.m_deleted_char_id);
+
+    return doIt(*m_prepared_email_update_sender_id_on_char_delete) &&
+            doIt(*m_prepared_email_update_recipient_id_on_char_delete);
+}
+
+bool GameDbSyncContext::deleteEmail(const EmailRemoveData &data)
+{
+    m_prepared_email_delete->bindValue(0, data.m_email_id);    
+    return doIt(*m_prepared_char_delete);
+}
+
+bool GameDbSyncContext::getEmail(const GetEmailRequestData &data, GetEmailResponseData &result)
+{
+    m_prepared_email_select->bindValue(0, data.m_email_id);
+
+    if (!doIt(*m_prepared_email_select))
+        return false;
+    if (!m_prepared_email_select->next())
+        return false;
+
+    result.m_email_id = m_prepared_email_select->value("id").toUInt();
+    result.m_email_data = m_prepared_email_select->value("email_data").toString();
+
+    return true;
+}
+
+// GetEmailsRequestData has 0 params
+bool GameDbSyncContext::getEmails(const GetEmailsRequestData &/*data*/, GetEmailsResponseData &result)
+{
+    if (!doIt(*m_prepared_email_select_all))
+        return false;
+
+    while (m_prepared_email_select_all->next())
+    {
+        EmailResponseData emailResponseData;
+        emailResponseData.m_email_id = m_prepared_email_select_all->value("id").toUInt();
+        emailResponseData.m_sender_id = m_prepared_email_select_all->value("sender_id").toUInt();
+        emailResponseData.m_recipient_id = m_prepared_email_select_all->value("recipient_id").toUInt();
+        emailResponseData.m_cerealized_email_data = m_prepared_email_select_all->value("email_data").toString();
+        result.m_email_response_datas.push_back(emailResponseData);
+    }
+
+    return true;
+}
+
+bool GameDbSyncContext::fillEmailRecipientId(const FillEmailRecipientIdRequestData &data, FillEmailRecipientIdResponseData &result)
+{
+    m_prepared_email_fill_recipient_id->bindValue(":recipient_name", data.m_recipient_name);
+
+    if(!doIt(*m_prepared_email_fill_recipient_id))
+        return false;
+    if(!m_prepared_email_fill_recipient_id->next())
+        return false;
+
+    result.m_sender_id = data.m_sender_id;
+    result.m_sender_name = data.m_sender_name;
+    result.m_subject = data.m_subject;
+    result.m_message = data.m_message;
+    result.m_timestamp = data.m_timestamp;
+
+    result.m_recipient_id = m_prepared_email_fill_recipient_id->value(0).toUInt();
     return true;
 }
 

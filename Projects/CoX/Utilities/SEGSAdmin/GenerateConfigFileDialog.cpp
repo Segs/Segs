@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -20,6 +20,8 @@ GenerateConfigFileDialog::GenerateConfigFileDialog(QWidget *parent) :
     ui(new Ui::GenerateConfigFileDialog)
 {
     ui->setupUi(this);
+    // Field Validators
+    ui->config_server_name_edit->setMaxLength(32);
     connect(ui->buttonBox,&QDialogButtonBox::accepted,this,&GenerateConfigFileDialog::capture_input);
     // GetIP Signals/Slots
     m_get_ip = new GetIPDialog(this);

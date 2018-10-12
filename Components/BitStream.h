@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /************************************************************************
@@ -29,6 +29,11 @@ Description: The BitStream class allows it's user to manipulate data in
 class QString;
 class BitStream : public GrowingBuffer
 {
+    template <class Archive>
+    friend void CEREAL_SAVE_FUNCTION_NAME( Archive & ar, const BitStream &buf );
+    template <class Archive>
+    friend void CEREAL_LOAD_FUNCTION_NAME( Archive & ar, BitStream &buf );
+
 public:
 
 explicit        BitStream(size_t size);
@@ -67,7 +72,7 @@ explicit        BitStream(size_t size);
         void    GetString(QString &str);
         float   GetFloat();
         int64_t Get64Bits();
-        size_t  GetWritableBits()   const   { int64_t bitsleft = int64_t(GetAvailSize() << 3) - m_write_bit_off; return bitsleft > 0 ? bitsleft : 0; }
+        size_t  GetWritableBits()   const   { int64_t bitsleft = int64_t(GetAvailSize() << 3) - m_write_bit_off; return size_t(bitsleft > 0 ? bitsleft : 0); }
         size_t  GetReadableBits()   const   { return (GetReadableDataSize()<<3)+(m_write_bit_off-m_read_bit_off);}
         size_t  GetAvailSize()      const;
         bool    IsByteAligned()     const   { return m_byteAligned;}

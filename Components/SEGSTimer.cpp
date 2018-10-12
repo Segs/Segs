@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -14,9 +14,9 @@
 #include "SEGSTimer.h"
 #include "EventProcessor.h"
 
-SEGSTimer::SEGSTimer( EventProcessor *m_processor,void *data,const ACE_Time_Value &fire_delta_time, bool one_shot)
+SEGSTimer::SEGSTimer(EventProcessor *m_processor, uint64_t data, const ACE_Time_Value &fire_delta_time, bool one_shot)
                     :
-                    m_id(-1),m_data(data),m_target(m_processor),m_fire_delta_time(fire_delta_time),m_one_shot(one_shot)
+                    m_id(-1),m_user_id(data),m_target(m_processor),m_fire_delta_time(fire_delta_time),m_one_shot(one_shot)
 {
     if(m_one_shot)
         schedule();
@@ -29,7 +29,7 @@ SEGSTimer::~SEGSTimer()
 {
     cancel();
     m_target = nullptr;
-    m_data = nullptr;
+    m_user_id = 0;
 }
 
 void SEGSTimer::schedule()

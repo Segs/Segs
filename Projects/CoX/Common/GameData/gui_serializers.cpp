@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -60,10 +60,7 @@ void saveTo(const GUISettings &target, const QString &baseName, bool text_format
     commonSaveTo(target,"GUISettings",baseName,text_format);
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive &archive, GUISettings &co, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive &archive, GUISettings &co, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(GUISettings)
 
 void serializeToDb(const GUISettings &data, QString &tgt)
 {

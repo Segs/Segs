@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -13,7 +13,8 @@
 #include "Costume.h"
 
 #include "BitStream.h"
-#include "Common/GameData/serialization_common.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
 #include <QtCore/QDebug>
 
 namespace
@@ -177,7 +178,7 @@ void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *
     bs.StoreFloat(costume.m_height);
     bs.StoreFloat(costume.m_physique);
 
-    bs.StoreBits(1,costume.m_non_default_costme_p);
+    bs.StoreBits(1,costume.m_send_full_costume);
     //m_num_parts = m_parts.size();
     assert(!costume.m_parts.empty());
     bs.StorePackedBits(4,costume.m_parts.size());
@@ -188,7 +189,7 @@ void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *
         {
             CostumePart part=costume.m_parts[costume_part];
             // TODO: this is bad code, it's purpose is to NOT send all part strings if m_non_default_costme_p is false
-            part.m_full_part = costume.m_non_default_costme_p;
+            part.m_full_part = costume.m_send_full_costume;
             ::serializeto(part,bs,packer);
         }
     }
@@ -210,7 +211,7 @@ void serializefrom(Costume &tgt, BitStream &src,const ColorAndPartPacker *packer
     tgt.m_height = src.GetFloat();
     tgt.m_physique = src.GetFloat();
 
-    tgt.m_non_default_costme_p = src.GetBits(1);
+    tgt.m_send_full_costume = src.GetBits(1);
     tgt.m_num_parts = src.GetPackedBits(4);
 
     try
@@ -218,7 +219,7 @@ void serializefrom(Costume &tgt, BitStream &src,const ColorAndPartPacker *packer
         for(int costume_part=0; costume_part<tgt.m_num_parts;costume_part++)
         {
             CostumePart part;
-            part.m_full_part = tgt.m_non_default_costme_p;
+            part.m_full_part = tgt.m_send_full_costume;
             ::serializefrom(part,src,packer);
             tgt.m_parts.push_back(part);
         }

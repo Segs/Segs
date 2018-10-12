@@ -38,7 +38,13 @@ SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
+scan_event_types(AuthEvents ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Events)
+add_event_sources(AuthEvents target_SOURCES)
 
 ADD_LIBRARY(AuthProtocol STATIC ${target_SOURCES})
+target_link_libraries(AuthProtocol PUBLIC Qt5::Core ace_IMP)
+target_link_libraries(AuthProtocol INTERFACE SEGS_Components)
 set_property(TARGET AuthProtocol PROPERTY POSITION_INDEPENDENT_CODE ON)
-ADD_DEPENDENCIES(AuthProtocol SEGS_Components)
+if(ENABLE_TESTS)
+    add_subdirectory(UnitTests)
+endif()

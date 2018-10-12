@@ -1,13 +1,11 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
-#include "GameLink.h"
-#include "GameEvents.h"
 #include "EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
 #include "GameDatabase/GameDBSyncEvents.h"
@@ -16,13 +14,21 @@
 class CharacterClient;
 class GameServer;
 class SEGSTimer;
-
-enum MapName
+struct GameLink;
+namespace SEGSEvents
 {
-    Outbreak,
-    AtlasPark
-};
+class UpdateServer;
+class UpdateCharacter;
+class DeleteCharacter;
+class MapServerAddrRequest;
+class Timeout;
 
+// internal events
+class Idle;
+class DisconnectRequest;
+class ConnectRequest;
+class UnknownEvent;
+}
 struct GameSession
 {
     enum eTravelDirection
@@ -30,7 +36,7 @@ struct GameSession
         EXITING_TO_MAP=0,
         EXITING_TO_LOGIN=1,
     };
-    GameAccountResponseData m_game_account;
+    SEGSEvents::GameAccountResponseData m_game_account;
     uint32_t m_auth_account_id=0;
     uint32_t is_connected_to_map_server_id=0;
     uint32_t is_connected_to_map_instance_id=0;
@@ -64,44 +70,47 @@ class GameHandler final : public EventProcessor
     std::unique_ptr<SEGSTimer> m_service_status_timer;
 
 public:
+                    IMPL_ID(GameHandler)
                     GameHandler();
-                    ~GameHandler();
+                    ~GameHandler() override;
         void        set_server(GameServer *s) {m_server=s;}
         void        start();
 protected:
-        void        dispatch(SEGSEvent *ev) override;
+        void        dispatch(SEGSEvents::Event *ev) override;
 
         //////////////////////////////////////////////////////////////////////////
         // Link events
-        void        on_idle(IdleEvent *ev);
-        void        on_link_lost(SEGSEvent *ev);
-        void        on_disconnect(DisconnectRequest *ev);
-        void        on_connection_request(ConnectRequest *ev);
+        void        on_idle(SEGSEvents::Idle *ev);
+        void        on_link_lost(SEGSEvents::Event *ev);
+        void        on_disconnect(SEGSEvents::DisconnectRequest *ev);
+        void        on_connection_request(SEGSEvents::ConnectRequest *ev);
 
-        void        on_update_server(UpdateServer *ev);
-        void        on_update_character(UpdateCharacter *ev);
-        void        on_delete_character(DeleteCharacter *ev);
-        void        on_map_req(MapServerAddrRequest *ev);
-        void        on_unknown_link_event(GameUnknownRequest *ev);
+        void        on_update_server(SEGSEvents::UpdateServer *ev);
+        void        on_update_character(SEGSEvents::UpdateCharacter *ev);
+        void        on_delete_character(SEGSEvents::DeleteCharacter *ev);
+        void        on_map_req(SEGSEvents::MapServerAddrRequest *ev);
+        void        on_unknown_link_event(SEGSEvents::UnknownEvent *ev);
     //////////////////////////////////////////////////////////////////////////
     // Server <-> Server events
-        void        on_expect_client(ExpectClientRequest *ev);     // from AuthServer
-        void        on_client_expected(ExpectMapClientResponse *ev); // from MapServer
-        void        on_client_connected_to_other_server(ClientConnectedMessage *ev);
-        void        on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev);
+        void        on_expect_client(SEGSEvents::ExpectClientRequest *ev);     // from AuthServer
+        void        on_client_expected(SEGSEvents::ExpectMapClientResponse *ev); // from MapServer
+        void        on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
+        void        on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
 
     //////////////////////////////////////////////////////////////////////////
     // Internal events
         void        on_check_links();
         void        reap_stale_links();
         void        report_service_status();
-        void        on_timeout(TimerEvent *ev);
+        void        on_timeout(SEGSEvents::Timeout *ev);
 
-        void        on_game_db_error(GameDbErrorMessage *ev);
-        void        on_account_data(GameAccountResponse *ev);
-        void        on_character_deleted(RemoveCharacterResponse *ev);
-        MapName     checkMap(const QString& map_path);
+        void        on_game_db_error(SEGSEvents::GameDbErrorMessage *ev);
+        void        on_account_data(SEGSEvents::GameAccountResponse *ev);
+        void        on_character_deleted(SEGSEvents::RemoveCharacterResponse *ev);
     //////////////////////////////////////////////////////////////////////////
         sIds        waiting_for_client; // this hash_set holds all client cookies we wait for
         GameServer *m_server;
+
+        void        serialize_from(std::istream &is) override;
+        void        serialize_to(std::ostream &is) override;
 };

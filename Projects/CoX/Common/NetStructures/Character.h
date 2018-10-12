@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -11,6 +11,7 @@
 #include "Powers.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
+#include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/clientoptions_definitions.h"
 #include "Common/GameData/gui_definitions.h"
 #include "Common/GameData/keybind_definitions.h"
@@ -21,24 +22,16 @@
 #include <cassert>
 #include <string>
 
+namespace SEGSEvents
+{
+    struct GameAccountResponseCharacterData;
+}
 class CharacterCostume;
+
 struct PlayerData;
 struct Costume;
-
-struct CharacterPowerBoost
-{
-    PowerPool_Info boost_id;
-    int            level        = 0;
-    int            num_combines = 0;
-};
-
-struct CharacterPower
-{
-    PowerPool_Info                   power_id;
-    int                              bought_at_level = 0;
-    float                            range           = 1.0f;
-    std::vector<CharacterPowerBoost> boosts;
-};
+class PowerPool_Info;
+class GameDataStore;
 
 enum NameFlag : bool
 {
@@ -56,21 +49,20 @@ class Character
 {
         friend  class CharacterDatabase;
 
-        using vPowerPool = std::vector<CharacterPower>;
         using vCostume = std::vector<CharacterCostume>;
 
-        vPowerPool              m_powers;
-        PowerTrayGroup          m_trays;
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
-        friend bool toActualCharacter(const struct GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player);
-        friend bool fromActualCharacter(const Character &src,const PlayerData &player, GameAccountResponseCharacterData &tgt);
+        friend bool toActualCharacter(const SEGSEvents::GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
+        friend bool fromActualCharacter(const Character &src,const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
 // Getters and setters
 const   QString &       getName() const { return m_name; }
         void            setName(const QString &val);
+        float           getHealth() { return m_char_data.m_current_attribs.m_HitPoints; }
+        void            setHealth(float val) { m_char_data.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val, m_max_attribs.m_HitPoints)); }        
         uint8_t         getIndex() const { return m_index; }
         void            setIndex(uint8_t val) { m_index = val; }
         uint64_t        getAccountId() const { return m_owner_account_id; }
@@ -84,18 +76,26 @@ const   QString &       getName() const { return m_name; }
         void            serializefrom(BitStream &buffer);
         void            serializeto(BitStream &buffer) const;
         void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
-        void            serializetoCharsel(BitStream &bs);
+        void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
+        void            finalizeLevel();
+        void            addStartingInspirations(QStringList &starting_insps);
+        void            addStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
+        void            addPowersByLevel(const QString &pcat_name, const QString &pset_name, uint32_t level);
+        void            getPowerFromBuildInfo(BitStream &src);
+        void            finalizeCombatLevel();
+        void            sendEnhancements(BitStream &bs) const;
+        void            sendInspirations(BitStream &bs) const;
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
         const CharacterCostume *getCurrentCostume() const;
-        void            DumpSidekickInfo();
-        void            DumpPowerPoolInfo( const PowerPool_Info &pool_info );
-        void            DumpBuildInfo();
+        void            dumpSidekickInfo();
+        void            dumpBuildInfo();
         void            face_bits(uint32_t){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;
         void            sendTray(BitStream &bs) const;
+        void            sendOwnedPowers(BitStream &bs) const;
         void            sendDescription(BitStream &bs) const;
         void            sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const;
         void            sendFriendList(BitStream &bs) const;
@@ -107,9 +107,9 @@ const   QString &       getName() const { return m_name; }
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;
+        bool                m_in_training   = false;
 
 protected:
-        PowerPool_Info  get_power_info(BitStream &src);
         uint8_t         m_index;
         QString         m_name;
         bool            m_villain;
@@ -132,5 +132,5 @@ protected:
 
 void serializeStats(const Character &src, BitStream &bs, bool sendAbsolute);
 bool initializeCharacterFromCreator();
-bool toActualCharacter(const GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player);
-bool fromActualCharacter(const Character &src, const PlayerData &player, GameAccountResponseCharacterData &tgt);
+bool toActualCharacter(const SEGSEvents::GameAccountResponseCharacterData &src, Character &tgt, PlayerData &player, EntityData &entity);
+bool fromActualCharacter(const Character &src, const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);

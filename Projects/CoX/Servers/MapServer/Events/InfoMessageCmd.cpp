@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -16,6 +16,7 @@
 #include "MapClientSession.h"
 #include "Logging.h"
 
+using namespace SEGSEvents;
 void InfoMessageCmd::serializeto(BitStream &bs) const
 {
     bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
@@ -23,13 +24,13 @@ void InfoMessageCmd::serializeto(BitStream &bs) const
     bs.StoreString(m_msg);
 }
 
-void sendInfoMessage(MessageChannel t, QString msg, MapClientSession *tgt)
+void sendInfoMessage(MessageChannel t, QString msg, MapClientSession &tgt)
 {
 
     InfoMessageCmd * res = new InfoMessageCmd(t,msg);
-    res->m_target_player_id = getIdx(*tgt->m_ent);
+    res->m_target_player_id = getIdx(*tgt.m_ent);
 
-    tgt->addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(res));
+    tgt.addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(res));
 
 
     qCDebug(logInfoMsg).noquote() << "InfoMessage:"

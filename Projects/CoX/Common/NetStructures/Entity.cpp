@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -10,12 +10,13 @@
  * @{
  */
 
-#define _USE_MATH_DEFINES
 #include "Entity.h"
 #include "LFG.h"
 #include "Team.h"
 #include "Character.h"
+#include "CharacterHelpers.h"
 #include "Servers/MapServer/DataHelpers.h"
+#include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/npc_definitions.h"
 #include <QtCore/QDebug>
@@ -23,6 +24,7 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
+#include <memory>
 
 //TODO: this file needs to know the MapInstance's WorldSimulation rate - Maybe extract it as a configuration object ?
 
@@ -42,11 +44,11 @@ void Entity::sendPvP(BitStream &bs)
     bs.StoreBits(1,0);
 }
 
-void Entity::fillFromCharacter()
+void Entity::fillFromCharacter(const GameDataStore &data)
 {
     m_hasname = !m_char->getName().isEmpty();
-    m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*m_char));
-    m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*m_char));
+    m_entity_data.m_origin_idx = getEntityOriginIndex(data,true, getOrigin(*m_char));
+    m_entity_data.m_class_idx = getEntityClassIndex(data,true, getClass(*m_char));
     m_is_hero = true;
 }
 
@@ -58,17 +60,15 @@ void Entity::beginLogout(uint16_t time_till_logout)
 {
     m_is_logging_out = true;
     m_time_till_logout = time_till_logout*1000;
-    removeLFG(*this);
-    leaveTeam(*this);
 }
 
-void fillEntityFromNewCharData(Entity &e, BitStream &src,const ColorAndPartPacker *packer,const Parse_AllKeyProfiles &default_profiles )
+void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &data)
 {
     QString description;
     QString battlecry;
     e.m_type = EntType(src.GetPackedBits(1));
     e.m_char->GetCharBuildInfo(src);
-    e.m_char->recv_initial_costume(src,packer);
+    e.m_char->recv_initial_costume(src,data.getPacker());
     e.m_char->m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
     if(e.m_char->m_char_data.m_has_the_prefix)
         e.m_char->m_char_data.m_has_titles = true;
@@ -76,15 +76,16 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const ColorAndPartPacke
     src.GetString(description);
     setBattleCry(*e.m_char,battlecry);
     setDescription(*e.m_char,description);
-    e.m_entity_data.m_origin_idx = getEntityOriginIndex(true, getOrigin(*e.m_char));
-    e.m_entity_data.m_class_idx = getEntityClassIndex(true, getClass(*e.m_char));
-    e.m_player->m_keybinds.resetKeybinds(default_profiles);
+    e.m_entity_data.m_origin_idx = getEntityOriginIndex(data,true, getOrigin(*e.m_char));
+    e.m_entity_data.m_class_idx = getEntityClassIndex(data,true, getClass(*e.m_char));
+    e.m_player->m_keybinds.resetKeybinds(data.m_keybind_profiles);
     e.m_is_hero = true;
 
-    e.m_direction                         = glm::quat(1.0f,0.0f,0.0f,0.0f);
+    e.m_direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 
-const QString &Entity::name() const {
+const QString &Entity::name() const
+{
     return m_char->getName();
 }
 
@@ -98,6 +99,7 @@ void Entity::dump()
             + "\n  m_type: " + QString::number(uint8_t(m_type))
             + "\n  class idx: " + QString::number(m_entity_data.m_class_idx)
             + "\n  origin idx: " + QString::number(m_entity_data.m_origin_idx)
+            + "\n  mapidx: " + QString::number(m_entity_data.m_map_idx)
             + "\n  pos: " + QString::number(m_entity_data.m_pos.x) + ", "
                           + QString::number(m_entity_data.m_pos.y) + ", "
                           + QString::number(m_entity_data.m_pos.z)
@@ -118,15 +120,6 @@ void Entity::dump()
     if(m_type == EntType::PLAYER)
         m_player->dump();
     dumpFriends(*this);
-}
-
-void Entity::addPosUpdate(const PosUpdate & p) {
-    m_update_idx = (m_update_idx+1) % 64;
-    m_pos_updates[m_update_idx] = p;
-}
-
-void Entity::addInterp(const PosUpdate & p) {
-    interpResults.emplace_back(p);
 }
 
 Entity::Entity()
@@ -158,16 +151,17 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
-    e.m_target_idx                      = 0;
+    e.m_target_idx                      = e.m_idx;
     e.m_assist_target_idx               = 0;
 
-    e.m_char.reset(new Character);
-    e.m_player.reset(new PlayerData);
+    e.m_char = std::make_unique<Character>();
+    e.m_player = std::make_unique<PlayerData>();
     e.m_player->reset();
-    e.might_have_rare = e.m_rare_bits   = true;
+    e.m_entity = std::make_unique<EntityData>();
+    e.m_update_anim = e.m_rare_update   = true;
 }
 
-void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
+void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant)
 {
     e.m_costume_type                    = AppearanceType::NpcCostume;
     e.m_destroyed                       = false;
@@ -176,18 +170,22 @@ void initializeNewNpcEntity(Entity &e,const Parse_NPC *src,int idx,int variant)
     e.m_is_hero                         = false;
     e.m_is_villian                      = true;
     e.m_entity_data.m_origin_idx        = {0};
-    e.m_entity_data.m_class_idx         = getEntityClassIndex(false,src->m_Class);
+    e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
     e.m_hasname                         = true;
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = false;
+    e.m_faction_data.m_has_faction      = true;
+    e.m_faction_data.m_rank             = src->m_Rank;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
 
-    e.m_char.reset(new Character);
-    e.m_npc.reset(new NPCData{false,src,idx,variant});
+    e.m_char = std::make_unique<Character>();
+    e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
-    e.might_have_rare = e.m_rare_bits   = true;
+    e.m_entity = std::make_unique<EntityData>();
+    e.m_update_anim = e.m_rare_update   = true;
+    e.m_char->m_char_data.m_level       = src->m_Level;
 }
 
 void markEntityForDbStore(Entity *e, DbStoreFlags f)
@@ -200,9 +198,40 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
     e->m_db_store_flags &= ~uint32_t(f);
 }
 
-void forcePosition(Entity &e, glm::vec3 pos)
+void revivePlayer(Entity &e, ReviveLevel lvl)
 {
-    e.m_entity_data.m_pos = pos;
-    e.m_full_update_count = 10;
+    float cur_hp = getHP(*e.m_char);
+    if(e.m_type != EntType::PLAYER && cur_hp != 0)
+        return;
+
+    switch(lvl)
+    {
+    case ReviveLevel::AWAKEN:
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.25);
+        break;
+    case ReviveLevel::BOUNCE_BACK:
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.5);
+        break;
+    case ReviveLevel::RESTORATION:
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75);
+        break;
+    case ReviveLevel::IMMORTAL_RECOVERY:
+        setMaxHP(*e.m_char);
+        break;
+    case ReviveLevel::REGEN_REVIVE:
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75);
+        setEnd(*e.m_char, getMaxEnd(*e.m_char)*0.5);
+        break;
+    case ReviveLevel::FULL:
+    default:
+        // Set HP and End to Max
+        setMaxHP(*e.m_char);
+        setMaxEnd(*e.m_char);
+        break;
+    }
+
+    // reset state to simple
+    setStateMode(e, ClientStates::SIMPLE);
 }
+
 //! @}

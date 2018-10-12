@@ -65,7 +65,10 @@ INSTALL & CONFIGURE THE COX CLIENT
 
 3. **How to correctly run the CoX Client?**
 
-   The CoX Client must be run with a special command line argument telling the client that it's not connecting to the official game servers. Create a shortcut to CoX.exe and place it on your desktop. Right click the link to access its properties, and in the `Target:` field, add the following to the end of the line: `-project SEGS`.
+   The CoX Client must be run with a special command line argument telling the client that it's not connecting to the official game servers. Create a shortcut to CoX.exe and place it on your desktop. Right click the link to access its properties, and in the `Target:` field, add the following to the end of the line: ` -project SEGS`.
+
+   > Your line should end something like this: `.../CoX.exe" -project SEGS`.  
+Please note the space between the quotation mark and the dash.
       
    If you would like to run the client in windowed mode, you may also add these optional command line arguments: `-fullscreen 0 -screen 1024 768`.
    
@@ -86,7 +89,7 @@ If you're looking to compile SEGS from source, or need to do an advanced manual 
    
    _Files are available in .tar.gz and .zip formats and can be extracted using most common compression tools._
 
-   Extract the release files to a local directory on your machine. For Windows users it is recommended to extract SEGS to your `Documents` folder or `C:\` to ensure that SEGS has all the permissions it needs to properly run.
+   Extract the release files to a local directory on your machine. For Windows users it is recommended to extract SEGS to your `C:\` to ensure that SEGS has all the permissions it needs to properly run.
 
    Once extracted, you will have a new directory `SEGS` containing all SEGS files and subdirectories.
    
@@ -121,8 +124,11 @@ If you're looking to compile SEGS from source, or need to do an advanced manual 
 
       SEGS requires several CoH files to run. Clicking this button will prompt you to enter the path to your CoX directory. Once selected, it will copy several files from the CoX directory, and extract a portion of those files to your `SEGS/data/` subdirectory. These `.bin` files are required by SEGS to load CoX maps, and spawn NPCs. Once completed, SEGSAdmin will clean up any unnecessary files.
 
-
-4. **(Optional) Add User Account**
+  4. **Ensure proper ports are open on any firewalls**
+      Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200
+     These are the same ports that the original game client and now, SEGS uses as well.
+      
+5. **(Optional) Add User Account**
 
    Optionally, you may elect to add additional user accounts by clicking this button on the left side of the SEGSAdmin window. SEGSAdmin will prompt you to enter a username, password, and access level for each account. A user's access level is used to determine their permissions within your server. Please reference this chart:
    
@@ -145,6 +151,8 @@ Enjoy!
 
 HELP AND MORE INFORMATION
 ------
+
+Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200
 
 For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.io/
 

@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -17,6 +17,8 @@
 
 #include <ace/Reactor.h>
 #include <ace/Message_Block.h>
+
+using namespace SEGSEvents;
 
 ServerEndpoint::~ServerEndpoint() 
 {
@@ -40,22 +42,22 @@ int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is ava
 
 int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is possible.
 {
-    SEGSEvent *ev;
+    Event *ev;
     ACE_Time_Value nowait (ACE_OS::gettimeofday ());
     while (-1 != getq(ev, &nowait))
     {
-        if(ev->type()==SEGS_EventTypes::evFinish)
+        if(ev->type()==evFinish)
         {
             ACE_ASSERT(!"Post finish message to all links");
         }
         else if(ev->type()==CRUD_EventTypes::evPacket)
         {
-            PacketEvent *pkt_ev = (PacketEvent *)ev;
+            Packet *pkt_ev = (Packet *)ev;
             ssize_t send_cnt = endpoint_.send(pkt_ev->bytes(),pkt_ev->size(),pkt_ev->target);
             if (send_cnt == -1)
             {
                 // inform the link that it should die.
-                pkt_ev->src()->putq(SEGSEvent::s_ev_finish.shallow_copy());
+                pkt_ev->src()->putq(Finish::s_instance->shallow_copy());
                 ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
                 ev->release();
                 break;
@@ -114,7 +116,7 @@ CRUDLink *ServerEndpoint::getClientLink(const ACE_INET_Addr &from_addr)
     res = createLinkInstance(); // create a new client handler
     if(nullptr == res)
         return nullptr;
-    res->putq(new ConnectEvent(this,from_addr)); // and inform it of a new connection
+    res->putq(new Connect(this,from_addr)); // and inform it of a new connection
     client_links[from_addr] = res;
     //TODO: schedule timeout timer here!!
     return res;

@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -13,7 +13,9 @@
 #include "keybind_serializers.h"
 #include "keybind_definitions.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
+#include "Logging.h"
 #include "DataStorage.h"
 
 namespace
@@ -256,10 +258,7 @@ void saveTo(const KeybindSettings &target, const QString &baseName, bool text_fo
     commonSaveTo(target,"KeybindSettings",baseName,text_format);
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive &archive, KeybindSettings &bds, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive &archive, KeybindSettings &bds, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(KeybindSettings)
 
 void serializeToDb(const KeybindSettings &data, QString &tgt)
 {

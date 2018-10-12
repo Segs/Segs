@@ -1,13 +1,14 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
 
 #include "Common/NetStructures/Friend.h"
+#include "Common/NetStructures/Powers.h"
 #include "Common/GameData/attrib_definitions.h"
 #include <QtCore/QString>
 #include <vector>
@@ -29,9 +30,10 @@ static const constexpr  uint32_t        class_version   = 1;
 
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 4;
+static const constexpr  uint32_t    class_version       = 8; // v8: security threat
                         uint32_t    m_level             = 0;
-                        uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar, or hasn't trained up.
+                        uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar.
+                        uint32_t    m_security_threat   = 0; // used to limit a character's participation in Task Forces, Strike Forces, and Trials
                         uint32_t    m_experience_points = 0;
                         uint32_t    m_experience_debt   = 0;
                         uint32_t    m_experience_patrol = 0; // planned future use
@@ -49,11 +51,23 @@ static const constexpr  uint32_t    class_version       = 4;
                         QString     m_last_online;
                         QString     m_class_name;
                         QString     m_origin_name;
-                        QString     m_mapName;
-                        uint32_t    m_mapIdx;
                         bool        m_supergroup_costume;       // player has a sg costume
                         bool        m_using_sg_costume;         // player uses sg costume currently
                         Sidekick    m_sidekick;                 // Sidekick Struct
                         FriendsList m_friendlist;               // Friendslist Struct
                         Parse_CharAttrib    m_current_attribs;
+                        bool        m_is_on_task_force  = false;
+                        bool        m_is_on_auto_logout = false;
+                        float       m_idle_time         = 0;
+                        vPowerSets          m_powersets;
+                        PowerTrayGroup      m_trays;
+                        vInspirations       m_inspirations;
+                        vEnhancements       m_enhancements;     // Enhancements owned, but not attached to powers
+                        uint32_t    m_max_insp_cols     = 0;
+                        uint32_t    m_max_insp_rows     = 0;
+                        uint32_t    m_max_enhance_slots = 0;
+
+                        // No need to serialize these members
+                        bool        m_has_updated_powers    = false;
+                        bool        m_reset_powersets   = false;
 };

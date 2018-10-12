@@ -1,20 +1,25 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
-#include "GameCommandList.h"
+#include "GameCommand.h"
+#include "MapEventTypes.h"
 
 #include <QtCore/QString>
 
-class EmailRead final : public GameCommand
+namespace SEGSEvents
+{
+// [[ev_def:type]]
+class EmailRead final : public GameCommandEvent
 {
 public:
-    EmailRead(const int id, const QString &message, const QString recipient) : GameCommand(MapEventTypes::evEmailReadCmd),
-        m_id(id), m_message(message), m_recipient(recipient)
+explicit    EmailRead() : GameCommandEvent(MapEventTypes::evEmailRead) {}
+            EmailRead(const int id, const QString &message, const QString sender) : GameCommandEvent(MapEventTypes::evEmailRead),
+        m_id(id), m_message(message), m_sender_name(sender)
     {
     }
 
@@ -23,14 +28,18 @@ public:
         bs.StoreBits(32, m_id);
         bs.StoreString(m_message);
         bs.StorePackedBits(1, m_count);
-        bs.StoreString(m_recipient);
+        bs.StoreString(m_sender_name);
     }
 
-    void    serializefrom(BitStream &src);
-
-protected:
+            // [[ev_def:field]]
     int m_id;
+            // [[ev_def:field]]
     QString m_message;
+            // [[ev_def:field]]
     int m_count = 1; //Doesn't do anything in Issue 0, seemingly, so hardcoding as 1
-    QString m_recipient; //Possible misnamed variable, as this is actually the sender in the email's read tab
+            // [[ev_def:field]]
+    QString m_sender_name;
+            EVENT_IMPL(EmailRead)
 };
+} // end of SEGSEvents namespace
+

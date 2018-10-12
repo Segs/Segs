@@ -1,15 +1,26 @@
 <RCC>
     <qresource prefix="/logo">
-        <file>logo3.png</file>
-        <file>logo4.png</file>
+        <file>Resources/logo3.png</file>
+        <file>Resources/logo4.png</file>
+        <file>Resources/splash-lg.png</file>
     </qresource>
     <qresource prefix="/icons">
-        <file>icon_warning.png</file>
-        <file>icon_good.png</file>
-        <file>segs.bmp</file>
-        <file>icon_lookup.png</file>
+        <file>Resources/icon_lookup.png</file>
+        <file>Resources/database.svg</file>
+        <file>Resources/file-plus.svg</file>
+        <file>Resources/save.svg</file>
+        <file>Resources/settings.svg</file>
+        <file>Resources/sliders.svg</file>
+        <file>Resources/users.svg</file>
+        <file>Resources/check.svg</file>
+        <file>Resources/download.svg</file>
+        <file>Resources/play.svg</file>
+        <file>Resources/square.svg</file>
+        <file>Resources/alert-triangle.svg</file>
+        <file>Resources/app-icon.svg</file>
     </qresource>
     <qresource prefix="/fonts">
         <file>dejavusanscondensed.ttf</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

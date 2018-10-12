@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -15,8 +15,11 @@
 #include "NetStructures/Costume.h"
 #include "GameDatabase/GameDBSyncEvents.h"
 #include "GameData/playerdata_definitions.h"
+#include "GameData/map_definitions.h"
 
 #include <QtCore/QDebug>
+
+using namespace SEGSEvents;
 
 // SpecHash<std::string,val>
 //
@@ -48,7 +51,7 @@ void UpdateServer::serializeto( BitStream &tgt ) const
     tgt.StorePackedBits(1, m_build_date);
     tgt.StorePackedBits(1, 0); // flags
     tgt.StoreString(currentVersion);
-    tgt.StoreBitArray(clientInfo,sizeof(clientInfo)*8);
+    tgt.StoreBitArray(clientInfo.data(),clientInfo.size()*8);
     tgt.StorePackedBits(1, authID);
     tgt.StoreBits(32, authCookie);
     tgt.StoreString(accountName);
@@ -59,7 +62,7 @@ void UpdateServer::serializefrom( BitStream &src )
     m_build_date = src.GetPackedBits(1);
     /*uint32_t t =*/ src.GetPackedBits(1);
     src.GetString(currentVersion);
-    src.GetBitArray(clientInfo,sizeof(clientInfo)*8);
+    src.GetBitArray(clientInfo.data(),clientInfo.size()*8);
     authID = src.GetPackedBits(1);
     authCookie = src.GetBits(32);
     src.GetString(accountName);
@@ -79,14 +82,15 @@ void GameEntryError::serializefrom( BitStream &tgt )
 void CharacterSlots::serializeto( BitStream &tgt ) const
 {
     tgt.StorePackedBits(1, 2); //opcode
-    tgt.StorePackedBits(1,static_cast<uint32_t>(m_data->m_max_slots));
-    assert(m_data->m_max_slots>0);
-    for(int i=0; i<m_data->m_max_slots; i++)
+    tgt.StorePackedBits(1,static_cast<uint32_t>(m_data.m_max_slots));
+    assert(m_data.m_max_slots>0);
+    for(int i=0; i<m_data.m_max_slots; i++)
     {
         Character converted;
         PlayerData player_data;
-        toActualCharacter(m_data->m_characters[i],converted,player_data);
-        converted.serializetoCharsel(tgt);
+        EntityData entity_data;
+        toActualCharacter(m_data.m_characters[i],converted,player_data, entity_data);
+        converted.serializetoCharsel(tgt, getDisplayMapName(entity_data.m_map_idx));
     }
     //tgt.StoreBitArray(m_clientinfo,128);
 }
@@ -109,10 +113,11 @@ void UpdateCharacter::serializefrom( BitStream &bs )
 
 void CharacterResponse::serializeto( BitStream &bs ) const
 {
-    GameAccountResponseCharacterData indexed_character(m_data->get_character(m_index));
+    GameAccountResponseCharacterData indexed_character(m_data.get_character(m_index));
     Character converted;
     PlayerData player_data;
-    toActualCharacter(indexed_character,converted,player_data);
+    EntityData entity_data;
+    toActualCharacter(indexed_character,converted,player_data, entity_data);
     bs.StorePackedBits(1,6); // opcode
 
     if(indexed_character.m_name.compare("EMPTY")!=0)// actual character was read from db
@@ -133,7 +138,7 @@ void CharacterResponse::serializefrom( BitStream &bs )
     assert(!"TODO");
 }
 
-void DeletionAcknowledged::serializeto( BitStream &tgt ) const
+void DeleteAcknowledged::serializeto( BitStream &tgt ) const
 {
     tgt.StorePackedBits(1,5); // opcode 5
 }

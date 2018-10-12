@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -20,6 +20,8 @@
 #include <glm/gtc/constants.hpp>
 #include <QDebug>
 #include <cmath>
+
+using namespace SEGSEvents;
 
 enum BinaryControl
 {
@@ -48,7 +50,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
     m_send_id                   = other.m_send_id;
     m_time_diff1                = other.m_time_diff1;
     m_time_diff2                = other.m_time_diff2;
-    has_input_commit_guess      = other.has_input_commit_guess;
+    m_has_input_commit_guess    = other.m_has_input_commit_guess;
     m_received_server_update_id = other.m_received_server_update_id;
     m_no_collision              = other.m_no_collision;
     m_controls_disabled         = other.m_controls_disabled;
@@ -64,7 +66,7 @@ InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
         if(other.pyr_valid[i])
             m_camera_pyr[i] = other.m_camera_pyr[i];
 
-        if(other.m_orientation_pyr[i])
+        if(other.m_orientation_pyr[i]!=0.0f)
         {
             qCDebug(logOrientation) << other.m_orientation_pyr[i];
             m_orientation_pyr[i] = other.m_orientation_pyr[i];
@@ -138,9 +140,13 @@ void InputState::partial_2(BitStream &bs)
             control_id = bs.GetBits(4);
 
         if(bs.GetBits(1))
-            ms_since_prev=bs.GetBits(2)+32; // delta from prev event
+            ms_since_prev = bs.GetBits(2)+32; // delta from prev event
         else
-            ms_since_prev=bs.GetBits(m_data.m_csc_deltabits);
+            ms_since_prev = bs.GetBits(m_data.m_csc_deltabits);
+
+        if (control_id < 8)
+            m_data.m_input_received = true;
+
         switch(control_id)
         {
             case FORWARD: case BACKWARD:
@@ -204,13 +210,12 @@ void InputState::partial_2(BitStream &bs)
 
 void InputState::extended_input(BitStream &bs)
 {
-    m_data.has_input_commit_guess = bs.GetBits(1);
-    if(m_data.has_input_commit_guess) // list of partial_2 follows
+    m_data.m_has_input_commit_guess = bs.GetBits(1);
+    if(m_data.m_has_input_commit_guess) // list of partial_2 follows
     {
         m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
         m_data.m_send_id = bs.GetBits(16);
-        m_data.current_state_P = nullptr;
-        qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_data.m_csc_deltabits, m_data.m_send_id, m_data.current_state_P);
+        qCDebug(logInput, "CSC_DELTA[%x-%x] : ", m_data.m_csc_deltabits, m_data.m_send_id);
         partial_2(bs);
 
     }
@@ -220,6 +225,9 @@ void InputState::extended_input(BitStream &bs)
 
     if(m_data.m_control_bits)
         qCDebug(logInput, "E input %x : ",m_data.m_control_bits);
+
+    if (m_data.m_control_bits != 0)
+        m_data.m_input_received = true;
 
     if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {
@@ -271,7 +279,7 @@ struct ControlState
     void dump()
     {
         qCDebug(logInput, "CSC: %d,%d, [%f,%f]", client_timenow, time_res, timestep,time_rel1C);
-        qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
+        qCDebug(logInput, "(%lu %lu)", m_perf_cntr_diff, m_perf_freq_diff);
     }
 };
 
@@ -311,6 +319,7 @@ void InputState::serializefrom(BitStream &bs)
         m_user_commands.ResetOffsets();
         bs.ByteAlign(true,false);
         m_user_commands.StoreBitArray(bs.read_ptr(),bs.GetReadableBits());
+
         // all remaining bits were moved to m_user_commands.
         bs.SetReadPos(bs.GetWritePos());
     }

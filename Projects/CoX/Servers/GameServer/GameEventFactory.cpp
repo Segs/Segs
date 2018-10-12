@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -12,6 +12,8 @@
 
 #include "GameEventFactory.h"
 #include "GameEvents.h"
+
+using namespace SEGSEvents;
 
 GameLinkEvent *GameEventFactory::EventFromStream(BitStream &bs)
 {
@@ -30,7 +32,7 @@ GameLinkEvent *GameEventFactory::EventFromStream(BitStream &bs)
     case 3: return new MapServerAddrRequest;
     case 4: return new DeleteCharacter;
     case 5: return new UpdateCharacter;
-    default: return new GameUnknownRequest;
+    default: return new UnknownEvent;
     }
     return ev;
 }

@@ -1,20 +1,22 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
 #include "CommonNetStructures.h"
 
 class Entity;
+// Max number of friends on friendslist -- client caps at 25 entries
+static const int g_max_friends = 25;
 
 struct Friend
 {
 static const constexpr  uint32_t    class_version   = 1;
                         bool        m_online_status;
-                        int         m_db_id;           // m_db_id
+                        uint32_t    m_db_id;           // m_db_id
                         QString     m_name;
                         uint8_t     m_class_idx;
                         uint8_t     m_origin_idx;
@@ -30,9 +32,22 @@ static const constexpr  uint32_t    class_version   = 1;
                         std::vector<Friend> m_friends;
 };
 
-void addFriend(Entity &src, Entity &tgt);
-void removeFriend(Entity &src, Entity &tgt);
-bool isFriendOnline(Entity &src, uint32_t db_id);
+enum class FriendListChangeStatus
+{
+    FRIEND_ADDED,
+    FRIEND_REMOVED,
+    MAX_FRIENDS_REACHED,
+    FRIEND_NOT_FOUND,
+};
+
+/*
+ * Friend Methods
+ */
 void toggleFriendList(Entity &src);
 void dumpFriends(const Entity &src);
 void dumpFriendsList(const Friend &f);
+
+FriendListChangeStatus addFriend(Entity &src, const Entity &tgt);
+FriendListChangeStatus removeFriend(Entity &src, QString friendName);
+
+const QString &getFriendDisplayMapName(const Friend &f);

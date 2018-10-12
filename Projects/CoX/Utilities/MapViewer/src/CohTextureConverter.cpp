@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -227,7 +227,7 @@ void preloadTextureNames()
     QDirIterator iter(basepath+"texture_library", QDir::Files, QDirIterator::Subdirectories);
     while (iter.hasNext()) {
         QString fpath = iter.next();
-        QString texture_key = QFileInfo(iter.fileInfo()).baseName().toLower();
+        QString texture_key = iter.fileInfo().baseName().toLower();
         s_texture_paths[texture_key] = fpath;
         loadTexHeader(fpath);
     }

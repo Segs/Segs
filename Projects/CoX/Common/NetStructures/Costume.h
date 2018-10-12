@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -52,7 +52,7 @@ struct Costume
     float m_height=0;
     float m_physique=0;
     uint32_t skin_color=0;
-    bool m_non_default_costme_p;
+    bool m_send_full_costume;
     int m_num_parts=0;
     float m_floats[8];
     std::vector<CostumePart> m_parts;
