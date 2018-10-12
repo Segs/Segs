@@ -15,6 +15,7 @@
 #include "MapServer.h"
 #include "MapInstance.h"
 #include "GameData/GameDataStore.h"
+#include "GameData/ClientStates.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
 #include "NetStructures/CharacterHelpers.h"
@@ -22,6 +23,9 @@
 #include "NetStructures/Contact.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
+#include "Events/EmailHeaders.h"
+#include "Events/EmailRead.h"
+#include "Servers/GameServer/EmailEvents.h"
 #include "MapEvents.h"
 #include "Logging.h"
 
@@ -44,7 +48,8 @@ glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
 float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
 float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
-Destination getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
+Destination     getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
+ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
@@ -138,6 +143,13 @@ void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
     e.m_cur_destination.location = location;
 }
 
+void setStateMode(Entity &e, ClientStates state)
+{
+    e.m_rare_update = true; // this must also be true for statemode to send
+    e.m_has_state_mode = true;
+    e.m_state_mode = state;
+}
+
 // For live debugging
 void    setu1(Entity &e, int val) { e.u1 = val; }
 
@@ -162,7 +174,7 @@ void toggleJumppack(Entity &e)
 void    toggleControlsDisabled(Entity &e) { e.m_controls_disabled = !e.m_controls_disabled; }
 void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
-void    toggleExtraInfo(Entity &e) { e.m_extra_info = !e.m_extra_info; }
+void    toggleInterp(Entity &e) { e.m_has_interp = !e.m_has_interp; }
 void    toggleMoveInstantly(Entity &e) { e.m_move_instantly = !e.m_move_instantly; }
 void    toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
 
@@ -187,6 +199,23 @@ void toggleLFG(Entity &e)
         addLFG(e);
         sendTeamLooking(&e);
     }
+}
+
+void toggleCollision(Entity &e)
+{
+    e.inp_state.m_no_collision = !e.inp_state.m_no_collision;
+
+    if (e.inp_state.m_no_collision)
+        e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
+    else
+        e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
+     qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.inp_state.m_no_collision;
+}
+
+void toggleMovementAuthority(Entity &e)
+{
+    toggleFullUpdate(e);
+    toggleControlId(e);
 }
 
 
@@ -278,15 +307,87 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
-void on_awaiting_dead_no_gurney_test(MapClientSession &session)
+void sendEmailHeaders(MapClientSession &sess)
 {
-    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    // later on the email id should be auto-incremented from DB
+    EmailHeaderRequest* msgToHandler = new EmailHeaderRequest({
+                                        sess.m_ent->m_char->m_db_id,
+                                        sess.m_ent->m_char->getName(),
+                                        "TEST", 576956720},
+                sess.link()->session_token());
+    EventProcessor* tgt = HandlerLocator::getEmail_Handler();
+    tgt->putq(msgToHandler);
+}
+
+void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    uint32_t timestamp = 0;
+
+    EmailSendMessage* msgToHandler = new EmailSendMessage({
+                                                            sess.m_ent->m_char->m_db_id,
+                                                            sess.m_ent->m_char->getName(),    // -> sender
+                                                            recipient_name,
+                                                            subject,
+                                                            message,
+                                                            timestamp},
+                sess.link()->session_token());
+
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+}
+
+void readEmailMessage(MapClientSession& sess, const uint32_t email_id)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    EmailReadRequest* msgToHandler = new EmailReadRequest({email_id}, sess.link()->session_token());
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+}
+
+void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    EmailDeleteMessage* msgToHandler = new EmailDeleteMessage({email_id}, sess.link()->session_token());
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
 bool isFriendOnline(Entity &src, uint32_t db_id)
 {
     // TODO: src is needed for mapclient
     return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
+}
+
+void setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits)
+{
+    g_interpolating = active;
+    g_interpolation_level = level;
+    g_interpolation_bits = bits;
+     QString output = QString("Setting Interpolation Settings (active, level, bits): %1, %2, %3")
+            .arg(g_interpolating)
+            .arg(g_interpolation_level)
+            .arg(g_interpolation_bits);
+     sendInfoMessage(MessageChannel::DEBUG_INFO, output, *sess);
+    qCDebug(logPosition) << output;
 }
 
 
@@ -375,10 +476,10 @@ void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000)
     src.addCommand<TimeUpdate>(sec_since_jan_1_2000);
 }
 
-void sendClientState(MapClientSession &ent, ClientStates client_state)
+void sendClientState(MapClientSession &sess, ClientStates client_state)
 {
-    qCDebug(logSlashCommand) << "Sending ClientState:" << QString::number(client_state);
-    ent.addCommand<SetClientState>(client_state);
+    qCDebug(logSlashCommand) << "Sending ClientState:" << uint8_t(client_state);
+    sess.addCommand<SetClientState>(client_state);
 }
 
 void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name)
@@ -557,33 +658,16 @@ void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)
     src.addCommand<SendWaypoint>(point_idx, location);
 }
 
-
-/*
- * sendEmail Wrappers for providing access to Email Database
- */
-void sendEmailHeaders(Entity *e)
+void sendStance(MapClientSession &src, PowerStance stance)
 {
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    src.addCommand<SendStance>(stance);
 }
 
-void readEmailMessage(Entity *e, const int id){
-    if(!e->m_client)
-    {
-        qWarning() << "m_client does not yet exist!";
-        return;
-    }
-    MapClientSession *src = e->m_client;
-
-    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+void sendDeadNoGurney(MapClientSession &sess)
+{
+    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    sess.addCommand<DeadNoGurney>();
 }
 
 
@@ -674,6 +758,23 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         sendFaceEntity(ent, tgt_idx);
     }
 
+    // Send PowerStance to client
+    PowerStance pstance;
+    pstance.has_stance = true;
+    pstance.pset_idx = pset_idx;
+    pstance.pow_idx = pow_idx;
+    ent.m_stance = pstance;
+    sendStance(*ent.m_client, pstance);
+
+    // Clear old moves and add TriggeredMove to queue
+    ent.m_triggered_moves.clear();
+    for(auto bits : powtpl.AttackBits)
+    {
+        // TODO: pull from stored FX name and lookup idx
+        // for now, send bits again
+        addTriggeredMove(ent, bits, powtpl.m_AttackFrames, bits);
+    }
+
     // Check and set endurance based upon end cost
     // TODO: refactor as checkEnduranceCost()
     float endurance = getEnd(*ent.m_char);
@@ -745,7 +846,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         // effects done here
         for(uint32_t i = 0; i<powtpl.pAttribMod.size(); i++)
         {
-            if (powtpl.pAttribMod[i].name.compare("Damage", Qt::CaseInsensitive))
+            if (powtpl.pAttribMod[i].name.compare("Damage", Qt::CaseInsensitive) == 0)
             {
                 // Deal Damage
                 sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);
@@ -761,7 +862,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
                         .arg(powtpl.pAttribMod[i].Magnitude)
                         .arg(powtpl.m_Name);
             }
-            else if (powtpl.pAttribMod[i].name.compare("Healing", Qt::CaseInsensitive))
+            else if (powtpl.pAttribMod[i].name.compare("Healing", Qt::CaseInsensitive) == 0)
             {
                 // Do Healing
                 sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);
