@@ -62,6 +62,13 @@ void forcePosition(Entity &e, glm::vec3 pos)
     e.m_full_update_count = 10;
 }
 
+void forceOrientation(Entity &e, glm::vec3 pyr)
+{
+    e.m_direction = glm::quat(pyr);
+    e.m_entity_data.m_orientation_pyr = pyr;
+    e.m_force_pos_and_cam = true;
+}
+
 // Move to Sequences or Triggers files later
 void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_idx)
 {

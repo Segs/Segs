@@ -655,6 +655,8 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
         toActualCostume(costume, main_costume);
         // appearance related.
         main_costume.m_body_type = src.m_costumes.back().m_body_type;
+        main_costume.m_height = src.m_costumes.back().m_height;
+                main_costume.m_physique = src.m_costumes.back().m_physique;
         main_costume.setSlotIndex(costume.m_slot_index);
         main_costume.setCharacterId(costume.m_character_id);
     }
@@ -692,10 +694,10 @@ bool fromActualCharacter(const Character &src,const PlayerData &player,
         fromActualCostume(costume, main_costume);
         // appearance related.
         main_costume.m_body_type = src.m_costumes.back().m_body_type;
-        main_costume.m_slot_index = costume.getSlotIndex();
-        main_costume.m_character_id= costume.getCharacterId();
         main_costume.m_height = costume.m_height;
         main_costume.m_physique = costume.m_physique;
+        main_costume.m_slot_index = costume.getSlotIndex();
+        main_costume.m_character_id= costume.getCharacterId();
     }
     return true;
 }
