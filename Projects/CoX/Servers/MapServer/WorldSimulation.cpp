@@ -36,20 +36,18 @@ void World::update(const ACE_Time_Value &tick_timer)
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_ent_mager.getEntitiesMutex());
 
     for(Entity * e : ref_ent_mager.m_live_entlist)
-    {
         updateEntity(e,delta);
-    }
 }
 
 void World::physicsStep(Entity *e,uint32_t msec)
 {
-    if(glm::length2(e->inp_state.pos_delta))
+    if(glm::length2(e->m_states.current()->m_pos_delta))
     {
         // todo: take into account time between updates
         glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
         //float vel_scale = e->inp_state.m_input_vel_scale/255.0f;
-        e->m_entity_data.m_pos += ((za*e->inp_state.pos_delta)*float(msec))/50.0f;
-        e->m_velocity = za*e->inp_state.pos_delta;
+        e->m_entity_data.m_pos += ((za*e->m_states.current()->m_pos_delta)*float(msec))/50.0f;
+        e->m_motion_state.m_velocity = za*e->m_states.current()->m_pos_delta;
     }
 }
 

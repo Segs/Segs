@@ -44,9 +44,9 @@ uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
 uint32_t    getAccessLevel(const Entity &e) { return e.m_entity_data.m_access_level; }
 uint32_t    getTargetIdx(const Entity &e) { return e.m_target_idx; }
 uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; }
-glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
-float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
-float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
+glm::vec3   getSpeed(const Entity &e) { return e.m_motion_state.m_speed; }
+float       getBackupSpd(const Entity &e) { return e.m_motion_state.m_backup_spd; }
+float       getJumpHeight(const Entity &e) { return e.m_motion_state.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
 Destination     getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
 ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
@@ -54,9 +54,9 @@ ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
 void    setMapIdx(Entity &e, uint32_t val) { e.m_entity_data.m_map_idx = val; }
-void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}; }
-void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
-void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
+void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_motion_state.m_speed = {v1,v2,v3}; }
+void    setBackupSpd(Entity &e, float val) { e.m_motion_state.m_backup_spd = val; }
+void    setJumpHeight(Entity &e, float val) { e.m_motion_state.m_jump_height = val; }
 void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
 
 void    setTeamID(Entity &e, uint8_t team_id)
@@ -154,24 +154,24 @@ void setStateMode(Entity &e, ClientStates state)
 void    setu1(Entity &e, int val) { e.u1 = val; }
 
 // Toggles
-void    toggleFlying(Entity &e) { e.m_is_flying = !e.m_is_flying; }
-void    toggleFalling(Entity &e) { e.m_is_falling = !e.m_is_falling; }
-void    toggleJumping(Entity &e) { e.m_is_jumping = !e.m_is_jumping; }
-void    toggleSliding(Entity &e) { e.m_is_sliding = !e.m_is_sliding; }
+void    toggleFlying(Entity &e) { e.m_motion_state.m_is_flying = !e.m_motion_state.m_is_flying; }
+void    toggleFalling(Entity &e) { e.m_motion_state.m_is_falling = !e.m_motion_state.m_is_falling; }
+void    toggleJumping(Entity &e) { e.m_motion_state.m_is_jumping = !e.m_motion_state.m_is_jumping; }
+void    toggleSliding(Entity &e) { e.m_motion_state.m_is_sliding = !e.m_motion_state.m_is_sliding; }
 
 void toggleStunned(Entity &e)
 {
-    e.m_is_stunned = !e.m_is_stunned;
+    e.m_motion_state.m_is_stunned = !e.m_motion_state.m_is_stunned;
     // TODO: toggle stunned FX above head
 }
 
 void toggleJumppack(Entity &e)
 {
-    e.m_has_jumppack = !e.m_has_jumppack;
+    e.m_motion_state.m_has_jumppack = !e.m_motion_state.m_has_jumppack;
     // TODO: toggle costume part for jetpack back item.
 }
 
-void    toggleControlsDisabled(Entity &e) { e.m_controls_disabled = !e.m_controls_disabled; }
+void    toggleControlsDisabled(Entity &e) { e.m_motion_state.m_controls_disabled = !e.m_motion_state.m_controls_disabled; }
 void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
 void    toggleInterp(Entity &e) { e.m_has_interp = !e.m_has_interp; }
@@ -203,13 +203,14 @@ void toggleLFG(Entity &e)
 
 void toggleCollision(Entity &e)
 {
-    e.inp_state.m_no_collision = !e.inp_state.m_no_collision;
+    e.m_motion_state.m_no_collision = !e.m_motion_state.m_no_collision;
 
-    if (e.inp_state.m_no_collision)
+    if (e.m_motion_state.m_no_collision)
         e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
     else
         e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
-     qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.inp_state.m_no_collision;
+
+    qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.m_motion_state.m_no_collision;
 }
 
 void toggleMovementAuthority(Entity &e)
@@ -307,6 +308,48 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
+void positionTest(MapClientSession *tgt)
+{
+    if(tgt->m_ent->m_type != EntType::PLAYER)
+        return;
+
+    QString output = "==== Position Test =======================\n";
+
+    output += QString("Move Time: %1\n")
+            .arg(tgt->m_ent->m_states.current()->m_move_time, 0, 'f', 1);
+
+    output += QString("Prev Pos <%1, %2, %3>\n")
+            .arg(tgt->m_ent->m_motion_state.m_last_pos.x, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_last_pos.y, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_last_pos.z, 0, 'f', 1);
+
+    output += QString("Server Pos <%1, %2, %3>\n")
+            .arg(tgt->m_ent->m_entity_data.m_pos.x, 0, 'f', 1)
+            .arg(tgt->m_ent->m_entity_data.m_pos.y, 0, 'f', 1)
+            .arg(tgt->m_ent->m_entity_data.m_pos.z, 0, 'f', 1);
+
+    FixedPointValue fpvx(tgt->m_ent->m_entity_data.m_pos.x);
+    FixedPointValue fpvy(tgt->m_ent->m_entity_data.m_pos.y);
+    FixedPointValue fpvz(tgt->m_ent->m_entity_data.m_pos.z);
+    output += QString("Client Pos <%1, %2, %3>\n")
+            .arg(fpvx.store)
+            .arg(fpvy.store)
+            .arg(fpvz.store);
+
+    output += QString("Velocity <%1, %2, %3> @ %4\n")
+            .arg(tgt->m_ent->m_motion_state.m_velocity.x, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_velocity.y, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_velocity.z, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_velocity_scale/255, 0, 'f', 1);
+
+    qDebug().noquote() << output;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, output, *tgt);
+}
+
+
+/*
+ * sendEmail Wrappers for providing access to Email Database
+ */
 void sendEmailHeaders(MapClientSession &sess)
 {
     if(!sess.m_ent->m_client)

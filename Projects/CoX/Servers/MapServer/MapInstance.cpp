@@ -347,8 +347,8 @@ void MapInstance::dispatch( Event *ev )
         case evShortcutsRequest:
             on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
             break;
-        case evInputState:
-            on_input_state(static_cast<InputState *>(ev));
+        case evRecvInputState:
+            on_input_state(static_cast<RecvInputState *>(ev));
             break;
         case evCookieRequest:
             on_cookie_confirm(static_cast<CookieRequest *>(ev));
@@ -721,7 +721,8 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     serializeFromQString(char_data,request_data.char_from_db_data);
     // existing character
     Entity *ent = m_entities.CreatePlayer();
-    toActualCharacter(char_data, *ent->m_char,*ent->m_player, *ent->m_entity);
+    toActualCharacter(char_data, *ent->m_char, *ent->m_player, *ent->m_entity);
+    ent->m_char->finalizeLevel(); // done here to fix spawn with 0 hp/end bug
     ent->fillFromCharacter(getGameData());
     ent->m_client = &map_session;
     map_session.m_ent = ent;
@@ -736,12 +737,12 @@ void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
     m_session_store.locked_unmark_session_for_reaping(&map_session);
     if(ev->m_data.slot_idx<0)
     {
-
         //TODO: this requires sending an actual error message to client and then disconnecting ?
         map_session.link()->putq(new DisconnectResponse);
         assert(false); //this code needs work;
         return;
     }
+
     map_session.m_ent->m_char->m_db_id = ev->m_data.m_char_id;
     map_session.m_ent->m_char->setIndex(ev->m_data.slot_idx);
     EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
@@ -993,29 +994,39 @@ void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
 }
 
-void MapInstance::on_input_state(InputState *st)
+void MapInstance::on_input_state(RecvInputState *st)
 {
     MapClientSession &session(m_session_store.session_from_event(st));
     Entity *   ent = session.m_ent;
-    if (st->m_data.m_has_input_commit_guess)
-        ent->m_input_ack = st->m_data.m_send_id;
-    ent->inp_state = st->m_data;
 
-    if (st->m_data.m_input_received)
-        ent->m_has_input_on_timeframe = st->m_data.m_input_received;
+    // Save current position to last_pos
+    ent->m_motion_state.m_last_pos      = ent->m_entity_data.m_pos;
+    ent->m_states.current()->m_pos_end  = ent->m_entity_data.m_pos;
+    st->m_next_state.m_pos_start        = ent->m_entity_data.m_pos;
+
+    // Add new input state
+    ent->m_states.addNewState(st->m_next_state);
+
+    // Set current Input Packet ID
+    if (st->m_next_state.m_full_input_packet)
+        ent->m_input_pkt_id = st->m_next_state.m_send_id;
+
+    // Check for input
+    if (st->m_next_state.m_input_received)
+        ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
 
     // Set Target
-    if(st->m_has_target && (getTargetIdx(*ent) != st->m_target_idx))
+    if(st->m_next_state.m_has_target && (getTargetIdx(*ent) != st->m_next_state.m_target_idx))
     {
         ent->m_has_input_on_timeframe = true;
-        setTarget(*ent, st->m_target_idx);
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target",qHash(st->m_target_idx));
+        setTarget(*ent, st->m_next_state.m_target_idx);
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target",qHash(st->m_next_state.m_target_idx));
     }
 
     // Set Orientation
-    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
+    if(st->m_next_state.m_orientation_pyr.p || st->m_next_state.m_orientation_pyr.y || st->m_next_state.m_orientation_pyr.r)
     {
-        ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
+        ent->m_entity_data.m_orientation_pyr = st->m_next_state.m_orientation_pyr;
         ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
 
@@ -1418,12 +1429,12 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
 
     if(afraidCommands.contains(lowerContents))                                  // Afraid: Cower in fear, hold stance.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Afraid emote";
         else
             msg = "Unhandled ground Afraid emote";
     }
-    else if(akimboCommands.contains(lowerContents) && !ent->m_is_flying)        // Akimbo: Stands with fists on hips looking forward, hold stance.
+    else if(akimboCommands.contains(lowerContents) && !ent->m_motion_state.m_is_flying)        // Akimbo: Stands with fists on hips looking forward, hold stance.
         msg = "Unhandled Akimbo emote";                                         // Not allowed when flying.
     else if(lowerContents == "angry")                                           // Angry: Fists on hips and slouches forward, as if glaring or grumbling, hold stance.
         msg = "Unhandled Angry emote";
@@ -1437,7 +1448,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled BatSmashReact emote";
     else if(bigWaveCommands.contains(lowerContents))                            // BigWave: Waves over the head, fists on hips stance.
         msg = "Unhandled BigWave emote";
-    else if(boomBoxCommands.contains(lowerContents) && !ent->m_is_flying)       // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
+    else if(boomBoxCommands.contains(lowerContents) && !ent->m_motion_state.m_is_flying)       // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
     {                                                                           // Not allowed when flying.
         int rSong = rand() % 25 + 1;                                            // Randomly pick a song.
         switch(rSong)
@@ -1568,11 +1579,11 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             }
         }
     }
-    else if(bowCommands.contains(lowerContents) && !ent->m_is_flying)           // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
+    else if(bowCommands.contains(lowerContents) && !ent->m_motion_state.m_is_flying)           // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
         msg = "Unhandled Bow emote";                                            // Not allowed when flying.
     else if(bowDownCommands.contains(lowerContents))                            // BowDown: Thrusts hands forward, then points down, as if ordering someone else to bow before you.
         msg = "Unhandled BowDown emote";
-    else if(lowerContents == "burp" && !ent->m_is_flying)                       // Burp (has sound): A raunchy belch, wipes mouth with arm afterward, ape-like stance.
+    else if(lowerContents == "burp" && !ent->m_motion_state.m_is_flying)                       // Burp (has sound): A raunchy belch, wipes mouth with arm afterward, ape-like stance.
         msg = "Unhandled Burp emote";                                           // Not allowed when flying.
     else if(lowerContents == "cheer")                                           // Cheer: Randomly does one of 3 cheers, 1 fist raised, 2 fists raised or 2 fists lowered, repeats.
     {
@@ -1613,7 +1624,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             }
         }
     }
-    else if(lowerContents == "crossarms" && !ent->m_is_flying)                  // CrossArms: Crosses arms, stance (slightly different from most other crossed arm stances).
+    else if(lowerContents == "crossarms" && !ent->m_motion_state.m_is_flying)                  // CrossArms: Crosses arms, stance (slightly different from most other crossed arm stances).
         msg = "Unhandled CrossArms emote";                                      // Not allowed when flying.
     else if(lowerContents == "dance")                                           // Dance: Randomly performs one of six dances.
     {
@@ -1755,7 +1766,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled Praise emote";
     else if(lowerContents == "protest")                                         // Protest: Hold hold up one of several randomly selected mostly unreadable protest signs.
         msg = "Unhandled Protest emote";
-    else if(lowerContents == "roar" && !ent->m_is_flying)                       // Roar: Claws air, roaring, ape-like stance.
+    else if(lowerContents == "roar" && !ent->m_motion_state.m_is_flying)                       // Roar: Claws air, roaring, ape-like stance.
         msg = "Unhandled Roar emote";                                           // Not allowed when flying.
     else if(lowerContents == "rock")                                            // Rock: Plays rock/paper/scissors, picking rock (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
         msg = "Unhandled Rock emote";
@@ -1793,7 +1804,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled Stop emote";
     else if(tarzanCommands.contains(lowerContents))                             // Tarzan: Beats chest and howls, angry-looking stance.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Tarzan emote";
         else
             msg = "Unhandled ground Tarzan emote";
@@ -1801,14 +1812,14 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     else if(taunt1Commands.contains(lowerContents))                             // Taunt1: Taunts, beckoning with one hand, then slaps fist into palm, repeating stance.
 
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Taunt1 emote";
         else
             msg = "Unhandled ground Taunt1 emote";
     }
     else if(taunt2Commands.contains(lowerContents))                             // Taunt2: Taunts, beckoning with both hands, combat stance.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Taunt2 emote";
         else
             msg = "Unhandled ground Taunt2 emote";
@@ -1833,13 +1844,13 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled Yes emote";
     else if(yogaCommands.contains(lowerContents))                               // Yoga: Sits down cross legged with hands on knees/legs, holds stance.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Yoga emote";
         else
             msg = "Unhandled ground Yoga emote";
     }
                                                                                 // Boombox Emotes
-    else if(lowerContents.startsWith("bb") && !ent->m_is_flying)                // Check if Boombox Emote.
+    else if(lowerContents.startsWith("bb") && !ent->m_motion_state.m_is_flying)                // Check if Boombox Emote.
     {                                                                           // Not allowed when flying.
         lowerContents.replace(0, 2, "");                                        // Remove the "BB" prefix for conciseness.
         if(lowerContents == "altitude")                                         // BBAltitude
@@ -1901,7 +1912,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled ListenPoliceBand emote";                               // Heroes can use this without any unlock requirement. For villains, ListenStolenPoliceBand unlocks by earning the Outlaw Badge.
     else if(snowflakesCommands.contains(lowerContents))                         // Snowflakes: Throws snowflakes.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Snowflakes emote";                          // Unlocked by purchasing from the Candy Keeper during the Winter Event.
         else
             msg = "Unhandled ground Snowflakes emote";
@@ -1962,6 +1973,10 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         session.m_in_map = true;
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
+        // Force position and orientation to fix #617 spawn at 0,0,0 bug
+        forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
+        forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
+
         char buf[256];
         std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
         std::snprintf(buf, 256, "There are %zu active entities and %zu clients", m_entities.active_entities(),

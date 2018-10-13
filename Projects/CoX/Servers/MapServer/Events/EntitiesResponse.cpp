@@ -527,33 +527,34 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         bs.StoreBits(8,ent->m_update_id);
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
 
-        storeVector(bs,ent->m_spd); // This is entity speed vector !!
+        storeVector(bs,ent->m_motion_state.m_speed); // This is entity speed vector !!
 
-        bs.StoreFloat(ent->m_backup_spd);         // Backup Speed default = 1.0f
+        bs.StoreFloat(ent->m_motion_state.m_backup_spd);         // Backup Speed default = 1.0f
         bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
 
-        bs.StoreFloat(ent->m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
-        bs.StoreBits(1,ent->m_is_flying);         // is_flying flag
-        bs.StoreBits(1,ent->m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
-        bs.StoreBits(1,ent->m_has_jumppack);      // jumpack flag (lacks costume parts)
+        bs.StoreFloat(ent->m_motion_state.m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
+        bs.StoreBits(1,ent->m_motion_state.m_is_flying);         // is_flying flag
+        bs.StoreBits(1,ent->m_motion_state.m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
+        bs.StoreBits(1,ent->m_motion_state.m_has_jumppack);      // jumpack flag (lacks costume parts)
 
-        bs.StoreBits(1,ent->m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
-        bs.StoreBits(1,ent->m_is_jumping);        // leaping? seems like the anim changes slightly?
-        bs.StoreBits(1,ent->m_is_sliding);        // sliding? default = 0
+        bs.StoreBits(1,ent->m_motion_state.m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
+        bs.StoreBits(1,ent->m_motion_state.m_is_jumping);        // leaping? seems like the anim changes slightly?
+        bs.StoreBits(1,ent->m_motion_state.m_is_sliding);        // sliding? default = 0
     }
+
     // Used to force the client to a position/speed/pitch/rotation by server
     bs.StoreBits(1,ent->m_force_pos_and_cam);
     if(ent->m_force_pos_and_cam)
     {
-        bs.StorePackedBits(1,ent->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
-        storeVector(bs,ent->m_entity_data.m_pos);         // server-side pos
-        storeVectorConditional(bs,ent->m_spd);          // server-side spd (optional)
+        bs.StorePackedBits(1,ent->m_states.current()->m_every_4_ticks); // sets g_client_pos_id_rel default = 0
+        storeVector(bs,ent->m_entity_data.m_pos);                       // server-side pos
+        storeVectorConditional(bs,ent->m_motion_state.m_speed);         // server-side velocity?
 
-        storeFloatConditional(bs,0); // Pitch not used ?
+        storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.x); // Pitch
         storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.y); // Yaw
-        storeFloatConditional(bs,0); // Roll
-        bs.StorePackedBits(1,ent->m_is_falling); // server side forced falling bit
+        storeFloatConditional(bs,ent->m_entity_data.m_orientation_pyr.z); // Roll
 
+        bs.StorePackedBits(1,ent->m_motion_state.m_is_falling);           // server side forced falling bit
         ent->m_force_pos_and_cam = false; // run once
     }
 }
@@ -561,10 +562,6 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
 {
     Entity * target = src.m_client->m_ent;
-    //TODO: remove this after we have proper physics processing
-    if(target->m_full_update_count>0)
-        target->m_full_update_count--;
-    target->m_full_update = target->m_full_update_count!=0;
 
     bs.StoreBits(1,target->m_full_update);
     if( !target->m_full_update )
@@ -579,10 +576,10 @@ void sendServerPhysicsPositions(const EntitiesResponse &src,BitStream &bs)
         for(int i=0; i<3; ++i)
             bs.StoreFloat(target->m_entity_data.m_pos[i]); // server position
         for(int i=0; i<3; ++i)
-            storeFloatConditional(bs,target->m_velocity[i]);
+            storeFloatConditional(bs,target->m_motion_state.m_velocity[i]);
 
         qCDebug(logPosition) << "position" << glm::to_string(target->m_entity_data.m_pos).c_str();
-        qCDebug(logPosition) << "velocity" << glm::to_string(target->m_velocity).c_str();
+        qCDebug(logPosition) << "velocity" << glm::to_string(target->m_motion_state.m_velocity).c_str();
     }
 }
 
@@ -632,9 +629,9 @@ void sendClientData(const GameDataStore &data,const EntitiesResponse &src,BitStr
     bs.StoreBits(1,ent->m_force_camera_dir);
     if(ent->m_force_camera_dir)
     {
-        bs.StoreFloat(ent->inp_state.m_camera_pyr.p); // force camera_pitch
-        bs.StoreFloat(ent->inp_state.m_camera_pyr.y); // force camera_yaw
-        bs.StoreFloat(ent->inp_state.m_camera_pyr.r); // force camera_roll
+        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.p); // force camera_pitch
+        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.y); // force camera_yaw
+        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.r); // force camera_roll
     }
 }
 }
@@ -644,7 +641,7 @@ EntitiesResponse::EntitiesResponse(MapClientSession *cl) :
     MapLinkEvent(MapEventTypes::evEntitiesResponse)
 {
     m_map_time_of_day       = 10;
-    m_client                = {cl ? cl->m_session_token:0,cl};
+    m_client                = {cl ? cl->m_session_token:0, cl};
     g_interpolation_level   = 2;
     g_interpolation_bits    = 1;
 }
@@ -658,24 +655,24 @@ void EntitiesResponse::serializeto( BitStream &tgt ) const
     MapInstance *mi = m_client->m_current_map;
     EntityManager &ent_manager(mi->m_entities);
 
-    tgt.StorePackedBits(1,m_incremental ? 2 : 3); // opcode  3 - full update.
+    tgt.StorePackedBits(1, m_incremental ? 2 : 3); // opcode  3 - full update.
 
-    tgt.StoreBits(1,ent_major_update); // passed to Entity::EntReceive as a parameter
+    tgt.StoreBits(1, ent_major_update); // passed to Entity::EntReceive as a parameter
 
-    sendCommands(*this,tgt);
+    sendCommands(*this, tgt);
 
-    tgt.StoreBits(32,abs_time);
-    //tgt.StoreBits(32,db_time);
+    tgt.StoreBits(32, abs_time);
+    //tgt.StoreBits(32, db_time);
     bool all_defaults = (debug_info==0) && (g_interpolation_level==2) && (g_interpolation_bits==1);
-    tgt.StoreBits(1,all_defaults);
+    tgt.StoreBits(1, all_defaults);
     if(!all_defaults)
     {
-        tgt.StoreBits(1,debug_info);
-        tgt.StoreBits(1,g_interpolation_level!=0);
-        if(g_interpolation_level!=0)
+        tgt.StoreBits(1, debug_info);
+        tgt.StoreBits(1, g_interpolation_level != 0);
+        if(g_interpolation_level != 0)
         {
-            tgt.StoreBits(2,g_interpolation_level);
-            tgt.StoreBits(2,g_interpolation_bits);
+            tgt.StoreBits(2, g_interpolation_level);
+            tgt.StoreBits(2, g_interpolation_bits);
         }
     }
     ;

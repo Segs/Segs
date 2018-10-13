@@ -7,6 +7,7 @@
 
 #pragma once
 #include "CommonNetStructures.h"
+#include "StateStorage.h"
 #include <glm/glm.hpp>
 
 class Entity;
@@ -85,9 +86,64 @@ enum MoveType
     MOVETYPE_JETPACK    = 0x10,
 };
 
+struct MotionState // current derived state of motion
+{
+    bool            m_is_falling            = false; // 0
+    bool            m_is_stunned            = false; //
+    bool            m_is_flying             = false; // 2
+    bool            m_is_jumping            = false; // 3
+    bool            m_is_bouncing           = false; // 6 , maybe repulsion? true when jumping
+    bool            m_is_sliding            = false; // 8, 9, 10
+    bool            m_has_jumppack          = false; //
+    bool            m_has_headpain          = false; // formerly recover_from_landing_timer, but only used as bool?
+    bool            m_is_slowed             = false; //
+    bool            m_controls_disabled     = false; //
+    bool            m_no_collision          = false; //
+    uint8_t         m_motion_state_id       = 1;
+    bool            m_update_motion_state   = true;     // EntityResponse sendServerControlState
+
+    // Unknown Movement Flags
+    bool            m_flag_1                = false; // 1 no idea
+    bool            m_flag_5                = false; // 5 no idea, true when jumping
+    bool            m_flag_12               = false; // 12 no idea, low friction?
+    bool            m_flag_13               = false; // 13 no idea, increased traction?
+    bool            m_flag_14               = false; // 14 no idea
+    bool            m_flag_15               = false; // 15 no idea
+
+    glm::vec3       m_velocity;
+    glm::vec3       m_speed                 = {1,1,1};
+    glm::vec3       m_input_velocity;
+    glm::vec3       m_last_pos;
+
+    StuckType       m_stuck                 = StuckType::STUCK_NONE;
+    StuckType       m_stuck_head            = StuckType::STUCK_NONE;
+
+    float           m_velocity_scale        = 0.0f;
+    float           m_move_time             = 0.0f;
+    float           m_backup_spd            = 1.0f;
+    float           m_jump_height           = 2.0f;
+    float           m_max_jump_height       = 0.0f;
+    float           m_jump_apex             = 0.0f;
+    int             m_jump_time             = 0;
+    int             m_walk_flags            = 0;
+    int             m_coll_surf_flags       = 0;
+    int             m_field_88              = 0;
+
+    glm::vec3       m_surf_normal;
+    glm::vec3       m_surf_normal2;
+    glm::vec3       m_surf_normal3;
+    glm::vec3       m_surf_repulsion;
+
+    SurfaceParams   m_surf_mods[2] = { {0,0,0,0,0},
+                                     {0,0,0,0,0} };
+};
+
+void processDirectionControl(InputState *next_state, uint8_t control_id, int ms_since_prev, int keypress_state);
+
 void addPosUpdate(Entity &e, const PosUpdate &p);
-void addInterp(const PosUpdate & p);
+bool updateRotation(const Entity &e, int axis); // returns true if given axis needs updating;
 void forcePosition(Entity &e, glm::vec3 pos);
+void forceOrientation(Entity &e, glm::vec3 pyr);
 
 // Move to Sequences or Triggers files later
 void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_idx);

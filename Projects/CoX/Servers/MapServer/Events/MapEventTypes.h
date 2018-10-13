@@ -22,7 +22,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evScene                      ,5)
     EVENT_DECL(MapEventTypes, evEntitiesRequest            ,6)
     EVENT_DECL(MapEventTypes, evEntitiesResponse           ,7)
-    EVENT_DECL(MapEventTypes, evInputState                 ,8)
+    EVENT_DECL(MapEventTypes, evRecvInputState                 ,8)
     EVENT_DECL(MapEventTypes, evClientQuit                 ,9)
     EVENT_DECL(MapEventTypes, evForcedLogout               ,10)
     EVENT_DECL(MapEventTypes, evInitiateMapXfer            ,11)
