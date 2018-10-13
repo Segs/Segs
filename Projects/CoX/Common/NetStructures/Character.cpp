@@ -47,6 +47,14 @@ Character::Character()
     m_char_data.m_sidekick.m_has_sidekick = false;
     m_char_data.m_current_attribs.initAttribArrays();
 
+    // "Temporary" workaround for 0 HP upon zoning
+    if (m_max_attribs.m_HitPoints < 95)                 // Puny L1 Mastermind max HPs (lowest max possible)
+        m_max_attribs.m_HitPoints               = 2000; // This quickly gets reset to sane values (L50 Tanker base)
+    if (m_max_attribs.m_Endurance < 100)
+        m_max_attribs.m_Endurance               = 100;
+    m_char_data.m_current_attribs.m_HitPoints   = m_max_attribs.m_HitPoints;
+    m_char_data.m_current_attribs.m_Endurance   = m_max_attribs.m_Endurance;
+
     int eh_idx = 0;
     for(CharacterEnhancement &eh : m_char_data.m_enhancements)
     {
