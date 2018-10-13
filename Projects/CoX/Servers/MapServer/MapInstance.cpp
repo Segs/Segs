@@ -722,6 +722,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     // existing character
     Entity *ent = m_entities.CreatePlayer();
     toActualCharacter(char_data, *ent->m_char,*ent->m_player, *ent->m_entity);
+    ent->m_char->finalizeLevel();           // Fix for death-by-zoning
     ent->fillFromCharacter(getGameData());
     ent->m_client = &map_session;
     map_session.m_ent = ent;
