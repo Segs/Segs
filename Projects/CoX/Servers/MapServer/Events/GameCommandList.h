@@ -13,6 +13,7 @@
 #include "Events/ChangeTitle.h"
 #include "Events/ContactDialogs.h"
 #include "Events/DeadNoGurney.h"
+#include "Events/DoorAnims.h"
 #include "Events/DoorMessage.h"
 #include "Events/EmailHeaders.h"
 #include "Events/EmailMessageStatus.h"

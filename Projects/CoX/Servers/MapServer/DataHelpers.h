@@ -133,9 +133,11 @@ void sendTradeSuccess(Entity& src, Entity& tgt);
 void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts);
 void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
 void sendContactDialogClose(MapClientSession &src);
-void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
+void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 &location);
 void sendStance(MapClientSession &src, PowerStance stance);
 void sendDeadNoGurney(MapClientSession &sess);
+void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state);
+void sendDoorAnimExit(MapClientSession &sess, bool force_move);
 
 const QString &getGenericTitle(uint32_t val);
 const QString &getOriginTitle(uint32_t val);

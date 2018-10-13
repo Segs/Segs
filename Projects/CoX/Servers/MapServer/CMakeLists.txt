@@ -51,6 +51,7 @@ SET(target_INCLUDE
     Events/ChatMessage.h
     Events/ContactDialogs.h
     Events/DeadNoGurney.h
+    Events/DoorAnims.h
     Events/DoorMessage.h
     Events/EmailHeaders.h
     Events/EmailMessageStatus.h

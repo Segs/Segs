@@ -573,7 +573,7 @@ void sendFaceLocation(Entity &src, glm::vec3 &loc)
 
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg)
 {
-    qCDebug(logMapXfers) << QString("Sending Door Message; delay: %1 msg: %2").arg(delay_status).arg(msg);
+    qCDebug(logMapXfers).noquote() << QString("Sending Door Message; delay: %1; msg: %2").arg(delay_status).arg(msg);
     tgt.addCommand<DoorMessage>(DoorMessageStatus(delay_status), msg);
 }
 
@@ -647,7 +647,7 @@ void sendContactDialogClose(MapClientSession &src)
     src.addCommand<ContactDialogClose>();
 }
 
-void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)
+void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 &location)
 {
     qCDebug(logSlashCommand) << QString("Sending SendWaypoint: %1 <%2, %3, %4>")
                                 .arg(point_idx)
@@ -668,6 +668,27 @@ void sendDeadNoGurney(MapClientSession &sess)
 {
     qCDebug(logSlashCommand) << "Sending new PowerStance";
     sess.addCommand<DeadNoGurney>();
+}
+
+void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state)
+{
+    qCDebug(logSlashCommand).noquote() << QString("Sending DoorAnimStart: entry<%1, %2, %3>  target<%4, %5, %6>  has_anims: %7  seq_state: %8")
+                                .arg(entry_pos.x, 0, 'f', 1)
+                                .arg(entry_pos.y, 0, 'f', 1)
+                                .arg(entry_pos.z, 0, 'f', 1)
+                                .arg(target_pos.x, 0, 'f', 1)
+                                .arg(target_pos.y, 0, 'f', 1)
+                                .arg(target_pos.z, 0, 'f', 1)
+                                .arg(has_anims)
+                                .arg(seq_state);
+
+    sess.addCommand<DoorAnimStart>(entry_pos, target_pos, has_anims, seq_state);
+}
+
+void sendDoorAnimExit(MapClientSession &sess, bool force_move)
+{
+    qCDebug(logSlashCommand) << "Sending DoorAnimExit" << force_move;
+    sess.addCommand<DoorAnimExit>(force_move);
 }
 
 

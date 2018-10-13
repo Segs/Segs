@@ -2013,8 +2013,13 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
+    // Start Door Animation
+    QString anim_name = "RUNIN";
+    glm::vec3 offset = ev->location + glm::vec3 {20,0,10};
+    sendDoorAnimStart(session, ev->location, offset, true, anim_name);
+
     // ev->name is the map_idx when using the map menu currently.
-    if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
+    if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
         uint8_t map_idx = ev->name.toInt();
         if (ev->location.x != 0 || ev->location.y != 0 || ev->location.z != 0)
@@ -2030,17 +2035,30 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     }
     else
     {
-        qCWarning(logMapXfers).noquote() << "Unhandled door entry request to:" << ev->name;
+        QString door_msg = "Knock! Knock!";
+        sendDoorMessage(session, 2, door_msg);
+
+        qCDebug(logMapXfers).noquote() << "Door entry request to:" << ev->name;
         if(ev->no_location)
-            qCWarning(logMapXfers).noquote() << "    no location provided";
+            qCDebug(logMapXfers).noquote() << "    no location provided";
         else
-            qCWarning(logMapXfers).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+            qCDebug(logMapXfers).noquote() << ev->location.x << ev->location.y << ev->location.z;
     }
 
-    //pseudocode:
-    //  auto door = get_door(ev->name,ev->location);
-    //  if(door and player_can_enter(door)
-    //    process_map_transfer(player,door->targetMap);
+    // Exit Door Animation
+    sendDoorAnimExit(session, true);
+
+    /* pseudocode:
+     * auto door = get_door(ev->name,ev->location);
+     * if(door and player_can_enter(door)
+     *      doorAnimStart(entry, target);
+     *      process_map_transfer(player, door->targetMap);
+     *      doorAnimsExit();
+     *  else if(door)
+     *      doorMessage(msg);
+     *  else
+     *      error: "not door?"
+     */
 }
 
 void MapInstance::on_change_stance(ChangeStance * ev)
