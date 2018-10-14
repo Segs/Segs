@@ -53,13 +53,13 @@
      <widget class="QLabel" name="authserver_label">
       <property name="minimumSize">
        <size>
-        <width>116</width>
+        <width>144</width>
         <height>19</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>116</width>
+        <width>144</width>
         <height>19</height>
        </size>
       </property>
@@ -117,13 +117,13 @@
      <widget class="QLabel" name="authserver_status">
       <property name="minimumSize">
        <size>
-        <width>90</width>
+        <width>106</width>
         <height>19</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>106</width>
         <height>19</height>
        </size>
       </property>
@@ -146,13 +146,13 @@
      <widget class="QLabel" name="segs_admin_version_label">
       <property name="minimumSize">
        <size>
-        <width>67</width>
+        <width>82</width>
         <height>19</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>67</width>
+        <width>82</width>
         <height>19</height>
        </size>
       </property>
@@ -219,13 +219,13 @@
      <widget class="QLabel" name="segs_admin_version">
       <property name="minimumSize">
        <size>
-        <width>61</width>
+        <width>65</width>
         <height>19</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>61</width>
+        <width>65</width>
         <height>19</height>
        </size>
       </property>
@@ -626,7 +626,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adds a new user account&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;IP configuration and logging&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>   Settings and Logging</string>
