@@ -227,8 +227,8 @@ void Character::GetCharBuildInfo(BitStream &src)
 
     // Now that character is created. Finalize level and update hp and end
     finalizeLevel();
-    setHP(*this); // set max hp
-    setEnd(*this); // set max end
+    setMaxHP(*this); // set max hp
+    setMaxEnd(*this); // set max end
 
     // This must come after finalize
     addStartingInspirations(starting_insps);      // resurgence and phenomenal_luck
@@ -384,7 +384,7 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
         ::serializeto(*getCurrentCostume(),bs,packer);
 }
 
-void Character::DumpSidekickInfo()
+void Character::dumpSidekickInfo()
 {
     QString msg = QString("Sidekick Info\n  has_sidekick: %1 \n  db_id: %2 \n  type: %3 ")
             .arg(m_char_data.m_sidekick.m_has_sidekick)
@@ -394,7 +394,7 @@ void Character::DumpSidekickInfo()
     qDebug().noquote() << msg;
 }
 
-void Character::DumpBuildInfo()
+void Character::dumpBuildInfo()
 {
     Character &c = *this;
     QString msg = "//--------------Char Debug--------------\n  "
@@ -417,7 +417,7 @@ void Character::DumpBuildInfo()
 
 void Character::dump()
 {
-    DumpBuildInfo();
+    dumpBuildInfo();
     qDebug() << "//--------------Owned Powers--------------";
     dumpOwnedPowers(m_char_data);
     qDebug() << "//-----------Owned Inspirations-----------";
@@ -425,7 +425,7 @@ void Character::dump()
     qDebug() << "//-----------Owned Enhancements-----------";
     dumpEnhancements(m_char_data);
     qDebug() << "//--------------Sidekick Info--------------";
-    DumpSidekickInfo();
+    dumpSidekickInfo();
     qDebug() << "//------------------Tray------------------";
     m_char_data.m_trays.dump();
     qDebug() << "//-----------------Costume-----------------";
@@ -603,7 +603,7 @@ void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
         qCritical() << e.what();
     }
 
-    tgt.m_non_default_costme_p = false;
+    tgt.m_send_full_costume = false;
 }
 
 void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
@@ -654,6 +654,8 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
         toActualCostume(costume, main_costume);
         // appearance related.
         main_costume.m_body_type = src.m_costumes.back().m_body_type;
+        main_costume.m_height = src.m_costumes.back().m_height;
+                main_costume.m_physique = src.m_costumes.back().m_physique;
         main_costume.setSlotIndex(costume.m_slot_index);
         main_costume.setCharacterId(costume.m_character_id);
     }
@@ -691,10 +693,10 @@ bool fromActualCharacter(const Character &src,const PlayerData &player,
         fromActualCostume(costume, main_costume);
         // appearance related.
         main_costume.m_body_type = src.m_costumes.back().m_body_type;
-        main_costume.m_slot_index = costume.getSlotIndex();
-        main_costume.m_character_id= costume.getCharacterId();
         main_costume.m_height = costume.m_height;
         main_costume.m_physique = costume.m_physique;
+        main_costume.m_slot_index = costume.getSlotIndex();
+        main_costume.m_character_id= costume.getCharacterId();
     }
     return true;
 }

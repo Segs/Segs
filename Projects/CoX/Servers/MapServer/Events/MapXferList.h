@@ -14,6 +14,7 @@
 
 namespace SEGSEvents
 {
+
 // [[ev_def:type]]
 class MapXferList final : public GameCommandEvent
 {
@@ -69,4 +70,5 @@ public:
                 }
         EVENT_IMPL(MapXferListClose)
 };
+
 } //end of SEGSEvents namespace

@@ -660,18 +660,18 @@ void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint
     qCDebug(logPowers) << "Moving inspiration from" << src_col << "x" << src_row << "to" << dest_col << "x" << dest_row;
 }
 
-void useInspiration(Entity &ent, uint32_t col, uint32_t row)
+bool useInspiration(Entity &ent, uint32_t col, uint32_t row)
 {
     CharacterData &cd = ent.m_char->m_char_data;
     const CharacterInspiration *insp = getInspiration(ent, col, row);
 
-    if(!insp->m_has_insp)
-        return;
-
-    applyInspirationEffect(ent, col, row);
-    removeInspiration(cd, col, row);
+    if(insp == nullptr)
+        return 0;
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
+    applyInspirationEffect(ent, col, row);
+    removeInspiration(cd, col, row);
+    return true;
 }
 
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
@@ -719,6 +719,12 @@ void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
         "Phenomenal_Luck",
     };
 
+    QStringList revive_names = {
+        "Awaken",
+        "Bounce_Back",
+        "Restoration",
+    };
+
     if(health_names.contains(insp->m_name, Qt::CaseInsensitive))
         setHP(*ent.m_char, getHP(*ent.m_char) + 15);
 
@@ -733,7 +739,24 @@ void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
         buff.m_activate_period = 30.0f; // hardcoded for now
         ent.m_buffs.push_back(buff);
         ent.m_update_buffs = true;
-        return;
+    }
+
+    if(revive_names.contains(insp->m_name, Qt::CaseInsensitive))
+    {
+        if(getHP(*ent.m_char) > 0.0)
+            return;
+
+        ReviveLevel lvl;
+        if(insp->m_name.contains(revive_names[0], Qt::CaseInsensitive))
+            lvl = ReviveLevel::AWAKEN;
+        else if(insp->m_name.contains(revive_names[1], Qt::CaseInsensitive))
+            lvl = ReviveLevel::BOUNCE_BACK;
+        else if(insp->m_name.contains(revive_names[2], Qt::CaseInsensitive))
+            lvl = ReviveLevel::RESTORATION;
+        else
+            lvl = ReviveLevel::IMMORTAL_RECOVERY;
+
+        revivePlayer(ent, lvl);
     }
 }
 

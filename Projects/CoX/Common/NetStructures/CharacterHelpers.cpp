@@ -1,5 +1,6 @@
 #include "CharacterHelpers.h"
 #include "Character.h"
+#include <QDateTime>
 
 /*
  * Character Methods
@@ -10,6 +11,8 @@ uint32_t            getCombatLevel(const Character &c) { return c.m_char_data.m_
 uint32_t            getSecurityThreat(const Character &c) { return c.m_char_data.m_security_threat; }
 float               getHP(const Character &c) { return c.m_char_data.m_current_attribs.m_HitPoints; }
 float               getEnd(const Character &c) { return c.m_char_data.m_current_attribs.m_Endurance; }
+float               getMaxHP(const Character &c) { return c.m_max_attribs.m_HitPoints; }
+float               getMaxEnd(const Character &c) { return c.m_max_attribs.m_Endurance; }
 uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
 const QString &     getOrigin(const Character &c) { return c.m_char_data.m_origin_name; }
 const QString &     getClass(const Character &c) { return c.m_char_data.m_class_name; }
@@ -23,6 +26,7 @@ uint32_t            getInf(const Character &c) { return c.m_char_data.m_influenc
 const QString &     getDescription(const Character &c) { return c.m_char_data.m_character_description ; }
 const QString &     getBattleCry(const Character &c) { return c.m_char_data.m_battle_cry; }
 const QString &     getAlignment(const Character &c) { return c.m_char_data.m_alignment; }
+const QString &     getLastOnline(const Character &c) { return c.m_char_data.m_last_online; }
 
 // Setters
 void setLevel(Character &c, uint32_t val)
@@ -53,9 +57,9 @@ void setHP(Character &c, float val)
     c.m_char_data.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
 }
 
-void setHP(Character &c)
+void setMaxHP(Character &c)
 {
-    setHP(c, c.m_max_attribs.m_HitPoints);
+    setHP(c, getMaxHP(c));
 }
 
 void setEnd(Character &c, float val)
@@ -63,9 +67,9 @@ void setEnd(Character &c, float val)
     c.m_char_data.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
 }
 
-void setEnd(Character &c)
+void setMaxEnd(Character &c)
 {
-    setEnd(c, c.m_max_attribs.m_Endurance);
+    setEnd(c, getMaxEnd(c));
 }
 
 void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
@@ -100,6 +104,11 @@ void setTitles(Character &c, bool prefix, QString generic, QString origin, QStri
 void setInf(Character &c, uint32_t val) { c.m_char_data.m_influence = val; }
 void setDescription(Character &c, QString val) { c.m_char_data.m_character_description = val; }
 void setBattleCry(Character &c, QString val) { c.m_char_data.m_battle_cry = val; }
+
+void updateLastOnline(Character &c)
+{
+    c.m_char_data.m_last_online = QDateTime::currentDateTime().toString();
+}
 
 // Toggles
 void toggleAFK(Character &c, const bool isTrue, QString msg)

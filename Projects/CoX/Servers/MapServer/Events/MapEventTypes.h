@@ -76,7 +76,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evFaceEntity                 ,154)
     EVENT_DECL(MapEventTypes, evFaceLocation               ,155)
     EVENT_DECL(MapEventTypes, evFloatingInfo               ,156)
-    EVENT_DECL(MapEventTypes, evSendStance                 ,157) // I think?
+    EVENT_DECL(MapEventTypes, evSendStance                 ,157)
     EVENT_DECL(MapEventTypes, evMapXferList                ,158)
     EVENT_DECL(MapEventTypes, evMapXferListClose           ,159)
     EVENT_DECL(MapEventTypes, evAddTimeStateLog            ,160)
@@ -117,6 +117,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evUnqueueAll                 ,232) // Click on another entity or Clicking 'z'
     EVENT_DECL(MapEventTypes, evAbortQueuedPower           ,233) // Clicking 'z'
     EVENT_DECL(MapEventTypes, evMoveInspiration            ,234)
+    EVENT_DECL(MapEventTypes, evDeadNoGurneyOK             ,235) // player click OK on death dialog
     EVENT_DECL(MapEventTypes, evChangeStance               ,236)
     EVENT_DECL(MapEventTypes, evTargetChatChannelSelected  ,237) // Change chat type using the letters in the chat window 'l, b, g, sg, r, f"
     EVENT_DECL(MapEventTypes, evChatReconfigure            ,238)
@@ -141,3 +142,4 @@ enum MapEventTypes
     END_EVENTS(MapEventTypes, 1500)
 };
 } // end of SEGSEvents namespace
+
