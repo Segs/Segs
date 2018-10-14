@@ -19,6 +19,8 @@
 #include <QFileInfo>
 #include <QDebug>
 #include <QValidator>
+#include <QCheckBox>
+#include <QMap>
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
@@ -38,6 +40,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     connect(ui->reset_defaults,&QPushButton::clicked,this,&SettingsDialog::set_default_values);
     connect(ui->map_player_fade_in,&QSlider::valueChanged,this,&SettingsDialog::text_edit_updater);
     connect(ui->map_player_fade_in_value,&QLineEdit::textChanged,this,&SettingsDialog::slider_updater);
+    connect(ui->auto_logout_check,&QCheckBox::clicked,this,&SettingsDialog::auto_logout_checkbox_validator);
 
     // GetIP Signals
     connect(m_get_ip,&GetIPDialog::sendIP,this,&SettingsDialog::auto_populate_ip_main);
@@ -56,8 +59,22 @@ void SettingsDialog::text_edit_updater()
 
 void SettingsDialog::slider_updater()
 {
-    float fade_in_slider = ui->map_player_fade_in_value->text().toFloat();
+    int fade_in_slider = ui->map_player_fade_in_value->text().toInt();
     ui->map_player_fade_in->setValue(fade_in_slider);
+}
+
+void SettingsDialog::auto_logout_checkbox_validator()
+{
+    if (ui->auto_logout_check->isChecked())
+    {
+        ui->time_to_auto_logout_label->setEnabled(true);
+        ui->time_to_auto_logout_spin->setEnabled(true);
+    }
+    else
+    {
+        ui->time_to_auto_logout_label->setEnabled(false);
+        ui->time_to_auto_logout_spin->setEnabled(false);
+    }
 }
 
 void SettingsDialog::open_settings_dialog()
@@ -65,7 +82,7 @@ void SettingsDialog::open_settings_dialog()
     QFileInfo config_file("settings.cfg");
     QString config_file_path = config_file.absoluteFilePath();
     SettingsDialog::read_config_file(config_file_path);
-    QList<QLineEdit *> all_line_edits = ui->tab_settings->findChildren<QLineEdit *>();
+    QList<QLineEdit *> all_line_edits = ui->tabWidget->findChildren<QLineEdit *>();
     foreach(QLineEdit* le, all_line_edits)
     {
         le->setStyleSheet("background-color: rgb(255, 255, 255)");
@@ -73,6 +90,7 @@ void SettingsDialog::open_settings_dialog()
     QString fade_in_value = QString::number(ui->map_player_fade_in->value());
     ui->map_player_fade_in_value->setText(fade_in_value);
     show();
+    auto_logout_checkbox_validator();
 }
 
 void SettingsDialog::read_config_file(QString filePath)
@@ -139,37 +157,42 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->map_location->setText(maps_loc);
     ui->map_player_fade_in->setValue(player_fade_in);
     config_file.endGroup();
+    config_file.beginGroup("AFKSettings");
+    ui->time_to_afk_spin->setValue(int(config_file.value("time_to_afk", "").toInt()));
+    ui->time_to_logout_msg_spin->setValue(int(config_file.value("time_to_logout_msg", "").toInt()));
+    ui->time_to_auto_logout_spin->setValue(int(config_file.value("time_to_auto_logout", "").toInt()));
+    ui->auto_logout_check->setChecked(bool(config_file.value("uses_auto_logout", "").toBool()));
+    config_file.endGroup();
+    config_file.beginGroup("StartingCharacter");
+    ui->inherent_powers_edit->setText(QString(config_file.value("inherent_powers", "").toString()));
+    ui->starting_temp_edit->setText(QString(config_file.value("starting_temps", "").toString()));
+    ui->starting_insp_edit->setText(QString(config_file.value("starting_inspirations", "").toString()));
+    ui->starting_level_spin->setValue(int(config_file.value("starting_level", "").toInt()));
+    ui->starting_inf_spin->setValue(int(config_file.value("starting_inf", "").toInt()));
+    config_file.endGroup();
     config_file.beginGroup("Logging");
-    ui->log_logging->setChecked(config_file.value("log_logging","").toBool());
-    ui->log_keybinds->setChecked(config_file.value("log_keybinds","").toBool());
-    ui->log_settings->setChecked(config_file.value("log_settings","").toBool());
-    ui->log_gui->setChecked(config_file.value("log_gui","").toBool());
-    ui->log_teams->setChecked(config_file.value("log_teams","").toBool());
-    ui->log_db->setChecked(config_file.value("log_db","").toBool());
-    ui->log_input->setChecked(config_file.value("log_input","").toBool());
-    ui->log_position->setChecked(config_file.value("log_position","").toBool());
-    ui->log_orientation->setChecked(config_file.value("log_orientation","").toBool());
-    ui->log_chat->setChecked(config_file.value("log_chat","").toBool());
-    ui->log_infomsg->setChecked(config_file.value("log_infomsg","").toBool());
-    ui->log_emotes->setChecked(config_file.value("log_emotes","").toBool());
-    ui->log_target->setChecked(config_file.value("log_target","").toBool());
-    ui->log_spawn->setChecked(config_file.value("log_spawn","").toBool());
-    ui->log_mapevents->setChecked(config_file.value("log_mapevents","").toBool());
-    ui->log_slashcommand->setChecked(config_file.value("log_slashcommands","").toBool());
-    ui->log_description->setChecked(config_file.value("log_description","").toBool());
-    ui->log_friends->setChecked(config_file.value("log_friends","").toBool());
-    ui->log_minimap->setChecked(config_file.value("log_minimap","").toBool());
-    ui->log_lfg->setChecked(config_file.value("log_lfg","").toBool());
-    ui->log_npcs->setChecked(config_file.value("log_npcs","").toBool());
-    ui->log_animations->setChecked(config_file.value("log_animations","").toBool());
-    ui->log_powers->setChecked(config_file.value("log_powers","").toBool());
-    ui->log_trades->setChecked(config_file.value("log_trades","").toBool());
-    ui->log_scripts->setChecked(config_file.value("log_scripts","").toBool());
+
+    // Read settings.cfg and populate UI elements
+
+    QGridLayout *logging_grid = new QGridLayout(ui->logging_cats);
+    logging_grid->setColumnStretch(0,1);
+    logging_grid->setColumnStretch(1,1);
+    logging_grid->setColumnStretch(2,1);
+    for(int i = 0; i < config_file.childKeys().size(); ++i)
+    {
+        QString temp_key = config_file.childKeys().at(i);
+        bool temp_value = config_file.value(temp_key).toBool();
+        QCheckBox *logging_checkbox = new QCheckBox(temp_key);
+        logging_grid->addWidget(logging_checkbox);
+        logging_checkbox->setChecked(temp_value);
+    }
+    config_file.endGroup();
 }
 
 void SettingsDialog::generate_default_config_file(QString server_name, QString ip)
 {
     QSettings config_file_write("settings.cfg", QSettings::IniFormat);
+    QSettings settings_template("settings_template.cfg", QSettings::IniFormat);
     config_file_write.beginGroup("AdminServer");
     config_file_write.beginGroup("AccountDatabase");
     config_file_write.setValue("db_driver","QSQLITE");
@@ -204,35 +227,28 @@ void SettingsDialog::generate_default_config_file(QString server_name, QString i
     config_file_write.setValue("maps","DefaultMapInstances");
     config_file_write.setValue("player_fade_in", "380.0");
     config_file_write.endGroup();
-    config_file_write.beginGroup("Logging");
-    config_file_write.setValue("log_generic","*.debug=true\nqt.*.debug=false");
-    config_file_write.setValue("log_logging","false");
-    config_file_write.setValue("log_keybinds","false");
-    config_file_write.setValue("log_settings","false");
-    config_file_write.setValue("log_gui","false");
-    config_file_write.setValue("log_teams","false");
-    config_file_write.setValue("log_db","false");
-    config_file_write.setValue("log_input","false");
-    config_file_write.setValue("log_position","false");
-    config_file_write.setValue("log_orientation","false");
-    config_file_write.setValue("log_chat","false");
-    config_file_write.setValue("log_infomsg","false");
-    config_file_write.setValue("log_emotes","false");
-    config_file_write.setValue("log_target","false");
-    config_file_write.setValue("log_spawn","false");
-    config_file_write.setValue("log_mapevents","false");
-    config_file_write.setValue("log_slashcommands","false");
-    config_file_write.setValue("log_description","false");
-    config_file_write.setValue("log_friends","false");
-    config_file_write.setValue("log_minimap","false");
-    config_file_write.setValue("log_lfg","false");
-    config_file_write.setValue("log_npcs","false");
-    config_file_write.setValue("log_animations","false");
-    config_file_write.setValue("log_powers","false");
-    config_file_write.setValue("log_trades","false");
-    config_file_write.setValue("log_scripts","false");
+    config_file_write.beginGroup("AFKSettings");
+    config_file_write.setValue("time_to_afk", "300");
+    config_file_write.setValue("time_to_logout_msg", "1080");
+    config_file_write.setValue("time_to_auto_logout", "120");
+    config_file_write.setValue("uses_auto_logout", "true");
     config_file_write.endGroup();
-
+    config_file_write.beginGroup("StartingCharacter");
+    config_file_write.setValue("inherent_powers", "prestige_generic_Sprintp");
+    config_file_write.setValue("starting_temps", "EMP_Glove,Cryoprojection_Bracers");
+    config_file_write.setValue("starting_inspirations", "Resurgence,Phenomenal_Luck");
+    config_file_write.setValue("starting_level", "1");
+    config_file_write.setValue("starting_inf", "0");
+    config_file_write.endGroup();
+    config_file_write.beginGroup("Logging");
+    settings_template.beginGroup("Logging");
+    QStringList logging_keys = settings_template.childKeys();
+    settings_template.endGroup();
+    for (const QString &key : logging_keys)
+    {
+        config_file_write.setValue(key, false);
+    }
+    config_file_write.endGroup();
     config_file_write.sync();
     emit checkForConfigFile();
     emit check_data_and_dir(ui->map_location->text());
@@ -270,35 +286,33 @@ void SettingsDialog::save_changes_config_file()
     QString player_fade_in = ui->map_player_fade_in_value->text() + ".0";
     config_file_write.setValue("player_fade_in",player_fade_in);
     config_file_write.endGroup();
-    config_file_write.beginGroup("Logging");
-    config_file_write.setValue("log_generic","*.debug=true\nqt.*.debug=false");
-    config_file_write.setValue("log_logging",ui->log_logging->isChecked());
-    config_file_write.setValue("log_keybinds",ui->log_keybinds->isChecked());
-    config_file_write.setValue("log_settings",ui->log_settings->isChecked());
-    config_file_write.setValue("log_gui",ui->log_gui->isChecked());
-    config_file_write.setValue("log_teams",ui->log_teams->isChecked());
-    config_file_write.setValue("log_db",ui->log_db->isChecked());
-    config_file_write.setValue("log_input",ui->log_input->isChecked());
-    config_file_write.setValue("log_position",ui->log_position->isChecked());
-    config_file_write.setValue("log_orientation",ui->log_orientation->isChecked());
-    config_file_write.setValue("log_chat",ui->log_chat->isChecked());
-    config_file_write.setValue("log_infomsg",ui->log_infomsg->isChecked());
-    config_file_write.setValue("log_emotes",ui->log_emotes->isChecked());
-    config_file_write.setValue("log_target",ui->log_target->isChecked());
-    config_file_write.setValue("log_spawn",ui->log_spawn->isChecked());
-    config_file_write.setValue("log_mapevents",ui->log_mapevents->isChecked());
-    config_file_write.setValue("log_slashcommands",ui->log_slashcommand->isChecked());
-    config_file_write.setValue("log_description",ui->log_description->isChecked());
-    config_file_write.setValue("log_friends",ui->log_friends->isChecked());
-    config_file_write.setValue("log_minimap",ui->log_minimap->isChecked());
-    config_file_write.setValue("log_lfg",ui->log_lfg->isChecked());
-    config_file_write.setValue("log_npcs",ui->log_npcs->isChecked());
-    config_file_write.setValue("log_animations",ui->log_animations->isChecked());
-    config_file_write.setValue("log_powers",ui->log_powers->isChecked());
-    config_file_write.setValue("log_trades",ui->log_trades->isChecked());
-    config_file_write.setValue("log_scripts",ui->log_scripts->isChecked());
+    config_file_write.beginGroup("AFKSettings");
+    config_file_write.setValue("time_to_afk", ui->time_to_afk_spin->value());
+    config_file_write.setValue("time_to_logout_msg", ui->time_to_logout_msg_spin->value());
+    config_file_write.setValue("time_to_auto_logout", ui->time_to_auto_logout_spin->value());
+    config_file_write.setValue("uses_auto_logout", ui->auto_logout_check->isChecked());
     config_file_write.endGroup();
-
+    config_file_write.beginGroup("StartingCharacter");
+    config_file_write.setValue("inherent_powers", ui->inherent_powers_edit->text());
+    config_file_write.setValue("starting_temps", ui->starting_temp_edit->text());
+    config_file_write.setValue("starting_inspirations", ui->starting_insp_edit->text());
+    config_file_write.setValue("starting_level", ui->starting_level_spin->value());
+    config_file_write.setValue("starting_inf", ui->starting_inf_spin->value());
+    config_file_write.endGroup();
+    config_file_write.beginGroup("Logging");
+    QList<QCheckBox*> check_boxes = ui->tab_logging->findChildren<QCheckBox *>();
+    for(int i = 0; i < check_boxes.size(); ++i)
+    {
+        if(check_boxes.at(i)->isChecked())
+        {
+            config_file_write.setValue(check_boxes.at(i)->text(),true);
+        }
+        else
+        {
+            config_file_write.setValue(check_boxes.at(i)->text(), false);
+        }
+    }
+    config_file_write.endGroup();
     config_file_write.sync();
     QMessageBox settings_saved;
     settings_saved.setText("Settings Saved");
@@ -332,37 +346,26 @@ void SettingsDialog::set_default_values()
     ui->map_location_port->setValue(7003);
     ui->map_location->setText("DefaultMapInstances");
     ui->map_player_fade_in->setValue(380.0);
-    ui->log_logging->setChecked(false);
-    ui->log_keybinds->setChecked(false);
-    ui->log_settings->setChecked(false);
-    ui->log_gui->setChecked(false);
-    ui->log_teams->setChecked(false);
-    ui->log_db->setChecked(false);
-    ui->log_input->setChecked(false);
-    ui->log_position->setChecked(false);
-    ui->log_orientation->setChecked(false);
-    ui->log_chat->setChecked(false);
-    ui->log_infomsg->setChecked(false);
-    ui->log_emotes->setChecked(false);
-    ui->log_target->setChecked(false);
-    ui->log_spawn->setChecked(false);
-    ui->log_mapevents->setChecked(false);
-    ui->log_slashcommand->setChecked(false);
-    ui->log_description->setChecked(false);
-    ui->log_friends->setChecked(false);
-    ui->log_minimap->setChecked(false);
-    ui->log_lfg->setChecked(false);
-    ui->log_npcs->setChecked(false);
-    ui->log_animations->setChecked(false);
-    ui->log_powers->setChecked(false);
-    ui->log_trades->setChecked(false);
-    ui->log_scripts->setChecked(false);
+    ui->time_to_afk_spin->setValue(300);
+    ui->time_to_logout_msg_spin->setValue(1080);
+    ui->time_to_auto_logout_spin->setValue(120);
+    ui->auto_logout_check->setChecked(true);
+    QList<QCheckBox*> check_boxes = ui->tab_logging->findChildren<QCheckBox *>();
+    for(int i = 0; i < check_boxes.size(); ++i)
+    {
+        check_boxes.at(i)->setChecked(false);
+    }
+    ui->inherent_powers_edit->setText("prestige_generic_Sprintp");
+    ui->starting_temp_edit->setText("EMP_Glove,Cryoprojection_Bracers");
+    ui->starting_insp_edit->setText("Resurgence,Phenomenal_Luck");
+    ui->starting_level_spin->setValue(1);
+    ui->starting_inf_spin->setValue(0);
 }
 
 void SettingsDialog::field_validator()
 {
 
-    QList<QLineEdit *> all_line_edits = ui->tab_settings->findChildren<QLineEdit *>();
+    QList<QLineEdit *> all_line_edits = ui->tabWidget->findChildren<QLineEdit *>();
     bool all_fields_validated = true;
     foreach(QLineEdit* le, all_line_edits)
     {
@@ -373,6 +376,7 @@ void SettingsDialog::field_validator()
 
         }
     }
+
     if (all_fields_validated == false) // Field validation failed, stop save
     {
         QMessageBox validation_error;
@@ -397,6 +401,7 @@ void SettingsDialog::auto_populate_ip_main(QString local_ip)
     ui->map_location_ip->setText(local_ip);
     ui->auth_ip->setText(local_ip);
 }
+
 
 void SettingsDialog::send_maps_dir()
 {
