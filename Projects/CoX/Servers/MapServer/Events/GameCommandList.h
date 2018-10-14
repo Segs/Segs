@@ -7,9 +7,11 @@
 
 #pragma once
 
+#include "Events/AddTimeStateLog.h"
 #include "Events/Browser.h"
 #include "Events/StandardDialogCmd.h"
 #include "Events/ChangeTitle.h"
+#include "Events/ContactDialogs.h"
 #include "Events/DeadNoGurney.h"
 #include "Events/DoorMessage.h"
 #include "Events/EmailHeaders.h"
@@ -25,8 +27,12 @@
 #include "Events/PlayerInfo.h"
 #include "Events/PowerSystemEvents.h"
 #include "Events/SetClientState.h"
+#include "Events/SendStance.h"
 #include "Events/SidekickOffer.h"
+#include "Events/StandardDialogCmd.h"
 #include "Events/TeamLooking.h"
 #include "Events/TeamOffer.h"
+#include "Events/TimeUpdate.h"
 #include "Events/TrayAdd.h"
+#include "Events/Waypoints.h"
 

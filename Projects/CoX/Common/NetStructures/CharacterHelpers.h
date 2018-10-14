@@ -20,8 +20,11 @@ struct Friend;
 // Getters
 uint32_t            getLevel(const Character &c);
 uint32_t            getCombatLevel(const Character &c);
+uint32_t            getSecurityThreat(const Character &c);
 float               getHP(const Character &c);
 float               getEnd(const Character &c);
+float               getMaxHP(const Character &c);
+float               getMaxEnd(const Character &c);
 uint64_t            getLastCostumeId(const Character &c);
 const QString &     getOrigin(const Character &c);
 const QString &     getClass(const Character &c);
@@ -36,12 +39,16 @@ uint32_t            getInf(const Character &c);
 const QString &     getDescription(const Character &c);
 const QString &     getBattleCry(const Character &c);
 const QString &     getAlignment(const Character &c);
+const QString &     getLastOnline(const Character &c);
 
 // Setters
 void    setLevel(Character &c, uint32_t val);
 void    setCombatLevel(Character &c, uint32_t val);
+void    setSecurityThreat(Character &c, uint32_t val);
 void    setHP(Character &c, float val);
 void    setEnd(Character &c, float val);
+void    setMaxHP(Character &c);
+void    setMaxEnd(Character &c);
 void    setLastCostumeId(Character &c, uint64_t val);
 void    setXP(Character &c, uint32_t val);
 void    setDebt(Character &c, uint32_t val);
@@ -49,6 +56,7 @@ void    setTitles(Character &c, bool prefix = false, QString generic = "", QStri
 void    setInf(Character &c, uint32_t val);
 void    setDescription(Character &c, QString val);
 void    setBattleCry(Character &c, QString val);
+void    updateLastOnline(Character &c);
 
 // Toggles
 void    toggleAFK(Character &c, const bool isTrue, QString msg = "");

@@ -20,7 +20,9 @@ struct AnimTrack;
 #ifdef NEAR
 #undef NEAR
 #endif
-enum class SeqBitNames : uint32_t {
+
+enum class SeqBitNames : uint32_t
+{
     INVALID_BIT=0,
     FORWARD=1,
     BACKWARD=2,
@@ -74,7 +76,7 @@ enum class SeqBitNames : uint32_t {
     HIDE=50,
     DIENOW=51,
     TARGET=52,
-    JUSTFIDDLESTIKCINDOIT=53, // fixed the original CoH name :)
+    JUSTFIDDLESTICKINDOIT=53, // fixed the original CoH name :)
     VARIATIONA=54,
     VARIATIONB=55,
     VARIATIONC=56,
@@ -377,29 +379,33 @@ enum class SeqBitNames : uint32_t {
 
     NON_EXISTING=~0U
 };
+
 struct SeqBitSet
 {
     std::bitset<416> bits;
     bool isSet(SeqBitNames v) const { return bits[uint32_t(v)]; }
     void set(SeqBitNames bit) { bits[uint32_t(bit)] = true;}
-    void setVal(SeqBitNames bit,bool v) { bits[uint32_t(bit)] = v;}
+    void setVal(SeqBitNames bit, bool v) { bits[uint32_t(bit)] = v; }
 };
-struct Parser_MoveTypeAnim
+
+struct SeqMoveDataTypeAnim
 {
     QString name;
     int firstFrame; // first frame ticks
     int lastFrame; // float ?
 };
+
 struct Parser_PlayFx
 {
     QString name;
     uint32_t delay;
     uint32_t flags;
 };
+
 struct SeqMoveTypeData
 {
     QString                            name;
-    std::vector<Parser_MoveTypeAnim *> m_Anim;
+    std::vector<SeqMoveDataTypeAnim *> m_Anim;
     std::vector<Parser_PlayFx *>       m_PlayFx;
     AnimTrack *                        anm_track;
     float                              Scale;
@@ -415,13 +421,17 @@ struct SeqNextMoveData
 {
     QString name;
 };
+
 struct SeqCycleMoveData
 {
     QString name;
 };
-enum {
+
+enum
+{
     MAXMOVES = 0x800
 };
+
 struct SeqMoveRawData
 {
     SeqBitSet requires_bits;
@@ -454,7 +464,9 @@ struct SeqMoveData
     std::vector<QString > Requires;
     std::vector<QString > Member;
     std::vector<QString > Interrupts;
-    enum eFlags {
+
+    enum eFlags
+    {
         Cycle=1,
         GlobalAnim=2,
         FinishCycle=4,
@@ -477,12 +489,14 @@ struct SeqGroupNameData
 {
     QString name;
 };
+
 struct SeqTypeDefData
 {
     QString name;
     QString pBaseSkeleton;
     QString pParentType;
 };
+
 struct SequencerData
 {
     QString name;
@@ -490,11 +504,12 @@ struct SequencerData
     std::vector<SeqGroupNameData *> m_Group;
     std::vector<SeqMoveData *> m_Move;
     int m_lastChangeDate;
-    int initialized=0;
+    int initialized = 0;
 };
 
-struct SequencerList {
+struct SequencerList
+{
     std::vector<SequencerData *> sq_list;
     int dev_seqInfoCount;
-    QMap<QString,SequencerData> m_Sequencers; // ordered by sequencer's name ( implemented by 'operator <' )
+    QMap<QString, SequencerData> m_Sequencers; // ordered by sequencer's name ( implemented by 'operator <' )
 };

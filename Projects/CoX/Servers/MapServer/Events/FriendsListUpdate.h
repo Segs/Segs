@@ -20,12 +20,14 @@ class FriendsListUpdate final : public GameCommandEvent
 public:
     // [[ev_def:field]]
     FriendsList m_list;
+
     FriendsListUpdate(const FriendsList &friends_list) : GameCommandEvent(MapEventTypes::evFriendsListUpdate),
         m_list(friends_list)
     {
     }
     explicit FriendsListUpdate() : GameCommandEvent(MapEventTypes::evFriendsListUpdate) {}
-    void    serializeto(BitStream &bs) const override {
+    void    serializeto(BitStream &bs) const override
+    {
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 37
 
         qCDebug(logFriends) << "FL Update:" << m_list.m_has_friends << m_list.m_friends_count << m_list.m_friends.size();
@@ -54,4 +56,5 @@ public:
     }
     EVENT_IMPL(FriendsListUpdate)
 };
+
 } // end of SEGSEvents namespace

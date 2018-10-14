@@ -44,11 +44,12 @@ SET(target_INCLUDE
     EntityStorage.h
     EntityUpdateCodec.h
     Events/GameCommandList.h
+    Events/AddTimeStateLog.h
     Events/Browser.h
     Events/ChangeTitle.h
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
-    Events/ClientStates.h
+    Events/ContactDialogs.h
     Events/DeadNoGurney.h
     Events/DoorMessage.h
     Events/EmailHeaders.h
@@ -74,12 +75,14 @@ SET(target_INCLUDE
     Events/PowerSystemEvents.h
     Events/SaveClientOptions.h
     Events/SceneEvent.h
+    Events/SendStance.h
     Events/SetClientState.h
     Events/Shortcuts.h
     Events/SidekickOffer.h
     Events/StandardDialogCmd.h
     Events/TeamLooking.h
     Events/TeamOffer.h
+    Events/TimeUpdate.h
     Events/TradeCancel.h
     Events/TradeInit.h
     Events/TradeOffer.h
@@ -90,6 +93,7 @@ SET(target_INCLUDE
     Events/TrayAdd.h
     Events/InfoMessageCmd.h
     Events/InteractWithEntity.h
+    Events/Waypoints.h
     Events/WindowState.h
     NpcGenerator.h
     MapEventFactory.h
