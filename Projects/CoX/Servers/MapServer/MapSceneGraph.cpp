@@ -148,16 +148,14 @@ struct NpcCreator
             {    
                 int idx = npc_store.npc_idx(npc_def);
                 Entity *e = map_instance->m_entities.CreateNpc(getGameData(),*npc_def, idx, 0);
+                e->m_char->setName(makeReadableName(persistent_name));
                 forcePosition(*e,glm::vec3(v[3]));
-                auto valquat = glm::quat_cast(v);
 
+                auto valquat = glm::quat_cast(v);
                 glm::vec3 angles = glm::eulerAngles(valquat);
                 angles.y += glm::pi<float>();
-                valquat = glm::quat(angles);
-                e->m_char->setName(makeReadableName(persistent_name));
-                e->m_direction = valquat;
-                e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
-                e->m_velocity = { 0,0,0 };
+                forceOrientation(*e, angles);
+                e->m_motion_state.m_velocity = { 0,0,0 };
             }
         }
         return true;

@@ -151,14 +151,34 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
-    e.m_target_idx                      = e.m_idx;
-    e.m_assist_target_idx               = 0;
+    e.m_target_idx                      = -1;
+    e.m_assist_target_idx               = -1;
+    e.m_move_type                       = MoveType::MOVETYPE_WALK;
+    e.m_motion_state.m_is_falling       = true;
+    e.m_update_anims = e.m_rare_update  = true;
 
     e.m_char = std::make_unique<Character>();
     e.m_player = std::make_unique<PlayerData>();
     e.m_player->reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anim = e.m_rare_update   = true;
+
+    std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
+
+    e.m_states.init(); // Initialize movement input state pointers
+    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
+    e.m_states.previous()->m_pos_start = e.m_states.previous()->m_pos_end = e.m_entity_data.m_pos;
+
+    PosUpdate p;
+    for(int i = 0; i<64; i++)
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        p.m_position = e.m_entity_data.m_pos;
+        p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
+        p.m_timestamp = now_ms;
+        addPosUpdate(e, p);
+    }
 }
 
 void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant)
@@ -177,15 +197,35 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_pchar_things                    = false;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
-    e.m_target_idx                      = 0;
-    e.m_assist_target_idx               = 0;
+    e.m_target_idx                      = -1;
+    e.m_assist_target_idx               = -1;
+    e.m_move_type                       = MoveType::MOVETYPE_WALK;
+    e.m_motion_state.m_is_falling       = true;
+    e.m_update_anims = e.m_rare_update  = true;
 
     e.m_char = std::make_unique<Character>();
     e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anim = e.m_rare_update   = true;
     e.m_char->m_char_data.m_level       = src->m_Level;
+
+    std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
+
+    e.m_states.init(); // Initialize movement input state pointers
+    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
+    e.m_states.previous()->m_pos_start = e.m_states.previous()->m_pos_end = e.m_entity_data.m_pos;
+
+    PosUpdate p;
+    for(int i = 0; i<64; i++)
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        p.m_position = e.m_entity_data.m_pos;
+        p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
+        p.m_timestamp = now_ms;
+        addPosUpdate(e, p);
+    }
 }
 
 void markEntityForDbStore(Entity *e, DbStoreFlags f)

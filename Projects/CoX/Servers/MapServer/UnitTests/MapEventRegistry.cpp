@@ -44,7 +44,7 @@ namespace
         "ForcedLogout",
         "FriendsListUpdate",
         "InfoMessageCmd",
-        "InputState",
+        "InputStateEvent",
         "InspirationDockMode",
         "InteractWithEntity",
         "LevelUp",

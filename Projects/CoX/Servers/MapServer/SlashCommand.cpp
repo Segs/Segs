@@ -857,7 +857,7 @@ void cmdHandler_SetSequence(const QString &cmd, MapClientSession &sess)
     sess.m_ent->m_seq_move_change_time = time;
 }
 
- void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
+void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
 {
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
@@ -1308,10 +1308,10 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     glm::vec3 offset = glm::vec3 {2,0,1};
     int idx = npc_store.npc_idx(npc_def);
 
-    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(),*npc_def,idx,variation);
-    forcePosition(*e,gm_loc + offset);
-    e->m_velocity = {0,0,0};
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), sess);
+    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
+    forcePosition(*e, gm_loc + offset);
+    e->m_motion_state.m_velocity = {0,0,0};
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx: %1").arg(e->m_idx), sess);
 }
 
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)

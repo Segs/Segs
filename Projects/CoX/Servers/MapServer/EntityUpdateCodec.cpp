@@ -15,6 +15,7 @@
 
 #include "NetStructures/Character.h"
 #include "NetStructures/Entity.h"
+#include "NetStructures/StateInterpolator.h"
 #include "MapServer.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/CoHMath.h"
@@ -24,6 +25,7 @@
 #include <glm/ext.hpp> // currently only needed for logOrientation debug
 
 namespace  {
+
 void storeCreation(const Entity &src, BitStream &bs)
 {
     // entity creation
@@ -65,7 +67,8 @@ void storeCreation(const Entity &src, BitStream &bs)
     if(src.m_hasname)
         bs.StoreString(src.m_char->getName());
     PUTDEBUG("after names");
-    bs.StoreBits(1,src.m_is_fading); // Is entity being faded in ?
+
+    bs.StoreBits(1, src.m_is_fading); // Is entity being faded in ?
     // the following is used as an input to LCG float generator, generated float (0-1) is used as
     // linear interpolation factor between scale_min and scale_max
     bs.StoreBits(32, src.m_randSeed);
@@ -90,63 +93,77 @@ void sendStateMode(const Entity &src, BitStream &bs)
     PUTDEBUG("after sendStateMode");
 }
 
-void storeInterpolationTree(const Entity &/*src*/,BitStream &bs)
+void storeInterpolationTree(const Entity &src, BitStream &bs)
 {
-    bs.StoreBits(1,0);
+    if(!storeBinTreesResult(bs, src.m_interp_bintree))
+        qWarning() << "Interpolation Tree doesn't have any values";
 }
 
-bool storePosition(const Entity &src,BitStream &bs)
+bool storePosition(const Entity &src, BitStream &bs)
 {
-// float x = pos.vals.x;
-    uint8_t updated_bit_pos = 7; // FixMe: updated_bit_pos is explicitly assigned and never modified later.
+    bs.StoreBits(3, src.m_states.current()->m_updated_bit_pos);
 
-    bs.StoreBits(3,updated_bit_pos);
+    bool partial_pos =  src.m_states.current()->m_updated_bit_pos != 7;
 
-    if(updated_bit_pos==0)
+    if(src.m_states.current()->m_updated_bit_pos == 0)
         return false; // no actual update takes place
 
     for(int i=0; i<3; i++)
     {
-        FixedPointValue fpv(src.m_entity_data.m_pos[i]);
-        //diff = packed ^ prev_pos[i]; // changed bits are '1'
-        bs.StoreBits(24,fpv.store);
+        if(partial_pos)
+        {
+            FixedPointValue fpv(src.m_states.current()->m_pos_delta[i]);
+            bs.StoreBits(8, fpv.store);
+            qCDebug(logPosition, "E[%d] position partial: %d", src.m_idx, (float)fpv.store);
+        }
+        else
+        {
+            //diff = packed ^ prev_pos[i]; // changed bits are '1'
+            FixedPointValue fpv(src.m_entity_data.m_pos[i]);
+            bs.StoreBits(24, fpv.store);
+            qCDebug(logPosition, "E[%d] position: %d", src.m_idx, (float)fpv.store);
+        }
     }
     return true;
-}
-
-bool update_rot(const Entity &/*src*/, int axis ) /* returns true if given axis needs updating */
-{
-    int axis_tmp = axis; // Used to quell tautological comparison warning
-    if(axis==axis_tmp)   // FixMe: var compared against same var.
-        return true;
-    return false;
 }
 
 void storeOrientation(const Entity &src,BitStream &bs)
 {
     // Check if update needed through update_rot()
     uint8_t updates;
-    updates = ((uint8_t)update_rot(src,0)) | (((uint8_t)update_rot(src,1))<<1) | (((uint8_t)update_rot(src,2))<<2);
-    storeBitsConditional(bs,3,updates); //frank 7,0,0.1,0
+    updates = ((uint8_t)updateRotation(src, 0)) | (((uint8_t)updateRotation(src, 1))<<1) | (((uint8_t)updateRotation(src, 2))<<2);
+    storeBitsConditional(bs, 3, updates); //frank 7,0,0.1,0
 
-    qCDebug(logOrientation, "updates: %i",updates);
+    if(src.m_type == EntType::PLAYER)
+        qCDebug(logOrientation, "update rot: %i", updates);
+
     glm::vec3 pyr_angles(0);
     pyr_angles.y = src.m_entity_data.m_orientation_pyr.y;
+
+    if(src.m_motion_state.m_is_flying)
+        pyr_angles.z = src.m_entity_data.m_orientation_pyr.z;
+
     // output everything
-    qCDebug(logOrientation, "Player: %d", src.m_idx);
-    qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
-    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.inp_state.m_camera_pyr).c_str());
-    qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
-    qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
-    qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
+    if(src.m_type == EntType::PLAYER)
+    {
+        qCDebug(logOrientation, "Player: %d", src.m_idx);
+        qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
+        qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.m_states.current()->m_camera_pyr).c_str());
+        qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
+        qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
+        qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
+    }
 
     for(int i=0; i<3; i++)
     {
-        if(!update_rot(src,i))
+        if(!updateRotation(src, i))
             continue;
 
-        uint32_t v = AngleQuantize(pyr_angles[i],9);
-        qCDebug(logOrientation, "v: %d", v); // does `v` fall between 0...512
+        uint32_t v = AngleQuantize(pyr_angles[i], 9);
+
+        if(src.m_type == EntType::PLAYER)
+            qCDebug(logOrientation, "Angle in Radians: %d", v); // does `v` fall between 0...512
+
         bs.StoreBits(9,v);
     }
 }
@@ -159,12 +176,13 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
     PUTDEBUG("before posInterpolators");
     if(!just_created && position_updated)
     {
-        // if position has changed
-        // prepare interpolation table, given previous position
+        qCDebug(logPosition, "E[%d]:  has_interp: %d  move_instantly: %d", src.m_idx, src.m_has_interp, src.m_move_instantly);
         bs.StoreBits(1, src.m_has_interp);
         if(src.m_has_interp)
         {
-            bs.StoreBits(1, src.m_move_instantly);
+            // if position has changed and move_instantly is false
+            // send interpolation table, given previous position
+            bs.StoreBits(1, src.m_move_instantly); // use sequences or move instantly?
             if(!src.m_move_instantly)
                 storeInterpolationTree(src, bs); // Bintree sending happens here
         }
@@ -187,7 +205,8 @@ void sendSeqMoveUpdate(const Entity &src, BitStream &bs)
         storePackedBitsConditional(bs, 4, src.m_seq_move_change_time); // maxval is 255
     }
 }
-void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
+
+void sendSeqTriggeredMoves(const Entity &src, BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
     if(src.m_type == EntType::PLAYER)
@@ -329,27 +348,27 @@ void sendTargetUpdate(const Entity &src,BitStream &bs)
         bs.StorePackedBits(12,assist_id);
 }
 
-void sendOnOddSend(const Entity &src,BitStream &bs)
+void sendOnOddSend(const Entity &src, BitStream &bs)
 {
     // if this is set the entity on client will :
     // set move change timer to be always 0
     // calculate interpolations using slow timer
-    //
-    bs.StoreBits(1,src.m_odd_send);
+    bs.StoreBits(1, src.m_odd_send);
 }
 
-void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
+void sendWhichSideOfTheForce(const Entity &src, BitStream &bs)
 {
     bs.StoreBits(1,src.m_is_villian); // on team evil ?
     bs.StoreBits(1,src.m_is_hero); // on team good ?
 }
-void sendEntCollision(const Entity &src,BitStream &bs)
+
+void sendEntCollision(const Entity &src, BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
-    bs.StoreBits(1, src.inp_state.m_no_collision); // 1/0 only
+    bs.StoreBits(1, src.m_states.current()->m_no_collision); // 1/0 only
 }
 
-void sendNoDrawOnClient(const Entity &src,BitStream &bs)
+void sendNoDrawOnClient(const Entity &src, BitStream &bs)
 {
     bs.StoreBits(1, src.m_no_draw_on_client); // 1/0 only
 }
@@ -397,6 +416,7 @@ void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStrea
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 } // end of anonoymous namespace
+
 void sendBuffs(const Entity &src, BitStream &bs)
 {
     bs.StorePackedBits(5, src.m_buffs.size());
@@ -406,14 +426,15 @@ void sendBuffs(const Entity &src, BitStream &bs)
 
 void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream &bs )
 {
-    bool client_believes_ent_exists=belief.m_entity!=nullptr;
+    bool client_believes_ent_exists = belief.m_entity!=nullptr;
     bool ent_exists = src.m_destroyed==false;
-    bool update_existence=client_believes_ent_exists!=ent_exists;
+    bool update_existence = client_believes_ent_exists!=ent_exists;
 
     //////////////////////////////////////////////////////////////////////////
     bs.StoreBits(1,update_existence);
     if(update_existence)
-        storeCreation(src,bs);
+        storeCreation(src, bs);
+
     belief.m_entity = ent_exists ? &src : nullptr;
     if(!ent_exists)
         return;
@@ -421,52 +442,53 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bs.StoreBits(1,src.m_update_anim); //var_C
+    bs.StoreBits(1, src.m_update_anims); //var_C
 
-    if(src.m_update_anim)
-        bs.StoreBits(1,src.m_rare_update);
-
-    if(src.m_rare_update)
-        sendStateMode(src,bs);
-
-    storePosUpdate(src,update_existence && ent_exists, bs);
-
-    if(src.m_update_anim)
-        sendSeqMoveUpdate(src,bs);
+    if(src.m_update_anims)
+        bs.StoreBits(1, src.m_rare_update);
 
     if(src.m_rare_update)
-        sendSeqTriggeredMoves(src,bs);
+        sendStateMode(src, bs);
+
+    storePosUpdate(src, update_existence && ent_exists, bs);
+
+    if(src.m_update_anims)
+        sendSeqMoveUpdate(src, bs);
+
+    if(src.m_rare_update)
+        sendSeqTriggeredMoves(src, bs);
 
     // NPC -> m_pchar_things=0 ?
     PUTDEBUG("before m_pchar_things");
-    bs.StoreBits(1,src.m_pchar_things);
+    bs.StoreBits(1, src.m_pchar_things);
     if(src.m_pchar_things)
-    {
-        sendNetFx(src,bs);
-    }
+        sendNetFx(src, bs);
+
     if(src.m_rare_update)
     {
-        sendCostumes(src,bs);
-        sendXLuency(bs,src.translucency);
+        sendCostumes(src, bs);
+        sendXLuency(bs, src.translucency);
         bs.StoreBits(1, src.m_char->m_char_data.m_has_titles); // Does entity have titles?
         if(src.m_char->m_char_data.m_has_titles)
-            src.m_char->sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
+            src.m_char->sendTitles(bs, NameFlag::HasName,ConditionalFlag::Conditional);
     }
+
     if(src.m_pchar_things)
     {
-        sendCharacterStats(src,bs);
-        sendBuffsConditional(src,bs);
-        sendTargetUpdate(src,bs);
+        sendCharacterStats(src, bs);
+        sendBuffsConditional(src, bs);
+        sendTargetUpdate(src, bs);
     }
+
     if(src.m_rare_update)
     {
-        sendOnOddSend(src,bs); // is one on client end
-        sendWhichSideOfTheForce(src,bs);
-        sendEntCollision(src,bs);
-        sendNoDrawOnClient(src,bs);
-        sendAFK(src,bs);
-        sendOtherSupergroupInfo(src,bs);
-        sendLogoutUpdate(src,belief,bs);
+        sendOnOddSend(src, bs); // is one on client end
+        sendWhichSideOfTheForce(src, bs);
+        sendEntCollision(src, bs);
+        sendNoDrawOnClient(src, bs);
+        sendAFK(src, bs);
+        sendOtherSupergroupInfo(src, bs);
+        sendLogoutUpdate(src, belief, bs);
     }
 }
 
