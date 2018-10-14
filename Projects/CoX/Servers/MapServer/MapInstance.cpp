@@ -165,7 +165,7 @@ void MapInstance::start(const QString &scenegraph_path)
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
-            },"Spawning npcs");
+            }, "Spawning npcs");
         qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
@@ -2013,44 +2013,50 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
+    QString output_msg = "Door entry request to:" + ev->name;
+    if(ev->no_location)
+        qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
+    else
+        qCDebug(logMapXfers).noquote() << output_msg << ev->location.x << ev->location.y << ev->location.z;
+
     // Start Door Animation
     QString anim_name = "RUNIN";
-    glm::vec3 offset = ev->location + glm::vec3 {20,0,10};
+    glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
     sendDoorAnimStart(session, ev->location, offset, true, anim_name);
 
-    // ev->name is the map_idx when using the map menu currently.
+    // TODO: use location and name to determine where the door goes.
+    // for now, we're using no_location to determine whether or not
+    // ev->name is the map_idx when using /mapmenu currently.
     if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
         uint8_t map_idx = ev->name.toInt();
-        if (ev->location.x != 0 || ev->location.y != 0 || ev->location.z != 0)
-            map_idx = std::rand() % 23;
+        if (!ev->no_location)
+             map_idx = std::rand() % 23;
 
-        // TODO: change this to not be hacky.
-        // change the map idx if you're trying to load the map you're currently on
-        // this should only ever happen with /movezone commands after doors work correctly.
-        if (map_idx == m_index)
-            map_idx = (map_idx + 1) % 23;
-        map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
-        session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+         // TODO: change this to not be hacky.
+         // change the map idx if you're trying to load the map you're currently on
+         // this should only ever happen with /movezone commands after doors work correctly.
+         if (map_idx == m_index)
+             map_idx = (map_idx + 1) % 23;
+         map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
+         session.link()->putq(new MapXferWait(getMapPath(map_idx)));
     }
     else
     {
         QString door_msg = "Knock! Knock!";
         sendDoorMessage(session, 2, door_msg);
-
-        qCDebug(logMapXfers).noquote() << "Door entry request to:" << ev->name;
-        if(ev->no_location)
-            qCDebug(logMapXfers).noquote() << "    no location provided";
-        else
-            qCDebug(logMapXfers).noquote() << ev->location.x << ev->location.y << ev->location.z;
+        bool has_location = false; // once movement works, should be true
+        glm::vec3 location = session.m_ent->m_entity_data.m_pos;
+        QString msg_body = createMapMenu();
+        showMapXferList(session, has_location, location, msg_body);
     }
 
     // Exit Door Animation
     sendDoorAnimExit(session, true);
 
     /* pseudocode:
-     * auto door = get_door(ev->name,ev->location);
-     * if(door and player_can_enter(door)
+     *  auto door = get_door(ev->name,ev->location);
+     *  if(door and player_can_enter(door)
      *      doorAnimStart(entry, target);
      *      process_map_transfer(player, door->targetMap);
      *      doorAnimsExit();

@@ -89,6 +89,7 @@ Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
 bool    isFriendOnline(Entity &src, uint32_t db_id);
 void    setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits);
+QString createMapMenu();
 
 
 /*

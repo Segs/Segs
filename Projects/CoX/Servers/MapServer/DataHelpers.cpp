@@ -16,6 +16,7 @@
 #include "MapInstance.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/ClientStates.h"
+#include "GameData/map_definitions.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
 #include "NetStructures/CharacterHelpers.h"
@@ -388,6 +389,18 @@ void setInterpolationSettings(MapClientSession *sess, const bool active, const u
             .arg(g_interpolation_bits);
      sendInfoMessage(MessageChannel::DEBUG_INFO, output, *sess);
     qCDebug(logPosition) << output;
+}
+
+QString createMapMenu() // TODO: compileMonorailMenu() as well
+{
+    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
+    for (auto &map_data : getAllMapData())
+    {
+        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_data.m_map_idx).arg(map_data.m_display_map_name));
+    }
+    msg_body.append("</table>");
+
+    return msg_body;
 }
 
 

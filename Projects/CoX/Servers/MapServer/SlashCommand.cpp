@@ -1751,15 +1751,11 @@ void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_MapXferList(const QString &/*cmd*/, MapClientSession &sess)
 {
-    bool has_location = true;
+    // if has_location == true, then player cannot be more than 400
+    // units away from pos or window will close
+    bool has_location = false;
     glm::vec3 location = sess.m_ent->m_entity_data.m_pos;
-    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
-    for (auto &map_data : getAllMapData())
-    {
-        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_data.m_map_idx).arg(map_data.m_display_map_name));
-    }
-    msg_body.append("</table>");
-
+    QString msg_body = createMapMenu();
     showMapXferList(sess, has_location, location, msg_body);
 }
 
