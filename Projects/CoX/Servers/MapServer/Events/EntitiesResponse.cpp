@@ -512,14 +512,6 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
 {
     Entity *ent = src.m_client->m_ent; // user entity
 
-    SurfaceParams surface_params[2];
-    memset(&surface_params,0,2*sizeof(SurfaceParams));
-    surface_params[0].traction = 1.5f;
-    surface_params[0].friction = 1.5f;
-    surface_params[0].bounce = 1.5f;
-    surface_params[1].max_speed = surface_params[0].max_speed = 1.5f;
-    surface_params[1].gravitational_constant = surface_params[0].gravitational_constant = 3.0f;
-
     bs.StoreBits(1,ent->m_update_part_1);
     if(ent->m_update_part_1)
     {
@@ -530,7 +522,7 @@ void sendServerControlState(const EntitiesResponse &src,BitStream &bs)
         storeVector(bs,ent->m_motion_state.m_speed); // This is entity speed vector !!
 
         bs.StoreFloat(ent->m_motion_state.m_backup_spd);         // Backup Speed default = 1.0f
-        bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
+        bs.StoreBitArray((uint8_t *)&g_world_surf_params,2*sizeof(SurfaceParams)*8);
 
         bs.StoreFloat(ent->m_motion_state.m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
         bs.StoreBits(1,ent->m_motion_state.m_is_flying);         // is_flying flag

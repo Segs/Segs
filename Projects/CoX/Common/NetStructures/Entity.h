@@ -207,8 +207,8 @@ public:
         uint8_t             m_update_id             = 1;
         bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
         bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
-        bool                m_full_update           = false;    // EntityReponse sendServerPhysicsPositions
-        bool                m_has_control_id        = false;    // EntityReponse sendServerPhysicsPositions
+        bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
+        bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_interp            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
         bool                m_in_training           = false;

@@ -139,6 +139,7 @@ struct MotionState // current derived state of motion
 };
 
 void processDirectionControl(InputState *next_state, uint8_t control_id, int ms_since_prev, int keypress_state);
+void setVelocity(Entity &e);
 
 void addPosUpdate(Entity &e, const PosUpdate &p);
 bool updateRotation(const Entity &e, int axis); // returns true if given axis needs updating;
