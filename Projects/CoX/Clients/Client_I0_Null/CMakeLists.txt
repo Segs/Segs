@@ -22,7 +22,7 @@ MESSAGE(${CMAKE_SOURCE_DIR}/../../../../CMakeScripts)
 include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/built)
 
-add_subdirectory(3rd_party)
+#add_subdirectory(3rd_party)
 
 link_directories(
     ${ThirdParty_Install_Dir}/lib
