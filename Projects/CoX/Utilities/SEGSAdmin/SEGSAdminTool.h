@@ -29,6 +29,7 @@ class SEGSAdminTool : public QMainWindow
     class NetworkManager *m_network_manager;
     class UpdateDetailDialog *m_update_dialog;
     class AboutDialog *m_about_dialog;
+    class SelectScriptDialog *m_script_dialog;
     bool m_server_running = false;
 
 public:

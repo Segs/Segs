@@ -2,9 +2,9 @@
 
 #include <QtGlobal>
 
-#ifndef JCON_DLL
-#define JCON_DLL
-#endif
+//#ifndef JCON_DLL
+//#define JCON_DLL
+//#endif
 
 // Use the generic helper definitions above to define JCON_API, which is used
 // for the public API symbols. It either DLL imports or DLL exports (or does

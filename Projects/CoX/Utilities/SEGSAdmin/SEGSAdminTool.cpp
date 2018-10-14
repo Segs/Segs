@@ -21,6 +21,7 @@
 #include "NetworkManager.h"
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
+#include "SelectScriptDialog.h"
 #include "version.h"
 #include <QDebug>
 #include <QtGlobal>
@@ -52,12 +53,13 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     m_network_manager = new NetworkManager();
     m_update_dialog = new UpdateDetailDialog(this);
     m_about_dialog = new AboutDialog(this);
+    m_script_dialog = new SelectScriptDialog(this);
 
     // SEGSAdminTool Signals
     connect(this,&SEGSAdminTool::checkForDB,this,&SEGSAdminTool::check_db_exist);
     connect(this,&SEGSAdminTool::addAdminUser,m_add_user_dialog,&AddNewUserDialog::on_add_admin_user);
     connect(this,&SEGSAdminTool::checkForConfigFile,this,&SEGSAdminTool::check_for_config_file);
-    connect(this,&SEGSAdminTool::getMapsDirConfigCheck,m_settings_dialog,&SettingsDialog::send_maps_dir_config_check);
+    connect(this,&SEGSAdminTool::getMapsDirConfigCheck,m_settings_dialog,&SettingsDialog::send_maps_dir_config_check); // May be a much better way to do this, but this works for now
     connect(this,&SEGSAdminTool::readyToRead,m_settings_dialog,&SettingsDialog::read_config_file);
     connect(ui->actionAbout,&QAction::triggered,m_about_dialog,&AboutDialog::show_ui);
     connect(ui->update_detail,&QPushButton::clicked,m_update_dialog,&UpdateDetailDialog::show_update);
@@ -67,6 +69,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(ui->settings_button,&QPushButton::clicked,m_settings_dialog,&SettingsDialog::open_settings_dialog);
     connect(ui->gen_config_file,&QPushButton::clicked,m_generate_config_dialog,&GenerateConfigFileDialog::on_generate_config_file);
     connect(ui->authserver_start,&QPushButton::clicked,this,&SEGSAdminTool::is_server_running);
+    connect(ui->motd_editor,&QPushButton::clicked,m_script_dialog,&SelectScriptDialog::show_dialog);
 
     // GenerateConfigFileDialog Signals
     connect(m_generate_config_dialog,&GenerateConfigFileDialog::sendInputConfigFile,m_settings_dialog,&SettingsDialog::generate_default_config_file);
@@ -436,6 +439,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
 
 void SEGSAdminTool::read_release_info(const QString &error)
 {
+    ui->output->appendPlainText("Checking for Updates...");
     QString version_number = VersionInfo::getAuthVersionNumber();
     version_number.prepend("v");
     if (!g_segs_release_info.isEmpty())
@@ -444,13 +448,15 @@ void SEGSAdminTool::read_release_info(const QString &error)
         if (g_segs_release_info[0].tag_name == version_number)
         {
 
-            qDebug()<<"CURRENT VERSION";
+            qDebug()<<"Current Version";
+            ui->output->appendPlainText("No updates available");
             ui->update_detail->setText("Up to date");
             ui->update_detail->setStyleSheet("color: rgb(0, 200, 0)");
         }
         else
         {
-            qDebug()<<"NEW VERSION";
+            qDebug()<<"New Version Available";
+            ui->output->appendPlainText("New Update Found!");
             ui->update_detail->setEnabled(true);
             ui->update_detail->setStyleSheet("color: rgb(204, 0, 0)");
             ui->update_detail->setText("Update available!");
