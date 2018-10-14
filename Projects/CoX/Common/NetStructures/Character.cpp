@@ -109,7 +109,8 @@ void Character::finalizeLevel()
     m_char_data.m_max_insp_cols = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationCol);
     m_char_data.m_max_enhance_slots = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_BoostSlot);
 
-    if (m_char_data.m_sidekick.m_type  != SidekickType::IsSidekick){
+    if (m_char_data.m_sidekick.m_type  != SidekickType::IsSidekick)
+    {
          m_char_data.m_combat_level = m_char_data.m_level;              // if sidekicked, m_combat_level is linked to
          finalizeCombatLevel();
     }
@@ -361,18 +362,16 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
             bs.StoreBits(32,m_current_costume_idx);
             bs.StoreBits(32,uint32_t(m_costumes.size()));
         }
+
         bs.StoreBits(1,m_multiple_costumes);
         if(m_multiple_costumes)
         {
             for(const Costume & c : m_costumes)
-            {
                 ::serializeto(c,bs,packer);
-            }
         }
         else
-        {
             ::serializeto(m_costumes[m_current_costume_idx],bs,packer);
-        }
+
         bs.StoreBits(1,m_char_data.m_supergroup_costume);
         if(m_char_data.m_supergroup_costume)
         {
@@ -382,9 +381,7 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
         }
     }
     else // other player's costumes we're sending only their current.
-    {
         ::serializeto(*getCurrentCostume(),bs,packer);
-    }
 }
 
 void Character::dumpSidekickInfo()
@@ -535,6 +532,7 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
+
 void Character::finalizeCombatLevel()
 {
     GameDataStore &data(getGameData());
@@ -544,6 +542,7 @@ void Character::finalizeCombatLevel()
     m_max_attribs.m_Endurance = data.m_player_classes[entclass].m_AttribMaxTable[0].m_Endurance[m_char_data.m_combat_level];
 
 }
+
 void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const
 {
     if(hasname == NameFlag::HasName)

@@ -74,10 +74,10 @@ void PowerTrayItem::Dump()
     {
     case TrayItemType::Power:
     case TrayItemType::Inspiration:
-            qDebug().noquote() << "[(" << QString::number(m_pset_idx,16) << ',' << QString::number(m_pow_idx,16)<<")]";
+        qDebug().noquote() << "[(" << QString::number(m_pset_idx,16) << ',' << QString::number(m_pow_idx,16)<<")]";
         break;
     case TrayItemType::Macro:
-            qDebug() << "[(" << m_command << ',' << m_short_name<<',' << m_icon_name<<")]";
+        qDebug() << "[(" << m_command << ',' << m_short_name<<',' << m_icon_name<<")]";
         break;
     case TrayItemType::None:
         break;
@@ -111,6 +111,7 @@ void PowerTrayGroup::serializefrom(BitStream &src)
     {
         tray.serializefrom(src);
     }
+
     m_has_default_power = src.GetBits(1);
     if(m_has_default_power)
     {
@@ -127,6 +128,7 @@ void PowerTrayGroup::dump()
     {
         if(m_trays[bar_num].setPowers()==0)
             continue;
+
         qDebug() << "Tray: " << bar_num;
         m_trays[bar_num].Dump();
     }
@@ -142,6 +144,7 @@ PowerTrayItem *PowerTray::getPowerTrayItem(size_t idx)
 {
     if(idx<10)
         return &m_tray_items[idx];
+
     return nullptr;
 }
 
@@ -149,9 +152,8 @@ int PowerTray::setPowers()
 {
     int res=0;
     for(const PowerTrayItem &pow : m_tray_items)
-    {
         res += (pow.m_entry_type!=TrayItemType::None);
-    }
+
     return res;
 }
 
@@ -170,10 +172,7 @@ void PowerTray::serializeto(BitStream &tgt) const
 void PowerTray::Dump()
 {
     for(PowerTrayItem &pow : m_tray_items)
-    {
         pow.Dump();
-    }
-
 }
 
 void PowerPool_Info::serializefrom(BitStream &src)

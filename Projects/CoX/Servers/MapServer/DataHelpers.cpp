@@ -834,7 +834,6 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
             sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
             return;
         }
-
     }
 
     // TODO: check for auto hit EntsAutoHit for StoredEntsEnum::CASTER

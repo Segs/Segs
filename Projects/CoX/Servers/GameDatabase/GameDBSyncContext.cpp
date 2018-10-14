@@ -100,10 +100,12 @@ bool GameDbSyncContext::loadAndConfigure()
     config.endGroup(); // AdminServer
 
     QSqlDatabase *db2;
-    if(!driver_list.contains(dbdriver.toUpper())) {
+    if(!driver_list.contains(dbdriver.toUpper()))
+    {
         qCritical() << "Database driver" << dbdriver << " not supported";
         return false;
     }
+
     db2 = new QSqlDatabase(QSqlDatabase::addDatabase(dbdriver,QStringLiteral("CharacterDatabase_")+thread_name_buf));
     db2->setHostName(dbhost);
     db2->setPort(dbport);
@@ -111,17 +113,22 @@ bool GameDbSyncContext::loadAndConfigure()
     db2->setUserName(dbuser);
     db2->setPassword(dbpass);
     m_db.reset(db2); // at this point we become owner of the db
+
     if(!m_db->open())
     {
         qCritical().noquote() << "Failed to open database:" <<dbname;
         return false;
     }
-    int db_version=getDbVersion(*m_db);
-    if(db_version!=required_db_version)
+
+    int db_version = getDbVersion(*m_db);
+    if(db_version != required_db_version)
     {
-        qCritical() << "Wrong db version:"<<db_version<<"this GameDatabase service requires:"<<required_db_version;
+        qCritical() << "Wrong database version:" << db_version;
+        qCritical() << "GameDatabase service requires version:" << required_db_version;
+
         return false;
     }
+
     m_prepared_fill = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_account_insert = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_account_select = std::make_unique<QSqlQuery>(*m_db);
@@ -149,7 +156,6 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_email_fill_recipient_id = std::make_unique<QSqlQuery>(*m_db);
 
     // TO-DO: prepQuery for playerUpdate
-
     prepQuery(*m_prepared_char_update,
                 "UPDATE characters SET "
                 "char_name=:char_name, chardata=:chardata, entitydata=:entitydata, bodytype=:bodytype, "

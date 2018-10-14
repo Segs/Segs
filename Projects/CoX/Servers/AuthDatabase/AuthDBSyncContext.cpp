@@ -138,7 +138,6 @@ bool AuthDbSyncContext::loadAndConfigure()
     }
 
     int64_t db_version = getDatabaseVersion(*m_db);
-
     if (db_version != REQUIRED_DB_VERSION)
     {
         qCritical() << "Wrong database version:" << db_version;

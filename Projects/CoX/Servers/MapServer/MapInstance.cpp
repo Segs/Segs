@@ -88,13 +88,9 @@ namespace
     void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
     {
         if(QFile::exists(locations_scriptname))
-        {
             lua->loadAndRunFile(locations_scriptname);
-        }
         else
-        {
             qDebug().noquote() << locations_scriptname <<"is missing; Process will continue without it.";
-        }
     }
 } // namespace
 
@@ -280,7 +276,8 @@ void MapInstance::reap_stale_links()
 
     SessionStore::MTGuard guard(m_session_store.reap_lock());
     // TODO: How to get m_char_db_id in this?
-    m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok) {
+    m_session_store.reap_stale_links("MapInstance",link_is_stale_if_disconnected_for,[tgt](uint64_t tok)
+    {
         tgt->putq(new ClientDisconnectedMessage({tok, 0},0));
     });
 }
@@ -568,10 +565,8 @@ void MapInstance::on_check_links()
     {
         MapLink * client_link = entry->link();
         if(!client_link)
-        {
-            // don't send to disconnected clients :)
-            continue;
-        }
+            continue; // don't send to disconnected clients :)
+
         // Send at least one packet within maximum_time_without_packets
         if(client_link->last_sent_packets()>maximum_time_without_packets)
             client_link->putq(new Idle); // Threading trouble, last_sent_packets will not get updated until the packet is actually sent.
@@ -607,7 +602,6 @@ void MapInstance::on_client_quit(ClientQuit*ev)
         if (!session.m_ent->m_char->m_char_data.m_is_on_auto_logout)
             abortLogout(session.m_ent);
     }
-
     else
         session.m_ent->beginLogout(10);
 }
@@ -642,7 +636,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
 
     Entity *ent = session.m_ent;
     assert(ent);
-        //todo: notify all clients about entity removal
+    //todo: notify all clients about entity removal
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token,session.m_ent->m_char->m_db_id},0));
 
