@@ -93,8 +93,6 @@ public:
 
     TimeState   m_time_state;
 
-    InputState & operator=(const InputState &other);
-
     template<class Archive>
     void serialize(Archive &ar)
     {
