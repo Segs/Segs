@@ -1112,6 +1112,20 @@
          </property>
         </widget>
        </item>
+       <item row="11" column="1">
+        <widget class="QCheckBox" name="log_scripts">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Scripts</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
