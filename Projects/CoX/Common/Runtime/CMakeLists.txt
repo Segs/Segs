@@ -2,6 +2,9 @@ find_package(Qt5 COMPONENTS Core REQUIRED)
 set(COMMON_RUNTIME_SRC
     SceneGraph.h
     SceneGraph.cpp
+    Model.h
+    Handle.h
+    Prefab.h
 )
 add_library(common_runtime STATIC ${COMMON_RUNTIME_SRC})
 add_dependencies(common_runtime gameData)

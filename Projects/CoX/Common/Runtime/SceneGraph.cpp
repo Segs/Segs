@@ -1,11 +1,14 @@
 #include "SceneGraph.h"
 
+#include "Model.h"
+#include "Prefab.h"
 #include "GameData/scenegraph_definitions.h"
 #include "GameData/scenegraph_serializers.h"
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
 #include "GameData/DataStorage.h"
 #include "GameData/CoHMath.h"
+#include "Common/Runtime/Prefab.h"
 #include "Logging.h"
 
 #include "glm/mat3x3.hpp"
@@ -13,7 +16,7 @@
 #include <QDir>
 #include <cmath>
 
-
+using namespace SEGS;
 
 // Node name re-mapping support
 
@@ -71,17 +74,6 @@ struct Model32
     glm::vec3       m_max;
     int             geoset_list_idx;
     PackInfo        pack_data[7];
-};
-struct GeoSet
-{
-    QString              geopath;
-    QString              name;
-    GeoSet *             parent_geoset = nullptr;
-    std::vector<Model *> subs;
-    std::vector<QString> tex_names;
-    std::vector<char>    m_geo_data;
-    uint32_t             geo_data_size;
-    bool                 data_loaded = false;
 };
 QHash<QString,GeoSet *> s_name_to_geoset;
 AllTricks_Data s_tricks_store;
@@ -371,21 +363,32 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
         }
     }
 }
-void addLod(const std::vector<DefLod_Data> &lods, SceneNode *a2)
+void addLod(const std::vector<DefLod_Data> &lods, SceneNode *node)
 {
     if(lods.empty())
         return;
 
     const DefLod_Data &lod_data(lods.front());
-    a2->lod_scale = lod_data.Scale;
+    node->lod_scale = lod_data.Scale;
 
-    if ( a2->lod_fromtrick )
+    if ( node->lod_fromtrick )
         return;
 
-    a2->lod_far       = lod_data.Far;
-    a2->lod_far_fade  = lod_data.FarFade;
-    a2->lod_near      = lod_data.Near;
-    a2->lod_near_fade = lod_data.NearFade;
+    node->lod_far       = lod_data.Far;
+    node->lod_far_fade  = lod_data.FarFade;
+    node->lod_near      = lod_data.Near;
+    node->lod_near_fade = lod_data.NearFade;
+}
+void addOmniLight(const std::vector<DefOmni_Data> & light_data, SceneNode *node)
+{
+    if ( light_data.empty() )
+        return;
+    const DefOmni_Data &omnid(light_data.front());
+    node->light = std::make_unique<LightProperties>(LightProperties{
+        RGBA(omnid.omniColor).toFloats(),
+        omnid.Size,
+        omnid.isNegative
+    });
 }
 bool nodeCalculateBounds(SceneNode *group)
 {
@@ -495,13 +498,14 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
         return false;
     }
     addLod(defload.p_Lod, node);
+    addOmniLight(defload.p_Omni, node);
 
     nodeCalculateBounds(node);
     nodeSetVisBounds(node);
     return true;
 }
 
-}
+} // end of anonymous namespace
 
 void serializeIn(SceneGraph_Data &scenegraph,LoadingContext &ctx,PrefabStore &prefabs)
 {
@@ -510,16 +514,19 @@ void serializeIn(SceneGraph_Data &scenegraph,LoadingContext &ctx,PrefabStore &pr
     for (const SceneRootNode_Data & root_dat : scenegraph.Ref)
         addRoot(root_dat, ctx,prefabs);
 }
+namespace SEGS {
 bool loadSceneGraph(const QString &path,LoadingContext &ctx,PrefabStore &prefabs)
 {
     QString binName = mapNameToPath(path,ctx);
     SceneGraph_Data serialized_graph;
     ctx.m_renamer.basename = buildBaseName(path);
-    binName.replace("CHUNKS.bin","Chunks.bin");
+    binName.replace(QStringLiteral("Chunks.bin"),QStringLiteral("CHUNKS.bin"));
     LoadSceneData(binName, serialized_graph);
 
     serializeIn(serialized_graph, ctx, prefabs);
     return true;
+}
+
 }
 void loadSubgraph(const QString &filename, LoadingContext &ctx,PrefabStore &prefabs)
 {

@@ -13,10 +13,11 @@
 
 #include "GameData/CoHMath.h"
 #include "GameData/GameDataStore.h"
-#include "SceneGraph.h"
 #include "EntityStorage.h"
 #include "Logging.h"
 #include "Common/NetStructures/Character.h"
+#include "Common/Runtime/Prefab.h"
+#include "Common/Runtime/SceneGraph.h"
 #include "NpcGenerator.h"
 #include "MapInstance.h"
 #include "GameData/NpcStore.h"
@@ -26,9 +27,11 @@
 #include <QSet>
 #include <memory>
 
+using namespace SEGS;
+
 namespace
 {
-    PrefabStore g_prefab_store;
+    SEGS::PrefabStore g_prefab_store;
 }
 MapSceneGraph::MapSceneGraph()
 {
@@ -42,8 +45,8 @@ MapSceneGraph::~MapSceneGraph()
 
 bool MapSceneGraph::loadFromFile(const QString &filename)
 {
-    m_scene_graph = std::make_unique<SceneGraph>();
-    LoadingContext ctx;
+    m_scene_graph = std::make_unique<SEGS::SceneGraph>();
+    SEGS::LoadingContext ctx;
     ctx.m_target = m_scene_graph.get();
     int geobin_idx= filename.indexOf("geobin");
     int maps_idx = filename.indexOf("maps");
@@ -145,7 +148,7 @@ struct NpcCreator
             QString npc_costume_name = convertNpcName(persistent_name);
             const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
             if (npc_def)
-            {    
+            {
                 int idx = npc_store.npc_idx(npc_def);
                 Entity *e = map_instance->m_entities.CreateNpc(getGameData(),*npc_def, idx, 0);
                 forcePosition(*e,glm::vec3(v[3]));

@@ -13,15 +13,21 @@
 
 class QString;
 
+namespace SEGS
+{
+struct SceneGraph;
+struct SceneNode;
+} // namespace SEGS
+
 ///
 /// \brief The MapSceneGraph class and functions operating on it are central point of access to the world's geometry
 ///
 class MapSceneGraph
 {
-    std::unique_ptr<struct SceneGraph> m_scene_graph;
+    std::unique_ptr<SEGS::SceneGraph> m_scene_graph;
     //! Contains all nodes from the scene graph that have any properties set, for faster lookups.
     //! @todo consider creating a property-name => [SceneNode,SceneNode] mapping instead ?
-    std::vector<struct SceneNode *> m_nodes_with_properties;
+    std::vector<SEGS::SceneNode *> m_nodes_with_properties;
     glm::vec3 m_spawn_point;
 public:
     MapSceneGraph();
