@@ -23,7 +23,6 @@ SET(target_CPP
     Events/TradeUpdate.cpp
     Events/TradeWasCancelledMessage.cpp
     Events/TradeWasUpdatedMessage.cpp
-    Events/InfoMessageCmd.cpp
     Events/WindowState.cpp
     MapClientSession.cpp
     NpcGenerator.cpp
@@ -62,7 +61,9 @@ SET(target_INCLUDE
     Events/FloatingInfo.h
     Events/FloatingInfoStyles.h
     Events/FriendsListUpdate.h
+    Events/InfoMessageCmd.h
     Events/InputState.h
+    Events/InteractWithEntity.h
     Events/LocationVisited.h
     Events/LevelUp.h
     Events/MapEventTypes.h
@@ -91,8 +92,6 @@ SET(target_INCLUDE
     Events/TradeWasCancelledMessage.h
     Events/TradeWasUpdatedMessage.h
     Events/TrayAdd.h
-    Events/InfoMessageCmd.h
-    Events/InteractWithEntity.h
     Events/Waypoints.h
     Events/WindowState.h
     NpcGenerator.h

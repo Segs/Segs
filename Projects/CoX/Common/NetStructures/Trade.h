@@ -10,11 +10,10 @@
 #include <vector>
 #include <stdint.h>
 
-
 class Entity;
 
-
-struct TradeInspiration {
+struct TradeInspiration
+{
     TradeInspiration() = default;
     TradeInspiration(uint32_t col, uint32_t row);
     bool operator==(const TradeInspiration& other) const;
@@ -32,7 +31,8 @@ struct TradeInspiration {
 
 
 // Trade information received from the client.
-struct TradeInfo {
+struct TradeInfo
+{
     bool isEqualContent(const TradeInfo& info) const;
 
     template<class Archive>
@@ -53,7 +53,8 @@ struct TradeInfo {
 };
 
 
-class TradeMember {
+class TradeMember
+{
 public:
     TradeMember();
     explicit TradeMember(const Entity& ent);
@@ -70,7 +71,8 @@ public:
 };
 
 
-class Trade {
+class Trade
+{
 public:
     Trade(const Entity& ent_a, const Entity& ent_b);
     TradeMember& getMember(const Entity& ent);

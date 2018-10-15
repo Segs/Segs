@@ -988,7 +988,7 @@ void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     CombineResult res=combineEnhancements(*session.m_ent, ev->first_power, ev->second_power);
-    sendEnhanceCombineResponse(session.m_ent, res.success, res.destroyed);
+    sendEnhanceCombineResponse(session, res.success, res.destroyed);
     session.m_ent->m_char->m_char_data.m_has_updated_powers = res.success || res.destroyed;
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
@@ -1323,7 +1323,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             {
                 if(f.m_online_status != true)
                     continue;
-                assert(false);
+                qWarning() << "Need to implement message router which will work across zone lines!";
                 //TODO: this only work for friends on local server
                 // introduce a message router, and send messages to EntityIDs instead of directly using sessions.
                 Entity *tgt = nullptr; //getEntityByDBID(*sender,f.m_db_id);
@@ -2215,7 +2215,7 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     // TODO: Check that target is valid, then Do Power!
     QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
     sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    sendFaceLocation(*session.m_ent, ev->location);
+    sendFaceLocation(session, ev->location);
 
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }

@@ -131,12 +131,6 @@ Entity::~Entity()
 
 }
 
-void abortLogout(Entity *e)
-{
-    e->m_is_logging_out = false; // send logout time of 0
-    e->m_time_till_logout = 0;
-}
-
 void initializeNewPlayerEntity(Entity &e)
 {
     e.m_costume_type                    = AppearanceType::WholeCostume;
@@ -186,52 +180,6 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_entity = std::make_unique<EntityData>();
     e.m_update_anim = e.m_rare_update   = true;
     e.m_char->m_char_data.m_level       = src->m_Level;
-}
-
-void markEntityForDbStore(Entity *e, DbStoreFlags f)
-{
-    e->m_db_store_flags |= uint32_t(f);
-}
-
-void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
-{
-    e->m_db_store_flags &= ~uint32_t(f);
-}
-
-void revivePlayer(Entity &e, ReviveLevel lvl)
-{
-    float cur_hp = getHP(*e.m_char);
-    if(e.m_type != EntType::PLAYER && cur_hp != 0)
-        return;
-
-    switch(lvl)
-    {
-    case ReviveLevel::AWAKEN:
-        setHP(*e.m_char, getMaxHP(*e.m_char)*0.25);
-        break;
-    case ReviveLevel::BOUNCE_BACK:
-        setHP(*e.m_char, getMaxHP(*e.m_char)*0.5);
-        break;
-    case ReviveLevel::RESTORATION:
-        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75);
-        break;
-    case ReviveLevel::IMMORTAL_RECOVERY:
-        setMaxHP(*e.m_char);
-        break;
-    case ReviveLevel::REGEN_REVIVE:
-        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75);
-        setEnd(*e.m_char, getMaxEnd(*e.m_char)*0.5);
-        break;
-    case ReviveLevel::FULL:
-    default:
-        // Set HP and End to Max
-        setMaxHP(*e.m_char);
-        setMaxEnd(*e.m_char);
-        break;
-    }
-
-    // reset state to simple
-    setStateMode(e, ClientStates::SIMPLE);
 }
 
 //! @}

@@ -9,10 +9,9 @@
 #include "GameCommand.h"
 #include "MapEventTypes.h"
 
-struct MapClientSession;
 class QString;
-
 enum class MessageChannel : int;
+
 namespace SEGSEvents
 {
 
@@ -24,17 +23,25 @@ public:
     QString         m_msg;
     // [[ev_def:field]]
     MessageChannel  m_channel_type;
+    // [[ev_def:field]]
     int             m_target_player_id;
-explicit            InfoMessageCmd() : GameCommandEvent(MapEventTypes::evInfoMessageCmd) {}
-                    InfoMessageCmd(MessageChannel t, const QString &msg) : GameCommandEvent(MapEventTypes::evInfoMessageCmd),
-                        m_msg(msg),m_channel_type(t)
-                    {
-                    }
-    void            serializeto(BitStream &bs) const override;
+
+explicit InfoMessageCmd() : GameCommandEvent(evInfoMessageCmd) {}
+    InfoMessageCmd(MessageChannel ch, int tgt, const QString &msg) : GameCommandEvent(evInfoMessageCmd),
+        m_channel_type(ch),
+        m_target_player_id(tgt),
+        m_msg(msg)
+    {
+    }
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+        bs.StorePackedBits(2, static_cast<uint8_t>(m_channel_type));
+        bs.StoreString(m_msg);
+    }
     EVENT_IMPL(InfoMessageCmd)
 };
 
 } // end of SEGSEvents namespace
 
 
-extern void sendInfoMessage(MessageChannel t, QString msg, MapClientSession &tgt);

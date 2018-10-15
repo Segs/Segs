@@ -14,6 +14,7 @@
 
 #include "Common/Servers/Database.h"
 #include "Events/GameCommandList.h"
+#include "DataHelpers.h"
 #include "NetStructures/Character.h"
 #include "NetStructures/CharacterHelpers.h"
 #include <glm/gtx/vector_query.hpp>

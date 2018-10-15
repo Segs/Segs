@@ -12,10 +12,11 @@
 
 #include "Powers.h"
 #include "Entity.h"
+#include "EntityHelpers.h"
 #include "Character.h"
+#include "CharacterHelpers.h"
 #include "Logging.h"
 #include "GameData/GameDataStore.h"
-#include "CharacterHelpers.h"
 #include <random>
 
 void PowerTrayItem::serializeto(BitStream &tgt) const

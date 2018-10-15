@@ -14,9 +14,9 @@
 
 #include "Events/InputState.h"
 #include "NetStructures/Entity.h"
+#include "NetStructures/EntityHelpers.h"
 #include "MapEvents.h"
 #include "MapClientSession.h"
-#include "Servers/MapServer/DataHelpers.h"
 #include "Logging.h"
 
 #include <cmath>

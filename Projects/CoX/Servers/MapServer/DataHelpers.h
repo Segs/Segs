@@ -7,138 +7,36 @@
 
 #pragma once
 #include "Events/MessageChannels.h"
-#include "Events/FloatingInfoStyles.h"
 #include "glm/vec3.hpp"
-#include <QString>
-#include <cstdint>
 #include <vector>
 
 class QString;
 class Entity;
 class Character;
-struct PlayerData;
-struct EntityData;
 struct Friend;
 struct FriendsList;
 struct MapClientSession;
 struct CharacterPowerSet;
 struct CharacterPower;
+struct PowerStance;
 class GameDataStore;
 class TradeMember;
 struct ContactEntry;
-struct Destination;
-struct PowerStance;
+enum FloatingInfoStyle : int;
 enum class ClientStates : uint8_t;
 
 /*
- * Entity Methods
+ * This file is intended to hold helper functions for methods
+ * requiring access to MapClientSession or MapInstance
  */
-// Getters
-uint32_t    getIdx(const Entity &e);
-uint32_t    getDbId(const Entity &e);
-uint32_t    getAccessLevel(const Entity &e);
-uint32_t    getTargetIdx(const Entity &e);
-uint32_t    getAssistTargetIdx(const Entity &e);
-glm::vec3   getSpeed(const Entity &e);
-float       getBackupSpd(const Entity &e);
-float       getJumpHeight(const Entity &e);
-uint8_t     getUpdateId(const Entity &e);
-Destination     getCurrentDestination(const Entity &e);
-ClientStates    getStateMode(const Entity &e);
-
-// Setters
-void    setDbId(Entity &e, uint8_t val);
-void    setMapIdx(Entity &e, uint32_t val);
-void    setSpeed(Entity &e, float v1, float v2, float v3);
-void    setBackupSpd(Entity &e, float val);
-void    setJumpHeight(Entity &e, float val);
-void    setUpdateID(Entity &e, uint8_t val);
-void    setTeamID(Entity &e, uint8_t team_id);
-void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
-void    setTarget(Entity &e, uint32_t target_idx);
-void    setAssistTarget(Entity &e);
-void    setCurrentDestination(Entity &e, int point_idx, glm::vec3 location);
-void    setStateMode(Entity &e, ClientStates state);
-
-// For live debugging
-void    setu1(Entity &e, int val);
-
-// Toggles
-void    toggleFlying(Entity &e);
-void    toggleFalling(Entity &e);
-void    toggleJumping(Entity &e);
-void    toggleSliding(Entity &e);
-void    toggleStunned(Entity &e);
-void    toggleJumppack(Entity &e);
-void    toggleControlsDisabled(Entity &e);
-void    toggleFullUpdate(Entity &e);
-void    toggleControlId(Entity &e);
-void    toggleInterp(Entity &e);
-void    toggleMoveInstantly(Entity &e);
-void    toggleCollision(Entity &e);
-void    toggleMovementAuthority(Entity &e);
-void    toggleTeamBuffs(PlayerData &c);
-void    toggleLFG(Entity &e);
-
-// Misc Methods
-void    charUpdateDB(Entity *e);
 
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
-void    sendServerMOTD(MapClientSession *tgt);
-bool    isFriendOnline(Entity &src, uint32_t db_id);
+void    sendServerMOTD(MapClientSession *sess);
+bool    isFriendOnline(MapClientSession &sess, uint32_t db_id);
 void    setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits);
 
-
-/*
- * Titles -- TODO: get titles from texts/English/titles_def
- */
-const QString &getGenericTitle(uint32_t val);
-const QString &getOriginTitle(uint32_t val);
-
-
-/*
- * sendInfoMessage wrapper to provide access to NetStructures
- */
-void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
-
-
-/*
- * SendUpdate Wrappers to provide access to NetStructures
- */
-void sendTimeStateLog(MapClientSession &src, uint32_t control_log);
-void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000);
-void sendClientState(MapClientSession &sess, ClientStates client_state);
-void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name);
-void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay);
-void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount);
-void sendLevelUp(MapClientSession &src);
-void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy);
-void sendChangeTitle(Entity *tgt, bool select_origin);
-void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx);
-void sendFriendsListUpdate(Entity *src, const FriendsList &friends_list);
-void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
-void sendTeamLooking(Entity *tgt);
-void sendTeamOffer(Entity *src, Entity *tgt);
-void sendFaceEntity(Entity &src, int32_t tgt_idx);
-void sendFaceLocation(Entity &src, glm::vec3 &loc);
-void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
-void sendBrowser(MapClientSession &tgt, QString &content);
-void sendTradeOffer(const Entity& src, Entity& tgt);
-void sendTradeInit(Entity& src, Entity& tgt);
-void sendTradeCancel(Entity& ent, const QString& msg);
-void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
-void sendTradeSuccess(Entity& src, Entity& tgt);
-void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts);
-void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
-void sendContactDialogClose(MapClientSession &src);
-void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
-void sendStance(MapClientSession &src, PowerStance stance);
-void sendDeadNoGurney(MapClientSession &sess);
-
-const QString &getGenericTitle(uint32_t val);
-const QString &getOriginTitle(uint32_t val);
 
 /*
  * sendEmail Wrappers for providing access to Email Database
@@ -148,17 +46,53 @@ void readEmailMessage(MapClientSession& sess, const uint32_t email_id);
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message);
 void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
+
 /*
- * usePower exposed for future Lua support
+ * sendInfoMessage wrapper to provide access to NetStructures
+ */
+void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
+
+
+/*
+ * SendUpdate Wrappers
+ */
+void sendInfoMessage(MessageChannel ch, QString msg, MapClientSession &tgt);
+void sendTimeStateLog(MapClientSession &sess, uint32_t control_log);
+void sendTimeUpdate(MapClientSession &sess, int32_t sec_since_jan_1_2000);
+void sendClientState(MapClientSession &sess, ClientStates client_state);
+void showMapXferList(MapClientSession &sess, bool has_location, glm::vec3 &location, QString &name);
+void sendFloatingInfo(MapClientSession &sess, QString &msg, FloatingInfoStyle style, float delay);
+void sendFloatingNumbers(MapClientSession &sess, uint32_t tgt_idx, int32_t amount);
+void sendLevelUp(MapClientSession &sess);
+void sendEnhanceCombineResponse(MapClientSession &sess, bool success, bool destroy);
+void sendChangeTitle(MapClientSession &sess, bool select_origin);
+void sendTrayAdd(MapClientSession &sess, uint32_t pset_idx, uint32_t pow_idx);
+void sendFriendsListUpdate(MapClientSession &sess, const FriendsList &friends_list);
+void sendSidekickOffer(MapClientSession &sess, uint32_t src_db_id);
+void sendTeamLooking(MapClientSession &sess);
+void sendTeamOffer(MapClientSession &src, MapClientSession &tgt);
+void sendFaceEntity(MapClientSession &src, int32_t tgt_idx);
+void sendFaceLocation(MapClientSession &sess, glm::vec3 &loc);
+void sendDoorMessage(MapClientSession &sess, uint32_t delay_status, QString &msg);
+void sendBrowser(MapClientSession &sess, QString &content);
+void sendTradeOffer(MapClientSession &tgt, const QString &name);
+void sendTradeInit(MapClientSession &src, MapClientSession &tgt);
+void sendTradeCancel(MapClientSession &sess, const QString &msg);
+void sendTradeUpdate(MapClientSession &src, MapClientSession &tgt, const TradeMember& trade_src, const TradeMember& trade_tgt);
+void sendTradeSuccess(MapClientSession &src, MapClientSession &tgt);
+void sendContactDialog(MapClientSession &sess, QString msg_body, std::vector<ContactEntry> active_contacts);
+void sendContactDialogYesNoOk(MapClientSession &sess, QString msg_body, bool has_yesno);
+void sendContactDialogClose(MapClientSession &sess);
+void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 location);
+void sendStance(MapClientSession &sess, PowerStance stance);
+void sendDeadNoGurney(MapClientSession &sess);
+
+/*
+ * usePower and increaseLevel here to provide access to
+ * both Entity and sendInfoMessage
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
 void increaseLevel(Entity &ent);
-
-/*
- * Team related helpers
- */
-void findTeamMember(Entity &tgt);
-
 
 /*
  * Lua Functions

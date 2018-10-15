@@ -329,16 +329,6 @@ static  void                sendPvP(BitStream &bs);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
 
-enum class DbStoreFlags : uint32_t
-{
-    PlayerData = 1,
-    Full       = ~0U,
-};
-
-void markEntityForDbStore(Entity *e,DbStoreFlags f);
-void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
 void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
-extern void abortLogout(Entity *e);
-void revivePlayer(Entity &e, ReviveLevel lvl);

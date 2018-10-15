@@ -14,9 +14,10 @@
 
 #include "Servers/MapServer/DataHelpers.h"
 #include "Servers/MapServer/MapClientSession.h"
+#include "Entity.h"
+#include "EntityHelpers.h"
 #include "Character.h"
 #include "CharacterHelpers.h"
-#include "Entity.h"
 #include "Logging.h"
 #include "Powers.h"
 
@@ -31,7 +32,7 @@ static bool hasRoomForTradeInfluence(Entity& src)
     const uint32_t inf = (getInf(*src.m_char) - info_src.m_influence) + info_tgt.m_influence;
     if (inf < info_tgt.m_influence) // Standard overflow check (only works with unsigned integers).
     {
-        messageOutput(MessageChannel::SERVER, "Not enough room to accept that much influence.", src);
+        sendInfoMessage(MessageChannel::SERVER, "Not enough room to accept that much influence.", *src.m_client);
         return false;
     }
 
@@ -51,7 +52,7 @@ static bool hasRoomForTradeEnhancements(Entity& src)
     const int max_num_enh = getMaxNumberEnhancements(cd);
     if (num_enh > max_num_enh)
     {
-        messageOutput(MessageChannel::SERVER, "Not enough room to accept that many enhancements.", src);
+        sendInfoMessage(MessageChannel::SERVER, "Not enough room to accept that many enhancements.", *src.m_client);
         return false;
     }
 
@@ -71,7 +72,7 @@ static bool hasRoomForTradeInspirations(Entity& src)
     const int max_num_insp = getMaxNumberInspirations(cd);
     if (num_insp > max_num_insp)
     {
-        messageOutput(MessageChannel::SERVER, "Not enough room to accept that many inspirations.", src);
+        sendInfoMessage(MessageChannel::SERVER, "Not enough room to accept that many inspirations.", *src.m_client);
         return false;
     }
 
@@ -95,9 +96,7 @@ static std::vector<CharacterEnhancement> removeTradedEnhancements(Entity& ent, c
     {
         const CharacterEnhancement* const enh = getEnhancement(ent, idx);
         if (enh == nullptr)
-        {
             continue;
-        }
 
         result.push_back(*enh);
         trashEnhancement(cd, idx);
@@ -111,9 +110,7 @@ static void addTradedEnhancements(Entity& ent, const std::vector<CharacterEnhanc
     CharacterData& cd = ent.m_char->m_char_data;
 
     for (const CharacterEnhancement& enh : enhs)
-    {
         addEnhancementToChar(cd, enh);
-    }
 }
 
 static std::vector<CharacterInspiration> removeTradedInspirations(Entity& ent, const TradeInfo& info)
@@ -125,9 +122,7 @@ static std::vector<CharacterInspiration> removeTradedInspirations(Entity& ent, c
     {
         const CharacterInspiration* const insp = getInspiration(ent, trade_insp.m_col, trade_insp.m_row);
         if (insp == nullptr)
-        {
             continue;
-        }
 
         result.push_back(*insp);
         removeInspiration(cd, trade_insp.m_col, trade_insp.m_row);
@@ -141,9 +136,7 @@ static void addTradedInspirations(Entity& ent, const std::vector<CharacterInspir
     CharacterData& cd = ent.m_char->m_char_data;
 
     for (const CharacterInspiration& insp : insps)
-    {
         addInspirationToChar(cd, insp);
-    }
 }
 
 static void finishTrade(Entity& src, Entity& tgt)
@@ -173,7 +166,7 @@ static void finishTrade(Entity& src, Entity& tgt)
     src.m_trade.reset();
     tgt.m_trade.reset();
 
-    sendTradeSuccess(src, tgt);
+    sendTradeSuccess(*src.m_client, *tgt.m_client);
 
     qCDebug(logTrades) << "Trade successful betweeen" << src.name() << "and" << tgt.name();
 }
@@ -221,49 +214,38 @@ Trade::Trade(const Entity& ent_a, const Entity& ent_b)
 
 TradeMember& Trade::getMember(const Entity& ent)
 {
-    if (m_member_a.m_db_id == getDbId(ent)) {
+    if (m_member_a.m_db_id == getDbId(ent))
         return m_member_a;
-    }
     else
-    {
         return m_member_b;
-    }
 }
 
 const TradeMember& Trade::getMember(const Entity& ent) const
 {
-    if (m_member_a.m_db_id == getDbId(ent)) {
+    if (m_member_a.m_db_id == getDbId(ent))
         return m_member_a;
-    }
     else
-    {
         return m_member_b;
-    }
 }
 
 TradeMember& Trade::getOtherMember(const Entity& ent)
 {
-    if (m_member_a.m_db_id == getDbId(ent)) {
+    if (m_member_a.m_db_id == getDbId(ent))
         return m_member_b;
-    }
     else
-    {
         return m_member_a;
-    }
 }
 
 const TradeMember& Trade::getOtherMember(const Entity& ent) const
 {
-    if (m_member_a.m_db_id == getDbId(ent)) {
+    if (m_member_a.m_db_id == getDbId(ent))
         return m_member_b;
-    }
     else
-    {
         return m_member_a;
-    }
 }
 
-bool Trade::isAccepted() const {
+bool Trade::isAccepted() const
+{
     return (m_member_a.m_info.m_accepted && m_member_b.m_info.m_accepted);
 }
 
@@ -282,7 +264,7 @@ void requestTrade(Entity& src, Entity& tgt)
         const QString msg = (src.m_trade->m_invite_accepted ?
                              "You are already in a trade." :
                              "You are already considering a trade offer.");
-        messageOutput(MessageChannel::SERVER, msg, src);
+        sendInfoMessage(MessageChannel::SERVER, msg, *src.m_client);
         qCDebug(logTrades) << "Trade invite from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
@@ -292,7 +274,7 @@ void requestTrade(Entity& src, Entity& tgt)
         const QString msg = (tgt.m_trade->m_invite_accepted ?
                              tgt.name() + " is already in a trade." :
                              tgt.name() + " is already considering a trade offer.");
-        messageOutput(MessageChannel::SERVER, msg, src);
+        sendInfoMessage(MessageChannel::SERVER, msg, *src.m_client);
         qCDebug(logTrades) << "Trade invite from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
@@ -301,12 +283,12 @@ void requestTrade(Entity& src, Entity& tgt)
     src.m_trade = std::make_shared<Trade>(src, tgt);
     tgt.m_trade = src.m_trade;
 
-    sendTradeOffer(src, tgt);
+    sendTradeOffer(*tgt.m_client, src.name());
 
     const QString msg_src = "You sent a trade request to " + tgt.name() + ".";
     const QString msg_tgt = src.name() + " sent a trade request.";
-    messageOutput(MessageChannel::SERVER, msg_src, src);
-    messageOutput(MessageChannel::SERVER, msg_tgt, tgt);
+    sendInfoMessage(MessageChannel::SERVER, msg_src, *src.m_client);
+    sendInfoMessage(MessageChannel::SERVER, msg_tgt, *tgt.m_client);
     qCDebug(logTrades) << src.name() << "sent a trade request to" << tgt.name();
 }
 
@@ -323,7 +305,7 @@ void acceptTrade(Entity& src, Entity& tgt)
     if (src.m_trade == nullptr)
     {
         const QString msg = "You have not been sent a trade offer.";
-        messageOutput(MessageChannel::SERVER, msg, src);
+        sendInfoMessage(MessageChannel::SERVER, msg, *src.m_client);
         qWarning() << "Trade accept from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
@@ -331,7 +313,7 @@ void acceptTrade(Entity& src, Entity& tgt)
     if (tgt.m_trade == nullptr)
     {
         const QString msg = tgt.name() + " have not sent a trade offer.";
-        messageOutput(MessageChannel::SERVER, msg, src);
+        sendInfoMessage(MessageChannel::SERVER, msg, *src.m_client);
         qWarning() << "Trade accept from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
@@ -339,7 +321,7 @@ void acceptTrade(Entity& src, Entity& tgt)
     if (src.m_trade != tgt.m_trade)
     {
         const QString msg = "You are not considering a trade offer from " + tgt.name() + ".";
-        messageOutput(MessageChannel::SERVER, msg, src);
+        sendInfoMessage(MessageChannel::SERVER, msg, *src.m_client);
         qWarning() << "Trade accept from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
@@ -347,12 +329,12 @@ void acceptTrade(Entity& src, Entity& tgt)
     // Accept the trade.
     src.m_trade->m_invite_accepted = true;
 
-    sendTradeInit(src, tgt);
+    sendTradeInit(*src.m_client, *tgt.m_client);
 
     const QString msg_src = "You accepted the trade invite from " + tgt.name() + ".";
     const QString msg_tgt = src.name() + " accepted your trade invite.";
-    messageOutput(MessageChannel::SERVER, msg_src, src);
-    messageOutput(MessageChannel::SERVER, msg_tgt, tgt);
+    sendInfoMessage(MessageChannel::SERVER, msg_src, *src.m_client);
+    sendInfoMessage(MessageChannel::SERVER, msg_tgt, *tgt.m_client);
     qCDebug(logTrades) << src.name() << "accepted a trade invite from" << tgt.name();
 }
 
@@ -363,7 +345,7 @@ void declineTrade(Entity& src, Entity& tgt)
     if (src.m_trade == nullptr)
     {
         const QString msg = "You have not been sent a trade offer.";
-        messageOutput(MessageChannel::SERVER, msg, src);
+        sendInfoMessage(MessageChannel::SERVER, msg, *src.m_client);
         qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
@@ -371,7 +353,7 @@ void declineTrade(Entity& src, Entity& tgt)
     if (tgt.m_trade == nullptr)
     {
         const QString msg = tgt.name() + " have not sent a trade offer.";
-        messageOutput(MessageChannel::SERVER, msg, src);
+        sendInfoMessage(MessageChannel::SERVER, msg, *src.m_client);
         qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
@@ -379,7 +361,7 @@ void declineTrade(Entity& src, Entity& tgt)
     if (src.m_trade != tgt.m_trade)
     {
         const QString msg = "You are not considering a trade offer from " + tgt.name() + ".";
-        messageOutput(MessageChannel::SERVER, msg, src);
+        sendInfoMessage(MessageChannel::SERVER, msg, *src.m_client);
         qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:" << msg;
         return;
     }
@@ -390,8 +372,8 @@ void declineTrade(Entity& src, Entity& tgt)
 
     const QString msg_src = "You declined the trade invite from " + tgt.name() + ".";
     const QString msg_tgt = src.name() + " declined your trade invite.";
-    messageOutput(MessageChannel::SERVER, msg_src, src);
-    messageOutput(MessageChannel::SERVER, msg_tgt, tgt);
+    sendInfoMessage(MessageChannel::SERVER, msg_src, *src.m_client);
+    sendInfoMessage(MessageChannel::SERVER, msg_tgt, *tgt.m_client);
     qCDebug(logTrades) << src.name() << "declined a trade invite from" << tgt.name();
 }
 
@@ -412,7 +394,7 @@ void cancelTrade(Entity& src)
         src.m_trade.reset();
 
         const QString msg = "Trade cancelled because the other player left.";
-        sendTradeCancel(src, msg);
+        sendTradeCancel(*src.m_client, msg);
 
         qCDebug(logTrades) << src.name() << "cancelled a trade where target has disappeared";
         return;
@@ -423,8 +405,8 @@ void cancelTrade(Entity& src)
 
     const QString msg_src = "You cancelled the trade with " + tgt->name() + ".";
     const QString msg_tgt = src.name() + " canceled the trade.";
-    sendTradeCancel(src, msg_src);
-    sendTradeCancel(*tgt, msg_tgt);
+    sendTradeCancel(*src.m_client, msg_src);
+    sendTradeCancel(*tgt->m_client, msg_tgt);
 
     qCDebug(logTrades) << src.name() << "cancelled a trade with" << tgt->name();
 }
@@ -433,9 +415,7 @@ void updateTrade(Entity& src, const TradeInfo& info)
 {
     Entity* const tgt = getEntityByDBID(src.m_client->m_current_map, info.m_db_id);
     if (tgt == nullptr)
-    {
         return;
-    }
 
     if (src.m_trade != tgt->m_trade)
     {
@@ -464,18 +444,14 @@ void updateTrade(Entity& src, const TradeInfo& info)
     }
 
     // A trade cannot be accepted if there is not enough space.
-    if (trade_src.m_info.m_accepted && !hasRoomForTrade(src))
-    {
+    if(trade_src.m_info.m_accepted && !hasRoomForTrade(src))
         trade_src.m_info.m_accepted = false;
-    }
 
-    sendTradeUpdate(src, *tgt, trade_src, trade_tgt);
+    sendTradeUpdate(*src.m_client, *tgt->m_client, trade_src, trade_tgt);
     qCDebug(logTrades) << src.name() << "updated a trade with" << tgt->name();
 
     if (trade.isAccepted())
-    {
         finishTrade(src, *tgt);
-    }
 }
 
 void discardTrade(Entity& ent)

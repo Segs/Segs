@@ -164,10 +164,10 @@ void removeTeamMember(Team &self, Entity *e)
         if(e->m_char->m_char_data.m_sidekick.m_has_sidekick)
         {
             //TODO: just send a message to the SidekickHandler about this removal.
-            assert(false);
             uint32_t sidekick_id = getSidekickId(*e->m_char);
-            Entity *tgt = nullptr; //getEntityByDBID(sess.m_current_map,sidekick_id);
-            removeSidekick(*e,tgt);
+            qWarning() << "Need to send a message to SidekickHandler about team removal for" << sidekick_id;
+            Entity *tgt = nullptr; //getEntityByDBID(sess.m_current_map, sidekick_id);
+            removeSidekick(*e, tgt);
         }
 
         qCDebug(logTeams) << "Removing" << iter->tm_name << "from team" << self.m_team_idx;
@@ -184,9 +184,9 @@ void removeTeamMember(Team &self, Entity *e)
 
     // int idx = self.m_team_members.front().tm_idx;
 
-    assert(false);
     // TODO: this should post an Team-removal event to the target entity, since we can't access other server's
     // Entity lists
+    qWarning() << "Need to send a message to target entity about team removal!";
     Entity *tgt = nullptr; //getEntityByDBID(idx);
     if(tgt == nullptr)
         return;
@@ -272,7 +272,7 @@ uint32_t getSidekickId(const Character &src)
     const Sidekick &src_sk(src.m_char_data.m_sidekick);
     return src_sk.m_db_id;
 }
-SidekickChangeStatus removeSidekick(Entity &src,Entity *tgt)
+SidekickChangeStatus removeSidekick(Entity &src, Entity *tgt)
 {
     //TODO: this function should actually post messages related to de-sidekicking to our target entity.
     QString     msg = "Unable to remove sidekick.";
