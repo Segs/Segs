@@ -123,7 +123,7 @@ void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
 void sendFaceEntity(Entity &src, int32_t tgt_idx);
-void sendFaceLocation(Entity &src, glm::vec3 &location);
+void sendFaceLocation(Entity &src, glm::vec3 &loc);
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
 void sendBrowser(MapClientSession &tgt, QString &content);
 void sendTradeOffer(const Entity& src, Entity& tgt);
@@ -161,3 +161,16 @@ void increaseLevel(Entity &ent);
  * Team related helpers
  */
 void findTeamMember(Entity &tgt);
+
+
+/*
+ * Lua Functions
+ */
+void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variation);
+void giveEnhancement(MapClientSession *cl, const char* name, int level);
+void giveDebt(MapClientSession *cl, int debt);
+void giveEnd(MapClientSession *cl, float end);
+void giveHp(MapClientSession *cl, float hp);
+void giveInf(MapClientSession *cl, int inf);
+void giveInsp(MapClientSession *cl, const char *value);
+void giveXp(MapClientSession *cl, int xp);

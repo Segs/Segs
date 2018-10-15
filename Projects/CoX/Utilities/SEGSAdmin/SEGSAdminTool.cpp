@@ -57,7 +57,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(this,&SEGSAdminTool::checkForDB,this,&SEGSAdminTool::check_db_exist);
     connect(this,&SEGSAdminTool::addAdminUser,m_add_user_dialog,&AddNewUserDialog::on_add_admin_user);
     connect(this,&SEGSAdminTool::checkForConfigFile,this,&SEGSAdminTool::check_for_config_file);
-    connect(this,&SEGSAdminTool::getMapsDirConfigCheck,m_settings_dialog,&SettingsDialog::send_maps_dir_config_check); // May be a much better way to do this, but this works for now
+    connect(this,&SEGSAdminTool::getMapsDirConfigCheck,m_settings_dialog,&SettingsDialog::send_maps_dir_config_check);
     connect(this,&SEGSAdminTool::readyToRead,m_settings_dialog,&SettingsDialog::read_config_file);
     connect(ui->actionAbout,&QAction::triggered,m_about_dialog,&AboutDialog::show_ui);
     connect(ui->update_detail,&QPushButton::clicked,m_update_dialog,&UpdateDetailDialog::show_update);
