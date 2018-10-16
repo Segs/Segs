@@ -165,6 +165,7 @@ void Settings::setDefaultSettings()
         config.setValue("log_target","false");
         config.setValue("log_spawn","false");
         config.setValue("log_mapevents","false");
+        config.setValue("log_mapxfers", "false");
         config.setValue("log_slashcommands","false");
         config.setValue("log_description","false");
         config.setValue("log_friends","false");
@@ -174,6 +175,8 @@ void Settings::setDefaultSettings()
         config.setValue("log_animations","false");
         config.setValue("log_powers","false");
         config.setValue("log_trades","false");
+        config.setValue("log_scripts","false");
+        config.setValue("log_scenegraph","false");
     config.endGroup();
 
     config.sync(); // sync changes or they wont be saved to file.

@@ -506,6 +506,9 @@ void MapInstance::dispatch( Event *ev )
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
             break;
+        case evDeadNoGurneyOK:
+            on_dead_no_gurney_ok(static_cast<DeadNoGurneyOK *>(ev));
+            break;
         case evBrowserClose:
             on_browser_close(static_cast<BrowserClose *>(ev));
             break;
@@ -718,7 +721,8 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     serializeFromQString(char_data,request_data.char_from_db_data);
     // existing character
     Entity *ent = m_entities.CreatePlayer();
-    toActualCharacter(char_data, *ent->m_char,*ent->m_player, *ent->m_entity);
+    toActualCharacter(char_data, *ent->m_char, *ent->m_player, *ent->m_entity);
+    ent->m_char->finalizeLevel(); // done here to fix spawn with 0 hp/end bug
     ent->fillFromCharacter(getGameData());
     ent->m_client = &map_session;
     map_session.m_ent = ent;
@@ -943,8 +947,8 @@ void MapInstance::on_timeout(Timeout *ev)
     }
 }
 
-void MapInstance::sendState() {
-
+void MapInstance::sendState()
+{
     if(m_session_store.num_sessions()==0)
         return;
 
@@ -1959,6 +1963,10 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         session.m_in_map = true;
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
+        // Force position and orientation to fix #617 spawn at 0,0,0 bug
+        forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
+        forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
+
         char buf[256];
         std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
         std::snprintf(buf, 256, "There are %zu active entities and %zu clients", m_entities.active_entities(),
@@ -1980,7 +1988,8 @@ void MapInstance::on_location_visited(LocationVisited *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited",qHash(ev->m_name));
+
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited",qHash(ev->m_name), ev->m_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),session);
 
     qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
@@ -1991,7 +2000,8 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited",qHash(ev->m_name));
+
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited",qHash(ev->m_name), ev->m_pos);
     qCWarning(logMapEvents) << "Unhandled plaque visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
@@ -2417,7 +2427,31 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
 void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received AwaitingDeadNoGurney";
+
+    // TODO: Check if disablegurney
+    /*
+    setStateMode(*session.m_ent, ClientStates::AWAITING_GURNEY_XFER);
+    sendClientState(session, ClientStates::AWAITING_GURNEY_XFER);
+    sendDeadNoGurney(session);
+    */
+    // otherwise
+    // Set statemode to Resurrect
+    setStateMode(*session.m_ent, ClientStates::RESURRECT);
+    // TODO: spawn in hospital, resurrect animations, "summoning sickness"
+    revivePlayer(*session.m_ent, ReviveLevel::FULL);
+}
+
+void MapInstance::on_dead_no_gurney_ok(DeadNoGurneyOK *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DeadNoGurneyOK";
+
+    // Set statemode to Ressurrect
+    setStateMode(*session.m_ent, ClientStates::RESURRECT);
+    revivePlayer(*session.m_ent, ReviveLevel::FULL);
+
+    // TODO: Spawn where you go with no gurneys (no hospitals)
 }
 
 void MapInstance::on_browser_close(BrowserClose *ev)

@@ -32,6 +32,16 @@ enum class TrayItemType : uint32_t
     Count                   = 7,
 };
 
+enum class ReviveLevel
+{
+    AWAKEN              = 1,
+    BOUNCE_BACK         = 2,
+    RESTORATION         = 3,
+    IMMORTAL_RECOVERY   = 4,
+    REGEN_REVIVE        = 5,
+    FULL                = 6,
+};
+
 struct PowerStance
 {
     bool        has_stance  = false;

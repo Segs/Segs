@@ -599,6 +599,10 @@ void sendCommands(const EntitiesResponse &src,BitStream &tgt)
     tgt.StoreFloat(4.0f);
     tgt.StorePackedBits(1,3); // use 'time step scale' shortcut
     tgt.StoreFloat(2.0f);
+    tgt.StorePackedBits(1,4); // use 'pause' shortcut
+    tgt.StorePackedBits(1,0); // if `true` no calcs happen
+    tgt.StorePackedBits(1,5); // use 'disablegurneys' shortcut
+    tgt.StorePackedBits(1,0); // if `false` spawn instantly
     tgt.StorePackedBits(1,0);
 }
 

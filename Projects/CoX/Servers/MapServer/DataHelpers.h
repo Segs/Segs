@@ -8,7 +8,6 @@
 #pragma once
 #include "Events/MessageChannels.h"
 #include "Events/FloatingInfoStyles.h"
-#include "Events/ClientStates.h"
 #include "glm/vec3.hpp"
 #include <QString>
 #include <cstdint>
@@ -29,7 +28,7 @@ class TradeMember;
 struct ContactEntry;
 struct Destination;
 struct PowerStance;
-
+enum class ClientStates : uint8_t;
 
 /*
  * Entity Methods
@@ -44,7 +43,8 @@ glm::vec3   getSpeed(const Entity &e);
 float       getBackupSpd(const Entity &e);
 float       getJumpHeight(const Entity &e);
 uint8_t     getUpdateId(const Entity &e);
-Destination getCurrentDestination(const Entity &e);
+Destination     getCurrentDestination(const Entity &e);
+ClientStates    getStateMode(const Entity &e);
 
 // Setters
 void    setDbId(Entity &e, uint8_t val);
@@ -58,6 +58,7 @@ void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t s
 void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e);
 void    setCurrentDestination(Entity &e, int point_idx, glm::vec3 location);
+void    setStateMode(Entity &e, ClientStates state);
 
 // For live debugging
 void    setu1(Entity &e, int val);
@@ -86,7 +87,6 @@ Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
-void    on_awaiting_dead_no_gurney_test(MapClientSession &session);
 bool    isFriendOnline(Entity &src, uint32_t db_id);
 void    setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits);
 
@@ -109,7 +109,7 @@ void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
  */
 void sendTimeStateLog(MapClientSession &src, uint32_t control_log);
 void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000);
-void sendClientState(MapClientSession &ent, ClientStates client_state);
+void sendClientState(MapClientSession &sess, ClientStates client_state);
 void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount);
@@ -122,7 +122,7 @@ void sendSidekickOffer(Entity *tgt, uint32_t src_db_id);
 void sendTeamLooking(Entity *tgt);
 void sendTeamOffer(Entity *src, Entity *tgt);
 void sendFaceEntity(Entity &src, int32_t tgt_idx);
-void sendFaceLocation(Entity &src, glm::vec3 &location);
+void sendFaceLocation(Entity &src, glm::vec3 &loc);
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg);
 void sendBrowser(MapClientSession &tgt, QString &content);
 void sendTradeOffer(const Entity& src, Entity& tgt);
@@ -135,6 +135,7 @@ void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_
 void sendContactDialogClose(MapClientSession &src);
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
 void sendStance(MapClientSession &src, PowerStance stance);
+void sendDeadNoGurney(MapClientSession &sess);
 
 const QString &getGenericTitle(uint32_t val);
 const QString &getOriginTitle(uint32_t val);
@@ -157,3 +158,16 @@ void increaseLevel(Entity &ent);
  * Team related helpers
  */
 void findTeamMember(Entity &tgt);
+
+
+/*
+ * Lua Functions
+ */
+void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variation);
+void giveEnhancement(MapClientSession *cl, const char* name, int level);
+void giveDebt(MapClientSession *cl, int debt);
+void giveEnd(MapClientSession *cl, float end);
+void giveHp(MapClientSession *cl, float hp);
+void giveInf(MapClientSession *cl, int inf);
+void giveInsp(MapClientSession *cl, const char *value);
+void giveXp(MapClientSession *cl, int xp);

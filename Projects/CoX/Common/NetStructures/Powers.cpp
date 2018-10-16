@@ -720,6 +720,12 @@ void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
         "Phenomenal_Luck",
     };
 
+    QStringList revive_names = {
+        "Awaken",
+        "Bounce_Back",
+        "Restoration",
+    };
+
     if(health_names.contains(insp->m_name, Qt::CaseInsensitive))
         setHP(*ent.m_char, getHP(*ent.m_char) + 15);
 
@@ -734,7 +740,24 @@ void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
         buff.m_activate_period = 30.0f; // hardcoded for now
         ent.m_buffs.push_back(buff);
         ent.m_update_buffs = true;
-        return;
+    }
+
+    if(revive_names.contains(insp->m_name, Qt::CaseInsensitive))
+    {
+        if(getHP(*ent.m_char) > 0.0)
+            return;
+
+        ReviveLevel lvl;
+        if(insp->m_name.contains(revive_names[0], Qt::CaseInsensitive))
+            lvl = ReviveLevel::AWAKEN;
+        else if(insp->m_name.contains(revive_names[1], Qt::CaseInsensitive))
+            lvl = ReviveLevel::BOUNCE_BACK;
+        else if(insp->m_name.contains(revive_names[2], Qt::CaseInsensitive))
+            lvl = ReviveLevel::RESTORATION;
+        else
+            lvl = ReviveLevel::IMMORTAL_RECOVERY;
+
+        revivePlayer(ent, lvl);
     }
 }
 
