@@ -337,12 +337,12 @@ void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, 
     uint32_t timestamp = 0;
 
     EmailSendMessage* msgToHandler = new EmailSendMessage({
-                                                            sess.m_ent->m_char->m_db_id,
-                                                            sess.m_ent->m_char->getName(),    // -> sender
-                                                            recipient_name,
-                                                            subject,
-                                                            message,
-                                                            timestamp},
+                sess.m_ent->m_char->m_db_id,
+                sess.m_ent->m_char->getName(),    // -> sender
+                recipient_name,
+                subject,
+                message,
+                timestamp},
                 sess.link()->session_token());
 
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);

@@ -857,7 +857,7 @@ void cmdHandler_SetSequence(const QString &cmd, MapClientSession &sess)
     sess.m_ent->m_seq_move_change_time = time;
 }
 
- void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
+void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
 {
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
