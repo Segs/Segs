@@ -1903,7 +1903,7 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
-    sendEmailHeaders(sess);
+
 }
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
