@@ -446,8 +446,8 @@ void MapInstance::dispatch( Event *ev )
         case evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
-        case evEmailHeaderResponse:
-            on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
+        case evEmailHeaderToClientMessage:
+            on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev));
             break;
         case evEmailHeadersToClientMessage:
             on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev));
@@ -458,8 +458,8 @@ void MapInstance::dispatch( Event *ev )
         case evEmailWasReadByRecipientMessage:
             on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
             break;
-        case evEmailSendErrorMessage:
-            on_email_send_error(static_cast<EmailSendErrorMessage *>(ev));
+        case evEmailCreateStatusMessage:
+            on_email_create_status(static_cast<EmailCreateStatusMessage *>(ev));
             break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
@@ -2612,7 +2612,7 @@ void MapInstance::send_player_update(Entity *e)
 }
 
 // EmailHandler will send this event here
-void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
+void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
 {
     EmailHeaders *header = new EmailHeaders(
                     ev->m_data.m_email_id,
@@ -2663,10 +2663,12 @@ void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg
     // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
 }
 
-void MapInstance::on_email_send_error(EmailSendErrorMessage *msg)
+void MapInstance::on_email_create_status(EmailCreateStatusMessage *msg)
 {
     MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_error_message, map_session);
+
+    EmailMessageStatus* msg_status = new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient);
+    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(msg_status));
 }
 
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)

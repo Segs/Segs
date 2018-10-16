@@ -1943,10 +1943,6 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
     }
 
     sendEmail(sess, result[1], result[3], result[4]);
-
-    QString msg = "Email Sent to recipient: " + result[1];
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)

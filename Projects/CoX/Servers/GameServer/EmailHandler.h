@@ -17,10 +17,10 @@
 
 namespace SEGSEvents
 {
-    struct EmailHeaderRequest;
     struct EmailSendMessage;
     struct EmailReadRequest;
     struct EmailDeleteMessage;
+    struct EmailCreateStatusMessage;
     struct ClientConnectedMessage;
     struct ClientDisconnectedMessage;
     struct GetEmailsResponse;
@@ -60,13 +60,13 @@ private:
     // EventProcessor interface
     void dispatch(SEGSEvents::Event *ev) override;
 
-    void on_email_header(SEGSEvents::EmailHeaderRequest* msg);
     void on_email_send(SEGSEvents::EmailSendMessage* msg);
     void on_email_read(SEGSEvents::EmailReadRequest* msg);
     void on_email_delete(SEGSEvents::EmailDeleteMessage* msg);
     void on_client_connected(SEGSEvents::ClientConnectedMessage* msg);
     void on_client_disconnected(SEGSEvents::ClientDisconnectedMessage *msg);
     void on_email_create_response(SEGSEvents::EmailCreateResponse* msg);
+    void on_email_create_status(SEGSEvents::EmailCreateStatusMessage* msg);
     void on_get_emails_response(SEGSEvents::GetEmailsResponse* msg);
     void on_fill_email_recipient_id_response(SEGSEvents::FillEmailRecipientIdResponse* msg);
     void on_fill_email_recipient_id_error(SEGSEvents::FillEmailRecipientIdErrorMessage* msg);

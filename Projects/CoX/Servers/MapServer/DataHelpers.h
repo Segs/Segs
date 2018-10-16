@@ -143,7 +143,6 @@ const QString &getOriginTitle(uint32_t val);
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
-void sendEmailHeaders(MapClientSession& sess);
 void readEmailMessage(MapClientSession& sess, const uint32_t email_id);
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message);
 void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
@@ -171,3 +170,6 @@ void giveHp(MapClientSession *cl, float hp);
 void giveInf(MapClientSession *cl, int inf);
 void giveInsp(MapClientSession *cl, const char *value);
 void giveXp(MapClientSession *cl, int xp);
+
+// to get the current time since whatever they set as their beginning
+uint32_t getCurrentTime();
