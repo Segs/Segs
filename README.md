@@ -158,6 +158,37 @@ cmake ..
 make
 ```
 
+**ADVANCED: Using Build Scripts**
+
+If you're using docker, run the following commands
+
+```
+cp activate.env.template activate.env
+source activate.env # set ENV variables and add ./scripts to PATH
+
+docker-build Dockerfile # build the docker image (only needed once)
+docker-up # Ctrl-D to run in background
+
+docker-forward segs bootstrap # set up cmake / clean build
+docker-forward segs build # build all components
+docker-forward segs build gameserver_lib # build a single component
+```
+
+This will also run on Ubuntu 18.04 with the following:
+
+```
+cp activate.env.template activate.env
+source activate.env # set ENV variables and add ./scripts to PATH
+
+sudo segs install_deps_ubuntu # install development tools (only needed once)
+
+segs bootstrap # set up cmake / clean build
+segs build # build all components
+segs build gameserver_lib # build a single component
+```
+
+Note: if you choose not to `source activate.env`, you can run the commands via `scripts/segs` instead
+
 
 CONTRIBUTE TO DEVELOPMENT
 ------
