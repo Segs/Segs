@@ -1,3 +1,4 @@
+# Test build trigger
 language: generic # prevent travis from overriding provided compilers.
 cache:
   ccache: true # includes $HOME/.ccache and adds /usr/lib/ccache to $PATH
