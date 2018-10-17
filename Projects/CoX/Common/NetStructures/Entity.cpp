@@ -62,28 +62,6 @@ void Entity::beginLogout(uint16_t time_till_logout)
     m_time_till_logout = time_till_logout*1000;
 }
 
-void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &data)
-{
-    QString description;
-    QString battlecry;
-    e.m_type = EntType(src.GetPackedBits(1));
-    e.m_char->GetCharBuildInfo(src);
-    e.m_char->recv_initial_costume(src,data.getPacker());
-    e.m_char->m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
-    if(e.m_char->m_char_data.m_has_the_prefix)
-        e.m_char->m_char_data.m_has_titles = true;
-    src.GetString(battlecry);
-    src.GetString(description);
-    setBattleCry(*e.m_char,battlecry);
-    setDescription(*e.m_char,description);
-    e.m_entity_data.m_origin_idx = getEntityOriginIndex(data,true, getOrigin(*e.m_char));
-    e.m_entity_data.m_class_idx = getEntityClassIndex(data,true, getClass(*e.m_char));
-    e.m_player->m_keybinds.resetKeybinds(data.m_keybind_profiles);
-    e.m_is_hero = true;
-
-    e.m_direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
-}
-
 const QString &Entity::name() const
 {
     return m_char->getName();
@@ -129,57 +107,6 @@ Entity::Entity()
 Entity::~Entity()
 {
 
-}
-
-void initializeNewPlayerEntity(Entity &e)
-{
-    e.m_costume_type                    = AppearanceType::WholeCostume;
-    e.m_destroyed                       = false;
-    e.m_type                            = EntType::PLAYER; // 2
-    e.m_create_player                   = true;
-    e.m_is_hero                         = true;
-    e.m_is_villian                      = false;
-    e.m_entity_data.m_origin_idx        = {0};
-    e.m_entity_data.m_class_idx         = {0};
-    e.m_hasname                         = true;
-    e.m_has_supergroup                  = false;
-    e.m_has_team                        = false;
-    e.m_pchar_things                    = true;
-    e.m_target_idx                      = e.m_idx;
-    e.m_assist_target_idx               = 0;
-
-    e.m_char = std::make_unique<Character>();
-    e.m_player = std::make_unique<PlayerData>();
-    e.m_player->reset();
-    e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anim = e.m_rare_update   = true;
-}
-
-void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant)
-{
-    e.m_costume_type                    = AppearanceType::NpcCostume;
-    e.m_destroyed                       = false;
-    e.m_type                            = EntType::NPC; // 2
-    e.m_create_player                   = false;
-    e.m_is_hero                         = false;
-    e.m_is_villian                      = true;
-    e.m_entity_data.m_origin_idx        = {0};
-    e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
-    e.m_hasname                         = true;
-    e.m_has_supergroup                  = false;
-    e.m_has_team                        = false;
-    e.m_pchar_things                    = false;
-    e.m_faction_data.m_has_faction      = true;
-    e.m_faction_data.m_rank             = src->m_Rank;
-    e.m_target_idx                      = 0;
-    e.m_assist_target_idx               = 0;
-
-    e.m_char = std::make_unique<Character>();
-    e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
-    e.m_player.reset();
-    e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anim = e.m_rare_update   = true;
-    e.m_char->m_char_data.m_level       = src->m_Level;
 }
 
 //! @}

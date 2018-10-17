@@ -12,6 +12,27 @@
 
 class Entity;
 
+enum class TradeSystemMessages
+{
+    SUCCESS,
+    GENERIC_FAILURE=1,
+    NOT_ENOUGH_ROOM_INFLUENCE,
+    NOT_ENOUGH_ROOM_ENHANCEMENTS,
+    NOT_ENOUGH_ROOM_INSPIRATIONS,
+    SRC_ALREADY_IN_TRADE,
+    TGT_ALREADY_IN_TRADE,
+    SRC_CONSIDERING_ANOTHER_TRADE,
+    TGT_CONSIDERING_ANOTHER_TRADE,
+    SEND_TRADE_OFFER,
+    TRADE_REQUEST_IS_VALID,
+    HAS_SENT_NO_TRADE,
+    TGT_RECV_NO_TRADE,
+    SRC_RECV_NO_TRADE,
+    NOT_CONSIDERING_TRADE,
+    ACCEPTED_TRADE,
+    DECLINED_TRADE,
+};
+
 struct TradeInspiration
 {
     TradeInspiration() = default;
@@ -87,9 +108,9 @@ public:
 };
 
 
-void requestTrade(Entity& src, Entity& tgt);
-void acceptTrade(Entity& src, Entity& tgt);
-void declineTrade(Entity& src, Entity& tgt);
-void cancelTrade(Entity& src);
-void updateTrade(Entity& src, const TradeInfo& info);
+TradeSystemMessages requestTrade(Entity& src, Entity& tgt);
+TradeSystemMessages acceptTrade(Entity& src, Entity& tgt);
+TradeSystemMessages declineTrade(Entity& src, Entity& tgt);
+TradeSystemMessages updateTrade(Entity& src, Entity &tgt, const TradeInfo& info);
 void discardTrade(Entity& src);
+void finishTrade(Entity& src, Entity& tgt);

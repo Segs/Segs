@@ -30,7 +30,6 @@ class Team;
 class Trade;
 class Character;
 struct PlayerData;
-class GameDataStore;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 
 
@@ -328,7 +327,3 @@ static  void                sendPvP(BitStream &bs);
         void                fillFromCharacter(const GameDataStore &data);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
 };
-
-void initializeNewPlayerEntity(Entity &e);
-void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
-void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);

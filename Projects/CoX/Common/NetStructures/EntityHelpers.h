@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "CommonNetStructures.h"
 #include "glm/vec3.hpp"
 #include <stdint.h>
 #include <QString>
@@ -16,6 +17,8 @@ struct PlayerData;
 struct EntityData;
 struct Destination;
 struct PowerStance;
+struct Parse_NPC;
+class GameDataStore;
 enum class ClientStates : uint8_t;
 enum class ReviveLevel;
 
@@ -77,6 +80,9 @@ void    toggleLFG(Entity &e);
 
 // Misc Methods
 void abortLogout(Entity *e);
+void initializeNewPlayerEntity(Entity &e);
+void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
+void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
 void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
 void revivePlayer(Entity &e, ReviveLevel lvl);

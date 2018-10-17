@@ -1796,11 +1796,37 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
 {
     Entity* const tgt = getEntityFromCommand(cmd, sess);
     if (tgt == nullptr || sess.m_ent == nullptr)
-    {
         return;
+
+    QString msg, tgt_msg;
+    TradeSystemMessages result;
+    result = requestTrade(*sess.m_ent, *tgt);
+
+    switch(result)
+    {
+    case TradeSystemMessages::SRC_ALREADY_IN_TRADE:
+        msg = "You are already in a trade.";
+        break;
+    case TradeSystemMessages::SRC_CONSIDERING_ANOTHER_TRADE:
+        msg = "You are already considering a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_ALREADY_IN_TRADE:
+        msg = tgt->name() + " is already in a trade.";
+        break;
+    case TradeSystemMessages::TGT_CONSIDERING_ANOTHER_TRADE:
+        msg = tgt->name() + " is already considering a trade offer.";
+        break;
+    case TradeSystemMessages::SEND_TRADE_OFFER:
+        sendTradeOffer(*tgt->m_client, sess.m_ent->name()); // send tradeOffer
+        msg = QString("You sent a trade request to %1.").arg(tgt->name());
+        tgt_msg = sess.m_ent->name() + " sent a trade request.";
+        sendInfoMessage(MessageChannel::SERVER, tgt_msg, *tgt->m_client);
+        break;
+    default:
+        msg = "Something went wrong with trade request!"; // this should never happen
     }
 
-    requestTrade(*sess.m_ent, *tgt);
+    sendInfoMessage(MessageChannel::SERVER, msg, *sess.m_ent->m_client);
 }
 
 void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
@@ -1989,7 +2015,32 @@ void cmdHandler_TradeAccept(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    acceptTrade(*sess.m_ent, *from_ent);
+    QString msg, tgt_msg;
+    TradeSystemMessages result;
+    result = acceptTrade(*sess.m_ent, *from_ent);
+
+    switch(result)
+    {
+    case TradeSystemMessages::HAS_SENT_NO_TRADE:
+        msg = "You have not sent a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_RECV_NO_TRADE:
+        msg = QString("%1 has not received a trade offer.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::SRC_RECV_NO_TRADE:
+        msg = QString("You are not considering a trade offer from %1.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::ACCEPTED_TRADE:
+        sendTradeInit(*sess.m_ent->m_client, *from_ent->m_client); // Initiate trade
+        msg = QString("You accepted the trade invite from %1.").arg(from_ent->name());
+        tgt_msg = sess.m_ent->name() + " accepted your trade invite.";
+        sendInfoMessage(MessageChannel::SERVER, tgt_msg, *from_ent->m_client);
+        break;
+    default:
+        msg = "Something went wrong with trade accept!"; // this should never happen
+    }
+
+    sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
@@ -1998,7 +2049,7 @@ void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
     const QStringList args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
     if (args.size() < 4)
     {
-        qWarning() << "Wrong number of arguments for TradeAccept:" << cmd;
+        qWarning() << "Wrong number of arguments for TradeDecline:" << cmd;
         discardTrade(*sess.m_ent);
         return;
     }
@@ -2012,7 +2063,31 @@ void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    declineTrade(*sess.m_ent, *from_ent);
+    QString msg, tgt_msg;
+    TradeSystemMessages result;
+    result = declineTrade(*sess.m_ent, *from_ent);
+
+    switch(result)
+    {
+    case TradeSystemMessages::HAS_SENT_NO_TRADE:
+        msg = "You have not sent a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_RECV_NO_TRADE:
+        msg = QString("%1 has not received a trade offer.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::SRC_RECV_NO_TRADE:
+        msg = QString("You are not considering a trade offer from %1.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::DECLINED_TRADE:
+        msg = QString("You declined the trade invite from %1.").arg(from_ent->name());
+        tgt_msg = sess.m_ent->name() + " declined your trade invite.";
+        sendInfoMessage(MessageChannel::SERVER, tgt_msg, *from_ent->m_client);
+        break;
+    default:
+        msg = "Something went wrong with trade decline!"; // this should never happen
+    }
+
+    sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src)
