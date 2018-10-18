@@ -7,22 +7,18 @@
 
 #pragma once
 #include "GameCommand.h"
-
 #include "MapEventTypes.h"
-
-#include <QtCore/QString>
-
-
-class QString;
 
 namespace SEGSEvents
 {
+
 // [[ev_def:type]]
 class ChatDividerMoved : public MapLinkEvent
 {
 public:
     // [[ev_def:field]]
     float m_position;
+
     ChatDividerMoved() : MapLinkEvent(MapEventTypes::evChatDividerMoved) {}
 
     // SerializableEvent interface
@@ -30,5 +26,6 @@ public:
     void serializeto(BitStream &) const override;
     EVENT_IMPL(ChatDividerMoved)
 };
+
 } // end of SEGSEvents namespace
 

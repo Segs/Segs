@@ -77,20 +77,22 @@ const   QString &       getName() const { return m_name; }
         void            serializeto(BitStream &buffer) const;
         void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
-        void            finalizeLevel(const GameDataStore &data);
-        void            addStartingInspirations(const GameDataStore &data, QStringList &starting_insps);
-        void            getStartingPowers(const GameDataStore &data, const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
-        void            getPowerFromBuildInfo(const GameDataStore &data,BitStream &src);
+        void            finalizeLevel();
+        void            addStartingInspirations(QStringList &starting_insps);
+        void            addStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
+        void            addPowersByLevel(const QString &pcat_name, const QString &pset_name, uint32_t level);
+        void            getPowerFromBuildInfo(BitStream &src);
+        void            finalizeCombatLevel();
         void            sendEnhancements(BitStream &bs) const;
         void            sendInspirations(BitStream &bs) const;
-        void            GetCharBuildInfo(BitStream &src, const GameDataStore &data); // serialize from char creation
+        void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
         const CharacterCostume *getCurrentCostume() const;
         void            setCurrentCostume(uint32_t idx);
         void            saveCostume(uint32_t idx, CharacterCostume &new_costume);
-        void            DumpSidekickInfo();
-        void            DumpBuildInfo();
+        void            dumpSidekickInfo();
+        void            dumpBuildInfo();
         void            face_bits(uint32_t){}
         void            dump();
         void            sendFullStats(BitStream &bs) const;
@@ -107,6 +109,7 @@ const   QString &       getName() const { return m_name; }
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;
+        bool                m_in_training   = false;
 
 protected:
         uint8_t         m_index;

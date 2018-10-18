@@ -568,7 +568,7 @@ static void registerGeometryModifier(GeometryModifiers *mod)
     auto iter = g_tricks_string_hash_tab.find(mod->name.toLower());
     if (iter!=g_tricks_string_hash_tab.end())
     {
-        qDebug() << "duplicate model trick!";
+        qCDebug(logSceneGraph) << "duplicate model trick!";
         return;
     }
     g_tricks_string_hash_tab[mod->name.toLower()]=mod;

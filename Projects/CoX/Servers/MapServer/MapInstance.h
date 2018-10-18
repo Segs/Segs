@@ -57,8 +57,8 @@ class EntityInfoRequest;
 class ChatReconfigure;
 class SwitchViewPoint;
 class SaveClientOptions;
-class SetDefaultPowerSend;
 class SetDefaultPower;
+class UnsetDefaultPower;
 class UnqueueAll;
 class TargetChatChannelSelected;
 class ActivatePower;
@@ -81,14 +81,21 @@ class TrashEnhancement;
 class TrashEnhancementInPower;
 class BuyEnhancementSlot;
 class RecvNewPower;
+class EmailHeaderResponse;
+class EmailReadResponse;
+class EmailWasReadByRecipientMessage;
+class EmailHeadersToClientMessage;
+class EmailSendErrorMessage;
 class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
 class AwaitingDeadNoGurney;
 class BrowserClose;
+class LevelUpResponse;
 class TradeWasCancelledMessage;
 class TradeWasUpdatedMessage;
 class RecvCostumeChange;
+class DeadNoGurneyOK;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -134,7 +141,6 @@ public:
         void                    dispatch(SEGSEvents::Event *ev) override;
 
         const QString &         name() const { return m_data_path; }
-        const GameDataStore &   serverData() const;
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         void                    start(const QString &scenegraph_path);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
@@ -201,8 +207,8 @@ protected:
         void on_chat_reconfigured(SEGSEvents::ChatReconfigure *ev);
         void on_switch_viewpoint(SEGSEvents::SwitchViewPoint *ev);
         void on_client_options(SEGSEvents::SaveClientOptions *ev);
-        void on_set_default_power_send(SEGSEvents::SetDefaultPowerSend *ev);
         void on_set_default_power(SEGSEvents::SetDefaultPower *ev);
+        void on_unset_default_power(SEGSEvents::UnsetDefaultPower *ev);
         void on_unqueue_all(SEGSEvents::UnqueueAll *ev);
         void on_target_chat_channel_selected(SEGSEvents::TargetChatChannelSelected *ev);
         void on_activate_power(SEGSEvents::ActivatePower *ev);
@@ -216,6 +222,11 @@ protected:
         void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
+        void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
+        void on_email_header_response(SEGSEvents::EmailHeaderResponse *ev);
+        void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
+        void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
+        void on_email_send_error(SEGSEvents::EmailSendErrorMessage *ev);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);
@@ -227,8 +238,10 @@ protected:
         void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
         void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
+        void on_dead_no_gurney_ok(SEGSEvents::DeadNoGurneyOK *ev);
         void on_browser_close(SEGSEvents::BrowserClose *ev);
         void on_recv_costume_change(SEGSEvents::RecvCostumeChange *ev);
+        void on_levelup_response(SEGSEvents::LevelUpResponse *ev);
         void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
         void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);
 };

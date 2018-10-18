@@ -15,12 +15,17 @@
 #include "MapServer.h"
 #include "MapInstance.h"
 #include "GameData/GameDataStore.h"
+#include "GameData/ClientStates.h"
 #include "GameData/playerdata_definitions.h"
-#include "GameData/map_definitions.h"
+#include "GameData/power_definitions.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Character.h"
+#include "NetStructures/Contact.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
+#include "Events/EmailHeaders.h"
+#include "Events/EmailRead.h"
+#include "Servers/GameServer/EmailEvents.h"
 #include "MapEvents.h"
 #include "Logging.h"
 
@@ -43,6 +48,8 @@ glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
 float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
 float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
+Destination     getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
+ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
 
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
@@ -130,6 +137,19 @@ void setAssistTarget(Entity &e)
     qCDebug(logTarget) << "Assist Target is:" << getAssistTargetIdx(e);
 }
 
+void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
+{
+    e.m_cur_destination.point_idx = point_idx;
+    e.m_cur_destination.location = location;
+}
+
+void setStateMode(Entity &e, ClientStates state)
+{
+    e.m_rare_update = true; // this must also be true for statemode to send
+    e.m_has_state_mode = true;
+    e.m_state_mode = state;
+}
+
 // For live debugging
 void    setu1(Entity &e, int val) { e.u1 = val; }
 
@@ -154,8 +174,50 @@ void toggleJumppack(Entity &e)
 void    toggleControlsDisabled(Entity &e) { e.m_controls_disabled = !e.m_controls_disabled; }
 void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
-void    toggleExtraInfo(Entity &e) { e.m_extra_info = !e.m_extra_info; }
+void    toggleInterp(Entity &e) { e.m_has_interp = !e.m_has_interp; }
 void    toggleMoveInstantly(Entity &e) { e.m_move_instantly = !e.m_move_instantly; }
+void    toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
+
+void toggleLFG(Entity &e)
+{
+    CharacterData *cd = &e.m_char->m_char_data;
+
+    if(e.m_has_team)
+    {
+        QString errormsg = "You're already on a team! You cannot toggle LFG.";
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
+        errormsg = e.name() + "is already on a team and cannot toggle LFG.";
+        qCDebug(logTeams) << errormsg;
+        removeLFG(e); // just in-case
+        return;
+    }
+
+    if(cd->m_lfg)
+        removeLFG(e);
+    else
+    {
+        addLFG(e);
+        sendTeamLooking(&e);
+    }
+}
+
+void toggleCollision(Entity &e)
+{
+    e.inp_state.m_no_collision = !e.inp_state.m_no_collision;
+
+    if (e.inp_state.m_no_collision)
+        e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
+    else
+        e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
+     qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.inp_state.m_no_collision;
+}
+
+void toggleMovementAuthority(Entity &e)
+{
+    toggleFullUpdate(e);
+    toggleControlId(e);
+}
+
 
 // Misc Methods
 void charUpdateDB(Entity *e)
@@ -245,40 +307,93 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
-void on_awaiting_dead_no_gurney_test(MapClientSession &session)
+void sendEmailHeaders(MapClientSession &sess)
 {
-    session.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<DeadNoGurney>(new DeadNoGurney()));
-}
-
-void sendEmailHeaders(Entity *e)
-{
-    if(!e->m_client)
+    if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
         return;
     }
-    MapClientSession *src = e->m_client;
 
-    EmailHeaders *header = new EmailHeaders(152, "TestSender ", "TEST", 576956720);
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    // later on the email id should be auto-incremented from DB
+    EmailHeaderRequest* msgToHandler = new EmailHeaderRequest({
+                                        sess.m_ent->m_char->m_db_id,
+                                        sess.m_ent->m_char->getName(),
+                                        "TEST", 576956720},
+                sess.link()->session_token());
+    EventProcessor* tgt = HandlerLocator::getEmail_Handler();
+    tgt->putq(msgToHandler);
 }
 
-void readEmailMessage(Entity *e, const int id){
-    if(!e->m_client)
+void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
+{
+    if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
         return;
     }
-    MapClientSession *src = e->m_client;
 
-    EmailRead *msg = new EmailRead(id, "https://youtu.be/PsCKnxe8hGY\\nhttps://youtu.be/dQw4w9WgXcQ", "TestSender");
-    src->addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(msg));
+    uint32_t timestamp = 0;
+
+    EmailSendMessage* msgToHandler = new EmailSendMessage({
+                                                            sess.m_ent->m_char->m_db_id,
+                                                            sess.m_ent->m_char->getName(),    // -> sender
+                                                            recipient_name,
+                                                            subject,
+                                                            message,
+                                                            timestamp},
+                sess.link()->session_token());
+
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
+
+void readEmailMessage(MapClientSession& sess, const uint32_t email_id)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    EmailReadRequest* msgToHandler = new EmailReadRequest({email_id}, sess.link()->session_token());
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+}
+
+void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id)
+{
+    if(!sess.m_ent->m_client)
+    {
+        qWarning() << "m_client does not yet exist!";
+        return;
+    }
+
+    EmailDeleteMessage* msgToHandler = new EmailDeleteMessage({email_id}, sess.link()->session_token());
+    HandlerLocator::getEmail_Handler()->putq(msgToHandler);
+}
+
+bool isFriendOnline(Entity &src, uint32_t db_id)
+{
+    // TODO: src is needed for mapclient
+    return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
+}
+
+void setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits)
+{
+    g_interpolating = active;
+    g_interpolation_level = level;
+    g_interpolation_bits = bits;
+     QString output = QString("Setting Interpolation Settings (active, level, bits): %1, %2, %3")
+            .arg(g_interpolating)
+            .arg(g_interpolation_level)
+            .arg(g_interpolation_bits);
+     sendInfoMessage(MessageChannel::DEBUG_INFO, output, *sess);
+    qCDebug(logPosition) << output;
+}
+
 
 /*
- * Character Methods
+ * Titles -- TODO: get titles from texts/English/titles_def
  */
-// TODO: get titles from texts/English/titles_def
 static const QStringList g_generic_titles =
 {
     "NULL",
@@ -327,67 +442,15 @@ static const QStringList g_origin_titles =
     "Venturous",
     "Watchful",
 };
+
 const QString &getGenericTitle(uint32_t val)
 {
     return g_generic_titles.at(val);
 }
+
 const QString &getOriginTitle(uint32_t val)
 {
     return g_origin_titles.at(val);
-}
-
-QString getMapPath(const EntityData &ed)
-{
-    return getMapPath(ed.m_map_idx);
-}
-
-QString getEntityDisplayMapName(const EntityData &ed)
-{
-    return getDisplayMapName(ed.m_map_idx);
-}
-
-const QString &getFriendDisplayMapName(const Friend &f)
-{
-    static const QString offline(QStringLiteral("OFFLINE"));
-    if (!f.m_online_status)
-        return offline;
-    return getDisplayMapName(f.m_map_idx);
-}
-
-void toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
-
-/*
- * Looking For Group
- */
-void toggleLFG(Entity &e)
-{
-    CharacterData *cd = &e.m_char->m_char_data;
-
-    if(e.m_has_team)
-    {
-        QString errormsg = "You're already on a team! You cannot toggle LFG.";
-        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
-        errormsg = e.name() + "is already on a team and cannot toggle LFG.";
-        qCDebug(logTeams) << errormsg;
-        removeLFG(e); // just in-case
-        return;
-    }
-
-    if(cd->m_lfg)
-        removeLFG(e);
-    else
-    {
-        addLFG(e);
-        sendTeamLooking(&e);
-    }
-}
-
-/*
- * getMapServerData Wrapper to provide access to NetStructures
- */
-GameDataStore *getMapServerData()
-{
-    return &g_GlobalMapServer->runtimeData();
 }
 
 /*
@@ -413,10 +476,10 @@ void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000)
     src.addCommand<TimeUpdate>(sec_since_jan_1_2000);
 }
 
-void sendClientState(MapClientSession &ent, ClientStates client_state)
+void sendClientState(MapClientSession &sess, ClientStates client_state)
 {
-    qCDebug(logSlashCommand) << "Sending ClientState:" << QString::number(client_state);
-    ent.addCommand<SetClientState>(client_state);
+    qCDebug(logSlashCommand) << "Sending ClientState:" << uint8_t(client_state);
+    sess.addCommand<SetClientState>(client_state);
 }
 
 void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name)
@@ -437,10 +500,10 @@ void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount
     src.addCommand<FloatingDamage>(src.m_ent->m_idx, tgt_idx, amount);
 }
 
-void sendLevelUp(Entity *tgt)
+void sendLevelUp(MapClientSession &src)
 {
-    //qCDebug(logSlashCommand) << "Sending LevelUp:" << tgt->m_idx;
-    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<LevelUp>(new LevelUp()));
+    //qCDebug(logSlashCommand) << "Sending LevelUp:" << src.m_idx;
+    src.addCommand<LevelUp>();
 }
 
 void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy)
@@ -496,16 +559,16 @@ void sendTeamOffer(Entity *src, Entity *tgt)
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
 }
 
-void sendFaceEntity(Entity *src, uint8_t tgt_idx)
+void sendFaceEntity(Entity &src, int32_t tgt_idx)
 {
     qCDebug(logOrientation) << QString("Sending Face Entity to %1").arg(tgt_idx);
-    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceEntity>(new FaceEntity(tgt_idx)));
+    src.m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceEntity>(new FaceEntity(tgt_idx)));
 }
 
-void sendFaceLocation(Entity *src, glm::vec3 &loc)
+void sendFaceLocation(Entity &src, glm::vec3 &loc)
 {
     qCDebug(logOrientation) << QString("Sending Face Location to x: %1 y: %2 z: %3").arg(loc.x).arg(loc.y).arg(loc.z);
-    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceLocation>(new FaceLocation(loc)));
+    src.m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceLocation>(new FaceLocation(loc)));
 }
 
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg)
@@ -524,434 +587,6 @@ void sendTailorOpen(MapClientSession &tgt)
 {
     qCDebug(logTailor) << QString("Sending TailorOpen");
     tgt.addCommand<TailorOpen>();
-}
-
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx, uint32_t tgt_id)
-{
-    // Add to activepowers queue
-    CharacterPower * ppower = nullptr;
-    ppower = getOwnedPower(ent, pset_idx, pow_idx);
-    if(ppower != nullptr && !ppower->m_name.isEmpty())
-        ent.m_queued_powers.push_back(ppower);
-
-    float endurance = getEnd(*ent.m_char);
-    float end_cost = std::max(ppower->m_power_tpl.EnduranceCost, 1.0f);
-
-    qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
-    if(end_cost > endurance)
-    {
-        QString msg = "Not enough endurance to use power" + ppower->m_name;
-        messageOutput(MessageChannel::DEBUG_INFO, msg, ent);
-        return;
-    }
-
-    setEnd(*ent.m_char, endurance-end_cost);
-
-    // TODO: Do actual power stuff. For now, be silly.
-    QStringList batman_kerpow{"AIEEE!", "ARRRGH!", "AWKKKKKK!", "BAM!", "BANG!", "BAP!",
-                     "BIFF!", "BLOOP!", "BLURP!", "BOFF!", "BONK!", "CLANK!",
-                     "CLASH!", "CLUNK!", "CRAAACK!", "CRASH!", "CRUNCH!", "EEE-YOW!",
-                     "FLRBBBBB!", "GLIPP!", "GLURPP!", "KAPOW!", "KER-PLOP!", "KLONK!",
-                     "KRUNCH!", "OOOFF!", "OUCH!", "OWWW!", "PAM!", "PLOP!",
-                     "POW!", "POWIE!", "QUNCKKK!", "RAKKK!", "RIP!", "SLOSH!",
-                     "SOCK!", "SPLAAT!", "SWAAP!", "SWISH!", "SWOOSH!", "THUNK!",
-                     "THWACK!", "THWAPP!", "TOUCHÉ!", "UGGH!", "URKK!", "VRONK!",
-                     "WHACK!", "WHAMM!", "WHAP!", "ZAM!", "ZAP!", "ZGRUPPP!",
-                     "ZLONK!", "ZLOPP!", "ZLOTT!", "ZOK!", "ZOWIE!", "ZWAPP!"};
-
-    std::random_device rng;
-    std::mt19937 urng(rng());
-    std::shuffle(batman_kerpow.begin(), batman_kerpow.end(), urng);
-    QString floating_msg = batman_kerpow.first();
-    QString console_msg;
-    assert(ent.m_client);
-    sendFloatingInfo(*ent.m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-
-    if(tgt_idx == ent.m_idx) // Skip the rest if targeting self.
-        return;
-
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx << tgt_id;
-        return;
-    }
-
-    // calculate damage
-    float damage = 1.0f;
-
-    // Send message to source
-    console_msg = floating_msg + " You hit " + target_ent->name() + " for " + QString::number(damage) + " damage!";
-    messageOutput(MessageChannel::COMBAT, console_msg, ent);
-
-    if(target_ent->m_type != EntType::PLAYER)
-        return;
-
-    // Send message to target
-    assert(target_ent->m_client);
-
-    sendFloatingInfo(*target_ent->m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    console_msg = floating_msg + " You were hit by " + ent.name() + " for " + QString::number(damage) + " damage!";
-    messageOutput(MessageChannel::COMBAT, console_msg, *target_ent);
-
-    // Deal Damage
-    sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
-    setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
-}
-void addFriend(Entity &src, const Entity &tgt)
-{
-    QString msg;
-    FriendsList &src_data(src.m_char->m_char_data.m_friendlist);
-
-    if(src_data.m_friends_count >= g_max_friends)
-    {
-        msg = "You cannot have more than " + QString::number(g_max_friends) + " friends.";
-        qCDebug(logFriends).noquote() << msg;
-        messageOutput(MessageChannel::USER_ERROR, msg, src);
-        return; // break early
-    }
-
-    src_data.m_has_friends = true;
-    src_data.m_friends_count++;
-
-    Friend f;
-    f.m_online_status   = (tgt.m_client != nullptr); // need some other method for this.
-    f.m_db_id           = tgt.m_db_id;
-    f.m_name            = tgt.name();
-    f.m_class_idx       = tgt.m_entity_data.m_class_idx;
-    f.m_origin_idx      = tgt.m_entity_data.m_origin_idx;
-    f.m_map_idx         = tgt.m_entity_data.m_map_idx;
-    f.m_mapname         = getEntityDisplayMapName(tgt.m_entity_data);
-
-    // add to friendlist
-    src_data.m_friends.emplace_back(f);
-    qCDebug(logFriends) << "friendslist size:" << src_data.m_friends_count << src_data.m_friends.size();
-
-    msg = "Adding " + tgt.name() + " to your friendlist.";
-    qCDebug(logFriends).noquote() << msg;
-    messageOutput(MessageChannel::FRIENDS, msg, src);
-
-    if(logFriends().isDebugEnabled())
-        dumpFriends(src);
-
-    sendFriendsListUpdate(&src, src_data); // Send FriendsListUpdate
-}
-
-void removeFriend(Entity &src, QString friend_name)
-{
-    QString msg;
-    FriendsList &src_data(src.m_char->m_char_data.m_friendlist);
-
-    qCDebug(logFriends) << "Searching for friend" << friend_name << "to remove them.";
-
-    QString lower_name = friend_name.toLower();
-    auto iter = std::find_if( src_data.m_friends.begin(), src_data.m_friends.end(),
-                              [lower_name](const Friend& f)->bool {return lower_name==f.m_name.toLower();});
-
-    if(iter!=src_data.m_friends.end())
-    {
-        msg = "Removing " + iter->m_name + " from your friends list.";
-        iter = src_data.m_friends.erase(iter);
-
-        qCDebug(logFriends) << msg;
-        if(logFriends().isDebugEnabled())
-            dumpFriends(src);
-    }
-    else
-        msg = friend_name + " is not on your friends list.";
-
-    if(src_data.m_friends.empty())
-        src_data.m_has_friends = false;
-
-    src_data.m_friends_count = src_data.m_friends.size();
-
-    qCDebug(logFriends).noquote() << msg;
-    messageOutput(MessageChannel::FRIENDS, msg, src);
-
-    // Send FriendsListUpdate
-    sendFriendsListUpdate(&src, src_data);
-}
-
-bool isFriendOnline(Entity &src, uint32_t db_id)
-{
-    // TODO: src is needed for mapclient
-    return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
-}
-
-
-void findTeamMember(Entity &tgt)
-{
-    sendTeamLooking(&tgt);
-}
-bool inviteTeam(Entity &src, Entity &tgt)
-{
-    if(src.name() == tgt.name())
-    {
-        qCDebug(logTeams) << "You cannot invite yourself to a team.";
-        return false;
-    }
-
-    if(!src.m_has_team)
-    {
-        qCDebug(logTeams) << src.name() << "is forming a team.";
-        src.m_team = new Team;
-        src.m_team->addTeamMember(&src);
-
-        tgt.m_team = src.m_team;
-        src.m_team->addTeamMember(&tgt);
-        return true;
-    }
-    else if (src.m_has_team && src.m_team->isTeamLeader(&src))
-    {
-        src.m_team->addTeamMember(&tgt);
-        return true;
-    }
-    else
-    {
-        qCDebug(logTeams) << src.name() << "is not team leader.";
-        return false;
-    }
-
-    qCWarning(logTeams) << "How did we get here in inviteTeam?";
-    return false;
-}
-
-bool kickTeam(Entity &tgt)
-{
-    if (!tgt.m_has_team)
-        return false;
-
-    removeTeamMember(*tgt.m_team,&tgt);
-    return true;
-}
-
-void leaveTeam(Entity &e)
-{
-    if(!e.m_team)
-    {
-        qCWarning(logTeams) << "Trying to leave a team, but Entity has no team!?";
-        return;
-    }
-
-    removeTeamMember(*e.m_team,&e);
-}
-
-/*
- * Sidekick Methods -- Sidekick system requires teaming.
- */
-// TODO: expose these to config and fail-test
-static const int g_max_sidekick_level_difference = 3;
-static const int g_min_sidekick_mentor_level = 10;
-
-bool isSidekickMentor(const Entity &e)
-{
-    return (e.m_char->m_char_data.m_sidekick.m_type == SidekickType::IsMentor);
-}
-
-void inviteSidekick(Entity &src, Entity &tgt)
-{
-    const QString possible_messages[] = {
-        QStringLiteral("Unable to add sidekick."),
-        QStringLiteral("To Mentor another player, you must be at least 3 levels higher than them."),
-        QStringLiteral("To Mentor another player, you must be at least level 10."),
-        QStringLiteral("You are already Mentoring someone."),
-        tgt.name() + QStringLiteral("is already a sidekick."),
-        QStringLiteral("To Mentor another player, you must be on the same team."),
-    };
-
-    QString     msg = possible_messages[0];
-    Sidekick    &src_sk = src.m_char->m_char_data.m_sidekick;
-    Sidekick    &tgt_sk = tgt.m_char->m_char_data.m_sidekick;
-    uint32_t    src_lvl = getLevel(*src.m_char);
-    uint32_t    tgt_lvl = getLevel(*tgt.m_char);
-
-    // Only a mentor may invite a sidekick
-    if(src_lvl < tgt_lvl+g_max_sidekick_level_difference)
-        msg = possible_messages[1];
-    else if(src_lvl < g_min_sidekick_mentor_level)
-        msg = possible_messages[2];
-    else if(src_sk.m_has_sidekick)
-        msg = possible_messages[3];
-    else if (tgt_sk.m_has_sidekick)
-        msg = possible_messages[4];
-    else if(!src.m_has_team || !tgt.m_has_team || src.m_team == nullptr || tgt.m_team == nullptr)
-        msg = possible_messages[5];
-    else if(src.m_team->m_team_idx != tgt.m_team->m_team_idx)
-        msg = possible_messages[5];
-    else
-    {
-        // Store this here now for sidekick_accept / decline
-        tgt_sk.m_db_id = src.m_db_id;
-
-        // sendSidekickOffer
-        sendSidekickOffer(&tgt, src.m_db_id); // tgt gets dialog, src.db_id is named.
-        return; // break early
-    }
-
-    qCDebug(logTeams).noquote() << msg;
-    messageOutput(MessageChannel::USER_ERROR, msg, src);
-}
-
-void addSidekick(Entity &tgt, Entity &src)
-{
-    QString     msg;
-    Sidekick    &src_sk = src.m_char->m_char_data.m_sidekick;
-    Sidekick    &tgt_sk = tgt.m_char->m_char_data.m_sidekick;
-    uint32_t    src_lvl = getLevel(*src.m_char);
-
-    src_sk.m_has_sidekick = true;
-    tgt_sk.m_has_sidekick = true;
-    src_sk.m_db_id = tgt.m_db_id;
-    tgt_sk.m_db_id = src.m_db_id;
-    src_sk.m_type = SidekickType::IsMentor;
-    tgt_sk.m_type = SidekickType::IsSidekick;
-    setCombatLevel(*tgt.m_char, src_lvl - 1);
-    // TODO: Implement 225 feet "leash" for sidekicks.
-
-    msg = QString("%1 is now Mentoring %2.").arg(src.name(),tgt.name());
-    qCDebug(logTeams).noquote() << msg;
-
-    // Send message to each player
-    msg = QString("You are now Mentoring %1.").arg(tgt.name()); // Customize for src.
-    messageOutput(MessageChannel::TEAM, msg, src);
-    msg = QString("%1 is now Mentoring you.").arg(src.name()); // Customize for src.
-    messageOutput(MessageChannel::TEAM, msg, tgt);
-}
-
-void removeSidekick(Entity &src)
-{
-    QString     msg = "Unable to remove sidekick.";
-    Sidekick    &src_sk = src.m_char->m_char_data.m_sidekick;
-
-    if(!src_sk.m_has_sidekick || src_sk.m_db_id == 0)
-    {
-        msg = "You are not sidekicked with anyone.";
-        qCDebug(logTeams).noquote() << msg;
-        messageOutput(MessageChannel::USER_ERROR, msg, src);
-        return; // break early
-    }
-    assert(false);
-    //TODO: this function should actually post messages related to de-sidekicking to our target entity.
-    Entity      *tgt            = nullptr; //getEntityByDBID(src_sk.m_db_id);
-    Sidekick    &tgt_sk         = tgt->m_char->m_char_data.m_sidekick;
-
-    if(tgt == nullptr)
-    {
-        msg = "Your sidekick is not currently online.";
-        qCDebug(logTeams).noquote() << msg;
-
-        // reset src Sidekick relationship
-        src_sk.m_has_sidekick = false;
-        src_sk.m_type         = SidekickType::NoSidekick;
-        src_sk.m_db_id        = 0;
-        setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
-
-        return; // break early
-    }
-
-    // Anyone can terminate a Sidekick relationship
-    if(!tgt_sk.m_has_sidekick || (tgt_sk.m_db_id != src.m_db_id))
-    {
-        // tgt doesn't know it's sidekicked with src. So clear src sidekick info.
-        src_sk.m_has_sidekick = false;
-        src_sk.m_type         = SidekickType::NoSidekick;
-        src_sk.m_db_id        = 0;
-        setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
-        msg = QString("You are no longer sidekicked with anyone.");
-    }
-    else {
-
-        // Send message to each player
-        if(isSidekickMentor(src))
-        {
-            // src is mentor, tgt is sidekick
-            msg = QString("You are no longer mentoring %1.").arg(tgt->name());
-            messageOutput(MessageChannel::TEAM, msg, src);
-            msg = QString("%1 is no longer mentoring you.").arg(src.name());
-            messageOutput(MessageChannel::TEAM, msg, *tgt);
-        }
-        else
-        {
-            // src is sidekick, tgt is mentor
-            msg = QString("You are no longer mentoring %1.").arg(src.name());
-            messageOutput(MessageChannel::TEAM, msg, *tgt);
-            msg = QString("%1 is no longer mentoring you.").arg(tgt->name());
-            messageOutput(MessageChannel::TEAM, msg, src);
-        }
-
-        src_sk.m_has_sidekick = false;
-        src_sk.m_type         = SidekickType::NoSidekick;
-        src_sk.m_db_id        = 0;
-        setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
-
-        tgt_sk.m_has_sidekick = false;
-        tgt_sk.m_type         = SidekickType::NoSidekick;
-        tgt_sk.m_db_id        = 0;
-        setCombatLevel(*tgt->m_char,getLevel(*tgt->m_char)); // reset CombatLevel
-
-        msg = QString("%1 and %2 are no longer sidekicked.").arg(src.name(),tgt->name());
-        qCDebug(logTeams).noquote() << msg;
-
-        return; // break early
-    }
-
-    qCDebug(logTeams).noquote() << msg;
-    messageOutput(MessageChannel::USER_ERROR, msg, src);
-}
-void removeTeamMember(Team &self, Entity *e)
-{
-    qCDebug(logTeams) << "Searching team members for" << e->name() << "to remove them.";
-    uint32_t id_to_find = e->m_db_id;
-    auto iter = std::find_if( self.m_team_members.begin(), self.m_team_members.end(),
-                              [id_to_find](const Team::TeamMember& t)->bool {return id_to_find==t.tm_idx;});
-    if(iter!=self.m_team_members.end())
-    {
-        if(iter->tm_idx == self.m_team_leader_idx)
-            self.m_team_leader_idx = self.m_team_members.front().tm_idx;
-
-        iter = self.m_team_members.erase(iter);
-        e->m_has_team = false;
-        e->m_team = nullptr;
-
-        if(e->m_char->m_char_data.m_sidekick.m_has_sidekick)
-            removeSidekick(*e);
-
-        qCDebug(logTeams) << "Removing" << iter->tm_name << "from team" << self.m_team_idx;
-        if(logTeams().isDebugEnabled())
-            self.listTeamMembers();
-    }
-
-    if(self.m_team_members.size() > 1)
-        return;
-
-    qCDebug(logTeams) << "One player left on team. Removing last entity and deleting team.";
-    if(logTeams().isDebugEnabled())
-        self.listTeamMembers();
-
-    // int idx = self.m_team_members.front().tm_idx;
-
-    assert(false);
-    // TODO: this should post an Team-removal event to the target entity, since we can't access other server's
-    // Entity lists
-    Entity *tgt = nullptr; //getEntityByDBID(idx);
-    if(tgt == nullptr)
-        return;
-
-    tgt->m_has_team = false;
-    tgt->m_team = nullptr;
-    self.m_team_members.clear();
-    self.m_team_leader_idx = 0;
-
-    qCDebug(logTeams) << "After removing all entities.";
-    if(logTeams().isDebugEnabled())
-        self.listTeamMembers();
-}
-
-bool isEntityOnMissionMap(const EntityData &ed)
-{
-    QString mapName = getMapName(ed.m_map_idx);
-    // Hazard and Trial maps are considered as mission maps
-    return mapName.contains("Hazard") || mapName.contains("Trial");
 }
 
 void sendTradeOffer(const Entity& src, Entity& tgt)
@@ -996,17 +631,512 @@ void sendTradeSuccess(Entity& src, Entity& tgt)
     tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_tgt));
 }
 
+void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialog:" << msg_body;
+    src.addCommand<ContactDialog>(msg_body, active_contacts);
+}
+
+void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialogYesNo:" << has_yesno << msg_body;
+
+    if(has_yesno)
+        src.addCommand<ContactDialogYesNo>(msg_body);
+    else
+        src.addCommand<ContactDialogOk>(msg_body);
+}
+
+void sendContactDialogClose(MapClientSession &src)
+{
+    qCDebug(logSlashCommand) << "Sending ContactDialogClose";
+    src.addCommand<ContactDialogClose>();
+}
+
+void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)
+{
+    qCDebug(logSlashCommand) << QString("Sending SendWaypoint: %1 <%2, %3, %4>")
+                                .arg(point_idx)
+                                .arg(location.x, 0, 'f', 1)
+                                .arg(location.y, 0, 'f', 1)
+                                .arg(location.z, 0, 'f', 1);
+
+    src.addCommand<SendWaypoint>(point_idx, location);
+}
+
+void sendStance(MapClientSession &src, PowerStance stance)
+{
+    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    src.addCommand<SendStance>(stance);
+}
+
+void sendDeadNoGurney(MapClientSession &sess)
+{
+    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    sess.addCommand<DeadNoGurney>();
+}
+
+
+/*
+ * usePower here to provide access to messageOutput
+ */
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id)
+{
+    QString from_msg, to_msg;
+    CharacterPower * ppower = nullptr;
+    ppower = getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
+    const Power_Data powtpl = ppower->getPowerTemplate();
+
+    if(ppower == nullptr || powtpl.m_Name.isEmpty())
+        return;
+
+    // Only dump powers if logPowers() is enabled
+    //if(logPowers().isDebugEnabled())
+        //dumpPower(*ppower);
+
+    //treat toggle as clicks, ignore everything else for now
+    if (powtpl.Type != PowerType::Toggle && powtpl.Type != PowerType::Click)
+        return;
+
+    // Target IDX of -1 is actually SELF
+    if(tgt_idx == -1)
+        tgt_idx = getIdx(ent);
+
+    // Get target and check that it's valid
+    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx << tgt_id;
+        return;
+    }
+
+    // TODO: Check for PVP flags
+    // if(src.can_pvp && tgt.can_pvp) pvp_ok = true;
+
+    // Check Range -- TODO: refactor as checkRange() and checkTarget()
+    // self targeting doesn't need these checks
+    // we can check EntsAffected for StoredEntsEnum::CASTER here
+    if (powtpl.Range == float(0.0))
+    {
+        target_ent = &ent;
+        tgt_idx = ent.m_idx;
+    }
+    else
+    {
+        // TODO: source should target last permitted target or
+        // if on a team, target target_ent's target instead
+        // of sending error messages.
+        // if(!targetValid(target)) target = last_valid_target;
+
+        // Consider if target is valid target or
+        // if target isn't villian, but needs to be
+        if(powtpl.Target == StoredEntEnum::Enemy
+                || powtpl.Target == StoredEntEnum::Foe
+                || powtpl.Target == StoredEntEnum::NPC)
+        {
+            if(!target_ent->m_is_villian /*&& !pvp_ok*/)
+            {
+                messageOutput(MessageChannel::COMBAT, QString("You cannot target allies with this power."), ent);
+                return;
+            }
+        }
+        else
+        {
+            if(target_ent->m_is_villian)
+            {
+                messageOutput(MessageChannel::COMBAT, QString("You must target allies with this power."), ent);
+                return;
+            }
+        }
+
+        // Check if the target is in range
+        glm::vec3 senderpos = ent.m_entity_data.m_pos;
+        glm::vec3 recpos = target_ent->m_entity_data.m_pos;
+
+        if (glm::distance(senderpos,recpos) > powtpl.Range)
+        {
+            from_msg = FloatingInfoMsg.find(FloatingMsg_OutOfRange).value();
+            sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
+            return;
+        }
+
+        // Face towards your target
+        sendFaceEntity(ent, tgt_idx);
+    }
+
+    // Send PowerStance to client
+    PowerStance pstance;
+    pstance.has_stance = true;
+    pstance.pset_idx = pset_idx;
+    pstance.pow_idx = pow_idx;
+    ent.m_stance = pstance;
+    sendStance(*ent.m_client, pstance);
+
+    // Clear old moves and add TriggeredMove to queue
+    ent.m_triggered_moves.clear();
+    for(auto bits : powtpl.AttackBits)
+    {
+        // TODO: pull from stored FX name and lookup idx
+        // for now, send bits again
+        addTriggeredMove(ent, bits, powtpl.m_AttackFrames, bits);
+    }
+
+    // Check and set endurance based upon end cost
+    // TODO: refactor as checkEnduranceCost()
+    float endurance = getEnd(*ent.m_char);
+    float end_cost = powtpl.EnduranceCost;
+
+    qCDebug(logPowers) << "Endurance Cost" << end_cost << "/" << endurance;
+    if(end_cost > endurance)
+    {
+        from_msg = FloatingInfoMsg.find(FloatingMsg_NotEnoughEndurance).value();
+        sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
+        return;
+    }
+
+    setEnd(*ent.m_char, endurance-end_cost);
+
+    // Queue power and add to recharge queue if necessary
+    // TODO: refactor as queuePower()
+    QueuedPowers qpowers;
+    qpowers.m_pow_idxs = {pset_idx, pow_idx};
+    qpowers.m_active_state_change   = true;
+    qpowers.m_activation_state      = true;
+    qpowers.m_timer_updated         = true;
+    qpowers.m_time_to_activate      = powtpl.TimeToActivate;
+    qpowers.m_recharge_time         = powtpl.RechargeTime;
+    qpowers.m_activate_period       = powtpl.ActivatePeriod;
+
+    // Add to queues
+    ent.m_queued_powers.push_back(qpowers); // Activation Queue
+    ent.m_recharging_powers.push_back(qpowers); // Recharging Queue
+
+    // If there are charges remaining, use them.
+    if(ppower->m_is_limited && ppower->m_charges_remaining)
+        --ppower->m_charges_remaining;
+
+    // was power temporary with no charges remaining?
+    // if so, remove it and update powers array
+    if(ppower->m_is_limited && !ppower->m_charges_remaining)
+    {
+        ppower->m_erase_power = true; // mark for removal
+        ent.m_char->m_char_data.m_reset_powersets = true; // powerset array has changed
+    }
+
+    // Update Powers to Client to show Recharging/Timers/Etc in UI
+    ent.m_char->m_char_data.m_has_updated_powers = true; // this is really important!
+
+    if(powtpl.Target == StoredEntEnum::Enemy || powtpl.Target == StoredEntEnum::Foe
+            || powtpl.Target == StoredEntEnum::NPC)
+    {
+        //roll to hit
+        int roll = rand()%100;
+        int chance = int(powtpl.Accuracy * 75);
+
+        qCDebug(logPowers) << "Power hit chance: " << roll << " / " << chance;
+        if (roll > chance)
+        {
+            from_msg = "miss";
+            sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
+            return;
+        }
+
+    }
+
+    // TODO: check for auto hit EntsAutoHit for StoredEntsEnum::CASTER
+    //   if (powtpl.EffectArea == StoredAffectArea::Character)//single target so do the following once
+    //   else                                                // AOE has to check all valid targets, and do the following
+
+    if(!powtpl.pAttribMod.empty())
+    {
+        // effects done here
+        for(uint32_t i = 0; i<powtpl.pAttribMod.size(); i++)
+        {
+            if (powtpl.pAttribMod[i].name.compare("Damage", Qt::CaseInsensitive) == 0)
+            {
+                // Deal Damage
+                sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);
+                setHP(*target_ent->m_char, getHP(*target_ent->m_char)-powtpl.pAttribMod[i].Magnitude);
+
+                // Build target specific messages
+                from_msg = QString("You deal %1 damage with %2")
+                        .arg(powtpl.pAttribMod[i].Magnitude)
+                        .arg(powtpl.m_Name);
+
+                to_msg   = QString("%1 hit you for %2 damage with %3")
+                        .arg(ent.name())
+                        .arg(powtpl.pAttribMod[i].Magnitude)
+                        .arg(powtpl.m_Name);
+            }
+            else if (powtpl.pAttribMod[i].name.compare("Healing", Qt::CaseInsensitive) == 0)
+            {
+                // Do Healing
+                sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);
+                setHP(*target_ent->m_char, getHP(*target_ent->m_char)+powtpl.pAttribMod[i].Magnitude);
+
+                // Build target specific messages
+                from_msg = QString("You heal %1 for %2 with %3")
+                        .arg(target_ent->name())
+                        .arg(powtpl.pAttribMod[i].Magnitude)
+                        .arg(powtpl.m_Name);
+
+                to_msg   = QString("%1 heals you for %2 with %3")
+                        .arg(target_ent->name())
+                        .arg(powtpl.pAttribMod[i].Magnitude)
+                        .arg(powtpl.m_Name);
+            }
+            else
+            {
+                // TODO: buffs, debuffs, CC, summons, etc
+                to_msg = QString("%1 %2 from %3")
+                        .arg(powtpl.pAttribMod[i].Magnitude)
+                        .arg(powtpl.pAttribMod[i].name)
+                        .arg(powtpl.m_Name);
+
+                if (powtpl.pAttribMod[i].Duration > 0)
+                    to_msg.append(" for a duration of %1").arg(powtpl.pAttribMod[i].Duration);
+
+                // Build target specific messages
+                from_msg = QString("You cause ").append(to_msg);
+                to_msg.prepend("You receive ");
+            }
+
+            // Send message to source combat window
+            messageOutput(MessageChannel::COMBAT, from_msg, ent);
+
+            // Send message to another player target
+            if(target_ent->m_type == EntType::PLAYER && tgt_idx != ent.m_idx)
+                messageOutput(MessageChannel::DAMAGE, to_msg, *target_ent);
+        }
+    }
+
+    // TODO: Do actual power animations. For now, show silly message to source.
+    QStringList batman_kerpow{"AIEEE!", "ARRRGH!", "AWKKKKKK!", "BAM!", "BANG!", "BAP!",
+                     "BIFF!", "BLOOP!", "BLURP!", "BOFF!", "BONK!", "CLANK!",
+                     "CLASH!", "CLUNK!", "CRAAACK!", "CRASH!", "CRUNCH!", "EEE-YOW!",
+                     "FLRBBBBB!", "GLIPP!", "GLURPP!", "KAPOW!", "KER-PLOP!", "KLONK!",
+                     "KRUNCH!", "OOOFF!", "OUCH!", "OWWW!", "PAM!", "PLOP!",
+                     "POW!", "POWIE!", "QUNCKKK!", "RAKKK!", "RIP!", "SLOSH!",
+                     "SOCK!", "SPLAAT!", "SWAAP!", "SWISH!", "SWOOSH!", "THUNK!",
+                     "THWACK!", "THWAPP!", "TOUCHÉ!", "UGGH!", "URKK!", "VRONK!",
+                     "WHACK!", "WHAMM!", "WHAP!", "ZAM!", "ZAP!", "ZGRUPPP!",
+                     "ZLONK!", "ZLOPP!", "ZLOTT!", "ZOK!", "ZOWIE!", "ZWAPP!"};
+
+    std::random_device rng;
+    std::mt19937 urng(rng());
+    std::shuffle(batman_kerpow.begin(), batman_kerpow.end(), urng);
+    QString floating_msg = batman_kerpow.first();
+    QString console_msg;
+    assert(ent.m_client);
+    sendFloatingInfo(*ent.m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+
+    // Handle powers without any attrib mod data
+    // If we've manually assigned power info to these powers, skip the rest.
+    // TODO: Everything below will go away when we have actual power behaviors in Lua scripts
+    if(!powtpl.pAttribMod.empty() || tgt_idx == ent.m_idx)
+        return;
+
+    // calculate damage
+    float damage = 1.0f;
+
+    // Send message to source
+    console_msg = floating_msg + " You hit " + target_ent->name() + " for " + QString::number(damage) + " damage!";
+    messageOutput(MessageChannel::COMBAT, console_msg, ent);
+
+    // Deal Damage
+    sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
+    setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
+
+    // If not a player, skip the rest
+    if(target_ent->m_type != EntType::PLAYER)
+        return;
+
+    // Send message to target
+    assert(target_ent->m_client);
+
+    sendFloatingInfo(*target_ent->m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    console_msg = floating_msg + " You were hit by " + ent.name() + " for " + QString::number(damage) + " damage!";
+    messageOutput(MessageChannel::COMBAT, console_msg, *target_ent);
+}
+
+void increaseLevel(Entity &ent)
+{
+    setLevel(*ent.m_char, getLevel(*ent.m_char)+1);
+    // increase security level every time we visit a trainer and level up
+    ++ent.m_char->m_char_data.m_security_threat;
+    ent.m_char->m_in_training = false; // we're done training
+
+    QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
+    sendFloatingInfo(*ent.m_client, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+}
+
+
+/*
+ * Team related helpers
+ */
+void findTeamMember(Entity &tgt)
+{
+    sendTeamLooking(&tgt);
+}
+
+/*
+ * Lua Functions
+ */
+//
+
+void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variation)
+{
+    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
+    const QString name_string = QString::fromUtf8(name);
+    QStringRef npc_name = QStringRef(&name_string);
+
+    const Parse_NPC * npc_def = npc_store.npc_by_name(npc_name);
+    if(!npc_def)
+    {
+        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for:"+npc_name, cl);
+        return;
+    }
+    int idx = npc_store.npc_idx(npc_def);
+    Entity *e = cl.m_current_map->m_entities.CreateNpc(getGameData(),*npc_def,idx, variation);
+
+    forcePosition(*e, *loc);
+    e->m_velocity = {0,0,0};
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc->x).arg(loc->y).arg(loc->z), cl);
+}
+
+void giveEnhancement(MapClientSession *cl, const char* e_name, int e_level)
+{
+    CharacterData &cd = cl->m_ent->m_char->m_char_data;
+    QString name = QString::fromUtf8(e_name);
+    uint32_t level = e_level;
+    QString msg = "You do not have room for any more enhancements!";
+
+    if(getNumberEnhancements(cd) < 10)
+    {
+        msg = "Awarding Enhancement '" + name + "' to " + cl->m_ent->name();
+        addEnhancementByName(cd, name, level);
+
+        QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
+        sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    }
+    qCDebug(logScripts()).noquote() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+}
+
+void giveDebt(MapClientSession *cl, int debt)
+{
+    uint32_t current_debt = getDebt(*cl->m_ent->m_char);
+    uint32_t debt_to_give = current_debt + debt;
+    setDebt(*cl->m_ent->m_char, debt_to_give);
+    QString msg = "Setting Debt to " + QString::number(debt_to_give);
+    qCDebug(logScripts) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+}
+
+void giveEnd(MapClientSession *cl, float end)
+{
+    float current_end = getEnd(*cl->m_ent->m_char);
+    float end_to_set = current_end + end;
+    setEnd(*cl->m_ent->m_char, end_to_set);
+    QString msg = QString("Setting Endurance to: %1").arg(end_to_set);
+    qCDebug(logScripts) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+}
+
+void giveHp(MapClientSession *cl, float hp)
+{
+    float current_hp = getHP(*cl->m_ent->m_char);
+    float hp_to_set = current_hp + hp;
+    setHP(*cl->m_ent->m_char, hp_to_set);
+    QString msg = QString("Setting HP to: %1").arg(hp_to_set);
+    qCDebug(logScripts) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+}
+
+void giveInf(MapClientSession *cl, int inf)
+{
+    uint32_t current_inf = getInf(*cl->m_ent->m_char);
+    uint32_t inf_to_set = current_inf + inf;
+    setInf(*cl->m_ent->m_char, inf_to_set);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Setting inf to %1").arg(inf_to_set), *cl);
+}
+
+void giveInsp(MapClientSession *cl, const char *value)
+{
+    CharacterData &cd = cl->m_ent->m_char->m_char_data;
+    QString val = QString::fromUtf8(value);
+    QString msg = "You do not have room for any more inspirations!";
+
+    if(getNumberInspirations(cd) < getMaxNumberInspirations(cd))
+    {
+        msg = "Awarding Inspiration '" + val + "' to " + cl->m_ent->name();
+
+        addInspirationByName(cd, val);
+
+        // NOTE: floating message shows no message here, but plays the awarding insp sound!
+        QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
+        sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    }
+
+    qCDebug(logScripts).noquote() << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+}
+
+void giveXp(MapClientSession *cl, int xp)
+{
+    uint32_t lvl = getLevel(*cl->m_ent->m_char);
+    uint32_t current_xp = getXP(*cl->m_ent->m_char);
+
+    // Calculate XP - Debt difference by server settings?
+
+    uint32_t current_debt = getDebt(*cl->m_ent->m_char);
+    if(current_debt > 0)
+    {
+        uint32_t debt_to_pay = 0;
+        uint32_t half_xp = xp / 2;
+        if(current_debt > half_xp)
+        {
+            debt_to_pay = half_xp; //Half to debt
+            xp = half_xp;
+        }
+        else
+        {
+            debt_to_pay = current_debt;
+            xp = xp - current_debt;
+        }
+        uint32_t newDebt = current_debt - debt_to_pay;
+        setDebt(*cl->m_ent->m_char, newDebt);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You paid %1 to your debt").arg(debt_to_pay), *cl);
+    }
+    uint32_t xp_to_give = current_xp + xp;
+    setXP(*cl->m_ent->m_char, xp_to_give);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were awarded %1 XP").arg(xp), *cl);
+    QString msg = "Setting XP to " + QString::number(xp_to_give);
+    uint32_t new_lvl = getLevel(*cl->m_ent->m_char);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were lvl %1 now %2").arg(lvl).arg(new_lvl), *cl);
+
+    //This check doesn't show level change
+
+    if(new_lvl != lvl)
+    {
+        cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, FloatingInfoMsg.find(FloatingMsg_Leveled).value(), FloatingInfo_Attention , 4.0);
+        msg += " and LVL to " + QString::number(new_lvl);
+    }
+    qCDebug(logScripts) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+}
+
+
 
 /*
  * Tailor and Costume Methods
  */
 void receiveCostume(CharacterCostume &new_costume, BitStream bs)
 {
-    // This method must be here, because NetStructures can't access g_GlobalMapServer =(
-    static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+    // This method must be here, because NetStructures can't access g_GlobalMapServer
+    static const ColorAndPartPacker *packer = getGameData().getPacker();
 
     serializefrom(new_costume, bs, packer);
 }
 
 //! @}
-

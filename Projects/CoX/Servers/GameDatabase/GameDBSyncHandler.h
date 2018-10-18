@@ -27,6 +27,14 @@ struct WouldNameDuplicateRequest;
 struct CreateNewCharacterRequest;
 struct GetEntityRequest;
 struct GetEntityByNameRequest;
+struct EmailCreateRequest;
+struct EmailCreateResponse;
+struct EmailMarkAsReadMessage;
+struct EmailUpdateOnCharDeleteMessage;
+struct EmailRemoveMessage;
+struct GetEmailRequest;
+struct GetEmailsRequest;
+struct FillEmailRecipientIdRequest;
 }
 
 class GameDBSyncHandler final : public EventProcessor
@@ -50,6 +58,16 @@ protected:
     void on_create_new_char(SEGSEvents::CreateNewCharacterRequest *ev);
     void on_get_entity(SEGSEvents::GetEntityRequest *ev);
     void on_get_entity_by_name(SEGSEvents::GetEntityByNameRequest *ev);
+
+    // email stuff
+    void on_email_create(SEGSEvents::EmailCreateRequest *ev);
+    void on_email_mark_as_read(SEGSEvents::EmailMarkAsReadMessage *msg);
+    void on_email_update_on_char_delete(SEGSEvents::EmailUpdateOnCharDeleteMessage *msg);
+    void on_email_remove(SEGSEvents::EmailRemoveMessage *msg);
+    void on_get_email(SEGSEvents::GetEmailRequest* ev);
+    void on_get_emails(SEGSEvents::GetEmailsRequest *ev);
+    void on_fill_email_recipient_id(SEGSEvents::FillEmailRecipientIdRequest *ev);
+
     // This is an unique ID that links this DB with it's Game Server
     uint8_t m_id;
 public:
