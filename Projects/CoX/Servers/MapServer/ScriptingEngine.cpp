@@ -139,7 +139,19 @@ void ScriptingEngine::registerTypes()
         sol::constructors<Contact()>(),
         // gets or set the value using member variable syntax
         "name", sol::property(&Contact::getName, &Contact::setName),
-        "display_name", &Contact::m_display_name
+        "displayName", &Contact::m_display_name,
+        "locationDescription", sol::property(&Contact::getLocationDescription, &Contact::setLocationDescription),
+        "npcId", &Contact::m_npc_id,
+        "currentStanding", &Contact::m_current_standing,
+        "notifyPlayer", &Contact::m_notify_player,
+        "taskIndex", &Contact::m_task_index,
+        "hasLocation", &Contact::m_has_location,
+        "location", &Contact::m_location,
+        "confidantThreshold", &Contact::m_confidant_threshold,
+        "friendThreshold", &Contact::m_friend_threshold,
+        "completeThreshold", &Contact::m_complete_threshold,
+        "canUseCell", &Contact::m_can_use_cell
+
     );
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
 
@@ -209,7 +221,14 @@ void ScriptingEngine::registerTypes()
     "giveXp", giveXp,
     "sendFloatingDamage",sendFloatingNumbers,
     "faceEntity",sendFaceEntity,
-    "faceLocation",  sendFaceLocation
+    "faceLocation",  sendFaceLocation,
+    "addUpdateContactList", [](MapClientSession *cl, Contact contact, glm::vec3 loc)
+    {
+        Destination des;
+        des.location = loc;
+        contact.m_location = des;
+        sendContactStatusList(*cl, contact);
+    }
 
     );
 
@@ -224,7 +243,7 @@ void ScriptingEngine::registerTypes()
         "set_default_spawn_point", &MapSceneGraph::set_default_spawn_point
     );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
-    m_private->m_lua["contactTable"] = m_private->m_lua.create_named_table("contactTable");
+    m_private->m_lua["characters"] = m_private->m_lua.create_named_table("characters");
     m_private->m_lua["printDebug"] = [](const char* msg)
     {
         qCDebug(logScripts) << msg;
@@ -294,6 +313,26 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
         return "";
     }
     auto result = funcwrap(arg1, loc);
+    if(!result.valid())
+    {
+        sol::error err = result;
+        qCritical() << "Failed to run script func:"<<name<<err.what();
+        return "";
+    }
+    return result.get<std::string>();
+}
+
+std::string ScriptingEngine::callFunc(const char *name, std::vector<Contact> contact_list)
+{
+    sol::protected_function funcwrap = m_private->m_lua[name];
+    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+
+    if(!funcwrap.valid())
+    {
+        qCritical() << "Failed to retrieve script func:"<<name;
+        return "";
+    }
+    auto result = funcwrap(contact_list);
     if(!result.valid())
     {
         sol::error err = result;

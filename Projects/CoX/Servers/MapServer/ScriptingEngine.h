@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include "NetStructures/CommonNetStructures.h"
+#include "NetStructures/Contact.h"
 
 class QString;
 struct MapClientSession;
@@ -25,6 +26,7 @@ public:
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1, glm::vec3 loc);
     std::string callFunc(const char *name,int arg1);
     std::string callFunc(const char *name,int arg1, glm::vec3 loc);
+    std::string callFunc(const char *name, std::vector<Contact> contact_list);
     int runScript(const QString &script_contents,const char *script_name="unnamed script");
     int runScript(MapClientSession *client,const QString &script_contents,const char *script_name="unnamed script");
     bool setIncludeDir(const QString &path);

@@ -23,6 +23,7 @@
 #include "NetStructures/Contact.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
+#include "Events/ContactList.h"
 #include "Events/EmailHeaders.h"
 #include "Events/EmailRead.h"
 #include "Servers/GameServer/EmailEvents.h"
@@ -645,6 +646,34 @@ void sendContactDialogClose(MapClientSession &src)
 {
     qCDebug(logSlashCommand) << "Sending ContactDialogClose";
     src.addCommand<ContactDialogClose>();
+}
+
+void sendContactStatusList(MapClientSession &src, Contact contact)
+{
+    vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
+    //find contact
+    bool found = false;
+    for(auto con: contacts)
+    {
+        if(con.m_npc_id == contact.m_npc_id)
+        {
+            found = true;
+            //contact already in list, update contact;
+            con = contact;
+        }
+    }
+
+    if(!found)
+        contacts.push_back(contact);
+
+    //update database contactList
+    src.m_ent->m_char->m_char_data.m_contacts = contacts;
+
+    auto val = src.m_current_map->m_scripting_interface->callFunc("contact_list",src.m_ent->m_char->m_char_data.m_contacts);
+
+    //Send contactList to client
+    src.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contact)));
+    qCDebug(logSlashCommand) << "Sending ContactStatusList";
 }
 
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)

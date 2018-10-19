@@ -46,6 +46,7 @@ static QHash<QString,int> contactLinkHash = {
 
 struct Destination // aka waypoint
 {
+  public:
     int point_idx = 0;
     glm::vec3 location;
 
@@ -79,14 +80,17 @@ public:
     std::string getName() const { return m_name.toStdString();}
     void setName(const char *n) { m_name = n; }
 
+    std::string getLocationDescription() const { return m_location_description.toStdString();}
+    void setLocationDescription(const char *n) { m_location_description = n; }
+
        QString         m_location_description;
-       uint32_t         m_idx;
-       uint32_t          m_handle;
-       uint32_t          m_current_standing;             // Current arc status?
-       uint32_t          m_confidant_threshold;           // int for confidant status?
-       uint32_t          m_friend_threshold;              // int for friend status?
-       uint32_t          m_complete_threshold;            // int for complete status?
-       uint32_t        m_task_index            = 0;
+       uint32_t         m_npc_id;
+       uint8_t          m_handle;
+       uint8_t          m_current_standing;             // Current arc status?
+       uint8_t          m_confidant_threshold;           // int for confidant status?
+       uint8_t          m_friend_threshold;              // int for friend status?
+       uint8_t          m_complete_threshold;            // int for complete status?
+       uint8_t         m_task_index            = 0;
        bool            m_notify_player         = false;
        bool            m_can_use_cell          = false;
        bool            m_has_location          = false;
@@ -107,7 +111,7 @@ public:
        archive(cereal::make_nvp("Name",m_name));
        archive(cereal::make_nvp("DisplayName",m_display_name));
        archive(cereal::make_nvp("LocationDescription",m_location_description));
-       archive(cereal::make_nvp("db_id",m_idx));
+       archive(cereal::make_nvp("npcId",m_npc_id));
        archive(cereal::make_nvp("Handle",m_handle));
        archive(cereal::make_nvp("CurrentStanding",m_current_standing));
        archive(cereal::make_nvp("ConfidantThreshold",m_confidant_threshold));

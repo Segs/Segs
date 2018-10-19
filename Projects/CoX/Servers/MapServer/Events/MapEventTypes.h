@@ -91,6 +91,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
     EVENT_DECL(MapEventTypes, evTrayAdd                    ,182)
     EVENT_DECL(MapEventTypes, evCombineEnhanceResponse     ,183)
+    EVENT_DECL(MapEventTypes, evReceiveContactStatus       ,184)
 // client -> server commands
     EVENT_DECL(MapEventTypes, evConsoleCommand             ,200)
     EVENT_DECL(MapEventTypes, evMiniMapState               ,201)

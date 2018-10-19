@@ -8,6 +8,7 @@
 #pragma once
 #include "Events/MessageChannels.h"
 #include "Events/FloatingInfoStyles.h"
+#include "NetStructures/Contact.h"
 #include "glm/vec3.hpp"
 #include <QString>
 #include <cstdint>
@@ -133,6 +134,7 @@ void sendTradeSuccess(Entity& src, Entity& tgt);
 void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts);
 void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
 void sendContactDialogClose(MapClientSession &src);
+void sendContactStatusList(MapClientSession &src, Contact contact);
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
 void sendStance(MapClientSession &src, PowerStance stance);
 void sendDeadNoGurney(MapClientSession &sess);

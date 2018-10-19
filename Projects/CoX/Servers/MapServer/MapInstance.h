@@ -95,6 +95,7 @@ class LevelUpResponse;
 class TradeWasCancelledMessage;
 class TradeWasUpdatedMessage;
 class DeadNoGurneyOK;
+class ReceiveContactStatus;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -242,4 +243,5 @@ protected:
         void on_levelup_response(SEGSEvents::LevelUpResponse *ev);
         void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
         void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);
+        void on_receive_contact_status(SEGSEvents::ReceiveContactStatus *ev);
 };
