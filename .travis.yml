@@ -107,3 +107,11 @@ script:
     fi
   - make VERBOSE=1
 # ctest --output-on-failure
+
+after_success:
+  - chmod +x ci_support/travis_discord_hook.sh
+  - ./ci_support/travis_discord_hook.sh success $WEBHOOK_URL
+
+after_failure:
+  - chmod +x ci_support/travis_discord_hook.sh
+  - ./ci_support/travis_discord_hook.sh failure $WEBHOOK_URL
