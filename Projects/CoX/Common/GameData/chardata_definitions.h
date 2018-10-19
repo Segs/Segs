@@ -9,6 +9,7 @@
 
 #include "Common/NetStructures/Friend.h"
 #include "Common/NetStructures/Powers.h"
+#include "Common/NetStructures/Contact.h"
 #include "Common/GameData/attrib_definitions.h"
 #include <QtCore/QString>
 #include <vector>
@@ -28,9 +29,11 @@ static const constexpr  uint32_t        class_version   = 1;
                         SidekickType    m_type          = NoSidekick;
 };
 
+using vContactList = std::vector<Contact>;
 struct CharacterData
 {
-static const constexpr  uint32_t    class_version       = 8; // v8: security threat
+//static const constexpr  uint32_t    class_version       = 8; // v8: security threat
+static const constexpr  uint32_t    class_version       = 9; // v9: contact
                         uint32_t    m_level             = 0;
                         uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar.
                         uint32_t    m_security_threat   = 0; // used to limit a character's participation in Task Forces, Strike Forces, and Trials
@@ -66,6 +69,7 @@ static const constexpr  uint32_t    class_version       = 8; // v8: security thr
                         uint32_t    m_max_insp_cols     = 0;
                         uint32_t    m_max_insp_rows     = 0;
                         uint32_t    m_max_enhance_slots = 0;
+                        vContactList m_contacts;
 
                         // No need to serialize these members
                         bool        m_has_updated_powers    = false;

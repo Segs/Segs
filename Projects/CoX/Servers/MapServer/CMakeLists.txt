@@ -50,6 +50,7 @@ SET(target_INCLUDE
     Events/ChatDividerMoved.h
     Events/ChatMessage.h
     Events/ContactDialogs.h
+    Events/ContactList.h
     Events/DeadNoGurney.h
     Events/DoorMessage.h
     Events/EmailHeaders.h

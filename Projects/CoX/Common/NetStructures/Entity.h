@@ -96,11 +96,7 @@ enum class FadeDirection
     Out
 };
 
-struct Destination // aka waypoint
-{
-    int point_idx = 0;
-    glm::vec3 location;
-};
+
 
 // returned by getEntityFromDB()
 struct CharacterFromDB

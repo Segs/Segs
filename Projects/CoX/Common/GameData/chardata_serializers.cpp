@@ -33,6 +33,8 @@ const constexpr uint32_t FriendsList::class_version;
 const constexpr uint32_t Sidekick::class_version;
 const constexpr uint32_t CharacterData::class_version;
 const constexpr uint32_t vInspirations::class_version;
+const constexpr uint32_t Contact::class_version;
+const constexpr uint32_t Destination::class_version;
 CEREAL_CLASS_VERSION(PowerPool_Info, PowerPool_Info::class_version)   // register PowerPool_Info class version
 CEREAL_CLASS_VERSION(CharacterInspiration, CharacterInspiration::class_version)   // register CharacterInspiration struct version
 CEREAL_CLASS_VERSION(CharacterEnhancement, CharacterEnhancement::class_version)   // register CharacterEnhancement struct version
@@ -43,6 +45,8 @@ CEREAL_CLASS_VERSION(FriendsList, FriendsList::class_version)       // register 
 CEREAL_CLASS_VERSION(Sidekick, Sidekick::class_version)             // register Sidekick struct version
 CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version)   // register CharacterData struct version
 CEREAL_CLASS_VERSION(vInspirations, vInspirations::class_version)   // register vInspirations struct version
+CEREAL_CLASS_VERSION(Contact, Contact::class_version)
+CEREAL_CLASS_VERSION(Destination, Destination::class_version)
 
 template<class Archive>
 void serialize(Archive &archive, PowerPool_Info &poolinfo, uint32_t const version)
@@ -226,6 +230,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("MaxInspirationCols", cd.m_max_insp_cols));
     archive(cereal::make_nvp("MaxInspirationRows", cd.m_max_insp_rows));
     archive(cereal::make_nvp("MaxEnhancementSlots", cd.m_max_enhance_slots));
+    archive(cereal::make_nvp("KnownContacts", cd.m_contacts));
 }
 
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)
