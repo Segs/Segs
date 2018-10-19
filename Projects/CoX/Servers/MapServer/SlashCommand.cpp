@@ -33,6 +33,8 @@
 #include "GameData/Trade.h"
 #include "Settings.h"
 
+#include "Messages/TeamService/TeamEvents.h"
+
 #include <QtCore/QString>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -1579,40 +1581,17 @@ void cmdHandler_MOTD(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
 {
+
+
     Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if(tgt == nullptr)
+    if (tgt == nullptr)
     {
+        const QString msg = "Team invite target name unable to be parsed from command: " + cmd;
+        qCWarning(logTeams) << msg;
         return;
     }
 
-    if(tgt->m_has_team)
-    {
-        const QString msg = tgt->name() + " is already on a team.";
-        qCDebug(logTeams) << msg;
-        sendInfoMessage(MessageChannel::SERVER, msg, sess);
-        return;
-    }
-
-    if(tgt->name() == sess.m_name)
-    {
-        const QString msg = "You cannot invite yourself to a team.";
-        qCDebug(logTeams) << msg;
-        sendInfoMessage(MessageChannel::SERVER, msg, sess);
-        return;
-    }
-
-    if(sess.m_ent->m_has_team && sess.m_ent->m_team != nullptr)
-    {
-        if(!sess.m_ent->m_team->isTeamLeader(sess.m_ent))
-        {
-            const QString msg = "Only the team leader can invite players to the team.";
-            qCDebug(logTeams) << sess.m_ent->name() << msg;
-            sendInfoMessage(MessageChannel::TEAM, msg, sess);
-            return;
-        }
-    }
-
-    sendTeamOffer(sess, *tgt->m_client);
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInvitedMessage({sess.m_ent->m_db_id, tgt->m_db_id}, 0));
 }
 
 void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
@@ -1620,19 +1599,14 @@ void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
     Entity* const tgt = getEntityFromCommand(cmd, sess);
     if(tgt == nullptr)
     {
+        const QString msg = "Team kick target name unable to be parsed from command: " + cmd;
+        qCWarning(logTeams) << msg;
         return;
     }
 
-    const QString name = tgt->name();
-    QString msg;
-    if(kickTeam(*tgt))
-        msg = "Kicking " + name + " from team.";
-    else
-        msg = "Failed to kick " + name;
-
-    qCDebug(logSlashCommand).noquote() << msg;
-    sendInfoMessage(MessageChannel::TEAM, msg, sess);
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberKickedMessage({sess.m_ent->m_db_id, tgt->m_db_id}, 0));
 }
+
 
 void cmdHandler_LeaveTeam(const QString &/*cmd*/, MapClientSession &sess)
 {
@@ -1927,7 +1901,7 @@ void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
-{
+{    
     // game command: "team_accept \"From\" to_db_id to_db_id \"To\""
 
     QString msgfrom = "Something went wrong with TeamAccept.";
@@ -1935,32 +1909,36 @@ void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
-    QString from_name       = args.value(1);
+    // QString from_name       = args.value(1);
     uint32_t tgt_db_id      = args.value(2).toUInt();
     uint32_t tgt_db_id_2    = args.value(3).toUInt(); // always the same?
-    QString tgt_name        = args.value(4);
+    // QString tgt_name        = args.value(4);
 
     if(tgt_db_id != tgt_db_id_2)
         qWarning() << "TeamAccept db_ids do not match!";
 
-    Entity *from_ent = getEntity(&sess,from_name);
-    if(from_ent == nullptr)
-        return;
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteAcceptedMessage({tgt_db_id}, 0));
 
-    if(inviteTeam(*from_ent,*sess.m_ent))
-    {
-        msgfrom = "Inviting " + tgt_name + " to team.";
-        msgtgt = "Joining " + from_name + "'s team.";
 
-    }
-    else
-    {
-        msgfrom = "Failed to invite " + tgt_name + ". They are already on a team.";
-    }
 
-    qCDebug(logSlashCommand).noquote() << msgfrom;
-    sendInfoMessage(MessageChannel::TEAM, msgfrom, *from_ent->m_client);
-    sendInfoMessage(MessageChannel::TEAM, msgtgt, sess);
+    // Entity *from_ent = getEntity(&sess,from_name);
+    // if(from_ent == nullptr)
+    //     return;
+
+    // if(inviteTeam(*from_ent,*sess.m_ent))
+    // {
+    //     msgfrom = "Inviting " + tgt_name + " to team.";
+    //     msgtgt = "Joining " + from_name + "'s team.";
+
+    // }
+    // else
+    // {
+    //     msgfrom = "Failed to invite " + tgt_name + ". They are already on a team.";
+    // }
+
+    // qCDebug(logSlashCommand).noquote() << msgfrom;
+    // sendInfoMessage(MessageChannel::TEAM, msgfrom, *from_ent->m_client);
+    // sendInfoMessage(MessageChannel::TEAM, msgtgt, sess);
 }
 
 void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
@@ -1970,21 +1948,23 @@ void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
-    QString from_name   = args.value(1);
+    // QString from_name   = args.value(1);
     uint32_t tgt_db_id  = args.value(2).toUInt();
-    QString tgt_name    = args.value(3);
+    // QString tgt_name    = args.value(3);
 
-    Entity *from_ent = getEntity(&sess,from_name);
-    if(from_ent == nullptr)
-        return;
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteDeclinedMessage({tgt_db_id}, 0));
 
-    msg = tgt_name + " declined a team invite from " + from_name + QString::number(tgt_db_id);
-    qCDebug(logSlashCommand).noquote() << msg;
+    // Entity *from_ent = getEntity(&sess,from_name);
+    // if(from_ent == nullptr)
+    //     return;
 
-    msg = tgt_name + " declined your team invite."; // to sender
-    sendInfoMessage(MessageChannel::TEAM, msg, *from_ent->m_client);
-    msg = "You declined the team invite from " + from_name; // to target
-    sendInfoMessage(MessageChannel::TEAM, msg, sess);
+    // msg = tgt_name + " declined a team invite from " + from_name + QString::number(tgt_db_id);
+    // qCDebug(logSlashCommand).noquote() << msg;
+
+    // msg = tgt_name + " declined your team invite."; // to sender
+    // sendInfoMessage(MessageChannel::TEAM, msg, *from_ent->m_client);
+    // msg = "You declined the team invite from " + from_name; // to target
+    // sendInfoMessage(MessageChannel::TEAM, msg, sess);
 }
 
 void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)

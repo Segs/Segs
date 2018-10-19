@@ -1,5 +1,6 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(Common)
+include_directories(Servers/Services)
 
 ADD_SUBDIRECTORY(Common)
 ADD_SUBDIRECTORY(Utilities)

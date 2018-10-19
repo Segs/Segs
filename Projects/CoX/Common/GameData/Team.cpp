@@ -23,13 +23,13 @@
  */
 uint32_t Team::m_team_idx_counter = 0;
 
-void Team::addTeamMember(Entity *e,uint32_t teammate_map_idx)
+TeamingError Team::addTeamMember(Entity *e,uint32_t teammate_map_idx)
 {
     if(m_team_members.size() >= m_max_team_size)
-        return;
+        return TeamingError::TEAM_FULL;
 
     if(e->m_has_team)
-        return;
+        return TeamingError::INVITEE_HAS_TEAM;
 
     if(e->m_char->m_char_data.m_lfg)
         removeLFG(*e);
@@ -44,6 +44,7 @@ void Team::addTeamMember(Entity *e,uint32_t teammate_map_idx)
     if(logTeams().isDebugEnabled())
         dump();
 
+    return TeamingError::OK;
 }
 
 Team::~Team() = default;

@@ -8,6 +8,13 @@
 #pragma once
 #include "CommonNetStructures.h"
 
+enum class TeamingError
+{
+    OK,
+    TEAM_FULL,
+    INVITEE_HAS_TEAM,
+};
+
 class Entity;
 
 class Team
@@ -35,10 +42,10 @@ const   uint32_t    m_team_idx          = 0;
         bool        m_has_taskforce  = false;    // it's possible that this belongs to entity or char instead
 
         // Methods
-        void        dump();
-        void        dumpAllTeamMembers();
-        void        addTeamMember(Entity *e, uint32_t teammate_map_idx);
-        bool        isTeamLeader(Entity *e);
+        void                dump();
+        void                dumpAllTeamMembers();
+        TeamingError        addTeamMember(Entity *e, uint32_t teammate_map_idx);
+        bool                isTeamLeader(Entity *e);
 
 private:
 static  uint32_t    m_team_idx_counter;

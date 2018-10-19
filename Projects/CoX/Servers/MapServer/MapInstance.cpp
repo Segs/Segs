@@ -47,6 +47,7 @@
 #include "GameData/playerdata_serializers.h"
 #include "GameData/Store.h"
 #include "Messages/EmailService/EmailEvents.h"
+#include "Messages/TeamService/TeamEvents.h"
 #include "Messages/Game/GameEvents.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
 #include "Messages/Map/ClueList.h"
