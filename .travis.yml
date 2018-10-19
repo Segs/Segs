@@ -1,6 +1,6 @@
 language: generic # prevent travis from overriding provided compilers.
 cache:
-  ccache: true # includes $HOME/.ccache and adds /usr/lib/ccache to $PATH
+  ccache: true    # includes $HOME/.ccache and adds /usr/lib/ccache to $PATH
   directories:
     - 3rd_party
 dist: trusty
@@ -106,6 +106,7 @@ script:
       cmake .. -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CXX_LINKER_FLAGS}" -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY});
     fi
   - make VERBOSE=1
+  - cd .. # go back to parent dir so relative path for after_success/failure script is correct
 # ctest --output-on-failure
 
 after_success:
