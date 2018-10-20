@@ -276,7 +276,8 @@ void SEGSAdminTool::create_databases(bool overwrite)
     }
     else
     {
-        ui->output->appendPlainText("Failed to start DBTool Add User...");
+        ui->output->appendPlainText("Failed to start DBTool Add User... "
+                                    "**Please ensure you are NOT running as an administrator or sudo user**");
         qDebug() <<"Failed to start DBTool Add User...";
         emit checkForDB(true);
         qApp->processEvents();
