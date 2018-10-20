@@ -7,6 +7,7 @@ dist: trusty
 
 notifications:
   email: false
+  webhooks: https://segs.io/travis/travis-ci.php
     
 env:
   global:
