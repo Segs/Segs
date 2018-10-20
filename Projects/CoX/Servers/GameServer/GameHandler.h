@@ -8,7 +8,7 @@
 #pragma once
 #include "EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
-#include "GameDatabase/GameDBSyncEvents.h"
+#include "Messages/GameDatabase/GameDBSyncEvents.h"
 
 #include <unordered_set>
 class CharacterClient;

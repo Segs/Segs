@@ -8,6 +8,7 @@
 #pragma once
 #include "GameData/scenegraph_definitions.h"
 #include "Common/Runtime/AxisAlignedBox.h"
+#include "Common/Runtime/Handle.h"
 
 #include "glm/vec3.hpp"
 #include "glm/mat3x3.hpp"
@@ -27,6 +28,7 @@ struct SceneNodeChildTransform
 {
     struct SceneNode *node;
     glm::mat3x3 m_matrix2;
+    glm::vec3 m_pyr;
     glm::vec3 m_translation;
 };
 struct LightProperties
@@ -36,8 +38,13 @@ struct LightProperties
     int is_negative;
 };
 using HLightProperties = std::unique_ptr<LightProperties>;
+
 struct SceneNode
 {
+    SceneNode()
+    {
+        is_LOD_fade_node = 0;
+    }
     struct GeoStoreDef *    belongs_to_geoset = nullptr;
     std::vector<SceneNodeChildTransform> children;
     std::vector<GroupProperty_Data> *properties = nullptr;
@@ -49,6 +56,11 @@ struct SceneNode
     QString dir;
     AxisAlignedBoundingBox        m_bbox;
     int                           m_index_in_scenegraph=0;
+
+    uint32_t                      fx_name_hash  = 0; //!< This is fnv1a hash of downcased fx file path.
+    // Start of bit flags
+    uint32_t                      is_LOD_fade_node : 1;
+    // end of bit flags
     glm::vec3                     center;
     float                         radius        = 0;
     float                         vis_dist      = 0;
@@ -58,6 +70,7 @@ struct SceneNode
     float                         lod_far_fade  = 0;
     float                         lod_scale     = 0;
     float                         shadow_dist   = 0;
+    HandleT<20,12,struct SoundInfo> sound_info;
     bool                          lod_autogen   = false;
     bool                          in_use        = false;
     bool                          lod_fromtrick = false;
@@ -81,4 +94,7 @@ struct PrefabStore;
 struct LoadingContext;
 
 bool loadSceneGraph(const QString &path, LoadingContext &ctx, PrefabStore &prefabs);
+SceneGraph *loadWholeMap(const QString &path);
+void loadSubgraph(const QString &filename, LoadingContext &ctx,PrefabStore &prefabs);
+SceneNode * getNodeByName(const SceneGraph &graph,const QString &name);
 } // and of SEGS namespace

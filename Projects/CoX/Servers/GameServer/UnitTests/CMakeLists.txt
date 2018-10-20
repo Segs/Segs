@@ -9,5 +9,6 @@ add_test(GameEventRegistry GameEventRegistry)
 
 target_link_libraries(GameEventRegistry
     Qt5::Test
-    gameserver_lib
+    GameServer
+    common_runtime
 )

@@ -12,7 +12,7 @@
 
 #include "DummyClass.h"
 
-#include "AuthProtocol/AuthEvents.h"
+#include "Auth/AuthEvents.h"
 #include "AuthProtocol/AuthLink.h"
 
 #include <QtCore/QDebug>

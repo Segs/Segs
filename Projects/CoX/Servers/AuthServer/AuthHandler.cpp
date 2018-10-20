@@ -14,7 +14,7 @@
 
 #include "AuthServer/AuthServer.h"
 #include "AuthProtocol/AuthLink.h"
-#include "AuthProtocol/AuthEvents.h"
+#include "Messages/Auth/AuthEvents.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"
 
 #include "Servers/InternalEvents.h"

@@ -18,15 +18,16 @@
 // Template functions are part of include file to avoid the need of explicit instantiation of templates.
 class GrowingBuffer
 {
-static  constexpr size_t    DEFAULT_MAX_SIZE = 0x10000; //64K should be enough for everyone :P
+static  constexpr uint32_t   DEFAULT_MAX_SIZE = 0x10000; //64K should be enough for everyone :P
 public:
 
             //              Con/De-struction
             //////////////////////////////////////////////////////////////////////////
 
 explicit                    GrowingBuffer(const GrowingBuffer &); // copy constructor
-                            GrowingBuffer(uint8_t *buf, size_t size,bool become_owner);
-                            GrowingBuffer(size_t max_size,uint8_t safe_area,size_t current_size);
+explicit                    GrowingBuffer(GrowingBuffer &&) noexcept; // copy constructor
+                            GrowingBuffer(uint8_t *buf, uint32_t size,bool become_owner);
+                            GrowingBuffer(uint32_t max_size,uint8_t safe_area, uint32_t current_size);
                             ~GrowingBuffer();
 
             //  Public methods
@@ -36,14 +37,14 @@ explicit                    GrowingBuffer(const GrowingBuffer &); // copy constr
             /* Unchecked functions are faster, but assume that they can read/write without violating the buffer, or their arguments*/
 
             void            PutString(const char *t);
-            void            PutBytes(const uint8_t *t, size_t len);
+            void            PutBytes(const uint8_t *t, uint32_t len);
             void            GetString(char *t);
-            bool            GetBytes(uint8_t *t, size_t len);
+            bool            GetBytes(uint8_t *t, uint32_t len);
 
 inline      void            uGetString(char *t);
-            void            uGetBytes(uint8_t *t,size_t len);
+            void            uGetBytes(uint8_t *t, uint32_t len);
 inline      void            uPutString(const char *t);
-            void            uPutBytes(const uint8_t *t,size_t len);
+            void            uPutBytes(const uint8_t *t, uint32_t len);
                             template <typename T>
             void            Put(const T &val)
                             {
@@ -88,14 +89,14 @@ inline      T               ruGet()
                                     return val;
                             }
 
-            void            PopFront(size_t count); //! this method removes up-to 'count' elements from the beginning of the buffer
+            void            PopFront(uint32_t count); //! this method removes up-to 'count' elements from the beginning of the buffer
 
             //              Accessors
             //////////////////////////////////////////////////////////////////////////
-            size_t          GetMaxSize() const          { return m_max_size;}
-            size_t          GetAvailSize() const        { return (m_size-m_write_off);}
-            size_t          GetDataSize() const         { return m_write_off; } //writing point gives actual size of readable data
-            size_t          GetReadableDataSize() const { return m_write_off-m_read_off; } //this much data can be read still
+            uint32_t        GetMaxSize() const          { return m_max_size;}
+            uint32_t        GetAvailSize() const        { return (m_size-m_write_off);}
+            uint32_t        GetDataSize() const         { return m_write_off; } //writing point gives actual size of readable data
+            uint32_t        GetReadableDataSize() const { return m_write_off-m_read_off; } //this much data can be read still
             uint8_t *       GetBuffer() const           { return m_buf; }
             uint32_t        getLastError() const        { return m_last_err;}
             void            setLastError(uint32_t val)  { m_last_err=val;}
@@ -113,11 +114,11 @@ inline      T               ruGet()
 protected:
             GrowingBuffer & operator=(const GrowingBuffer &) = delete;
             uint8_t *       m_buf;
-            size_t          m_write_off;
-            size_t          m_read_off;
-            size_t          m_size;
-            size_t          m_max_size;
+            uint32_t        m_write_off;
+            uint32_t        m_read_off;
+            uint32_t        m_size;
+            uint32_t        m_max_size;
             uint32_t        m_last_err;
             uint8_t         m_safe_area;
-            int             resize(size_t accommodate_size);
+            int             resize(uint32_t accommodate_size);
 };

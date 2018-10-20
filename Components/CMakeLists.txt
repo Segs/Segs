@@ -18,6 +18,7 @@ SET(target_CPP
 )
 SET(target_INCLUDE
     Colors.h
+    CompiletimeHash.h
     serialization_common.h
     serialization_types.h
     BitStream.h

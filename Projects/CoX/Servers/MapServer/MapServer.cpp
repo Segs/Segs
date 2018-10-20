@@ -69,7 +69,7 @@ bool MapServer::Run()
 {
     assert(m_owner_game_server_id != INVALID_GAME_SERVER_ID);
 
-    if (!getGameData().read_runtime_data(RUNTIME_DATA_PATH))
+    if (!getGameData().read_game_data(RUNTIME_DATA_PATH))
         return false;
 
     assert(d->m_manager.num_templates() > 0);

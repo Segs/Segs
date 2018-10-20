@@ -11,10 +11,6 @@
 class QString;
 class ClientOptions;
 
-template<class Archive>
-void serialize(Archive &archive, ClientOptions &co, uint32_t const version);
-
 void saveTo(const ClientOptions &target,const QString &baseName,bool text_format=false);
-
 void serializeToDb(const ClientOptions &data, QString &tgt);
 void serializeFromDb(ClientOptions &data, const QString &src);

@@ -7,7 +7,9 @@
 
 #pragma once
 
-enum eAuthPacketType
+#include <stdint.h>
+
+enum eAuthPacketType : uint8_t 
 {
     SMSG_AUTHVERSION = 0x00,
     SMSG_AUTH_ALREADY_LOGGED_IN   = 0x01,

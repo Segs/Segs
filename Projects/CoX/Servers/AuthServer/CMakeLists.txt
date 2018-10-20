@@ -17,42 +17,39 @@ SET (target_SOURCES
   ${target_CPP}
   ${target_INCLUDE}
 )
-
+add_handler(Auth ${target_SOURCES})
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
 
-ADD_LIBRARY(authserver_lib STATIC ${target_SOURCES})
-target_link_libraries(authserver_lib PUBLIC Qt5::Core)
-target_link_libraries(authserver_lib PUBLIC ace_IMP cox_server_common AuthProtocol SEGS_Components)
+target_link_libraries(Auth PUBLIC Qt5::Core)
+target_link_libraries(Auth PUBLIC ace_IMP cox_server_common AuthProtocol SEGS_Components)
 IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
-    ADD_EXECUTABLE(authserver ${authserver_standaloneSRCS})
-    TARGET_LINK_LIBRARIES(authserver PUBLIC
-        authserver_lib
-        auth_db_sync_lib
-        gameserver_lib
-        mapserver_lib
-        game_db_sync_lib
-        network_structures
+    ADD_EXECUTABLE(segs_server ${authserver_standaloneSRCS})
+    TARGET_LINK_LIBRARIES(segs_server PUBLIC
+        Auth
+        AuthDatabase
+        GameServer
+        MapServer
+        GameDatabase
         ${target_DEPENDS} gameData
         ${SCRIPTING_LIBRARY}
-        mapserver_lib
         Threads::Threads
         ace_IMP
         ${CMAKE_DL_LIBS}
     )
-    ADD_DEPENDENCIES(authserver ${target_DEPENDS} authserver_lib)
-    ADD_DEPENDENCIES(authserver ACE_BUILD)
-    target_link_libraries(authserver PUBLIC Qt5::Core)
-    set_property(TARGET authserver PROPERTY POSITION_INDEPENDENT_CODE ON)
+    ADD_DEPENDENCIES(segs_server ${target_DEPENDS} Auth)
+    ADD_DEPENDENCIES(segs_server ACE_BUILD)
+    target_link_libraries(segs_server PUBLIC Qt5::Core)
+    set_property(TARGET segs_server PROPERTY POSITION_INDEPENDENT_CODE ON)
     IF(MINGW)
-        target_link_libraries(authserver PUBLIC ws2_32)
+        target_link_libraries(segs_server PUBLIC ws2_32)
     ENDIF()
-    install(TARGETS authserver
+    install(TARGETS segs_server
         DESTINATION deploy
     )
 ENDIF(BUILD_SEPARATE)
 
 IF(WIN32)
     include(Windeployqt)
-    windeployqt(authserver deploy)
+    windeployqt(segs_server deploy)
 ENDIF()

@@ -41,12 +41,21 @@ inline void prologue(JSONInputArchive &, QString const &) { }
 inline void prologue(BinaryOutputArchive &, QString const &) { }
 inline void prologue(BinaryInputArchive &, QString const &) { }
 
-template<class Archive> inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, ::QString const & str)
+template<class Archive>
+inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, ::QString const & str)
 {
     ar( str.toStdString() );
 }
 
-//! Serialization for basic_string types, if binary data is supported
+template<class Archive>
+inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, ::QByteArray const & str)
+{
+    // make sure we actually have a latin1 string in str
+    assert(QString(str).toLatin1()==str);
+    ar( str.toStdString() );
+}
+
+//! Serialization for utf8-like types, if binary data is supported
 template<class Archive>
 inline void CEREAL_LOAD_FUNCTION_NAME(Archive & ar, ::QString & str)
 {
@@ -54,7 +63,14 @@ inline void CEREAL_LOAD_FUNCTION_NAME(Archive & ar, ::QString & str)
     ar( rd );
     str = QString::fromStdString(rd);
 }
-
+//! Serialization for latin1 string types, if binary data is supported
+template<class Archive>
+inline void CEREAL_LOAD_FUNCTION_NAME(Archive & ar, ::QByteArray & str)
+{
+    std::string rd;
+    ar( rd );
+    str = QByteArray::fromStdString(rd);
+}
 template<class Archive>
 void serialize(Archive & archive, glm::vec3 & m)
 {

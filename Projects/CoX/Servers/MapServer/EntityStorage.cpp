@@ -11,7 +11,7 @@
  */
 
 #include "EntityStorage.h"
-#include "NetStructures/Entity.h"
+#include "GameData/Entity.h"
 #include "EntityUpdateCodec.h"
 #include "MapClientSession.h"
 #include "MapServer/MapServer.h"
@@ -78,7 +78,7 @@ void EntityManager::sendGlobalEntDebugInfo( BitStream &tgt ) const
 }
 
 /**
- * @brief send the Entity removals to bring the world-state beliefs between server and \a client
+ * @brief send the Entity removals to bring the world-state beliefs between server and \a client into sync
  * @param tgt is the bitstream that will contain the serialized deletes
  * @param client is used to compare the current world-state beliefs between server and given player
  */

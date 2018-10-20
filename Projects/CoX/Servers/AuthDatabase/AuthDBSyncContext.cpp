@@ -12,7 +12,7 @@
 
 #include "AuthDBSyncContext.h"
 
-#include "AuthDBSyncEvents.h"
+#include "Messages/AuthDatabase/AuthDBSyncEvents.h"
 #include "PasswordHasher.h"
 #include "Settings.h"
 

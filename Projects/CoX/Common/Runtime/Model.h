@@ -8,14 +8,27 @@
 #pragma once
 #include "Common/Runtime/AxisAlignedBox.h"
 #include "Common/Runtime/Handle.h"
+#include "Common/Runtime/HandleBasedStorage.h"
 
 #include <QString>
 
 #include <vector>
+#include <memory>
+#include <functional>
+
+struct ModelModifiers;
+struct TextureModifiers;
+class QFile;
+
+template <int idx_bits, int gen_bits, typename T>
+struct SingularStoreHandleT;
 
 namespace SEGS
 {
-using HTexture = HandleT<20,12,struct TextureWrapper>;
+struct GeoSet;
+enum class CoHBlendMode : uint8_t;
+using HTexture = SingularStoreHandleT<20,12,struct TextureWrapper>;
+
 struct VBOPointers
 {
     std::vector<glm::vec3> pos;
@@ -43,9 +56,7 @@ enum ModelFlags : uint32_t
     OBJ_STATICFX       = 0x8000,
     OBJ_HIDE           = 0x10000,
 };
-enum class CoHBlendMode : uint8_t;
-struct ConvertedGeoSet;
-struct ModelModifiers;
+
 #pragma pack(push, 1)
 struct DeltaPack
 {
@@ -78,20 +89,22 @@ struct Model
 {
     AxisAlignedBoundingBox   box;
     QString                  name;
-    glm::vec3                m_min;
-    glm::vec3                m_max;
     int                      flags;
     float                    visibility_radius;
     uint32_t                 num_textures;
     PackBlock                packed_data;
     std::vector<TextureBind> texture_bind_info;
     ptrdiff_t                boneinfo_offset = 0;
-    ConvertedGeoSet *        geoset;
+    GeoSet *                 geoset;
     ModelModifiers *         trck_node = nullptr;
     glm::vec3                scale;
     uint32_t                 vertex_count;
     uint32_t                 model_tri_count;
     CoHBlendMode             blend_mode;
+    std::unique_ptr<VBOPointers> vbo;
 };
-
+void geosetLoadHeader(QFile &fp, GeoSet *geoset);
+void geosetLoadData(QFile &fp, GeoSet *geoset);
+void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model *model,const std::vector<HTexture> &textures);
+void fillVBO(Model & model);
 } // namespace SEGS

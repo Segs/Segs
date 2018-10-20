@@ -1,4 +1,12 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+ */
+
 #pragma once
+
 #include <stdint.h>
 
 template <int idx_bits, int gen_bits>
@@ -11,8 +19,8 @@ struct Handle
     static_assert(sizeof(uint32_t) * 8 >= (idx_bits + gen_bits), "Handle bits exceed the size of underlying type");
     uint32_t idx : idx_bits;
     uint32_t gen : gen_bits;
-    Handle(uint32_t idx_, uint16_t gen_) : idx(idx_), gen(gen_) {}
-    Handle() = default;
+    constexpr Handle(uint32_t idx_, uint16_t gen_) : idx(idx_), gen(gen_) {}
+    constexpr Handle() = default;
     operator bool() const { return gen != 0; }
 };
 

@@ -3,7 +3,7 @@
 #include "SEGSEventFactory.h"
 
 using namespace SEGSEvents;
-extern void register_GameDBEvents();
+extern void register_GameDatabaseEvents();
 namespace
 {
     const char *event_names[] =
@@ -36,7 +36,7 @@ private slots:
             QVERIFY2(create_by_name(ev_name)==nullptr,"no types registered yet, create_by_name result should be null");
         }
         // TODO: call register_all_events();
-        register_GameDBEvents();
+        register_GameDatabaseEvents();
         for(const char *ev_name : event_names)
         {
             QVERIFY2(create_by_name(ev_name) != nullptr,

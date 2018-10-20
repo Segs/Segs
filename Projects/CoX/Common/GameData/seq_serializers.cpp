@@ -22,9 +22,9 @@
 
 namespace
 {
-    void seqCleanSeqFileName(QString &filename)
+    void seqCleanSeqFileName(QByteArray &filename)
     {
-        filename = QDir::cleanPath(filename.toUpper());
+        filename = QDir::cleanPath(filename.toUpper()).toLatin1();
         int loc = filename.indexOf("/SEQUENCERS/");
 
         if(loc!=-1)
@@ -106,17 +106,17 @@ namespace
         if(s->end_encountered())
             return ok;
 
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("Anim")==0)
+            if("Anim"==_name)
             {
                 SeqMoveDataTypeAnim *nt = new SeqMoveDataTypeAnim;
                 ok &= loadFrom(s,nt);
                 target->m_Anim.push_back(nt);
             }
-            else if(_name.compare("PlayFx")==0)
+            else if("PlayFx"==_name)
             {
                 Parser_PlayFx *nt = new Parser_PlayFx;
                 ok &= loadFrom(s,nt);
@@ -151,23 +151,23 @@ namespace
         if(s->end_encountered())
             return ok;
 
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("NextMove")==0)
+            if("NextMove"==_name)
             {
                 SeqNextMoveData *nt = new SeqNextMoveData;
                 ok &= loadFrom(s,nt);
                 target->m_NextMove.push_back(nt);
             }
-            else if(_name.compare("CycleMove")==0)
+            else if("CycleMove"==_name)
             {
                 SeqCycleMoveData *nt = new SeqCycleMoveData;
                 ok &= loadFrom(s,nt);
                 target->m_CycleMove.push_back(nt);
             }
-            else if(_name.compare("Type")==0)
+            else if("Type"==_name)
             {
                 SeqMoveTypeData *nt = new SeqMoveTypeData;
                 ok &= loadFrom(s,nt);
@@ -216,25 +216,25 @@ namespace
         if(s->end_encountered())
             return ok;
 
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("TypeDef")==0)
+            if("TypeDef"==_name)
             {
                 SeqTypeDefData *nt = new SeqTypeDefData;
                 ok &= loadFrom(s,nt);
                 assert(ok);
                 target->m_TypeDef.push_back(nt);
             }
-            else if(_name.compare("Group")==0)
+            else if("Group"==_name)
             {
                 SeqGroupNameData *nt = new SeqGroupNameData;
                 ok &= loadFrom(s,nt);
                 assert(ok);
                 target->m_Group.push_back(nt);
             }
-            else if(_name.compare("Move")==0)
+            else if("Move"==_name)
             {
                 SeqMoveData *nt = new SeqMoveData;
                 ok &= loadFrom(s,nt);
@@ -259,11 +259,11 @@ bool loadFrom(BinStore *s, SequencerList *target)
     if(s->end_encountered())
         return ok;
 
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Sequencer")==0)
+        if("Sequencer"==_name)
         {
             SequencerData nt;
             ok &= loadFrom(s,&nt);
