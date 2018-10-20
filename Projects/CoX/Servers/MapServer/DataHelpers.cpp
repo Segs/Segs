@@ -20,7 +20,6 @@
 #include "GameData/power_definitions.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Character.h"
-#include "NetStructures/Contact.h"
 #include "NetStructures/Team.h"
 #include "NetStructures/LFG.h"
 #include "Events/ContactList.h"
@@ -653,13 +652,15 @@ void sendContactStatusList(MapClientSession &src, Contact contact)
     vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
     //find contact
     bool found = false;
-    for(auto con: contacts)
+
+    for (int i = 0; i < contacts.size(); ++i)
     {
-        if(con.m_npc_id == contact.m_npc_id)
+        if(contacts[i].m_npc_id == contact.m_npc_id)
         {
             found = true;
             //contact already in list, update contact;
-            con = contact;
+            contacts.at(i) = contact;
+            break;
         }
     }
 
@@ -669,11 +670,9 @@ void sendContactStatusList(MapClientSession &src, Contact contact)
     //update database contactList
     src.m_ent->m_char->m_char_data.m_contacts = contacts;
 
-    auto val = src.m_current_map->m_scripting_interface->callFunc("contact_list",src.m_ent->m_char->m_char_data.m_contacts);
-
     //Send contactList to client
-    src.m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contact)));
-    qCDebug(logSlashCommand) << "Sending ContactStatusList";
+    src.addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contacts)));
+    qCDebug(logScripts) << "Sending ContactStatusList";
 }
 
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)

@@ -7,13 +7,10 @@
 
 #pragma once
 
-
-#include <QString>
-#include <QHash>
-#include <QVector>
+#include "CommonNetStructures.h"
 #include "glm/vec3.hpp"
-#include "qdebug.h"
 #include "cereal/cereal.hpp"
+#include "Logging.h"
 
 static QHash<QString,int> contactLinkHash = {
     {"CONTACTLINK_HELLO"                ,1},
@@ -47,10 +44,12 @@ static QHash<QString,int> contactLinkHash = {
 struct Destination // aka waypoint
 {
   public:
+    static const constexpr uint32_t class_version = 1;
+
     int point_idx = 0;
     glm::vec3 location;
-
-    static const constexpr uint32_t class_version = 1;
+    QString         m_location_name;
+    QString         m_location_map_name;
 
         template<class Archive>
         void serialize(Archive &archive, uint32_t const version)
@@ -63,8 +62,10 @@ struct Destination // aka waypoint
 
         archive(cereal::make_nvp("PointIdx",point_idx));
         archive(cereal::make_nvp("Location",location));
-        }
+        archive(cereal::make_nvp("LocationName",m_location_name));
+        archive(cereal::make_nvp("LocationMapName",m_location_map_name));
 
+        }
 };
 
 
@@ -73,9 +74,6 @@ class Contact
 public:
     static const constexpr uint32_t class_version = 1;
 
-    QString m_name;
-    QString m_display_name;
-
     // for scripting language access.
     std::string getName() const { return m_name.toStdString();}
     void setName(const char *n) { m_name = n; }
@@ -83,21 +81,21 @@ public:
     std::string getLocationDescription() const { return m_location_description.toStdString();}
     void setLocationDescription(const char *n) { m_location_description = n; }
 
+       QString         m_name;
        QString         m_location_description;
-       uint32_t         m_npc_id;
-       uint8_t          m_handle;
-       uint8_t          m_current_standing;             // Current arc status?
-       uint8_t          m_confidant_threshold;           // int for confidant status?
-       uint8_t          m_friend_threshold;              // int for friend status?
-       uint8_t          m_complete_threshold;            // int for complete status?
+       uint32_t        m_npc_id;
+       uint8_t         m_contact_idx;                   // most likey
+       uint8_t         m_current_standing;
+       uint8_t         m_confidant_threshold;
+       uint8_t         m_friend_threshold;
+       uint8_t         m_complete_threshold;
        uint8_t         m_task_index            = 0;
        bool            m_notify_player         = false;
        bool            m_can_use_cell          = false;
        bool            m_has_location          = false;
        Destination     m_location;
 
-       QString         m_location_name;
-       QString         m_location_map_name;
+
 
        template<class Archive>
        void serialize(Archive &archive, uint32_t const version)
@@ -109,10 +107,9 @@ public:
            }
 
        archive(cereal::make_nvp("Name",m_name));
-       archive(cereal::make_nvp("DisplayName",m_display_name));
        archive(cereal::make_nvp("LocationDescription",m_location_description));
        archive(cereal::make_nvp("npcId",m_npc_id));
-       archive(cereal::make_nvp("Handle",m_handle));
+       archive(cereal::make_nvp("Handle",m_contact_idx));
        archive(cereal::make_nvp("CurrentStanding",m_current_standing));
        archive(cereal::make_nvp("ConfidantThreshold",m_confidant_threshold));
        archive(cereal::make_nvp("FriendThreshold",m_friend_threshold));
@@ -122,12 +119,9 @@ public:
        archive(cereal::make_nvp("CanUseCell",m_can_use_cell));
        archive(cereal::make_nvp("HasLocation",m_has_location));
        archive(cereal::make_nvp("Location",m_location));
-       archive(cereal::make_nvp("LocationName",m_location_name));
-       archive(cereal::make_nvp("LocationMapName",m_location_map_name));
-
        }
 };
-
+using vContactList = std::vector<Contact>;
 
 struct ContactEntry
 {

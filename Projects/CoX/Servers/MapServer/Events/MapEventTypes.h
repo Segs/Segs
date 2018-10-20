@@ -62,8 +62,8 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evContactDialogClose         ,140)
     EVENT_DECL(MapEventTypes, evContactDialogOk            ,141)
     EVENT_DECL(MapEventTypes, evContactDialogYesNo         ,142)
-    EVENT_DECL(MapEventTypes, evContactStatusList        ,143)
-    EVENT_DECL(MapEventTypes, evContactSelect            ,144)
+    EVENT_DECL(MapEventTypes, evContactStatusList          ,143)
+    EVENT_DECL(MapEventTypes, evContactSelect              ,144)
 //    EVENT_DECL(MapEventTypes, evTaskStatusList           ,145)
 //    EVENT_DECL(MapEventTypes, evTaskSelect               ,146)
 //    EVENT_DECL(MapEventTypes, evTaskRemoveTeammates      ,147)
@@ -91,7 +91,6 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
     EVENT_DECL(MapEventTypes, evTrayAdd                    ,182)
     EVENT_DECL(MapEventTypes, evCombineEnhanceResponse     ,183)
-    EVENT_DECL(MapEventTypes, evReceiveContactStatus       ,184)
 // client -> server commands
     EVENT_DECL(MapEventTypes, evConsoleCommand             ,200)
     EVENT_DECL(MapEventTypes, evMiniMapState               ,201)
@@ -110,6 +109,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evResetKeybinds              ,221)
     EVENT_DECL(MapEventTypes, evSelectKeybindProfile       ,222)
     EVENT_DECL(MapEventTypes, evDialogButton               ,224)
+    EVENT_DECL(MapEventTypes, evReceiveContactStatus       ,226)
     EVENT_DECL(MapEventTypes, evActivatePower              ,227)
     EVENT_DECL(MapEventTypes, evActivatePowerAtLocation    ,228)
     EVENT_DECL(MapEventTypes, evActivateInspiration        ,229) // Hit F1, F2, F3, F4, F5 or Click on Inspiration in Tray

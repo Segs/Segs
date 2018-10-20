@@ -29,7 +29,6 @@ static const constexpr  uint32_t        class_version   = 1;
                         SidekickType    m_type          = NoSidekick;
 };
 
-using vContactList = std::vector<Contact>;
 struct CharacterData
 {
 //static const constexpr  uint32_t    class_version       = 8; // v8: security threat

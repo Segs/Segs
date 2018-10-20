@@ -139,7 +139,6 @@ void ScriptingEngine::registerTypes()
         sol::constructors<Contact()>(),
         // gets or set the value using member variable syntax
         "name", sol::property(&Contact::getName, &Contact::setName),
-        "displayName", &Contact::m_display_name,
         "locationDescription", sol::property(&Contact::getLocationDescription, &Contact::setLocationDescription),
         "npcId", &Contact::m_npc_id,
         "currentStanding", &Contact::m_current_standing,
@@ -243,7 +242,6 @@ void ScriptingEngine::registerTypes()
         "set_default_spawn_point", &MapSceneGraph::set_default_spawn_point
     );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
-    m_private->m_lua["characters"] = m_private->m_lua.create_named_table("characters");
     m_private->m_lua["printDebug"] = [](const char* msg)
     {
         qCDebug(logScripts) << msg;
