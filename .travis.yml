@@ -1,11 +1,13 @@
 language: generic # prevent travis from overriding provided compilers.
 cache:
+  ccache: true    # includes $HOME/.ccache and adds /usr/lib/ccache to $PATH
   directories:
     - $HOME/.ccache
 dist: trusty
 
 notifications:
   email: false
+  webhooks: https://segs.io/travis/travis-ci.php
     
 env:
   global:
