@@ -109,7 +109,7 @@ public:
        archive(cereal::make_nvp("Name",m_name));
        archive(cereal::make_nvp("LocationDescription",m_location_description));
        archive(cereal::make_nvp("npcId",m_npc_id));
-       archive(cereal::make_nvp("Handle",m_contact_idx));
+       archive(cereal::make_nvp("ContactIdx",m_contact_idx));
        archive(cereal::make_nvp("CurrentStanding",m_current_standing));
        archive(cereal::make_nvp("ConfidantThreshold",m_confidant_threshold));
        archive(cereal::make_nvp("FriendThreshold",m_friend_threshold));
