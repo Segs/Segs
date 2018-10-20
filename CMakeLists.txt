@@ -109,7 +109,7 @@ macro(add_messages_library name )
     target_include_directories(${name}_interface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
     target_link_libraries(${name}_interface PUBLIC Qt5::Core)
     # all interfaces use stuff from Common, so should depend/link to it
-    target_link_libraries(${name}_interface PUBLIC Common)
+    target_link_libraries(${name}_interface PUBLIC SEGS_Components)
 endmacro()
 
 macro(add_handler name)
