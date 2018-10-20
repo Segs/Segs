@@ -7,6 +7,7 @@ dist: trusty
 
 notifications:
   email: false
+  webhooks: https://segs.io/travis/travis-ci.php
     
 env:
   global:
@@ -106,13 +107,4 @@ script:
       cmake .. -DCMAKE_BUILD_TYPE=${BUILD} -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_EXE_LINKER_FLAGS="${CXX_LINKER_FLAGS}" -DBUILD_WITH_CCACHE=1  -DCLANG_TIDY=$(which ${CLANG_TIDY});
     fi
   - make VERBOSE=1
-  - cd .. # go back to parent dir so relative path for after_success/failure script is correct
 # ctest --output-on-failure
-
-after_success:
-  - chmod +x ci_support/travis_discord_hook.sh
-  - ./ci_support/travis_discord_hook.sh success $WEBHOOK_URL
-
-after_failure:
-  - chmod +x ci_support/travis_discord_hook.sh
-  - ./ci_support/travis_discord_hook.sh failure $WEBHOOK_URL
