@@ -113,7 +113,7 @@ macro(add_messages_library name )
     target_include_directories(${name}_interface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
     target_link_libraries(${name}_interface PUBLIC Qt5::Core)
     # all interfaces use stuff from Common, so should depend/link to it
-    target_link_libraries(${name}_interface PUBLIC )
+    target_link_libraries(${name}_interface PUBLIC SEGS_Components)
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN}) 
 	set_target_properties (${name}_interface PROPERTIES
 		FOLDER Projects/CoX/Common/Messages
