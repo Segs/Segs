@@ -270,6 +270,7 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
     m_private->m_lua["client"] = client;
+    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     return callFunc(name,arg1);
 }
@@ -277,6 +278,7 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, glm::vec3 loc)
 {
     m_private->m_lua["client"] = client;
+    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     return callFunc(name,arg1,loc);
 }

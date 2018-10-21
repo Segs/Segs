@@ -675,6 +675,14 @@ void sendContactStatusList(MapClientSession &src, Contact contact)
     qCDebug(logScripts) << "Sending ContactStatusList";
 }
 
+void sendContactStatusList(MapClientSession &src)
+{
+    vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
+    //Send contactList to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contacts)));
+    qCDebug(logScripts) << "Sending ContactStatusList";
+}
+
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)
 {
     qCDebug(logSlashCommand) << QString("Sending SendWaypoint: %1 <%2, %3, %4>")

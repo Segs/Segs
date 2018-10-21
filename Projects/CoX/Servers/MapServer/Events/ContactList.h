@@ -39,7 +39,7 @@ namespace SEGSEvents
                 bs.StoreString(contact.m_name);
                 bs.StoreString(contact.m_location_description);
                 bs.StorePackedBits(12, contact.m_npc_id);
-                bs.StorePackedBits(1, contact.m_contact_idx);
+                bs.StorePackedBits(1, count); // m_contact_idx
                 bs.StorePackedBits(1, contact.m_task_index);
                 bs.StoreBits(1, contact.m_notify_player);
                 bs.StoreBits(1, contact.m_can_use_cell);
@@ -68,6 +68,7 @@ namespace SEGSEvents
     class ContactSelect : public GameCommandEvent
     {
     public:
+        // [[ev_def:field]]
         Contact selected_contact;
         explicit ContactSelect() : GameCommandEvent(MapEventTypes::evContactSelect){}
         ContactSelect(Contact contact) : GameCommandEvent(MapEventTypes::evContactSelect)
@@ -100,7 +101,7 @@ namespace SEGSEvents
         }
         void    serializefrom(BitStream &bs)
         {
-            m_srv_idx = bs.GetPackedBits(12);
+            m_srv_idx = bs.GetPackedBits(1);
             qCDebug(logMapEvents) << "ReceiveContactStatus Event";
         }
 
