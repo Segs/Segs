@@ -22,3 +22,10 @@ target_link_libraries(GameDatabase INTERFACE SEGS_Components)
 if(ENABLE_TESTS)
     add_subdirectory(UnitTests)
 endif()
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES GameDatabase SOURCES) 
+list(REMOVE_ITEM TARGET_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/GameDBEvents.gen.cpp)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (GameDatabase PROPERTIES
+    FOLDER Projects/CoX/Servers
+)

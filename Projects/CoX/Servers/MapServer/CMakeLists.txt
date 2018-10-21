@@ -63,4 +63,9 @@ endif()
 if(ENABLE_TESTS)
     add_subdirectory(UnitTests)
 endif()
-
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES MapServer SOURCES)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${target_CPP} ${target_INCLUDE}) 
+set_target_properties (MapServer PROPERTIES
+    FOLDER Projects/CoX/Servers
+)

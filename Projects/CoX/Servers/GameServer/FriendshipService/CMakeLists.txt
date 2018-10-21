@@ -20,3 +20,10 @@ target_link_libraries(FriendshipService PUBLIC SEGS_Components gameData)
 if(ENABLE_TESTS)
     add_subdirectory(UnitTests)
 endif()
+
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES FriendshipService SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (FriendshipService PROPERTIES
+    FOLDER Projects/CoX/Servers/GameServer
+)

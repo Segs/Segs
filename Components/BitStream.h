@@ -16,6 +16,8 @@ Description: The BitStream class allows it's user to manipulate data in
 
 #pragma once
 
+#include <cereal/macros.hpp>
+
 #include "Buffer.h"
 
 #include <cstdint>

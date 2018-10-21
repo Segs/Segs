@@ -38,3 +38,9 @@ target_compile_options(mapviewer PUBLIC -march=native)
 #    COMMAND ${CMAKE_COMMAND} -E copy_directory ${ThirdParty_Install_Dir}/share/Lutefisk3D/CoreData ${EXECUTABLE_OUTPUT_PATH}/mapviewer_data/CoreData
 #    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Data ${EXECUTABLE_OUTPUT_PATH}/mapviewer_data/Data
 #)
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES mapviewer SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (mapviewer PROPERTIES
+    FOLDER Projects/CoX/Utilities
+)

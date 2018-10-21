@@ -53,3 +53,11 @@ IF(WIN32)
     include(Windeployqt)
     windeployqt(segs_server deploy)
 ENDIF()
+# Retain directory structure in visual studio
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${target_CPP} ${target_INCLUDE} ${authserver_standaloneSRCS}) 
+set_target_properties (Auth PROPERTIES
+    FOLDER Projects/CoX/Servers
+)
+set_target_properties (segs_server PROPERTIES
+    FOLDER Projects/CoX/Servers
+)

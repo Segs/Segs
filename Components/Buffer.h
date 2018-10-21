@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <cereal/macros.hpp>
-
 #include <stdint.h>
 #include <cstring>
 

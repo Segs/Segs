@@ -22,3 +22,10 @@ target_include_directories(common_runtime INTERFACE
 )
 target_link_libraries(common_runtime INTERFACE gameData )
 #set_property(TARGET segs_runtime APPEND PROPERTY INCLUDE_DIRECTORIES "$<TARGET_PROPERTY:cereal_IMP,INTERFACE_INCLUDE_DIRECTORIES>")
+
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES common_runtime SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (common_runtime PROPERTIES
+    FOLDER Projects/CoX/Common
+)

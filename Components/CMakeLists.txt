@@ -59,6 +59,13 @@ if(ENABLE_TESTS)
     add_subdirectory(UnitTests)
 endif()
 
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES SEGS_Components SOURCES) 
+list(REMOVE_ITEM TARGET_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/Common.gen.cpp)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (SEGS_Components PROPERTIES
+    FOLDER Components
+)
 
 
 

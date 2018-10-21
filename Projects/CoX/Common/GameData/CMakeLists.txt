@@ -128,3 +128,10 @@ add_dependencies(gameData ace_IMP cereal_IMP) # used for Singleton stuff.
 target_link_libraries(gameData PUBLIC Qt5::Core)
 target_link_libraries(gameData INTERFACE SEGS_Components)
 set_property(TARGET gameData APPEND PROPERTY INCLUDE_DIRECTORIES "$<TARGET_PROPERTY:cereal_IMP,INTERFACE_INCLUDE_DIRECTORIES>")
+
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES gameData SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (gameData PROPERTIES
+    FOLDER Projects/CoX/Common
+)
