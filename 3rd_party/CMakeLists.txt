@@ -15,7 +15,7 @@ if(MINGW) # ERICEDIT: If the OS is Windows:
     add_custom_command( # ERICEDIT: Copy over libACE.dll to the output directory.
         TARGET libace
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ace_LIBRARY_SHARED} ${EXECUTABLE_OUTPUT_PATH}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ace_LIBRARY_SHARED} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
 endif()
 ########################################################################################

@@ -131,7 +131,7 @@ endmacro()
 add_subdirectory(Components)
 add_subdirectory(Projects)
 
-file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/data)
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data)
 
 set(MAPNAMES
   City_00_01
@@ -152,5 +152,5 @@ set(MAPNAMES
   Trial_05_01
   )
 foreach(MAPDIR ${MAPNAMES})
-  file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/DefaultMapInstances/${MAPDIR})
+  file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/${MAPDIR})
 endforeach(MAPDIR)
