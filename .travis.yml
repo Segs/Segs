@@ -1,8 +1,8 @@
 language: generic # prevent travis from overriding provided compilers.
 cache:
   ccache: true    # includes $HOME/.ccache and adds /usr/lib/ccache to $PATH
-  directories:
-    - 3rd_party
+# directories:
+#   - 3rd_party   # this is sometimes breaking subsequent Travis builds
 dist: trusty
 
 notifications:
@@ -92,6 +92,7 @@ install:
     else
       brew install cppcheck qt;
       brew link --force qt;
+      export PATH="/usr/local/opt/qt/bin:$PATH" # missing mkspecs fix
       QT5_CMAKE_PREFIX=$(ls -d $(brew --cellar)/qt/*/lib/cmake);
       CMAKE_OPTS="-DCMAKE_PREFIX_PATH=${QT5_CMAKE_PREFIX}";
     fi
