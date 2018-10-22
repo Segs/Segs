@@ -14,12 +14,12 @@
 
 struct Parse_CostumePart
 {
-    QString m_Name;
+    QByteArray m_Name;
     RGBA m_Color1;
     RGBA m_Color2;
-    QString m_Texture1;
-    QString m_Texture2;
-    QString m_CP_Geometry;
+    QByteArray m_Texture1;
+    QByteArray m_Texture2;
+    QByteArray m_CP_Geometry;
 };
 
 enum class BodyType : int
@@ -35,8 +35,8 @@ enum class BodyType : int
 
 struct Parse_Costume
 {
-    QString  m_EntTypeFile;
-    QString  m_CostumeFilePrefix;
+    QByteArray  m_EntTypeFile;
+    QByteArray  m_CostumeFilePrefix;
     BodyType m_BodyType  = BodyType::Male;
     float    m_Scale     = 0;
     float    m_BoneScale = 0;
@@ -47,19 +47,19 @@ struct Parse_Costume
 
 struct NPCPower_Desc
 {
-    QString PowerCategory;
-    QString PowerSet;
-    QString Power;
+    QByteArray PowerCategory;
+    QByteArray PowerSet;
+    QByteArray Power;
     int Level;
     int Remove;
 };
 
 struct Parse_NPC
 {
-    QString m_Name;
-    QString m_DisplayName;
+    QByteArray m_Name;
+    QByteArray m_DisplayName;
     int m_Rank;
-    QString m_Class;
+    QByteArray m_Class;
     int m_Level;
     int m_XP;
     std::vector<NPCPower_Desc> m_Powers;

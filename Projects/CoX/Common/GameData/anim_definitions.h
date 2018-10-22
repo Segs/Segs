@@ -15,7 +15,7 @@ struct TextureAnim_Data
 {
     BoneAnimTrack *animtrack1;
     BoneAnimTrack *animtrack2;
-    QString scrollType;
+    QByteArray scrollType;
     float speed;
     float stScale;
     int flags;

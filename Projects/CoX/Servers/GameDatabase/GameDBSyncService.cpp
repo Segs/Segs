@@ -2,7 +2,7 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
 #include "Common/Servers/InternalEvents.h"
-#include "GameDBSyncEvents.h"
+#include "Messages/GameDatabase/GameDBSyncEvents.h"
 
 using namespace SEGSEvents;
 

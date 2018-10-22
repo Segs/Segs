@@ -11,7 +11,7 @@
  */
 
 #include "Common/GameData/DataStorage.h"
-#include "Common/GameData/attrib_definitions.h"
+#include "Common/GameData/CharacterAttributes.h"
 #include "Common/GameData/attrib_serializers.h"
 #include "Common/GameData/bodypart_serializers.h"
 #include "Common/GameData/costume_definitions.h"
@@ -30,7 +30,7 @@
 #include "Common/GameData/trick_serializers.h"
 #include "Common/GameData/fx_definitions.h"
 #include "Common/GameData/fx_serializers.h"
-#include "Common/GameData/charclass_definitions.h"
+#include "Common/GameData/CharacterClass.h"
 #include "Common/GameData/charclass_serializers.h"
 #include "Common/GameData/def_serializers.h"
 #include "Common/GameData/other_definitions.h"
@@ -212,7 +212,7 @@ int main(int argc,char **argv)
           case eZones:        doConvert(doLoadRef<AllMaps_Data>(&binfile),target_basename,json_output); break;
           case eAttribNames:  doConvert(doLoadRef<AttribNames_Data>(&binfile),target_basename,json_output); break;
           case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(&binfile),target_basename,json_output); break;
-          case eTrickDefinitions: doConvert(doLoad<AllTricks_Data>(&binfile),target_basename,json_output); break;
+          case eTrickDefinitions: doConvert(doLoadRef<SceneModifiers>(&binfile),target_basename,json_output); break;
           case eEntityClasses: doConvert(doLoadRef<Parse_AllCharClasses>(&binfile),target_basename,json_output); break;
           case eEntityOrigins: doConvert(doLoadRef<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
           case ePowerDefinitions: doConvert(doLoadRef<AllPowerCategories>(&binfile),target_basename,json_output); break;
@@ -223,7 +223,7 @@ int main(int argc,char **argv)
             {
                 QString name_to_find = app.arguments()[2];
                 std::sort(data->begin(), data->end(), [](const Parse_NPC &a, const Parse_NPC &b) -> bool {
-                    return a.m_Name.compare(b.m_Name, Qt::CaseInsensitive) < 0;
+                    return QString(a.m_Name).compare(QString(b.m_Name), Qt::CaseInsensitive) < 0;
                 });
                 auto iter = std::find_if(data->begin(), data->end(), [name_to_find](const Parse_NPC &n) -> bool {
                     if (n.m_Name == name_to_find)

@@ -79,7 +79,7 @@ void CRUDLink::packets_for_event(Event *ev)
     // create one or more properly formated CrudP_Packets in the protocol object
     // qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);
-    if (false == m_protocol.batchSend(packets_to_send))
+    if (!m_protocol.batchSend(packets_to_send))
     {
         // link is unresponsive, tell our target object
         target()->putq(new Disconnect(this));

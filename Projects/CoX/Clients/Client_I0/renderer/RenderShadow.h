@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 struct Matrix4x3;
 struct SplatSib;
 

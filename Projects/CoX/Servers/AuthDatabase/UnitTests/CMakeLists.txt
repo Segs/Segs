@@ -9,5 +9,5 @@ add_test(AuthDBEventRegistry AuthDBEventRegistry)
 
 target_link_libraries(AuthDBEventRegistry
     Qt5::Test
-    auth_db_sync_lib
+    AuthDatabase
 )

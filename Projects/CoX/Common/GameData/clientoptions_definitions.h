@@ -13,6 +13,7 @@
 #include <cassert>
 
 #include <QDebug>
+#include <cereal/cereal.hpp>
 
 enum ReticleVisibility : uint32_t {
   rv_HideAlways             = 0,
@@ -58,8 +59,8 @@ public:
         m_mouse_speed = 0.6f;
     }
 
-// ClientOptions serialization class version
-static const constexpr uint32_t class_version = 1;
+    // ClientOptions serialization class version
+    enum : uint32_t { class_version = 1 };
 
     // Other Options
     int32_t control_debug       = 0;
@@ -126,5 +127,33 @@ static const constexpr uint32_t class_version = 1;
                  << "\n\t" << "Show Assist Reticles:" << m_show_assist_reticles
                  << "\n\t" << "Chat Font Size:" << m_chat_font_size;
     }
-
+    template<class Archive>
+    void serialize(Archive &archive, uint32_t const version)
+    {
+        if(version != ClientOptions::class_version)
+        {
+            qCritical() << "Failed to serialize ClientOptions, incompatible serialization format version " << version;
+            return;
+        }
+    
+        archive(cereal::make_nvp("FirstPersonView",m_first_person_view));
+        archive(cereal::make_nvp("MouseSpeed",m_mouse_speed));
+        archive(cereal::make_nvp("TurnSpeed",m_turn_speed));
+        archive(cereal::make_nvp("InvertMouse",m_mouse_invert));
+        archive(cereal::make_nvp("FadeChatWindow",m_fade_chat_wnd));
+        archive(cereal::make_nvp("FadeNavWindow",m_fade_nav_wnd));
+        archive(cereal::make_nvp("ShowTooltips",m_show_tooltips));
+        archive(cereal::make_nvp("AllowProfanity",m_allow_profanity));
+        archive(cereal::make_nvp("ChatBalloons",m_chat_balloons));
+        archive(cereal::make_nvp("ShowArchetype",(uint32_t)m_show_archetype));
+        archive(cereal::make_nvp("ShowSuperGroup",(uint32_t)m_show_supergroup));
+        archive(cereal::make_nvp("PlayerName",(uint32_t)m_show_player_name));
+        archive(cereal::make_nvp("PlayerBars",(uint32_t)m_show_player_bars));
+        archive(cereal::make_nvp("EnemyName",(uint32_t)m_show_enemy_name));
+        archive(cereal::make_nvp("EnemyBars",(uint32_t)m_show_enemy_bars));
+        archive(cereal::make_nvp("PlayerReticles",(uint32_t)m_show_player_reticles));
+        archive(cereal::make_nvp("EnemyReticles",(uint32_t)m_show_enemy_reticles));
+        archive(cereal::make_nvp("AssistReticles",(uint32_t)m_show_assist_reticles));
+        archive(cereal::make_nvp("FontSize",(uint32_t)m_chat_font_size));
+    }
 };

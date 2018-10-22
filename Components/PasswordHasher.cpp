@@ -53,7 +53,7 @@ QByteArray PasswordHasher::generateSalt()
 QByteArray PasswordHasher::hashPassword(const QByteArray &pass, const QByteArray &salt)
 {
     QByteArray pass_array(pass+salt);
-    QByteArray hashed_pass_array = m_hasher.hash(pass_array, QCryptographicHash::Sha256);
+    QByteArray hashed_pass_array = QCryptographicHash::hash(pass_array, QCryptographicHash::Sha256);
     return hashed_pass_array;
 }
 

@@ -154,7 +154,15 @@ template \
 void serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, type & m, uint32_t const version);\
 template \
 void serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, type & m, uint32_t const version);
-
+#define SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(type)\
+template \
+void type::serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, uint32_t const version);\
+template \
+void type::serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, uint32_t const version);\
+template \
+void type::serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, uint32_t const version);\
+template \
+void type::serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, uint32_t const version);
 
 #define SPECIALIZE_SPLIT_SERIALIZATIONS(type)\
 template \

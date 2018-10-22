@@ -10,7 +10,7 @@
  * @{
  */
 
-#include "AuthProtocol/Events/LoginRequest.h"
+#include "Auth/LoginRequest.h"
 #include "AuthProtocol/AuthLink.h"
 #include "DummyClass.h"
 

@@ -12,7 +12,7 @@
 
 #include "AuthDBSyncHandler.h"
 
-#include "AuthDBSyncEvents.h"
+#include "Messages/AuthDatabase/AuthDBSyncEvents.h"
 #include "HandlerLocator.h"
 #include "MessageBus.h"
 

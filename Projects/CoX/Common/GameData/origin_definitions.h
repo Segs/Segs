@@ -12,16 +12,16 @@
 
 struct Parse_Origin
 {
-    QString Name;
-    QString DisplayName;
-    QString DisplayHelp;
-    QString DisplayShortHelp;
+    QByteArray Name;
+    QByteArray DisplayName;
+    QByteArray DisplayHelp;
+    QByteArray DisplayShortHelp;
     int NumBonusPowerSets;
     int NumBonusPowers;
     int NumBonusBoostSlots;
     int NumContacts;
     float ContactBonusLength;
 };
-typedef std::vector<Parse_Origin> Parse_AllOrigins;
+using Parse_AllOrigins = std::vector<Parse_Origin>;
 
 #endif // PARSE_ORIGIN_H

@@ -48,7 +48,7 @@ public:
 class CRUDLink_Event : public Event
 {
 public:
-    CRUDLink_Event(size_t evtype, EventSrc *ev_src = nullptr) : Event(evtype, ev_src) //,LINK
+    CRUDLink_Event(uint32_t evtype, EventSrc *ev_src = nullptr) : Event(evtype, ev_src) //,LINK
     {
     }
     virtual void serializeto(BitStream &) const = 0;

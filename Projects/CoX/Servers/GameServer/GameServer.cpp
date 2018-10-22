@@ -11,14 +11,14 @@
  */
 
 #include "GameServer.h"
-#include "GameEvents.h"
+#include "Messages/Game/GameEvents.h"
 
 #include "FriendshipService/FriendHandler.h"
 #include "ConfigExtension.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
 #include "Common/Servers/ServerEndpoint.h"
-#include "EmailHandler.h"
+#include "EmailService/EmailHandler.h"
 #include "Settings.h"
 
 #include <ace/Synch.h>
