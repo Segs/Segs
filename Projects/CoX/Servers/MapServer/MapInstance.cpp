@@ -516,6 +516,9 @@ void MapInstance::dispatch( Event *ev )
         case evLevelUpResponse:
             on_levelup_response(static_cast<LevelUpResponse *>(ev));
             break;
+    case evReceiveContactStatus:
+        on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
+        break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
@@ -1957,6 +1960,8 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         session.m_in_map = true;
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
+        // Send current contact list
+        sendContactStatusList(session);
         // Force position and orientation to fix #617 spawn at 0,0,0 bug
         forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
         forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
@@ -2314,9 +2319,18 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
 void MapInstance::on_interact_with(InteractWithEntity *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
+    Entity *entity = getEntity(&session, ev->m_srv_idx);
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx, entity->m_entity_data.m_pos);
+}
+
+void MapInstance::on_receive_contact_status(ReceiveContactStatus *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "ReceiveContactStatus Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"contact_call",ev->m_srv_idx);
 }
 
 void MapInstance::on_move_inspiration(MoveInspiration *ev)

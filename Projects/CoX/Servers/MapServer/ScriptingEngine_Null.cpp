@@ -56,6 +56,14 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
     return "";
 }
 
+std::string ScriptingEngine::callFunc(const char *name, std::vector<Contact> contact_list)
+{
+    Q_UNUSED(name);
+    Q_UNUSED(contact_list);
+    return "";
+}
+
+
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
     Q_UNUSED(client);

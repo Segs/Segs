@@ -19,15 +19,15 @@
 #include "GameData/ClientStates.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
-#include "GameData/CharacterHelpers.h"
-#include "GameData/Character.h"
-#include "GameData/Contact.h"
-#include "GameData/Team.h"
-#include "GameData/LFG.h"
-#include "Messages/Map/EmailHeaders.h"
-#include "Messages/Map/EmailRead.h"
-#include "Messages/EmailService/EmailEvents.h"
-#include "Messages/Map/MapEvents.h"
+#include "NetStructures/CharacterHelpers.h"
+#include "NetStructures/Character.h"
+#include "NetStructures/Team.h"
+#include "NetStructures/LFG.h"
+#include "Events/ContactList.h"
+#include "Events/EmailHeaders.h"
+#include "Events/EmailRead.h"
+#include "Servers/GameServer/EmailEvents.h"
+#include "MapEvents.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -639,6 +639,42 @@ void sendContactDialogClose(MapClientSession &src)
 {
     qCDebug(logSlashCommand) << "Sending ContactDialogClose";
     src.addCommand<ContactDialogClose>();
+}
+
+void sendContactStatusList(MapClientSession &src, Contact contact)
+{
+    vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
+    //find contact
+    bool found = false;
+
+    for (int i = 0; i < contacts.size(); ++i)
+    {
+        if(contacts[i].m_npc_id == contact.m_npc_id)
+        {
+            found = true;
+            //contact already in list, update contact;
+            contacts.at(i) = contact;
+            break;
+        }
+    }
+
+    if(!found)
+        contacts.push_back(contact);
+
+    //update database contactList
+    src.m_ent->m_char->m_char_data.m_contacts = contacts;
+
+    //Send contactList to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contacts)));
+    qCDebug(logScripts) << "Sending ContactStatusList";
+}
+
+void sendContactStatusList(MapClientSession &src)
+{
+    vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
+    //Send contactList to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contacts)));
+    qCDebug(logScripts) << "Sending ContactStatusList";
 }
 
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)
