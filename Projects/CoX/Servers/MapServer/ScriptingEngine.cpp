@@ -150,8 +150,16 @@ void ScriptingEngine::registerTypes()
         "friendThreshold", &Contact::m_friend_threshold,
         "completeThreshold", &Contact::m_complete_threshold,
         "canUseCell", &Contact::m_can_use_cell
-
     );
+
+    m_private->m_lua.new_usertype<Destination>("Destination",
+            sol::constructors<Destination()>(),
+            "pointIdx", &Destination::point_idx,
+            "location", &Destination::location,
+            "name", sol::property(&Destination::getLocationName, &Destination::setLocationName),
+            "mapName", sol::property(&Destination::getLocationMapName, &Destination::setLocationMapName)
+    );
+
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
 
         "new", sol::no_constructor, // The client links are not constructible from the script side.
@@ -221,13 +229,7 @@ void ScriptingEngine::registerTypes()
     "sendFloatingDamage",sendFloatingNumbers,
     "faceEntity",sendFaceEntity,
     "faceLocation",  sendFaceLocation,
-    "addUpdateContactList", [](MapClientSession *cl, Contact contact, glm::vec3 loc)
-    {
-        Destination des;
-        des.location = loc;
-        contact.m_location = des;
-        sendContactStatusList(*cl, contact);
-    }
+    "addUpdateContactList", updateContactStatusList
 
     );
 

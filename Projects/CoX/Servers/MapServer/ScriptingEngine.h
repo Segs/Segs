@@ -9,8 +9,7 @@
 #define SCRIPTINGENGINE_H
 #include <memory>
 #include <string>
-#include "NetStructures/CommonNetStructures.h"
-#include "NetStructures/Contact.h"
+#include "Common/GameData/Contact.h"
 
 class QString;
 struct MapClientSession;

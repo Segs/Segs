@@ -10,6 +10,7 @@
 #include "Common/GameData/Sidekick.h"
 #include "Common/GameData/Friend.h"
 #include "Common/GameData/Powers.h"
+#include "Common/GameData/Contact.h"
 #include "Common/GameData/CharacterAttributes.h"
 
 #include <QString>
@@ -44,6 +45,7 @@ struct CharacterData
         PowerTrayGroup      m_trays;
         vInspirations       m_inspirations;
         vEnhancements       m_enhancements;     // Enhancements owned, but not attached to powers
+        vContactList   m_contacts;
         uint32_t    m_max_insp_cols     = 0;
         uint32_t    m_max_insp_rows     = 0;
         uint32_t    m_max_enhance_slots = 0;

@@ -51,6 +51,14 @@ struct Destination // aka waypoint
     QString         m_location_name;
     QString         m_location_map_name;
 
+    // for scripting language access.
+    std::string getLocationName() const { return m_location_name.toStdString();}
+    void setLocationName(const char *n) { m_location_name = n; }
+
+    std::string getLocationMapName() const { return m_location_map_name.toStdString();}
+    void setLocationMapName(const char *n) { m_location_map_name = n; }
+
+
         template<class Archive>
         void serialize(Archive &archive, uint32_t const version)
         {
@@ -144,5 +152,3 @@ struct ContactEntryBulk
 };
 
 struct CharacterData;
-
-void addContact(CharacterData &cd, Contact &contact);

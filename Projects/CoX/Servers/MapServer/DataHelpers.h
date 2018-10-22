@@ -8,9 +8,7 @@
 #pragma once
 #include "Messages/Map/MessageChannels.h"
 #include "Messages/Map/FloatingInfoStyles.h"
-#include "Events/MessageChannels.h"
-#include "Events/FloatingInfoStyles.h"
-#include "NetStructures/Contact.h"
+#include "Common/GameData/Contact.h"
 #include "glm/vec3.hpp"
 #include <QString>
 #include <cstdint>
@@ -136,7 +134,7 @@ void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<Cont
 void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
 void sendContactDialogClose(MapClientSession &src);
 void sendContactStatusList(MapClientSession &src);
-void sendContactStatusList(MapClientSession &src, Contact contact);
+void updateContactStatusList(MapClientSession &src, Contact contact);
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
 void sendStance(MapClientSession &src, PowerStance stance);
 void sendDeadNoGurney(MapClientSession &sess);

@@ -9,12 +9,12 @@
 
 #include "GameCommand.h"
 #include "MapEventTypes.h"
-#include "Contact.h"
+#include "Common/GameData/Contact.h"
 
 namespace SEGSEvents
 {
     // [[ev_def:type]]
-    class ContactStatusList : public GameCommandEvent
+    class ContactStatusList final : public GameCommandEvent
     {
 
     public:
@@ -65,7 +65,7 @@ namespace SEGSEvents
     };
 
      // [[ev_def:type]]
-    class ContactSelect : public GameCommandEvent
+    class ContactSelect final : public GameCommandEvent
     {
     public:
         // [[ev_def:field]]
@@ -87,7 +87,7 @@ namespace SEGSEvents
     };
 
 // [[ev_def:type]]
-    class ReceiveContactStatus : public MapLinkEvent
+    class ReceiveContactStatus final : public MapLinkEvent
     {
 
     public:

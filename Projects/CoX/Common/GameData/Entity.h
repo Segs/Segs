@@ -18,6 +18,7 @@
 #include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/CoHMath.h"
+#include "Common/GameData/Contact.h"
 
 #include <glm/gtc/constants.hpp>
 
@@ -32,7 +33,6 @@ class Character;
 struct PlayerData;
 class GameDataStore;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
-
 
 class InputStateStorage
 {

@@ -12,6 +12,7 @@
 
 #include "MapEventFactory.h"
 #include "Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/ContactList.h"
 
 using namespace SEGSEvents;
 

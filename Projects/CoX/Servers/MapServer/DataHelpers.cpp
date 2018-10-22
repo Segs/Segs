@@ -19,15 +19,15 @@
 #include "GameData/ClientStates.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
-#include "NetStructures/CharacterHelpers.h"
-#include "NetStructures/Character.h"
-#include "NetStructures/Team.h"
-#include "NetStructures/LFG.h"
-#include "Events/ContactList.h"
-#include "Events/EmailHeaders.h"
-#include "Events/EmailRead.h"
-#include "Servers/GameServer/EmailEvents.h"
-#include "MapEvents.h"
+#include "Common/GameData/CharacterHelpers.h"
+#include "Common/GameData/Character.h"
+#include "Common/GameData/Team.h"
+#include "Common/GameData/LFG.h"
+#include "Common/Messages/Map/ContactList.h"
+#include "Common/Messages/Map/EmailHeaders.h"
+#include "Common/Messages/Map/EmailRead.h"
+#include "Common/Messages/EmailService/EmailEvents.h"
+#include "Common/Messages/Map/MapEvents.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -641,7 +641,7 @@ void sendContactDialogClose(MapClientSession &src)
     src.addCommand<ContactDialogClose>();
 }
 
-void sendContactStatusList(MapClientSession &src, Contact contact)
+void updateContactStatusList(MapClientSession &src, Contact contact)
 {
     vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
     //find contact

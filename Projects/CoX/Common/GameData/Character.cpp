@@ -144,32 +144,6 @@ void Character::addStartingInspirations(QStringList &starting_insps)
         addInspirationByName(m_char_data, name);
 }
 
-void Character::addStartingContact(const char *contact_name)
-{
-    Contact startingContact;
-    startingContact.setName(contact_name); // "OfficerFlint
-    startingContact.m_current_standing = 1;
-    startingContact.m_notify_player = true;
-    //startingContact.m_display_name = "Officer Flint";
-    startingContact.m_task_index = 1;
-    startingContact.m_npc_id = 1939; // Npc Id
-    startingContact.m_has_location = true;
-    //startingContact.m_handle = 1; // ?
-    startingContact.m_location_description = "Outbreak";
-    //startingContact.m_location_name = "Outbreak Starting";
-    //startingContact.m_location_map_name = "City_00_01"; //folder name?
-    startingContact.m_location.location.x = -62.0;
-    startingContact.m_location.location.y = 0.0;
-    startingContact.m_location.location.z = 182.0;
-    startingContact.m_confidant_threshold = 3;
-    startingContact.m_friend_threshold = 2;
-    startingContact.m_complete_threshold = 4;
-    startingContact.m_can_use_cell = false;
-
-    qCDebug(logMapEvents) << "Character addStartingContact";
-    addContact(m_char_data, startingContact);
-}
-
 void Character::addStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names)
 {
     PowerPool_Info ppool;
