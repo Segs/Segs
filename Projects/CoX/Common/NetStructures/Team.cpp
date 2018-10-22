@@ -51,7 +51,7 @@ void Team::dump()
     QString output = "Debugging Team: " + QString::number(m_team_idx)
              + "\n\t size: " + QString::number(m_team_members.size())
              + "\n\t leader db_id: " + QString::number(m_team_leader_idx)
-             + "\n\t has mission? " + QString::number(m_team_has_mission)
+             + "\n\t has mission? " + QString::number(m_has_taskforce)
              + "\nTeam Members: ";
     qDebug().noquote() << output;
 

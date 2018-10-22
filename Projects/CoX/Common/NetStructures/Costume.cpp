@@ -17,6 +17,8 @@
 #include "serialization_types.h"
 #include <QtCore/QDebug>
 
+int g_max_num_costume_slots = 4; // client cannot handle more than 5 slots
+
 namespace
 {
     void serializeto_charsel(const CostumePart &part, BitStream &bs )
@@ -119,7 +121,7 @@ void serialize(Archive &arc, Costume &c)
     //arc(c.m_height);
     //arc(c.m_physique);
     //arc(c.skin_color);
-    //arc(c.m_non_default_costme_p);
+    //arc(c.m_send_full_costume);
     //arc(c.m_num_parts);
     //arc(c.m_floats);
     arc(c.m_parts);
@@ -208,16 +210,14 @@ void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *
     bs.StoreFloat(costume.m_physique);
 
     bs.StoreBits(1,costume.m_send_full_costume);
-    //m_num_parts = m_parts.size();
     assert(!costume.m_parts.empty());
     bs.StorePackedBits(4,costume.m_parts.size());
-
     try
     {
         for(uint32_t costume_part=0; costume_part<costume.m_parts.size();costume_part++)
         {
             CostumePart part=costume.m_parts[costume_part];
-            // TODO: this is bad code, it's purpose is to NOT send all part strings if m_non_default_costme_p is false
+            // TODO: this is bad code, it's purpose is to NOT send all part strings if m_send_full_costume is false
             part.m_full_part = costume.m_send_full_costume;
             ::serializeto(part,bs,packer);
         }

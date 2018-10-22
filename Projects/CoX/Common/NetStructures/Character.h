@@ -89,7 +89,9 @@ const   QString &       getName() const { return m_name; }
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
         const CharacterCostume *getCurrentCostume() const;
+        uint32_t        getCurrentCostumeIdx();
         void            setCurrentCostume(uint32_t idx);
+        void            addCostumeSlot();
         void            saveCostume(uint32_t idx, CharacterCostume &new_costume);
         void            dumpSidekickInfo();
         void            dumpBuildInfo();
@@ -119,7 +121,6 @@ protected:
         Costume *       m_sg_costume;
         uint32_t        m_current_costume_idx;
         bool            m_current_costume_set;
-        uint32_t        m_num_costumes;
         bool            m_multiple_costumes;  // has more then 1 costume
         enum CharBodyType
         {

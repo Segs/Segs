@@ -14,6 +14,8 @@
 #include <QtCore/QString>
 #include <vector>
 
+extern int g_max_num_costume_slots;
+
 struct CostumePart
 {
     enum class Type {

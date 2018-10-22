@@ -2466,11 +2466,13 @@ void MapInstance::on_browser_close(BrowserClose *ev)
 
 void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
 {
+    // has changed costume in tailor
     MapClientSession &session(m_session_store.session_from_event(ev));
-
-    uint32_t idx = session.m_ent->m_char->getCurrentCostume()->getSlotIndex();
-    session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
     qCDebug(logTailor) << "Entity: " << session.m_ent->m_idx << "has received CostumeChange";
+
+    uint32_t idx = session.m_ent->m_char->getCurrentCostumeIdx();
+    session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
+    markEntityForDbStore(session.m_ent, DbStoreFlags::Full);
 }
 
 void MapInstance::on_levelup_response(LevelUpResponse *ev)

@@ -1,5 +1,6 @@
 #include "CharacterHelpers.h"
 #include "Character.h"
+#include "Costume.h"
 #include <QDateTime>
 
 /*

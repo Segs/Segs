@@ -552,7 +552,7 @@ void sendTeamOffer(Entity *src, Entity *tgt)
 
     // Check for mission, send appropriate TeamOfferType
     if(src->m_has_team && src->m_team != nullptr)
-        if(src->m_team->m_team_has_mission)
+        if(src->m_team->m_has_taskforce)
             type = WithMission; // TODO: Check for invalid missions to send `LeaveMission` instead
 
     qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << type;
@@ -674,6 +674,18 @@ void sendDeadNoGurney(MapClientSession &sess)
 {
     qCDebug(logSlashCommand) << "Sending new PowerStance";
     sess.addCommand<DeadNoGurney>();
+}
+
+
+/*
+ * Tailor and Costume Methods
+ */
+void receiveCostume(CharacterCostume &new_costume, BitStream bs)
+{
+    // This method must be here, because NetStructures can't access g_GlobalMapServer
+    static const ColorAndPartPacker *packer = getGameData().getPacker();
+
+    serializefrom(new_costume, bs, packer);
 }
 
 
@@ -1124,19 +1136,6 @@ void giveXp(MapClientSession *cl, int xp)
     }
     qCDebug(logScripts) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
-}
-
-
-
-/*
- * Tailor and Costume Methods
- */
-void receiveCostume(CharacterCostume &new_costume, BitStream bs)
-{
-    // This method must be here, because NetStructures can't access g_GlobalMapServer
-    static const ColorAndPartPacker *packer = getGameData().getPacker();
-
-    serializefrom(new_costume, bs, packer);
 }
 
 //! @}

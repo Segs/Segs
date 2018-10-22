@@ -7,7 +7,9 @@
 
 #pragma once
 
-#include <QString>
+#include "CommonNetStructures.h"
+#include <QVector>
+#include <QHash>
 
 static QHash<QString,int> contactLinkHash = {
     {"CONTACTLINK_HELLO"                ,1},

@@ -37,7 +37,7 @@ Character::Character()
     m_multiple_costumes                         = false;
     m_current_costume_idx                       = 0;
     m_current_costume_set                       = false;
-    m_char_data.m_supergroup_costume            = false;
+    m_char_data.m_has_supergroup_costume            = false;
     m_sg_costume                                = nullptr;
     m_char_data.m_using_sg_costume              = false;
     m_char_data.m_has_titles = m_char_data.m_has_the_prefix
@@ -66,7 +66,7 @@ void Character::reset()
     m_multiple_costumes=false;
     m_current_costume_idx=0;
     m_current_costume_set=false;
-    m_char_data.m_supergroup_costume=false;
+    m_char_data.m_has_supergroup_costume=false;
     m_sg_costume=nullptr;
     m_char_data.m_using_sg_costume=false;
     m_char_data.m_has_titles = false;
@@ -133,9 +133,19 @@ void Character::finalizeLevel()
     }
     */
 
+    // TODO: Make customizable in settings.cfg
+    QVector<uint32_t> costume_levels = {19, 29, 39, 49};
+    for(uint32_t i : costume_levels)
+    {
+        // add costume every time current level matches i
+        // this would allow server operators to award all
+        // costumes at 10th level, or different levels
+        if(i == m_char_data.m_level)
+            addCostumeSlot();
+    }
+
     m_char_data.m_has_updated_powers = true; // this must be true, because we're updating powers
     m_char_data.m_reset_powersets = true; // possible that we need to reset the powerset array client side
-
 }
 
 void Character::addStartingInspirations(QStringList &starting_insps)
@@ -350,10 +360,33 @@ const CharacterCostume * Character::getCurrentCostume() const
         return &m_costumes[0];
 }
 
+uint32_t Character::getCurrentCostumeIdx()
+{
+    return m_current_costume_idx;
+}
+
 void Character::setCurrentCostume(uint32_t idx)
 {
     m_current_costume_set = true;
     m_current_costume_idx = idx;
+}
+
+void Character::addCostumeSlot()
+{
+    if(m_costumes.size() == static_cast<size_t>(g_max_num_costume_slots))
+        return; // client cannot handle more than 4 costumes;
+
+    CharacterCostume new_costume = m_costumes.front();
+    new_costume.setSlotIndex(static_cast<uint8_t>(m_costumes.size()));
+    m_costumes.emplace_back(new_costume);
+
+    if(m_costumes.size() > 1)
+        m_multiple_costumes = true;
+
+    m_current_costume_set = true; // must set this to reset costume array size
+
+    for(Costume c : m_costumes)
+        c.dump();
 }
 
 void Character::saveCostume(uint32_t idx, CharacterCostume &new_costume)
@@ -368,30 +401,29 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
     // full costume
     if(all_costumes) // this is only sent to the current player
     {
-        bs.StoreBits(1,m_current_costume_set);
+        bs.StoreBits(1, m_current_costume_set);
         if(m_current_costume_set)
         {
-            bs.StoreBits(32,m_current_costume_idx);
-            bs.StoreBits(32,uint32_t(m_costumes.size()));
+            bs.StoreBits(32, m_current_costume_idx);
+            bs.StoreBits(32, uint32_t(m_costumes.size())-1); // must be minus 1 because the client adds 1
         }
-        bs.StoreBits(1,m_multiple_costumes);
+
+        bs.StoreBits(1, m_multiple_costumes);
         if(m_multiple_costumes)
         {
             for(const Costume & c : m_costumes)
-            {
                 ::serializeto(c,bs,packer);
-            }
         }
         else
         {
             ::serializeto(m_costumes[m_current_costume_idx],bs,packer);
         }
-        bs.StoreBits(1,m_char_data.m_supergroup_costume);
-        if(m_char_data.m_supergroup_costume)
+
+        bs.StoreBits(1, m_char_data.m_has_supergroup_costume);
+        if(m_char_data.m_has_supergroup_costume)
         {
             ::serializeto(*m_sg_costume,bs,packer);
-
-            bs.StoreBits(1,m_char_data.m_using_sg_costume);
+            bs.StoreBits(1, m_char_data.m_using_sg_costume);
         }
     }
     else // other player's costumes we're sending only their current.
@@ -669,7 +701,7 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
         // appearance related.
         main_costume.m_body_type = src.m_costumes.back().m_body_type;
         main_costume.m_height = src.m_costumes.back().m_height;
-                main_costume.m_physique = src.m_costumes.back().m_physique;
+        main_costume.m_physique = src.m_costumes.back().m_physique;
         main_costume.setSlotIndex(costume.m_slot_index);
         main_costume.setCharacterId(costume.m_character_id);
     }
@@ -681,9 +713,9 @@ bool fromActualCharacter(const Character &src,const PlayerData &player,
 {
     const CharacterData &  cd(src.m_char_data);
 
-    tgt.m_db_id      = src.m_db_id;
-    tgt.m_account_id = src.m_account_id;
-    tgt.m_name = src.getName();
+    tgt.m_db_id         = src.m_db_id;
+    tgt.m_account_id    = src.m_account_id;
+    tgt.m_name          = src.getName();
 
     try
     {

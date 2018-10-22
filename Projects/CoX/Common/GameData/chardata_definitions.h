@@ -51,14 +51,12 @@ static const constexpr  uint32_t    class_version       = 8; // v8: security thr
                         QString     m_last_online;
                         QString     m_class_name;
                         QString     m_origin_name;
-                        bool        m_supergroup_costume;       // player has a sg costume
+                        bool        m_has_supergroup_costume;   // player has a sg costume
                         bool        m_using_sg_costume;         // player uses sg costume currently
                         Sidekick    m_sidekick;                 // Sidekick Struct
                         FriendsList m_friendlist;               // Friendslist Struct
                         Parse_CharAttrib    m_current_attribs;
                         bool        m_is_on_task_force  = false;
-                        bool        m_is_on_auto_logout = false;
-                        float       m_idle_time         = 0;
                         vPowerSets          m_powersets;
                         PowerTrayGroup      m_trays;
                         vInspirations       m_inspirations;
@@ -70,4 +68,6 @@ static const constexpr  uint32_t    class_version       = 8; // v8: security thr
                         // No need to serialize these members
                         bool        m_has_updated_powers    = false;
                         bool        m_reset_powersets   = false;
+                        bool        m_is_on_auto_logout = false;
+                        float       m_idle_time         = 0;
 };

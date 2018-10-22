@@ -91,20 +91,20 @@ void storeTeamList(const EntitiesResponse &src,BitStream &bs)
     // shorthand local vars
     int         team_idx = 0;
     bool        mark_lfg = e->m_char->m_char_data.m_lfg;
-    bool        has_mission = false;
+    bool        has_taskforce = false;
     uint32_t    tm_leader_id = 0;
     uint32_t    tm_size = 0;
 
     if(e->m_has_team && e->m_team != nullptr)
     {
         team_idx        = e->m_team->m_team_idx;
-        has_mission     = e->m_team->m_team_has_mission;
+        has_taskforce   = e->m_team->m_has_taskforce; // maybe we need to move this out of the Team obj
         tm_leader_id    = e->m_team->m_team_leader_idx;
         tm_size         = e->m_team->m_team_members.size();
     }
 
     storePackedBitsConditional(bs,20,team_idx);
-    bs.StoreBits(1,has_mission);
+    bs.StoreBits(1,has_taskforce);
     bs.StoreBits(1,mark_lfg);
 
     if(team_idx == 0) // if no team, return.

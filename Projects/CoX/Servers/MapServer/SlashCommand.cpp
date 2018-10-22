@@ -115,6 +115,7 @@ void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &s
 void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Revive(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddCostumeSlot(const QString &cmd, MapClientSession &sess);
 
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
@@ -226,6 +227,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setwaypoint"}, "Test SendWaypoint. Send waypoint to client", cmdHandler_SendWaypoint, 9},
     {{"setstatemode"}, "Send StateMode. Send StateMode to client", cmdHandler_SetStateMode, 9},
     {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
+    {{"addcostumeslot"}, "Add a new costume slot to Character", cmdHandler_AddCostumeSlot, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -1258,6 +1260,16 @@ void cmdHandler_Revive(const QString &cmd, MapClientSession &sess)
     revivePlayer(*tgt, static_cast<ReviveLevel>(revive_lvl));
 
     msg = "Reviving " + tgt->name();
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_AddCostumeSlot(const QString &/*cmd*/, MapClientSession &sess)
+{
+    sess.m_ent->m_char->addCostumeSlot();
+    markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
+
+    QString msg = "Adding Costume Slot to " + sess.m_ent->name();
+    qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 

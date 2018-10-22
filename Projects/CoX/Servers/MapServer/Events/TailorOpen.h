@@ -23,7 +23,7 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-evFirstServerToClient); // pkt 88
+        bs.StorePackedBits(1,type()-evFirstServerToClient); // packet 88
     }
 
     EVENT_IMPL(TailorOpen)
@@ -41,9 +41,9 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 60
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 60
     }
-    void    serializefrom(BitStream &bs)
+    void    serializefrom(BitStream &bs) override
     {
         receiveCostume(m_new_costume, bs);
         qCDebug(logTailor) << "Changing Costume";
