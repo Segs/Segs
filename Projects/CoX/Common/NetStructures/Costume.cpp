@@ -90,7 +90,7 @@ void serializefrom(CostumePart &part,BitStream &bs,const ColorAndPartPacker *pac
     }
 }
 
-CharacterCostume CharacterCostume::NullCostume;
+Costume Costume::NullCostume;
 void Costume::storeCharselParts( BitStream &bs ) const
 {
     bs.StorePackedBits(1,m_parts.size());
@@ -101,8 +101,14 @@ void Costume::storeCharselParts( BitStream &bs ) const
 }
 
 template<class Archive>
-void serialize(Archive &arc, CostumePart &cp)
+void serialize(Archive &arc, CostumePart &cp, uint32_t const version)
 {
+    if (version != cp.class_version)
+    {
+        qCritical() << "Failed to serialize CostumePart, incompatible serialization format version " << version;
+        return;
+    }
+
     arc(cp.m_type);
     arc(cp.m_geometry);
     arc(cp.m_texture_1);
@@ -110,43 +116,34 @@ void serialize(Archive &arc, CostumePart &cp)
     arc(cp.name_3);
     arc(cp.name_4);
     arc(cp.name_5);
+    //arc(cp.name_6);
     arc(cp.m_full_part);
     arc(cp.m_colors[0]);
     arc(cp.m_colors[1]);
 }
 
-template<class Archive>
-void serialize(Archive &arc, Costume &c)
-{
-    //arc(c.m_height);
-    //arc(c.m_physique);
-    //arc(c.skin_color);
-    //arc(c.m_send_full_costume);
-    //arc(c.m_num_parts);
-    //arc(c.m_floats);
-    arc(c.m_parts);
-    //arc(c.m_body_type);
-}
+SPECIALIZE_VERSIONED_SERIALIZATIONS(CostumePart)
 
 template<class Archive>
-void CharacterCostume::serialize(Archive &arc)
+void Costume::serialize(Archive &archive, uint32_t const version)
 {
-    // We pass this cast to the base type for each base type we
-    // need to serialize.  Do this instead of calling serialize functions
-    // directly
-    arc(cereal::base_class<Costume>(this));
-    arc(m_slot_index);
-    arc(m_character_id);
+    if (version != Costume::class_version)
+    {
+        qCritical() << "Failed to serialize Costume, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("Height", m_height));
+    archive(cereal::make_nvp("Physique", m_physique));
+    archive(cereal::make_nvp("BodyType", m_body_type));
+    archive(cereal::make_nvp("SkinColor", m_skin_color));
+    archive(cereal::make_nvp("SendFullCostume", m_send_full_costume));
+    archive(cereal::make_nvp("NumParts", m_num_parts));
+    archive(cereal::make_nvp("Floats", m_floats));
+    archive(cereal::make_nvp("Parts", m_parts));
 }
 
-template
-void CharacterCostume::serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive);
-template
-void CharacterCostume::serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive);
-template
-void CharacterCostume::serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive);
-template
-void CharacterCostume::serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(Costume)
 
 void Costume::serializeToDb(QString &tgt) const
 {
@@ -180,46 +177,52 @@ void Costume::serializeFromDb(const QString &src)
 
 void Costume::dump() const
 {
+    qDebug().noquote() << "Costume: " << m_character_id << ":" << m_index;
+    qDebug().noquote() << "  Body Type: " << m_body_type;
+    qDebug().noquote() << "  Skin Color: " << m_skin_color;
+    qDebug().noquote() << "  Height: " << m_height;
+    qDebug().noquote() << "  Physique: " << m_physique;
+    qDebug().noquote() << "****** " << m_num_parts << " Parts ******";
 
-    qDebug().noquote() << "Costume \n";
-    qDebug().noquote() << "body type: " << m_body_type;
-    qDebug().noquote() << "skin color: "<< skin_color;
-    qDebug().noquote() << "Height " << m_height;
-    qDebug().noquote() << "Physique " << m_physique;
-    qDebug().noquote() << "****** "<< m_num_parts << " Parts *******";
-    for(int i=0; i<m_num_parts; i++)
+    for(int i=0; i < m_num_parts; i++)
     {
         const CostumePart &cp(m_parts[i]);
         if(cp.m_full_part)
-            qDebug() << cp.m_geometry << cp.m_texture_1 << cp.m_texture_2 <<
+            qDebug().noquote() << cp.m_geometry << cp.m_texture_1 << cp.m_texture_2 <<
                         cp.m_colors[0] << cp.m_colors[1] <<
                         cp.name_3 << cp.name_4 << cp.name_5;
         else
-            qDebug() << cp.m_geometry << cp.m_texture_1 << cp.m_texture_2 <<
+            qDebug().noquote() << cp.m_geometry << cp.m_texture_1 << cp.m_texture_2 <<
                         cp.m_colors[0] << cp.m_colors[1];
     }
-    qDebug().noquote() << "*************";
+
 }
 
-void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *packer)
+void dumpCostumes(vCostumes &costumes)
 {
-    bs.StorePackedBits(3,costume.m_body_type); // 0:male normal
-    bs.StoreBits(32,costume.skin_color); // rgb ?
+    for(auto costume : costumes)
+        costume.dump();
+}
+
+void serializeto(const Costume &costume,BitStream &bs, const ColorAndPartPacker *packer)
+{
+    bs.StorePackedBits(3, costume.m_body_type); // 0:male normal
+    bs.StoreBits(32, costume.m_skin_color); // rgb ?
 
     bs.StoreFloat(costume.m_height);
     bs.StoreFloat(costume.m_physique);
 
-    bs.StoreBits(1,costume.m_send_full_costume);
+    bs.StoreBits(1, costume.m_send_full_costume);
     assert(!costume.m_parts.empty());
-    bs.StorePackedBits(4,costume.m_parts.size());
+    bs.StorePackedBits(4, costume.m_parts.size());
     try
     {
-        for(uint32_t costume_part=0; costume_part<costume.m_parts.size();costume_part++)
+        for(uint32_t costume_part = 0; costume_part < costume.m_parts.size(); costume_part++)
         {
-            CostumePart part=costume.m_parts[costume_part];
+            CostumePart part = costume.m_parts[costume_part];
             // TODO: this is bad code, it's purpose is to NOT send all part strings if m_send_full_costume is false
             part.m_full_part = costume.m_send_full_costume;
-            ::serializeto(part,bs,packer);
+            ::serializeto(part, bs, packer);
         }
     }
     catch(cereal::RapidJSONException &e)
@@ -235,7 +238,7 @@ void serializeto(const Costume &costume,BitStream &bs,const ColorAndPartPacker *
 void serializefrom(Costume &tgt, BitStream &src,const ColorAndPartPacker *packer)
 {
     tgt.m_body_type = src.GetPackedBits(3); // 0:male normal
-    tgt.skin_color = src.GetBits(32); // rgb
+    tgt.m_skin_color = src.GetBits(32); // rgb
 
     tgt.m_height = src.GetFloat();
     tgt.m_physique = src.GetFloat();

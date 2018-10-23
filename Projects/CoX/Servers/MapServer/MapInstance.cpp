@@ -40,6 +40,7 @@
 #include "NetStructures/Character.h"
 #include "NetStructures/CharacterHelpers.h"
 #include "NetStructures/Entity.h"
+#include "NetStructures/Costume.h"
 #include "NetStructures/Trade.h"
 #include "SEGSTimer.h"
 #include "SlashCommand.h"
@@ -1131,7 +1132,7 @@ QString process_replacement_strings(MapClientSession *sender,const QString &msg_
         else if(str == "\\$\\$")
         {
             if(new_msg.contains(str))
-                qCDebug(logChat) << "need to send newline for" << str; // TODO: Need method for returning newline in str
+                qCDebug(logChat) << "need to send newline for" << str; // This apparently works client-side.
         }
     }
     return new_msg;
@@ -2570,7 +2571,7 @@ void MapInstance::on_update_entities()
 
 void MapInstance::send_character_update(Entity *e)
 {
-    QString cerealizedCharData, cerealizedEntityData, cerealizedPlayerData;
+    QString cerealizedCharData, cerealizedEntityData, cerealizedPlayerData, cerealizedCostumeData;
 
     PlayerData playerData = PlayerData({
                 e->m_player->m_gui,
@@ -2581,6 +2582,7 @@ void MapInstance::send_character_update(Entity *e)
     serializeToQString(e->m_char->m_char_data, cerealizedCharData);
     serializeToQString(e->m_entity_data, cerealizedEntityData);
     serializeToQString(playerData, cerealizedPlayerData);
+    serializeToQString(*e->m_char->getAllCostumes(), cerealizedCostumeData);
 
     CharacterUpdateMessage* msg = new CharacterUpdateMessage(
                 CharacterUpdateData({
@@ -2590,12 +2592,13 @@ void MapInstance::send_character_update(Entity *e)
                                         cerealizedCharData,
                                         cerealizedEntityData,
                                         cerealizedPlayerData,
+                                        cerealizedCostumeData,
 
                                         // plain values
                                         e->m_char->getCurrentCostume()->m_body_type,
                                         e->m_char->getCurrentCostume()->m_height,
                                         e->m_char->getCurrentCostume()->m_physique,
-                                        (uint32_t)e->m_supergroup.m_SG_id,
+                                        uint32_t(e->m_supergroup.m_SG_id),
                                         e->m_char->m_db_id
         }), (uint64_t)1);
 

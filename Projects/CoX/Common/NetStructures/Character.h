@@ -9,6 +9,7 @@
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "Powers.h"
+#include "Costume.h"
 #include "Common/GameData/attrib_definitions.h"
 #include "Common/GameData/chardata_definitions.h"
 #include "Common/GameData/entitydata_definitions.h"
@@ -26,10 +27,8 @@ namespace SEGSEvents
 {
     struct GameAccountResponseCharacterData;
 }
-class CharacterCostume;
 
 struct PlayerData;
-struct Costume;
 class PowerPool_Info;
 class GameDataStore;
 
@@ -49,12 +48,10 @@ class Character
 {
         friend  class CharacterDatabase;
 
-        using vCostume = std::vector<CharacterCostume>;
-
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
         friend bool toActualCharacter(const SEGSEvents::GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
-        friend bool fromActualCharacter(const Character &src,const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);
+        friend bool fromActualCharacter(const Character &src, const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -88,11 +85,10 @@ const   QString &       getName() const { return m_name; }
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
-        const CharacterCostume *getCurrentCostume() const;
-        uint32_t        getCurrentCostumeIdx();
-        void            setCurrentCostume(uint32_t idx);
+        const Costume   *getCurrentCostume() const;
+        const vCostumes *getAllCostumes() const;
         void            addCostumeSlot();
-        void            saveCostume(uint32_t idx, CharacterCostume &new_costume);
+        void            saveCostume(uint32_t idx, Costume &new_costume);
         void            dumpSidekickInfo();
         void            dumpBuildInfo();
         void            face_bits(uint32_t){}
@@ -112,16 +108,13 @@ const   QString &       getName() const { return m_name; }
         uint32_t            m_account_id;
         uint32_t            m_db_id;
         bool                m_in_training   = false;
+        bool                m_current_costume_set = false;
 
 protected:
         uint8_t         m_index;
         QString         m_name;
-        bool            m_villain;
-        vCostume        m_costumes;
+        vCostumes       m_costumes;
         Costume *       m_sg_costume;
-        uint32_t        m_current_costume_idx;
-        bool            m_current_costume_set;
-        bool            m_multiple_costumes;  // has more then 1 costume
         enum CharBodyType
         {
             TYPE_MALE,

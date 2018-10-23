@@ -209,7 +209,7 @@ void serialize(Archive &archive, CharacterData &cd, uint32_t const version)
     archive(cereal::make_nvp("AfkMsg",cd.m_afk_msg));
     archive(cereal::make_nvp("LFG",cd.m_lfg));
     archive(cereal::make_nvp("Alignment",cd.m_alignment));
-    archive(cereal::make_nvp("LastCostumeID",cd.m_last_costume_id));
+    archive(cereal::make_nvp("LastCostumeID",cd.m_current_costume_idx));
     archive(cereal::make_nvp("LastOnline",cd.m_last_online));
     archive(cereal::make_nvp("Class",cd.m_class_name));
     archive(cereal::make_nvp("Origin",cd.m_origin_name));

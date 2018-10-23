@@ -122,7 +122,7 @@ bool GameDbSyncContext::loadAndConfigure()
         qCritical() << "Wrong db version:"<<db_version<<"this GameDatabase service requires:"<<required_db_version;
         return false;
     }
-    m_prepared_fill = std::make_unique<QSqlQuery>(*m_db);
+
     m_prepared_account_insert = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_account_select = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_entity_select = std::make_unique<QSqlQuery>(*m_db);
@@ -132,7 +132,6 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_char_insert = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_char_delete = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_char_update = std::make_unique<QSqlQuery>(*m_db);
-    m_prepared_costume_insert = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_costume_update = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_get_char_slots = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_options_update = std::make_unique<QSqlQuery>(*m_db);
@@ -152,39 +151,35 @@ bool GameDbSyncContext::loadAndConfigure()
 
     prepQuery(*m_prepared_char_update,
                 "UPDATE characters SET "
-                "char_name=:char_name, chardata=:chardata, entitydata=:entitydata, bodytype=:bodytype, "
-                "height=:height, physique=:physique,"
-                "supergroup_id=:supergroup_id, player_data=:player_data "
+                "char_name=:char_name, costume_data=:costume_data, "
+                "chardata=:chardata, entitydata=:entitydata, player_data=:player_data, "
+                "supergroup_id=:supergroup_id "
                 "WHERE id=:id ");
     prepQuery(*m_prepared_player_update,
-              "UPDATE characters SET "
-              "player_data=:player_data "
-              "WHERE id=:id ");
+                "UPDATE characters SET "
+                "player_data=:player_data "
+                "WHERE id=:id ");
     prepQuery(*m_prepared_costume_update,
-                "UPDATE costume SET "
-                "costume_index=:costume_index, skin_color=:skin_color, parts=:parts "
-                "WHERE character_id=:id ");
+                "UPDATE characters SET "
+                "costume_data=:costume_data "
+                "WHERE id=:id ");
     prepQuery(*m_prepared_options_update,
-              "UPDATE characters SET "
-              "player_data=:player_data "
-              "WHERE id=:id ");
+                "UPDATE characters SET "
+                "player_data=:player_data "
+                "WHERE id=:id ");
 
-    prepQuery(*m_prepared_fill,"SELECT * FROM costume WHERE character_id=? AND costume_index=?");
     prepQuery(*m_prepared_account_select,"SELECT * FROM accounts WHERE id=?");
     prepQuery(*m_prepared_account_insert,"INSERT INTO accounts  (id,max_slots) VALUES (?,?)");
     prepQuery(*m_prepared_char_insert,
                 "INSERT INTO characters  ("
-                "slot_index, account_id, char_name, chardata, entitydata, "
-                "bodytype, height, physique, "
-                "supergroup_id, player_data"
+                "slot_index, account_id, char_name, "
+                "costume_data, chardata, entitydata, player_data "
+                "supergroup_id "
                 ") VALUES ("
-                ":slot_index, :account_id, :char_name, :chardata, :entitydata, "
-                ":bodytype, :height, :physique, "
-                ":supergroup_id, :player_data"
+                ":slot_index, :account_id, :char_name, "
+                ":costume_data, :chardata, :entitydata, :player_data, "
+                ":supergroup_id "
                 ")");
-    prepQuery(*m_prepared_costume_insert,
-                "INSERT INTO costume (character_id,costume_index,skin_color,parts) VALUES "
-                "(:id,:costume_index,:skin_color,:parts)");
     prepQuery(*m_prepared_entity_select,"SELECT * FROM characters WHERE id=:id");
     prepQuery(*m_prepared_entity_select_by_name, "SELECT id FROM characters WHERE char_name=:char_name");
     prepQuery(*m_prepared_char_select,"SELECT * FROM characters WHERE account_id=? AND slot_index=?");
@@ -193,14 +188,10 @@ bool GameDbSyncContext::loadAndConfigure()
     prepQuery(*m_prepared_get_char_slots,"SELECT slot_index FROM characters WHERE account_id=?");
 
     // email prepQueries
-
-
     prepQuery(*m_prepared_email_insert, "INSERT INTO emails (id, sender_id, recipient_id, email_data)"
                                         "VALUES (:id, :sender_id, :recipient_id, :email_data)");
 
-
     // new_id is either sender_id or 0 (deleted chara and/or account, could separate this tho)
-
     prepQuery(*m_prepared_email_mark_as_read, "UPDATE emails SET "
                                         "email_data=:email_data "
                                         "WHERE id=:id");
@@ -222,22 +213,18 @@ bool GameDbSyncContext::performUpdate(const CharacterUpdateData &data)
 {
     m_prepared_char_update->bindValue(QStringLiteral(":id"), data.m_id); // for WHERE statement only
     m_prepared_char_update->bindValue(QStringLiteral(":char_name"), data.m_char_name);
+    m_prepared_char_update->bindValue(QStringLiteral(":costume_data"), data.m_costume_data);
     m_prepared_char_update->bindValue(QStringLiteral(":chardata"), data.m_char_data);
     m_prepared_char_update->bindValue(QStringLiteral(":entitydata"), data.m_entitydata);
-    m_prepared_char_update->bindValue(QStringLiteral(":bodytype"), data.m_bodytype);
-    m_prepared_char_update->bindValue(QStringLiteral(":height"), data.m_height);
-    m_prepared_char_update->bindValue(QStringLiteral(":physique"), data.m_physique);
-    m_prepared_char_update->bindValue(QStringLiteral(":supergroup_id"), data.m_supergroup_id);
     m_prepared_char_update->bindValue(QStringLiteral(":player_data"), data.m_player_data);
+    m_prepared_char_update->bindValue(QStringLiteral(":supergroup_id"), data.m_supergroup_id);
     return doIt(*m_prepared_char_update);
 }
 
 bool GameDbSyncContext::performUpdate(const CostumeUpdateData &data)
 {
-    m_prepared_costume_update->bindValue(QStringLiteral(":id"), uint32_t(data.m_db_id)); // for WHERE statement only
-    m_prepared_costume_update->bindValue(QStringLiteral(":costume_index"), data.m_costume_index);
-    m_prepared_costume_update->bindValue(QStringLiteral(":skin_color"), data.m_skin_color);
-    m_prepared_costume_update->bindValue(QStringLiteral(":parts"), data.m_parts);
+    m_prepared_costume_update->bindValue(QStringLiteral(":id"), data.m_id);
+    m_prepared_costume_update->bindValue(QStringLiteral(":costume_data"), data.m_costume_data);
     return doIt(*m_prepared_costume_update);
 }
 
@@ -293,36 +280,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
         character.m_serialized_player_data = m_prepared_char_select->value("player_data").toString();
         character.m_serialized_entity_data = m_prepared_char_select->value("entitydata").toString();
-
-        GameAccountResponseCostumeData costume;
-        // appearance related.
-
-        costume.m_body_type = m_prepared_char_select->value("bodytype").toUInt();
-        costume.m_height = m_prepared_char_select->value("height").toFloat();
-        costume.m_physique = m_prepared_char_select->value("physique").toFloat();
-        costume.m_slot_index = 0;
-        costume.m_character_id = character.m_db_id;
-
-        m_prepared_fill->bindValue(0,quint64(character.m_db_id));
-        m_prepared_fill->bindValue(1,(uint16_t)costume.m_slot_index);
-        if(!doIt(*m_prepared_fill))
-            continue;
-
-        if(!m_prepared_fill->next()) // retry with the first one
-        {
-            m_prepared_fill->bindValue(1,0); // get first costume
-
-            if(!doIt(*m_prepared_fill))
-                continue;
-            if(!m_prepared_fill->next()) {
-                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT ("(%P|%t) GameDbSyncContext::getAccount no costumes.\n")),false);
-                continue;
-            }
-        }
-        costume.skin_color = m_prepared_fill->value("skin_color").toUInt();
-        costume.m_serialized_data = m_prepared_fill->value("parts").toString();
-        character.m_costumes.emplace_back(costume);
-
+        character.m_serialized_costume_data = m_prepared_char_select->value("costume_data").toString();
     }
     return true;
 }
@@ -365,6 +323,7 @@ bool GameDbSyncContext::createNewChar(const CreateNewCharacterRequestData &data,
         result.slot_idx = -1;
         return true;
     }
+
     int selected_slot = data.m_slot_idx;
     if(selected_slot<0 || slots_in_use.find(selected_slot)!= slots_in_use.end())
     {
@@ -378,34 +337,25 @@ bool GameDbSyncContext::createNewChar(const CreateNewCharacterRequestData &data,
             }
         }
     }
-    const GameAccountResponseCostumeData & costume(data.m_character.current_costume());
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
     assert(data.m_slot_idx<8);
-    //cd->m_last_online = QDateTime::currentDateTimeUtc().toString();
+
     m_prepared_char_insert->bindValue(":slot_index", uint32_t(selected_slot));
     m_prepared_char_insert->bindValue(":account_id", data.m_character.m_account_id);
     m_prepared_char_insert->bindValue(":char_name", data.m_character.m_name);
-    m_prepared_char_insert->bindValue(":bodytype", costume.m_body_type);
-    m_prepared_char_insert->bindValue(QStringLiteral(":height"), costume.m_height);
-    m_prepared_char_insert->bindValue(QStringLiteral(":physique"), costume.m_physique);
-    m_prepared_char_insert->bindValue(":supergroup_id", 0);
-    m_prepared_char_insert->bindValue(":player_data", data.m_character.m_serialized_player_data);
-    m_prepared_char_insert->bindValue(":entitydata", data.m_ent_data);
+    m_prepared_char_insert->bindValue(":costume_data", data.m_character.m_serialized_costume_data);
     m_prepared_char_insert->bindValue(":chardata", data.m_character.m_serialized_chardata);
+    m_prepared_char_insert->bindValue(":entitydata", data.m_ent_data);
+    m_prepared_char_insert->bindValue(":player_data", data.m_character.m_serialized_player_data);
+    m_prepared_char_insert->bindValue(":supergroup_id", 0);
 
     if(!doIt(*m_prepared_char_insert))
         return false;
+
     int64_t char_id = m_prepared_char_insert->lastInsertId().toLongLong();
     result.m_char_id = char_id;
     result.slot_idx = selected_slot;
-    // create costume
-    m_prepared_costume_insert->bindValue(":id",quint64(char_id));
-    m_prepared_costume_insert->bindValue(":costume_index",uint32_t(0));
-    m_prepared_costume_insert->bindValue(":skin_color",uint32_t(costume.skin_color));
-    m_prepared_costume_insert->bindValue(":parts",costume.m_serialized_data);
 
-    if(!doIt(*m_prepared_costume_insert))
-        return false;
     grd.commit();
     return true;
 }

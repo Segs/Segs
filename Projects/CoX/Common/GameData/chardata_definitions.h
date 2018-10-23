@@ -47,7 +47,7 @@ static const constexpr  uint32_t    class_version       = 8; // v8: security thr
                         QString     m_afk_msg;
                         bool        m_lfg               = false;
                         QString     m_alignment         = "hero";
-                        uint64_t    m_last_costume_id;
+                        uint32_t    m_current_costume_idx;
                         QString     m_last_online;
                         QString     m_class_name;
                         QString     m_origin_name;

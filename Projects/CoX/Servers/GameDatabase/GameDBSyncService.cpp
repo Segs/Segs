@@ -69,11 +69,9 @@ void GameDBSyncService::on_character_update(CharacterUpdateMessage* msg)
                     msg->m_data.m_char_data,
                     msg->m_data.m_entitydata,
                     msg->m_data.m_player_data,
+                    msg->m_data.m_costume_data,
 
                     // plain values
-                    msg->m_data.m_bodytype,
-                    msg->m_data.m_height,
-                    msg->m_data.m_physique,
                     msg->m_data.m_supergroup_id,
                     msg->m_data.m_id
     }, uint64_t(1));

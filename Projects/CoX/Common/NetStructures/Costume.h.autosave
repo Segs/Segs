@@ -18,6 +18,7 @@ extern int g_max_num_costume_slots;
 
 struct CostumePart
 {
+    static const constexpr  uint32_t    class_version = 1;
     enum class Type {
         Pants=0,
         Chest,
@@ -46,6 +47,7 @@ struct CostumePart
     uint8_t m_type = 0; // arms/legs etc..
     bool m_full_part;
 };
+CEREAL_CLASS_VERSION(CostumePart, CostumePart::class_version)   // register Costume class version
 
 void serializeto(const CostumePart &part, BitStream &bs, const ColorAndPartPacker *packingContext);
 void serializefrom(CostumePart &part, BitStream &bs, const ColorAndPartPacker *packingContext);

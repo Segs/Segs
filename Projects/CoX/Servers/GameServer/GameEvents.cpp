@@ -86,10 +86,11 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     assert(m_data.m_max_slots>0);
     for(int i=0; i<m_data.m_max_slots; i++)
     {
+        vCostumes costume_data;
         Character converted;
-        PlayerData player_data;
         EntityData entity_data;
-        toActualCharacter(m_data.m_characters[i],converted,player_data, entity_data);
+        PlayerData player_data;
+        toActualCharacter(m_data.m_characters[i], converted, player_data, entity_data);
         converted.serializetoCharsel(tgt, getDisplayMapName(entity_data.m_map_idx));
     }
     //tgt.StoreBitArray(m_clientinfo,128);
