@@ -127,10 +127,10 @@ struct GameAccountRequestData
 struct GameAccountResponseCharacterData
 {
     QString m_name;
+    QString m_serialized_costume_data;
     QString m_serialized_chardata;
     QString m_serialized_player_data;
     QString m_serialized_entity_data;
-    QString m_serialized_costume_data;
 
     uint32_t m_db_id;
     uint32_t m_account_id;
@@ -150,9 +150,9 @@ struct GameAccountResponseCharacterData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_name );
+        ar( m_name, m_serialized_costume_data );
         ar( m_serialized_chardata, m_serialized_entity_data );
-        ar( m_serialized_player_data, m_serialized_costume_data );
+        ar( m_serialized_player_data );
         ar( m_db_id, m_account_id );
         ar( index );
     }

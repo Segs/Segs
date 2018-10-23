@@ -86,7 +86,6 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     assert(m_data.m_max_slots>0);
     for(int i=0; i<m_data.m_max_slots; i++)
     {
-        vCostumes costume_data;
         Character converted;
         EntityData entity_data;
         PlayerData player_data;

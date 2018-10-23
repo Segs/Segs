@@ -18,7 +18,7 @@ extern int g_max_num_costume_slots;
 
 struct CostumePart
 {
-    static const constexpr  uint32_t    class_version = 1;
+    enum : uint32_t {class_version = 1};
     enum class Type {
         Pants=0,
         Chest,
@@ -54,7 +54,7 @@ void serializefrom(CostumePart &part, BitStream &bs, const ColorAndPartPacker *p
 class Costume
 {
 public:
-    static const constexpr  uint32_t    class_version = 1;
+    enum : uint32_t {class_version = 1};
     size_t      m_index         = 0;
     uint32_t    m_character_id  = 0; // who does this costume belong to?
     float       m_height        = 0;
