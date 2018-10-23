@@ -11,6 +11,7 @@
  */
 
 #include "GameDataStore.h"
+#include "trick_definitions.h"
 
 #include "Common/GameData/DataStorage.h"
 #include "Common/GameData/costume_serializers.h"
@@ -19,11 +20,13 @@
 #include "Common/GameData/keybind_serializers.h"
 #include "Common/GameData/npc_serializers.h"
 #include "Common/GameData/power_serializers.h"
-#include "NetStructures/CommonNetStructures.h"
+#include "Common/GameData/trick_serializers.h"
+#include "Common/GameData/CommonNetStructures.h"
 #include "Logging.h"
 #include "Settings.h"
 
 #include <QtCore/QDebug>
+
 
 namespace
 {
@@ -32,7 +35,7 @@ constexpr uint32_t    colorcachecount_bitlength =10;
 
 uint32_t color_to_4ub(const glm::vec3 &rgb)
 {
-    return ((uint32_t)rgb[0]) | (((uint32_t)rgb[1])<<8) | (((uint32_t)rgb[2])<<16) | (0xFF<<24);
+    return ((uint32_t)rgb[0]) | (((uint32_t)rgb[1])<<8) | (((uint32_t)rgb[2])<<16) | (0xFFu<<24);
 }
 
 class HashBasedPacker final : public ColorAndPartPacker
@@ -93,7 +96,7 @@ public:
                             {
                                 m_strings.insert_entry(geo_set.m_MaskNames[name_idx],"");
                             }
-                            for(int name_idx=geo_set.m_MaskStrings.size()-1; name_idx>=0; --name_idx)
+                            for(int name_idx=int(geo_set.m_MaskStrings.size())-1; name_idx>=0; --name_idx)
                             {
                                 m_strings.insert_entry(geo_set.m_MaskStrings[name_idx],"");
                             }
@@ -221,7 +224,7 @@ GameDataStore::~GameDataStore()
     packer_instance = nullptr;
 }
 
-bool GameDataStore::read_runtime_data(const QString &directory_path)
+bool GameDataStore::read_game_data(const QString &directory_path)
 {
     qInfo().noquote() << "Reading game data from" << directory_path << "folder";
 
@@ -391,10 +394,8 @@ bool GameDataStore::read_commands(const QString &directory_path)
 bool GameDataStore::read_npcs(const QString &directory_path)
 {
     qDebug() << "Loading npcs:";
-    if (!read_data_to<AllNpcs_Data, npccostumesets_i0_requiredCrc>(directory_path, "VillainCostume.bin",
-                                                                   m_npc_store.m_all_npcs))
-        return false;
-    return true;
+    return read_data_to<AllNpcs_Data, npccostumesets_i0_requiredCrc>(directory_path, "VillainCostume.bin",
+                                                                   m_npc_store.m_all_npcs);
 }
 
 bool GameDataStore::read_settings(const QString &/*directory_path*/)
@@ -469,11 +470,8 @@ bool GameDataStore::read_effectiveness(const QString &directory_path)
 bool GameDataStore::read_pi_schedule(const QString &directory_path)
 {
     qDebug() << "Loading PI Schedule:";
-    if (!read_data_to<Parse_PI_Schedule, pischedule_i0_requiredCrc>(directory_path, "schedules.bin",
-                                                                   m_pi_schedule))
-        return false;
-
-    return true;
+    return read_data_to<Parse_PI_Schedule, pischedule_i0_requiredCrc>(directory_path, "schedules.bin",
+                                                                   m_pi_schedule);
 }
 
 const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
@@ -503,7 +501,7 @@ int getEntityOriginIndex(const GameDataStore &data, bool is_player, const QStrin
     int idx = 0;
     for(const Parse_Origin &orig : origins_to_search)
     {
-        if(orig.Name.compare(origin_name,Qt::CaseInsensitive)==0)
+        if(origin_name.compare(orig.Name,Qt::CaseInsensitive)==0)
             return idx;
         idx++;
     }
@@ -517,7 +515,7 @@ int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString
     int idx = 0;
     for(const CharClass_Data &classdata : classes_to_search)
     {
-        if(classdata.m_Name.compare(class_name,Qt::CaseInsensitive)==0)
+        if(class_name.compare(classdata.m_Name,Qt::CaseInsensitive)==0)
             return idx;
         idx++;
     }

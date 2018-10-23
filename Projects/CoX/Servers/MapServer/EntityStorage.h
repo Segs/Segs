@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "NetStructures/Entity.h"
+#include "GameData/Entity.h"
 #include "Servers/MapServer/DataHelpers.h"
 
 #include <ace/Thread_Mutex.h>

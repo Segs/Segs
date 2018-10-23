@@ -38,11 +38,11 @@ bool loadFrom(BinStore *s, AllMaps_Data &target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Zone")==0) {
+        if("Zone"==_name) {
             Map_Data nt;
             ok &= loadFrom(s,nt);
             target.push_back(nt);

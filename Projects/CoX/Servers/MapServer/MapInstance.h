@@ -85,7 +85,7 @@ class EmailHeaderResponse;
 class EmailReadResponse;
 class EmailWasReadByRecipientMessage;
 class EmailHeadersToClientMessage;
-class EmailSendErrorMessage;
+struct EmailSendErrorMessage;
 class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;

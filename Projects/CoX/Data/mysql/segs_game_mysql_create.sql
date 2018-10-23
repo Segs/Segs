@@ -9,6 +9,10 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `table_versions`;
 DROP TABLE IF EXISTS `supergroups`;
 DROP TABLE IF EXISTS `progress`;
+<<<<<<< HEAD
+=======
+DROP TABLE IF EXISTS `costume`;
+>>>>>>> upstream/develop
 DROP TABLE IF EXISTS `emails`;
 DROP TABLE IF EXISTS `characters`;
 DROP TABLE IF EXISTS `accounts`;
@@ -55,8 +59,14 @@ INSERT INTO `table_versions` (`id`, `table_name`, `version`, `last_update`) VALU
 (1, 'db_version', 9, '2018-10-22 22:56:43'),
 (2, 'table_versions', 0, '2017-11-11 08:57:42'),
 (3, 'accounts', 1, '2018-05-03 12:52:03'),
+<<<<<<< HEAD
 (4, 'characters', 8, '2018-10-22 22:56:43'),
 (7, 'supergroups', 2, '2018-10-22 22:56:43'),
+=======
+(4, 'characters', 8, '2018-05-04 14:58:27'),
+(5, 'costume', 0, '2017-11-11 08:57:43'),
+(7, 'supergroups', 1, '2018-05-03 12:52:53'),
+>>>>>>> upstream/develop
 (8, 'emails', 0, '2018-09-23 08:00:00');
 
 ALTER TABLE `accounts`

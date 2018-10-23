@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Common/NetStructures/Powers.h"
+#include "Common/GameData/Powers.h"
 
 #include <stdint.h>
 

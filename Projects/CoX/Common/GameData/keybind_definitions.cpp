@@ -72,7 +72,7 @@ void KeybindSettings::setKeybind(QString &profile, KeyName &key, ModKeys &mods, 
     for(auto &p : m_keybind_profiles)
     {
         if(p.Name == profile)
-            p.KeybindArr.push_back({key,mods,keystring,command,is_secondary});
+            p.KeybindArr.push_back({key,mods,keystring.toLatin1(),command.toLatin1(),is_secondary});
     }
 
     qCDebug(logKeybinds) << "Setting keybind: " << profile << key << mods << keystring << command << is_secondary;

@@ -6,12 +6,18 @@
  */
 
 #pragma once
-#include "AuthEvents.h"
-#include "AuthOpcodes.h"
+#include <stdint.h>
+
+enum eAuthPacketType : uint8_t ;
+namespace SEGSEvents {
+class AuthLinkEvent;
+}
 
 class AuthEventFactory
 {
 public:
-static  SEGSEvents::AuthLinkEvent * EventForType(eAuthPacketType type);
-static  void            Destroy(SEGSEvents::AuthLinkEvent *what);
+using   EventType = SEGSEvents::AuthLinkEvent;
+    
+static  EventType * EventForType(eAuthPacketType type);
+static  void        Destroy(EventType *what);
 };

@@ -26,7 +26,7 @@ CEREAL_CLASS_VERSION(PlayerData, PlayerData::class_version)         // register 
 template<class Archive>
 void serialize(Archive &archive, PlayerData &pd, uint32_t const version)
 {
-    if (version != pd.class_version)
+    if (version != PlayerData::class_version)
     {
         qCritical() << "Failed to serialize PlayerData, incompatible serialization format version " << version;
         return;

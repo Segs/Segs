@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "Events/MessageChannels.h"
-#include "Events/FloatingInfoStyles.h"
+#include "Messages/Map/MessageChannels.h"
+#include "Messages/Map/FloatingInfoStyles.h"
 #include "glm/vec3.hpp"
 #include <QString>
 #include <cstdint>
@@ -25,7 +25,7 @@ struct CharacterPowerSet;
 struct CharacterPower;
 class GameDataStore;
 class TradeMember;
-class CharacterCostume;
+class Costume;
 class BitStream;
 struct ContactEntry;
 struct Destination;
@@ -60,7 +60,6 @@ void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t s
 void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e);
 void    setCurrentDestination(Entity &e, int point_idx, glm::vec3 location);
-void    setStateMode(Entity &e, ClientStates state);
 
 // For live debugging
 void    setu1(Entity &e, int val);
@@ -162,10 +161,6 @@ void increaseLevel(Entity &ent);
  */
 void findTeamMember(Entity &tgt);
 
-/*
- * Tailor and Costume Methods
- */
-void receiveCostume(CharacterCostume &new_costume, BitStream bs);
 
 /*
  * Lua Functions

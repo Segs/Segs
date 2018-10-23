@@ -13,8 +13,6 @@ class GUIWindow;
 class GUISettings;
 
 template<class Archive>
-void serialize(Archive &archive, GUIWindow &wnd);
-template<class Archive>
 void serialize(Archive &archive, GUISettings &gui, uint32_t const version);
 
 void saveTo(const GUISettings &target,const QString &baseName,bool text_format=false);

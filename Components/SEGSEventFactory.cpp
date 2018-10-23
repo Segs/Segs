@@ -1,6 +1,7 @@
 #include "SEGSEventFactory.h"
 
 #include "SEGSEvent.h"
+#include "Logging.h"
 
 #include <unordered_map>
 #include <vector>
@@ -52,5 +53,35 @@ const char *event_name(uint32_t type_id)
     if(iter==s_id_to_event_descriptor.end())
         return nullptr;
     return s_all_event_descriptors[iter->second].name;
+}
+Event *from_storage(std::istream &istr)
+{
+    Event * ev;
+    uint32_t type_id;
+    // we create a binary input to read the type_id;
+    {
+        cereal::BinaryInputArchive iarchive(istr);
+        iarchive(type_id);
+        ev = create_by_id(type_id);
+    }
+    if(!ev)
+    {
+        qCritical()<<"Unknown Event type" << type_id;
+        return nullptr;
+    }
+    ev->serialize_from(istr);
+    return ev;
+}
+void to_storage(std::ostream &ostr,Event *ev)
+{
+    assert(ev);
+    uint32_t type_id = ev->type();
+    // we create a binary input to read the type_id;
+    {
+        cereal::BinaryOutputArchive oarchive(ostr);
+        oarchive(type_id);
+        ev = create_by_id(type_id);
+    }
+    ev->do_serialize(ostr);
 }
 }

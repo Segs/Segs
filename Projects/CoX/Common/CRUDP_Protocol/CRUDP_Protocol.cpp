@@ -246,7 +246,7 @@ CrudP_Packet *CrudP_Protocol::mergeSiblings(uint32_t id)
 {
     auto store_iter = sibling_map.find(id);
     pPacketStorage &storage(store_iter->second);
-    assert(storage.size()>=1); // wtf ??
+    assert(!storage.empty()); // wtf ??
     BitStream *bs=new BitStream(32);
     CrudP_Packet *res= new CrudP_Packet(*storage[0]); //copy packet info from first sibling
     for(CrudP_Packet *pak : storage)

@@ -16,7 +16,7 @@
 
 #include "GameDBSyncContext.h"
 
-#include "GameDBSyncEvents.h"
+#include "Messages/GameDatabase/GameDBSyncEvents.h"
 #include "Settings.h"
 #include "Database.h"
 

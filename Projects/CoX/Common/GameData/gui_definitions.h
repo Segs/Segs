@@ -13,6 +13,7 @@
 #include <cassert>
 
 #include <QDebug>
+#include <cereal/cereal.hpp>
 
 enum WindowIDX : uint32_t {
     wdw_DockDraw        = 0,
@@ -78,8 +79,8 @@ enum ChatWindowMasks : uint32_t {   // top      bottom  bottom              top
 
 class GUIWindow
 {
+    enum {class_version=1};
 public:
-
         // GUI Window Params
         WindowIDX           m_idx               = wdw_DockDraw;
         WindowVisibility    m_mode              = wv_Uninitialized;
@@ -107,6 +108,20 @@ public:
                             }
 
         void                setWindowVisibility(WindowVisibility val) { m_mode = val; }
+        template<class Archive>
+        void                serialize(Archive &archive)
+                            {
+                                archive(cereal::make_nvp("IDX",m_idx));
+                                archive(cereal::make_nvp("Mode",m_mode));
+                                archive(cereal::make_nvp("DraggableFrame",m_draggable_frame));
+                                archive(cereal::make_nvp("PosX",m_posx));
+                                archive(cereal::make_nvp("PosY",m_posy));
+                                archive(cereal::make_nvp("Width",m_width));
+                                archive(cereal::make_nvp("Height",m_height));
+                                archive(cereal::make_nvp("Locked",m_locked));
+                                archive(cereal::make_nvp("Color",m_color));
+                                archive(cereal::make_nvp("Alpha",m_alpha));
+                            }
 };
 
 class GUISettings

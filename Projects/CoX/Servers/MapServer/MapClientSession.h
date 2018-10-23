@@ -8,7 +8,7 @@
 #pragma once
 #include "FixedPointValue.h"
 #include "NetCommandManager.h"
-#include "Events/GameCommand.h"
+#include "Messages/Map/GameCommand.h"
 
 #include <map>
 #include <memory>
