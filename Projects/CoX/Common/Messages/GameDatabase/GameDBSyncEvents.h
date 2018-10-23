@@ -144,7 +144,7 @@ struct GameAccountResponseCharacterData
 
     bool isEmpty() const
     {
-        return 0==m_name.compare("EMPTY",Qt::CaseInsensitive);
+        return 0==m_name.compare("EMPTY", Qt::CaseInsensitive);
     }
 
     template <class Archive>

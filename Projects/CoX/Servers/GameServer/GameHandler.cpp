@@ -198,8 +198,6 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     assert(session.m_game_account.valid());
 
     ev->src()->putq(new CharacterResponse(this,ev->m_index,session.m_game_account));
-
-    // TODO: Do we update database here? issue #271
 }
 
 void GameHandler::on_idle(Idle */*ev*/)

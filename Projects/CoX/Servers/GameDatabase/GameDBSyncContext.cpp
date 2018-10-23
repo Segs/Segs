@@ -116,10 +116,10 @@ bool GameDbSyncContext::loadAndConfigure()
         qCritical().noquote() << "Failed to open database:" <<dbname;
         return false;
     }
-    int db_version=getDbVersion(*m_db);
-    if(db_version!=required_db_version)
+    int db_version = getDbVersion(*m_db);
+    if(db_version != required_db_version)
     {
-        qCritical() << "Wrong db version:"<<db_version<<"this GameDatabase service requires:"<<required_db_version;
+        qCritical() << "Wrong db version:" << db_version << "this GameDatabase service requires:" << required_db_version;
         return false;
     }
 

@@ -96,9 +96,7 @@ void Costume::storeCharselParts( BitStream &bs ) const
 {
     bs.StorePackedBits(1,m_parts.size());
     for(const CostumePart & part : m_parts)
-    {
         serializeto_charsel(part,bs);
-    }
 }
 
 template<class Archive>
