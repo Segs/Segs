@@ -7,10 +7,16 @@ ${CMAKE_CURRENT_SOURCE_DIR}/AuthHandler.h
 ${CMAKE_CURRENT_SOURCE_DIR}/AuthServer.h
 )
 SET (authserver_standaloneSRCS
+${CMAKE_CURRENT_SOURCE_DIR}/AdminRPC.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/AdminRPC.h
 ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 SET (target_SOURCES
@@ -35,6 +41,7 @@ IF(BUILD_SEPARATE)
         ${SCRIPTING_LIBRARY}
         Threads::Threads
         ace_IMP
+        jcon_IMP
         ${CMAKE_DL_LIBS}
     )
     ADD_DEPENDENCIES(segs_server ${target_DEPENDS} Auth)

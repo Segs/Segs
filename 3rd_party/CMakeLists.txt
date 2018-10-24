@@ -26,4 +26,5 @@ if(ENABLE_SCRIPTING_ENGINE)
     include(ExternalProject_LUA.cmake)
     include(ExternalProject_SOL2.cmake)
 endif()
+include(ExternalProject_JCON.cmake)
 
