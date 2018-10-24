@@ -475,7 +475,6 @@ void Character::recv_initial_costume( BitStream &src, const ColorAndPartPacker *
     m_costumes.emplace_back();
     m_char_data.m_current_costume_idx = 0;
     ::serializefrom(m_costumes.back(), src, packer);
-    dumpCostumes(m_costumes); // TEST
 }
 
 void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolute*/)
@@ -630,9 +629,11 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
     tgt.m_db_id      = src.m_db_id;
     tgt.m_account_id = src.m_account_id;
     tgt.setName(src.m_name);
+    tgt.setIndex(src.m_slot_idx);
 
     try
     {
+        qCDebug(logDB) << "Costume:" << src.m_serialized_costume_data;
         serializeFromQString(tgt.m_costumes, src.m_serialized_costume_data);
         serializeFromQString(cd, src.m_serialized_chardata);
         serializeFromQString(entity, src.m_serialized_entity_data);
@@ -657,6 +658,7 @@ bool fromActualCharacter(const Character &src, const PlayerData &player,
 
     tgt.m_db_id         = src.m_db_id;
     tgt.m_account_id    = src.m_account_id;
+    tgt.m_slot_idx      = src.m_index;
     tgt.m_name          = src.getName();
 
     try

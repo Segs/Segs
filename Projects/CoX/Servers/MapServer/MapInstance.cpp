@@ -723,6 +723,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
         return;
     }
     GameAccountResponseCharacterData char_data;
+    qCDebug(logDB) << "expected_client: Costume:" << char_data.m_serialized_costume_data;
     serializeFromQString(char_data,request_data.char_from_db_data);
     // existing character
     Entity *ent = m_entities.CreatePlayer();
@@ -841,8 +842,8 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         Entity *e = m_entities.CreatePlayer();
 
         const GameDataStore &data(getGameData());
-
         fillEntityFromNewCharData(*e, ev->m_character_data, data);
+
         e->m_char->m_account_id = map_session.auth_id();
         e->m_client = &map_session;
         map_session.m_ent = e;
@@ -853,16 +854,16 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         e->m_entity_data.m_access_level = map_session.m_access_level;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
+        e->m_char->setIndex(map_session.m_requested_slot_idx);
+
         GameAccountResponseCharacterData char_data;
         fromActualCharacter(*e->m_char, *e->m_player, *e->m_entity, char_data);
         serializeToDb(e->m_entity_data, ent_data);
 
-        qDebug() << "TEST" << char_data.m_name;
         qDebug() << "TEST" << char_data.m_serialized_costume_data;
 
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
-        // FixMe: char_data members index, m_current_costume_idx, and m_villain are not initialized.
         game_db->putq(new CreateNewCharacterRequest({char_data,ent_data, map_session.m_requested_slot_idx,
                                                      map_session.m_max_slots,map_session.m_client_id},
                                                     token,this));

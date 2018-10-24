@@ -134,7 +134,7 @@ struct GameAccountResponseCharacterData
 
     uint32_t m_db_id;
     uint32_t m_account_id;
-    int index;
+    int m_slot_idx;
 
     void reset()
     {
@@ -153,7 +153,7 @@ struct GameAccountResponseCharacterData
         ar( m_serialized_chardata, m_serialized_entity_data );
         ar( m_serialized_player_data );
         ar( m_db_id, m_account_id );
-        ar( index );
+        ar( m_slot_idx );
     }
 };
 
