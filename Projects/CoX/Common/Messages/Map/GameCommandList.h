@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "BitStream.h"
+
 #include "Messages/Map/AddTimeStateLog.h"
 #include "Messages/Map/Browser.h"
 #include "Messages/Map/StandardDialogCmd.h"

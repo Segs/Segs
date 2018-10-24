@@ -9,6 +9,7 @@
 // if this file is included stand-alone this will pull in common definitions
 #include "MapEventTypes.h"
 #include "MapSessionReference.h"
+#include "BitStream.h"
 
 namespace SEGSEvents
 {

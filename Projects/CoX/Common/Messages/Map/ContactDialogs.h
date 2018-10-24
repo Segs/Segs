@@ -9,6 +9,7 @@
 #include "GameCommand.h"
 #include "MapEventTypes.h"
 #include "GameData/Contact.h"
+#include "BitStream.h"
 
 #include <QtCore/QString>
 
