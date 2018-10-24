@@ -75,7 +75,7 @@ void setMaxEnd(Character &c)
 
 void setCurrentCostumeIdx(Character &c, uint32_t idx)
 {
-    c.m_current_costume_set = true;
+    c.m_add_new_costume = true;
     c.m_char_data.m_current_costume_idx = idx;
 }
 

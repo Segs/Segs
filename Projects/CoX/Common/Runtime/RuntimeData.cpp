@@ -5,10 +5,10 @@
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
 #include "GameData/DataStorage.h"
+#include "Logging.h"
 
 #include <QDirIterator>
 #include <QString>
-#include <QDebug>
 
 using namespace SEGS;
 namespace {
@@ -28,7 +28,7 @@ static void setupTexOpt(SceneModifiers *mods,TextureModifiers *tmod)
         tmod->Flags |= uint32_t(TexOpt::DUAL);
     if (!tmod->Surface.isEmpty())
     {
-        //qDebug() <<"Has surface"<<tex->Surface;
+        //qCDebug(logSceneGraph) <<"Has surface"<<tex->Surface;
     }
 
     tmod->name = tmod->name.mid(0,tmod->name.lastIndexOf('.')); // cut last extension part
@@ -38,7 +38,7 @@ static void setupTexOpt(SceneModifiers *mods,TextureModifiers *tmod)
     auto iter = mods->m_texture_path_to_mod.find(lower_name);
     if (iter!=mods->m_texture_path_to_mod.end())
     {
-        qDebug() << "duplicate texture info: "<<tmod->name;
+        qCDebug(logSceneGraph) << "duplicate texture info: "<<tmod->name;
         return;
     }
     mods->m_texture_path_to_mod[lower_name] = tmod;
@@ -72,12 +72,12 @@ static void setupTrick(SceneModifiers *mods,GeometryModifiers *gmod)
     if (gmod->GroupFlags & VisTray)
         gmod->ObjFlags |= 0x400;
     if (gmod->name.isEmpty())
-        qDebug() << "No name in trick";
+        qCDebug(logSceneGraph) << "No name in trick";
     QString lower_name = gmod->name.toLower();
     auto iter = mods->g_tricks_string_hash_tab.find(lower_name);
     if (iter!=mods->g_tricks_string_hash_tab.end())
     {
-        qDebug() << "duplicate model trick!";
+        qCDebug(logSceneGraph) << "duplicate model trick!";
         return;
     }
     mods->g_tricks_string_hash_tab[lower_name]=gmod;

@@ -1133,28 +1133,16 @@ void CharacterInspiration::serialize(Archive &archive, uint32_t const version)
 {
     if (version != CharacterInspiration::class_version)
     {
-    }
-    switch(version)
-    {
-    case 1:
-        serialize_v1(archive);
-    case 2:
-        archive(m_insp_info,m_name,m_col,m_row,m_has_insp);
-    default:
-        qCritical() << "Failed to serialize CharacterInspiration, incompatible serialization format version " << version;
+        qCritical() << "Failed to serialize CharacterInspirations, incompatible serialization format version " << version;
         return;
     }
-}
-template<class Archive>
-void CharacterInspiration::serialize_v1(Archive &archive)
-{
+
     archive(cereal::make_nvp("InspirationInfo", m_insp_info));
     archive(cereal::make_nvp("Name", m_name));
     archive(cereal::make_nvp("Col", m_col));
     archive(cereal::make_nvp("Row", m_row));
     archive(cereal::make_nvp("HasInsp", m_has_insp));
 }
-
 SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(CharacterInspiration)
 CEREAL_CLASS_VERSION(CharacterInspiration, CharacterInspiration::class_version)   // register CharacterInspiration struct version
 

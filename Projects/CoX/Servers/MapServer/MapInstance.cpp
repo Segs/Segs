@@ -54,7 +54,6 @@
 
 #include <ace/Reactor.h>
 
-#include <QtCore/QDebug>
 #include <QRegularExpression>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
@@ -855,8 +854,11 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
         GameAccountResponseCharacterData char_data;
-        fromActualCharacter(*e->m_char,*e->m_player, *e->m_entity, char_data);
-        serializeToDb(e->m_entity_data,ent_data);
+        fromActualCharacter(*e->m_char, *e->m_player, *e->m_entity, char_data);
+        serializeToDb(e->m_entity_data, ent_data);
+
+        qDebug() << "TEST" << char_data.m_name;
+        qDebug() << "TEST" << char_data.m_serialized_costume_data;
 
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);
@@ -2572,20 +2574,20 @@ void MapInstance::send_character_update(Entity *e)
                 e->m_player->m_options
                 });
 
+    serializeToQString(*e->m_char->getAllCostumes(), cerealizedCostumeData);
     serializeToQString(e->m_char->m_char_data, cerealizedCharData);
     serializeToQString(e->m_entity_data, cerealizedEntityData);
     serializeToQString(playerData, cerealizedPlayerData);
-    serializeToQString(*e->m_char->getAllCostumes(), cerealizedCostumeData);
 
     CharacterUpdateMessage* msg = new CharacterUpdateMessage(
                 CharacterUpdateData({
                                         e->m_char->getName(),
 
                                         // cerealized blobs
+                                        cerealizedCostumeData,
                                         cerealizedCharData,
                                         cerealizedEntityData,
                                         cerealizedPlayerData,
-                                        cerealizedCostumeData,
 
                                         // plain values
                                         uint32_t(e->m_supergroup.m_SG_id),

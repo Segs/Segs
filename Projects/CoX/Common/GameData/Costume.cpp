@@ -115,7 +115,6 @@ void serialize(Archive &arc, CostumePart &cp, uint32_t const version)
     arc(cp.name_3);
     arc(cp.name_4);
     arc(cp.name_5);
-    //arc(cp.name_6);
     arc(cp.m_full_part);
     arc(cp.m_colors[0]);
     arc(cp.m_colors[1]);
@@ -146,8 +145,6 @@ SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(Costume)
 
 void Costume::serializeToDb(QString &tgt) const
 {
-// for now only parts are serialized
-    // format is a simple [[]]
     std::ostringstream ostr;
     {
         cereal::JSONOutputArchive ar( ostr );

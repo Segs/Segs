@@ -108,7 +108,8 @@ const   QString &       getName() const { return m_name; }
         uint32_t            m_account_id;
         uint32_t            m_db_id;
         bool                m_in_training   = false;
-        bool                m_current_costume_set = false;
+        bool                m_add_new_costume = false;
+        QStringList         m_costume_slot_unlocks; // load once and use during finalizeLevel() which is called many times
 
 protected:
         QString         m_name;

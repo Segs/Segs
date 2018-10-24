@@ -37,7 +37,8 @@ namespace
     bool prepQuery(QSqlQuery &qr,const QString &txt) {
         if(!qr.prepare(txt))
         {
-            qDebug() << "SQL_ERROR:"<<qr.lastError();
+            qDebug() << "SQL_ERROR:" << qr.lastError();
+            qDebug() << "QUERY:" << qr.executedQuery();
             return false;
         }
         return true;
@@ -46,6 +47,7 @@ namespace
         if(!qr.exec())
         {
             qDebug() << "SQL_ERROR:"<<qr.lastError();
+            qDebug() << "QUERY:" << qr.executedQuery();
             return false;
         }
         return true;
@@ -147,8 +149,7 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_email_select_all = std::make_unique<QSqlQuery>(*m_db);
     m_prepared_email_fill_recipient_id = std::make_unique<QSqlQuery>(*m_db);
 
-    // TO-DO: prepQuery for playerUpdate
-
+    // Update prepQueries
     prepQuery(*m_prepared_char_update,
                 "UPDATE characters SET "
                 "char_name=:char_name, costume_data=:costume_data, "
@@ -173,7 +174,7 @@ bool GameDbSyncContext::loadAndConfigure()
     prepQuery(*m_prepared_char_insert,
                 "INSERT INTO characters  ("
                 "slot_index, account_id, char_name, "
-                "costume_data, chardata, entitydata, player_data "
+                "costume_data, chardata, entitydata, player_data, "
                 "supergroup_id "
                 ") VALUES ("
                 ":slot_index, :account_id, :char_name, "
@@ -277,10 +278,10 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_account_id = (m_prepared_char_select->value("account_id").toUInt());
         QString name=m_prepared_char_select->value("char_name").toString();
         character.m_name =  name.isEmpty() ? "EMPTY" : name;
-        character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
-        character.m_serialized_player_data = m_prepared_char_select->value("player_data").toString();
-        character.m_serialized_entity_data = m_prepared_char_select->value("entitydata").toString();
         character.m_serialized_costume_data = m_prepared_char_select->value("costume_data").toString();
+        character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
+        character.m_serialized_entity_data = m_prepared_char_select->value("entitydata").toString();
+        character.m_serialized_player_data = m_prepared_char_select->value("player_data").toString();
     }
     return true;
 }

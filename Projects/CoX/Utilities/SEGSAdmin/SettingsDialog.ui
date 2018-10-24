@@ -44,7 +44,7 @@
     <enum>QTabWidget::Rounded</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>3</number>
    </property>
    <property name="tabsClosable">
     <bool>false</bool>
@@ -1067,7 +1067,20 @@
      <string>Starting Character</string>
     </attribute>
     <layout class="QGridLayout" name="gridLayout_13">
-     <item row="0" column="0" colspan="2">
+     <item row="3" column="0">
+      <spacer name="verticalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>131</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="0" colspan="3">
       <widget class="QGroupBox" name="groupBox_5">
        <property name="font">
         <font>
@@ -1195,7 +1208,7 @@
        </layout>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QGroupBox" name="groupBox_6">
        <property name="font">
         <font>
@@ -1206,7 +1219,7 @@
         <string>Level and Influence</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_12">
-        <item row="0" column="0">
+        <item row="2" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_8">
           <item>
            <widget class="QLabel" name="starting_level_label">
@@ -1244,7 +1257,7 @@
           </item>
          </layout>
         </item>
-        <item row="1" column="0">
+        <item row="3" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_9">
           <item>
            <widget class="QLabel" name="starting_inf_label">
@@ -1285,7 +1298,7 @@
        </layout>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <spacer name="horizontalSpacer_3">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -1298,18 +1311,57 @@
        </property>
       </spacer>
      </item>
-     <item row="2" column="0">
-      <spacer name="verticalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+     <item row="1" column="0" colspan="3">
+      <widget class="QGroupBox" name="groupBox_7">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>131</height>
-        </size>
+       <property name="title">
+        <string>Costume Slot Unlock Levels (for each setting in this group, separate each value with a comma)</string>
        </property>
-      </spacer>
+       <layout class="QGridLayout" name="gridLayout_14">
+        <item row="0" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_10">
+          <item>
+           <widget class="QLabel" name="costume_slot_unlocks_label">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Levels to Unlock Costumes:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="costume_slot_unlocks_edit">
+            <property name="minimumSize">
+             <size>
+              <width>625</width>
+              <height>22</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>671</width>
+              <height>22</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>160</width>
+              <height>22</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </widget>

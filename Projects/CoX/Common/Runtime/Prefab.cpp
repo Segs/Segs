@@ -77,7 +77,7 @@ bool PrefabStore::prepareGeoLookupArray(const QString &base_path)
     QFile defnames(base_path + "bin/defnames.bin");
     if (!defnames.open(QFile::ReadOnly))
     {
-        qCritical() << "Failed to open defnames.bin";
+        qCritical() << "Failed to open bin/defnames.bin";
         return false;
     }
     QString lookup_str;

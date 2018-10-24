@@ -34,7 +34,7 @@ using namespace SEGSEvents;
 
 Character::Character()
 {
-    m_current_costume_set                   = false;
+    m_add_new_costume                       = false;
     m_char_data.m_current_costume_idx       = 0;
     m_char_data.m_has_sg_costume            = false;
     m_char_data.m_using_sg_costume          = false;
@@ -67,7 +67,7 @@ void Character::reset()
     m_char_data.m_has_titles                = false;
     m_char_data.m_sidekick.m_has_sidekick   = false;
     m_char_data.m_powersets.clear();
-    m_current_costume_set                   = false;
+    m_add_new_costume                       = false;
     m_sg_costume                            = nullptr;
 }
 
@@ -130,14 +130,12 @@ void Character::finalizeLevel()
     }
     */
 
-    // TODO: Make customizable in settings.cfg
-    QVector<uint32_t> costume_levels = {19, 29, 39, 49};
-    for(uint32_t i : costume_levels)
+    for(auto level : m_costume_slot_unlocks)
     {
         // add costume every time current level matches i
         // this would allow server operators to award all
         // costumes at 10th level, or different levels
-        if(i == m_char_data.m_level)
+        if(level.toUInt() == m_char_data.m_level)
             addCostumeSlot();
     }
 
@@ -215,11 +213,12 @@ void Character::GetCharBuildInfo(BitStream &src)
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
     config.beginGroup("StartingCharacter");
-        QStringList inherent_and_preorders = config.value("inherent_powers","Brawl").toString().split(',');
-        QStringList starting_temps = config.value("starting_temps","EMP_Glove").toString().split(',');
-        QStringList starting_insps = config.value("starting_inspirations","Resurgence").toString().split(',');
+        QStringList inherent_and_preorders = config.value(QStringLiteral("inherent_powers"), "Brawl").toString().split(',');
+        QStringList starting_temps = config.value(QStringLiteral("starting_temps"), "EMP_Glove").toString().split(',');
+        QStringList starting_insps = config.value(QStringLiteral("starting_inspirations"), "Resurgence").toString().split(',');
         uint startlevel = config.value(QStringLiteral("starting_level"), "1").toUInt() -1; //convert from 1-50 to 0-49
         uint startinf = config.value(QStringLiteral("starting_inf"), "0").toUInt();
+        m_costume_slot_unlocks = config.value(QStringLiteral("costume_slot_unlocks"), "19,29,39,49").toString().split(',');
     config.endGroup();
 
     m_char_data.m_level = startlevel;
@@ -346,13 +345,13 @@ void Character::serializetoCharsel( BitStream &bs, const QString& entity_map_nam
         m_costumes[getCurrentCostumeIdx(c)].storeCharsel(bs);
 
     bs.StoreString(entity_map_name);
-    bs.StorePackedBits(1,1);
+    bs.StorePackedBits(1,1); // field_1CC
 }
 
 const Costume * Character::getCurrentCostume() const
 {
     assert(!m_costumes.empty());
-    if(m_current_costume_set)
+    if(m_add_new_costume)
         return &m_costumes[getCurrentCostumeIdx(*this)];
 
     return &m_costumes.front();
@@ -373,7 +372,7 @@ void Character::addCostumeSlot()
     new_costume.m_index = m_costumes.size();
     m_costumes.emplace_back(new_costume);
 
-    m_current_costume_set = true; // must set this to reset costume array size
+    m_add_new_costume = true; // must set this to reset costume array size
 
     dumpCostumes(m_costumes);
 }
@@ -390,8 +389,8 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
     // full costume
     if(all_costumes) // this is only sent to the current player
     {
-        bs.StoreBits(1, m_current_costume_set);
-        if(m_current_costume_set)
+        bs.StoreBits(1, m_add_new_costume);
+        if(m_add_new_costume)
         {
             bs.StoreBits(32, getCurrentCostumeIdx(*this));
             bs.StoreBits(32, uint32_t(m_costumes.size())-1); // must be minus 1 because the client adds 1
@@ -476,6 +475,7 @@ void Character::recv_initial_costume( BitStream &src, const ColorAndPartPacker *
     m_costumes.emplace_back();
     m_char_data.m_current_costume_idx = 0;
     ::serializefrom(m_costumes.back(), src, packer);
+    dumpCostumes(m_costumes); // TEST
 }
 
 void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolute*/)

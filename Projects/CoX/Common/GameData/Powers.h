@@ -90,7 +90,7 @@ struct QueuedPowers
 class PowerPool_Info
 {
 public:
-enum : uint32_t { class_version=1 };
+enum : uint32_t { class_version = 1 };
         uint32_t        m_pcat_idx          = 0;
         uint32_t        m_pset_idx          = 0;
         uint32_t        m_pow_idx           = 0;
@@ -120,8 +120,6 @@ struct CharacterInspiration
         
         template<class Archive>
         void serialize(Archive &archive, uint32_t const version);
-        template<class Archive>
-        void serialize_v1(Archive &archive);
 };
 
 struct vInspirations

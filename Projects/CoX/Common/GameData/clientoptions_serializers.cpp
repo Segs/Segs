@@ -20,8 +20,6 @@
 // register Client Options class version
 CEREAL_CLASS_VERSION(ClientOptions, ClientOptions::class_version)
 
-
-
 void saveTo(const ClientOptions &target, const QString &baseName, bool text_format)
 {
     commonSaveTo(target,"ClientOptions",baseName,text_format);

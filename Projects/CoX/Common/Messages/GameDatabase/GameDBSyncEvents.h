@@ -75,14 +75,14 @@ struct CharacterUpdateData
     QString m_char_data;
     QString m_entitydata;
     QString m_player_data;
-    uint32_t m_id;
     uint32_t m_supergroup_id;
+    uint32_t m_id;
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_id, m_char_name, m_costume_data );
+        ar( m_char_name, m_costume_data );
         ar( m_char_data, m_entitydata, m_player_data );
-        ar( m_supergroup_id );
+        ar( m_supergroup_id, m_id );
     }
 };
 // [[ev_def:macro]]
@@ -129,12 +129,11 @@ struct GameAccountResponseCharacterData
     QString m_name;
     QString m_serialized_costume_data;
     QString m_serialized_chardata;
-    QString m_serialized_player_data;
     QString m_serialized_entity_data;
+    QString m_serialized_player_data;
 
     uint32_t m_db_id;
     uint32_t m_account_id;
-
     int index;
 
     void reset()

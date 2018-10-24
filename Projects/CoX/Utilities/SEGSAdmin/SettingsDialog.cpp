@@ -169,6 +169,7 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->starting_insp_edit->setText(QString(config_file.value("starting_inspirations", "").toString()));
     ui->starting_level_spin->setValue(int(config_file.value("starting_level", "").toInt()));
     ui->starting_inf_spin->setValue(int(config_file.value("starting_inf", "").toInt()));
+    ui->costume_slot_unlocks_edit->setText(QString(config_file.value("costume_slot_unlocks", "").toString()));
     config_file.endGroup();
     config_file.beginGroup("Logging");
 
@@ -239,6 +240,7 @@ void SettingsDialog::generate_default_config_file(QString server_name, QString i
     config_file_write.setValue("starting_inspirations", "Resurgence,Phenomenal_Luck");
     config_file_write.setValue("starting_level", "1");
     config_file_write.setValue("starting_inf", "0");
+    config_file_write.setValue("costume_slot_unlocks", "19,29,39,49");
     config_file_write.endGroup();
     config_file_write.beginGroup("Logging");
     settings_template.beginGroup("Logging");
@@ -298,6 +300,7 @@ void SettingsDialog::save_changes_config_file()
     config_file_write.setValue("starting_inspirations", ui->starting_insp_edit->text());
     config_file_write.setValue("starting_level", ui->starting_level_spin->value());
     config_file_write.setValue("starting_inf", ui->starting_inf_spin->value());
+    config_file_write.setValue("costume_slot_unlocks", ui->costume_slot_unlocks_edit->text());
     config_file_write.endGroup();
     config_file_write.beginGroup("Logging");
     QList<QCheckBox*> check_boxes = ui->tab_logging->findChildren<QCheckBox *>();
@@ -360,6 +363,7 @@ void SettingsDialog::set_default_values()
     ui->starting_insp_edit->setText("Resurgence,Phenomenal_Luck");
     ui->starting_level_spin->setValue(1);
     ui->starting_inf_spin->setValue(0);
+    ui->costume_slot_unlocks_edit->setText("19,29,39,49");
 }
 
 void SettingsDialog::field_validator()
