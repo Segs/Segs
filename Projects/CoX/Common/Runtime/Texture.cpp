@@ -1,6 +1,7 @@
 #include "Texture.h"
 
 #include "RuntimeData.h"
+#include "Logging.h"
 #include "Common/GameData/GameDataStore.h"
 #include "Common/GameData/trick_definitions.h"
 
@@ -75,7 +76,7 @@ void loadTexHeader(const QString &fname)
     {
         if(!s_missing_textures.contains(lookupstring))
         {
-            qDebug() << "Missing texture" << fname;
+            qCDebug(logSceneGraph) << "Missing texture" << fname;
             s_missing_textures.insert(lookupstring);
         }
         return;
@@ -134,7 +135,7 @@ void loadTexHeader(const QString &fname)
             rd.m_loaded_textures[lookupstring] = TextureStorage::instance().create(res);
             return;
         }
-        qDebug() << "Detail texture "<<res.info->Blend<<" does not exist for texture mod"<<res.info->name;
+        qCDebug(logSceneGraph) << "Detail texture " << res.info->Blend << " does not exist for texture mod" << res.info->name;
         detailname = "grey";
     }
     else if (lookupstring.compare("invisible")==0)
