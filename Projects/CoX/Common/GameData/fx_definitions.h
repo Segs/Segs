@@ -3,8 +3,7 @@
 #include "Common/GameData/anim_definitions.h"
 #include "Common/GameData/seq_definitions.h"
 
-#include <QtCore/QString>
-#include <QtCore/QMap>
+#include <QtCore/QByteArray>
 #include <vector>
 #include <array>
 
@@ -21,8 +20,8 @@ enum SplatFlags {
 enum SplatFalloffType : uint32_t;
 struct FxBehavior
 {
-    QString name;
-    bool initialized=0;
+    QByteArray name;
+    bool initialized=false;
     int lastChangeDate=0;
     glm::vec3 m_StartJitter;
     glm::vec3 m_InitialVelocity;
@@ -65,8 +64,8 @@ struct FxBehavior
 using Fx_AllBehaviors = std::vector<FxBehavior>;
 struct EventSplat
 {
-    QString tex1;
-    QString tex2;
+    QByteArray tex1;
+    QByteArray tex2;
 };
 enum GeoEvent_Flags {
     Event_LookAtCamera = 2,
@@ -75,7 +74,7 @@ enum GeoEvent_Flags {
 };
 struct FxSoundData
 {
-    QString m_Name;
+    QByteArray m_Name;
     float m_Radius = 100.0f;
     float m_Fade = 20.0f;
     float m_Volume = 1.0f;
@@ -83,30 +82,30 @@ struct FxSoundData
 
 struct FxGeoEntry_Event
 {
-    QString m_EName;
-    QString m_Type;
-    QString m_At;
-    QString m_Bhvr;
-    std::vector<std::vector<QString>> m_Geom;
+    QByteArray m_EName;
+    QByteArray m_Type;
+    QByteArray m_At;
+    QByteArray m_Bhvr;
+    std::vector<std::vector<QByteArray>> m_Geom;
     int m_AltPiv=0;
-    QString m_AnimPiv;
-    QString m_Anim;
-    QString m_SetState;
-    std::vector<std::vector<QString>> m_Part;
-    QString m_ChildFx;
-    QString m_LookAt;
-    QString m_Magnet;
-    QString m_POther;
-    QString m_PMagnet;
+    QByteArray m_AnimPiv;
+    QByteArray m_Anim;
+    QByteArray m_SetState;
+    std::vector<std::vector<QByteArray>> m_Part;
+    QByteArray m_ChildFx;
+    QByteArray m_LookAt;
+    QByteArray m_Magnet;
+    QByteArray m_POther;
+    QByteArray m_PMagnet;
     std::vector<EventSplat> m_Splats;
     std::vector<FxSoundData> m_Sounds;
     int m_Debris=0;
-    QString m_WorldGroup;
+    QByteArray m_WorldGroup;
     std::pair<uint8_t,uint8_t> m_Power;
     float m_LifeSpan=0;
     int m_Flags=0;
-    std::vector<std::vector<QString>> m_Until;
-    std::vector<std::vector<QString>> m_While;
+    std::vector<std::vector<QByteArray>> m_Until;
+    std::vector<std::vector<QByteArray>> m_While;
     // Converted bits.
     SeqBitSet m_UntilBits;
     SeqBitSet m_WhileBits;
@@ -138,18 +137,18 @@ enum FxCondition_Bits
 };
 struct FxInfo_Condition
 {
-    QString m_On;
+    QByteArray m_On;
     float m_Time;
     int m_Dist;
     float m_Chance;
     int DoMany;
     std::vector<FxGeoEntry_Event> m_Event;
     int trigger; // FxCondition_Bits
-    std::vector<std::vector<QString>> str_TriggerBits;
+    std::vector<std::vector<QByteArray>> str_TriggerBits;
     SeqBitSet triggerstates[9];
 };
 struct FxInfo_Input {
-    QString m_InpName;
+    QByteArray m_InpName;
 };
 enum FxInfo_Flags {
     FxInfo_SoundOnly=2,
@@ -158,10 +157,10 @@ enum FxInfo_Flags {
 };
 struct FxInfo
 {
-    std::vector<QString> inputs;
+    std::vector<QByteArray> inputs;
     std::vector<FxInfo_Input> m_Inputs;
     std::vector<FxInfo_Condition> m_Conditions;
-    QString fxname;
+    QByteArray fxname;
     int m_LifeSpan;
     int m_Lighting;
     int m_Flags; //FxInfo_Flags

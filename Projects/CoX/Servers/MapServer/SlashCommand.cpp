@@ -13,8 +13,9 @@
 #include "SlashCommand.h"
 
 #include "DataHelpers.h"
-#include "Events/GameCommandList.h"
-#include "Events/MapXferWait.h"
+#include "MessageHelpers.h"
+#include "Messages/Map/GameCommandList.h"
+#include "Messages/Map/MapXferWait.h"
 #include "GameData/ClientStates.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
@@ -22,11 +23,11 @@
 #include "Logging.h"
 #include "MapLink.h"
 #include "MapInstance.h"
-#include "NetStructures/Character.h"
-#include "NetStructures/CharacterHelpers.h"
-#include "NetStructures/Entity.h"
-#include "NetStructures/LFG.h"
-#include "NetStructures/Trade.h"
+#include "GameData/Character.h"
+#include "GameData/CharacterHelpers.h"
+#include "GameData/Entity.h"
+#include "GameData/LFG.h"
+#include "GameData/Trade.h"
 #include "Settings.h"
 
 #include <QtCore/QString>
@@ -1694,7 +1695,7 @@ void cmdHandler_Friend(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    FriendListChangeStatus status = addFriend(*sess.m_ent, *tgt);
+    FriendListChangeStatus status = addFriend(*sess.m_ent, *tgt,getEntityDisplayMapName(tgt->m_entity_data));
     if(status==FriendListChangeStatus::MAX_FRIENDS_REACHED)
     {
         QString msg = "You cannot have more than " + QString::number(g_max_friends) + " friends.";

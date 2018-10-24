@@ -13,7 +13,7 @@
 #include "GameDBSyncHandler.h"
 
 #include "HandlerLocator.h"
-#include "GameDBSyncEvents.h"
+#include "Messages/GameDatabase/GameDBSyncEvents.h"
 #include "MessageBus.h"
 
 using namespace SEGSEvents;

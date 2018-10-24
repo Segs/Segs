@@ -181,11 +181,11 @@ bool loadFrom(BinStore * s, Parse_AllOrigins &target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Origin")==0) {
+        if("Origin"==_name) {
             target.emplace_back();
             ok &= loadFrom(s,&target.back());
         } else

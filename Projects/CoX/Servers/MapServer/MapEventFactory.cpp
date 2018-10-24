@@ -10,7 +10,8 @@
  * @{
  */
 
-#include "MapEvents.h"
+#include "MapEventFactory.h"
+#include "Messages/Map/MapEvents.h"
 
 using namespace SEGSEvents;
 

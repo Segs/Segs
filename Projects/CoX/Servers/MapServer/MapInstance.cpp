@@ -12,13 +12,32 @@
 
 #include "MapInstance.h"
 
+#include "DataHelpers.h"
+#include "EntityStorage.h"
+#include "Logging.h"
+#include "MapManager.h"
+#include "MapSceneGraph.h"
+#include "MapServer.h"
+#include "MapTemplate.h"
+#include "MessageHelpers.h"
+#include "SEGSTimer.h"
+#include "SlashCommand.h"
+#include "TimeEvent.h"
+#include "WorldSimulation.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
+#include "version.h"
 #include "Common/GameData/CoHMath.h"
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/InternalEvents.h"
+#include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/MessageBus.h"
-#include "DataHelpers.h"
-#include "EntityStorage.h"
+#include "GameData/Character.h"
+#include "GameData/CharacterHelpers.h"
+#include "GameData/Entity.h"
+#include "GameData/GameDataStore.h"
+#include "GameData/Trade.h"
 #include "GameData/chardata_serializers.h"
 #include "GameData/clientoptions_serializers.h"
 #include "GameData/entitydata_serializers.h"
@@ -26,30 +45,12 @@
 #include "GameData/map_definitions.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/playerdata_serializers.h"
-#include "GameDatabase/GameDBSyncEvents.h"
-#include "Logging.h"
-#include "Servers/GameServer/EmailEvents.h"
-#include "GameServer/GameEvents.h"
-#include "MapEvents.h"
-#include "MapManager.h"
-#include "MapSceneGraph.h"
-#include "MapServer.h"
-#include "TimeEvent.h"
-#include "GameData/GameDataStore.h"
-#include "MapTemplate.h"
-#include "NetStructures/Character.h"
-#include "NetStructures/CharacterHelpers.h"
-#include "NetStructures/Entity.h"
-#include "NetStructures/Trade.h"
-#include "SEGSTimer.h"
-#include "SlashCommand.h"
-#include "WorldSimulation.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
-#include "version.h"
-#include "Common/Servers/InternalEvents.h"
-#include "Events/MapXferWait.h"
-#include "Events/MapXferRequest.h"
+#include "Messages/EmailService/EmailEvents.h"
+#include "Messages/Game/GameEvents.h"
+#include "Messages/GameDatabase/GameDBSyncEvents.h"
+#include "Messages/Map/MapEvents.h"
+#include "Messages/Map/MapXferRequest.h"
+#include "Messages/Map/MapXferWait.h"
 
 #include <ace/Reactor.h>
 
@@ -591,6 +592,8 @@ void MapInstance::on_shortcuts_request(ShortcutsRequest *ev)
     // TODO: use the access level and send proper commands
     MapClientSession &session(m_session_store.session_from_event(ev));
     Shortcuts *res = new Shortcuts(&session);
+
+    NetCommandManagerSingleton::instance()->UpdateCommandShortcuts(&session,res->m_commands);
     session.link()->putq(res);
 }
 
@@ -895,20 +898,17 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->unkn2 = true;
     lnk->putq(res);
 }
-
 void MapInstance::on_entities_request(EntitiesRequest *ev)
 {
     // this packet should start the per-client send-world-state-update timer
     // actually I think the best place for this timer would be the map instance.
     // so this method should call MapInstace->initial_update(MapClient *);
     MapClientSession &session(m_session_store.session_from_event(ev));
-    srand(time(nullptr));
-
-    EntitiesResponse *res=new EntitiesResponse(&session);
+    EntitiesResponse *res=new EntitiesResponse();
     res->m_map_time_of_day = m_world->time_of_day();
-    res->is_incremental(false); // full world update = op 3
     res->ent_major_update = true;
     res->abs_time = 30*100*(m_world->accumulated_time);
+    buildEntityResponse(res,session,EntityUpdateMode::FULL,false);
     session.link()->putq(res);
     m_session_store.add_to_active_sessions(&session);
 }
@@ -959,19 +959,13 @@ void MapInstance::sendState()
     {
 
         MapClientSession *cl = *iter;
-        EntitiesResponse *res=new EntitiesResponse(cl);
+        
+        EntitiesResponse *res=new EntitiesResponse();
         res->m_map_time_of_day = m_world->time_of_day();
-
-        if(cl->m_in_map==false) // send full updates until client `resumes`
-        {
-            //TODO: decide when we need full updates res->is_incremental(false);
-        }
-        else
-        {
-            res->is_incremental(true); // incremental world update = op 2
-        }
+        //while cl->m_in_map==false we send full updates until client `resumes`
         res->ent_major_update = true;
         res->abs_time = 30*100*(m_world->accumulated_time);
+        buildEntityResponse(res,*cl,cl->m_in_map ? EntityUpdateMode::INCREMENTAL : EntityUpdateMode::FULL,false);
         cl->link()->putq(res);
     }
 
@@ -2029,6 +2023,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     // Start Door Animation
     QString anim_name = "RUNIN";
     glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
+    sess.addCommand<DoorMessage>(session, 0, "Loading...");
     sendDoorAnimStart(session, ev->location, offset, true, anim_name);
 
     // TODO: use location and name to determine where the door goes.
@@ -2225,7 +2220,7 @@ void MapInstance::on_activate_power(ActivatePower *ev)
     uint32_t tgt_idx = ev->target_idx;
 
     if(ev->target_idx <= 0 || ev->target_idx == session.m_ent->m_idx)
-        tgt_idx = -1; 
+        tgt_idx = -1;
 
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
     usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
@@ -2667,7 +2662,7 @@ void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 }
 
 void MapInstance::on_email_read_response(EmailReadResponse *ev)
-{    
+{
     EmailRead *email_read = new EmailRead(
                 ev->m_data.m_email_id,
                 ev->m_data.m_message,

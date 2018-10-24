@@ -33,3 +33,11 @@ add_dependencies(cox_server_common ace_IMP)
 target_link_libraries(cox_server_common INTERFACE ace_IMP)
 target_link_libraries(cox_server_common PUBLIC Qt5::Core Qt5::Sql)
 set_target_properties(cox_server_common PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${target_INCLUDE_DIR})
+
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES cox_server_common SOURCES) 
+list(REMOVE_ITEM TARGET_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/cox_server_common.gen.cpp)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (cox_server_common PROPERTIES
+    FOLDER Projects/CoX/Common
+)

@@ -11,7 +11,7 @@
 #include <ace/Time_Value.h>
 
 #include "MapServer.h"
-#include "NetStructures/Entity.h"
+#include "GameData/Entity.h"
 #include "EntityStorage.h"
 #include "SceneGraph.h"
 

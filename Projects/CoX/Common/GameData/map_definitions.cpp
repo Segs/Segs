@@ -71,7 +71,8 @@ uint32_t getMapIndex(const QString &map_name)
     return 0;
 }
 
-const QString &getDisplayMapName(const QString &map_name)
+/// \note this functions returns the string by value, since m_display_map_name is QByteArray
+QString getDisplayMapName(const QString &map_name)
 {
     for (const auto &map_data : g_defined_map_datas)
     {
@@ -87,7 +88,7 @@ const QString &getDisplayMapName(const QString &map_name)
     return g_defined_map_datas[0].m_display_map_name;
 }
 
-const QString &getDisplayMapName(size_t index)
+QString getDisplayMapName(size_t index)
 {
     // Since index is unsigned, it cannot be negative.
     // Thus, no need to check for index < 0.

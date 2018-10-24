@@ -6,8 +6,6 @@
  */
 
 #pragma once
-#include "Common/GameData/attrib_definitions.h"
-
 #include <vector>
 #include <stdint.h>
 

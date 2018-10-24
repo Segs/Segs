@@ -10,7 +10,7 @@
 #include "Common/GameData/CoXHash.h"
 #include "Common/GameData/costume_definitions.h"
 #include "Common/GameData/origin_definitions.h"
-#include "Common/GameData/charclass_definitions.h"
+#include "Common/GameData/CharacterClass.h"
 #include "Common/GameData/keybind_definitions.h"
 #include "Common/GameData/other_definitions.h"
 #include "Common/GameData/npc_definitions.h"
@@ -20,10 +20,9 @@
 
 class ColorAndPartPacker;
 class QString;
-
 class GameDataStore
 {
-        ColorAndPartPacker *packer_instance;
+        ColorAndPartPacker *packer_instance = nullptr;
         LevelExpAndDebt     m_experience_and_debt_per_level;
 
         bool            read_costumes(const QString &directory_path);
@@ -42,7 +41,7 @@ class GameDataStore
 public:
                         GameDataStore();
                         ~GameDataStore();
-        bool            read_runtime_data(const QString &directory_path);
+        bool            read_game_data(const QString &directory_path);
         const ColorAndPartPacker *getPacker() const { return packer_instance; }
         uint32_t        expForLevel(uint32_t lev) const;
         uint32_t        expDebtForLevel(uint32_t lev) const;
