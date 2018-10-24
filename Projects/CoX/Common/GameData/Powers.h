@@ -120,8 +120,6 @@ struct CharacterInspiration
         
         template<class Archive>
         void serialize(Archive &archive, uint32_t const version);
-        template<class Archive>
-        void serialize_v1(Archive &archive);
 };
 
 struct vInspirations
