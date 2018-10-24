@@ -32,25 +32,7 @@ explicit            EntitiesResponse();
         /// The `mutable` keyword has to be put before the event_gen comment :(
         mutable 
         // [[ev_def:field]]
-        BitStream commands {8};
-        mutable 
-        // [[ev_def:field]]
-        BitStream entities_update {200};
-        mutable 
-        // [[ev_def:field]]
-        BitStream physics_update {16};
-        mutable 
-        // [[ev_def:field]]
-        BitStream controls_update {16};
-        mutable 
-        // [[ev_def:field]]
-        BitStream entity_removals {16};
-        mutable 
-        // [[ev_def:field]]
-        BitStream client_data {32};
-        mutable 
-        // [[ev_def:field]]
-        BitStream follow_up_commands {16};
+        BitStream blob_of_death {220};
         // [[ev_def:field]]
         bool        m_incremental=false; //  if true then this is incremental update
         // [[ev_def:field]]

@@ -16,7 +16,7 @@
 // this part of the Entity is for Players only info
 struct PlayerData
 {
-    static const constexpr  uint32_t    class_version   = 2;
+    enum : uint32_t {class_version   = 2};
     GUISettings         m_gui;
     KeybindSettings     m_keybinds;
     ClientOptions       m_options;

@@ -52,35 +52,7 @@ void EntitiesResponse::serializefrom(BitStream &src)
 }
 void EntitiesResponse::serializeto( BitStream &tgt ) const
 {
-    tgt.StorePackedBits(1,m_incremental ? 2 : 3); // opcode  3 - full update.
-
-    tgt.StoreBits(1,ent_major_update); // passed to Entity::EntReceive as a parameter
-
-    tgt.appendBitStream(commands);
-
-    tgt.StoreBits(32,abs_time);
-    //tgt.StoreBits(32,db_time);
-    bool all_defaults = (debug_info==0) && (g_interpolation_level==2) && (g_interpolation_bits==1);
-    tgt.StoreBits(1,all_defaults);
-    if(!all_defaults)
-    {
-        tgt.StoreBits(1,debug_info);
-        tgt.StoreBits(1,g_interpolation_level!=0);
-        if(g_interpolation_level!=0)
-        {
-            tgt.StoreBits(2,g_interpolation_level);
-            tgt.StoreBits(2,g_interpolation_bits);
-        }
-    }
-    ;
-    
-    tgt.appendBitStream(entities_update);
-    tgt.appendBitStream(physics_update);
-    tgt.appendBitStream(controls_update);
-    tgt.appendBitStream(entity_removals);
-    // Client specific part
-    tgt.appendBitStream(client_data);
-    tgt.appendBitStream(follow_up_commands);
+    tgt.appendBitStream(blob_of_death);
 }
 
 //! @}

@@ -12,6 +12,8 @@
 
 #include "LocationVisited.h"
 
+#include "BitStream.h"
+
 using namespace SEGSEvents;
 
 void LocationVisited::serializefrom(BitStream & src)
