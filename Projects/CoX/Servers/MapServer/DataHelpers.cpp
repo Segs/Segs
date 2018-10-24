@@ -390,7 +390,9 @@ QString createMapMenu() // TODO: compileMonorailMenu() as well
     QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
     for (auto &map_data : getAllMapData())
     {
-        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_data.m_map_idx).arg(map_data.m_display_map_name));
+        uint32_t map_idx = map_data.m_map_idx;
+        QString map_name = getDisplayMapName(map_idx);
+        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_idx).arg(map_name));
     }
     msg_body.append("</table>");
 

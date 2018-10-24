@@ -2023,7 +2023,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     // Start Door Animation
     QString anim_name = "RUNIN";
     glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
-    sess.addCommand<DoorMessage>(session, 0, "Loading...");
+    sendDoorMessage(session, 0, output_msg);
     sendDoorAnimStart(session, ev->location, offset, true, anim_name);
 
     // TODO: use location and name to determine where the door goes.
