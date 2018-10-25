@@ -14,6 +14,8 @@
 #include "CRUDP_Protocol.h"
 
 #include "PacketCodec.h"
+#include "BitStream.h"
+
 
 #include <cassert>
 

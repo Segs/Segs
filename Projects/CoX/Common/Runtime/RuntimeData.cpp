@@ -2,6 +2,7 @@
 
 #include "Prefab.h"
 #include "Texture.h"
+#include "Logging.h"
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
 #include "GameData/DataStorage.h"
@@ -28,7 +29,7 @@ static void setupTexOpt(SceneModifiers *mods,TextureModifiers *tmod)
         tmod->Flags |= uint32_t(TexOpt::DUAL);
     if (!tmod->Surface.isEmpty())
     {
-        //qCDebug(logSceneGraph) <<"Has surface"<<tex->Surface;
+        //qCDebug(logSceneGraph) << "Has surface" << tex->Surface;
     }
 
     tmod->name = tmod->name.mid(0,tmod->name.lastIndexOf('.')); // cut last extension part
@@ -38,7 +39,7 @@ static void setupTexOpt(SceneModifiers *mods,TextureModifiers *tmod)
     auto iter = mods->m_texture_path_to_mod.find(lower_name);
     if (iter!=mods->m_texture_path_to_mod.end())
     {
-        qCDebug(logSceneGraph) << "duplicate texture info: "<<tmod->name;
+        qCDebug(logSceneGraph) << "Duplicate texture info: " << tmod->name;
         return;
     }
     mods->m_texture_path_to_mod[lower_name] = tmod;

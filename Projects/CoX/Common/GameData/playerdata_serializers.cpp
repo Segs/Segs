@@ -20,7 +20,6 @@
 
 #include "Logging.h"
 
-const constexpr uint32_t PlayerData::class_version;
 CEREAL_CLASS_VERSION(PlayerData, PlayerData::class_version)         // register PlayerData class version
 
 template<class Archive>

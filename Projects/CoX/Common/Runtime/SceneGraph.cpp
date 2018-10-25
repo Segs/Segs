@@ -141,7 +141,7 @@ QString groupRename(LoadingContext &ctx, const QString &oldname, bool is_def)
             prefix = "maps/grp";
         else
         {
-            qCDebug(logSceneGraph) << "bad def name:" <<prefix;
+            qCDebug(logSceneGraph) << "bad def name:" << prefix;
             prefix = "baddef";
         }
     }
@@ -448,7 +448,7 @@ void postprocessTextureReplacers(const std::vector<ReplaceTex_Data> &data, Scene
     // and it's a pretty important piece of the puzzle.
     for (const ReplaceTex_Data &tex_repl : data )
     {
-        qCDebug(logSceneGraph()) << "Texture: " << tex_repl.repl_with;
+        qCDebug(logSceneGraph) << "Texture to Replace:" << tex_repl.repl_with;
         // HInstanceMod tr = InstanceModStorage::instance().create();
         // tr->addTextureReplacement(tex_repl.texUnit,tex_repl.repl_with);
     }
@@ -490,7 +490,7 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
 
     if ( node->children.empty() && !node->model )
     {
-        qCDebug(logSceneGraph) << "Should delete def"<<defload.name<<" after conversion it has no children, nor models";
+        qCDebug(logSceneGraph) << "Should delete def" << defload.name << " after conversion it has no children, nor models";
         return false;
     }
 

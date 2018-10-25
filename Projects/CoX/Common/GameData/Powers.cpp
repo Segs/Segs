@@ -1133,7 +1133,7 @@ void CharacterInspiration::serialize(Archive &archive, uint32_t const version)
 {
     if (version != CharacterInspiration::class_version)
     {
-        qCritical() << "Failed to serialize CharacterInspirations, incompatible serialization format version " << version;
+        qCritical() << "Failed to serialize CharacterInspiration, incompatible serialization format version " << version;
         return;
     }
 

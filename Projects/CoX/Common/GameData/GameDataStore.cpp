@@ -325,7 +325,8 @@ bool GameDataStore::read_colors( const QString &directory_path )
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading " << directory_path << "bin/supergroupColors.bin ... ";
     BinStore sg_color_store;
-    if(!sg_color_store.open(directory_path + "bin/supergroupColors.bin",palette_i0_requiredCrc))
+
+    if(!sg_color_store.open(directory_path + "bin/supergroupColors.bin", palette_i0_requiredCrc))
     {
         deb << "failure";
         qWarning().noquote() << "Couldn't load bin/supergroupColors.bin from" << directory_path;
@@ -339,7 +340,7 @@ bool GameDataStore::read_colors( const QString &directory_path )
     else
     {
         deb << "failure";
-        qWarning().noquote() << "Couldn't load" << directory_path<<"bin/supergroupColors.bin: wrong file format?";
+        qWarning().noquote() << "Couldn't load" << directory_path << "bin/supergroupColors.bin: wrong file format?";
     }
     return res;
 }
@@ -347,9 +348,9 @@ bool GameDataStore::read_colors( const QString &directory_path )
 bool GameDataStore::read_origins(const QString &directory_path)
 {
     qDebug() << "Loading origins:";
-    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path,"bin/origins.bin",m_player_origins))
+    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path, "bin/origins.bin", m_player_origins))
         return false;
-    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path,"bin/villain_origins.bin",m_other_origins))
+    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path, "bin/villain_origins.bin", m_other_origins))
         return false;
     return true;
 }
@@ -377,7 +378,7 @@ bool GameDataStore::read_exp_and_debt(const QString &directory_path)
 bool GameDataStore::read_keybinds(const QString &directory_path)
 {
     qDebug() << "Loading keybinds:";
-    if(!read_data_to<Parse_AllKeyProfiles,keyprofile_i0_requiredCrc>(directory_path,"bin/kb.bin",m_keybind_profiles))
+    if(!read_data_to<Parse_AllKeyProfiles,keyprofile_i0_requiredCrc>(directory_path, "bin/kb.bin", m_keybind_profiles))
         return false;
     return true;
 }

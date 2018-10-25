@@ -158,3 +158,4 @@ public:
         archive(cereal::make_nvp("FontSize", uint32_t(m_chat_font_size)));
     }
 };
+CEREAL_CLASS_VERSION(ClientOptions, ClientOptions::class_version)

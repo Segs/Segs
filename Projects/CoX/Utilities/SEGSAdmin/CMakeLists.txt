@@ -36,6 +36,14 @@ set(SEGSADMIN_SOURCES
     AboutDialog.cpp
     AboutDialog.h
     AboutDialog.ui
+    TextEdit.cpp
+    TextEdit.h
+    SelectScriptDialog.cpp
+    SelectScriptDialog.h
+    SelectScriptDialog.ui
+    SyntaxHighlighter.cpp
+    SyntaxHighlighter.h
+
 
 )
 add_executable(SEGSAdmin WIN32 ${SEGSADMIN_SOURCES})

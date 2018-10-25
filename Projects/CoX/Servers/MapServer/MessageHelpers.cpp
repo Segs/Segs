@@ -50,19 +50,21 @@ void sendInfoMessage(MessageChannel t, const QString &msg, MapClientSession &tgt
              << "\n  Message:" << res->m_msg;
 }
 
-void storeEntityResponseCommands(BitStream &tgt,float time_of_day)
+void storeEntityResponseCommands(BitStream &bs,float time_of_day)
 {
-    tgt.StorePackedBits(1,1); // use 'time' shortcut
-    tgt.StoreFloat(float(time_of_day)*10.0f);
-    tgt.StorePackedBits(1,2); // use 'time scale' shortcut
-    tgt.StoreFloat(4.0f);
-    tgt.StorePackedBits(1,3); // use 'time step scale' shortcut
-    tgt.StoreFloat(2.0f);
-    tgt.StorePackedBits(1,4); // use 'pause' shortcut
-    tgt.StorePackedBits(1,0); // if `true` no calcs happen
-    tgt.StorePackedBits(1,5); // use 'disablegurneys' shortcut
-    tgt.StorePackedBits(1,0); // if `false` spawn instantly
-    tgt.StorePackedBits(1,0);
+    PUTDEBUG("before commands");
+    bs.StorePackedBits(1,1); // use 'time' shortcut
+    bs.StoreFloat(float(time_of_day)*10.0f);
+    bs.StorePackedBits(1,2); // use 'time scale' shortcut
+    bs.StoreFloat(4.0f);
+    bs.StorePackedBits(1,3); // use 'time step scale' shortcut
+    bs.StoreFloat(2.0f);
+    bs.StorePackedBits(1,4); // use 'pause' shortcut
+    bs.StorePackedBits(1,0); // if `true` no calcs happen
+    bs.StorePackedBits(1,5); // use 'disablegurneys' shortcut
+    bs.StorePackedBits(1,0); // if `false` spawn instantly
+    bs.StorePackedBits(1,0);
+    PUTDEBUG("after commands");
 }
 
 void storeEntityResponseOtherEntities(BitStream &tgt,EntityManager &manager, MapClientSession *self, bool incremental,bool debug)
@@ -76,6 +78,7 @@ void storeEntityResponseOtherEntities(BitStream &tgt,EntityManager &manager, Map
 }
 void storeServerPhysicsPositions(BitStream &bs,Entity *self)
 {
+    PUTDEBUG("before physics");
     //TODO: remove this after we have proper physics processing
     if(self->m_full_update_count>0)
         self->m_full_update_count--;
@@ -150,11 +153,13 @@ void storeServerControlState(BitStream &bs,Entity *self)
 
 void storeControlState(BitStream &bs,Entity *self)
 {
+    PUTDEBUG("before control state");
     storeServerControlState(bs,self);
 }
 
 void storeEntityRemovals(BitStream &bs, EntityManager &manager,MapClientSession *self)
 {
+    PUTDEBUG("before removals");
     manager.sendDeletes(bs,*self);
 }
 
@@ -630,6 +635,7 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
 }
 void storeClientData(BitStream &bs,Entity *ent,bool incremental)
 {
+    PUTDEBUG("Before character data");
     if(!incremental)
     {
         //full_update - > receiveCharacterFromServer
@@ -656,6 +662,7 @@ void storeClientData(BitStream &bs,Entity *ent,bool incremental)
         bs.StoreFloat(ent->inp_state.m_camera_pyr.y); // force camera_yaw
         bs.StoreFloat(ent->inp_state.m_camera_pyr.r); // force camera_roll
     }
+    PUTDEBUG("After character data");
 }
 
 void storeFollowupCommands(BitStream &bs,MapClientSession *m_client)
@@ -669,14 +676,31 @@ void storeFollowupCommands(BitStream &bs,MapClientSession *m_client)
 
 void buildEntityResponse(EntitiesResponse *res,MapClientSession &to_client,EntityUpdateMode mode,bool use_debug)
 {
-    bool is_incremental = mode==EntityUpdateMode::FULL;
+    bool is_incremental = mode!=EntityUpdateMode::FULL;
+    res->blob_of_death.StorePackedBits(1,is_incremental ? 2 : 3); // opcode  3 - full update.
+    res->blob_of_death.StoreBits(1,res->ent_major_update); // passed to Entity::EntReceive as a parameter
     res->is_incremental(is_incremental); // full world update = op 3
-    
-    storeEntityResponseCommands(res->commands,res->m_map_time_of_day);
-    storeEntityResponseOtherEntities(res->entities_update,to_client.m_current_map->m_entities, &to_client, is_incremental,use_debug);
-    storeServerPhysicsPositions(res->physics_update,to_client.m_ent);
-    storeControlState(res->controls_update,to_client.m_ent);
-    storeEntityRemovals(res->entity_removals,to_client.m_current_map->m_entities,&to_client);
-    storeClientData(res->client_data,to_client.m_ent,is_incremental);
-    storeFollowupCommands(res->follow_up_commands,&to_client);
+
+    res->debug_info = use_debug;
+    storeEntityResponseCommands(res->blob_of_death,res->m_map_time_of_day);
+    res->blob_of_death.StoreBits(32,res->abs_time);
+    //tgt.StoreBits(32,db_time);
+    bool all_defaults = (use_debug==0) && (res->g_interpolation_level==2) && (res->g_interpolation_bits==1);
+    res->blob_of_death.StoreBits(1,all_defaults);
+    if(!all_defaults)
+    {
+        res->blob_of_death.StoreBits(1,use_debug);
+        res->blob_of_death.StoreBits(1,res->g_interpolation_level!=0);
+        if(res->g_interpolation_level!=0)
+        {
+            res->blob_of_death.StoreBits(2,res->g_interpolation_level);
+            res->blob_of_death.StoreBits(2,res->g_interpolation_bits);
+        }
+    }
+    storeEntityResponseOtherEntities(res->blob_of_death,to_client.m_current_map->m_entities, &to_client, is_incremental,use_debug);
+    storeServerPhysicsPositions(res->blob_of_death,to_client.m_ent);
+    storeControlState(res->blob_of_death,to_client.m_ent);
+    storeEntityRemovals(res->blob_of_death,to_client.m_current_map->m_entities,&to_client);
+    storeClientData(res->blob_of_death,to_client.m_ent,is_incremental);
+    storeFollowupCommands(res->blob_of_death,&to_client);
 }

@@ -9,6 +9,7 @@
 // if this file is included stand-alone this will pull in common definitions
 #include "GameCommand.h"
 #include "MapEventTypes.h"
+#include "BitStream.h"
 
 namespace SEGSEvents
 {

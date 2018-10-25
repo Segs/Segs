@@ -12,6 +12,8 @@
 
 #include "PlaqueVisited.h"
 
+#include "BitStream.h"
+
 using namespace SEGSEvents;
 
 void PlaqueVisited::serializefrom(BitStream & src)
