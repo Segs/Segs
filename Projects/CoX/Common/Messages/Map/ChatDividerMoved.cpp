@@ -12,6 +12,8 @@
 
 #include "ChatDividerMoved.h"
 
+#include "BitStream.h"
+
 using namespace SEGSEvents;
 
 void ChatDividerMoved::serializefrom(BitStream &src)
