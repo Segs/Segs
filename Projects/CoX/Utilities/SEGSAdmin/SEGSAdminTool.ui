@@ -290,7 +290,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adds a new user account&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>   Add User Account</string>
+          <string> Add User Account</string>
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
@@ -454,7 +454,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>   Generate Config File</string>
+          <string> Generate Config File</string>
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
@@ -513,7 +513,7 @@
           </font>
          </property>
          <property name="text">
-          <string>   Setup CoH Data Files</string>
+          <string> Setup CoH Data Files</string>
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
@@ -550,7 +550,7 @@
           </font>
          </property>
          <property name="text">
-          <string>   Create New Databases</string>
+          <string> Create New Databases</string>
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
@@ -629,7 +629,7 @@
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;IP configuration and logging&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>   Settings and Logging</string>
+          <string> Settings and Logging</string>
          </property>
          <property name="icon">
           <iconset resource="resources.qrc">
