@@ -53,7 +53,7 @@ scan_event_types(MapEvents ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DI
 add_event_sources(MapEvents target_SOURCES)
 
 add_handler(MapServer ${target_SOURCES})
-target_link_libraries(MapServer PUBLIC CRUDP_Protocol common_runtime)
+target_link_libraries(MapServer PUBLIC CRUDP_Protocol common_runtime TeamService)
 target_link_libraries(MapServer PUBLIC Qt5::Core)
 target_link_libraries(MapServer PUBLIC gameData)
 

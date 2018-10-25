@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include <cassert>
+
 namespace
 {
     struct EventDescriptorEntry
@@ -76,12 +77,10 @@ void to_storage(std::ostream &ostr,Event *ev)
 {
     assert(ev);
     uint32_t type_id = ev->type();
-    // we create a binary input to read the type_id;
-    {
-        cereal::BinaryOutputArchive oarchive(ostr);
-        oarchive(type_id);
-        ev = create_by_id(type_id);
-    }
+
+    // we create a binary output to store the type_id;
+    cereal::BinaryOutputArchive oarchive(ostr);
+    oarchive(type_id);
     ev->do_serialize(ostr);
 }
 }

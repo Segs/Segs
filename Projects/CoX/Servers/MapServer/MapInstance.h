@@ -16,6 +16,8 @@
 #include "MapClientSession.h"
 #include "NpcGenerator.h"
 
+#include "Messages/TeamService/TeamEvents.h"
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -258,4 +260,5 @@ protected:
         void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
         void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
         void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
+        void on_team_member_invited(SEGSEvents::TeamMemberInvitedMessage *msg);
 };

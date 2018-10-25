@@ -14,11 +14,11 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 add_handler(TeamService ${target_SOURCES})
-target_link_libraries(TeamService PUBLIC Qt5::Core)
+target_link_libraries(TeamService PUBLIC Qt5::Core UserRouterService_interface)
 target_link_libraries(TeamService PUBLIC SEGS_Components gameData)
 
 if(ENABLE_TESTS)
-    add_subdirectory(UnitTests)
+#    add_subdirectory(UnitTests)
 endif()
 
 # Retain directory structure in visual studio

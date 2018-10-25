@@ -23,6 +23,69 @@
  */
 uint32_t Team::m_team_idx_counter = 0;
 
+bool Team::isFull() 
+{
+    return m_team_members.size() >= m_max_team_size;
+}
+
+bool Team::containsEntityID(uint32_t entity_id) 
+{
+    for (const TeamMember &tm : m_team_members) 
+    {
+        if (tm.tm_idx == entity_id) 
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Team::containsEntityName(const QString &name) 
+{
+    for (const TeamMember &tm : m_team_members) 
+    {
+        if (QString::compare(tm.tm_name, name, Qt::CaseInsensitive) == 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+TeamingError Team::addTeamMember(uint32_t entity_id) 
+{
+    if(m_team_members.size() >= m_max_team_size)
+        return TeamingError::TEAM_FULL;
+    
+    // create new team member
+    TeamMember new_member;
+    new_member.tm_idx = entity_id;
+
+    if(m_team_members.size() <= 1)
+        m_team_leader_idx = entity_id;
+
+    m_team_members.emplace_back(new_member);
+
+    return TeamingError::OK;
+}
+
+TeamingError Team::addTeamMember(const QString &name) 
+{
+    if(m_team_members.size() >= m_max_team_size)
+        return TeamingError::TEAM_FULL;
+    
+    // create new team member
+    TeamMember new_member;
+    new_member.tm_name = name;
+	new_member.tm_pending = true;
+
+    m_team_members.emplace_back(new_member);
+    
+    return TeamingError::OK;
+}
+
 TeamingError Team::addTeamMember(Entity *e,uint32_t teammate_map_idx)
 {
     if(m_team_members.size() >= m_max_team_size)

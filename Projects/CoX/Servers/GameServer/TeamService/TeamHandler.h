@@ -11,6 +11,7 @@
 #include "Servers/InternalEvents.h"
 #include "Common/Servers/ClientManager.h"
 #include "GameData/Team.h"
+#include "GameData/CharacterData.h"
 #include <unordered_map>
 #include <set>
 #include <vector>
@@ -21,14 +22,22 @@ namespace SEGSEvents
     struct TeamMemberKickedMessage;
     struct TeamMemberInviteAcceptedMessage;
     struct TeamMemberInviteDeclinedMessage;
+    struct UserRouterQueryRequest;
+    struct UserRouterQueryResponse;
+    struct UserRouterOpaqueRequest;
+    struct UserRouterOpaqueResponse;
 } // end of namespace SEGSEvents
 
 struct TeamHandlerState
 {
     //Key is db ID of char, value is everything associated
     int m_game_server_id;
+    EventProcessor *m_map_handler;
 
-    std::vector<Team> m_teams;
+    std::vector<Team *> m_teams;
+
+    std::map<uint32_t, QString> m_id_to_name;
+    std::multimap<QString, SEGSEvents::Event *> m_pending_events;
 };
 
 class TeamHandler : public EventProcessor
@@ -40,7 +49,19 @@ public:
     ~TeamHandler() override;
     void dispatch(SEGSEvents::Event *ev) override;
 
+private:
     TeamHandlerState m_state;
+
+	uint32_t id_for_name(const QString &name);
+    bool name_known(const QString &name);
+
+    void on_user_router_query_response(SEGSEvents::UserRouterQueryResponse *msg);
+    void on_user_router_opaque_response(SEGSEvents::UserRouterOpaqueResponse *msg);
+
+    void on_team_member_invited(SEGSEvents::TeamMemberInvitedMessage *msg);
+    void on_team_member_kicked(SEGSEvents::TeamMemberKickedMessage *msg);
+    void on_team_member_invite_accepted(SEGSEvents::TeamMemberInviteAcceptedMessage *msg);
+    void on_team_member_invite_declined(SEGSEvents::TeamMemberInviteDeclinedMessage *msg);
 
     // EventProcessor interface
 protected:

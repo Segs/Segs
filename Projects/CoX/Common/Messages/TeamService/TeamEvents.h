@@ -7,15 +7,17 @@
 
 #pragma once
 
+#include "Messages/UserRouterService/UserRouterEvents.h"
 #include "Servers/InternalEvents.h"
 #include "GameData/Team.h"
-#include "GameData/chardata_serializers.h"
+#include "GameData/CharacterData.h"
+
 namespace SEGSEvents
 {
     
 enum TeamEventTypes : uint32_t
 {
-    evTeamMemberInvitedMessage = Internal_EventTypes::ID_LAST_Internal_EventTypes,
+    evTeamMemberInvitedMessage = UserRouterEventTypes::evUserRouterQueryResponse + 1,
     evTeamMemberKickedMessage,
     evTeamMemberInviteAcceptedMessage,
     evTeamMemberInviteDeclinedMessage,
@@ -26,12 +28,14 @@ enum TeamEventTypes : uint32_t
 
 struct TeamMemberInvitedData
 {
-    uint64_t m_leader_id;
-    uint64_t m_invitee_id;
+    QString m_leader_name;
+    uint32_t m_leader_id;
+    CharacterData m_leader_data;
+    QString m_invitee_name;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_leader_id, m_invitee_id);
+        ar(m_leader_name, m_leader_id, m_leader_data, m_invitee_name);
     }
 };
 
@@ -40,8 +44,8 @@ ONE_WAY_MESSAGE(TeamEventTypes,TeamMemberInvited)
 
 struct TeamMemberKickedData
 {
-    uint64_t m_leader_id;
-    uint64_t m_kickee_id;
+    uint32_t m_leader_id;
+    uint32_t m_kickee_id;
     template<class Archive>
     void serialize(Archive &ar)
     {
@@ -54,11 +58,14 @@ ONE_WAY_MESSAGE(TeamEventTypes,TeamMemberKicked)
 
 struct TeamMemberInviteAcceptedData
 {
-    uint64_t m_invitee_id;
+    uint32_t m_invitee_id;
+	QString m_invitee_name;
+	QString m_leader_name;
+
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_invitee_id);
+        ar(m_invitee_id, m_invitee_name, m_leader_name);
     }
 };
 
@@ -67,7 +74,10 @@ ONE_WAY_MESSAGE(TeamEventTypes,TeamMemberInviteAccepted)
 
 struct TeamMemberInviteDeclinedData
 {
-    uint64_t m_invitee_id;
+    uint32_t m_invitee_id;
+	QString m_invitee_name;
+	QString m_leader_name;
+
     template<class Archive>
     void serialize(Archive &ar)
     {

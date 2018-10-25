@@ -7,6 +7,7 @@
 
 #pragma once
 #include "CommonNetStructures.h"
+#include "CharacterData.h"
 
 enum class TeamingError
 {
@@ -20,21 +21,28 @@ class Entity;
 class Team
 {
 public:
-        Team()
-            : m_team_idx( ++m_team_idx_counter )
+        Team(bool transient=false)
+            : m_transient(transient), m_team_idx( ++m_team_idx_counter )
         { }
         ~Team();
 
         struct TeamMember {
-            uint32_t    tm_idx  = 0;
-            QString     tm_name; // stored here for quick lookup.
-            QString     tm_map; // stored here for quick lookup.
-            // this value is transient, and should be updated by TeamingService
-            uint32_t    tm_map_idx = 0;
+            uint32_t        tm_idx  = 0;
+            QString         tm_name; // stored here for quick lookup.
+            QString         tm_map; // stored here for quick lookup.
+
+            // these values are transient, and should be updated by TeamingService
+            uint32_t        tm_map_idx = 0;
+            CharacterData   tm_data;
+			bool        	tm_pending = false; // if true, user has not responded to invite yet
         };
 
         // Member Vars
         std::vector<TeamMember> m_team_members;
+
+        // indicates that the team is still being formed
+        // i.e. an invite has been sent by a player NOT YET on a team
+        bool        m_transient;
 
 const   uint32_t    m_team_idx          = 0;
         uint32_t    m_max_team_size     = 8;        // max is always 8
@@ -46,6 +54,12 @@ const   uint32_t    m_team_idx          = 0;
         void                dumpAllTeamMembers();
         TeamingError        addTeamMember(Entity *e, uint32_t teammate_map_idx);
         bool                isTeamLeader(Entity *e);
+
+        TeamingError        addTeamMember(uint32_t entity_id);
+        TeamingError        addTeamMember(const QString &name);
+        bool                containsEntityID(uint32_t entity_id);
+        bool                containsEntityName(const QString &name);
+        bool                isFull();
 
 private:
 static  uint32_t    m_team_idx_counter;

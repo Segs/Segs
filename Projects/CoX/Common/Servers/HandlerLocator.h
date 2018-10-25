@@ -27,9 +27,10 @@ class HandlerLocator
     static std::deque<EventProcessor *> m_game_servers;
     static std::deque<EventProcessor *> m_map_servers;
     static std::deque<EventProcessor *> m_game_db_servers;
-    static std::deque<std::deque<EventProcessor *>> m_map_instances;
     static std::unordered_map<uint32_t,std::deque<EventProcessor *>> m_all_event_processors;
 public:
+    static std::deque<std::deque<EventProcessor *>> m_map_instances;
+
     HandlerLocator();
     static void setMessageBus(MessageBus *h) { m_message_bus=h; }
     static MessageBus *getMessageBus() { return m_message_bus; }

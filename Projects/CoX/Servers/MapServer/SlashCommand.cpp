@@ -25,6 +25,7 @@
 #include "MapLink.h"
 #include "MapInstance.h"
 #include "GameData/Character.h"
+#include "GameData/CharacterData.h"
 #include "GameData/CharacterHelpers.h"
 #include "GameData/Entity.h"
 #include "GameData/EntityHelpers.h"
@@ -1581,17 +1582,17 @@ void cmdHandler_MOTD(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
 {
+	QString invitee_name = getCommandParameter(cmd);
 
-
-    Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if (tgt == nullptr)
-    {
-        const QString msg = "Team invite target name unable to be parsed from command: " + cmd;
-        qCWarning(logTeams) << msg;
+	if (invitee_name.isEmpty())
+	{
+        QString msg = "You must specify a player to invite.";
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
         return;
-    }
+	}
 
-    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInvitedMessage({sess.m_ent->m_db_id, tgt->m_db_id}, 0));
+    qCDebug(logTeams) << "Sending TeamMemberInvitedMessage to TeamService";
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInvitedMessage({sess.m_ent->name(), sess.m_ent->m_db_id, sess.m_ent->m_char->m_char_data, invitee_name}, sess.link()->session_token()));
 }
 
 void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
@@ -1909,15 +1910,15 @@ void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
-    // QString from_name       = args.value(1);
+    QString from_name       = args.value(1);
     uint32_t tgt_db_id      = args.value(2).toUInt();
     uint32_t tgt_db_id_2    = args.value(3).toUInt(); // always the same?
-    // QString tgt_name        = args.value(4);
+    QString tgt_name        = args.value(4);
 
     if(tgt_db_id != tgt_db_id_2)
         qWarning() << "TeamAccept db_ids do not match!";
 
-    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteAcceptedMessage({tgt_db_id}, 0));
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteAcceptedMessage({tgt_db_id, from_name, tgt_name}, sess.link()->session_token()));
 
 
 
@@ -1948,12 +1949,11 @@ void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
-    // QString from_name   = args.value(1);
+    QString from_name   = args.value(1);
     uint32_t tgt_db_id  = args.value(2).toUInt();
-    // QString tgt_name    = args.value(3);
+    QString tgt_name    = args.value(3);
 
-    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteDeclinedMessage({tgt_db_id}, 0));
-
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteDeclinedMessage({tgt_db_id, from_name, tgt_name}, sess.link()->session_token()));
     // Entity *from_ent = getEntity(&sess,from_name);
     // if(from_ent == nullptr)
     //     return;

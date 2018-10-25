@@ -22,6 +22,9 @@
 #include "TeamService/TeamHandler.h"
 #include "Settings.h"
 
+#include "Messages/TeamService/TeamEvents.h"
+#include "Messages/UserRouterService/UserRouterEvents.h"
+
 #include <ace/Synch.h>
 #include <ace/INET_Addr.h>
 #include <ace/Message_Queue.h>
@@ -101,8 +104,13 @@ void GameServer::serialize_to(std::ostream &/*os*/)
 {
     assert(false);
 }
+
+extern void register_TeamServiceEvents();
+
 GameServer::GameServer(int id) : d(new PrivateData)
 {
+    register_TeamServiceEvents();
+
     d->m_handler = new GameHandler;
     d->m_handler->set_server(this);
     d->m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);

@@ -19,9 +19,14 @@
 #include "Runtime/RuntimeData.h"
 #include "MapTemplate.h"
 #include "MapInstance.h"
+#include "MapClientSession.h"
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Servers/MessageBus.h"
+#include "MessageHelpers.h"
+
+#include "SEGSEventFactory.h"
+#include "Messages/UserRouterService/UserRouterEvents.h"
 
 #include <ace/Reactor.h>
 
@@ -50,20 +55,22 @@ namespace
 class MapServer::PrivateData
 {
 public:
-        MapManager      m_manager;
+    MapManager      m_manager;
 };
 
-
-MapServer::MapServer(uint8_t id) : d(new PrivateData), m_id(id)
+MapServer::MapServer(uint8_t id) : d(new PrivateData), m_id(id), m_message_bus_endpoint(*this)
 {
     assert(g_GlobalMapServer==nullptr && "Only one GameServer instance per process allowed");
     g_GlobalMapServer = this;
+
     HandlerLocator::setMap_Handler(id,this);
+
+    m_message_bus_endpoint.subscribe(evClientConnectedMessage);
+    m_message_bus_endpoint.subscribe(evClientDisconnectedMessage);
 }
 
 MapServer::~MapServer()
 {
-
 }
 
 bool MapServer::Run()
@@ -179,9 +186,154 @@ void MapServer::dispatch(Event *ev)
         case Internal_EventTypes::evClientMapXferMessage:
             on_client_map_xfer(static_cast<ClientMapXferMessage *>(ev));
             break;
+        case evUserRouterInfoMessage:
+            route_info_message(static_cast<UserRouterInfoMessage *>(ev));
+            break;
+        case evUserRouterOpaqueRequest:
+            fill_opaque_message(static_cast<UserRouterOpaqueRequest *>(ev));
+            route_opaque_message(static_cast<UserRouterOpaqueRequest *>(ev));
+            break;
+        // will be obtained from MessageBusEndpoint
+        case Internal_EventTypes::evClientConnectedMessage:
+			on_client_connected(static_cast<ClientConnectedMessage *>(ev));
+			break;
+        case Internal_EventTypes::evClientDisconnectedMessage:
+			on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
+			break;
+        case UserRouterEventTypes::evUserRouterQueryRequest:
+            on_user_router_query_request(static_cast<UserRouterQueryRequest *>(ev));
+            break;
         default:
             assert(!"Unknown event encountered in dispatch.");
     }
+}
+
+MapClientSession* MapServer::getMapClientSessionForEntityID(uint32_t entity_id)  
+{
+	MapInstance *mi = getMapInstanceForEntityID(entity_id);
+
+	if (mi == nullptr)
+		return nullptr;
+
+	for (MapClientSession *cl : mi->m_session_store)
+	{
+		if (cl->m_ent->m_db_id == entity_id) {
+			return cl;
+		}
+	}
+
+	return nullptr;
+}
+
+MapInstance *MapServer::getMapInstanceForEntityID(uint32_t entity_id)
+{
+	return m_id_to_map_instance[entity_id];
+}
+
+QString MapServer::getNameFromMapInstance(uint32_t entity_id)
+{
+	MapInstance *mi = m_id_to_map_instance[entity_id];
+	qCritical() << "mi" << mi;
+	for (MapClientSession *cl : mi->m_session_store)
+	{
+		qCritical() << "cl" << cl;
+		if (cl->m_ent->m_db_id == entity_id) {
+			return cl->m_ent->name();
+		}
+	}
+
+	return 	"";
+}
+
+void MapServer::on_user_router_query_request(UserRouterQueryRequest *msg)
+{
+    qCritical() << " got request" << msg->m_data.m_query_id << msg->m_data.m_query_name;
+
+    QString _name = "";
+    uint32_t _id = 0;
+
+    if (msg->m_data.m_query_id != 0)
+		_id = msg->m_data.m_query_id;
+	else
+		_name = msg->m_data.m_query_name;
+
+	for (EventProcessor *_mi : HandlerLocator::m_map_instances[m_id])
+	{
+		if (_mi == nullptr)
+			continue;
+
+		MapInstance *mi = static_cast<MapInstance *>(_mi);
+		for (MapClientSession *cl : mi->m_session_store)
+		{
+			if (_id == 0) 
+			{
+				if (cl->m_ent->name() == _name) 
+					_id = cl->m_ent->m_db_id;
+			}
+			else if (cl->m_ent->m_db_id == _id) 
+				_name = cl->m_ent->name();
+		}
+	}
+
+	assert(_id != 0);
+	assert(!_name.isEmpty());
+
+    msg->src()->putq(new UserRouterQueryResponse({msg->m_data.m_query_id, msg->m_data.m_query_name, _id, _name}, 0));
+}
+
+void MapServer::fill_opaque_message(UserRouterOpaqueRequest *msg)
+{
+	if (msg->m_data.m_target_id == 0 && (!msg->m_data.m_target_name.isEmpty()))
+	{
+		// get id from name
+		for (EventProcessor *_mi : HandlerLocator::m_map_instances[m_id])
+		{
+			if (_mi == nullptr) 
+				continue;
+
+			MapInstance *mi = static_cast<MapInstance *>(_mi);
+			for (MapClientSession *cl : mi->m_session_store)
+			{
+				if (cl->m_ent->name() == msg->m_data.m_target_name) 
+				{
+					msg->m_data.m_target_id = cl->m_ent->m_db_id;
+					return;
+				}
+			}
+		}
+	}
+}
+
+void MapServer::route_opaque_message(UserRouterOpaqueRequest *msg) 
+{
+    MapInstance *ins = m_id_to_map_instance[msg->m_data.m_target_id];
+
+    if (ins == nullptr) {
+		qCDebug(logLogging) << "error routing message to map instance:" << msg->m_data.m_target_id;
+
+		msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data.m_sender_id, UserRouterError::USER_OFFLINE}, 0));
+        return;
+    }
+
+    std::stringstream event_stream ;
+	event_stream.write(msg->m_data.m_payload.constData(), msg->m_data.m_payload.size());
+
+    Event *e = from_storage(event_stream);
+
+    ins->putq(e, 0);
+	msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data.m_sender_id, UserRouterError::OK}, 0));
+}
+
+void MapServer::route_info_message(UserRouterInfoMessage *msg) 
+{
+    MapClientSession *sess = getMapClientSessionForEntityID(msg->m_data.m_target_id);
+
+    if (sess == nullptr) {
+        // TODO: handle message sent to invalid entity ID
+        return;
+    }
+
+    sendInfoMessage(msg->m_data.m_info_channel, msg->m_data.m_message, *sess);
 }
 
 void MapServer::on_expect_client(ExpectMapClientRequest *ev)
@@ -239,5 +391,20 @@ void MapServer::serialize_from(std::istream &/*is*/)
 void MapServer::serialize_to(std::ostream &/*os*/)
 {
     assert(false);
+}
+void MapServer::on_client_connected(ClientConnectedMessage *msg)
+{
+	EventProcessor *mi = HandlerLocator::getMapInstance_Handler(
+		msg->m_data.m_server_id,
+		msg->m_data.m_sub_server_id);
+
+	qCritical() << "got client: " << msg->m_data.m_char_db_id << mi;
+	m_id_to_map_instance[msg->m_data.m_char_db_id] = static_cast<MapInstance *>(mi);
+}
+
+void MapServer::on_client_disconnected(ClientDisconnectedMessage *msg)
+{
+    if (m_id_to_map_instance.count(msg->m_data.m_char_db_id))
+        m_id_to_map_instance.erase(msg->m_data.m_char_db_id);
 }
 //! @}

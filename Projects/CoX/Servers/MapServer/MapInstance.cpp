@@ -47,7 +47,6 @@
 #include "GameData/playerdata_serializers.h"
 #include "GameData/Store.h"
 #include "Messages/EmailService/EmailEvents.h"
-#include "Messages/TeamService/TeamEvents.h"
 #include "Messages/Game/GameEvents.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
 #include "Messages/Map/ClueList.h"
@@ -523,6 +522,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evReceiveContactStatus:
             on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
+			break;
+        case evTeamMemberInvitedMessage:
+            on_team_member_invited(static_cast<TeamMemberInvitedMessage *>(ev));
             break;
         case evReceiveTaskDetailRequest:
             on_receive_task_detail_request(static_cast<ReceiveTaskDetailRequest *>(ev));
@@ -669,8 +671,8 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token,session.m_ent->m_char->m_db_id},0));
 
-    removeLFG(*ent);
-    leaveTeam(*ent);
+    //removeLFG(*ent);
+    //leaveTeam(*ent);
     updateLastOnline(*ent->m_char);
 
     // one last character update for the disconnecting entity
@@ -3087,5 +3089,22 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
         qCDebug(logStores) << "Error processing buyItem";
 }
 
+void MapInstance::on_team_member_invited(TeamMemberInvitedMessage *msg) {
+
+
+    for (MapClientSession *cl : m_session_store)
+    {
+        if (cl->m_ent->name() != msg->m_data.m_invitee_name)
+			continue;
+
+		QString name = msg->m_data.m_leader_name;
+		uint32_t db_id = cl->m_ent->m_db_id;
+		TeamOfferType type = NoMission;
+
+		qCDebug(logLogging) << "Sending Teamup Offer" << db_id << name << type;
+
+		cl->m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
+    }
+}
 
 //! @}
