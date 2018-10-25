@@ -38,11 +38,21 @@ int ScriptingEngine::loadAndRunFile(const QString &path)
     Q_UNUSED(path);
     return -1;
 }
-
+bool ScriptingEngine::setIncludeDir(const QString &)
+{
+    return false;
+}
 std::string ScriptingEngine::callFunc(const char *name, int arg1)
 {
     Q_UNUSED(name);
     Q_UNUSED(arg1);
+    return "";
+}
+std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
+{
+    Q_UNUSED(name);
+    Q_UNUSED(arg1);
+    Q_UNUSED(loc);
     return "";
 }
 
@@ -53,5 +63,14 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     Q_UNUSED(arg1);
     return "";
 }
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, glm::vec3 loc)
+{
+    Q_UNUSED(client);
+    Q_UNUSED(name);
+    Q_UNUSED(arg1);
+    Q_UNUSED(loc);
+    return "";
+}
+
 
 //! @}

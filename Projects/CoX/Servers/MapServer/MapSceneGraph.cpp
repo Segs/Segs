@@ -12,23 +12,23 @@
 #include "MapSceneGraph.h"
 
 #include "GameData/CoHMath.h"
-#include "MapServerData.h"
-#include "SceneGraph.h"
+#include "GameData/GameDataStore.h"
 #include "EntityStorage.h"
 #include "Logging.h"
-#include "Common/NetStructures/Character.h"
+#include "Common/GameData/Character.h"
+#include "Common/Runtime/Prefab.h"
+#include "Common/Runtime/SceneGraph.h"
 #include "NpcGenerator.h"
 #include "MapInstance.h"
-#include "NpcStore.h"
+#include "GameData/NpcStore.h"
 
 #include "glm/mat4x4.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <QSet>
+#include <memory>
 
-namespace
-{
-    PrefabStore g_prefab_store;
-}
+using namespace SEGS;
+
 MapSceneGraph::MapSceneGraph()
 {
 
@@ -41,20 +41,9 @@ MapSceneGraph::~MapSceneGraph()
 
 bool MapSceneGraph::loadFromFile(const QString &filename)
 {
-    m_scene_graph.reset(new SceneGraph);
-    LoadingContext ctx;
-    ctx.m_target = m_scene_graph.get();
-    int geobin_idx= filename.indexOf("geobin");
-    int maps_idx = filename.indexOf("maps");
-    ctx.m_base_path = filename.mid(0, geobin_idx);
-    g_prefab_store.prepareGeoLookupArray(ctx.m_base_path);
-    QString upcase_city = filename;
-    upcase_city.replace("city","City");
-    upcase_city.replace("zones","Zones");
-    bool res = loadSceneGraph(upcase_city.mid(maps_idx), ctx, g_prefab_store);
-    if (!res)
+    m_scene_graph.reset(loadWholeMap(filename));
+    if(!m_scene_graph)
         return false;
-
     for(const auto &def : m_scene_graph->all_converted_defs)
     {
         if(def->properties)
@@ -62,12 +51,13 @@ bool MapSceneGraph::loadFromFile(const QString &filename)
             m_nodes_with_properties.emplace_back(def);
         }
     }
-    return res;
+    return true;
 }
 void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function<bool(SceneNode *,const glm::mat4 &)> visit_func )
 {
     if (!visit_func(self, accumulated))
         return;
+
     for(const auto & child : self->children)
     {
         glm::mat4 transform(child.m_matrix2);
@@ -121,6 +111,7 @@ struct NpcCreator
 
     bool checkPersistent(SceneNode *n, const glm::mat4 &v)
     {
+        assert(map_instance);
         bool has_npc = false;
         QString persistent_name;
         for (GroupProperty_Data &prop : *n->properties)
@@ -129,7 +120,7 @@ struct NpcCreator
             {
                 persistent_name = prop.propValue;
             }
-            if (prop.propName.contains("NPC", Qt::CaseInsensitive))
+            if (prop.propName.toUpper().contains("NPC"))
             {
                 qCDebug(logNPCs) << prop.propName << '=' << prop.propValue;
                 has_npc = true;
@@ -138,13 +129,13 @@ struct NpcCreator
         if(has_npc && map_instance)
         {
             qCDebug(logNPCs) << "Attempting to spawn npc" << persistent_name << "at" << v[3][0] << v[3][1] << v[3][2];
-            const NPCStorage & npc_store(map_instance->serverData().getNPCDefinitions());
+            const NPCStorage & npc_store(getGameData().getNPCDefinitions());
             QString npc_costume_name = convertNpcName(persistent_name);
             const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
             if (npc_def)
             {
                 int idx = npc_store.npc_idx(npc_def);
-                Entity *e = map_instance->m_entities.CreateNpc(*npc_def, idx, 0);
+                Entity *e = map_instance->m_entities.CreateNpc(getGameData(),*npc_def, idx, 0);
                 forcePosition(*e,glm::vec3(v[3]));
                 auto valquat = glm::quat_cast(v);
 
@@ -231,7 +222,7 @@ struct SpawnPointLocator
             return true;
         for (GroupProperty_Data &prop : *n->properties)
         {
-            if(prop.propName=="SpawnLocation" && 0==prop.propValue.compare(m_kind))
+            if(prop.propName=="SpawnLocation" && prop.propValue==m_kind)
             {
                 m_targets->emplace_back(v);
                 return false; //

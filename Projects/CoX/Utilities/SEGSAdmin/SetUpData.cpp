@@ -266,6 +266,7 @@ void SetUpData::read_piggtool()
 void SetUpData::create_default_directory(QString maps_dir) // Creates default directories
 {
     ui->label_create_directory->setEnabled(true);
+    qDebug()<<"maps_dir: "<<maps_dir;
     QDir path(QDir::currentPath());
     for(const QString &map_name : g_map_names)
     {

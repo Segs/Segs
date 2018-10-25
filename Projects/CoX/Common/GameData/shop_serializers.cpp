@@ -12,6 +12,7 @@
 
 #include "shop_serializers.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
 #include "Common/GameData/shop_definitions.h"
 #include "DataStorage.h"
@@ -34,7 +35,7 @@ namespace
         bool ok = true;
         s->prepare();
         ok &= s->read(target.m_Name);
-       ok &= s->prepare_nested(); // will update the file size left
+        ok &= s->prepare_nested(); // will update the file size left
         assert(ok);
         return s->end_encountered();
     }
@@ -58,20 +59,20 @@ namespace
         assert(ok);
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         // Only one entry per Item
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("Sell")==0) {
+            if("Sell"==_name) {
                 ShopBuySell_Data nt;
                 ok &= loadFrom(s,nt);
                 target.m_Sells.push_back(nt);
-            } else if(_name.compare("Buy")==0) {
+            } else if("Buy"==_name) {
                 ShopBuySell_Data nt;
                 ok &= loadFrom(s,nt);
                 target.m_Buys.push_back(nt);
-            } else if(_name.compare("Item")==0) {
+            } else if("Item"==_name) {
                 ShopItem_Data nt;
                 ok &= loadFrom(s,nt);
                 target.m_Items.push_back(nt);
@@ -109,12 +110,12 @@ namespace
         assert(ok);
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         // Only one entry per Item
         if(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("Power")==0) {
+            if("Power"==_name) {
                 ok &= loadFrom(s,&target->m_Power);
             } else
                 assert(!"unknown field referenced.");
@@ -132,11 +133,11 @@ bool loadFrom(BinStore *s, AllShops_Data &target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Store")==0) {
+        if("Store"==_name) {
             Shop_Data nt;
             ok &= loadFrom(s,nt);
             target.push_back(nt);
@@ -155,11 +156,11 @@ bool loadFrom(BinStore * s, AllShopItems_Data *target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Item")==0) {
+        if("Item"==_name) {
             ShopItemInfo_Data nt;
             ok &= loadFrom(s,&nt);
             target->emplace_back(nt);
@@ -178,11 +179,11 @@ bool loadFrom(BinStore * s, AllShopDepts_Data *target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Department")==0) {
+        if("Department"==_name) {
             ShopDeptName_Data nt;
             ok &= loadFrom(s,&nt);
             target->push_back(nt);

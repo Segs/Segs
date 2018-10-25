@@ -6,7 +6,6 @@
  */
 
 #pragma once
-#include "BitStream.h"
 #include <set>
 #include <deque>
 #include <vector>
@@ -17,6 +16,8 @@
 class PacketCollector;
 static const uint32_t maxPacketSize    = 1472;
 static const uint32_t packetHeaderSize = 8;
+class BitStream;
+class QString;
 class CrudP_Packet
 {
     using time_point = std::chrono::steady_clock::time_point;
@@ -33,10 +34,10 @@ public:
     void GetString(QString &str);
 
     float GetFloat();
-    void StoreBits(uint32_t nBits, uint32_t dataBits)   { m_stream->StoreBits(nBits, dataBits); }
-    void StoreBitArray(uint8_t *array, size_t nBits)    { m_stream->StoreBitArray(array,nBits); }
-    void StorePackedBits(uint32_t nBits, uint32_t dataBits) { m_stream->StorePackedBits(nBits, dataBits); }
-    void StoreString(const char *str)                   { m_stream->StoreString(str); }
+    void StoreBits(uint32_t nBits, uint32_t dataBits);
+    void StoreBitArray(uint8_t *array, size_t nBits);
+    void StorePackedBits(uint32_t nBits, uint32_t dataBits);
+    void StoreString(const char *str);
     void CompressAndStoreString(const char *str);
 
     //  Sets the packet to the "finalized" state.
@@ -46,8 +47,8 @@ public:
 
     //  Accessors
     //////////////////////////////////////////////////////////////////////////
-    uint8_t  *  GetBuffer()         const   { return m_stream->GetBuffer(); }
-    size_t      GetPacketLength()   const   { return m_stream->GetReadableDataSize();}
+    uint8_t  *  GetBuffer();
+    size_t      GetPacketLength()   const;
     BitStream * GetStream()                 { return m_stream;                      }
     bool        getIsCompressed()   const   { return m_compressed;                  }
     bool        HasSiblings()       const   { return m_numSibs > 0;                 }
@@ -63,7 +64,7 @@ public:
     uint32_t getSibPos()            const   { return m_sibPos;}
     size_t   getNumAcks()           const   { return m_acks.size(); }
 
-    void ByteAlign()                        { m_stream->ByteAlign(); }
+    void ByteAlign();
     void SetStream(BitStream *stream)       { m_stream = stream; }
     void SetIsCompressed(bool compressed)   { m_compressed = compressed; }
     void SetReliabilty(bool r)              { m_reliable = r; }

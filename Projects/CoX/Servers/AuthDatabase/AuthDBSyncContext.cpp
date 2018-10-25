@@ -12,8 +12,8 @@
 
 #include "AuthDBSyncContext.h"
 
-#include "AuthDBSyncEvents.h"
-#include "PasswordHasher/PasswordHasher.h"
+#include "Messages/AuthDatabase/AuthDBSyncEvents.h"
+#include "PasswordHasher.h"
 #include "Settings.h"
 
 #include <ace/Thread.h>
@@ -24,6 +24,8 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <cassert>
+
+using namespace SEGSEvents;
 
 namespace
 {

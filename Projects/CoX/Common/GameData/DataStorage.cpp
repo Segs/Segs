@@ -11,7 +11,7 @@
  */
 
 #include "DataStorage.h"
-#include "Common/GameData/Colors.h"
+#include "Colors.h"
 #include <QtCore/QFile>
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
@@ -32,27 +32,26 @@ bool BinStore::check_bin_version_and_crc(uint32_t req_crc)
     return true;
 }
 
-QString BinStore::read_pstr( size_t maxlen )
+const QByteArray &BinStore::read_pstr( size_t maxlen )
 {
+    static QByteArray buf;
     uint16_t len=0;
+    buf.resize(0);
     if(read(len)!=true)
-        return "";
+        return buf;
     if(len<=maxlen)
     {
-        char *buf=new char[len+1];
-        m_str.read(buf,len);
-        buf[len]=0;
-        QString res=buf;
-        delete [] buf;
+        buf.resize(len);
+        m_str.read(buf.data(),len);
         if(m_file_sizes.size()>0)
         {
             (*m_file_sizes.rbegin())-=len;
             bytes_read+=len;
         }
         fixup();
-        return res;
+        return buf;
     }
-    return "";
+    return buf;
 }
 
 void BinStore::skip_pstr()
@@ -73,12 +72,12 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
             m_str.seek(v+m_str.pos());
         return true;
     }
-    QString hdr=read_pstr(20);
+    const QByteArray &hdr(read_pstr(20));
     uint32_t sz;
     read_internal(sz);
 
     quint64 read_start = m_str.pos();
-    if(hdr.compare("Files1")||sz<=0)
+    if(!hdr.startsWith("Files1")||sz<=0)
         return false;
     int num_data_blocks;
     read_internal(num_data_blocks);
@@ -150,6 +149,12 @@ bool BinStore::read( uint8_t &v )
     return res==1;
 }
 
+bool BinStore::readU( uint8_t &v )
+{
+    size_t res = read_internal(v);
+    uint8_t skipover;
+    return res+read_internal(skipover) + read_internal(skipover) + read_internal(skipover)==4;
+}
 bool BinStore::read(Vec2 &val)
 {
     bool parse_ok=true;
@@ -189,13 +194,13 @@ bool BinStore::read(uint8_t *&val, uint32_t length)
     return parse_ok;
 }
 
-bool BinStore::read(QString &val)
+bool BinStore::read(QByteArray &val)
 {
     val=this->read_str(12000);
     return true;
 }
 
-bool BinStore::read(std::vector<QString> &res)
+bool BinStore::read(std::vector<QByteArray> &res)
 {
     bool parse_ok=true;
     uint32_t to_read = 0;
@@ -265,9 +270,9 @@ bool BinStore::read_bytes( char *tgt,size_t sz )
     return true;
 }
 
-QString BinStore::read_str( size_t maxlen )
+const QByteArray & BinStore::read_str( size_t maxlen )
 {
-    QString result(read_pstr(maxlen));
+    const QByteArray &result(read_pstr(maxlen));
     fixup();
     return result;
 }
@@ -278,7 +283,7 @@ void BinStore::prepare()
     bytes_read=0;
 }
 
-uint32_t BinStore::read_header( QString &name,size_t maxlen )
+uint32_t BinStore::read_header( QByteArray &name,size_t maxlen )
 {
     name = read_pstr(maxlen);
     uint32_t res;
@@ -295,7 +300,7 @@ bool BinStore::prepare_nested()
     return result;
 }
 
-bool BinStore::nesting_name(QString &name)
+bool BinStore::nesting_name(QByteArray &name)
 {
     uint32_t expected_size = read_header(name,12000);
     if(expected_size == uint32_t(~0))

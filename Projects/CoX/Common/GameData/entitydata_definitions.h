@@ -13,12 +13,11 @@
 
 struct EntityData
 {
-static const constexpr  uint32_t    class_version       = 4;    // v4: adds m_current_map
+static const constexpr  uint32_t    class_version       = 5;    // v5: removes m_current_map
                         uint32_t    m_access_level      = 0;
                         uint8_t     m_origin_idx        = {0};
                         uint8_t     m_class_idx         = {0};
                         glm::vec3   m_pos;
                         glm::vec3   m_orientation_pyr;          // Stored in Radians
-                        uint32_t    m_map_idx           = 1;    // only 1 map instance
-                        QString     m_current_map;
+                        uint32_t    m_map_idx           = 0;	// map_idx == 0 will load up Outbreak. So newly-created characters will go there
 };

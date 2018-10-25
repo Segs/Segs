@@ -21,6 +21,7 @@ Some other useful links:
 * Our [Discord](https://discord.segs.io/)
 * Our [wiki](https://github.com/Segs/Segs/wiki)
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
+* How Can I Help? [Specific Tasks to Help](https://github.com/Segs/Segs/issues/519)
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide)
 
 Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.io/developers
@@ -157,6 +158,37 @@ cmake ..
 make
 ```
 
+**ADVANCED: Using Build Scripts**
+
+If you're using docker, run the following commands
+
+```
+cp activate.env.template activate.env
+source activate.env # set ENV variables and add ./scripts to PATH
+
+docker-build Dockerfile # build the docker image (only needed once)
+docker-up # Ctrl-D to run in background
+
+docker-forward segs bootstrap # set up cmake / clean build
+docker-forward segs build # build all components
+docker-forward segs build gameserver_lib # build a single component
+```
+
+This will also run on Ubuntu 18.04 with the following:
+
+```
+cp activate.env.template activate.env
+source activate.env # set ENV variables and add ./scripts to PATH
+
+sudo segs install_deps_ubuntu # install development tools (only needed once)
+
+segs bootstrap # set up cmake / clean build
+segs build # build all components
+segs build gameserver_lib # build a single component
+```
+
+Note: if you choose not to `source activate.env`, you can run the commands via `scripts/segs` instead
+
 
 CONTRIBUTE TO DEVELOPMENT
 ------
@@ -167,6 +199,7 @@ Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to
 
 * Our GitHub: https://github.com/Segs/Segs
 * The Issue Queue: https://github.com/Segs/Segs/issues
+* How Can I Help Issue: https://github.com/Segs/Segs/issues/519
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide))
 * Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 

@@ -12,9 +12,12 @@
 
 #include "power_serializers.h"
 #include "power_definitions.h"
+#include "seq_definitions.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 #include "DataStorage.h"
 
+#include <QMetaEnum>
 #include <type_traits>
 
 bool loadFrom(BinStore *s, StoredAttribMod &target)
@@ -69,7 +72,7 @@ bool loadFrom(BinStore *s, Power_Data &target)
     ok &= s->read(target.DisplayVictimHit);
     ok &= s->read(target.IconName);
     ok &= s->readEnum(target.Type);
-    ok &= s->read(target.AttackTypes);
+    ok &= s->readEnum(target.AttackTypes);
     ok &= s->read(target.Requires);
     ok &= s->read(target.Accuracy);
     ok &= s->read(target.NearGround);
@@ -100,12 +103,12 @@ bool loadFrom(BinStore *s, Power_Data &target)
     ok &= s->read(target.AIGroups);
     ok &= s->read(target.IgnoreStrength); // true/false
     ok &= s->readEnum(target.ModeSeqBits);
-    ok &= s->read(target.AttackBits); // or cast anim bits
-    ok &= s->read(target.BlockBits);
-    ok &= s->read(target.WindUpBits);
-    ok &= s->read(target.HitBits);
-    ok &= s->read(target.DeathBits); // or DeathAnimBits - resolve using g_hashTabPtr
-    ok &= s->read(target.ActivationBits); // or AttachedAnim - resolve using g_hashTabPtr
+    ok &= s->readEnum(target.AttackBits); // or cast anim bits
+    ok &= s->readEnum(target.BlockBits);
+    ok &= s->readEnum(target.WindUpBits);
+    ok &= s->readEnum(target.HitBits);
+    ok &= s->readEnum(target.DeathBits); // or DeathAnimBits - resolve using g_hashTabPtr
+    ok &= s->readEnum(target.ActivationBits); // or AttachedAnim - resolve using g_hashTabPtr
     ok &= s->read(target.ActivationFX); // or AttachedFxName
     ok &= s->read(target.AttackFX); // or TravellingProjectileEffect
     ok &= s->read(target.HitFX); // or AttachedToVictimFxName
@@ -116,18 +119,18 @@ bool loadFrom(BinStore *s, Power_Data &target)
     ok &= s->read(target.DeathFX);
     ok &= s->read(target.m_AttackFrames); // those are non-inerruptible ?
     ok &= s->read(target.InitialAttackFX);
-    ok &= s->read(target.InitialAttackBits); //each entry can be mapped from int to attack bit name using g_hashTabPtr ?
+    ok &= s->readEnum(target.InitialAttackBits); //each entry can be mapped from int to attack bit name using g_hashTabPtr ?
     ok &= s->read(target.m_InitialFramesBeforeHit);
     ok &= s->read(target.ProjectileSpeed);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("AttribMod")==0) {
+        if("AttribMod"==_name) {
             target.pAttribMod.emplace_back();
             ok &= loadFrom(s,target.pAttribMod.back());
         } else
@@ -141,7 +144,7 @@ bool loadFrom(BinStore *s, Parse_PowerSet &target)
 {
     bool ok = true;
     s->prepare();
-    ok &= s->read(target.Name);
+    ok &= s->read(target.m_Name);
     ok &= s->read(target.DisplayName);
     ok &= s->read(target.DisplayHelp);
     ok &= s->read(target.DisplayShortHelp);
@@ -151,11 +154,11 @@ bool loadFrom(BinStore *s, Parse_PowerSet &target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Power")==0) {
+        if("Power"==_name) {
             target.m_Powers.emplace_back();
             ok &= loadFrom(s,target.m_Powers.back());
         } else
@@ -178,11 +181,11 @@ bool loadFrom(BinStore *s, StoredPowerCategory &target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("PowerSet")==0) {
+        if("PowerSet"==_name) {
             target.m_PowerSets.emplace_back();
             ok &= loadFrom(s,target.m_PowerSets.back());
         } else
@@ -200,11 +203,11 @@ bool loadFrom(BinStore *s, AllPowerCategories &target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("PowerCategory")==0) {
+        if("PowerCategory"==_name) {
             target.m_categories.emplace_back();
             ok &= loadFrom(s,target.m_categories.back());
         } else
@@ -270,11 +273,41 @@ static void serialize(Archive & archive, StoredAttribMod & src)
     archive(cereal::make_nvp("PriorityListOffense",src.PriorityListOffense));
     archive(cereal::make_nvp("PriorityListPassive",src.PriorityListPassive));
 }
-
+template<class Archive>
+static void serialize(Archive & archive, SeqBitNames & src)
+{
+    auto val = std::underlying_type<SeqBitNames>::type(src);
+    archive(val);
+    src = SeqBitNames(val);
+}
+namespace cereal
+{
+static std::string save_minimal(cereal::JSONOutputArchive & archive, const SeqBitNames & src)
+{
+    QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums::SeqBitNames>();
+    QString val = metaEnum.valueToKey(std::underlying_type<SeqBitNames>::type(src));
+    return val.toStdString();
+}
+static void load_minimal(const cereal::JSONInputArchive & archive, SeqBitNames & val,const std::string &src)
+{
+    QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums::SeqBitNames>();
+    val  = SeqBitNames(metaEnum.keyToValue(src.c_str()));
+}
+static std::string save_minimal(cereal::JSONOutputArchive & archive, const AttackType & src)
+{
+    QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums_Power::AttackType>();
+    QString val = metaEnum.valueToKey(std::underlying_type<AttackType>::type(src));
+    return val.toStdString();
+}
+static void load_minimal(const cereal::JSONInputArchive & /*archive*/, AttackType & val,const std::string &src)
+{
+    QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums_Power::AttackType>();
+    val  = AttackType(metaEnum.keyToValue(src.c_str()));
+}
+}
 template<class Archive>
 static void serialize(Archive & archive, Power_Data & src)
 {
-
     archive(cereal::make_nvp("Name",src.m_Name));
     archive(cereal::make_nvp("DisplayName",src.DisplayName));
     archive(cereal::make_nvp("DisplayHelp",src.DisplayHelp));
@@ -340,7 +373,7 @@ static void serialize(Archive & archive, Power_Data & src)
 template<class Archive>
 static void serialize(Archive & archive, Parse_PowerSet & src)
 {
-    archive(cereal::make_nvp("Name",src.Name));
+    archive(cereal::make_nvp("Name",src.m_Name));
     archive(cereal::make_nvp("DisplayName",src.DisplayName));
     archive(cereal::make_nvp("DisplayHelp",src.DisplayHelp));
     archive(cereal::make_nvp("DisplayShortHelp",src.DisplayShortHelp));

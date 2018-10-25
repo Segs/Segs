@@ -16,6 +16,7 @@
 #include "origin_definitions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
 #include <cereal/archives/json.hpp>
 #include <cereal/types/vector.hpp>
@@ -140,11 +141,11 @@ void saveTo(const LevelExpAndDebt & target, const QString & baseName, bool text_
     commonSaveTo(target,"LevelExpAndDebt",baseName,text_format);
 }
 
-bool loadFrom(BinStore * s, Parse_Combining * target)
+bool loadFrom(BinStore * s, Parse_Combining &target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target->CombineChances);
+    ok &= s->read(target.CombineChances);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok && s->end_encountered());
     return ok;
@@ -155,11 +156,11 @@ void saveTo(const Parse_Combining & target, const QString & baseName, bool text_
     commonSaveTo(target,"CombiningChances",baseName,text_format);
 }
 
-bool loadFrom(BinStore * s, Parse_Effectiveness * target)
+bool loadFrom(BinStore * s, Parse_Effectiveness &target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target->Effectiveness);
+    ok &= s->read(target.Effectiveness);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return ok;
@@ -180,11 +181,11 @@ bool loadFrom(BinStore * s, Parse_AllOrigins &target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Origin")==0) {
+        if("Origin"==_name) {
             target.emplace_back();
             ok &= loadFrom(s,&target.back());
         } else
@@ -199,17 +200,17 @@ void saveTo(const Parse_AllOrigins & target, const QString & baseName, bool text
     commonSaveTo(target,"Origins",baseName,text_format);
 }
 
-bool loadFrom(BinStore * s, Parse_PI_Schedule * target)
+bool loadFrom(BinStore * s, Parse_PI_Schedule &target)
 {
     s->prepare();
     bool ok = true;
-    ok &= s->read(target->m_FreeBoostSlotsOnPower);
-    ok &= s->read(target->m_PoolPowerSet);
-    ok &= s->read(target->m_Power);
-    ok &= s->read(target->m_AssignableBoost);
-    ok &= s->read(target->m_InspirationCol);
-    ok &= s->read(target->m_InspirationRow);
-    ok &= s->read(target->m_BoostSlot);
+    ok &= s->read(target.m_FreeBoostSlotsOnPower);
+    ok &= s->read(target.m_PoolPowerSet);
+    ok &= s->read(target.m_Power);
+    ok &= s->read(target.m_AssignableBoost);
+    ok &= s->read(target.m_InspirationCol);
+    ok &= s->read(target.m_InspirationRow);
+    ok &= s->read(target.m_BoostSlot);
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return ok;

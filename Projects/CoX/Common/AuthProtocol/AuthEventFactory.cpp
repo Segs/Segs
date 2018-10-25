@@ -11,14 +11,16 @@
  */
 
 #include "AuthEventFactory.h"
-#include "AuthEvents.h"
+#include "AuthOpcodes.h"
+#include "Auth/AuthEvents.h"
 
+using namespace SEGSEvents;
 AuthLinkEvent *AuthEventFactory::EventForType(eAuthPacketType type)
 {
     switch(type)
     {
         case SMSG_AUTHVERSION:
-            return new AuthorizationProtocolVersion();
+            return new AuthProtocolVersion();
         case SMSG_AUTH_ERROR:
             return new AuthorizationError();
         case CMSG_AUTH_SELECT_DBSERVER:

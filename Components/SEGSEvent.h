@@ -6,48 +6,51 @@
  */
 
 #pragma once
+#include "CompiletimeHash.h"
 #include <ace/Time_Value.h>
+#include "cereal/archives/binary.hpp"
 #include <atomic>
 #include <typeinfo>
 #include <cassert>
-class EventProcessor;
 
-// Helper defines to ease the definition of event types
-#define INIT_EVENTS() enum : uint32_t { base = 0,
-#define BEGINE_EVENTS(parent_class) enum : uint32_t { base = parent_class::evLAST_EVENT,
-#define BEGINE_EVENTS_INTERNAL() enum : uint32_t { base = 20000,
-#define EVENT_DECL(name,cnt) name = base+cnt+1,
-#define END_EVENTS(cnt) evLAST_EVENT=base+cnt+1};
-class SEGS_EventTypes
+class EventSrc;
+namespace SEGSEvents
 {
-public:
-    INIT_EVENTS()
-    EVENT_DECL(evFinish,0)  // this event will finish the Processor that receives it
-    EVENT_DECL(evConnect,1) //! on the link level this means a new connection, higher level handlers are also notified by this event
-    EVENT_DECL(evDisconnect,2)
-    EVENT_DECL(evTimeout,3)
-    END_EVENTS(4)
+// Helper macros to ease the definition of event types
+#define BEGINE_EVENTS(enum_name,parent_class) base_##enum_name = (uint32_t)parent_class::ID_LAST_##parent_class,
+#define BEGINE_EVENTS_SKIP(enum_name,parent_class,skip) base_##enum_name = (uint32_t)parent_class::ID_LAST_##parent_class + skip,
+#define BEGINE_EVENTS_INTERNAL(enum_name) base_##enum_name = 20000,
+#define EVENT_DECL(enum_name,name,cnt) name = base_##enum_name+cnt+1,
+#define END_EVENTS(enum_name,cnt) ID_LAST_##enum_name=base_##enum_name+cnt+1
+
+enum CommonTypes : uint32_t
+{
+    evFinish=0,  // this event will finish the Processor that receives it
+    evConnect=1, //! on the link level this means a new connection, higher level handlers are also notified by this event
+    evDisconnect=2,
+    evTimeout=3,
+    ID_LAST_CommonTypes
 };
 
-class SEGSEvent
+class Event
 {
 protected:
         const uint32_t  m_type;
-        EventProcessor *m_event_source;
         std::atomic<int> m_ref_count {1}; // used to prevent event being deleted when it's in multiple queues
+        EventSrc *m_event_source;
 
 public:
 
-virtual                 ~SEGSEvent()
+virtual                 ~Event()
                         {
                             // we allow delete when there is 1 reference left (static variables on exit)
                             assert(m_ref_count<=1);
                             m_event_source=nullptr;
                         }
-                        SEGSEvent(uint32_t evtype,EventProcessor *ev_src=nullptr) :
+                        Event(uint32_t evtype,EventSrc *ev_src=nullptr) :
                             m_type(evtype),m_event_source(ev_src)
                         {}
-        SEGSEvent *     shallow_copy() // just incrementing the ref count
+        Event *         shallow_copy() // just incrementing the ref count
                         {
                             ++m_ref_count;
                             return this;
@@ -58,24 +61,39 @@ virtual                 ~SEGSEvent()
                                 delete this;
                         }
         int             get_ref_count() const {return m_ref_count; }
-        void            src(EventProcessor *ev_src) {m_event_source=ev_src;}
-        EventProcessor *src() const {return m_event_source;}
+        void            src(EventSrc *ev_src) {m_event_source=ev_src;}
+        EventSrc *      src() const {return m_event_source;}
         uint32_t        type() const {return m_type;}
 virtual const char *    info();
 
-static  SEGSEvent       s_ev_finish;
-};
+protected:
+// Note those are friend functions that will store/restore this message in the std::stream.
+friend Event *          from_storage(std::istream &istr);
+friend void             to_storage(std::ostream &ostr,Event *ev);
 
-class TimerEvent final: public SEGSEvent
+virtual void            do_serialize(std::ostream &os)  = 0;
+virtual void            serialize_from(std::istream &os)  = 0;
+};
+#define EVENT_IMPL(name)\
+    template<class Archive>\
+    void serialize(Archive & archive); \
+    void do_serialize(std::ostream &os) override {\
+        cereal::BinaryOutputArchive oarchive(os);\
+        oarchive(*this);\
+    }\
+    void serialize_from(std::istream &os) override {\
+        cereal::BinaryInputArchive iarchive(os);\
+        iarchive(*this);\
+    }\
+    ~name() override = default;
+
+
+// [[ev_def:type]]
+struct Finish final: public Event
 {
-    ACE_Time_Value          m_arrival_time;
-    void *                  m_data;
-
 public:
-                            TimerEvent(const ACE_Time_Value &time, void *dat,EventProcessor *source)
-                                : SEGSEvent(SEGS_EventTypes::evTimeout,source), m_arrival_time(time), m_data(dat)
-                            {
-                            }
-    void *                  data() { return m_data; }
-    const ACE_Time_Value &  arrival_time() { return m_arrival_time; }
+                    Finish(EventSrc *source=nullptr) : Event(evFinish,source) {}
+static  Finish *    s_instance;
+        EVENT_IMPL(Finish)
 };
+} // end of SEGSEventsNamespace

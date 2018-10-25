@@ -9,6 +9,7 @@
 #define SCRIPTINGENGINE_H
 #include <memory>
 #include <string>
+#include "GameData/CommonNetStructures.h"
 
 class QString;
 struct MapClientSession;
@@ -21,9 +22,12 @@ public:
     void registerTypes();
     int loadAndRunFile(const QString &path);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1);
+    std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1, glm::vec3 loc);
     std::string callFunc(const char *name,int arg1);
+    std::string callFunc(const char *name,int arg1, glm::vec3 loc);
     int runScript(const QString &script_contents,const char *script_name="unnamed script");
     int runScript(MapClientSession *client,const QString &script_contents,const char *script_name="unnamed script");
+    bool setIncludeDir(const QString &path);
 private:
 #ifdef SCRIPTING_ENABLED
     struct ScriptingEnginePrivate;

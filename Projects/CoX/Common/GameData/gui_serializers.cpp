@@ -20,21 +20,6 @@ const constexpr uint32_t GUISettings::class_version;
 CEREAL_CLASS_VERSION(GUISettings, GUISettings::class_version) // register GUISettings class version
 
 template<class Archive>
-void serialize(Archive &archive, GUIWindow &wnd)
-{
-    archive(cereal::make_nvp("IDX",wnd.m_idx));
-    archive(cereal::make_nvp("Mode",wnd.m_mode));
-    archive(cereal::make_nvp("DraggableFrame",wnd.m_draggable_frame));
-    archive(cereal::make_nvp("PosX",wnd.m_posx));
-    archive(cereal::make_nvp("PosY",wnd.m_posy));
-    archive(cereal::make_nvp("Width",wnd.m_width));
-    archive(cereal::make_nvp("Height",wnd.m_height));
-    archive(cereal::make_nvp("Locked",wnd.m_locked));
-    archive(cereal::make_nvp("Color",wnd.m_color));
-    archive(cereal::make_nvp("Alpha",wnd.m_alpha));
-}
-
-template<class Archive>
 void serialize(Archive &archive, GUISettings &gui, uint32_t const version)
 {
     if(version != GUISettings::class_version)
@@ -60,10 +45,7 @@ void saveTo(const GUISettings &target, const QString &baseName, bool text_format
     commonSaveTo(target,"GUISettings",baseName,text_format);
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive &archive, GUISettings &co, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive &archive, GUISettings &co, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(GUISettings)
 
 void serializeToDb(const GUISettings &data, QString &tgt)
 {

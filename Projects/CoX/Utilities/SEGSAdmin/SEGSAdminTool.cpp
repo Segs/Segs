@@ -18,6 +18,11 @@
 #include "Globals.h"
 #include "GetIPDialog.h"
 #include "SettingsDialog.h"
+#include "NetworkManager.h"
+#include "UpdateDetailDialog.h"
+#include "AboutDialog.h"
+#include "SelectScriptDialog.h"
+#include "version.h"
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -33,15 +38,22 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     ui(new Ui::SEGSAdminTool)
 {
     ui->setupUi(this);
+    ui->update_detail->setEnabled(false);
     QFont dejavu_font;
     dejavu_font.setFamily("DejaVu Sans Condensed");
     dejavu_font.setPointSize(12);
     ui->output->setFont(dejavu_font);
+    ui->update_detail->setFont(dejavu_font);
     ui->output->appendPlainText("*** Welcome to SEGSAdmin ***");
+    ui->segs_admin_version->setText(QString("v") + VersionInfo::getAuthVersionNumber());
     m_add_user_dialog = new AddNewUserDialog(this);
     m_set_up_data = new SetUpData(this);
     m_settings_dialog = new SettingsDialog(this);
     m_generate_config_dialog = new GenerateConfigFileDialog(this);
+    m_network_manager = new NetworkManager();
+    m_update_dialog = new UpdateDetailDialog(this);
+    m_about_dialog = new AboutDialog(this);
+    m_script_dialog = new SelectScriptDialog(this);
 
     // SEGSAdminTool Signals
     connect(this,&SEGSAdminTool::checkForDB,this,&SEGSAdminTool::check_db_exist);
@@ -49,12 +61,15 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(this,&SEGSAdminTool::checkForConfigFile,this,&SEGSAdminTool::check_for_config_file);
     connect(this,&SEGSAdminTool::getMapsDirConfigCheck,m_settings_dialog,&SettingsDialog::send_maps_dir_config_check); // May be a much better way to do this, but this works for now
     connect(this,&SEGSAdminTool::readyToRead,m_settings_dialog,&SettingsDialog::read_config_file);
+    connect(ui->actionAbout,&QAction::triggered,m_about_dialog,&AboutDialog::show_ui);
+    connect(ui->update_detail,&QPushButton::clicked,m_update_dialog,&UpdateDetailDialog::show_update);
     connect(ui->createUser,&QPushButton::clicked,m_add_user_dialog,&AddNewUserDialog::on_add_user);
     connect(ui->runDBTool,&QPushButton::clicked,this,&SEGSAdminTool::check_db_exist);
     connect(ui->set_up_data_button,&QPushButton::clicked,m_set_up_data,&SetUpData::open_data_dialog);
     connect(ui->settings_button,&QPushButton::clicked,m_settings_dialog,&SettingsDialog::open_settings_dialog);
     connect(ui->gen_config_file,&QPushButton::clicked,m_generate_config_dialog,&GenerateConfigFileDialog::on_generate_config_file);
     connect(ui->authserver_start,&QPushButton::clicked,this,&SEGSAdminTool::is_server_running);
+    connect(ui->motd_editor,&QPushButton::clicked,m_script_dialog,&SelectScriptDialog::show_dialog);
 
     // GenerateConfigFileDialog Signals
     connect(m_generate_config_dialog,&GenerateConfigFileDialog::sendInputConfigFile,m_settings_dialog,&SettingsDialog::generate_default_config_file);
@@ -72,10 +87,16 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(m_settings_dialog,&SettingsDialog::sendMapsDirConfigCheck,this,&SEGSAdminTool::check_data_and_dir);
     connect(m_settings_dialog,&SettingsDialog::sendMapsDir,m_set_up_data,&SetUpData::create_default_directory);
 
+    // Network Manager Signals
+    connect(this,&SEGSAdminTool::getLatestReleases,m_network_manager,&NetworkManager::get_latest_releases);
+    connect(m_network_manager,&NetworkManager::releasesReadyToRead,this,&SEGSAdminTool::read_release_info);
+
     // Send startup signals
     emit checkForConfigFile();
     emit check_db_exist(true);
     emit getMapsDirConfigCheck();
+    emit getLatestReleases();
+
 }
 
 SEGSAdminTool::~SEGSAdminTool()
@@ -85,6 +106,8 @@ SEGSAdminTool::~SEGSAdminTool()
 
 void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub dirs and maps dir
 {
+    QPixmap check_icon(":icons/Resources/check.svg");
+    QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for correct data and maps directories...");
     QStringList data_dirs = {"data/bin","data/geobin","data/object_library"}; // Currently only checking for these 3 sub dirs, check for all files could be overkill
     bool all_maps_exist = true;
@@ -103,19 +126,18 @@ void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub 
     }
     if(all_data_dirs_exist && all_maps_exist)
     {
-        ui->icon_status_data->setText("<html><head/><body><p><img src=':/icons/icon_good.png'/></p></body></html>");
+        ui->icon_status_data->setPixmap(check_icon);
         ui->output->appendPlainText("SUCCESS: Data and maps directories found!");
     }
     else
     {
-        ui->icon_status_data->setText("<html><head/><body><p><img src=':/icons/icon_warning.png'/></p></body></html>");
+        ui->icon_status_data->setPixmap(alert_triangle);
         ui->output->appendPlainText("WARNING: We couldn't find the correct data and/or maps directories. Please use the server setup to your left");
     }
 
 }
 
 void SEGSAdminTool::commit_user(QString username, QString password, QString acclevel)
-// TODO: Error checking & validate blank fields on save
 {
     ui->output->appendPlainText("Setting arguments...");
     ui->createUser->setEnabled(false);
@@ -165,6 +187,8 @@ void SEGSAdminTool::read_createuser()
 
 void SEGSAdminTool::check_db_exist(bool on_startup)
 {
+    QPixmap check_icon(":icons/Resources/check.svg");
+    QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
     QFileInfo file1("segs");
@@ -174,7 +198,7 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
         if (file1.exists() && file2.exists())
         {
             ui->output->appendPlainText("SUCCESS: Existing databases found!");
-            ui->icon_status_db->setText("<html><head/><body><p><img src=':/icons/icon_good.png'/></p></body></html>");
+            ui->icon_status_db->setPixmap(check_icon);
             ui->runDBTool->setText("Create New Databases");
             ui->runDBTool->setEnabled(true);
             ui->createUser->setEnabled(true);
@@ -182,7 +206,7 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
         else
         {
             ui->output->appendPlainText("WARNING: Not all databases were found. Please use the server setup to your left");
-            ui->icon_status_db->setText("<html><head/><body><p><img src=':/icons/icon_warning.png'/></p></body></html>");
+            ui->icon_status_db->setPixmap(alert_triangle);
             ui->createUser->setEnabled(false); // Cannot create users until DB's created
         }
     }
@@ -217,6 +241,8 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
 
 void SEGSAdminTool::create_databases(bool overwrite)
 {
+    QPixmap check_icon(":icons/Resources/check.svg");
+    QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->runDBTool->setEnabled(false);
     ui->runDBTool->setText("Please Wait...");
     ui->output->appendPlainText("Setting arguments...");
@@ -244,13 +270,14 @@ void SEGSAdminTool::create_databases(bool overwrite)
         m_createDB->closeWriteChannel();
         m_createDB->waitForFinished();
         emit checkForDB(true);
-        ui->icon_status_db->setText("<html><head/><body><p><img src=':/icons/icon_good.png'/></p></body></html>");
+        ui->icon_status_db->setPixmap(check_icon);
         qApp->processEvents();
         emit addAdminUser();
     }
     else
     {
-        ui->output->appendPlainText("Failed to start DBTool Add User...");
+        ui->output->appendPlainText("Failed to start DBTool Add User... "
+                                    "**Please ensure you are NOT running as an administrator or sudo user**");
         qDebug() <<"Failed to start DBTool Add User...";
         emit checkForDB(true);
         qApp->processEvents();
@@ -276,51 +303,52 @@ void SEGSAdminTool::is_server_running()
 {
     if (m_server_running == true)
     {
-        SEGSAdminTool::stop_auth_server();
+        SEGSAdminTool::stop_segs_server();
     }
     else
     {
-        SEGSAdminTool::start_auth_server();
+        SEGSAdminTool::start_segs_server();
     }
 }
-void SEGSAdminTool::start_auth_server()
+void SEGSAdminTool::start_segs_server()
 {
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
-    QString program = "authserver";
+    QString program = "segs_server";
     #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
     program.prepend("./");
     #endif
-    m_start_auth_server = new QProcess(this);
-    m_start_auth_server->start(program);
+    m_start_segs_server = new QProcess(this);
+    m_start_segs_server->start(program);
 
-    if (m_start_auth_server->waitForStarted())
+    if (m_start_segs_server->waitForStarted())
     {
 
         ui->authserver_start->setText("Please Wait...");
-        ui->output->appendPlainText("Starting AuthServer...");
+        ui->output->appendPlainText("Starting SEGS Server...");
         ui->authserver_status->setText("STARTING");
         ui->authserver_status->setStyleSheet("QLabel {color: rgb(255, 153, 51)}");
         qApp->processEvents();
-        qDebug() << "Starting AuthServer...";
-        connect(m_start_auth_server,&QProcess::readyReadStandardError,this,&SEGSAdminTool::read_authserver);
-        connect(m_start_auth_server,&QProcess::readyReadStandardOutput,this,&SEGSAdminTool::read_authserver);
-        m_start_auth_server->waitForFinished(2000);
-        if(m_start_auth_server->state()==QProcess::Running)
+        qDebug() << "Starting SEGS Server...";
+        connect(m_start_segs_server,&QProcess::readyReadStandardError,this,&SEGSAdminTool::read_segsserver);
+        connect(m_start_segs_server,&QProcess::readyReadStandardOutput,this,&SEGSAdminTool::read_segsserver);
+        m_start_segs_server->waitForFinished(2000);
+        if(m_start_segs_server->state()==QProcess::Running)
         {
-            ui->output->appendPlainText("*** AuthServer Running ***");
+            ui->output->appendPlainText("*** SEGS Server Running ***");
             ui->authserver_status->setText("RUNNING");
             ui->authserver_status->setStyleSheet("QLabel {color: rgb(0, 200, 0)}");
             ui->authserver_start->setStyleSheet("color: rgb(255, 0, 0);");
             ui->authserver_start->setText("Stop Server");
+            ui->authserver_start->setIcon(QIcon(":/icons/Resources/square.svg"));
             ui->user_box->setEnabled(false);
             ui->server_setup_box->setEnabled(false);
             ui->server_config->setEnabled(false);
-            int pid = m_start_auth_server->processId();
-            qDebug()<<pid;
+            //qint64 pid = m_start_segs_server->processId();
+            //qDebug()<<pid;
             m_server_running = true;
         }
-        if(m_start_auth_server->state()==QProcess::NotRunning)
+        if(m_start_segs_server->state()==QProcess::NotRunning)
         {
             ui->output->appendPlainText("*** AUTHSERVER NOT RUNNING... Have you setup your piggs and settings files? ***");
             ui->authserver_start->setText("Start Server");
@@ -332,8 +360,8 @@ void SEGSAdminTool::start_auth_server()
     }
     else
     {
-        ui->output->appendPlainText("Failed to start AuthServer...");
-        qDebug() <<"Failed to start AuthServer...";
+        ui->output->appendPlainText("Failed to start SEGS Server...");
+        qDebug() <<"Failed to start SEGS Server...";
         ui->authserver_start->setText("Start Server");
         ui->authserver_start->setEnabled(true);
         qApp->processEvents();
@@ -341,10 +369,10 @@ void SEGSAdminTool::start_auth_server()
 
 }
 
-void SEGSAdminTool::read_authserver()
+void SEGSAdminTool::read_segsserver()
 {
-    QByteArray out_err = m_start_auth_server->readAllStandardError();
-    QByteArray out_std = m_start_auth_server->readAllStandardOutput();
+    QByteArray out_err = m_start_segs_server->readAllStandardError();
+    QByteArray out_std = m_start_segs_server->readAllStandardOutput();
     qDebug().noquote()<<QString(out_err);
     qDebug().noquote()<<QString(out_std);
     QString output_err = out_err;
@@ -356,30 +384,33 @@ void SEGSAdminTool::read_authserver()
     qApp->processEvents();
 }
 
-void SEGSAdminTool::stop_auth_server()
+void SEGSAdminTool::stop_segs_server()
 {
-    m_start_auth_server->close();
-    if(m_start_auth_server->state()==QProcess::Running)
+    m_start_segs_server->close();
+    if(m_start_segs_server->state()==QProcess::Running)
     {
-        ui->output->appendPlainText("*** AuthServer Failed to Stop ***");
+        ui->output->appendPlainText("*** SEGS Server Failed to Stop ***");
     }
-    if(m_start_auth_server->state()==QProcess::NotRunning)
+    if(m_start_segs_server->state()==QProcess::NotRunning)
     {
         ui->authserver_start->setEnabled(true);
         ui->authserver_status->setText("STOPPED");
         ui->authserver_status->setStyleSheet("QLabel {color: rgb(255, 0, 0)}");
         ui->authserver_start->setStyleSheet("color: rgb(0, 170, 0);");
         ui->authserver_start->setText("Start Server");
+        ui->authserver_start->setIcon(QIcon(":/icons/Resources/play.svg"));
         ui->user_box->setEnabled(true);
         ui->server_setup_box->setEnabled(true);
         ui->server_config->setEnabled(true);
         m_server_running = false;
-        ui->output->appendPlainText("*** AuthServer Stopped ***");
+        ui->output->appendPlainText("*** SEGS Server Stopped ***");
     }
 }
 
 void SEGSAdminTool::check_for_config_file() // Does this on application start
 {
+    QPixmap check_icon(":icons/Resources/check.svg");
+    QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     // Load settings.cfg if exists
     ui->output->appendPlainText("Checking for existing configuration file...");
     QFileInfo config_file("settings.cfg");
@@ -387,23 +418,65 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     {
         QString config_file_path = config_file.absoluteFilePath();
         ui->output->appendPlainText("SUCCESS: Configuration file found!");
-        ui->icon_status_config->setText("<html><head/><body><p><img src=':/icons/icon_good.png'/></p></body></html>");
+        ui->icon_status_config->setPixmap(check_icon);
         ui->gen_config_file->setEnabled(false);
         ui->runDBTool->setEnabled(true);
         ui->set_up_data_button->setEnabled(true);
         ui->authserver_start->setEnabled(true);
+        ui->settings_button->setEnabled(true);
         emit readyToRead(config_file_path);
     }
     else
     {
         ui->output->appendPlainText("WARNING: No settings.cfg file found! Please use the server setup to your left");
-        ui->icon_status_config->setText("<html><head/><body><p><img src=':/icons/icon_warning.png'/></p></body></html>");
+        ui->icon_status_config->setPixmap(alert_triangle);
         ui->runDBTool->setEnabled(false); // Cannot create DB without settings.cfg
         ui->createUser->setEnabled(false); // Cannot create user without settings.cfg
         ui->set_up_data_button->setEnabled(false); // Shouldn't create data before config file exists
         ui->authserver_start->setEnabled(false); // Shouldn't run authserver if no config file exists
+        ui->settings_button->setEnabled(false); // Shouldn't be able to edit settings if no config file exists
     }
 }
 
+void SEGSAdminTool::read_release_info(const QString &error)
+{
+    ui->output->appendPlainText("Checking for Updates...");
+    QString version_number = VersionInfo::getAuthVersionNumber();
+    version_number.prepend("v");
+    if (!g_segs_release_info.isEmpty())
+    {
+        ui->update_detail->setText("Checking for updates...");
+        if (g_segs_release_info[0].tag_name == version_number)
+        {
+
+            qDebug()<<"Current Version";
+            ui->output->appendPlainText("No updates available");
+            ui->update_detail->setText("Up to date");
+            ui->update_detail->setStyleSheet("color: rgb(0, 200, 0)");
+        }
+        else
+        {
+            qDebug()<<"New Version Available";
+            ui->output->appendPlainText("New Update Found!");
+            ui->update_detail->setEnabled(true);
+            ui->update_detail->setStyleSheet("color: rgb(204, 0, 0)");
+            ui->update_detail->setText("Update available!");
+            ui->update_detail->setFlat(false);
+        }
+    }
+    else
+    {
+        ui->update_detail->setText("Error fetching latest releases");
+        ui->update_detail->setStyleSheet("color: rgb(255, 0, 0)");
+        ui->output->appendPlainText("*********************************WARNING***********************************\n"
+                                    "There was an error fetching the latest release information. You may be missing"
+                                    " the OpenSSL library files. Please refer to README.MD for more info\n"
+                                    "You can view the latest releases by visiting https://github.com/Segs/Segs/releases"
+                                    "\n******************************************************************************"
+                                    "\nError Message: " + error);
+
+    }
+
+}
 //!@}
 

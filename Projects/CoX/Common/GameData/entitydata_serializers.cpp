@@ -15,6 +15,7 @@
 #include "entitydata_definitions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
 const constexpr uint32_t EntityData::class_version;
 CEREAL_CLASS_VERSION(EntityData, EntityData::class_version) // register EntityData class version
@@ -36,9 +37,6 @@ void serialize(Archive & archive, EntityData &ed, uint32_t const version)
 
     if(version >= 3)
         archive(cereal::make_nvp("MapIdx",ed.m_map_idx));
-
-    if(version >= 4)
-        archive(cereal::make_nvp("CurrentMap", ed.m_current_map));
 }
 
 void saveTo(const EntityData & target, const QString & baseName, bool text_format)

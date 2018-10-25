@@ -14,6 +14,8 @@
 #include "CoHSceneConverter.h"
 
 #include "Common/GameData/trick_definitions.h"
+#include "Common/Runtime/RuntimeData.h"
+#include "Common/Runtime/Texture.h"
 
 #include <Lutefisk3D/Graphics/Texture.h>
 #include <Lutefisk3D/Graphics/Texture2D.h>
@@ -29,8 +31,8 @@ extern QString basepath;
 
 using namespace Urho3D;
 
-// for every directory in the texture's path we can hava a modifier.
-QHash<QString,TextureModifiers *> g_texture_path_to_mod;
+std::unordered_map<uint32_t,Urho3D::SharedPtr<Urho3D::Texture>> g_converted_textures;
+
 namespace
 {
 #pragma pack(push, 1)
@@ -46,138 +48,35 @@ struct TexFileHdr
     char    magic[3];
 };
 #pragma pack(pop)
-
 QSet<QString>                  s_missing_textures;
-QHash<QString, QString>        s_texture_paths; // map from texture name to actual file path
-QHash<QString, TextureWrapper> s_loaded_textures;
-
-TextureModifiers *modFromTextureName(const QString &texpath)
-{
-    QVector<QStringRef> split = texpath.splitRef("/");
-    while(!split.empty())
-    {
-        if(0==split.front().compare(QLatin1String("texture_library"))) {
-            split.pop_front();
-            break;
-        }
-        split.pop_front();
-    }
-    // scan from the back of the texture path, until a modifier is found.
-    while(!split.empty())
-    {
-        auto val = g_texture_path_to_mod.value(split.back().toString().toLower(),nullptr);
-        if(val)
-            return val;
-        split.pop_back();
-    }
-    return nullptr;
 }
 
-void loadTexHeader(const QString &fname)
+SEGS::HTexture tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
 {
-    TextureWrapper res;
-    QFileInfo tex_path(fname);
-    QString lookupstring=tex_path.baseName().toLower();
-    const QString &actualPath(s_texture_paths[lookupstring]);
-    if(actualPath.isEmpty()) {
-        if(!s_missing_textures.contains(lookupstring)) {
-            qDebug() << "Missing texture" << fname;
-            s_missing_textures.insert(lookupstring);
-        }
-        return;
-    }
-    QFileInfo actualFile(actualPath);
-    QFile src_tex(actualPath);
-    if (src_tex.exists() && src_tex.open(QFile::ReadOnly)) {
-        TexFileHdr hdr;
-        src_tex.read((char *)&hdr, sizeof(TexFileHdr));
-        if (0 == memcmp(hdr.magic, "TX2", 3)) {
-            if(hdr.alpha)
-                res.flags |= TextureWrapper::ALPHA;
-        }
-    }
-    res.info = modFromTextureName(actualFile.path()+"/"+actualFile.baseName());
-    uint32_t texopt_flags = 0;
-    if (res.info)
-        texopt_flags = res.info->Flags;
-    if (fname.contains("PLAYERS/",Qt::CaseInsensitive) ||
-            fname.contains("ENEMIES/",Qt::CaseInsensitive) ||
-            fname.contains("NPCS/",Qt::CaseInsensitive))
-        res.flags |= TextureWrapper::BUMPMAP_MIRROR | TextureWrapper::CLAMP;
-
-    if (fname.contains("MAPS/",Qt::CaseInsensitive))
-        res.flags |= TextureWrapper::CLAMP;
-
-    if (texopt_flags & REPLACEABLE)
-        res.flags |= TextureWrapper::REPLACEABLE;
-
-    if (texopt_flags & BUMPMAP)
-        res.flags |= TextureWrapper::BUMPMAP;
-
-    res.scaleUV0 = {1,1};
-    res.scaleUV1 = {1,1};
-
-    if (res.info && !res.info->BumpMap.isEmpty())
-        res.bumpmap = res.info->BumpMap;
-    QString detailname;
-    if (texopt_flags & DUAL)
-    {
-        res.detailname = res.info->Blend;
-        if (!res.detailname.isEmpty())
-        {
-            res.flags |= TextureWrapper::DUAL;
-            res.BlendType = CoHBlendMode(res.info->BlendType);
-            res.scaleUV0 = {res.info->ScaleST0.x,res.info->ScaleST0.y};
-            res.scaleUV1 = {res.info->ScaleST1.x,res.info->ScaleST1.y};
-
-            if (res.BlendType == CoHBlendMode::ADDGLOW && 0==res.detailname.compare("grey",Qt::CaseInsensitive))
-            {
-                res.detailname = "black";
-            }
-            s_loaded_textures[lookupstring] = res;
-            return;
-        }
-        else
-        {
-            qDebug() << "Detail texture "<<res.info->Blend<<" does not exist for texture mod"<<res.info->name;
-            detailname = "grey";
-        }
-    }
-    else if (lookupstring.compare("invisible")==0)
-    {
-        detailname = "invisible";
-    }
-    else
-    {
-        detailname = "grey";
-    }
-    res.detailname = detailname;
-    if (res.BlendType == CoHBlendMode::ADDGLOW && 0==res.detailname.compare("grey",Qt::CaseInsensitive))
-    {
-        res.detailname = "black";
-    }
-    s_loaded_textures[lookupstring] = res;
-}
-}
-
-TextureWrapper tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
-{
+    SEGS::RuntimeData &rd(getRuntimeData());
     ResourceCache *rcache=ctx->m_ResourceCache.get();
     QFileInfo tex_path(fname);
     QString lookupstring = tex_path.baseName().toLower();
-    QString actualPath   = s_texture_paths.value(lookupstring);
+    QString actualPath   = rd.m_texture_paths.value(lookupstring);
+    static SEGS::HTexture missing_tex_handle;
     if(actualPath.isEmpty())
     {
+        if(!missing_tex_handle)
+        {
+            missing_tex_handle = SEGS::TextureStorage::instance().create();
+            g_converted_textures[missing_tex_handle.idx] = rcache->GetResource<Texture2D>("Textures/Missing.dds");
+
+        }
         if(!s_missing_textures.contains(lookupstring))
         {
             qDebug() << "Missing texture" << fname;
             s_missing_textures.insert(lookupstring);
         }
-        return TextureWrapper();
+        return missing_tex_handle;
     }
-    TextureWrapper &res(s_loaded_textures[lookupstring]);
-    if(res.base) // we have an Urho3D texture already, nothing to do.
-        return res;
+    SEGS::HTexture &res(rd.m_loaded_textures[lookupstring]);
+    if(g_converted_textures.find(res.idx)!=g_converted_textures.end())
+        return res; // we have an Urho3D texture already, nothing to do.
 
     QFile src_tex(actualPath);
     if (!src_tex.exists() || !src_tex.open(QFile::ReadOnly))
@@ -197,70 +96,63 @@ TextureWrapper tryLoadTexture(Urho3D::Context *ctx,const QString &fname)
     QDir converted_dir("./converted");
     QString converted_path(converted_dir.filePath(originalname));
     QFile tgt(converted_path);
-    if (!tgt.exists())
+    if (tgt.exists())
     {
-        QByteArray data = src_tex.readAll();
-        // save extracted texture into a local directory
-        converted_dir.mkpath(QFileInfo(originalname).path());
-        if(!tgt.open(QFile::WriteOnly))
-        {
-            qCritical() << "Cannot write:"<<converted_path;
-        }
-        else
-        {
-            tgt.write(data);
-            tgt.close();
-        }
-        res.base = new Texture2D(ctx);
-        VectorBuffer vbuf(data.data(),data.size());
-        if (res.base->BeginLoad(vbuf))
-            res.base->EndLoad();
+        // a pre-converted texture file exists, load it instead
+        g_converted_textures[res.idx] = rcache->GetResource<Texture2D>(converted_path);
+        return res;
     }
-    else // a pre-converted texture file exists, load it instead
-        res.base = rcache->GetResource<Texture2D>(converted_path);
+    QByteArray data = src_tex.readAll();
+    // save extracted texture into a local directory
+    converted_dir.mkpath(QFileInfo(originalname).path());
+    if(!tgt.open(QFile::WriteOnly))
+    {
+        qCritical() << "Cannot write:"<<converted_path;
+    }
+    else
+    {
+        tgt.write(data);
+        tgt.close();
+    }
+    auto entry = new Texture2D(ctx);
+    g_converted_textures[res.idx] = entry;
+    VectorBuffer vbuf(data.data(),data.size());
+    if (entry->BeginLoad(vbuf))
+        entry->EndLoad();
     return res;
 }
 
-void preloadTextureNames()
+std::vector<SEGS::HTexture> getModelTextures(Urho3D::Context *ctx,std::vector<QString> &names)
 {
-    //TODO: store texture headers into an array, and only rescan directories when forced ?
-    QDirIterator iter(basepath+"texture_library", QDir::Files, QDirIterator::Subdirectories);
-    while (iter.hasNext()) {
-        QString fpath = iter.next();
-        QString texture_key = QFileInfo(iter.fileInfo()).baseName().toLower();
-        s_texture_paths[texture_key] = fpath;
-        loadTexHeader(fpath);
-    }
-}
+    uint32_t name_count = std::max<uint32_t>(1,names.size());
+    std::vector<SEGS::HTexture> res;
+    res.reserve(name_count);
+    SEGS::HTexture white_tex = tryLoadTexture(ctx,"white.tga");
 
-std::vector<TextureWrapper> getModelTextures(Urho3D::Context *ctx,std::vector<QString> &a1)
-{
-    uint32_t v2 = std::max<uint32_t>(1,a1.size());
-    std::vector<TextureWrapper> res;
-    res.reserve(v2);
-
-    for(size_t tex_idx=0; tex_idx < a1.size(); ++tex_idx )
+    for(size_t tex_idx=0; tex_idx < names.size(); ++tex_idx )
     {
-        QFileInfo fi(a1[tex_idx]);
+        QFileInfo fi(names[tex_idx]);
         QString baseName = fi.completeBaseName();
-        if(baseName!=a1[tex_idx])
+        if(baseName!=names[tex_idx])
         {
-            if(fi.fileName() == a1[tex_idx])
-                a1[tex_idx] = baseName;
+            if(fi.fileName() == names[tex_idx])
+                names[tex_idx] = baseName;
             else
-                a1[tex_idx] = fi.path()+"/"+baseName;
+                names[tex_idx] = fi.path()+"/"+baseName;
         }
-        if ( a1[tex_idx].contains("PORTAL",Qt::CaseInsensitive) )
+        if ( names[tex_idx].contains("PORTAL",Qt::CaseInsensitive) )
             res.emplace_back(tryLoadTexture(ctx,"invisible.tga"));
         else
-            res.emplace_back(tryLoadTexture(ctx,a1[tex_idx]));
-        if ( !res[tex_idx].base )
+            res.emplace_back(tryLoadTexture(ctx,names[tex_idx]));
+        // replace missing texture with white
+        // TODO: make missing textures much more visible ( high contrast + text ? )
+        if ( g_converted_textures.end()==g_converted_textures.find(res[tex_idx].idx) )
         {
-            res[tex_idx] = tryLoadTexture(ctx,"white.tga");
+            res[tex_idx] = white_tex;
         }
     }
-    if (a1.empty())
-        res.emplace_back(tryLoadTexture(ctx,"white.tga"));
+    if (names.empty())
+        res.emplace_back(white_tex);
     return res;
 }
 

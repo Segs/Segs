@@ -7,16 +7,16 @@
 
 #pragma once
 
-#include <QtCore/QString>
 #include <stdint.h>
 #include <vector>
 #include <array>
 #include <cassert>
 
 #include <QDebug>
+#include <cereal/cereal.hpp>
 
 enum WindowIDX : uint32_t {
-    wdw_Unknown0        = 0,
+    wdw_DockDraw        = 0,
     wdw_Status          = 1,
     wdw_Target          = 2,
     wdw_PowersTray      = 3,
@@ -27,7 +27,7 @@ enum WindowIDX : uint32_t {
     wdw_Map             = 8,
     wdw_ChatOptions     = 9,
     wdw_Friends         = 10,
-    wdw_Unknown11       = 11,
+    wdw_ContactDiag     = 11,
     wdw_Inspirations    = 12,
     wdw_SuperGroup      = 13,
     wdw_Emails          = 14,
@@ -35,21 +35,21 @@ enum WindowIDX : uint32_t {
     wdw_Contacts        = 16,
     wdw_Missions        = 17,
     wdw_Clues           = 18,
-    wdw_Unknown19       = 19,
+    wdw_Trade           = 19,
     wdw_Quit            = 20,
     wdw_Info            = 21,
     wdw_Help            = 22,
-    wdw_Unknown23       = 23,
+    wdw_MissionSummary  = 23,
     wdw_Actions         = 24,
-    wdw_Unknown25       = 25,
+    wdw_Browser         = 25,
     wdw_Search          = 26,
-    wdw_Unknown27       = 27,
+    wdw_Shop            = 27,
     wdw_GenericDlg      = 28,
-    wdw_Unknown29       = 29,
+    wdw_MissionFeedback = 29,
     wdw_Support         = 30,
-    wdw_Unknown31       = 31,
+    wdw_TitleSelect     = 31,
     wdw_Defeated        = 32,
-    wdw_Unknown33       = 33,
+    wdw_MapXferList     = 33,
     wdw_CostumeSelect   = 34,
 };
 
@@ -79,10 +79,10 @@ enum ChatWindowMasks : uint32_t {   // top      bottom  bottom              top
 
 class GUIWindow
 {
+    enum {class_version=1};
 public:
-
         // GUI Window Params
-        WindowIDX           m_idx               = wdw_Unknown0;
+        WindowIDX           m_idx               = wdw_DockDraw;
         WindowVisibility    m_mode              = wv_Uninitialized;
         bool                m_draggable_frame   = false;
         int32_t             m_posx              = 0;
@@ -108,12 +108,26 @@ public:
                             }
 
         void                setWindowVisibility(WindowVisibility val) { m_mode = val; }
+        template<class Archive>
+        void                serialize(Archive &archive)
+                            {
+                                archive(cereal::make_nvp("IDX",m_idx));
+                                archive(cereal::make_nvp("Mode",m_mode));
+                                archive(cereal::make_nvp("DraggableFrame",m_draggable_frame));
+                                archive(cereal::make_nvp("PosX",m_posx));
+                                archive(cereal::make_nvp("PosY",m_posy));
+                                archive(cereal::make_nvp("Width",m_width));
+                                archive(cereal::make_nvp("Height",m_height));
+                                archive(cereal::make_nvp("Locked",m_locked));
+                                archive(cereal::make_nvp("Color",m_color));
+                                archive(cereal::make_nvp("Alpha",m_alpha));
+                            }
 };
 
 class GUISettings
 {
 public:
-    GUISettings() { }
+    GUISettings() = default;
 
 // GUISettings serialization class version
 static const constexpr uint32_t class_version = 1;

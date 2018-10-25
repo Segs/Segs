@@ -77,7 +77,6 @@ static void deskey(const unsigned char *key,short edf) /* Thanks to James Gillog
         }
     }
     cookey(kn);
-    return;
 }
 static void cookey(unsigned long *raw1)
 {
@@ -342,7 +341,6 @@ static void desfunc(unsigned long *block,const unsigned long *keys)
     right ^= (work << 4);
     *block++ = right;
     *block = leftt;
-    return;
 }
 void AuthPacketCodec::SetDesKey(uint64_t key)
 {

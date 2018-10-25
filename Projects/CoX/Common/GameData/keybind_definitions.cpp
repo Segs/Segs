@@ -12,6 +12,7 @@
 
 #include "keybind_definitions.h"
 
+#include "GameDataStore.h"
 #include "Logging.h"
 
 QString makeKeyString(const KeyName &key, const ModKeys &mods)
@@ -42,6 +43,11 @@ void KeybindSettings::setKeybindProfile(QString &profile)
 
 const CurrentKeybinds &KeybindSettings::getCurrentKeybinds() const
 {
+    GameDataStore &data(getGameData());
+    assert(!data.m_keybind_profiles.empty()); // just incase GameData fails us
+    if(m_keybind_profiles.empty())
+        return data.m_keybind_profiles.front().KeybindArr;
+
     for(const auto &p : m_keybind_profiles)
     {
         if(p.Name == m_cur_keybind_profile)
@@ -49,14 +55,11 @@ const CurrentKeybinds &KeybindSettings::getCurrentKeybinds() const
     }
 
     qCDebug(logKeybinds) << "Could not get Current Keybinds. Returning first keybind profile.";
-    return m_keybind_profiles.at(0).KeybindArr;
+    return m_keybind_profiles.front().KeybindArr;
 }
 
 void KeybindSettings::resetKeybinds(const Parse_AllKeyProfiles &default_profiles)
 {
-//    const MapServerData &data(g_GlobalMapServer->runtimeData());
-//    const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
-
     m_keybind_profiles = default_profiles;
 }
 
@@ -69,7 +72,7 @@ void KeybindSettings::setKeybind(QString &profile, KeyName &key, ModKeys &mods, 
     for(auto &p : m_keybind_profiles)
     {
         if(p.Name == profile)
-            p.KeybindArr.push_back({key,mods,keystring,command,is_secondary});
+            p.KeybindArr.push_back({key,mods,keystring.toLatin1(),command.toLatin1(),is_secondary});
     }
 
     qCDebug(logKeybinds) << "Setting keybind: " << profile << key << mods << keystring << command << is_secondary;

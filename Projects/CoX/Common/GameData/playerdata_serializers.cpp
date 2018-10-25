@@ -20,26 +20,22 @@
 
 #include "Logging.h"
 
-CEREAL_CLASS_VERSION(PlayerData, PlayerData::class_version)  // register PlayerData class version
-
-const constexpr uint32_t PlayerData::class_version;
+CEREAL_CLASS_VERSION(PlayerData, PlayerData::class_version)         // register PlayerData class version
 
 template<class Archive>
-void serialize(Archive &archive, PlayerData &cd, uint32_t const version)
+void serialize(Archive &archive, PlayerData &pd, uint32_t const version)
 {
-    if (version != cd.class_version)
+    if (version != PlayerData::class_version)
     {
         qCritical() << "Failed to serialize PlayerData, incompatible serialization format version " << version;
         return;
     }
-    archive(cereal::make_nvp("Gui",cd.m_gui));
-    archive(cereal::make_nvp("KeyBinds",cd.m_keybinds));
-    archive(cereal::make_nvp("Options",cd.m_options));
+    archive(cereal::make_nvp("AuthData", pd.m_auth_data));
+    archive(cereal::make_nvp("Gui", pd.m_gui));
+    archive(cereal::make_nvp("KeyBinds", pd.m_keybinds));
+    archive(cereal::make_nvp("Options", pd.m_options));
 }
 
-template
-void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, PlayerData & m, uint32_t const version);
-template
-void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, PlayerData & m, uint32_t const version);
+SPECIALIZE_VERSIONED_SERIALIZATIONS(PlayerData)
 
 //! @}

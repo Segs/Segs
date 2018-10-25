@@ -13,6 +13,7 @@
 #include <algorithm>
 
 // AngleRadians for use in PosUpdate etc
+// TODO: we can replace this with glm::vec and other methods
 struct AngleRadians
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*glm::pi<float>()/180.0f);}
@@ -112,7 +113,7 @@ inline glm::vec3 toCoH_YPR(const glm::quat &q)
     float qwx(q.w * q.x);
     float qwy(q.w * q.y);
     float qwz(q.w * q.z);
-    glm::mat3 mat(mat3_cast(q));
+    //glm::mat3 mat(mat3_cast(q));
     //float mat00 = 1 - 2 * (qyy + qzz);
     float mat01 = 2 * (qxy + qwz);
     //float mat02 = 2 * (qxz - qwy);
@@ -264,6 +265,38 @@ inline void transformFromYPRandTranslation(glm::mat4 & mat, glm::vec3 pyr,glm::v
     mat[1]= glm::vec4(rotmat[1],0);
     mat[2]= glm::vec4(rotmat[2],0);
     mat[3]= glm::vec4(translation,1);
+}
+
+// XYZ
+inline void createMat3RYP(glm::mat3 *mat, const glm::vec3 *vec)
+{
+    float cx = std::cos(vec->x);
+    float nsx = -std::sin(vec->x);
+    float cy = std::cos(vec->y);
+    float nsy = -std::sin(vec->y);
+    float cz = std::cos(vec->z);
+    float nsz = -std::sin(vec->z);
+    float tmp = -(cz * nsy);
+    float tmp2 = -(nsz * nsy);
+    mat[0][0].x = cz * cy;
+    mat[0][1].y = nsz * cy;
+    mat[0][2].z = nsy;
+    mat[1][0].x = tmp * nsx - nsz * cx;
+    mat[1][1].y = tmp2 * nsx + cz * cx;
+    mat[1][2].z = cy * nsx;
+    mat[2][0].x = nsz * nsx + tmp * cx;
+    mat[2][1].y = tmp2 * cx - cz * nsx;
+    mat[2][2].z = cy * cx;
+}
+
+inline void camLookAt(glm::vec3 *vec, glm::mat3 *mat)
+{
+    glm::vec3 result;
+
+    result.x = std::atan2(vec->y,sqrt(vec->z * vec->z + vec->x * vec->x));
+    result.y = std::atan2(vec->x,vec->z);
+    result.z = 0;
+    createMat3RYP(mat, &result);
 }
 
 inline float normalizeRadAngle(float ang)

@@ -10,7 +10,7 @@
  * @{
  */
 
-#include "AuthProtocol/Events/LoginRequest.h"
+#include "Auth/LoginRequest.h"
 #include "AuthProtocol/AuthLink.h"
 #include "DummyClass.h"
 
@@ -35,7 +35,7 @@ static const int MAX_ITERATIONS = 4;
 struct AuthConnector final : public ACE_Connector<AuthLink, ACE_SOCK_Connector>
 {
     DummyClass *m_target;
-    int make_svc_handler (AuthLink *&sh) override
+    int make_svc_handler (AuthLink *&sh) override final
     {
         if(sh)
             return 0;
