@@ -120,7 +120,7 @@ void EntityManager::sendEntities(BitStream& bs, MapClientSession &target, bool /
 
     lEntity to_send = m_live_entlist;
     lEntity client_belief_set;
-
+    PUTDEBUG("before ent recv loop");
     for (Entity* pEnt : m_live_entlist)
     {
         bool client_believes_this_entity_exists=client_belief_set.find(pEnt)!=client_belief_set.end();

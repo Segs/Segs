@@ -22,7 +22,7 @@ Description: The BitStream class allows it's user to manipulate data in
 
 #include <cstdint>
 #include <utility>
-
+//#define CUSTOM_CLIENT_CODE
 #ifdef CUSTOM_CLIENT_CODE
 #define PUTDEBUG(x) bs.StoreString(x);
 #else
@@ -57,13 +57,8 @@ explicit        BitStream(size_t size);
         void    StorePackedBits(uint32_t nBits, uint32_t dataBits);
         void    appendBitStream(BitStream &src)
         {
-            if ((src.GetReadPos() & 7) == 0) 
-            {  // source is aligned ?
-                StoreBitArray(src.read_ptr(),src.GetReadableBits());
-                return;
-            }
+            //TODO: optimize this to partial memcopy in special cases ?
             uint32_t bits_to_store =src.GetReadableBits();
-            ByteAlign(false,true);
             while(bits_to_store>32)
             {
                 StoreBits(32,src.uGetBits(32));

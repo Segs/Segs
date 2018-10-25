@@ -27,7 +27,7 @@ struct ClientMapXferMessage;
 }
 
 static constexpr uint8_t INVALID_GAME_SERVER_ID = 255;
-static constexpr char RUNTIME_DATA_PATH[] = "./data/bin/";
+static constexpr char RUNTIME_DATA_PATH[] = "./data/";
 
 class MapServer final : public EventProcessor
 {

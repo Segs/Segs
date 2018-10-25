@@ -299,13 +299,13 @@ int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &sche
 bool GameDataStore::read_costumes(const QString &directory_path)
 {
     QDebug deb=qDebug().noquote().nospace();
-    deb << "Reading "<<directory_path<<"costume.bin ... ";
+    deb << "Reading " << directory_path << "bin/costume.bin ... ";
     BinStore costumes_store;
-    if(!costumes_store.open(directory_path+"costume.bin",costumesets_i0_requiredCrc))
+    if(!costumes_store.open(directory_path + "bin/costume.bin", costumesets_i0_requiredCrc))
     {
         deb << "failure";
-        qWarning().noquote() << "Couldn't load costume.bin from" << directory_path;
-        qWarning().noquote() << "Using piggtool, ensure that bin.pigg has been extracted to ./data/";
+        qWarning().noquote() << "Couldn't load bin/costume.bin from" << directory_path;
+        qWarning().noquote() << "Using piggtool, ensure that bin.pigg has been extracted to ./data/bin/";
         return false;
     }
 
@@ -315,7 +315,7 @@ bool GameDataStore::read_costumes(const QString &directory_path)
     else
     {
         deb << "failure";
-        qWarning().noquote() << "Couldn't load" << directory_path<<"costume.bin: wrong file format?";
+        qWarning().noquote() << "Couldn't load" << directory_path << "bin/costume.bin: wrong file format?";
     }
     return res;
 }
@@ -323,13 +323,13 @@ bool GameDataStore::read_costumes(const QString &directory_path)
 bool GameDataStore::read_colors( const QString &directory_path )
 {
     QDebug deb=qDebug().noquote().nospace();
-    deb << "Reading "<<directory_path<<"supergroupColors.bin ... ";
+    deb << "Reading " << directory_path << "bin/supergroupColors.bin ... ";
     BinStore sg_color_store;
-    if(!sg_color_store.open(directory_path+"supergroupColors.bin",palette_i0_requiredCrc))
+    if(!sg_color_store.open(directory_path + "bin/supergroupColors.bin", palette_i0_requiredCrc))
     {
         deb << "failure";
-        qWarning().noquote() << "Couldn't load supergroupColors.bin from" << directory_path;
-        qWarning().noquote() << "Using piggtool, ensure that bin.pigg has been extracted to ./data/";
+        qWarning().noquote() << "Couldn't load bin/supergroupColors.bin from" << directory_path;
+        qWarning().noquote() << "Using piggtool, ensure that bin.pigg has been extracted to ./data/bin/";
         return false;
     }
 
@@ -339,7 +339,7 @@ bool GameDataStore::read_colors( const QString &directory_path )
     else
     {
         deb << "failure";
-        qWarning().noquote() << "Couldn't load" << directory_path<<"supergroupColors.bin: wrong file format?";
+        qWarning().noquote() << "Couldn't load" << directory_path << "bin/supergroupColors.bin: wrong file format?";
     }
     return res;
 }
@@ -347,9 +347,9 @@ bool GameDataStore::read_colors( const QString &directory_path )
 bool GameDataStore::read_origins(const QString &directory_path)
 {
     qDebug() << "Loading origins:";
-    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path,"origins.bin",m_player_origins))
+    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path, "bin/origins.bin", m_player_origins))
         return false;
-    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path,"villain_origins.bin",m_other_origins))
+    if(!read_data_to<Parse_AllOrigins,origins_i0_requiredCrc>(directory_path, "bin/villain_origins.bin", m_other_origins))
         return false;
     return true;
 }
@@ -357,9 +357,9 @@ bool GameDataStore::read_origins(const QString &directory_path)
 bool GameDataStore::read_classes(const QString &directory_path)
 {
     qDebug() << "Loading classes:";
-    if (!read_data_to<Parse_AllCharClasses, charclass_i0_requiredCrc>(directory_path, "classes.bin", m_player_classes))
+    if (!read_data_to<Parse_AllCharClasses, charclass_i0_requiredCrc>(directory_path, "bin/classes.bin", m_player_classes))
         return false;
-    if (!read_data_to<Parse_AllCharClasses, charclass_i0_requiredCrc>(directory_path, "villain_classes.bin",
+    if (!read_data_to<Parse_AllCharClasses, charclass_i0_requiredCrc>(directory_path, "bin/villain_classes.bin",
                                                                       m_other_classes))
         return false;
     return true;
@@ -368,7 +368,7 @@ bool GameDataStore::read_classes(const QString &directory_path)
 bool GameDataStore::read_exp_and_debt(const QString &directory_path)
 {
     qDebug() << "Loading exp and debt tables:";
-    if (!read_data_to<LevelExpAndDebt, levelsdebts_i0_requiredCrc>(directory_path, "experience.bin",
+    if (!read_data_to<LevelExpAndDebt, levelsdebts_i0_requiredCrc>(directory_path, "bin/experience.bin",
                                                                    m_experience_and_debt_per_level))
         return false;
     return true;
@@ -377,7 +377,7 @@ bool GameDataStore::read_exp_and_debt(const QString &directory_path)
 bool GameDataStore::read_keybinds(const QString &directory_path)
 {
     qDebug() << "Loading keybinds:";
-    if(!read_data_to<Parse_AllKeyProfiles,keyprofile_i0_requiredCrc>(directory_path,"kb.bin",m_keybind_profiles))
+    if(!read_data_to<Parse_AllKeyProfiles,keyprofile_i0_requiredCrc>(directory_path, "bin/kb.bin", m_keybind_profiles))
         return false;
     return true;
 }
@@ -385,7 +385,7 @@ bool GameDataStore::read_keybinds(const QString &directory_path)
 bool GameDataStore::read_commands(const QString &directory_path)
 {
     qDebug() << "Loading commands:";
-    if (!read_data_to<Parse_AllCommandCategories, keycommands_i0_requiredCrc>(directory_path, "command.bin",
+    if (!read_data_to<Parse_AllCommandCategories, keycommands_i0_requiredCrc>(directory_path, "bin/command.bin",
                                                                               m_command_categories))
         return false;
     return true;
@@ -394,7 +394,7 @@ bool GameDataStore::read_commands(const QString &directory_path)
 bool GameDataStore::read_npcs(const QString &directory_path)
 {
     qDebug() << "Loading npcs:";
-    return read_data_to<AllNpcs_Data, npccostumesets_i0_requiredCrc>(directory_path, "VillainCostume.bin",
+    return read_data_to<AllNpcs_Data, npccostumesets_i0_requiredCrc>(directory_path, "bin/VillainCostume.bin",
                                                                    m_npc_store.m_all_npcs);
 }
 
@@ -416,7 +416,7 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
 bool GameDataStore::read_powers(const QString &directory_path)
 {
     qDebug() << "Loading powers:";
-    if (!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "powers.bin",
+    if (!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "bin/powers.bin",
                                                                    m_all_powers))
         return false;
 
@@ -446,10 +446,10 @@ bool GameDataStore::read_powers(const QString &directory_path)
 bool GameDataStore::read_combine_chances(const QString &directory_path)
 {
     qDebug() << "Loading Combining schedule:";
-    if (!read_data_to<Parse_Combining, combining_i0_requiredCrc>(directory_path, "combine_chances.bin",
+    if (!read_data_to<Parse_Combining, combining_i0_requiredCrc>(directory_path, "bin/combine_chances.bin",
                                                                    m_combine_chances))
         return false;
-    if (!read_data_to<Parse_Combining, combining_i0_requiredCrc>(directory_path, "combine_same_set_chances.bin",
+    if (!read_data_to<Parse_Combining, combining_i0_requiredCrc>(directory_path, "bin/combine_same_set_chances.bin",
                                                                    m_combine_same))
         return false;
     return true;
@@ -458,10 +458,10 @@ bool GameDataStore::read_combine_chances(const QString &directory_path)
 bool GameDataStore::read_effectiveness(const QString &directory_path)
 {
     qDebug() << "Loading Enhancement Effectiveness:";
-    if (!read_data_to<Parse_Effectiveness, boosteffectiveness_i0_requiredCrc>(directory_path, "boost_effect_above.bin",
+    if (!read_data_to<Parse_Effectiveness, boosteffectiveness_i0_requiredCrc>(directory_path, "bin/boost_effect_above.bin",
                                                                    m_effectiveness_above))
         return false;
-    if (!read_data_to<Parse_Effectiveness, boosteffectiveness_i0_requiredCrc>(directory_path, "boost_effect_below.bin",
+    if (!read_data_to<Parse_Effectiveness, boosteffectiveness_i0_requiredCrc>(directory_path, "bin/boost_effect_below.bin",
                                                                    m_effectiveness_below))
         return false;
     return true;
@@ -470,7 +470,7 @@ bool GameDataStore::read_effectiveness(const QString &directory_path)
 bool GameDataStore::read_pi_schedule(const QString &directory_path)
 {
     qDebug() << "Loading PI Schedule:";
-    return read_data_to<Parse_PI_Schedule, pischedule_i0_requiredCrc>(directory_path, "schedules.bin",
+    return read_data_to<Parse_PI_Schedule, pischedule_i0_requiredCrc>(directory_path, "bin/schedules.bin",
                                                                    m_pi_schedule);
 }
 

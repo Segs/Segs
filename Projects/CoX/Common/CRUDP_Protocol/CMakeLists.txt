@@ -1,6 +1,7 @@
 SET(target_CPP
     CRUDP_Packet.cpp
     CRUDP_Protocol.cpp
+    CRUD_Events.cpp
     CRUD_Link.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/GameProtocol.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/GameProtocolHandler.cpp
