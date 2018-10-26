@@ -17,6 +17,7 @@
 #include "MessageHelpers.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/ClientStates.h"
+#include "GameData/map_definitions.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
 #include "GameData/CharacterHelpers.h"
@@ -330,12 +331,12 @@ void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, 
     uint32_t timestamp = 0;
 
     EmailSendMessage* msgToHandler = new EmailSendMessage({
-                                                            sess.m_ent->m_char->m_db_id,
-                                                            sess.m_ent->m_char->getName(),    // -> sender
-                                                            recipient_name,
-                                                            subject,
-                                                            message,
-                                                            timestamp},
+                sess.m_ent->m_char->m_db_id,
+                sess.m_ent->m_char->getName(),    // -> sender
+                recipient_name,
+                subject,
+                message,
+                timestamp},
                 sess.link()->session_token());
 
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
@@ -382,6 +383,20 @@ void setInterpolationSettings(MapClientSession *sess, const bool active, const u
             .arg(g_interpolation_bits);
      sendInfoMessage(MessageChannel::DEBUG_INFO, output, *sess);
     qCDebug(logPosition) << output;
+}
+
+QString createMapMenu() // TODO: compileMonorailMenu() as well
+{
+    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
+    for (auto &map_data : getAllMapData())
+    {
+        uint32_t map_idx = map_data.m_map_idx;
+        QString map_name = getDisplayMapName(map_idx);
+        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_idx).arg(map_name));
+    }
+    msg_body.append("</table>");
+
+    return msg_body;
 }
 
 
@@ -476,10 +491,11 @@ void sendClientState(MapClientSession &sess, ClientStates client_state)
     sess.addCommand<SetClientState>(client_state);
 }
 
-void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name)
+void showMapXferList(MapClientSession &sess, bool has_location, glm::vec3 &location, QString &name)
 {
+    sess.m_ent->m_is_using_mapmenu = true;
     qCDebug(logSlashCommand) << "Showing MapXferList:" << name;
-    ent.addCommand<MapXferList>(has_location, location, name);
+    sess.addCommand<MapXferList>(has_location, location, name);
 }
 
 void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay)
@@ -567,7 +583,7 @@ void sendFaceLocation(Entity &src, glm::vec3 &loc)
 
 void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg)
 {
-    qCDebug(logMapXfers) << QString("Sending Door Message; delay: %1 msg: %2").arg(delay_status).arg(msg);
+    qCDebug(logMapXfers).noquote() << QString("Sending Door Message; delay: %1; msg: %2").arg(delay_status).arg(msg);
     tgt.addCommand<DoorMessage>(DoorMessageStatus(delay_status), msg);
 }
 
@@ -641,7 +657,7 @@ void sendContactDialogClose(MapClientSession &src)
     src.addCommand<ContactDialogClose>();
 }
 
-void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location)
+void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 &location)
 {
     qCDebug(logSlashCommand) << QString("Sending SendWaypoint: %1 <%2, %3, %4>")
                                 .arg(point_idx)
@@ -662,6 +678,27 @@ void sendDeadNoGurney(MapClientSession &sess)
 {
     qCDebug(logSlashCommand) << "Sending new PowerStance";
     sess.addCommand<DeadNoGurney>();
+}
+
+void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state)
+{
+    qCDebug(logSlashCommand).noquote() << QString("Sending DoorAnimStart: entry<%1, %2, %3>  target<%4, %5, %6>  has_anims: %7  seq_state: %8")
+                                .arg(entry_pos.x, 0, 'f', 1)
+                                .arg(entry_pos.y, 0, 'f', 1)
+                                .arg(entry_pos.z, 0, 'f', 1)
+                                .arg(target_pos.x, 0, 'f', 1)
+                                .arg(target_pos.y, 0, 'f', 1)
+                                .arg(target_pos.z, 0, 'f', 1)
+                                .arg(has_anims)
+                                .arg(seq_state);
+
+    sess.addCommand<DoorAnimStart>(entry_pos, target_pos, has_anims, seq_state);
+}
+
+void sendDoorAnimExit(MapClientSession &sess, bool force_move)
+{
+    qCDebug(logSlashCommand) << "Sending DoorAnimExit" << force_move;
+    sess.addCommand<DoorAnimExit>(force_move);
 }
 
 

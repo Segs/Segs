@@ -33,6 +33,12 @@ void NpcGenerator::generate(MapInstance *map_instance)
         e->m_direction = valquat;
         e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
         e->m_velocity = { 0,0,0 };
+
+        if(costume_name.contains("door", Qt::CaseInsensitive))
+        {
+            e->m_is_fading = false;
+            e->translucency = 0.0f;
+        }
     }
 }
 

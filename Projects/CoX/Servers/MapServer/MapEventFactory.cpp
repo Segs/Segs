@@ -63,6 +63,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 9: return new EnterDoor;
         case 10: return new AwaitingDeadNoGurney;
         case 11: return new SetDestination;
+        case 13: return new HasEnteredDoor;
         case 14: return new WindowState;
         case 16: return new ChatDividerMoved;
         case 17: return new InspirationDockMode;
