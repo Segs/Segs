@@ -727,7 +727,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
         return;
     }
     GameAccountResponseCharacterData char_data;
-    qCDebug(logDB) << "expected_client: Costume:" << char_data.m_serialized_costume_data;
+    qCDebug(logDB).noquote() << "expected_client: Costume:" << char_data.m_serialized_costume_data;
     serializeFromQString(char_data,request_data.char_from_db_data);
     // existing character
     Entity *ent = m_entities.CreatePlayer();
@@ -864,7 +864,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         fromActualCharacter(*e->m_char, *e->m_player, *e->m_entity, char_data);
         serializeToDb(e->m_entity_data, ent_data);
 
-        qDebug() << "TEST" << char_data.m_serialized_costume_data;
+        qCDebug(logDB).noquote() << "received serialized Costume:" << char_data.m_serialized_costume_data;
 
         // create the character from the data.
         //fillGameAccountData(map_session.m_client_id, map_session.m_game_account);

@@ -67,10 +67,7 @@ public:
     {
         uint8_t op;
         buf.uGet(op);
-        qWarning() << op << "in ReconnectAttempt serializefrom";
-        for(auto i : m_arr)
-            qWarning() << i;
-
+        assert(op==3);
         buf.uGetBytes(m_arr,8);
     }
     EVENT_IMPL(ReconnectAttempt)

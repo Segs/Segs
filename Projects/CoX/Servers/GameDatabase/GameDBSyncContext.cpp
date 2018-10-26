@@ -120,15 +120,15 @@ bool GameDbSyncContext::loadAndConfigure()
 
     if(!m_db->open())
     {
-        qFatal().noquote() << "Failed to open database:" <<dbname;
+        qFatal("Failed to open database: %s", dbname);
         return false;
     }
 
     int64_t db_version = getDatabaseVersion(*m_db);
-    if(db_version!=REQUIRED_DB_VERSION)
+    if(db_version != REQUIRED_DB_VERSION)
     {
-        qCritical() << "Wrong database version:" << db_version;
-        qFatal() << "Game database requires version:" << REQUIRED_DB_VERSION;
+        // we should just stop the server, it isn't going to work anyway
+        qFatal("Wrong database version (%d) Game database requires version: %d", db_version, REQUIRED_DB_VERSION);
 
         return false;
     }

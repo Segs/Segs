@@ -374,7 +374,8 @@ void Character::addCostumeSlot()
 
     m_add_new_costume = true; // must set this to reset costume array size
 
-    dumpCostumes(m_costumes);
+    if(logTailor().isDebugEnabled())
+        dumpCostumes(m_costumes);
 }
 
 void Character::saveCostume(uint32_t idx, Costume &new_costume)
