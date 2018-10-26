@@ -14,19 +14,20 @@
 
 #include "MapServer.h"
 #include "MapInstance.h"
+#include "MessageHelpers.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/ClientStates.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
-#include "NetStructures/CharacterHelpers.h"
-#include "NetStructures/Character.h"
-#include "NetStructures/Contact.h"
-#include "NetStructures/Team.h"
-#include "NetStructures/LFG.h"
-#include "Events/EmailHeaders.h"
-#include "Events/EmailRead.h"
-#include "Servers/GameServer/EmailEvents.h"
-#include "MapEvents.h"
+#include "GameData/CharacterHelpers.h"
+#include "GameData/Character.h"
+#include "GameData/Contact.h"
+#include "GameData/Team.h"
+#include "GameData/LFG.h"
+#include "Messages/Map/EmailHeaders.h"
+#include "Messages/Map/EmailRead.h"
+#include "Messages/EmailService/EmailEvents.h"
+#include "Messages/Map/MapEvents.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -141,13 +142,6 @@ void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
 {
     e.m_cur_destination.point_idx = point_idx;
     e.m_cur_destination.location = location;
-}
-
-void setStateMode(Entity &e, ClientStates state)
-{
-    e.m_rare_update = true; // this must also be true for statemode to send
-    e.m_has_state_mode = true;
-    e.m_state_mode = state;
 }
 
 // For live debugging
@@ -628,7 +622,7 @@ void sendBrowser(MapClientSession &tgt, QString &content)
 
 void sendTradeOffer(const Entity& src, Entity& tgt)
 {
-    const QString name = src.name();
+    const QString &name = src.name();
     const uint32_t db_id = tgt.m_db_id;
 
     qCDebug(logTrades) << "Sending Trade Offer" << db_id << name;
@@ -815,7 +809,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     {
         // TODO: pull from stored FX name and lookup idx
         // for now, send bits again
-        addTriggeredMove(ent, bits, powtpl.m_AttackFrames, bits);
+        addTriggeredMove(ent, uint32_t(bits), powtpl.m_AttackFrames, uint32_t(bits));
     }
 
     // Check and set endurance based upon end cost
@@ -889,46 +883,45 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         // effects done here
         for(uint32_t i = 0; i<powtpl.pAttribMod.size(); i++)
         {
-            if (powtpl.pAttribMod[i].name.compare("Damage", Qt::CaseInsensitive) == 0)
+            QByteArray lower_name = powtpl.pAttribMod[i].name.toLower();
+            if (lower_name == "Damage")
             {
                 // Deal Damage
                 sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);
                 setHP(*target_ent->m_char, getHP(*target_ent->m_char)-powtpl.pAttribMod[i].Magnitude);
 
                 // Build target specific messages
-                from_msg = QString("You deal %1 damage with %2")
-                        .arg(powtpl.pAttribMod[i].Magnitude)
-                        .arg(powtpl.m_Name);
+                from_msg = QString("You deal %1 damage with ")
+                        .arg(powtpl.pAttribMod[i].Magnitude) + powtpl.m_Name;
 
-                to_msg   = QString("%1 hit you for %2 damage with %3")
+                to_msg   = QString("%1 hit you for %2 damage with ")
                         .arg(ent.name())
-                        .arg(powtpl.pAttribMod[i].Magnitude)
-                        .arg(powtpl.m_Name);
+                        .arg(powtpl.pAttribMod[i].Magnitude)  + powtpl.m_Name;
             }
-            else if (powtpl.pAttribMod[i].name.compare("Healing", Qt::CaseInsensitive) == 0)
+            else if ("Healing" == lower_name)
             {
                 // Do Healing
                 sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);
                 setHP(*target_ent->m_char, getHP(*target_ent->m_char)+powtpl.pAttribMod[i].Magnitude);
 
                 // Build target specific messages
-                from_msg = QString("You heal %1 for %2 with %3")
+                from_msg = QString("You heal %1 for %2 with ")
                         .arg(target_ent->name())
                         .arg(powtpl.pAttribMod[i].Magnitude)
-                        .arg(powtpl.m_Name);
+                        + powtpl.m_Name;
 
-                to_msg   = QString("%1 heals you for %2 with %3")
+                to_msg   = QString("%1 heals you for %2 with ")
                         .arg(target_ent->name())
                         .arg(powtpl.pAttribMod[i].Magnitude)
-                        .arg(powtpl.m_Name);
+                        + powtpl.m_Name;
             }
             else
             {
                 // TODO: buffs, debuffs, CC, summons, etc
                 to_msg = QString("%1 %2 from %3")
                         .arg(powtpl.pAttribMod[i].Magnitude)
-                        .arg(powtpl.pAttribMod[i].name)
-                        .arg(powtpl.m_Name);
+                        .arg(QString(powtpl.pAttribMod[i].name))
+                        .arg(QString(powtpl.m_Name));
 
                 if (powtpl.pAttribMod[i].Duration > 0)
                     to_msg.append(" for a duration of %1").arg(powtpl.pAttribMod[i].Duration);

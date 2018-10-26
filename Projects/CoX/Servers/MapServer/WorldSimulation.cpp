@@ -13,9 +13,9 @@
 #include "WorldSimulation.h"
 
 #include "Common/Servers/Database.h"
-#include "Events/GameCommandList.h"
-#include "NetStructures/Character.h"
-#include "NetStructures/CharacterHelpers.h"
+#include "Messages/Map/GameCommandList.h"
+#include "GameData/Character.h"
+#include "GameData/CharacterHelpers.h"
 #include <glm/gtx/vector_query.hpp>
 
 void World::update(const ACE_Time_Value &tick_timer)

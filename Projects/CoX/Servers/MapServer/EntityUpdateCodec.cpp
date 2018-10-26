@@ -13,8 +13,8 @@
 #include "EntityUpdateCodec.h"
 #include "MapClientSession.h"
 
-#include "NetStructures/Character.h"
-#include "NetStructures/Entity.h"
+#include "GameData/Character.h"
+#include "GameData/Entity.h"
 #include "MapServer.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/CoHMath.h"

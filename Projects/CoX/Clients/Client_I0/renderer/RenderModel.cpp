@@ -1,4 +1,4 @@
-﻿#include "RenderModel.h"
+#include "RenderModel.h"
 
 #include "RenderBonedModel.h"
 #include "RendererState.h"

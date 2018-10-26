@@ -26,6 +26,7 @@
 #include "Servers/GameServer/GameServer.h"
 #include "Servers/GameDatabase/GameDBSync.h"
 #include "Servers/AuthDatabase/AuthDBSync.h"
+#include "AdminRPC.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include <ace/ACE.h>
@@ -284,6 +285,9 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     qInfo().noquote() << VersionInfo::getAuthVersion();
 
     qInfo().noquote() << "main";
+
+    // Create websocket jsonrpc admin interface
+    startWebSocketServer();
 
     bool no_err = CreateServers();
     if(!no_err)

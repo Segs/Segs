@@ -12,7 +12,8 @@
 
 #include <ace/INET_Addr.h>
 #include "EventProcessor.h"
-#include "MapEvents.h"
+#include "MapEventFactory.h"
+#include "MapLink.h"
 
 MapEventFactory MapLink::m_factory;
 

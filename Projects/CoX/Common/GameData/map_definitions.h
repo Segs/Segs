@@ -17,25 +17,25 @@ struct Map_Data
 {
     glm::vec2 Location;
     glm::vec2 TextLocation;
-    QString Name;
-    QString Icon;
+    QByteArray Name;
+    QByteArray Icon;
 };
 
 struct MapData
 {
     uint32_t m_map_idx;
-    QString m_map_name;             // City_00_01, City_01_01, etc...
-    QString m_map_path;             // The ones ending with .txt
-    QString m_display_map_name;     // Outbreak, Atlas Park...
+    QByteArray m_map_name;             // City_00_01, City_01_01, etc...
+    QByteArray m_map_path;             // The ones ending with .txt
+    QByteArray m_display_map_name;     // Outbreak, Atlas Park...
 };
-typedef std::vector<Map_Data> AllMaps_Data;
+using AllMaps_Data = std::vector<Map_Data>;
 
 uint32_t       getMapIndex(const QString &map_name);
 const std::vector<MapData> &getAllMapData();
 const MapData &getMapData(const QString &map_name);
 QString        getMapName(const QString &map_name);
 QString        getMapName(size_t map_idx);
-const QString &getDisplayMapName(size_t index);
+QString        getDisplayMapName(size_t index);
 QString        getEntityDisplayMapName(const EntityData &ed);
 bool           isEntityOnMissionMap(const EntityData &ed);
 QString        getMapPath(size_t index);

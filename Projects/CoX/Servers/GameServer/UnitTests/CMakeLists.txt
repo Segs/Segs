@@ -9,5 +9,13 @@ add_test(GameEventRegistry GameEventRegistry)
 
 target_link_libraries(GameEventRegistry
     Qt5::Test
-    gameserver_lib
+    GameServer
+    common_runtime
+)
+
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES GameEventRegistry SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (GameEventRegistry PROPERTIES
+    FOLDER UnitTests/GameServer/GameEventRegistry
 )

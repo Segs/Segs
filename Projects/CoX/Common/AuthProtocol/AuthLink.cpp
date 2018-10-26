@@ -16,6 +16,7 @@
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"
 #include "AuthProtocol/AuthPacketCodec.h"
+#include "Auth/AuthEvents.h"
 
 #include <ace/Reactor.h>
 
@@ -34,7 +35,7 @@ struct AuthLinkState
     int                     m_protocol_version=-1;
 };
 namespace  {
-static void encode_buffer(AuthLinkState &state,const AuthLinkEvent *ev)
+void encode_buffer(AuthLinkState &state,const AuthLinkEvent *ev)
 {
     assert(ev);
     if(ev==nullptr)
@@ -65,7 +66,7 @@ static void encode_buffer(AuthLinkState &state,const AuthLinkEvent *ev)
   \arg opcode packet opcode byte
   \arg direction if this is false then the packet is from server to client, other way around otherwise
 */
-static eAuthPacketType OpcodeToType(AuthLinkType link_type,uint8_t opcode )
+eAuthPacketType OpcodeToType(AuthLinkType link_type,uint8_t opcode )
 {
     // packets coming in from server to client
     if(link_type==AuthLinkType::Client)

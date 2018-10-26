@@ -12,6 +12,8 @@
 
 #include "CRUDP_Packet.h"
 
+#include "BitStream.h"
+
 #include <QtCore/QDebug>
 
 CrudP_Packet::CrudP_Packet()
@@ -79,6 +81,41 @@ void CrudP_Packet::GetString(QString &tgt)
 float CrudP_Packet::GetFloat()
 {
     return m_stream->GetFloat();
+}
+
+void CrudP_Packet::StoreBits(uint32_t nBits, uint32_t dataBits)
+{
+    m_stream->StoreBits(nBits, dataBits);
+}
+
+void CrudP_Packet::StoreBitArray(uint8_t *array, size_t nBits)
+{
+    m_stream->StoreBitArray(array, nBits);
+}
+
+void CrudP_Packet::StorePackedBits(uint32_t nBits, uint32_t dataBits)
+{
+    m_stream->StorePackedBits(nBits, dataBits);
+}
+
+void CrudP_Packet::StoreString(const char *str)
+{
+    m_stream->StoreString(str);
+}
+
+uint8_t *CrudP_Packet::GetBuffer()
+{
+    return m_stream->GetBuffer();
+}
+
+size_t CrudP_Packet::GetPacketLength() const
+{
+    return m_stream->GetReadableDataSize();
+}
+
+void CrudP_Packet::ByteAlign()
+{
+    m_stream->ByteAlign();
 }
 
 void CrudP_Packet::setContents(const BitStream &t)

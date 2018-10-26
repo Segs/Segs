@@ -10,7 +10,7 @@
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
 #include "Common/Servers/ClientManager.h"
-#include "NetStructures/Friend.h"
+#include "GameData/Friend.h"
 #include <unordered_map>
 #include <set>
 #include <vector>

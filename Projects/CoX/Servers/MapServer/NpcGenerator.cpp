@@ -3,7 +3,7 @@
 #include "MapInstance.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/NpcStore.h"
-#include "NetStructures/Character.h"
+#include "GameData/Character.h"
 
 #include <QRegularExpression>
 
