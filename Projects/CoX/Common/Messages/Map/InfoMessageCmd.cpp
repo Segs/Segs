@@ -12,6 +12,7 @@
 
 #include "InfoMessageCmd.h"
 
+#include "BitStream.h"
 //#include "MapClientSession.h"
 #include "Logging.h"
 

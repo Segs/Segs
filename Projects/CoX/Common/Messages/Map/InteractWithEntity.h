@@ -9,6 +9,7 @@
 #include "GameCommand.h"
 #include "MapEventTypes.h"
 #include "Logging.h"
+#include "BitStream.h"
 
 namespace SEGSEvents
 {

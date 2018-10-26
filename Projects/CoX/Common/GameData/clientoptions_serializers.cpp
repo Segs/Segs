@@ -18,7 +18,6 @@
 #include "serialization_types.h"
 
 // register Client Options class version
-CEREAL_CLASS_VERSION(ClientOptions, ClientOptions::class_version)
 
 
 
