@@ -559,7 +559,8 @@ void MapInstance::on_idle(Idle *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
-    lnk->putq(new Idle);
+    // we don't have to respond with an idle message here, check links will send idle events as needed.
+    //lnk->putq(new Idle);
 }
 
 void MapInstance::on_check_links()
@@ -957,15 +958,16 @@ void MapInstance::sendState()
 
     for(;iter!=end; ++iter)
     {
-
         MapClientSession *cl = *iter;
-        
-        EntitiesResponse *res=new EntitiesResponse();
+        if (!cl->m_in_map)
+            continue;
+
+        EntitiesResponse *res = new EntitiesResponse();
         res->m_map_time_of_day = m_world->time_of_day();
         //while cl->m_in_map==false we send full updates until client `resumes`
         res->ent_major_update = true;
-        res->abs_time = 30*100*(m_world->accumulated_time);
-        buildEntityResponse(res,*cl,cl->m_in_map ? EntityUpdateMode::INCREMENTAL : EntityUpdateMode::FULL,false);
+        res->abs_time = 30 * 100 * (m_world->accumulated_time);
+        buildEntityResponse(res, *cl, cl->m_in_map ? EntityUpdateMode::INCREMENTAL : EntityUpdateMode::FULL, false);
         cl->link()->putq(res);
     }
 
@@ -1044,7 +1046,16 @@ void MapInstance::on_input_state(InputState *st)
 
 void MapInstance::on_cookie_confirm(CookieRequest * ev)
 {
+    MapClientSession &session(m_session_store.session_from_event(ev));
     qDebug("Received cookie confirm %x - %x\n", ev->cookie, ev->console);
+
+    // just after sending this packet the client started waiting for resume , so we send it the update right now.
+    EntitiesResponse *res = new EntitiesResponse();
+    res->m_map_time_of_day = m_world->time_of_day();
+    res->ent_major_update = true;
+    res->abs_time = 30 * 100 * (m_world->accumulated_time);
+    buildEntityResponse(res, session, EntityUpdateMode::FULL, false);
+    session.link()->putq(res);
 }
 
 void MapInstance::on_window_state(WindowState * ev)
@@ -1953,7 +1964,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     // TODO only do this the first time a client connects, not after map transfers..
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    if(session.m_in_map==false)
+    if(!session.m_in_map)
         session.m_in_map = true;
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
