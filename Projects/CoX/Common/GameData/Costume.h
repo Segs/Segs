@@ -42,7 +42,6 @@ struct CostumePart
     QString name_3;
     QString name_4;
     QString name_5;
-    QString name_6;
     uint32_t m_colors[2] = {0};
     uint8_t m_type = 0; // arms/legs etc..
     bool m_full_part;
@@ -63,7 +62,6 @@ public:
     uint32_t    m_skin_color    = 0;
     bool        m_send_full_costume;
     int         m_num_parts     = 0;
-    float       m_floats[8];
     std::vector<CostumePart> m_parts;
 
     static Costume NullCostume;

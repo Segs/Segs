@@ -150,12 +150,14 @@ void SettingsDialog::read_config_file(QString filePath)
     int map_loc_addr_port = map_loc_addr_portip[1].toInt();
     QString maps_loc = config_file.value("maps","DefaultMapInstances").toString();
     float player_fade_in = config_file.value("player_fade_in", "").toFloat();
+    float motd_timer = config_file.value("motd_timer", "").toFloat();
     ui->map_listen_ip->setText(map_listen_addr_portip[0]);
     ui->map_listen_port->setValue(map_listen_addr_port);
     ui->map_location_ip->setText(map_loc_addr_portip[0]);
     ui->map_location_port->setValue(map_loc_addr_port);
     ui->map_location->setText(maps_loc);
     ui->map_player_fade_in->setValue(player_fade_in);
+    ui->map_motd_timer->setValue(motd_timer);
     config_file.endGroup();
     config_file.beginGroup("AFKSettings");
     ui->time_to_afk_spin->setValue(int(config_file.value("time_to_afk", "").toInt()));
@@ -287,6 +289,8 @@ void SettingsDialog::save_changes_config_file()
     config_file_write.setValue("maps",ui->map_location->text());
     QString player_fade_in = ui->map_player_fade_in_value->text() + ".0";
     config_file_write.setValue("player_fade_in",player_fade_in);
+    QString motd_timer = ui->map_motd_timer->text() + ".0";
+    config_file_write.setValue("motd_timer",motd_timer);
     config_file_write.endGroup();
     config_file_write.beginGroup("AFKSettings");
     config_file_write.setValue("time_to_afk", ui->time_to_afk_spin->value());
@@ -349,6 +353,7 @@ void SettingsDialog::set_default_values()
     ui->map_location_port->setValue(7003);
     ui->map_location->setText("DefaultMapInstances");
     ui->map_player_fade_in->setValue(380.0);
+    ui->map_motd_timer->setValue(120.0);
     ui->time_to_afk_spin->setValue(300);
     ui->time_to_logout_msg_spin->setValue(1080);
     ui->time_to_auto_logout_spin->setValue(120);

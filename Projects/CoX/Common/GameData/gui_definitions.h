@@ -131,8 +131,8 @@ class GUISettings
 public:
     GUISettings() = default;
 
-// GUISettings serialization class version
-static const constexpr uint32_t class_version = 1;
+        // GUISettings serialization class version
+        enum : uint32_t { class_version = 1 };
 
         // List of Windows
         std::array<GUIWindow, 35> m_wnds;

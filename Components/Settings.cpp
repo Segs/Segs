@@ -134,6 +134,7 @@ void Settings::setDefaultSettings()
         config.setValue("location_addr","127.0.0.1:7003");
         config.setValue("maps","DefaultMapInstances");
         config.setValue("player_fade_in", "380.0");
+        config.setValue("motd_timer", "120.0");
     config.endGroup();
     config.beginGroup("AFK Settings");
         config.setValue("time_to_afk","300");

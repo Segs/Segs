@@ -67,6 +67,7 @@ public:
         Parse_Effectiveness         m_effectiveness_below;
         Parse_PI_Schedule           m_pi_schedule;
         float                       m_player_fade_in;
+        float                       m_motd_timer = 60 * 60; // default 1 hr
 
         // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)
         const StoredPowerCategory&  get_power_category(uint32_t pcat_idx);

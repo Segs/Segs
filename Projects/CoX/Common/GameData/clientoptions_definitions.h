@@ -60,7 +60,7 @@ public:
     }
 
     // ClientOptions serialization class version
-    enum : uint32_t {class_version = 0};
+    enum : uint32_t { class_version = 0 };
 
     // Other Options
     int32_t control_debug       = 0;

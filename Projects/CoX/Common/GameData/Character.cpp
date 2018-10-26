@@ -351,7 +351,7 @@ void Character::serializetoCharsel( BitStream &bs, const QString& entity_map_nam
 const Costume * Character::getCurrentCostume() const
 {
     assert(!m_costumes.empty());
-    if(m_add_new_costume)
+    if(m_costumes.size() > 1)
         return &m_costumes[getCurrentCostumeIdx(*this)];
 
     return &m_costumes.front();
@@ -387,7 +387,7 @@ void Character::saveCostume(uint32_t idx, Costume &new_costume)
 void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *packer , bool all_costumes) const
 {
     // full costume
-    if(all_costumes) // this is only sent to the current player
+    if(all_costumes) // This is only sent to the current player
     {
         bs.StoreBits(1, m_add_new_costume);
         if(m_add_new_costume)
@@ -633,7 +633,8 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
 
     try
     {
-        qCDebug(logDB) << "Costume:" << src.m_serialized_costume_data;
+        qCDebug(logDB) << src.m_name << src.m_db_id << src.m_account_id << src.m_slot_idx;
+        qCDebug(logDB).noquote() << "Costume:" << src.m_serialized_costume_data;
         serializeFromQString(tgt.m_costumes, src.m_serialized_costume_data);
         serializeFromQString(cd, src.m_serialized_chardata);
         serializeFromQString(entity, src.m_serialized_entity_data);

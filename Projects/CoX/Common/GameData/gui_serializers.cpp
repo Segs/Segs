@@ -16,9 +16,7 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-// register GUISettings class version
-const constexpr uint32_t GUISettings::class_version;
-CEREAL_CLASS_VERSION(GUISettings, GUISettings::class_version)
+CEREAL_CLASS_VERSION(GUISettings, GUISettings::class_version) // register GUISettings class version
 
 template<class Archive>
 void serialize(Archive &archive, GUISettings &gui, uint32_t const version)

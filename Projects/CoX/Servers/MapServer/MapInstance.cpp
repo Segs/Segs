@@ -1974,7 +1974,13 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         welcome_msg += buf;
         sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),session);
 
-        sendServerMOTD(&session);
+        // Show MOTD only if it's been more than hour since last online
+        // TODO: Make length of motd suppression configurable in settings.cfg
+        QDateTime last_online = QDateTime::fromString(getLastOnline(*session.m_ent->m_char));
+        QDateTime today = QDateTime::currentDateTime();
+        const GameDataStore &data(getGameData()); // for motd timer
+        if(last_online.addSecs(data.m_motd_timer) < today)
+            sendServerMOTD(&session);
     }
     else
     {
@@ -2469,6 +2475,7 @@ void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
 
     uint32_t idx = getCurrentCostumeIdx(*session.m_ent->m_char);
     session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
+    session.m_ent->m_rare_update = true; // re-send costumes, they've changed.
     markEntityForDbStore(session.m_ent, DbStoreFlags::Full);
 }
 

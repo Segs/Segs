@@ -18,7 +18,7 @@
 #include "serialization_types.h"
 #include <QtCore/QDebug>
 
-int g_max_num_costume_slots = 4; // client cannot handle more than 5 slots
+int g_max_num_costume_slots = 4; // client UI cannot handle more than 4 slots
 
 namespace
 {
@@ -137,7 +137,6 @@ void Costume::serialize(Archive &archive, uint32_t const version)
     archive(cereal::make_nvp("SkinColor", m_skin_color));
     archive(cereal::make_nvp("SendFullCostume", m_send_full_costume));
     archive(cereal::make_nvp("NumParts", m_num_parts));
-    archive(cereal::make_nvp("Floats", m_floats));
     archive(cereal::make_nvp("Parts", m_parts));
 }
 CEREAL_CLASS_VERSION(Costume, Costume::class_version)   // register Costume class version
@@ -150,6 +149,7 @@ void Costume::serializeToDb(QString &tgt) const
         cereal::JSONOutputArchive ar( ostr );
         ar(*this);
     }
+
     tgt = QString::fromStdString(ostr.str());
 }
 
@@ -162,12 +162,6 @@ void Costume::serializeFromDb(const QString &src)
     {
         cereal::JSONInputArchive ar(istr);
         ar(*this);
-    }
-    // Set the part types
-    uint8_t part_type=0;
-    for(CostumePart & part : m_parts)
-    {
-        part.m_type = part_type++;
     }
 }
 
@@ -248,6 +242,7 @@ void serializefrom(Costume &tgt, BitStream &src, const ColorAndPartPacker *packe
         {
             CostumePart part;
             part.m_full_part = tgt.m_send_full_costume;
+            part.m_type = costume_part;
             ::serializefrom(part,src,packer);
             tgt.m_parts.push_back(part);
         }

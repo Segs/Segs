@@ -508,6 +508,7 @@ void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy)
 
 void sendChangeTitle(Entity *tgt, bool select_origin)
 {
+    tgt->m_rare_update = true; // titles have changed, resend them
     //qCDebug(logSlashCommand) << "Sending ChangeTitle Dialog:" << tgt->m_idx << "select_origin:" << select_origin;
     tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<ChangeTitle>(new ChangeTitle(select_origin)));
 }
@@ -579,6 +580,7 @@ void sendBrowser(MapClientSession &tgt, QString &content)
 
 void sendTailorOpen(MapClientSession &tgt)
 {
+    tgt.m_ent->m_rare_update = false;
     qCDebug(logTailor) << QString("Sending TailorOpen");
     tgt.addCommand<TailorOpen>();
 }
