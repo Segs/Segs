@@ -165,7 +165,7 @@ void findTeamMember(Entity &tgt);
 /*
  * Lua Functions
  */
-void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variation);
+void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variation, glm::vec3 *ori);
 void giveEnhancement(MapClientSession *cl, const char* name, int level);
 void giveDebt(MapClientSession *cl, int debt);
 void giveEnd(MapClientSession *cl, float end);

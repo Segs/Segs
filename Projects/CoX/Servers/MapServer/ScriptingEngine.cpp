@@ -153,11 +153,11 @@ void ScriptingEngine::registerTypes()
     );
 
     m_private->m_lua.new_usertype<Destination>("Destination",
-            sol::constructors<Destination()>(),
-            "pointIdx", &Destination::point_idx,
-            "location", &Destination::location,
-            "name", sol::property(&Destination::getLocationName, &Destination::setLocationName),
-            "mapName", sol::property(&Destination::getLocationMapName, &Destination::setLocationMapName)
+        sol::constructors<Destination()>(),
+        "pointIdx", &Destination::point_idx,
+        "location", &Destination::location,
+        "name", sol::property(&Destination::getLocationName, &Destination::setLocationName),
+        "mapName", sol::property(&Destination::getLocationMapName, &Destination::setLocationMapName)
     );
 
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
@@ -217,20 +217,18 @@ void ScriptingEngine::registerTypes()
         "addNpc", addNpc
         );
 
-
     m_private->m_lua.new_usertype<Character>("Character",
-    "giveDebt", giveDebt,
-    "giveEnhancement", giveEnhancement,
-    "giveEnd", giveEnd,
-    "giveHp", giveHp,
-    "giveInf",giveInf,
-    "giveInsp", giveInsp,
-    "giveXp", giveXp,
-    "sendFloatingDamage",sendFloatingNumbers,
-    "faceEntity",sendFaceEntity,
-    "faceLocation",  sendFaceLocation,
-    "addUpdateContactList", updateContactStatusList
-
+        "giveDebt", giveDebt,
+        "giveEnhancement", giveEnhancement,
+        "giveEnd", giveEnd,
+        "giveHp", giveHp,
+        "giveInf",giveInf,
+        "giveInsp", giveInsp,
+        "giveXp", giveXp,
+        "sendFloatingDamage",sendFloatingNumbers,
+        "faceEntity",sendFaceEntity,
+        "faceLocation",  sendFaceLocation,
+        "addUpdateContactList", updateContactStatusList
     );
 
     m_private->m_lua.new_usertype<Entity>( "Entity",

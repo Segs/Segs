@@ -12,6 +12,8 @@
 #include "cereal/cereal.hpp"
 #include "Logging.h"
 
+struct CharacterData;
+
 static QHash<QString,int> contactLinkHash = {
     {"CONTACTLINK_HELLO"                ,1},
     {"CONTACTLINK_MAIN"                 ,2},
@@ -151,4 +153,4 @@ struct ContactEntryBulk
     // size_t num_active_contacts; // we can use size()
 };
 
-struct CharacterData;
+

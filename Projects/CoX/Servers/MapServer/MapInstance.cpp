@@ -517,9 +517,9 @@ void MapInstance::dispatch( Event *ev )
         case evLevelUpResponse:
             on_levelup_response(static_cast<LevelUpResponse *>(ev));
             break;
-    case evReceiveContactStatus:
-        on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
-        break;
+        case evReceiveContactStatus:
+            on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
+            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
