@@ -283,6 +283,7 @@ public:
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
         bool                m_in_training           = false;
         bool                m_has_input_on_timeframe= false;
+        bool                m_is_using_mapmenu      = false;
 
         int                 u1 = 0; // used for live-debugging
 

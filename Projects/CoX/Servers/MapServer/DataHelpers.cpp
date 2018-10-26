@@ -491,10 +491,11 @@ void sendClientState(MapClientSession &sess, ClientStates client_state)
     sess.addCommand<SetClientState>(client_state);
 }
 
-void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name)
+void showMapXferList(MapClientSession &sess, bool has_location, glm::vec3 &location, QString &name)
 {
+    sess.m_ent->m_is_using_mapmenu = true;
     qCDebug(logSlashCommand) << "Showing MapXferList:" << name;
-    ent.addCommand<MapXferList>(has_location, location, name);
+    sess.addCommand<MapXferList>(has_location, location, name);
 }
 
 void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay)

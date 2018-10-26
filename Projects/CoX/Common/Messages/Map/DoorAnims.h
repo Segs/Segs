@@ -105,4 +105,21 @@ namespace SEGSEvents
         EVENT_IMPL(EnterDoor)
     };
 
+    // [[ev_def:type]]
+    class HasEnteredDoor final : public MapLinkEvent
+    {
+    public:
+        HasEnteredDoor():MapLinkEvent(MapEventTypes::evHasEnteredDoor)
+        {}
+        void serializeto(BitStream &bs) const override
+        {
+            bs.StorePackedBits(1,13);
+        }
+        void serializefrom(BitStream &bs) override
+        {
+            // nothing received from client
+        }
+        EVENT_IMPL(HasEnteredDoor)
+    };
+
 } // end of namespace SEGSEvents
