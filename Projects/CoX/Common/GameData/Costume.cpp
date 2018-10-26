@@ -99,6 +99,14 @@ void Costume::storeCharselParts( BitStream &bs ) const
         serializeto_charsel(part,bs);
 }
 
+void Costume::storeCharsel(BitStream &bs) const
+{
+    bs.StorePackedBits(1, m_body_type); // 0:male normal
+    bs.StoreFloat(m_height);
+    bs.StoreFloat(m_physique);
+    bs.StoreBits(32, m_skin_color); // rgb ?
+}
+
 template<class Archive>
 void serialize(Archive &arc, CostumePart &cp, uint32_t const version)
 {
@@ -131,6 +139,8 @@ void Costume::serialize(Archive &archive, uint32_t const version)
         return;
     }
 
+    archive(cereal::make_nvp("CharacterID", m_character_id));
+    archive(cereal::make_nvp("CostumeIdx", m_index));
     archive(cereal::make_nvp("Height", m_height));
     archive(cereal::make_nvp("Physique", m_physique));
     archive(cereal::make_nvp("BodyType", m_body_type));

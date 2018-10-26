@@ -67,13 +67,7 @@ public:
     static Costume NullCostume;
 
     void storeCharselParts(BitStream &bs) const;
-    void storeCharsel(BitStream &bs)
-    {
-        bs.StorePackedBits(1, m_body_type); // 0:male normal
-        bs.StoreFloat(m_height);
-        bs.StoreFloat(m_physique);
-        bs.StoreBits(32, m_skin_color); // rgb ?
-    }
+    void storeCharsel(BitStream &bs) const;
     void serializeToDb(QString &tgt) const;
     void serializeFromDb(const QString &src);
     void dump() const;

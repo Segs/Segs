@@ -727,8 +727,8 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
         return;
     }
     GameAccountResponseCharacterData char_data;
-    qCDebug(logDB).noquote() << "expected_client: Costume:" << char_data.m_serialized_costume_data;
     serializeFromQString(char_data,request_data.char_from_db_data);
+    qCDebug(logDB).noquote() << "expected_client: Costume:" << char_data.m_serialized_costume_data;
     // existing character
     Entity *ent = m_entities.CreatePlayer();
     toActualCharacter(char_data, *ent->m_char, *ent->m_player, *ent->m_entity);

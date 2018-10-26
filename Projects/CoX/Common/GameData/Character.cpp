@@ -342,7 +342,7 @@ void Character::serializetoCharsel( BitStream &bs, const QString& entity_map_nam
         Costume::NullCostume.storeCharsel(bs);
     }
     else
-        m_costumes[getCurrentCostumeIdx(c)].storeCharsel(bs);
+        getCurrentCostume()->storeCharsel(bs);
 
     bs.StoreString(entity_map_name);
     bs.StorePackedBits(1,1); // field_1CC
@@ -359,7 +359,7 @@ const Costume * Character::getCurrentCostume() const
 
 const vCostumes * Character::getAllCostumes() const
 {
-    assert(!m_costumes.empty());
+    assert(!m_costumes.empty()); // should always have 1 costume
     return &m_costumes;
 }
 
