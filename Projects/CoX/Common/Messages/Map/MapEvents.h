@@ -287,36 +287,6 @@ public:
 };
 
 // [[ev_def:type]]
-class EnterDoor final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    bool no_location;
-    // [[ev_def:field]]
-    glm::vec3 location;
-    // [[ev_def:field]]
-    QString name;
-    EnterDoor():MapLinkEvent(MapEventTypes::evEnterDoor)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,9);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        no_location = bs.GetBits(1);
-        if(!no_location)
-        {
-            location.x = bs.GetFloat();
-            location.y = bs.GetFloat();
-            location.z = bs.GetFloat();
-        }
-        bs.GetString(name);
-    }
-    EVENT_IMPL(EnterDoor)
-};
-
-// [[ev_def:type]]
 class DialogButton final : public MapLinkEvent
 {
 public:
@@ -663,6 +633,7 @@ public:
 #include "Messages/Map/ChatDividerMoved.h"
 #include "Messages/Map/ContactDialogs.h"
 #include "Messages/Map/DeadNoGurney.h"
+#include "Messages/Map/DoorAnims.h"
 #include "Messages/Map/EntitiesResponse.h"
 #include "Messages/Map/FriendsListUpdate.h"
 #include "Messages/Map/GameCommandList.h"

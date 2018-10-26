@@ -8,6 +8,7 @@ set(SOURCES
     ChatMessage.h
     ContactDialogs.h
     DeadNoGurney.h
+    DoorAnims.h
     DoorMessage.h
     EmailHeaders.h
     EmailMessageStatus.h

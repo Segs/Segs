@@ -56,7 +56,7 @@ namespace
 GameDbSyncContext::GameDbSyncContext() = default;
 GameDbSyncContext::~GameDbSyncContext() = default;
 
-int64_t GameDbSyncContext::getDbVersion(QSqlDatabase &db)
+int64_t GameDbSyncContext::getDatabaseVersion(QSqlDatabase &db)
 {
     QSqlQuery version_query(
                 QStringLiteral("SELECT version FROM table_versions WHERE table_name='db_version' ORDER BY id DESC LIMIT 1"),
@@ -66,8 +66,13 @@ int64_t GameDbSyncContext::getDbVersion(QSqlDatabase &db)
         qDebug() << version_query.lastError();
         return -1;
     }
+
     if(!version_query.next())
+    {
+        qCritical() << "No rows found when fetching database version.";
         return -1;
+    }
+
     return version_query.value(0).toInt();
 }
 
@@ -112,15 +117,19 @@ bool GameDbSyncContext::loadAndConfigure()
     db2->setUserName(dbuser);
     db2->setPassword(dbpass);
     m_db.reset(db2); // at this point we become owner of the db
+
     if(!m_db->open())
     {
-        qCritical().noquote() << "Failed to open database:" <<dbname;
+        qFatal().noquote() << "Failed to open database:" <<dbname;
         return false;
     }
-    int db_version = getDbVersion(*m_db);
-    if(db_version != required_db_version)
+
+    int64_t db_version = getDatabaseVersion(*m_db);
+    if(db_version!=REQUIRED_DB_VERSION)
     {
-        qCritical() << "Wrong db version:" << db_version << "this GameDatabase service requires:" << required_db_version;
+        qCritical() << "Wrong database version:" << db_version;
+        qFatal() << "Game database requires version:" << REQUIRED_DB_VERSION;
+
         return false;
     }
 
