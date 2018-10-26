@@ -231,9 +231,6 @@ void Character::GetCharBuildInfo(BitStream &src)
     // This must come after finalize
     addStartingInspirations(starting_insps);      // resurgence and phenomenal_luck
 
-
-    //addStartingContact("Officer Flint");
-
     m_char_data.m_trays.serializefrom(src);
 }
 

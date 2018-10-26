@@ -79,7 +79,6 @@ const   QString &       getName() const { return m_name; }
         void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
         void            finalizeLevel();
         void            addStartingInspirations(QStringList &starting_insps);
-        void            addStartingContact(const char *starting_contact);
         void            addStartingPowers(const QString &pcat_name, const QString &pset_name, const QStringList &power_names);
         void            addPowersByLevel(const QString &pcat_name, const QString &pset_name, uint32_t level);
         void            getPowerFromBuildInfo(BitStream &src);

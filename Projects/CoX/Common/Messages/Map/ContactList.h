@@ -29,7 +29,7 @@ namespace SEGSEvents
         void serializeto(BitStream &bs) const override
         {
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 43
-            bs.StorePackedBits(1, m_contact_list.size()); // svr_contacts_total_also_maybe
+            bs.StorePackedBits(1, m_contact_list.size() - 1); // svr_contacts_total_also_maybe
             bs.StorePackedBits(1, m_contact_list.size()); // svr_contacts_total
 
             int count = 0;
@@ -49,16 +49,18 @@ namespace SEGSEvents
                 bs.StorePackedBits(1, contact.m_complete_threshold);
                 bs.StoreBits(1, contact.m_has_location);
 
-                bs.StoreFloat(contact.m_location.location.x);
-                bs.StoreFloat(contact.m_location.location.y);
-                bs.StoreFloat(contact.m_location.location.z);
-                bs.StoreString(contact.m_location.m_location_map_name);
-                bs.StoreString(contact.m_location.m_location_name);
+                if(contact.m_has_location)
+                {
+                    bs.StoreFloat(contact.m_location.location.x);
+                    bs.StoreFloat(contact.m_location.location.y);
+                    bs.StoreFloat(contact.m_location.location.z);
+                    bs.StoreString(contact.m_location.m_location_map_name);
+                    bs.StoreString(contact.m_location.m_location_name);
+                }
 
                  qCDebug(logMapEvents) << "ContactStatusList Event serializeTo. currentStanding: " << contact.m_current_standing;
                 ++count;
             }
-
         }
 
         EVENT_IMPL(ContactStatusList)
