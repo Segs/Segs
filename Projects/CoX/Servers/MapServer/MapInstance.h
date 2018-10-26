@@ -29,7 +29,7 @@ class GameDataStore;
 class MapSceneGraph;
 namespace SEGSEvents
 {
-class InputState;
+class RecvInputState;
 class Idle;
 class DisconnectRequest;
 class SceneRequest;
@@ -49,8 +49,8 @@ class PlaqueVisited;
 class InspirationDockMode;
 class EnterDoor;
 class ChangeStance;
-class SendStance;
 class SetDestination;
+class HasEnteredDoor;
 class AbortQueuedPower;
 class DescriptionAndBattleCry;
 class EntityInfoRequest;
@@ -174,7 +174,7 @@ protected:
         void on_entities_request(SEGSEvents::EntitiesRequest *ev);
         void on_create_map_entity(SEGSEvents::NewEntity *ev);
         void on_timeout(SEGSEvents::Timeout *ev);
-        void on_input_state(SEGSEvents::InputState *st);
+        void on_input_state(SEGSEvents::RecvInputState *st);
         void on_idle(SEGSEvents::Idle *ev);
         void on_shortcuts_request(SEGSEvents::ShortcutsRequest *ev);
 
@@ -198,8 +198,8 @@ protected:
         void on_inspiration_dockmode(SEGSEvents::InspirationDockMode *ev);
         void on_enter_door(SEGSEvents::EnterDoor *ev);
         void on_change_stance(SEGSEvents::ChangeStance *ev);
-        void on_send_stance(SEGSEvents::SendStance *ev);
         void on_set_destination(SEGSEvents::SetDestination *ev);
+        void on_has_entered_door(SEGSEvents::HasEnteredDoor *ev);
         void on_abort_queued_power(SEGSEvents::AbortQueuedPower *ev);
         void on_description_and_battlecry(SEGSEvents::DescriptionAndBattleCry *ev);
         void on_entity_info_request(SEGSEvents::EntityInfoRequest *ev);

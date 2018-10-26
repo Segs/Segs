@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
- * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+ * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
+ * This software is licensed! (See License.txt for details)
  */
 
 /*!
@@ -14,123 +14,20 @@
 
 #include "GameData/Character.h"
 #include "GameData/Entity.h"
+#include "GameData/Movement.h"
 #include "GameData/CoHMath.h"
 #include "Logging.h"
 
 #include <glm/gtc/constants.hpp>
-#include <QDebug>
 #include <cmath>
 
 using namespace SEGSEvents;
 
-enum BinaryControl
+void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
 {
-    FORWARD=0,
-    BACKWARD=1,
-    LEFT=2,
-    RIGHT=3,
-    UP=4,
-    DOWN=5,
-    PITCH=6,
-    YAW=7,
-    LAST_BINARY_VALUE=5,
-    LAST_QUANTIZED_VALUE=7,
-};
-
-void InputState::serializeto(BitStream &) const
-{
-    assert(!"Not implemented");
-}
-
-InputStateStorage &InputStateStorage::operator =(const InputStateStorage &other)
-{
-    m_csc_deltabits             = other.m_csc_deltabits;
-    m_send_deltas               = other.m_send_deltas;
-    m_control_bits              = other.m_control_bits;
-    m_send_id                   = other.m_send_id;
-    m_time_diff1                = other.m_time_diff1;
-    m_time_diff2                = other.m_time_diff2;
-    m_has_input_commit_guess    = other.m_has_input_commit_guess;
-    m_received_server_update_id = other.m_received_server_update_id;
-    m_no_collision              = other.m_no_collision;
-    m_controls_disabled         = other.m_controls_disabled;
-
-    for(int i=0; i<3; ++i)
-    {
-        if(other.pos_delta_valid[i])
-            pos_delta[i] = other.pos_delta[i];
-    }
-    bool update_needed=false;
-    for(int i=0; i<3; ++i)
-    {
-        if(other.pyr_valid[i])
-            m_camera_pyr[i] = other.m_camera_pyr[i];
-
-        if(other.m_orientation_pyr[i]!=0.0f)
-        {
-            qCDebug(logOrientation) << other.m_orientation_pyr[i];
-            m_orientation_pyr[i] = other.m_orientation_pyr[i];
-            update_needed = true;
-        }
-    }
-    if(update_needed)
-        m_direction = fromCoHYpr(m_orientation_pyr);
-
-    qCDebug(logOrientation) << m_direction.w << m_direction.x << m_direction.y << m_direction.z;
-    return *this;
-}
-
-void InputStateStorage::processDirectionControl(int dir,int /*prev_time*/,int press_release)
-{
-    if(press_release)
-    {
-        qCDebug(logInput, "pressed: %d", dir);
-        switch(dir)
-        {
-            case 0: pos_delta[2] = 1.0f; break; //FORWARD
-            case 1: pos_delta[2] = -1.0f; break; //BACKWARD
-            case 2: pos_delta[0] = -1.0f; break; //LEFT
-            case 3: pos_delta[0] = 1.0f; break; //RIGHT
-            case 4: pos_delta[1] = 1.0f; break; // UP
-            case 5: pos_delta[1] = -1.0f; break; // DOWN
-        }
-    }
-    else {
-        switch(dir)
-        {
-            case 0: pos_delta[2] =0.0f; break;
-            case 1: pos_delta[2] =0.0f; break;
-            case 2: pos_delta[0] =0.0f; break;
-            case 3: pos_delta[0] =0.0f; break;
-            case 4: pos_delta[1] =0.0f; break;
-            case 5: pos_delta[1] =0.0f; break;
-        }
-    }
-    switch(dir)
-    {
-        case 0:
-        case 1: pos_delta_valid[2] = true; break;
-        case 2:
-        case 3: pos_delta_valid[0] = true; break;
-        case 4:
-        case 5: pos_delta_valid[1] = true; break;
-    }
-}
-
-void InputState::partial_2(BitStream &bs)
-{
-    uint8_t control_id;
-    uint16_t ms_since_prev;
-    float v;
-
-    static const char *control_name[] = {"FORWARD",
-                                         "BACK",
-                                         "LEFT",
-                                         "RIGHT",
-                                         "UP",
-                                         "DOWN",
-                                         "PITCH",
-                                         "YAW",};
+    uint8_t     control_id = 0;
+    uint32_t    ms_since_prev = 0;
+    float       angle = 0.0f;
 
     do
     {
@@ -142,63 +39,89 @@ void InputState::partial_2(BitStream &bs)
         if(bs.GetBits(1))
             ms_since_prev = bs.GetBits(2)+32; // delta from prev event
         else
-            ms_since_prev = bs.GetBits(m_data.m_csc_deltabits);
+            ms_since_prev = bs.GetBits(m_next_state.m_csc_deltabits);
 
         if (control_id < 8)
-            m_data.m_input_received = true;
+                    m_next_state.m_input_received = true;
+
+        m_next_state.m_ms_since_prev = ms_since_prev;
 
         switch(control_id)
         {
             case FORWARD: case BACKWARD:
             case LEFT: case RIGHT:
             case UP: case DOWN:
-                qCDebug(logInput, "%s  : %d - ", control_name[control_id], ms_since_prev);
-                m_data.processDirectionControl(control_id,ms_since_prev,bs.GetBits(1));
+            {
+                bool keypress_state = bs.GetBits(1); // get keypress state
+                auto now_ms = std::chrono::steady_clock::now();
+                m_next_state.m_svr_keypress_time[control_id] = now_ms - m_next_state.m_keypress_start[control_id];
+
+                m_next_state.m_control_bits[control_id] = keypress_state; // save control_bits state
+                processDirectionControl(&m_next_state, control_id, ms_since_prev, keypress_state);
+
+                qCDebug(logInput, "key released %d", control_id);
+                qCDebug(logLFG, "svr vs client keypress time: %f %f : %f", m_next_state.m_svr_keypress_time[control_id].count(), m_next_state.m_keypress_time[control_id], m_next_state.m_ms_since_prev);
                 break;
+            }
             case PITCH: // camera pitch (Insert/Delete keybinds)
             {
-                v = AngleDequantize(bs.GetBits(11),11); // pitch
-                m_data.pyr_valid[0] = true;
-                m_data.m_camera_pyr[0] = v;
-                qCDebug(logOrientation, "Pitch (%f): %f", m_data.m_orientation_pyr[0], m_data.m_camera_pyr.x);
+                angle = AngleDequantize(bs.GetBits(11),11); // pitch
+                m_next_state.m_pyr_valid[0] = true;
+                m_next_state.m_camera_pyr[0] = angle;
+                qCDebug(logInput, "Pitch (%f): %f", m_next_state.m_orientation_pyr[0], m_next_state.m_camera_pyr.x);
                 break;
             }
             case YAW: // camera yaw (Q or E keybinds)
             {
-                v = AngleDequantize(bs.GetBits(11),11); // yaw
-                m_data.pyr_valid[1] = true;
-                m_data.m_camera_pyr[1] = v;
-                qCDebug(logOrientation, "Yaw (%f): %f", m_data.m_orientation_pyr[1], m_data.m_camera_pyr.y);
+                angle = AngleDequantize(bs.GetBits(11),11); // yaw
+                m_next_state.m_pyr_valid[1] = true;
+                m_next_state.m_camera_pyr[1] = angle;
+                qCDebug(logInput, "Yaw (%f): %f", m_next_state.m_orientation_pyr[1], m_next_state.m_camera_pyr.y);
                 break;
             }
             case 8:
             {
-                m_data.m_controls_disabled = bs.GetBits(1);
-                if ( m_data.m_send_deltas )
+                m_next_state.m_controls_disabled = bs.GetBits(1);
+                if ( m_next_state.m_full_timeupdate ) // sent_run_physics. maybe autorun? maybe is_running?
                 {
-                    m_data.m_time_diff1=bs.GetPackedBits(8);   // value - previous_value
-                    m_data.m_time_diff2=bs.GetPackedBits(8);   // time - previous_time
+                    m_next_state.m_time_diff1 = bs.GetPackedBits(8);   // value - previous_value
+                    m_next_state.m_time_diff2 = bs.GetPackedBits(8);   // time - previous_time
                 }
                 else
                 {
-                    m_data.m_send_deltas = true;
-                    m_data.m_time_diff1=bs.GetBits(32);       // value
-                    m_data.m_time_diff2=bs.GetPackedBits(10); // value - time
+                    m_next_state.m_full_timeupdate = true;
+                    m_next_state.m_time_diff1 = bs.GetBits(32);       // value
+                    m_next_state.m_time_diff2 = bs.GetPackedBits(10); // value - time
                 }
-                if(bs.GetBits(1))
+
+                /*
+                qCDebug(logMovement, "Controls Disabled: %d  time_diff1: %d \t time_diff2: %d",
+                        m_next_state.m_controls_disabled, m_next_state.m_time_diff1, m_next_state.m_time_diff2);
+                */
+
+                if(bs.GetBits(1)) // if true velocity scale < 255
                 {
-                    m_data.m_input_vel_scale=bs.GetBits(8);
+                    m_next_state.m_velocity_scale = bs.GetBits(8);
+                    qCDebug(logInput, "Velocity Scale: %d", m_next_state.m_velocity_scale);
                 }
+                else
+                    m_next_state.m_velocity_scale = 255;
+
                 break;
             }
             case 9:
             {
-                m_data.m_received_server_update_id = bs.GetBits(8);
+                m_next_state.m_every_4_ticks = bs.GetBits(8); // value goes to 0 every 4 ticks. Some kind of send_partial flag
+
+                if(m_next_state.m_every_4_ticks != 1)
+                    qCDebug(logInput, "This goes to 0 every 4 ticks: %d", m_next_state.m_every_4_ticks);
+
                 break;
             }
             case 10:
             {
-                m_data.m_no_collision = bs.GetBits(1);
+                m_next_state.m_no_collision = bs.GetBits(1);
+                qCDebug(logInput, "Collision: %d", m_next_state.m_no_collision);
                 break;
             }
             default:
@@ -206,104 +129,68 @@ void InputState::partial_2(BitStream &bs)
         }
 
     } while(bs.GetBits(1));
+
+    //qCDebug(logInput, "recv control_id 9 %f", m_next_state.m_every_4_ticks);
 }
 
-void InputState::extended_input(BitStream &bs)
+void RecvInputState::extended_input(BitStream &bs)
 {
-    m_data.m_has_input_commit_guess = bs.GetBits(1);
-    if(m_data.m_has_input_commit_guess) // list of partial_2 follows
+    bool keypress_state;
+
+    m_next_state.m_full_input_packet = bs.GetBits(1);
+    if(m_next_state.m_full_input_packet) // list of partial_2 follows
     {
-        m_data.m_csc_deltabits=bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
-        m_data.m_send_id = bs.GetBits(16);
-        qCDebug(logInput, "CSC_DELTA[%x-%x] : ", m_data.m_csc_deltabits, m_data.m_send_id);
-        partial_2(bs);
+        m_next_state.m_csc_deltabits = bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
+        m_next_state.m_send_id = bs.GetBits(16);
 
+        //qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_current.m_csc_deltabits, m_current.m_send_id, m_current.current_state_P);
+        receiveControlState(bs); // formerly partial_2
     }
-    m_data.m_control_bits = 0;
+
+    // Key Pressed/Held
     for(int idx=0; idx<6; ++idx)
-        m_data.m_control_bits |= (bs.GetBits(1))<<idx;
+    {
+        keypress_state = bs.GetBits(1);
+        m_next_state.m_control_bits[idx] = keypress_state;
+        if(keypress_state==true)
+        {
+            m_next_state.m_keypress_start[idx] = std::chrono::steady_clock::now();
+            processDirectionControl(&m_next_state, idx, 0, keypress_state);
+            qCDebug(logInput, "keypress down %d", idx);
+        }
+    }
 
-    if(m_data.m_control_bits)
-        qCDebug(logInput, "E input %x : ",m_data.m_control_bits);
-
-    if (m_data.m_control_bits != 0)
-        m_data.m_input_received = true;
+    if (m_next_state.m_control_bits != 0)
+            m_next_state.m_input_received = true;
 
     if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
     {
-        m_data.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
-        m_data.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11);
-        qCDebug(logOrientation, "%f : %f",m_data.m_orientation_pyr[0],m_data.m_orientation_pyr[1]);
+        m_next_state.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
+        m_next_state.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11);
+        qCDebug(logOrientation, "extended pitch: %f \tyaw: %f", m_next_state.m_orientation_pyr[0], m_next_state.m_orientation_pyr[1]);
     }
 }
 
-struct ControlState
+void RecvInputState::serializefrom(BitStream &bs)
 {
-    int client_timenow;
-    int time_res;
-    float timestep;
-    float time_rel1C;
-    uint64_t m_perf_cntr_diff;
-    uint64_t m_perf_freq_diff;
-    // recover actual ControlState from network data and previous entry
-    void serializefrom_delta(BitStream &bs,const ControlState &/*prev*/)
-    {
-        client_timenow   = bs.GetPackedBits(1); // field_0 diff next-current
-        time_res = bs.GetPackedBits(1); // time to next state ?
-        timestep = bs.GetFloat(); // next state's timestep
-
-        time_rel1C = timestep;
-        if(bs.GetBits(1)) //timestep!=time_rel1C
-            time_rel1C = bs.GetFloat();
-
-        m_perf_cntr_diff = bs.Get64Bits(); //current_state->ticks - prev_state->ticks
-        if(bs.GetBits(1))
-        {
-            // perf freq changed between current and prev
-            m_perf_freq_diff = bs.Get64Bits();
-        }
-    }
-    void serializefrom_base(BitStream &bs)
-    {
-        client_timenow   = bs.GetBits(32); // result of time(NULL)
-        time_res = bs.GetBits(32); // result of timeGetTime()
-        timestep = bs.GetFloat(); //client global TIMESTEP - per frame time
-
-        time_rel1C = timestep;
-        if(bs.GetBits(1)) //timestep!=time_rel1C
-            time_rel1C = bs.GetFloat(); // simulation timestep ?
-
-        m_perf_cntr_diff = bs.Get64Bits(); //next_state->ticks - current_state->ticks
-        m_perf_freq_diff = bs.Get64Bits(); //v7->perf_cntr1
-    }
-    void dump()
-    {
-        qCDebug(logInput, "CSC: %d,%d, [%f,%f]", client_timenow, time_res, timestep,time_rel1C);
-        qCDebug(logInput, "(%lu %lu)", m_perf_cntr_diff, m_perf_freq_diff);
-    }
-};
-
-void InputState::serializefrom(BitStream &bs)
-{
-    m_data.m_send_deltas=false;
+    m_next_state.m_full_timeupdate = false; // possibly some kind of full_update flag that is used elsewhere also
 
     if(bs.GetBits(1))
         extended_input(bs);
 
-    m_has_target = bs.GetBits(1);
-    m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
+    m_next_state.m_has_target = bs.GetBits(1);
+    m_next_state.m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
 
-    if(m_has_target)
-        qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_has_target, m_target_idx);
+    qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_next_state.m_has_target, m_next_state.m_target_idx);
 
-    int ctrl_idx=0;
-    ControlState prev_fld;
+    TimeState prev_fld;
+    int ctrl_idx = 0;
     while(bs.GetBits(1)) // receive control state array entries ?
     {
-        ControlState fld;
+        TimeState fld;
         if(ctrl_idx)
         {
-            fld.serializefrom_delta(bs,prev_fld);
+            fld.serializefrom_delta(bs, prev_fld);
         }
         else // initial values
         {
@@ -313,31 +200,38 @@ void InputState::serializefrom(BitStream &bs)
         prev_fld = fld;
         ctrl_idx++;
     }
+
     recv_client_opts(bs); // g_pak contents will follow
+
     if(bs.GetReadableBits()>0)
     {
         m_user_commands.ResetOffsets();
         bs.ByteAlign(true,false);
         m_user_commands.StoreBitArray(bs.read_ptr(),bs.GetReadableBits());
-
         // all remaining bits were moved to m_user_commands.
         bs.SetReadPos(bs.GetWritePos());
     }
 }
 
+void RecvInputState::serializeto(BitStream &) const
+{
+    assert(!"Not implemented");
+}
+
 //TODO: use generic ReadableStructures here ?
-void InputState::recv_client_opts(BitStream &bs)
+void RecvInputState::recv_client_opts(BitStream &bs)
 {
     ClientOptions opts;
     ClientOption *entry;
     glm::vec3 vec;
     int cmd_idx;
+
     while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
         entry=opts.get(cmd_idx-1);
         if (!entry)
         {
-            qWarning() << "recv_client_opts missing opt for cmd index"<<cmd_idx-1;
+            qWarning() << "recv_client_opts missing opt for cmd index" << cmd_idx-1;
             continue;
         }
         for(ClientOption::Arg &arg : entry->m_args)
