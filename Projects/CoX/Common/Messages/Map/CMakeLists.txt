@@ -7,6 +7,7 @@ set(SOURCES
     ChatMessage.cpp
     ChatMessage.h
     ContactDialogs.h
+    ContactList.h
     DeadNoGurney.h
     DoorMessage.h
     EmailHeaders.h
