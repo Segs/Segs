@@ -101,7 +101,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evEnterDoor                  ,209)
     EVENT_DECL(MapEventTypes, evAwaitingDeadNoGurney       ,210)
     EVENT_DECL(MapEventTypes, evSetDestination             ,211)
-    EVENT_DECL(MapEventTypes, evHasEnteredDoor                ,213)
+    EVENT_DECL(MapEventTypes, evHasEnteredDoor             ,213)
     EVENT_DECL(MapEventTypes, evWindowState                ,214)
     EVENT_DECL(MapEventTypes, evInspirationDockMode        ,217)
     EVENT_DECL(MapEventTypes, evPowersDockMode             ,218)

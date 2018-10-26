@@ -110,7 +110,7 @@ void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
 void sendTimeStateLog(MapClientSession &src, uint32_t control_log);
 void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000);
 void sendClientState(MapClientSession &sess, ClientStates client_state);
-void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name);
+void showMapXferList(MapClientSession &sess, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount);
 void sendLevelUp(MapClientSession &src);
