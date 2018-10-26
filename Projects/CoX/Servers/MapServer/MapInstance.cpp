@@ -166,7 +166,7 @@ void MapInstance::start(const QString &scenegraph_path)
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
-            },"Spawning npcs");
+            }, "Spawning npcs");
         qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
@@ -362,6 +362,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
+            break;
+        case evHasEnteredDoor:
+            on_has_entered_door(static_cast<HasEnteredDoor *>(ev));
             break;
         case evWindowState:
             on_window_state(static_cast<WindowState *>(ev));
@@ -559,7 +562,8 @@ void MapInstance::on_idle(Idle *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
-    lnk->putq(new Idle);
+    // we don't have to respond with an idle message here, check links will send idle events as needed.
+    //lnk->putq(new Idle);
 }
 
 void MapInstance::on_check_links()
@@ -957,15 +961,16 @@ void MapInstance::sendState()
 
     for(;iter!=end; ++iter)
     {
-
         MapClientSession *cl = *iter;
-        
-        EntitiesResponse *res=new EntitiesResponse();
+        if (!cl->m_in_map)
+            continue;
+
+        EntitiesResponse *res = new EntitiesResponse();
         res->m_map_time_of_day = m_world->time_of_day();
         //while cl->m_in_map==false we send full updates until client `resumes`
         res->ent_major_update = true;
-        res->abs_time = 30*100*(m_world->accumulated_time);
-        buildEntityResponse(res,*cl,cl->m_in_map ? EntityUpdateMode::INCREMENTAL : EntityUpdateMode::FULL,false);
+        res->abs_time = 30 * 100 * (m_world->accumulated_time);
+        buildEntityResponse(res, *cl, cl->m_in_map ? EntityUpdateMode::INCREMENTAL : EntityUpdateMode::FULL, false);
         cl->link()->putq(res);
     }
 
@@ -1054,7 +1059,16 @@ void MapInstance::on_input_state(RecvInputState *st)
 
 void MapInstance::on_cookie_confirm(CookieRequest * ev)
 {
+    MapClientSession &session(m_session_store.session_from_event(ev));
     qDebug("Received cookie confirm %x - %x\n", ev->cookie, ev->console);
+
+    // just after sending this packet the client started waiting for resume , so we send it the update right now.
+    EntitiesResponse *res = new EntitiesResponse();
+    res->m_map_time_of_day = m_world->time_of_day();
+    res->ent_major_update = true;
+    res->abs_time = 30 * 100 * (m_world->accumulated_time);
+    buildEntityResponse(res, session, EntityUpdateMode::FULL, false);
+    session.link()->putq(res);
 }
 
 void MapInstance::on_window_state(WindowState * ev)
@@ -1963,7 +1977,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     // TODO only do this the first time a client connects, not after map transfers..
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    if(session.m_in_map==false)
+    if(!session.m_in_map)
         session.m_in_map = true;
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
@@ -2024,34 +2038,59 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
-    // ev->name is the map_idx when using the map menu currently.
-    if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
-    {
-        uint8_t map_idx = ev->name.toInt();
-        if (ev->location.x != 0 || ev->location.y != 0 || ev->location.z != 0)
-            map_idx = std::rand() % 23;
+    QString output_msg = "Door entry request to:" + ev->name;
+    if(ev->no_location)
+        qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
+    else
+        qCDebug(logMapXfers).noquote() << output_msg << ev->location.x << ev->location.y << ev->location.z;
 
-        // TODO: change this to not be hacky.
-        // change the map idx if you're trying to load the map you're currently on
-        // this should only ever happen with /movezone commands after doors work correctly.
-        if (map_idx == m_index)
-            map_idx = (map_idx + 1) % 23;
-        map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
-        session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+    // For now, let's test by making some of the door options random
+    int randNum = std::rand() % 100;
+    if(randNum < 35 || session.m_ent->m_is_using_mapmenu)
+    {
+        // TODO: use location and name to determine where the door goes.
+        // for now, we're using no_location to determine whether or not
+        // ev->name is the map_idx when using /mapmenu currently.
+        if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
+        {
+            uint8_t map_idx = ev->name.toInt();
+            if (!ev->no_location)
+                 map_idx = std::rand() % 23;
+
+             // TODO: change this to not be hacky.
+             // change the map idx if you're trying to load the map you're currently on
+             // this should only ever happen with /movezone commands after doors work correctly.
+             if (map_idx == m_index)
+                 map_idx = (map_idx + 1) % 23;
+             map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
+             session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+        }
+        session.m_ent->m_is_using_mapmenu = false;
+    }
+    else if(randNum < 70)
+    {
+        // Start Door Animation
+        QString anim_name = "RUNIN";
+        glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
+        sendDoorAnimStart(session, ev->location, offset, true, anim_name);
     }
     else
     {
-        qCWarning(logMapXfers).noquote() << "Unhandled door entry request to:" << ev->name;
-        if(ev->no_location)
-            qCWarning(logMapXfers).noquote() << "    no location provided";
-        else
-            qCWarning(logMapXfers).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+        QString door_msg = "Knock! Knock!";
+        sendDoorMessage(session, 2, door_msg);
     }
 
-    //pseudocode:
-    //  auto door = get_door(ev->name,ev->location);
-    //  if(door and player_can_enter(door)
-    //    process_map_transfer(player,door->targetMap);
+    /* pseudocode:
+     *  auto door = get_door(ev->name,ev->location);
+     *  if(door and player_can_enter(door)
+     *      doorAnimStart(entry, target);
+     *      process_map_transfer(player, door->targetMap);
+     *      doorAnimsExit();
+     *  else if(door)
+     *      doorMessage(msg);
+     *  else
+     *      error: "not door?"
+     */
 }
 
 void MapInstance::on_change_stance(ChangeStance * ev)
@@ -2078,6 +2117,17 @@ void MapInstance::on_set_destination(SetDestination * ev)
     // store destination, confirm accuracy and send back to client as waypoint.
     setCurrentDestination(*session.m_ent, ev->point_index, ev->destination);
     sendWaypoint(session, ev->point_index, ev->destination);
+}
+
+void MapInstance::on_has_entered_door(HasEnteredDoor *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+
+    sendDoorAnimExit(session, false);
+
+    QString output_msg = "Enter door animation has finished.";
+    qCDebug(logAnimations).noquote() << output_msg;
 }
 
 void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)

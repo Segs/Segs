@@ -500,7 +500,7 @@ bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)
         qDebug() << "Unresponsive link";
         return false;
     }
-    // move some packaets from reliable_packets to retransmit_queue
+    // move some packets from reliable_packets to retransmit_queue
     processRetransmits();
     // first handle retransmit queue
     CrudP_Packet *pak;

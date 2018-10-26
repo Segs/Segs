@@ -15,6 +15,7 @@
 #include "Messages/Map/ChangeTitle.h"
 #include "Messages/Map/ContactDialogs.h"
 #include "Messages/Map/DeadNoGurney.h"
+#include "Messages/Map/DoorAnims.h"
 #include "Messages/Map/DoorMessage.h"
 #include "Messages/Map/EmailHeaders.h"
 #include "Messages/Map/EmailMessageStatus.h"

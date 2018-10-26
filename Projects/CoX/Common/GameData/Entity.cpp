@@ -251,20 +251,20 @@ void revivePlayer(Entity &e, ReviveLevel lvl)
     switch(lvl)
     {
     case ReviveLevel::AWAKEN:
-        setHP(*e.m_char, getMaxHP(*e.m_char)*0.25);
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.25f);
         break;
     case ReviveLevel::BOUNCE_BACK:
-        setHP(*e.m_char, getMaxHP(*e.m_char)*0.5);
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.5f);
         break;
     case ReviveLevel::RESTORATION:
-        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75);
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75f);
         break;
     case ReviveLevel::IMMORTAL_RECOVERY:
         setMaxHP(*e.m_char);
         break;
     case ReviveLevel::REGEN_REVIVE:
-        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75);
-        setEnd(*e.m_char, getMaxEnd(*e.m_char)*0.5);
+        setHP(*e.m_char, getMaxHP(*e.m_char)*0.75f);
+        setEnd(*e.m_char, getMaxEnd(*e.m_char)*0.5f);
         break;
     case ReviveLevel::FULL:
     default:

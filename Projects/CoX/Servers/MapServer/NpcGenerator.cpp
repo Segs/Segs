@@ -31,6 +31,12 @@ void NpcGenerator::generate(MapInstance *map_instance)
         angles.y += glm::pi<float>();
         forceOrientation(*e, angles);
         e->m_motion_state.m_velocity = { 0,0,0 };
+
+        if(costume_name.contains("door", Qt::CaseInsensitive))
+        {
+            e->m_is_fading = false;
+            e->translucency = 0.0f;
+        }
     }
 }
 
