@@ -86,6 +86,7 @@ Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
+void    positionTest(MapClientSession *tgt);
 bool    isFriendOnline(Entity &src, uint32_t db_id);
 void    setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits);
 QString createMapMenu();
@@ -165,11 +166,11 @@ void findTeamMember(Entity &tgt);
 /*
  * Lua Functions
  */
-void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variation);
-void giveEnhancement(MapClientSession *cl, const char* name, int level);
-void giveDebt(MapClientSession *cl, int debt);
-void giveEnd(MapClientSession *cl, float end);
-void giveHp(MapClientSession *cl, float hp);
-void giveInf(MapClientSession *cl, int inf);
-void giveInsp(MapClientSession *cl, const char *value);
-void giveXp(MapClientSession *cl, int xp);
+void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation);
+void giveEnhancement(MapClientSession &sess, const char* name, int level);
+void giveDebt(MapClientSession &sess, int debt);
+void giveEnd(MapClientSession &sess, float end);
+void giveHp(MapClientSession &sess, float hp);
+void giveInf(MapClientSession &sess, int inf);
+void giveInsp(MapClientSession &sess, QString &name);
+void giveXp(MapClientSession &sess, int xp);

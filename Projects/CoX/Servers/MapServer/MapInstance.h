@@ -29,7 +29,7 @@ class GameDataStore;
 class MapSceneGraph;
 namespace SEGSEvents
 {
-class InputState;
+class RecvInputState;
 class Idle;
 class DisconnectRequest;
 class SceneRequest;
@@ -174,7 +174,7 @@ protected:
         void on_entities_request(SEGSEvents::EntitiesRequest *ev);
         void on_create_map_entity(SEGSEvents::NewEntity *ev);
         void on_timeout(SEGSEvents::Timeout *ev);
-        void on_input_state(SEGSEvents::InputState *st);
+        void on_input_state(SEGSEvents::RecvInputState *st);
         void on_idle(SEGSEvents::Idle *ev);
         void on_shortcuts_request(SEGSEvents::ShortcutsRequest *ev);
 

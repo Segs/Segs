@@ -46,9 +46,9 @@ uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
 uint32_t    getAccessLevel(const Entity &e) { return e.m_entity_data.m_access_level; }
 uint32_t    getTargetIdx(const Entity &e) { return e.m_target_idx; }
 uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; }
-glm::vec3   getSpeed(const Entity &e) { return e.m_spd; }
-float       getBackupSpd(const Entity &e) { return e.m_backup_spd; }
-float       getJumpHeight(const Entity &e) { return e.m_jump_height; }
+glm::vec3   getSpeed(const Entity &e) { return e.m_motion_state.m_speed; }
+float       getBackupSpd(const Entity &e) { return e.m_motion_state.m_backup_spd; }
+float       getJumpHeight(const Entity &e) { return e.m_motion_state.m_jump_height; }
 uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
 Destination     getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
 ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
@@ -56,9 +56,9 @@ ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
 void    setMapIdx(Entity &e, uint32_t val) { e.m_entity_data.m_map_idx = val; }
-void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_spd = {v1,v2,v3}; }
-void    setBackupSpd(Entity &e, float val) { e.m_backup_spd = val; }
-void    setJumpHeight(Entity &e, float val) { e.m_jump_height = val; }
+void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_motion_state.m_speed = {v1,v2,v3}; }
+void    setBackupSpd(Entity &e, float val) { e.m_motion_state.m_backup_spd = val; }
+void    setJumpHeight(Entity &e, float val) { e.m_motion_state.m_jump_height = val; }
 void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
 
 void    setTeamID(Entity &e, uint8_t team_id)
@@ -149,24 +149,24 @@ void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
 void    setu1(Entity &e, int val) { e.u1 = val; }
 
 // Toggles
-void    toggleFlying(Entity &e) { e.m_is_flying = !e.m_is_flying; }
-void    toggleFalling(Entity &e) { e.m_is_falling = !e.m_is_falling; }
-void    toggleJumping(Entity &e) { e.m_is_jumping = !e.m_is_jumping; }
-void    toggleSliding(Entity &e) { e.m_is_sliding = !e.m_is_sliding; }
+void    toggleFlying(Entity &e) { e.m_motion_state.m_is_flying = !e.m_motion_state.m_is_flying; }
+void    toggleFalling(Entity &e) { e.m_motion_state.m_is_falling = !e.m_motion_state.m_is_falling; }
+void    toggleJumping(Entity &e) { e.m_motion_state.m_is_jumping = !e.m_motion_state.m_is_jumping; }
+void    toggleSliding(Entity &e) { e.m_motion_state.m_is_sliding = !e.m_motion_state.m_is_sliding; }
 
 void toggleStunned(Entity &e)
 {
-    e.m_is_stunned = !e.m_is_stunned;
+    e.m_motion_state.m_is_stunned = !e.m_motion_state.m_is_stunned;
     // TODO: toggle stunned FX above head
 }
 
 void toggleJumppack(Entity &e)
 {
-    e.m_has_jumppack = !e.m_has_jumppack;
+    e.m_motion_state.m_has_jumppack = !e.m_motion_state.m_has_jumppack;
     // TODO: toggle costume part for jetpack back item.
 }
 
-void    toggleControlsDisabled(Entity &e) { e.m_controls_disabled = !e.m_controls_disabled; }
+void    toggleControlsDisabled(Entity &e) { e.m_motion_state.m_controls_disabled = !e.m_motion_state.m_controls_disabled; }
 void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
 void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
 void    toggleInterp(Entity &e) { e.m_has_interp = !e.m_has_interp; }
@@ -198,13 +198,14 @@ void toggleLFG(Entity &e)
 
 void toggleCollision(Entity &e)
 {
-    e.inp_state.m_no_collision = !e.inp_state.m_no_collision;
+    e.m_motion_state.m_no_collision = !e.m_motion_state.m_no_collision;
 
-    if (e.inp_state.m_no_collision)
+    if (e.m_motion_state.m_no_collision)
         e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
     else
         e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
-     qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.inp_state.m_no_collision;
+
+    qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.m_motion_state.m_no_collision;
 }
 
 void toggleMovementAuthority(Entity &e)
@@ -302,6 +303,48 @@ void sendServerMOTD(MapClientSession *tgt)
     }
 }
 
+void positionTest(MapClientSession *tgt)
+{
+    if(tgt->m_ent->m_type != EntType::PLAYER)
+        return;
+
+    QString output = "==== Position Test =======================\n";
+
+    output += QString("Move Time: %1\n")
+            .arg(tgt->m_ent->m_states.current()->m_move_time, 0, 'f', 1);
+
+    output += QString("Prev Pos <%1, %2, %3>\n")
+            .arg(tgt->m_ent->m_motion_state.m_last_pos.x, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_last_pos.y, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_last_pos.z, 0, 'f', 1);
+
+    output += QString("Server Pos <%1, %2, %3>\n")
+            .arg(tgt->m_ent->m_entity_data.m_pos.x, 0, 'f', 1)
+            .arg(tgt->m_ent->m_entity_data.m_pos.y, 0, 'f', 1)
+            .arg(tgt->m_ent->m_entity_data.m_pos.z, 0, 'f', 1);
+
+    FixedPointValue fpvx(tgt->m_ent->m_entity_data.m_pos.x);
+    FixedPointValue fpvy(tgt->m_ent->m_entity_data.m_pos.y);
+    FixedPointValue fpvz(tgt->m_ent->m_entity_data.m_pos.z);
+    output += QString("Client Pos <%1, %2, %3>\n")
+            .arg(fpvx.store)
+            .arg(fpvy.store)
+            .arg(fpvz.store);
+
+    output += QString("Velocity <%1, %2, %3> @ %4\n")
+            .arg(tgt->m_ent->m_motion_state.m_velocity.x, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_velocity.y, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_velocity.z, 0, 'f', 1)
+            .arg(tgt->m_ent->m_motion_state.m_velocity_scale/255, 0, 'f', 1);
+
+    qDebug().noquote() << output;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, output, *tgt);
+}
+
+
+/*
+ * sendEmail Wrappers for providing access to Email Database
+ */
 void sendEmailHeaders(MapClientSession &sess)
 {
     if(!sess.m_ent->m_client)
@@ -1008,112 +1051,109 @@ void findTeamMember(Entity &tgt)
  */
 //
 
-void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variation)
+void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
-    const QString name_string = QString::fromUtf8(name);
-    QStringRef npc_name = QStringRef(&name_string);
-
-    const Parse_NPC * npc_def = npc_store.npc_by_name(npc_name);
+    const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
     if(!npc_def)
     {
-        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for:"+npc_name, cl);
+        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
         return;
     }
-    int idx = npc_store.npc_idx(npc_def);
-    Entity *e = cl.m_current_map->m_entities.CreateNpc(getGameData(),*npc_def,idx, variation);
 
-    forcePosition(*e, *loc);
-    e->m_velocity = {0,0,0};
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc->x).arg(loc->y).arg(loc->z), cl);
+    int idx = npc_store.npc_idx(npc_def);
+    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
+
+    forcePosition(*e, loc);
+    e->m_motion_state.m_velocity = {0,0,0};
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx: %1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 
-void giveEnhancement(MapClientSession *cl, const char* e_name, int e_level)
+void giveEnhancement(MapClientSession &sess, const char* e_name, int e_level)
 {
-    CharacterData &cd = cl->m_ent->m_char->m_char_data;
+    CharacterData &cd = sess.m_ent->m_char->m_char_data;
     QString name = QString::fromUtf8(e_name);
     uint32_t level = e_level;
     QString msg = "You do not have room for any more enhancements!";
 
     if(getNumberEnhancements(cd) < 10)
     {
-        msg = "Awarding Enhancement '" + name + "' to " + cl->m_ent->name();
+        msg = "Awarding Enhancement '" + name + "' to " + sess.m_ent->name();
         addEnhancementByName(cd, name, level);
 
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
-        sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+        sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     }
     qCDebug(logScripts()).noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void giveDebt(MapClientSession *cl, int debt)
+void giveDebt(MapClientSession &sess, int debt)
 {
-    uint32_t current_debt = getDebt(*cl->m_ent->m_char);
+    uint32_t current_debt = getDebt(*sess.m_ent->m_char);
     uint32_t debt_to_give = current_debt + debt;
-    setDebt(*cl->m_ent->m_char, debt_to_give);
+    setDebt(*sess.m_ent->m_char, debt_to_give);
     QString msg = "Setting Debt to " + QString::number(debt_to_give);
     qCDebug(logScripts) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void giveEnd(MapClientSession *cl, float end)
+void giveEnd(MapClientSession &sess, float end)
 {
-    float current_end = getEnd(*cl->m_ent->m_char);
+    float current_end = getEnd(*sess.m_ent->m_char);
     float end_to_set = current_end + end;
-    setEnd(*cl->m_ent->m_char, end_to_set);
+    setEnd(*sess.m_ent->m_char, end_to_set);
     QString msg = QString("Setting Endurance to: %1").arg(end_to_set);
     qCDebug(logScripts) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void giveHp(MapClientSession *cl, float hp)
+void giveHp(MapClientSession &sess, float hp)
 {
-    float current_hp = getHP(*cl->m_ent->m_char);
+    float current_hp = getHP(*sess.m_ent->m_char);
     float hp_to_set = current_hp + hp;
-    setHP(*cl->m_ent->m_char, hp_to_set);
+    setHP(*sess.m_ent->m_char, hp_to_set);
     QString msg = QString("Setting HP to: %1").arg(hp_to_set);
     qCDebug(logScripts) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void giveInf(MapClientSession *cl, int inf)
+void giveInf(MapClientSession &sess, int inf)
 {
-    uint32_t current_inf = getInf(*cl->m_ent->m_char);
+    uint32_t current_inf = getInf(*sess.m_ent->m_char);
     uint32_t inf_to_set = current_inf + inf;
-    setInf(*cl->m_ent->m_char, inf_to_set);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Setting inf to %1").arg(inf_to_set), *cl);
+    setInf(*sess.m_ent->m_char, inf_to_set);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Setting inf to %1").arg(inf_to_set), sess);
 }
 
-void giveInsp(MapClientSession *cl, const char *value)
+void giveInsp(MapClientSession &sess, QString &name)
 {
-    CharacterData &cd = cl->m_ent->m_char->m_char_data;
-    QString val = QString::fromUtf8(value);
+    CharacterData &cd = sess.m_ent->m_char->m_char_data;
     QString msg = "You do not have room for any more inspirations!";
 
     if(getNumberInspirations(cd) < getMaxNumberInspirations(cd))
     {
-        msg = "Awarding Inspiration '" + val + "' to " + cl->m_ent->name();
+        msg = "Awarding Inspiration '" + name + "' to " + sess.m_ent->name();
 
-        addInspirationByName(cd, val);
+        addInspirationByName(cd, name);
 
         // NOTE: floating message shows no message here, but plays the awarding insp sound!
         QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
-        sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+        sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     }
 
     qCDebug(logScripts).noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void giveXp(MapClientSession *cl, int xp)
+void giveXp(MapClientSession &sess, int xp)
 {
-    uint32_t lvl = getLevel(*cl->m_ent->m_char);
-    uint32_t current_xp = getXP(*cl->m_ent->m_char);
+    uint32_t lvl = getLevel(*sess.m_ent->m_char);
+    uint32_t current_xp = getXP(*sess.m_ent->m_char);
 
     // Calculate XP - Debt difference by server settings?
 
-    uint32_t current_debt = getDebt(*cl->m_ent->m_char);
+    uint32_t current_debt = getDebt(*sess.m_ent->m_char);
     if(current_debt > 0)
     {
         uint32_t debt_to_pay = 0;
@@ -1129,25 +1169,24 @@ void giveXp(MapClientSession *cl, int xp)
             xp = xp - current_debt;
         }
         uint32_t newDebt = current_debt - debt_to_pay;
-        setDebt(*cl->m_ent->m_char, newDebt);
-        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You paid %1 to your debt").arg(debt_to_pay), *cl);
+        setDebt(*sess.m_ent->m_char, newDebt);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You paid %1 to your debt").arg(debt_to_pay), sess);
     }
     uint32_t xp_to_give = current_xp + xp;
-    setXP(*cl->m_ent->m_char, xp_to_give);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were awarded %1 XP").arg(xp), *cl);
+    setXP(*sess.m_ent->m_char, xp_to_give);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were awarded %1 XP").arg(xp), sess);
     QString msg = "Setting XP to " + QString::number(xp_to_give);
-    uint32_t new_lvl = getLevel(*cl->m_ent->m_char);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were lvl %1 now %2").arg(lvl).arg(new_lvl), *cl);
+    uint32_t new_lvl = getLevel(*sess.m_ent->m_char);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were lvl %1 now %2").arg(lvl).arg(new_lvl), sess);
 
     //This check doesn't show level change
-
     if(new_lvl != lvl)
     {
-        cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, FloatingInfoMsg.find(FloatingMsg_Leveled).value(), FloatingInfo_Attention , 4.0);
+        sess.addCommand<FloatingInfo>(sess.m_ent->m_idx, FloatingInfoMsg.find(FloatingMsg_Leveled).value(), FloatingInfo_Attention , 4.0);
         msg += " and LVL to " + QString::number(new_lvl);
     }
     qCDebug(logScripts) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 
