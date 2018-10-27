@@ -22,7 +22,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evScene                      ,5)
     EVENT_DECL(MapEventTypes, evEntitiesRequest            ,6)
     EVENT_DECL(MapEventTypes, evEntitiesResponse           ,7)
-    EVENT_DECL(MapEventTypes, evRecvInputState                 ,8)
+    EVENT_DECL(MapEventTypes, evRecvInputState             ,8)
     EVENT_DECL(MapEventTypes, evClientQuit                 ,9)
     EVENT_DECL(MapEventTypes, evForcedLogout               ,10)
     EVENT_DECL(MapEventTypes, evInitiateMapXfer            ,11)
@@ -30,9 +30,10 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evChatDividerMoved           ,36)
 // server -> client commands
     EVENT_DECL(MapEventTypes, evFirstServerToClient        ,100)
-//    EVENT_DECL(MapEventTypes, evServerGameCommand        ,113) // 1013?
     EVENT_DECL(MapEventTypes, evMapXferWait                ,110)
     EVENT_DECL(MapEventTypes, evMapXferRequest             ,111)
+//    EVENT_DECL(MapEventTypes, evForceClientLogout        ,112)
+//    EVENT_DECL(MapEventTypes, evServerGameCommand        ,113) // 1013?
     EVENT_DECL(MapEventTypes, evStandardDialogCmd          ,114)
     EVENT_DECL(MapEventTypes, evInfoMessageCmd             ,115)
     EVENT_DECL(MapEventTypes, evDoorMessage                ,116)

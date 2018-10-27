@@ -475,6 +475,7 @@ void Character::recv_initial_costume( BitStream &src, const ColorAndPartPacker *
     assert(m_costumes.size()==0);
     m_costumes.emplace_back();
     m_char_data.m_current_costume_idx = 0;
+    m_costumes.back().m_character_id = static_cast<uint64_t>(m_db_id);
     ::serializefrom(m_costumes.back(), src, packer);
 }
 
