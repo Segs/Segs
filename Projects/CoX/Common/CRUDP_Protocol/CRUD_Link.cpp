@@ -140,7 +140,6 @@ int CRUDLink::handle_output( ACE_HANDLE )
                 break;
             case evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
                 event_for_packet(static_cast<Packet *>(ev));
-                connection_update(); // we've received some bytes -> connection update
                 break;
             default:
                 packets_for_event(static_cast<CRUDLink_Event *>(ev));

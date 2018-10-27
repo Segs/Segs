@@ -87,8 +87,10 @@ Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *tgt);
+void    positionTest(MapClientSession *tgt);
 bool    isFriendOnline(Entity &src, uint32_t db_id);
 void    setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits);
+QString createMapMenu();
 
 
 /*
@@ -110,7 +112,7 @@ void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
 void sendTimeStateLog(MapClientSession &src, uint32_t control_log);
 void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000);
 void sendClientState(MapClientSession &sess, ClientStates client_state);
-void showMapXferList(MapClientSession &ent, bool has_location, glm::vec3 &location, QString &name);
+void showMapXferList(MapClientSession &sess, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount);
 void sendLevelUp(MapClientSession &src);
@@ -135,9 +137,11 @@ void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_
 void sendContactDialogClose(MapClientSession &src);
 void sendContactStatusList(MapClientSession &src);
 void updateContactStatusList(MapClientSession &src, Contact contact);
-void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 location);
+void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 &location);
 void sendStance(MapClientSession &src, PowerStance stance);
 void sendDeadNoGurney(MapClientSession &sess);
+void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state);
+void sendDoorAnimExit(MapClientSession &sess, bool force_move);
 
 const QString &getGenericTitle(uint32_t val);
 const QString &getOriginTitle(uint32_t val);
@@ -165,7 +169,7 @@ void findTeamMember(Entity &tgt);
 /*
  * Lua Functions
  */
-void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variation, glm::vec3 *ori);
+void addNpc(MapClientSession &cl, const char* name, glm::vec3 &loc, int variation, glm::vec3 *ori);
 void giveEnhancement(MapClientSession *cl, const char* name, int level);
 void giveDebt(MapClientSession *cl, int debt);
 void giveEnd(MapClientSession *cl, float end);
