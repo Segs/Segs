@@ -135,6 +135,10 @@ void ScriptingEngine::registerTypes()
         "y", &glm::vec3::y,
         "z", &glm::vec3::z
     );
+
+    m_private->m_lua.new_usertype<QString>( "QString",
+        sol::constructors<QString(), QString(const char*)>()
+    );
     m_private->m_lua.new_usertype<Contact>( "Contact",
         // 3 constructors
         sol::constructors<Contact()>(),
