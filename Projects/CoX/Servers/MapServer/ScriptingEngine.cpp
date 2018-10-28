@@ -9,6 +9,7 @@
  * @addtogroup MapServer Projects/CoX/Servers/MapServer
  * @{
  */
+#pragma once
 #include "ScriptingEngine.h"
 
 #include "DataHelpers.h"
@@ -214,7 +215,8 @@ void ScriptingEngine::registerTypes()
         {
             sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
         },
-        "addNpc", addNpc
+        "addNpc", addNpc,
+        "addNpcWithOrientation", addNpcWithOrientation
         );
 
     m_private->m_lua.new_usertype<Character>("Character",
