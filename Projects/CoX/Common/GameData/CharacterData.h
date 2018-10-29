@@ -19,7 +19,7 @@
 
 struct CharacterData
 {
-        enum : uint32_t {class_version       = 8}; // v8: security threat
+        enum : uint32_t {class_version       = 9}; // v9: contacts
 
         QString     m_titles[3];             // Generic, Origin, Special
         QString     m_class_name;

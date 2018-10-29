@@ -43,6 +43,7 @@ void CharacterData::serialize(Archive &archive, uint32_t const version)
     archive(cereal::make_nvp("PowerTrayGroups", m_trays));
     archive(cereal::make_nvp("Inspirations", m_inspirations));
     archive(cereal::make_nvp("Enhancements", m_enhancements));
+    archive(cereal::make_nvp("KnownContact", m_contacts));
     archive(cereal::make_nvp("MaxInspirationCols", m_max_insp_cols));
     archive(cereal::make_nvp("MaxInspirationRows", m_max_insp_rows));
     archive(cereal::make_nvp("MaxEnhancementSlots", m_max_enhance_slots));

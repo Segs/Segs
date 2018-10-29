@@ -46,7 +46,7 @@ static QHash<QString,int> contactLinkHash = {
 struct Destination // aka waypoint
 {
   public:
-    static const constexpr uint32_t class_version = 1;
+    enum : uint32_t {class_version       = 1};
 
     int point_idx = 0;
     glm::vec3 location;
@@ -61,28 +61,16 @@ struct Destination // aka waypoint
     void setLocationMapName(const char *n) { m_location_map_name = n; }
 
 
-        template<class Archive>
-        void serialize(Archive &archive, uint32_t const version)
-        {
-            if(version != Destination::class_version)
-            {
-                qCritical() << "Failed to serialize Destination, incompatible serialization format version " << version;
-                return;
-            }
+    template<class Archive>
+    void serialize(Archive &archive, uint32_t const version);
 
-        archive(cereal::make_nvp("PointIdx",point_idx));
-        archive(cereal::make_nvp("Location",location));
-        archive(cereal::make_nvp("LocationName",m_location_name));
-        archive(cereal::make_nvp("LocationMapName",m_location_map_name));
-
-        }
 };
 
 
 class Contact
 {
 public:
-    static const constexpr uint32_t class_version = 1;
+    enum : uint32_t {class_version       = 1};
 
     // for scripting language access.
     std::string getName() const { return m_name.toStdString();}
@@ -108,28 +96,8 @@ public:
 
 
        template<class Archive>
-       void serialize(Archive &archive, uint32_t const version)
-       {
-           if(version != Contact::class_version)
-           {
-               qCritical() << "Failed to serialize Destination, incompatible serialization format version " << version;
-               return;
-           }
+       void serialize(Archive &archive, uint32_t const version);
 
-       archive(cereal::make_nvp("Name",m_name));
-       archive(cereal::make_nvp("LocationDescription",m_location_description));
-       archive(cereal::make_nvp("npcId",m_npc_id));
-       archive(cereal::make_nvp("ContactIdx",m_contact_idx));
-       archive(cereal::make_nvp("CurrentStanding",m_current_standing));
-       archive(cereal::make_nvp("ConfidantThreshold",m_confidant_threshold));
-       archive(cereal::make_nvp("FriendThreshold",m_friend_threshold));
-       archive(cereal::make_nvp("CompleteThreshold",m_complete_threshold));
-       archive(cereal::make_nvp("TaskIndex",m_task_index));
-       archive(cereal::make_nvp("NotifyPlayer",m_notify_player));
-       archive(cereal::make_nvp("CanUseCell",m_can_use_cell));
-       archive(cereal::make_nvp("HasLocation",m_has_location));
-       archive(cereal::make_nvp("Location",m_location));
-       }
 };
 using vContactList = std::vector<Contact>;
 

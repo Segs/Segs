@@ -722,6 +722,7 @@ void updateContactStatusList(MapClientSession &src, Contact contact)
 
     //update database contactList
     src.m_ent->m_char->m_char_data.m_contacts = contacts;
+    qCDebug(logScripts) << "Sending Character Contact Database updated";
 
     //Send contactList to client
     src.addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contacts)));
