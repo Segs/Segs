@@ -1104,7 +1104,7 @@ void addNpc(MapClientSession &sess, QString name, glm::vec3 &loc, int variation)
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 
-void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 *loc, int variation, glm::vec3 *ori)
+void addNpcWithOrientation(MapClientSession &sess, QString name, glm::vec3 &loc, int variation, glm::vec3 &ori)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -1117,15 +1117,14 @@ void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 *loc
     int idx = npc_store.npc_idx(npc_def);
     Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
 
-    forcePosition(*e, *loc);
-    forceOrientation(*e, *ori);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc->x).arg(loc->y).arg(loc->z), sess);
+    forcePosition(*e, loc);
+    forceOrientation(*e, ori);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 
-void giveEnhancement(MapClientSession &sess, const char* e_name, int e_level)
+void giveEnhancement(MapClientSession &sess, QString name, int e_level)
 {
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
-    QString name = QString::fromUtf8(e_name);
     uint32_t level = e_level;
     QString msg = "You do not have room for any more enhancements!";
 

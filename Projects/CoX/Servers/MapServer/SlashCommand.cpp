@@ -980,7 +980,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
         level = getLevel(*sess.m_ent->m_char);
     }
 
-    giveEnhancement(sess, qPrintable(name), level);
+    giveEnhancement(sess, name, level);
 }
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)

@@ -219,17 +219,33 @@ void ScriptingEngine::registerTypes()
         {
             sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
         },
-        "addNpc", addNpc,
-        "addNpcWithOrientation", addNpcWithOrientation
+        "addNpc", [](MapClientSession *cl, const char* name, glm::vec3 &loc, int variation)
+        {
+            QString npc_name = QString::fromUtf8(name);
+            addNpc(*cl, npc_name, loc, variation);
+        },
+        "addNpcWithOrientation", [](MapClientSession *cl, const char* name, glm::vec3 &loc, int variation, glm::vec3 &ori)
+        {
+            QString npc_name = QString::fromUtf8(name);
+            addNpcWithOrientation(*cl, npc_name, loc, variation, ori);
+        }
         );
 
     m_private->m_lua.new_usertype<Character>("Character",
         "giveDebt", giveDebt,
-        "giveEnhancement", giveEnhancement,
+        "giveEnhancement", [](MapClientSession *cl, const char* name, int level)
+        {
+            QString e_name = QString::fromUtf8(name);
+            giveEnhancement(*cl, e_name, level);
+        },
         "giveEnd", giveEnd,
         "giveHp", giveHp,
         "giveInf",giveInf,
-        "giveInsp", giveInsp,
+        "giveInsp",[](MapClientSession *cl, const char* name)
+        {
+            QString e_name = QString::fromUtf8(name);
+            giveInsp(*cl, e_name);
+        },
         "giveXp", giveXp,
         "sendFloatingDamage",sendFloatingNumbers,
         "faceEntity",sendFaceEntity,
