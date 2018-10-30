@@ -149,6 +149,10 @@ using namespace SEGS_Enums_Power;
 
 struct StoredAttribMod
 {
+    // Older combinations of Qt/moc/CMake require Q_GADGET macro and granting public access
+    // to members. Otherwise, moc files are not generated properly under certain conditions.
+    Q_GADGET
+public:
     QByteArray         name;
     int                index_in_power;
     QByteArray         DisplayAttackerHit;

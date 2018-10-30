@@ -389,6 +389,10 @@ using namespace SEGS_Enums;
 
 struct SeqBitSet
 {
+    // Older combinations of Qt/moc/CMake require Q_GADGET macro and granting public access
+    // to members. Otherwise, moc files are not generated properly under certain conditions.
+    Q_GADGET
+public:
     std::bitset<416> bits;
     bool isSet(SeqBitNames v) const { return bits[uint32_t(v)]; }
     void set(SeqBitNames bit) { bits[uint32_t(bit)] = true;}
