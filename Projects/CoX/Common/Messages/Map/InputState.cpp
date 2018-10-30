@@ -61,7 +61,7 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                 processDirectionControl(&m_next_state, control_id, ms_since_prev, keypress_state);
 
                 qCDebug(logInput, "key released %d", control_id);
-                qCDebug(logLFG, "svr vs client keypress time: %f %f : %f", 
+                qCDebug(logInput, "svr vs client keypress time: %f %f : %f", 
                         m_next_state.m_svr_keypress_time[control_id].count(),
                         m_next_state.m_keypress_time[control_id], m_next_state.m_ms_since_prev);
                 break;
