@@ -9,24 +9,24 @@
  * @addtogroup MapServer Projects/CoX/Servers/MapServer
  * @{
  */
-
-#include "Character.h"
-#include "CharacterHelpers.h"
-#include "Contact.h"
-#include "DataHelpers.h"
 #include "ScriptingEngine.h"
+
+#include "DataHelpers.h"
+#include "MessageHelpers.h"
 #include "MapClientSession.h"
 #include "MapInstance.h"
 #include "MapSceneGraph.h"
-#include "Entity.h"
 
-#include "Events/Browser.h"
-#include "Events/ChatMessage.h"
-#include "Events/FloatingDamage.h"
-#include "Events/StandardDialogCmd.h"
-#include "Events/InfoMessageCmd.h"
-#include "Common/NetStructures/Entity.h"
-#include "Common/NetStructures/Contact.h"
+#include "Messages/Map/Browser.h"
+#include "Messages/Map/ChatMessage.h"
+#include "Messages/Map/FloatingDamage.h"
+#include "Messages/Map/StandardDialogCmd.h"
+#include "Messages/Map/InfoMessageCmd.h"
+#include "Common/GameData/Character.h"
+#include "Common/GameData/CharacterHelpers.h"
+#include "Common/GameData/Contact.h"
+#include "Common/GameData/Entity.h"
+#include "Common/GameData/Contact.h"
 #define SOL_CHECK_ARGUMENTS 1
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
@@ -351,6 +351,7 @@ bool ScriptingEngine::setIncludeDir(const QString &path)
         return false;
     }
     m_private->m_restricted_include_dir = fi.absoluteFilePath();
+    return true;
 }
 
 //! @}

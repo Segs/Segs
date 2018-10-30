@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 struct GfxTree_Node;
 #include <GL/glew.h>
 #include <stdint.h>

@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "Events/MessageChannels.h"
+#include "Messages/Map/MessageChannels.h"
 #include "glm/vec3.hpp"
 #include <vector>
 
@@ -29,13 +29,14 @@ enum class ClientStates : uint8_t;
  * This file is intended to hold helper functions for methods
  * requiring access to MapClientSession or MapInstance
  */
-
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *sess);
-bool    isFriendOnline(MapClientSession &sess, uint32_t db_id);
+void    positionTest(MapClientSession *tgt);
+bool    isFriendOnline(Entity &sess, uint32_t db_id);
 void    setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits);
+QString createMapMenu();
 
 
 /*
@@ -48,15 +49,9 @@ void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
 
 /*
- * sendInfoMessage wrapper to provide access to NetStructures
- */
-void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt);
-
-
-/*
  * SendUpdate Wrappers
  */
-void sendInfoMessage(MessageChannel ch, QString msg, MapClientSession &tgt);
+void sendInfoMessage(MessageChannel ch, const QString &msg, MapClientSession &tgt);
 void sendTimeStateLog(MapClientSession &sess, uint32_t control_log);
 void sendTimeUpdate(MapClientSession &sess, int32_t sec_since_jan_1_2000);
 void sendClientState(MapClientSession &sess, ClientStates client_state);
@@ -83,9 +78,11 @@ void sendTradeSuccess(MapClientSession &src, MapClientSession &tgt);
 void sendContactDialog(MapClientSession &sess, QString msg_body, std::vector<ContactEntry> active_contacts);
 void sendContactDialogYesNoOk(MapClientSession &sess, QString msg_body, bool has_yesno);
 void sendContactDialogClose(MapClientSession &sess);
-void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 location);
-void sendStance(MapClientSession &sess, PowerStance stance);
+void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location);
+void sendStance(MapClientSession &sess, PowerStance &stance);
 void sendDeadNoGurney(MapClientSession &sess);
+void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state);
+void sendDoorAnimExit(MapClientSession &sess, bool force_move);
 
 /*
  * usePower and increaseLevel here to provide access to
@@ -97,11 +94,11 @@ void increaseLevel(Entity &ent);
 /*
  * Lua Functions
  */
-void addNpc(MapClientSession &cl, const char* name, glm::vec3 *loc, int variation);
-void giveEnhancement(MapClientSession *cl, const char* name, int level);
-void giveDebt(MapClientSession *cl, int debt);
-void giveEnd(MapClientSession *cl, float end);
-void giveHp(MapClientSession *cl, float hp);
-void giveInf(MapClientSession *cl, int inf);
-void giveInsp(MapClientSession *cl, const char *value);
-void giveXp(MapClientSession *cl, int xp);
+void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation);
+void giveEnhancement(MapClientSession &sess, const char* name, int level);
+void giveDebt(MapClientSession &sess, int debt);
+void giveEnd(MapClientSession &sess, float end);
+void giveHp(MapClientSession &sess, float hp);
+void giveInf(MapClientSession &sess, int inf);
+void giveInsp(MapClientSession &sess, QString &name);
+void giveXp(MapClientSession &sess, int xp);

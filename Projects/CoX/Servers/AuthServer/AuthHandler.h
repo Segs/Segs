@@ -9,7 +9,7 @@
 #include "Servers/InternalEvents.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"
 #include "AuthProtocol/AuthLink.h"
-#include "AuthProtocol/AuthEvents.h"
+#include "Messages/Auth/AuthEvents.h"
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/ClientManager.h"
 #include "EventProcessor.h"

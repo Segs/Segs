@@ -25,11 +25,13 @@ namespace Urho3D
     class Vector3;
     class Drawable;
 }
-
-struct CoHSceneGraph;
-struct CoHNode;
-struct CoHModel;
-struct ConvertedRootNode;
+namespace SEGS
+{
+struct SceneNode;
+struct SceneGraph;
+struct Model;
+struct RootNode;
+}
 
 class MapViewerApp;
 
@@ -45,13 +47,13 @@ protected:
     void changeEvent(QEvent *e);
 signals:
     void scenegraphSelected(const QString &path);
-    void nodeSelected(CoHNode *n);
-    void nodeDisplayRequest(CoHNode *n,bool isroot);
-    void refDisplayRequest(ConvertedRootNode *n,bool show_all);
+    void nodeSelected(SEGS::SceneNode *n);
+    void nodeDisplayRequest(SEGS::SceneNode *n,bool isroot);
+    void refDisplayRequest(SEGS::RootNode *n,bool show_all);
 public slots:
     void onCameraPositionChanged(float x,float y,float z);
-    void onModelSelected(CoHNode*n, CoHModel*m, Urho3D::Drawable*d);
-    void onScenegraphLoaded(const CoHSceneGraph &sc);
+    void onModelSelected(SEGS::SceneNode *n, SEGS::Model *m, Urho3D::Drawable*d);
+    void onScenegraphLoaded(const SEGS::SceneGraph &sc);
 private slots:
     void on_actionLoad_Scene_Graph_triggered();
     void on_actionSet_data_paths_triggered();

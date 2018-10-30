@@ -12,9 +12,8 @@ target_link_libraries(MapEventRegistry
     # FIXME: adding the above lib to linked libs fixes a very frustrating mingw ws2_32 linking problem
     # I have no idea why, and don't feel like digging into library/defines lists that are used in both cases
     Qt5::Test
-    network_structures
-    mapserver_lib
+    MapServer
     gameData
-    game_db_sync_lib
+    GameDatabase_interface
 )
 set_property(TARGET MapEventRegistry PROPERTY POSITION_INDEPENDENT_CODE ON)

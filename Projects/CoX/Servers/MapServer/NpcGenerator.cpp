@@ -3,7 +3,7 @@
 #include "MapInstance.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/NpcStore.h"
-#include "NetStructures/Character.h"
+#include "GameData/Character.h"
 
 #include <QRegularExpression>
 
@@ -22,17 +22,21 @@ void NpcGenerator::generate(MapInstance *map_instance)
     for(const glm::mat4 &v : initial_positions)
     {
         int idx = npc_store.npc_idx(npc_def);
-        Entity *e = map_instance->m_entities.CreateGeneric(getGameData(),*npc_def, idx, 0,type);
-        forcePosition(*e,glm::vec3(v[3]));
+        Entity *e = map_instance->m_entities.CreateGeneric(getGameData(), *npc_def, idx, 0,type);
+        e->m_char->setName(makeReadableName(costume_name));
+        forcePosition(*e, glm::vec3(v[3]));
         auto valquat = glm::quat_cast(v);
 
         glm::vec3 angles = glm::eulerAngles(valquat);
         angles.y += glm::pi<float>();
-        valquat = glm::quat(angles);
-        e->m_char->setName(makeReadableName(costume_name));
-        e->m_direction = valquat;
-        e->m_entity_data.m_orientation_pyr = {angles.x,angles.y,angles.z};
-        e->m_velocity = { 0,0,0 };
+        forceOrientation(*e, angles);
+        e->m_motion_state.m_velocity = { 0,0,0 };
+
+        if(costume_name.contains("door", Qt::CaseInsensitive))
+        {
+            e->m_is_fading = false;
+            e->translucency = 0.0f;
+        }
     }
 }
 

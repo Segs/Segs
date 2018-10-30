@@ -13,9 +13,9 @@
 #include "EntityUpdateCodec.h"
 #include "MapClientSession.h"
 
-#include "NetStructures/Character.h"
-#include "NetStructures/Entity.h"
-#include "NetStructures/EntityHelpers.h"
+#include "GameData/Character.h"
+#include "GameData/Entity.h"
+#include "GameData/EntityHelpers.h"
 #include "MapServer.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/CoHMath.h"
@@ -136,7 +136,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
     // output everything
     qCDebug(logOrientation, "Player: %d", src.m_idx);
     qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
-    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.inp_state.m_camera_pyr).c_str());
+    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.m_states.current()->m_camera_pyr).c_str());
     qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
     qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
     qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
@@ -347,7 +347,7 @@ void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 void sendEntCollision(const Entity &src,BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
-    bs.StoreBits(1, src.inp_state.m_no_collision); // 1/0 only
+    bs.StoreBits(1, src.m_motion_state.m_no_collision); // 1/0 only
 }
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)
@@ -422,9 +422,9 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bs.StoreBits(1,src.m_update_anim); //var_C
+    bs.StoreBits(1,src.m_update_anims); //var_C
 
-    if(src.m_update_anim)
+    if(src.m_update_anims)
         bs.StoreBits(1,src.m_rare_update);
 
     if(src.m_rare_update)
@@ -432,7 +432,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
 
     storePosUpdate(src,update_existence && ent_exists, bs);
 
-    if(src.m_update_anim)
+    if(src.m_update_anims)
         sendSeqMoveUpdate(src,bs);
 
     if(src.m_rare_update)

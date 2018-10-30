@@ -236,6 +236,11 @@ void BitStream::StoreString(const char *str)
     m_write_off  += idx;
 }
 
+void BitStream::StoreString(const QByteArray &str)
+{
+    StoreString(str.constData());
+}
+
 void BitStream::StoreString(const QString &str)
 {
     StoreString(qPrintable(str));
@@ -367,10 +372,10 @@ int64_t BitStream::Get64Bits()
     return result;
 }
 
-size_t BitStream::GetAvailSize() const
+uint32_t BitStream::GetAvailSize() const
 {
     int64_t res = int64_t(m_size)- int64_t(m_write_off)-(m_write_bit_off!=0);
-    return size_t(std::max<int64_t>(0,res));
+    return uint32_t(std::max<int64_t>(0,res));
 }
 /************************************************************************
 Function:    GetFloat/GetFloatWithDebugInfo()

@@ -13,8 +13,9 @@
 #include "SlashCommand.h"
 
 #include "DataHelpers.h"
-#include "Events/GameCommandList.h"
-#include "Events/MapXferWait.h"
+#include "MessageHelpers.h"
+#include "Messages/Map/GameCommandList.h"
+#include "Messages/Map/MapXferWait.h"
 #include "GameData/ClientStates.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
@@ -22,12 +23,12 @@
 #include "Logging.h"
 #include "MapLink.h"
 #include "MapInstance.h"
-#include "NetStructures/Character.h"
-#include "NetStructures/CharacterHelpers.h"
-#include "NetStructures/Entity.h"
-#include "NetStructures/EntityHelpers.h"
-#include "NetStructures/LFG.h"
-#include "NetStructures/Trade.h"
+#include "GameData/Character.h"
+#include "GameData/CharacterHelpers.h"
+#include "GameData/Entity.h"
+#include "GameData/EntityHelpers.h"
+#include "GameData/LFG.h"
+#include "GameData/Trade.h"
 #include "Settings.h"
 
 #include <QtCore/QString>
@@ -858,7 +859,7 @@ void cmdHandler_SetSequence(const QString &cmd, MapClientSession &sess)
     sess.m_ent->m_seq_move_change_time = time;
 }
 
- void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
+void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
 {
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
@@ -962,51 +963,23 @@ void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
 {
-    CharacterData &cd = sess.m_ent->m_char->m_char_data;
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
-    QString msg = "You do not have room for any more inspirations!";
-
-    if(getNumberInspirations(cd) < getMaxNumberInspirations(cd))
-    {
-        msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
-
-        addInspirationByName(cd, val);
-
-        // NOTE: floating message shows no message here, but plays the awarding insp sound!
-        QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
-        sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    }
-
-    qCDebug(logSlashCommand).noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+    giveInsp(sess, val);
 }
 
 void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
 {
-    CharacterData &cd = sess.m_ent->m_char->m_char_data;
     QVector<QStringRef> args(cmd.splitRef(' '));
     QString name = args.value(1).toString();
     uint32_t level = args.value(2).toUInt() -1;
-    QString msg = "You do not have room for any more enhancements!";
 
     if(args.size() < 3)
     {
-        level = cd.m_level;
+        level = getLevel(*sess.m_ent->m_char);
     }
 
-    if(getNumberEnhancements(cd) < 10)
-    {
-        msg = "Awarding Enhancement '" + name + "' to " + sess.m_ent->name();
-
-        addEnhancementByName(cd, name, level);
-
-        QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
-        sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    }
-
-    qCDebug(logSlashCommand).noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+    giveEnhancement(sess, qPrintable(name), level);
 }
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
@@ -1105,7 +1078,7 @@ void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess)
     args.removeFirst(); // remove integer
     QString msg = args.join(" ");
 
-    if(!ok || delay_status < 0 || delay_status > 2)
+    if(!ok || delay_status > 2)
     {
         qCDebug(logSlashCommand) << "First argument must be 0, 1, or 2;" << cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "First argument must be 0, 1, or 2;" + cmd, sess);
@@ -1278,11 +1251,13 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     int variation = 0;
+
     if(cmd.contains('"')) // assume /addNpc "A guy in a hat" 1
     {
         int start_idx = cmd.indexOf('"');
         int end_idx = cmd.indexOf('"',start_idx+1);
         parts.push_back(cmd.midRef(0,start_idx-1));
+
         if(end_idx!=-1)
             parts.push_back(cmd.midRef(start_idx+1,end_idx-start_idx-2));
         if(cmd.midRef(end_idx+1).size()>0)
@@ -1290,29 +1265,21 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     }
     else
         parts = cmd.splitRef(' ');
+
     if(parts.size()>2) // assume /addNpc Monsterifier 1
         variation = parts[2].toInt();
+
     if(parts.size()<2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
         return;
     }
-    glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos;
-    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
-    const Parse_NPC * npc_def = npc_store.npc_by_name(parts[1]);
-    if(!npc_def)
-    {
-        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for:"+parts[1], sess);
-        return;
-    }
-    glm::vec3 offset = glm::vec3 {2,0,1};
-    int idx = npc_store.npc_idx(npc_def);
 
-    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(),*npc_def,idx,variation);
-    forcePosition(*e,gm_loc + offset);
-    e->m_velocity = {0,0,0};
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), sess);
+    QString name = parts[1].toString();
+    glm::vec3 offset = glm::vec3 {2,0,1};
+    glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos + offset;
+    addNpc(sess, name, gm_loc, variation);
 }
 
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
@@ -1703,7 +1670,7 @@ void cmdHandler_Friend(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    FriendListChangeStatus status = addFriend(*sess.m_ent, *tgt);
+    FriendListChangeStatus status = addFriend(*sess.m_ent, *tgt,getEntityDisplayMapName(tgt->m_entity_data));
     if(status==FriendListChangeStatus::MAX_FRIENDS_REACHED)
     {
         QString msg = "You cannot have more than " + QString::number(g_max_friends) + " friends.";
@@ -1760,15 +1727,11 @@ void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_MapXferList(const QString &/*cmd*/, MapClientSession &sess)
 {
-    bool has_location = true;
+    // if has_location == true, then player cannot be more than 400
+    // units away from pos or window will close
+    bool has_location = false;
     glm::vec3 location = sess.m_ent->m_entity_data.m_pos;
-    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
-    for (auto &map_data : getAllMapData())
-    {
-        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_data.m_map_idx).arg(map_data.m_display_map_name));
-    }
-    msg_body.append("</table>");
-
+    QString msg_body = createMapMenu();
     showMapXferList(sess, has_location, location, msg_body);
 }
 

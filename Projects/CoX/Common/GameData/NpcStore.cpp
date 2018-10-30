@@ -18,7 +18,7 @@ void NPCStorage::prepare_dictionaries()
 {
     // client expects the indices of npcs to be taken from sorted by name array
     std::sort(std::begin(m_all_npcs),std::end(m_all_npcs),[](const Parse_NPC &a,const Parse_NPC &b)->bool {
-        return a.m_Name.compare(b.m_Name,Qt::CaseInsensitive)<0;
+        return QString(a.m_Name).compare(b.m_Name,Qt::CaseInsensitive)<0;
     });
     for(Parse_NPC &npc : m_all_npcs)
     {

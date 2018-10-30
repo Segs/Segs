@@ -42,7 +42,7 @@ virtual void            serialize_from(std::istream &is) = 0;
 virtual void            serialize_to(std::ostream &is) = 0;
 };
 #define IMPL_ID(EventProcessorChildType)\
-    enum { processor_id = CompileTimeUtils::hash_64_fnv1a_const(#EventProcessorChildType) };\
+    enum : uint64_t { processor_id = CompileTimeUtils::hash_64_fnv1a_const(#EventProcessorChildType) };\
     uint64_t        get_id() const override { return processor_id; }
 
 inline void shutdown_event_processor_and_wait(EventProcessor *ep)

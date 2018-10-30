@@ -12,13 +12,32 @@
 
 #include "MapInstance.h"
 
+#include "DataHelpers.h"
+#include "EntityStorage.h"
+#include "Logging.h"
+#include "MapManager.h"
+#include "MapSceneGraph.h"
+#include "MapServer.h"
+#include "MapTemplate.h"
+#include "MessageHelpers.h"
+#include "SEGSTimer.h"
+#include "SlashCommand.h"
+#include "TimeEvent.h"
+#include "WorldSimulation.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
+#include "version.h"
 #include "Common/GameData/CoHMath.h"
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/InternalEvents.h"
+#include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/MessageBus.h"
-#include "DataHelpers.h"
-#include "EntityStorage.h"
+#include "GameData/Character.h"
+#include "GameData/CharacterHelpers.h"
+#include "GameData/Entity.h"
+#include "GameData/GameDataStore.h"
+#include "GameData/Trade.h"
 #include "GameData/chardata_serializers.h"
 #include "GameData/clientoptions_serializers.h"
 #include "GameData/entitydata_serializers.h"
@@ -26,30 +45,12 @@
 #include "GameData/map_definitions.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/playerdata_serializers.h"
-#include "GameDatabase/GameDBSyncEvents.h"
-#include "Logging.h"
-#include "Servers/GameServer/EmailEvents.h"
-#include "GameServer/GameEvents.h"
-#include "MapEvents.h"
-#include "MapManager.h"
-#include "MapSceneGraph.h"
-#include "MapServer.h"
-#include "TimeEvent.h"
-#include "GameData/GameDataStore.h"
-#include "MapTemplate.h"
-#include "NetStructures/Character.h"
-#include "NetStructures/CharacterHelpers.h"
-#include "NetStructures/Entity.h"
-#include "NetStructures/Trade.h"
-#include "SEGSTimer.h"
-#include "SlashCommand.h"
-#include "WorldSimulation.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
-#include "version.h"
-#include "Common/Servers/InternalEvents.h"
-#include "Events/MapXferWait.h"
-#include "Events/MapXferRequest.h"
+#include "Messages/EmailService/EmailEvents.h"
+#include "Messages/Game/GameEvents.h"
+#include "Messages/GameDatabase/GameDBSyncEvents.h"
+#include "Messages/Map/MapEvents.h"
+#include "Messages/Map/MapXferRequest.h"
+#include "Messages/Map/MapXferWait.h"
 
 #include <ace/Reactor.h>
 
@@ -165,7 +166,7 @@ void MapInstance::start(const QString &scenegraph_path)
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
-            },"Spawning npcs");
+            }, "Spawning npcs");
         qInfo() << "Loading custom scripts";
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
@@ -347,8 +348,8 @@ void MapInstance::dispatch( Event *ev )
         case evShortcutsRequest:
             on_shortcuts_request(static_cast<ShortcutsRequest *>(ev));
             break;
-        case evInputState:
-            on_input_state(static_cast<InputState *>(ev));
+        case evRecvInputState:
+            on_input_state(static_cast<RecvInputState *>(ev));
             break;
         case evCookieRequest:
             on_cookie_confirm(static_cast<CookieRequest *>(ev));
@@ -361,6 +362,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
+            break;
+        case evHasEnteredDoor:
+            on_has_entered_door(static_cast<HasEnteredDoor *>(ev));
             break;
         case evWindowState:
             on_window_state(static_cast<WindowState *>(ev));
@@ -558,7 +562,8 @@ void MapInstance::on_idle(Idle *ev)
 {
     MapLink * lnk = (MapLink *)ev->src();
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
-    lnk->putq(new Idle);
+    // we don't have to respond with an idle message here, check links will send idle events as needed.
+    //lnk->putq(new Idle);
 }
 
 void MapInstance::on_check_links()
@@ -591,6 +596,8 @@ void MapInstance::on_shortcuts_request(ShortcutsRequest *ev)
     // TODO: use the access level and send proper commands
     MapClientSession &session(m_session_store.session_from_event(ev));
     Shortcuts *res = new Shortcuts(&session);
+
+    NetCommandManagerSingleton::instance()->UpdateCommandShortcuts(&session,res->m_commands);
     session.link()->putq(res);
 }
 
@@ -737,12 +744,12 @@ void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
     m_session_store.locked_unmark_session_for_reaping(&map_session);
     if(ev->m_data.slot_idx<0)
     {
-
         //TODO: this requires sending an actual error message to client and then disconnecting ?
         map_session.link()->putq(new DisconnectResponse);
         assert(false); //this code needs work;
         return;
     }
+
     map_session.m_ent->m_char->m_db_id = ev->m_data.m_char_id;
     map_session.m_ent->m_char->setIndex(ev->m_data.slot_idx);
     EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
@@ -895,20 +902,17 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->unkn2 = true;
     lnk->putq(res);
 }
-
 void MapInstance::on_entities_request(EntitiesRequest *ev)
 {
     // this packet should start the per-client send-world-state-update timer
     // actually I think the best place for this timer would be the map instance.
     // so this method should call MapInstace->initial_update(MapClient *);
     MapClientSession &session(m_session_store.session_from_event(ev));
-    srand(time(nullptr));
-
-    EntitiesResponse *res=new EntitiesResponse(&session);
+    EntitiesResponse *res=new EntitiesResponse();
     res->m_map_time_of_day = m_world->time_of_day();
-    res->is_incremental(false); // full world update = op 3
     res->ent_major_update = true;
     res->abs_time = 30*100*(m_world->accumulated_time);
+    buildEntityResponse(res,session,EntityUpdateMode::FULL,false);
     session.link()->putq(res);
     m_session_store.add_to_active_sessions(&session);
 }
@@ -957,21 +961,16 @@ void MapInstance::sendState()
 
     for(;iter!=end; ++iter)
     {
-
         MapClientSession *cl = *iter;
-        EntitiesResponse *res=new EntitiesResponse(cl);
-        res->m_map_time_of_day = m_world->time_of_day();
+        if (!cl->m_in_map)
+            continue;
 
-        if(cl->m_in_map==false) // send full updates until client `resumes`
-        {
-            //TODO: decide when we need full updates res->is_incremental(false);
-        }
-        else
-        {
-            res->is_incremental(true); // incremental world update = op 2
-        }
+        EntitiesResponse *res = new EntitiesResponse();
+        res->m_map_time_of_day = m_world->time_of_day();
+        //while cl->m_in_map==false we send full updates until client `resumes`
         res->ent_major_update = true;
-        res->abs_time = 30*100*(m_world->accumulated_time);
+        res->abs_time = 30 * 100 * (m_world->accumulated_time);
+        buildEntityResponse(res, *cl, cl->m_in_map ? EntityUpdateMode::INCREMENTAL : EntityUpdateMode::FULL, false);
         cl->link()->putq(res);
     }
 
@@ -994,29 +993,39 @@ void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
 }
 
-void MapInstance::on_input_state(InputState *st)
+void MapInstance::on_input_state(RecvInputState *st)
 {
     MapClientSession &session(m_session_store.session_from_event(st));
     Entity *   ent = session.m_ent;
-    if (st->m_data.m_has_input_commit_guess)
-        ent->m_input_ack = st->m_data.m_send_id;
-    ent->inp_state = st->m_data;
 
-    if (st->m_data.m_input_received)
-        ent->m_has_input_on_timeframe = st->m_data.m_input_received;
+    // Save current position to last_pos
+    ent->m_motion_state.m_last_pos      = ent->m_entity_data.m_pos;
+    ent->m_states.current()->m_pos_end  = ent->m_entity_data.m_pos;
+    st->m_next_state.m_pos_start        = ent->m_entity_data.m_pos;
+
+    // Add new input state
+    ent->m_states.addNewState(st->m_next_state);
+
+    // Set current Input Packet ID
+    if (st->m_next_state.m_full_input_packet)
+        ent->m_input_pkt_id = st->m_next_state.m_send_id;
+
+    // Check for input
+    if (st->m_next_state.m_input_received)
+        ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
 
     // Set Target
-    if(st->m_has_target && (getTargetIdx(*ent) != st->m_target_idx))
+    if(st->m_next_state.m_has_target && (getTargetIdx(*ent) != st->m_next_state.m_target_idx))
     {
         ent->m_has_input_on_timeframe = true;
-        setTarget(*ent, st->m_target_idx);
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target",qHash(st->m_target_idx));
+        setTarget(*ent, st->m_next_state.m_target_idx);
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target",qHash(st->m_next_state.m_target_idx));
     }
 
     // Set Orientation
-    if(st->m_data.m_orientation_pyr.p || st->m_data.m_orientation_pyr.y || st->m_data.m_orientation_pyr.r)
+    if(st->m_next_state.m_orientation_pyr.p || st->m_next_state.m_orientation_pyr.y || st->m_next_state.m_orientation_pyr.r)
     {
-        ent->m_entity_data.m_orientation_pyr = st->m_data.m_orientation_pyr;
+        ent->m_entity_data.m_orientation_pyr = st->m_next_state.m_orientation_pyr;
         ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
 
@@ -1050,7 +1059,16 @@ void MapInstance::on_input_state(InputState *st)
 
 void MapInstance::on_cookie_confirm(CookieRequest * ev)
 {
+    MapClientSession &session(m_session_store.session_from_event(ev));
     qDebug("Received cookie confirm %x - %x\n", ev->cookie, ev->console);
+
+    // just after sending this packet the client started waiting for resume , so we send it the update right now.
+    EntitiesResponse *res = new EntitiesResponse();
+    res->m_map_time_of_day = m_world->time_of_day();
+    res->ent_major_update = true;
+    res->abs_time = 30 * 100 * (m_world->accumulated_time);
+    buildEntityResponse(res, session, EntityUpdateMode::FULL, false);
+    session.link()->putq(res);
 }
 
 void MapInstance::on_window_state(WindowState * ev)
@@ -1419,12 +1437,12 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
 
     if(afraidCommands.contains(lowerContents))                                  // Afraid: Cower in fear, hold stance.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Afraid emote";
         else
             msg = "Unhandled ground Afraid emote";
     }
-    else if(akimboCommands.contains(lowerContents) && !ent->m_is_flying)        // Akimbo: Stands with fists on hips looking forward, hold stance.
+    else if(akimboCommands.contains(lowerContents) && !ent->m_motion_state.m_is_flying)        // Akimbo: Stands with fists on hips looking forward, hold stance.
         msg = "Unhandled Akimbo emote";                                         // Not allowed when flying.
     else if(lowerContents == "angry")                                           // Angry: Fists on hips and slouches forward, as if glaring or grumbling, hold stance.
         msg = "Unhandled Angry emote";
@@ -1438,7 +1456,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled BatSmashReact emote";
     else if(bigWaveCommands.contains(lowerContents))                            // BigWave: Waves over the head, fists on hips stance.
         msg = "Unhandled BigWave emote";
-    else if(boomBoxCommands.contains(lowerContents) && !ent->m_is_flying)       // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
+    else if(boomBoxCommands.contains(lowerContents) && !ent->m_motion_state.m_is_flying)       // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
     {                                                                           // Not allowed when flying.
         int rSong = rand() % 25 + 1;                                            // Randomly pick a song.
         switch(rSong)
@@ -1569,11 +1587,11 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             }
         }
     }
-    else if(bowCommands.contains(lowerContents) && !ent->m_is_flying)           // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
+    else if(bowCommands.contains(lowerContents) && !ent->m_motion_state.m_is_flying)           // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
         msg = "Unhandled Bow emote";                                            // Not allowed when flying.
     else if(bowDownCommands.contains(lowerContents))                            // BowDown: Thrusts hands forward, then points down, as if ordering someone else to bow before you.
         msg = "Unhandled BowDown emote";
-    else if(lowerContents == "burp" && !ent->m_is_flying)                       // Burp (has sound): A raunchy belch, wipes mouth with arm afterward, ape-like stance.
+    else if(lowerContents == "burp" && !ent->m_motion_state.m_is_flying)                       // Burp (has sound): A raunchy belch, wipes mouth with arm afterward, ape-like stance.
         msg = "Unhandled Burp emote";                                           // Not allowed when flying.
     else if(lowerContents == "cheer")                                           // Cheer: Randomly does one of 3 cheers, 1 fist raised, 2 fists raised or 2 fists lowered, repeats.
     {
@@ -1614,7 +1632,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
             }
         }
     }
-    else if(lowerContents == "crossarms" && !ent->m_is_flying)                  // CrossArms: Crosses arms, stance (slightly different from most other crossed arm stances).
+    else if(lowerContents == "crossarms" && !ent->m_motion_state.m_is_flying)                  // CrossArms: Crosses arms, stance (slightly different from most other crossed arm stances).
         msg = "Unhandled CrossArms emote";                                      // Not allowed when flying.
     else if(lowerContents == "dance")                                           // Dance: Randomly performs one of six dances.
     {
@@ -1756,7 +1774,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled Praise emote";
     else if(lowerContents == "protest")                                         // Protest: Hold hold up one of several randomly selected mostly unreadable protest signs.
         msg = "Unhandled Protest emote";
-    else if(lowerContents == "roar" && !ent->m_is_flying)                       // Roar: Claws air, roaring, ape-like stance.
+    else if(lowerContents == "roar" && !ent->m_motion_state.m_is_flying)                       // Roar: Claws air, roaring, ape-like stance.
         msg = "Unhandled Roar emote";                                           // Not allowed when flying.
     else if(lowerContents == "rock")                                            // Rock: Plays rock/paper/scissors, picking rock (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
         msg = "Unhandled Rock emote";
@@ -1794,7 +1812,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled Stop emote";
     else if(tarzanCommands.contains(lowerContents))                             // Tarzan: Beats chest and howls, angry-looking stance.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Tarzan emote";
         else
             msg = "Unhandled ground Tarzan emote";
@@ -1802,14 +1820,14 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     else if(taunt1Commands.contains(lowerContents))                             // Taunt1: Taunts, beckoning with one hand, then slaps fist into palm, repeating stance.
 
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Taunt1 emote";
         else
             msg = "Unhandled ground Taunt1 emote";
     }
     else if(taunt2Commands.contains(lowerContents))                             // Taunt2: Taunts, beckoning with both hands, combat stance.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Taunt2 emote";
         else
             msg = "Unhandled ground Taunt2 emote";
@@ -1834,13 +1852,13 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled Yes emote";
     else if(yogaCommands.contains(lowerContents))                               // Yoga: Sits down cross legged with hands on knees/legs, holds stance.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Yoga emote";
         else
             msg = "Unhandled ground Yoga emote";
     }
                                                                                 // Boombox Emotes
-    else if(lowerContents.startsWith("bb") && !ent->m_is_flying)                // Check if Boombox Emote.
+    else if(lowerContents.startsWith("bb") && !ent->m_motion_state.m_is_flying)                // Check if Boombox Emote.
     {                                                                           // Not allowed when flying.
         lowerContents.replace(0, 2, "");                                        // Remove the "BB" prefix for conciseness.
         if(lowerContents == "altitude")                                         // BBAltitude
@@ -1902,7 +1920,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
         msg = "Unhandled ListenPoliceBand emote";                               // Heroes can use this without any unlock requirement. For villains, ListenStolenPoliceBand unlocks by earning the Outlaw Badge.
     else if(snowflakesCommands.contains(lowerContents))                         // Snowflakes: Throws snowflakes.
     {
-        if(ent->m_is_flying)                                                    // Different versions when flying and on the ground.
+        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
             msg = "Unhandled flying Snowflakes emote";                          // Unlocked by purchasing from the Candy Keeper during the Winter Event.
         else
             msg = "Unhandled ground Snowflakes emote";
@@ -1959,7 +1977,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     // TODO only do this the first time a client connects, not after map transfers..
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    if(session.m_in_map==false)
+    if(!session.m_in_map)
         session.m_in_map = true;
     if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
@@ -2020,34 +2038,59 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
-    // ev->name is the map_idx when using the map menu currently.
-    if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
-    {
-        uint8_t map_idx = ev->name.toInt();
-        if (ev->location.x != 0 || ev->location.y != 0 || ev->location.z != 0)
-            map_idx = std::rand() % 23;
+    QString output_msg = "Door entry request to:" + ev->name;
+    if(ev->no_location)
+        qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
+    else
+        qCDebug(logMapXfers).noquote() << output_msg << ev->location.x << ev->location.y << ev->location.z;
 
-        // TODO: change this to not be hacky.
-        // change the map idx if you're trying to load the map you're currently on
-        // this should only ever happen with /movezone commands after doors work correctly.
-        if (map_idx == m_index)
-            map_idx = (map_idx + 1) % 23;
-        map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
-        session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+    // For now, let's test by making some of the door options random
+    int randNum = std::rand() % 100;
+    if(randNum < 35 || session.m_ent->m_is_using_mapmenu)
+    {
+        // TODO: use location and name to determine where the door goes.
+        // for now, we're using no_location to determine whether or not
+        // ev->name is the map_idx when using /mapmenu currently.
+        if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
+        {
+            uint8_t map_idx = ev->name.toInt();
+            if (!ev->no_location)
+                 map_idx = std::rand() % 23;
+
+             // TODO: change this to not be hacky.
+             // change the map idx if you're trying to load the map you're currently on
+             // this should only ever happen with /movezone commands after doors work correctly.
+             if (map_idx == m_index)
+                 map_idx = (map_idx + 1) % 23;
+             map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
+             session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+        }
+        session.m_ent->m_is_using_mapmenu = false;
+    }
+    else if(randNum < 70)
+    {
+        // Start Door Animation
+        QString anim_name = "RUNIN";
+        glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
+        sendDoorAnimStart(session, ev->location, offset, true, anim_name);
     }
     else
     {
-        qCWarning(logMapXfers).noquote() << "Unhandled door entry request to:" << ev->name;
-        if(ev->no_location)
-            qCWarning(logMapXfers).noquote() << "    no location provided";
-        else
-            qCWarning(logMapXfers).noquote() << ev->location.x<< ev->location.y<< ev->location.z;
+        QString door_msg = "Knock! Knock!";
+        sendDoorMessage(session, 2, door_msg);
     }
 
-    //pseudocode:
-    //  auto door = get_door(ev->name,ev->location);
-    //  if(door and player_can_enter(door)
-    //    process_map_transfer(player,door->targetMap);
+    /* pseudocode:
+     *  auto door = get_door(ev->name,ev->location);
+     *  if(door and player_can_enter(door)
+     *      doorAnimStart(entry, target);
+     *      process_map_transfer(player, door->targetMap);
+     *      doorAnimsExit();
+     *  else if(door)
+     *      doorMessage(msg);
+     *  else
+     *      error: "not door?"
+     */
 }
 
 void MapInstance::on_change_stance(ChangeStance * ev)
@@ -2074,6 +2117,17 @@ void MapInstance::on_set_destination(SetDestination * ev)
     // store destination, confirm accuracy and send back to client as waypoint.
     setCurrentDestination(*session.m_ent, ev->point_index, ev->destination);
     sendWaypoint(session, ev->point_index, ev->destination);
+}
+
+void MapInstance::on_has_entered_door(HasEnteredDoor *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+
+    sendDoorAnimExit(session, false);
+
+    QString output_msg = "Enter door animation has finished.";
+    qCDebug(logAnimations).noquote() << output_msg;
 }
 
 void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
@@ -2201,7 +2255,7 @@ void MapInstance::on_activate_power(ActivatePower *ev)
     uint32_t tgt_idx = ev->target_idx;
 
     if(ev->target_idx <= 0 || ev->target_idx == session.m_ent->m_idx)
-        tgt_idx = -1; 
+        tgt_idx = -1;
 
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
     usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
@@ -2643,7 +2697,7 @@ void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 }
 
 void MapInstance::on_email_read_response(EmailReadResponse *ev)
-{    
+{
     EmailRead *email_read = new EmailRead(
                 ev->m_data.m_email_id,
                 ev->m_data.m_message,

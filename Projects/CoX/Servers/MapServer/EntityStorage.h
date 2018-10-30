@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "NetStructures/Entity.h"
-#include "NetStructures/EntityHelpers.h"
+#include "GameData/Entity.h"
+#include "GameData/EntityHelpers.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>

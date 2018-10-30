@@ -19,12 +19,13 @@ std::vector<glm::vec3> convertToVec3Vector(const std::vector<float>& src) {
     }
     return res;
 }
-void cleanupPSystemName(QString &name)
+void cleanupPSystemName(QByteArray &name)
 {
-    int idx = name.indexOf("/FX/",0,Qt::CaseInsensitive);
-    if(idx==-1 && name.startsWith("FX/",Qt::CaseInsensitive))
+    int idx = name.indexOf("/FX/",0);
+    if(idx==-1 && name.startsWith("FX/"))
         idx=0;
-    if(idx!=-1) {
+    if(idx!=-1)
+    {
         name = name.mid(idx+3).toUpper();
     }
 }
@@ -217,12 +218,12 @@ bool loadFrom(BinStore * s, Parse_AllPSystems * target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
         s->prepare();
-        if(_name.compare("System")==0) {
+        if("System"==_name) {
             ParticleSystemInfo nt;
             ok &= loadFrom(s,&nt);
             cleanupPSystemName(nt.m_Name); // normalize the name by removing the leading /FX/ path spec
