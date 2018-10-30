@@ -20,15 +20,15 @@
 #include "GameData/map_definitions.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
-#include "GameData/CharacterHelpers.h"
-#include "GameData/Character.h"
-#include "GameData/Contact.h"
-#include "GameData/Team.h"
-#include "GameData/LFG.h"
-#include "Messages/Map/EmailHeaders.h"
-#include "Messages/Map/EmailRead.h"
-#include "Messages/EmailService/EmailEvents.h"
-#include "Messages/Map/MapEvents.h"
+#include "Common/GameData/CharacterHelpers.h"
+#include "Common/GameData/Character.h"
+#include "Common/GameData/Team.h"
+#include "Common/GameData/LFG.h"
+#include "Common/Messages/Map/ContactList.h"
+#include "Common/Messages/Map/EmailHeaders.h"
+#include "Common/Messages/Map/EmailRead.h"
+#include "Common/Messages/EmailService/EmailEvents.h"
+#include "Common/Messages/Map/MapEvents.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -700,6 +700,43 @@ void sendContactDialogClose(MapClientSession &src)
     src.addCommand<ContactDialogClose>();
 }
 
+void updateContactStatusList(MapClientSession &src, Contact contact)
+{
+    vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
+    //find contact
+    bool found = false;
+
+    for (int i = 0; i < contacts.size(); ++i)
+    {
+        if(contacts[i].m_npc_id == contact.m_npc_id)
+        {
+            found = true;
+            //contact already in list, update contact;
+            contacts.at(i) = contact;
+            break;
+        }
+    }
+
+    if(!found)
+        contacts.push_back(contact);
+
+    //update database contactList
+    src.m_ent->m_char->m_char_data.m_contacts = contacts;
+    qCDebug(logScripts) << "Sending Character Contact Database updated";
+
+    //Send contactList to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contacts)));
+    qCDebug(logScripts) << "Sending ContactStatusList";
+}
+
+void sendContactStatusList(MapClientSession &src)
+{
+    vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
+    //Send contactList to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contacts)));
+    qCDebug(logScripts) << "Sending ContactStatusList";
+}
+
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 &location)
 {
     qCDebug(logSlashCommand) << QString("Sending SendWaypoint: %1 <%2, %3, %4>")
@@ -1065,14 +1102,30 @@ void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation
     Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
 
     forcePosition(*e, loc);
-    e->m_motion_state.m_velocity = {0,0,0};
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx: %1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 
-void giveEnhancement(MapClientSession &sess, const char* e_name, int e_level)
+void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori)
+{
+    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
+    const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
+    if(!npc_def)
+    {
+        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
+        return;
+    }
+
+    int idx = npc_store.npc_idx(npc_def);
+    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
+
+    forcePosition(*e, loc);
+    forceOrientation(*e, ori);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
+}
+
+void giveEnhancement(MapClientSession &sess, QString &name, int e_level)
 {
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
-    QString name = QString::fromUtf8(e_name);
     uint32_t level = e_level;
     QString msg = "You do not have room for any more enhancements!";
 

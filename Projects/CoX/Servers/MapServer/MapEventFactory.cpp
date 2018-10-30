@@ -12,6 +12,7 @@
 
 #include "MapEventFactory.h"
 #include "Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/ContactList.h"
 
 using namespace SEGSEvents;
 
@@ -73,6 +74,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 21: return new ResetKeybinds;
         case 22: return new SelectKeybindProfile;
         case 24: return new DialogButton;
+        case 26: return new ReceiveContactStatus;
         case 27: return new ActivatePower;
         case 28: return new ActivatePowerAtLocation;
         case 29: return new ActivateInspiration;

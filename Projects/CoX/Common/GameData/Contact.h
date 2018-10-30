@@ -7,7 +7,12 @@
 
 #pragma once
 
-#include <QString>
+#include "CommonNetStructures.h"
+#include "glm/vec3.hpp"
+#include "cereal/cereal.hpp"
+#include "Logging.h"
+
+struct CharacterData;
 
 static QHash<QString,int> contactLinkHash = {
     {"CONTACTLINK_HELLO"                ,1},
@@ -38,15 +43,63 @@ static QHash<QString,int> contactLinkHash = {
     {"CONTACTLINK_GOTOTAILOR"           ,0x1A},
 };
 
-struct Contact
+struct Destination // aka waypoint
 {
-    QString m_name;
-    QString m_display_name;
+  public:
+    enum : uint32_t {class_version       = 1};
+
+    int point_idx = 0;
+    glm::vec3 location;
+    QString         m_location_name;
+    QString         m_location_map_name;
+
+    // for scripting language access.
+    std::string getLocationName() const { return m_location_name.toStdString();}
+    void setLocationName(const char *n) { m_location_name = n; }
+
+    std::string getLocationMapName() const { return m_location_map_name.toStdString();}
+    void setLocationMapName(const char *n) { m_location_map_name = n; }
+
+
+    template<class Archive>
+    void serialize(Archive &archive, uint32_t const version);
+
+};
+
+
+class Contact
+{
+public:
+    enum : uint32_t {class_version       = 1};
 
     // for scripting language access.
     std::string getName() const { return m_name.toStdString();}
     void setName(const char *n) { m_name = n; }
+
+    std::string getLocationDescription() const { return m_location_description.toStdString();}
+    void setLocationDescription(const char *n) { m_location_description = n; }
+
+       QString         m_name;
+       QString         m_location_description;
+       uint32_t        m_npc_id;
+       uint8_t         m_contact_idx;                   // most likey
+       uint8_t         m_current_standing;
+       uint8_t         m_confidant_threshold;
+       uint8_t         m_friend_threshold;
+       uint8_t         m_complete_threshold;
+       uint8_t         m_task_index            = 0;
+       bool            m_notify_player         = false;
+       bool            m_can_use_cell          = false;
+       bool            m_has_location          = false;
+       Destination     m_location;
+
+
+
+       template<class Archive>
+       void serialize(Archive &archive, uint32_t const version);
+
 };
+using vContactList = std::vector<Contact>;
 
 struct ContactEntry
 {
@@ -67,3 +120,5 @@ struct ContactEntryBulk
     QVector<ContactEntry> m_responses; // must be size 11, or cannot exceed 11?
     // size_t num_active_contacts; // we can use size()
 };
+
+

@@ -116,6 +116,7 @@ void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &s
 void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Revive(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
 
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
@@ -225,6 +226,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setwaypoint"}, "Test SendWaypoint. Send waypoint to client", cmdHandler_SendWaypoint, 9},
     {{"setstatemode"}, "Send StateMode. Send StateMode to client", cmdHandler_SetStateMode, 9},
     {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
+    {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -978,7 +980,7 @@ void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
         level = getLevel(*sess.m_ent->m_char);
     }
 
-    giveEnhancement(sess, qPrintable(name), level);
+    giveEnhancement(sess, name, level);
 }
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
@@ -1229,7 +1231,31 @@ void cmdHandler_Revive(const QString &cmd, MapClientSession &sess)
     msg = "Reviving " + tgt->name();
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
+void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
+{
+    Contact startingContact;
+    startingContact.setName("Officer Flint"); // "OfficerFlint
+    startingContact.m_current_standing = 0;
+    startingContact.m_notify_player = true;
+    startingContact.m_task_index = 1;
+    startingContact.m_npc_id = 1939; // Npc Id
+    startingContact.m_has_location = true;
+    startingContact.m_task_index = 0;
+    startingContact.m_location_description = "Outbreak";
+    startingContact.m_location.location.x = -62.0;
+    startingContact.m_location.location.y = 0.0;
+    startingContact.m_location.location.z = 182.0;
+    startingContact.m_location.m_location_name = "Outbreak Starting";
+    startingContact.m_location.m_location_map_name = "City_00_01"; //folder name?
+    startingContact.m_confidant_threshold = 3;
+    startingContact.m_friend_threshold = 2;
+    startingContact.m_complete_threshold = 4;
+    startingContact.m_can_use_cell = false;
 
+    updateContactStatusList(sess, startingContact);
+    QString msg = "Sending OfficerFlint to contactList";
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
 
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
