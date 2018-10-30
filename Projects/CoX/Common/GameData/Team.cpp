@@ -57,10 +57,10 @@ void Team::dump()
              + "\nTeam Members: ";
     qDebug().noquote() << output;
 
-    listTeamMembers();
+    dumpAllTeamMembers();
 }
 
-void Team::listTeamMembers()
+void Team::dumpAllTeamMembers()
 {
     QString output = "Team Members:";
 
@@ -165,16 +165,13 @@ void removeTeamMember(Team &self, Entity *e)
 
         if(e->m_char->m_char_data.m_sidekick.m_has_sidekick)
         {
-            //TODO: just send a message to the SidekickHandler about this removal.
-            assert(false);
             uint32_t sidekick_id = getSidekickId(*e->m_char);
-            Entity *tgt = nullptr; //getEntityByDBID(sess.m_current_map,sidekick_id);
-            removeSidekick(*e,tgt);
+            removeSidekick(*e, sidekick_id);
         }
 
         qCDebug(logTeams) << "Removing" << iter->tm_name << "from team" << self.m_team_idx;
         if(logTeams().isDebugEnabled())
-            self.listTeamMembers();
+            self.dumpAllTeamMembers();
     }
 
     if(self.m_team_members.size() > 1)
@@ -182,14 +179,14 @@ void removeTeamMember(Team &self, Entity *e)
 
     qCDebug(logTeams) << "One player left on team. Removing last entity and deleting team.";
     if(logTeams().isDebugEnabled())
-        self.listTeamMembers();
+        self.dumpAllTeamMembers();
 
-    // int idx = self.m_team_members.front().tm_idx;
-
-    assert(false);
+    qWarning() << "Team should post an Team-removal event to the target entity.";
     // TODO: this should post an Team-removal event to the target entity, since we can't access other server's
     // Entity lists
-    Entity *tgt = nullptr; //getEntityByDBID(idx);
+
+    //int idx = self.m_team_members.front().tm_idx;
+    Entity *tgt = nullptr;// getEntityByDBID(e->m_client, idx);
     if(tgt == nullptr)
         return;
 
@@ -200,7 +197,7 @@ void removeTeamMember(Team &self, Entity *e)
 
     qCDebug(logTeams) << "After removing all entities.";
     if(logTeams().isDebugEnabled())
-        self.listTeamMembers();
+        self.dumpAllTeamMembers();
 }
 
 /*
@@ -264,6 +261,7 @@ void addSidekick(Entity &tgt, Entity &src)
     msg = QString("%1 is now Mentoring %2.").arg(src.name(),tgt.name());
     qCDebug(logTeams).noquote() << msg;
 }
+
 /**
  * @brief getSidekickId will return the db_id of the given Character's sidekick if any
  * @param src
@@ -274,7 +272,8 @@ uint32_t getSidekickId(const Character &src)
     const Sidekick &src_sk(src.m_char_data.m_sidekick);
     return src_sk.m_db_id;
 }
-SidekickChangeStatus removeSidekick(Entity &src,Entity *tgt)
+
+SidekickChangeStatus removeSidekick(Entity &src, uint32_t sidekick_id)
 {
     //TODO: this function should actually post messages related to de-sidekicking to our target entity.
     QString     msg = "Unable to remove sidekick.";
@@ -283,6 +282,9 @@ SidekickChangeStatus removeSidekick(Entity &src,Entity *tgt)
     if(!src_sk.m_has_sidekick || src_sk.m_db_id == 0)
         return SidekickChangeStatus::GENERIC_FAILURE;
 
+    //TODO: just send a message to the SidekickHandler about this removal.
+    qWarning() << "Sidekick needs to send a message to the SidekickHandler about this removal";
+    Entity *tgt = nullptr; //getEntityByDBID(src.m_client, sidekick_id);
     if(tgt == nullptr)
     {
         msg = "Your sidekick is not currently online.";
@@ -292,11 +294,11 @@ SidekickChangeStatus removeSidekick(Entity &src,Entity *tgt)
         src_sk.m_has_sidekick = false;
         src_sk.m_type         = SidekickType::NoSidekick;
         src_sk.m_db_id        = 0;
-        setCombatLevel(*src.m_char,getLevel(*src.m_char)); // reset CombatLevel
+        setCombatLevel(*src.m_char, getLevel(*src.m_char)); // reset CombatLevel
 
         return SidekickChangeStatus::SUCCESS;
     }
-    Sidekick    &tgt_sk         = tgt->m_char->m_char_data.m_sidekick;
+    Sidekick &tgt_sk = tgt->m_char->m_char_data.m_sidekick;
 
     // Anyone can terminate a Sidekick relationship
     if(!tgt_sk.m_has_sidekick || (tgt_sk.m_db_id != src.m_db_id))
@@ -323,7 +325,7 @@ SidekickChangeStatus removeSidekick(Entity &src,Entity *tgt)
     msg = QString("%1 and %2 are no longer sidekicked.").arg(src.name(),tgt->name());
     qCDebug(logTeams).noquote() << msg;
 
-    return SidekickChangeStatus::SUCCESS; // break early
+    return SidekickChangeStatus::SUCCESS;
 }
 
 //! @}
