@@ -56,7 +56,13 @@ ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
 // Setters
 void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
 void    setMapIdx(Entity &e, uint32_t val) { e.m_entity_data.m_map_idx = val; }
-void    setSpeed(Entity &e, float v1, float v2, float v3) { e.m_motion_state.m_speed = {v1,v2,v3}; }
+void    setSpeed(Entity &e, float v1, float v2, float v3)
+{
+    // TODO: we really shouldn't modify surface-mods here. But currently this appears
+    // to be the only way to adjust speed. This is a work-around until a fix can be found.
+    e.m_motion_state.m_surf_mods->max_speed = std::max({v1, v2, v3});
+    e.m_motion_state.m_speed = {v1,v2,v3};
+}
 void    setBackupSpd(Entity &e, float val) { e.m_motion_state.m_backup_spd = val; }
 void    setJumpHeight(Entity &e, float val) { e.m_motion_state.m_jump_height = val; }
 void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
