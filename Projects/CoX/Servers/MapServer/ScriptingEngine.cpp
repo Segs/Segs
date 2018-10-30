@@ -320,14 +320,14 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
     if(!funcwrap.valid())
     {
-        qCritical() << "Failed to retrieve script func:"<<name;
+        qCritical() << "Failed to retrieve script func:" << name;
         return "";
     }
     auto result = funcwrap(arg1);
     if(!result.valid())
     {
         sol::error err = result;
-        qCritical() << "Failed to run script func:"<<name<<err.what();
+        qCritical() << "Failed to run script func:" << name << err.what();
         return "";
     }
     return result.get<std::string>();
@@ -340,7 +340,7 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
 
     if(!funcwrap.valid())
     {
-        qCritical() << "Failed to retrieve script func:"<<name;
+        qCritical() << "Failed to retrieve script func:" << name;
         return "";
     }
     auto result = funcwrap(arg1, loc);
