@@ -305,6 +305,15 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     return callFunc(name,arg1,loc);
 }
 
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, const char *arg1, glm::vec3 loc)
+{
+    m_private->m_lua["client"] = client;
+    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
+    m_private->m_lua["heroName"] = qPrintable(client->m_name);
+    return callFunc(name,arg1,loc);
+}
+
+
 std::string ScriptingEngine::callFunc(const char *name, int arg1)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
@@ -325,6 +334,26 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
 }
 
 std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
+{
+    sol::protected_function funcwrap = m_private->m_lua[name];
+    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+
+    if(!funcwrap.valid())
+    {
+        qCritical() << "Failed to retrieve script func:"<<name;
+        return "";
+    }
+    auto result = funcwrap(arg1, loc);
+    if(!result.valid())
+    {
+        sol::error err = result;
+        qCritical() << "Failed to run script func:"<<name<<err.what();
+        return "";
+    }
+    return result.get<std::string>();
+}
+
+std::string ScriptingEngine::callFunc(const char *name, const char *arg1, glm::vec3 loc)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
     funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
