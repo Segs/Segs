@@ -12,6 +12,7 @@
 
 #include "MapEventFactory.h"
 #include "Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/ContactList.h"
 
 using namespace SEGSEvents;
 
@@ -30,7 +31,7 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
     switch(opcode) // this is the actual clientside packet Opcode
     {
         case 1: return new ConnectRequest;
-        case 2: return new InputState;
+        case 2: return new RecvInputState;
         case 3: return new SceneRequest;
         case 4: return new ShortcutsRequest;
         case 5: return new EntitiesRequest;
@@ -63,6 +64,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 9: return new EnterDoor;
         case 10: return new AwaitingDeadNoGurney;
         case 11: return new SetDestination;
+        case 13: return new HasEnteredDoor;
         case 14: return new WindowState;
         case 16: return new ChatDividerMoved;
         case 17: return new InspirationDockMode;
@@ -72,6 +74,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 21: return new ResetKeybinds;
         case 22: return new SelectKeybindProfile;
         case 24: return new DialogButton;
+        case 26: return new ReceiveContactStatus;
         case 27: return new ActivatePower;
         case 28: return new ActivatePowerAtLocation;
         case 29: return new ActivateInspiration;

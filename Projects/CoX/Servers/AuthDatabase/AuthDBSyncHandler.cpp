@@ -40,17 +40,17 @@ void AuthDBSyncHandler::dispatch(Event *ev)
     {
 
         case AuthDBEventTypes::evCreateAccountMessage:
-        on_create_account(static_cast<CreateAccountMessage *>(ev));
-        break;
+            on_create_account(static_cast<CreateAccountMessage *>(ev));
+            break;
         case AuthDBEventTypes::evRetrieveAccountRequest:
-        on_retrieve_account(static_cast<RetrieveAccountRequest *>(ev));
-        break;
+            on_retrieve_account(static_cast<RetrieveAccountRequest *>(ev));
+            break;
         case AuthDBEventTypes::evValidatePasswordRequest:
-        on_validate_password(static_cast<ValidatePasswordRequest *>(ev));
-        break;
+            on_validate_password(static_cast<ValidatePasswordRequest *>(ev));
+            break;
         default:
-        assert(false);
-        break;
+            assert(false);
+            break;
     }
 }
 

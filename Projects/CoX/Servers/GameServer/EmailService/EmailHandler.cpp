@@ -21,39 +21,37 @@ void EmailHandler::dispatch(Event *ev)
     {
         // EmailEvents
         case EmailEventTypes::evEmailHeaderRequest:
-        on_email_header(static_cast<EmailHeaderRequest *>(ev));
-        break;
+            on_email_header(static_cast<EmailHeaderRequest *>(ev));
+            break;
         case EmailEventTypes::evEmailReadRequest:
-        on_email_read(static_cast<EmailReadRequest *>(ev));
-        break;
+            on_email_read(static_cast<EmailReadRequest *>(ev));
+            break;
         case EmailEventTypes::evEmailSendMessage:
-        on_email_send(static_cast<EmailSendMessage *>(ev));
-        break;
+            on_email_send(static_cast<EmailSendMessage *>(ev));
+            break;
         case EmailEventTypes::evEmailDeleteMessage:
-        on_email_delete(static_cast<EmailDeleteMessage *>(ev));
-        break;
-
+            on_email_delete(static_cast<EmailDeleteMessage *>(ev));
+            break;
         // GameDbEvents
         case GameDBEventTypes::evEmailCreateResponse:
-        on_email_create_response(static_cast<EmailCreateResponse *>(ev));
-        break;
+            on_email_create_response(static_cast<EmailCreateResponse *>(ev));
+            break;
         case GameDBEventTypes::evGetEmailsResponse:
-        on_get_emails_response(static_cast<GetEmailsResponse *>(ev));
-        break;
+            on_get_emails_response(static_cast<GetEmailsResponse *>(ev));
+            break;
         case GameDBEventTypes::evFillEmailRecipientIdResponse:
-        on_fill_email_recipient_id_response(static_cast<FillEmailRecipientIdResponse *>(ev));
-        break;
+            on_fill_email_recipient_id_response(static_cast<FillEmailRecipientIdResponse *>(ev));
+            break;
         case GameDBEventTypes::evFillEmailRecipientIdErrorMessage:
-        on_fill_email_recipient_id_error(static_cast<FillEmailRecipientIdErrorMessage *>(ev));
-        break;
-
+            on_fill_email_recipient_id_error(static_cast<FillEmailRecipientIdErrorMessage *>(ev));
+            break;
         // will be obtained from MessageBusEndpoint
         case Internal_EventTypes::evClientConnectedMessage:
-        on_client_connected(static_cast<ClientConnectedMessage *>(ev));
-        break;
+            on_client_connected(static_cast<ClientConnectedMessage *>(ev));
+            break;
         case Internal_EventTypes::evClientDisconnectedMessage:
-        on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
-        break;
+            on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
+            break;
         default: assert(false); break;
     }
 }

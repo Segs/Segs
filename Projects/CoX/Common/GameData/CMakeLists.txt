@@ -7,6 +7,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterData.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterHelpers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Contact.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Costume.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Entity.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Friend.cpp
@@ -14,6 +15,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Trade.cpp
@@ -71,6 +73,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Trade.h
     ${CMAKE_CURRENT_SOURCE_DIR}/chardata_serializers.h

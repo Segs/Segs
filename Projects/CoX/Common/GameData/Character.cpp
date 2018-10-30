@@ -634,8 +634,8 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
 
     try
     {
-        serializeFromQString(cd,src.m_serialized_chardata);
-        serializeFromQString(player,src.m_serialized_player_data);
+        serializeFromQString(cd, src.m_serialized_chardata);
+        serializeFromQString(player, src.m_serialized_player_data);
         serializeFromQString(entity, src.m_serialized_entity_data);
     }
     catch(cereal::RapidJSONException &e)
@@ -655,7 +655,7 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
         // appearance related.
         main_costume.m_body_type = src.m_costumes.back().m_body_type;
         main_costume.m_height = src.m_costumes.back().m_height;
-                main_costume.m_physique = src.m_costumes.back().m_physique;
+        main_costume.m_physique = src.m_costumes.back().m_physique;
         main_costume.setSlotIndex(costume.m_slot_index);
         main_costume.setCharacterId(costume.m_character_id);
     }

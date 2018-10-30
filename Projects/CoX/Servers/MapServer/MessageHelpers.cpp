@@ -54,7 +54,7 @@ void storeEntityResponseCommands(BitStream &bs,float time_of_day)
 {
     PUTDEBUG("before commands");
     bs.StorePackedBits(1,1); // use 'time' shortcut
-    bs.StoreFloat(float(time_of_day)*10.0f);
+    bs.StoreFloat(time_of_day*10.0f);
     bs.StorePackedBits(1,2); // use 'time scale' shortcut
     bs.StoreFloat(4.0f);
     bs.StorePackedBits(1,3); // use 'time step scale' shortcut
@@ -79,10 +79,6 @@ void storeEntityResponseOtherEntities(BitStream &tgt,EntityManager &manager, Map
 void storeServerPhysicsPositions(BitStream &bs,Entity *self)
 {
     PUTDEBUG("before physics");
-    //TODO: remove this after we have proper physics processing
-    if(self->m_full_update_count>0)
-        self->m_full_update_count--;
-    self->m_full_update = self->m_full_update_count!=0;
 
     bs.StoreBits(1,self->m_full_update);
     if( !self->m_full_update )
@@ -97,22 +93,14 @@ void storeServerPhysicsPositions(BitStream &bs,Entity *self)
         for(int i=0; i<3; ++i)
             bs.StoreFloat(self->m_entity_data.m_pos[i]); // server position
         for(int i=0; i<3; ++i)
-            storeFloatConditional(bs,self->m_velocity[i]);
+            storeFloatConditional(bs,self->m_motion_state.m_velocity[i]);
 
         qCDebug(logPosition) << "position" << glm::to_string(self->m_entity_data.m_pos).c_str();
-        qCDebug(logPosition) << "velocity" << glm::to_string(self->m_velocity).c_str();
+        qCDebug(logPosition) << "velocity" << glm::to_string(self->m_motion_state.m_velocity).c_str();
     }
 }
 void storeServerControlState(BitStream &bs,Entity *self)
 {
-    SurfaceParams surface_params[2];
-    memset(&surface_params,0,2*sizeof(SurfaceParams));
-    surface_params[0].traction = 1.5f;
-    surface_params[0].friction = 1.5f;
-    surface_params[0].bounce = 1.5f;
-    surface_params[1].max_speed = surface_params[0].max_speed = 1.5f;
-    surface_params[1].gravitational_constant = surface_params[0].gravitational_constant = 3.0f;
-
     bs.StoreBits(1,self->m_update_part_1);
     if(self->m_update_part_1)
     {
@@ -120,32 +108,32 @@ void storeServerControlState(BitStream &bs,Entity *self)
         bs.StoreBits(8,self->m_update_id);
         // after input_send_time_initialized, this value is enqueued as CSC_9's control_flags
 
-        storeVector(bs,self->m_spd); // This is entity speed vector !!
+        storeVector(bs,self->m_motion_state.m_speed); // This is entity speed vector !!
 
-        bs.StoreFloat(self->m_backup_spd);         // Backup Speed default = 1.0f
-        bs.StoreBitArray((uint8_t *)&surface_params,2*sizeof(SurfaceParams)*8);
+        bs.StoreFloat(self->m_motion_state.m_backup_spd);         // Backup Speed default = 1.0f
+        bs.StoreBitArray((uint8_t *)&self->m_motion_state.m_surf_mods,2*sizeof(SurfaceParams)*8);
 
-        bs.StoreFloat(self->m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
-        bs.StoreBits(1,self->m_is_flying);         // is_flying flag
-        bs.StoreBits(1,self->m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
-        bs.StoreBits(1,self->m_has_jumppack);      // jumpack flag (lacks costume parts)
+        bs.StoreFloat(self->m_motion_state.m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
+        bs.StoreBits(1,self->m_motion_state.m_is_flying);         // is_flying flag
+        bs.StoreBits(1,self->m_motion_state.m_is_stunned);        // is_stunned flag (lacks overhead 'dizzy' FX)
+        bs.StoreBits(1,self->m_motion_state.m_has_jumppack);      // jumpack flag (lacks costume parts)
 
-        bs.StoreBits(1,self->m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
-        bs.StoreBits(1,self->m_is_jumping);        // leaping? seems like the anim changes slightly?
-        bs.StoreBits(1,self->m_is_sliding);        // sliding? default = 0
+        bs.StoreBits(1,self->m_motion_state.m_controls_disabled); // if 1/true entity anims stop, can still move, but camera stays. Slipping on ice?
+        bs.StoreBits(1,self->m_motion_state.m_is_jumping);        // leaping? seems like the anim changes slightly?
+        bs.StoreBits(1,self->m_motion_state.m_is_sliding);        // sliding? default = 0
     }
     // Used to force the client to a position/speed/pitch/rotation by server
     bs.StoreBits(1,self->m_force_pos_and_cam);
     if(self->m_force_pos_and_cam)
     {
-        bs.StorePackedBits(1,self->inp_state.m_received_server_update_id); // sets g_client_pos_id_rel default = 0
-        storeVector(bs,self->m_entity_data.m_pos);         // server-side pos
-        storeVectorConditional(bs,self->m_spd);          // server-side spd (optional)
+        bs.StorePackedBits(1,self->m_states.current()->m_every_4_ticks);    // sets g_client_pos_id_rel default = 0
+        storeVector(bs,self->m_entity_data.m_pos);                          // server-side pos
+        storeVectorConditional(bs,self->m_motion_state.m_velocity);         // server-side velocity
 
-        storeFloatConditional(bs,0); // Pitch not used ?
+        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.x); // Pitch not used ?
         storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.y); // Yaw
-        storeFloatConditional(bs,0); // Roll
-        bs.StorePackedBits(1,self->m_is_falling); // server side forced falling bit
+        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.z); // Roll
+        bs.StorePackedBits(1,self->m_motion_state.m_is_falling); // server side forced falling bit
 
         self->m_force_pos_and_cam = false; // run once
     }
@@ -209,7 +197,7 @@ void storeTeamList(BitStream &bs,Entity *self)
     assert(self);
 
     // shorthand local vars
-    int         team_idx = 0;
+    uint32_t    team_idx = 0;
     bool        mark_lfg = self->m_char->m_char_data.m_lfg;
     bool        has_mission = false;
     uint32_t    tm_leader_id = 0;
@@ -482,6 +470,7 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     PUTDEBUG("before friend list");
     player_char.sendFriendList(bs);
 }
+
 void storePowerInfoUpdate(BitStream &bs,Entity *e)
 {
     assert(e);
@@ -632,7 +621,8 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
     qCDebug(logPowers) << "  Powers Updated:" << cd->m_has_updated_powers;
 }
 
-}
+} // end of anonymous namespace
+
 void storeClientData(BitStream &bs,Entity *ent,bool incremental)
 {
     PUTDEBUG("Before character data");
@@ -658,9 +648,9 @@ void storeClientData(BitStream &bs,Entity *ent,bool incremental)
     bs.StoreBits(1,ent->m_force_camera_dir);
     if(ent->m_force_camera_dir)
     {
-        bs.StoreFloat(ent->inp_state.m_camera_pyr.p); // force camera_pitch
-        bs.StoreFloat(ent->inp_state.m_camera_pyr.y); // force camera_yaw
-        bs.StoreFloat(ent->inp_state.m_camera_pyr.r); // force camera_roll
+        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.p); // force camera_pitch
+        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.y); // force camera_yaw
+        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.r); // force camera_roll
     }
     PUTDEBUG("After character data");
 }
@@ -682,6 +672,7 @@ void buildEntityResponse(EntitiesResponse *res,MapClientSession &to_client,Entit
     res->is_incremental(is_incremental); // full world update = op 3
     res->debug_info = use_debug;
     storeEntityResponseCommands(res->blob_of_death,res->m_map_time_of_day);
+
     res->blob_of_death.StoreBits(32,res->abs_time);
     //tgt.StoreBits(32,db_time);
     bool all_defaults = (use_debug==0) && (res->g_interpolation_level==2) && (res->g_interpolation_bits==1);
@@ -696,6 +687,7 @@ void buildEntityResponse(EntitiesResponse *res,MapClientSession &to_client,Entit
             res->blob_of_death.StoreBits(2,res->g_interpolation_bits);
         }
     }
+
     storeEntityResponseOtherEntities(res->blob_of_death,to_client.m_current_map->m_entities, &to_client, is_incremental,use_debug);
     storeServerPhysicsPositions(res->blob_of_death,to_client.m_ent);
     storeControlState(res->blob_of_death,to_client.m_ent);
