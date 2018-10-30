@@ -136,7 +136,7 @@ void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<Cont
 void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno);
 void sendContactDialogClose(MapClientSession &src);
 void sendContactStatusList(MapClientSession &src);
-void updateContactStatusList(MapClientSession &src, Contact contact);
+void updateContactStatusList(MapClientSession &src, const Contact &contact_to_update);
 void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 &location);
 void sendStance(MapClientSession &src, PowerStance stance);
 void sendDeadNoGurney(MapClientSession &sess);

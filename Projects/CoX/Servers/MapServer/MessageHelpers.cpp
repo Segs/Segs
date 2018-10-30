@@ -54,7 +54,7 @@ void storeEntityResponseCommands(BitStream &bs,float time_of_day)
 {
     PUTDEBUG("before commands");
     bs.StorePackedBits(1,1); // use 'time' shortcut
-    bs.StoreFloat(float(time_of_day)*10.0f);
+    bs.StoreFloat(time_of_day*10.0f);
     bs.StorePackedBits(1,2); // use 'time scale' shortcut
     bs.StoreFloat(4.0f);
     bs.StorePackedBits(1,3); // use 'time step scale' shortcut

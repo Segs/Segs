@@ -706,25 +706,25 @@ void sendContactDialogClose(MapClientSession &src)
     src.addCommand<ContactDialogClose>();
 }
 
-void updateContactStatusList(MapClientSession &src, Contact contact)
+void updateContactStatusList(MapClientSession &src, const Contact &updated_contact_data)
 {
     vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
     //find contact
     bool found = false;
 
-    for (int i = 0; i < contacts.size(); ++i)
+    for (Contact & contact : contacts)
     {
-        if(contacts[i].m_npc_id == contact.m_npc_id)
+        if(contact.m_npc_id == updated_contact_data.m_npc_id)
         {
             found = true;
             //contact already in list, update contact;
-            contacts.at(i) = contact;
+            contact = updated_contact_data;
             break;
         }
     }
 
     if(!found)
-        contacts.push_back(contact);
+        contacts.push_back(updated_contact_data);
 
     //update database contactList
     src.m_ent->m_char->m_char_data.m_contacts = contacts;
@@ -768,15 +768,16 @@ void sendDeadNoGurney(MapClientSession &sess)
 
 void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state)
 {
-    qCDebug(logSlashCommand).noquote() << QString("Sending DoorAnimStart: entry<%1, %2, %3>  target<%4, %5, %6>  has_anims: %7  seq_state: %8")
-                                .arg(entry_pos.x, 0, 'f', 1)
-                                .arg(entry_pos.y, 0, 'f', 1)
-                                .arg(entry_pos.z, 0, 'f', 1)
-                                .arg(target_pos.x, 0, 'f', 1)
-                                .arg(target_pos.y, 0, 'f', 1)
-                                .arg(target_pos.z, 0, 'f', 1)
-                                .arg(has_anims)
-                                .arg(seq_state);
+    qCDebug(logSlashCommand).noquote()
+        << QString("Sending DoorAnimStart: entry<%1, %2, %3>  target<%4, %5, %6>  has_anims: %7  seq_state: %8")
+               .arg(entry_pos.x, 0, 'f', 1)
+               .arg(entry_pos.y, 0, 'f', 1)
+               .arg(entry_pos.z, 0, 'f', 1)
+               .arg(target_pos.x, 0, 'f', 1)
+               .arg(target_pos.y, 0, 'f', 1)
+               .arg(target_pos.z, 0, 'f', 1)
+               .arg(has_anims)
+               .arg(seq_state);
 
     sess.addCommand<DoorAnimStart>(entry_pos, target_pos, has_anims, seq_state);
 }
@@ -1029,7 +1030,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
                         .arg(QString(powtpl.m_Name));
 
                 if (powtpl.pAttribMod[i].Duration > 0)
-                    to_msg.append(" for a duration of %1").arg(powtpl.pAttribMod[i].Duration);
+                    to_msg.append(QString(" for a duration of %1").arg(powtpl.pAttribMod[i].Duration));
 
                 // Build target specific messages
                 from_msg = QString("You cause ").append(to_msg);
