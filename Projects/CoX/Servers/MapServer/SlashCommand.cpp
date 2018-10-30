@@ -1630,8 +1630,7 @@ void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
     QString msg;
 
     uint32_t sidekick_id = getSidekickId(*sess.m_ent->m_char);
-    Entity *tgt = getEntityByDBID(sess.m_current_map,sidekick_id);
-    auto res = removeSidekick(*sess.m_ent,tgt);
+    auto res = removeSidekick(*sess.m_ent, sidekick_id);
     if(res==SidekickChangeStatus::GENERIC_FAILURE)
     {
         msg = "You are not sidekicked with anyone.";
@@ -1640,6 +1639,7 @@ void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
     }
     else if(res==SidekickChangeStatus::SUCCESS)
     {
+        Entity *tgt = getEntityByDBID(sess.m_current_map, sidekick_id);
         QString tgt_name = tgt ? tgt->name() : "Unknown Player";
         if(isSidekickMentor(*sess.m_ent))
         {

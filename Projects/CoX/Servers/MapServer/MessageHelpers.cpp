@@ -54,7 +54,7 @@ void storeEntityResponseCommands(BitStream &bs,float time_of_day)
 {
     PUTDEBUG("before commands");
     bs.StorePackedBits(1,1); // use 'time' shortcut
-    bs.StoreFloat(float(time_of_day)*10.0f);
+    bs.StoreFloat(time_of_day*10.0f);
     bs.StorePackedBits(1,2); // use 'time scale' shortcut
     bs.StoreFloat(4.0f);
     bs.StorePackedBits(1,3); // use 'time step scale' shortcut
@@ -111,7 +111,7 @@ void storeServerControlState(BitStream &bs,Entity *self)
         storeVector(bs,self->m_motion_state.m_speed); // This is entity speed vector !!
 
         bs.StoreFloat(self->m_motion_state.m_backup_spd);         // Backup Speed default = 1.0f
-        bs.StoreBitArray((uint8_t *)&g_world_surf_params,2*sizeof(SurfaceParams)*8);
+        bs.StoreBitArray((uint8_t *)&self->m_motion_state.m_surf_mods,2*sizeof(SurfaceParams)*8);
 
         bs.StoreFloat(self->m_motion_state.m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
         bs.StoreBits(1,self->m_motion_state.m_is_flying);         // is_flying flag
@@ -126,9 +126,9 @@ void storeServerControlState(BitStream &bs,Entity *self)
     bs.StoreBits(1,self->m_force_pos_and_cam);
     if(self->m_force_pos_and_cam)
     {
-        bs.StorePackedBits(1,self->m_states.current()->m_every_4_ticks); // sets g_client_pos_id_rel default = 0
-        storeVector(bs,self->m_entity_data.m_pos);         // server-side pos
-        storeVectorConditional(bs,self->m_motion_state.m_speed);          // server-side spd (optional)
+        bs.StorePackedBits(1,self->m_states.current()->m_every_4_ticks);    // sets g_client_pos_id_rel default = 0
+        storeVector(bs,self->m_entity_data.m_pos);                          // server-side pos
+        storeVectorConditional(bs,self->m_motion_state.m_velocity);         // server-side velocity
 
         storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.x); // Pitch not used ?
         storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.y); // Yaw

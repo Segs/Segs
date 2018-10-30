@@ -97,7 +97,7 @@ namespace SEGSEvents
         int32_t m_srv_idx = 0;
         explicit ReceiveContactStatus() : MapLinkEvent(MapEventTypes::evReceiveContactStatus){}
 
-        void serializeto(BitStream &bs) const override
+        void serializeto(BitStream &/*bs*/) const override
         {
             assert(!"ReceiveContactStatus serializeto");
         }

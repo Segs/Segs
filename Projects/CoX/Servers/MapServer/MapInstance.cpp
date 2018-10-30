@@ -1269,6 +1269,8 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
 
             Entity *tgt = getEntity(sender,target_name);
 
+            qWarning() << "Private chat: this only work for players on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
+
             if(tgt == nullptr)
             {
                 prepared_chat_message = QString("No player named \"%1\" currently online.").arg(target_name);
@@ -1277,11 +1279,11 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             }
             else
             {
-                prepared_chat_message = QString(" -->%1: %2").arg(target_name,msg_content.toString());
-                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,*sender); // in this case, sender is target
+                prepared_chat_message = QString(" --> %1: %2").arg(target_name,msg_content.toString());
+                sendInfoMessage(MessageChannel::PRIVATE, prepared_chat_message, *sender); // in this case, sender is target
 
                 prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
-                sendChatMessage(MessageChannel::PRIVATE,prepared_chat_message,sender,*tgt->m_client);
+                sendChatMessage(MessageChannel::PRIVATE, prepared_chat_message, sender, *tgt->m_client);
             }
 
             break;
@@ -1291,9 +1293,11 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             if(!sender->m_ent->m_has_team)
             {
                 prepared_chat_message = "You are not a member of a Team.";
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender);
+                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender);
                 break;
             }
+
+            qWarning() << "Team chat: this only work for members on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
 
             // Only send the message to characters on sender's team
             for(MapClientSession *cl : m_session_store)
@@ -1304,7 +1308,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(MapClientSession * cl : recipients)
             {
-                sendChatMessage(MessageChannel::TEAM,prepared_chat_message,sender,*cl);
+                sendChatMessage(MessageChannel::TEAM, prepared_chat_message, sender, *cl);
             }
             break;
         }
@@ -1313,9 +1317,11 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             if(!sender->m_ent->m_has_supergroup)
             {
                 prepared_chat_message = "You are not a member of a SuperGroup.";
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender);
+                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender);
                 break;
             }
+
+            qWarning() << "SuperGroup chat: this only work for members on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
 
             // Only send the message to characters in sender's supergroup
             for(MapClientSession *cl : m_session_store)
@@ -1339,22 +1345,25 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
                 sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender);
                 break;
             }
+
+            qWarning() << "Friend chat: this only work for friends on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
+
             // Only send the message to characters in sender's friendslist
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
             for(Friend &f : fl->m_friends)
             {
                 if(f.m_online_status != true)
                     continue;
-                assert(false);
+
                 //TODO: this only work for friends on local server
                 // introduce a message router, and send messages to EntityIDs instead of directly using sessions.
-                Entity *tgt = nullptr; //getEntityByDBID(*sender,f.m_db_id);
+                Entity *tgt = getEntityByDBID(sender->m_current_map, f.m_db_id);
                 if(tgt == nullptr) // In case we didn't toggle online_status.
                     continue;
 
-                sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,*tgt->m_client);
+                sendChatMessage(MessageChannel::FRIENDS, prepared_chat_message, sender, *tgt->m_client);
             }
-            sendChatMessage(MessageChannel::FRIENDS,prepared_chat_message,sender,*sender);
+            sendChatMessage(MessageChannel::FRIENDS, prepared_chat_message, sender, *sender);
             break;
         }
         default:
@@ -2013,7 +2022,7 @@ void MapInstance::on_location_visited(LocationVisited *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited", (ev->m_name.toLocal8Bit()).data() , ev->m_pos);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited", qPrintable(ev->m_name), ev->m_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),session);
 
     qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
@@ -2025,7 +2034,7 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited", (ev->m_name.toLocal8Bit()).data(), ev->m_pos);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited", qPrintable(ev->m_name), ev->m_pos);
     qCWarning(logMapEvents) << "Unhandled plaque visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
