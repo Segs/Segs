@@ -85,7 +85,7 @@ float get_interpolator_perturbation(int16_t a1,int level)
 {
     buildErrorTable();
     if ( a1 )
-        return (2 * (a1 >= 0) - 1) * s_coding_sequence[std::abs(a1)]*(1<<level);
+        return (2 * (a1 >= 0) - 1) * s_coding_sequence[int(std::abs(a1))]*(1<<level);
 
     return 0.0f;
 }
