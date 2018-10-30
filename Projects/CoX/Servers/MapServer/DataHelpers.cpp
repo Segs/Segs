@@ -922,6 +922,31 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     ent.m_queued_powers.push_back(qpowers); // Activation Queue
     ent.m_recharging_powers.push_back(qpowers); // Recharging Queue
 
+    // TODO: Refactor this out
+    QStringList fly_names = {
+        "Combat_Flight",
+        "Fly",
+        "Group_Fly",
+    };
+    if(fly_names.contains(powtpl.m_Name, Qt::CaseInsensitive))
+    {
+        toggleFlying(ent);
+
+        if(getSpeed(ent) == glm::vec3(1.0f, 1.0f, 1.0f))
+            setSpeed(ent, 5.0f, 5.0f, 5.0f);
+        else
+            setSpeed(ent, 1.0f, 1.0f, 1.0f);
+    }
+
+    // TODO: Refactor this out
+    if(powtpl.m_Name == "Super_Speed")
+    {
+        if(getSpeed(ent) == glm::vec3(1.0f, 1.0f, 1.0f))
+            setSpeed(ent, 5.0f, 5.0f, 5.0f);
+        else
+            setSpeed(ent, 1.0f, 1.0f, 1.0f);
+    }
+
     // If there are charges remaining, use them.
     if(ppower->m_is_limited && ppower->m_charges_remaining)
         --ppower->m_charges_remaining;
