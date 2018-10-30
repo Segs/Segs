@@ -7,6 +7,7 @@ SET(target_CPP
     BitStream.cpp
     Buffer.cpp
     ConfigExtension.cpp
+    EmergencyHelpers.cpp
     EventProcessor.cpp
     SEGSEvent.cpp
     SEGSEventFactory.cpp
@@ -23,7 +24,9 @@ SET(target_INCLUDE
     serialization_types.h
     BitStream.h
     Buffer.h
+    CircularBlockBuffer.h
     ConfigExtension.h
+    EmergencyHelpers.h
     EventProcessor.h
     SEGSEvent.h
     SEGSEventFactory.h
