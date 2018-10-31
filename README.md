@@ -43,7 +43,8 @@ REQUIREMENTS AND NOTES
 
 Below are the utilities and libraries you'll need to compile SEGS in any environment. While it may be possible to use another toolset, the C++ Tool Chain below is the only one officially supported by the SEGS team. These packages are available for both Linux or Windows, via your distro's package manager, or via the links below:
 
-   - **QT 5.9+** - A cross platform application framework utilized heavily by SEGS. https://www.qt.io/download-qt-for-application-development  
+   - **QT 5.9+** - A cross platform application framework utilized heavily by SEGS. http://download.qt.io/archive/qt/
+   
    - **CMake 3.6+** - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
    - **Git** - A version control system for tracking changes in computer files and coordinating work on those files among multiple people. https://git-scm.com/download  
 
