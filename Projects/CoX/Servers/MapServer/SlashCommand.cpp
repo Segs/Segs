@@ -232,7 +232,7 @@ static const SlashCommand g_defined_slash_commands[] = {
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", cmdHandler_AddNPC, 2},
-    {{"moveTo", "setpospyr"},"set the gm's position to <x> <y> <z>", cmdHandler_MoveTo, 2},
+    {{"moveTo", "setpos", "setpospyr"},"set the gm's position to <x> <y> <z>", cmdHandler_MoveTo, 2},
 
     /* Access Level 1 Commands */
     {{"cmdlist","commandlist"},"List all accessible commands", cmdHandler_CmdList, 1},
