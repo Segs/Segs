@@ -7,19 +7,7 @@ SET(target_CPP
     DataHelpers.cpp
     EntityStorage.cpp
     EntityUpdateCodec.cpp
-    Events/GameCommandList.cpp
-    Events/ChatDividerMoved.cpp
-    Events/ChatMessage.cpp
-    Events/EntitiesResponse.cpp
-    Events/InputState.cpp
-    Events/LocationVisited.cpp
-    Events/PlaqueVisited.cpp
-    Events/NewEntity.cpp
-    Events/SaveClientOptions.cpp
-    Events/SceneEvent.cpp
-    Events/InfoMessageCmd.cpp
-    Events/WindowState.cpp
-    NpcStore.cpp
+    MapClientSession.cpp
     NpcGenerator.cpp
     MapEventFactory.cpp
     MapInstance.cpp
@@ -27,8 +15,8 @@ SET(target_CPP
     MapManager.cpp
     MapSceneGraph.cpp
     MapServer.cpp
-    MapServerData.cpp
     MapTemplate.cpp
+    MessageHelpers.cpp
     NetCommandManager.cpp
     SlashCommand.cpp
     WorldSimulation.cpp
@@ -38,44 +26,15 @@ SET(target_INCLUDE
     DataHelpers.h
     EntityStorage.h
     EntityUpdateCodec.h
-    Events/GameCommandList.h
-    Events/ChatDividerMoved.h
-    Events/ChatMessage.h
-    Events/EmailHeaders.h
-    Events/EmailMessageStatus.h
-    Events/EmailRead.h
-    Events/EntitiesResponse.h
-    Events/FloatingDamage.h
-    Events/FriendsListUpdate.h
-    Events/InputState.h
-    Events/LocationVisited.h
-    Events/MapEventTypes.h
-    Events/MessageChannels.h
-    Events/NewEntity.h
-    Events/PlaqueVisited.h
-    Events/PlayerInfo.h
-    Events/SaveClientOptions.h
-    Events/SceneEvent.h
-    Events/Shortcuts.h
-    Events/SidekickOffer.h
-    Events/StandardDialogCmd.h
-    Events/TeamLooking.h
-    Events/TeamOffer.h
-    Events/InfoMessageCmd.h
-    Events/InteractWithEntity.h
-    Events/WindowState.h
-    NpcStore.h
     NpcGenerator.h
     MapEventFactory.h
-    MapEvents.h
     MapInstance.h
     MapLink.h
     MapManager.h
-    MapRef.h
     MapSceneGraph.h
     MapServer.h
-    MapServerData.h
     MapTemplate.h
+    MessageHelpers.h
     NetCommandManager.h
     ScriptingEngine.h
     SlashCommand.h
@@ -90,11 +49,23 @@ SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
-ADD_LIBRARY(mapserver_lib STATIC ${target_SOURCES})
-target_link_libraries(mapserver_lib PUBLIC CRUDP_Protocol common_runtime)
-target_link_libraries(mapserver_lib PUBLIC Qt5::Core)
-if(ENABLE_SCRIPTING_ENGINE)
-    target_compile_definitions(mapserver_lib PUBLIC -DSCRIPTING_ENABLED=1)
-    target_link_libraries(mapserver_lib INTERFACE lua_IMP sol2_IMP)
-endif()
+scan_event_types(MapEvents ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Events)
+add_event_sources(MapEvents target_SOURCES)
+add_handler(MapServer ${target_SOURCES})
+target_link_libraries(MapServer PUBLIC CRUDP_Protocol common_runtime)
+target_link_libraries(MapServer PUBLIC Qt5::Core)
+target_link_libraries(MapServer PUBLIC gameData)
 
+if(ENABLE_SCRIPTING_ENGINE)
+    target_compile_definitions(MapServer PUBLIC -DSCRIPTING_ENABLED=1)
+    target_link_libraries(MapServer INTERFACE lua_IMP sol2_IMP)
+endif()
+if(ENABLE_TESTS)
+    add_subdirectory(UnitTests)
+endif()
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES MapServer SOURCES)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${target_CPP} ${target_INCLUDE}) 
+set_target_properties (MapServer PROPERTIES
+    FOLDER Projects/CoX/Servers
+)

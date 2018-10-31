@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -10,12 +10,13 @@
  * @{
  */
 
+#include "GameData/CharacterClass.h"
+#include "GameData/CharacterAttributes.h"
 #include "charclass_serializers.h"
-#include "charclass_definitions.h"
 #include "attrib_serializers.h"
-#include "attrib_definitions.h"
 
 #include "serialization_common.h"
+#include "serialization_types.h"
 #include <cereal/types/memory.hpp>
 
 #include "DataStorage.h"
@@ -46,47 +47,47 @@ namespace
         ok &= s->prepare_nested(); // will update the file size left
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("AttribMin")==0) {
+            if("AttribMin"==_name) {
                 target.m_AttribMin.emplace_back();
                 ok &= loadFrom(s,target.m_AttribMin.back());
-            } else if(_name.compare("AttribBase")==0) {
+            } else if("AttribBase"==_name) {
                 target.m_AttribBase.emplace_back();
                 ok &= loadFrom(s,target.m_AttribBase.back());
-            } else if(_name.compare("StrengthMin")==0) {
+            } else if("StrengthMin"==_name) {
                 target.m_StrengthMin.emplace_back();
                 ok &= loadFrom(s,target.m_StrengthMin.back());
-            } else if(_name.compare("ResistanceMin")==0) {
+            } else if("ResistanceMin"==_name) {
                 target.m_ResistanceMin.emplace_back();
                 ok &= loadFrom(s,target.m_ResistanceMin.back());
-            } else if(_name.compare("AttribMaxTable")==0) {
+            } else if("AttribMaxTable"==_name) {
                 target.m_AttribMaxTable.emplace_back();
                 ok &= loadFrom(s,target.m_AttribMaxTable.back());
-            } else if(_name.compare("AttribMaxMaxTable")==0) {
+            } else if("AttribMaxMaxTable"==_name) {
                 target.m_AttribMaxMaxTable.emplace_back();
                 ok &= loadFrom(s,target.m_AttribMaxMaxTable.back());
-            } else if(_name.compare("StrengthMaxTable")==0) {
+            } else if("StrengthMaxTable"==_name) {
                 target.m_StrengthMaxTable.emplace_back();
                 ok &= loadFrom(s,target.m_StrengthMaxTable.back());
-            } else if(_name.compare("ResistanceMaxTable")==0) {
+            } else if("ResistanceMaxTable"==_name) {
                 target.m_ResistanceMaxTable.emplace_back();
                 ok &= loadFrom(s,target.m_ResistanceMaxTable.back());
-            } else if(_name.compare("ModTable")==0) {
+            } else if("ModTable"==_name) {
                 target.m_ModTable.emplace_back();
                 ok &= loadFrom(s,target.m_ModTable.back());
-            } else if(_name.compare("_FinalAttrMax_")==0) {
+            } else if("_FinalAttrMax_"==_name) {
                 target._FinalAttrMax_.reset(new Parse_CharAttrib);
                 ok &= loadFrom(s,*target._FinalAttrMax_);
-            } else if(_name.compare("_FinalAttrMaxMax_")==0) {
+            } else if("_FinalAttrMaxMax_"==_name) {
                 target._FinalAttrMaxMax_.reset(new Parse_CharAttrib);
                 ok &= loadFrom(s,*target._FinalAttrMaxMax_);
-            } else if(_name.compare("_FinalAttrStrengthMax_")==0) {
+            } else if("_FinalAttrStrengthMax_"==_name) {
                 target._FinalAttrStrengthMax_.reset(new Parse_CharAttrib);
                 ok &= loadFrom(s,*target._FinalAttrStrengthMax_);
-            } else if(_name.compare("_FinalAttrResistanceMax_")==0) {
+            } else if("_FinalAttrResistanceMax_"==_name) {
                 target._FinalAttrResistanceMax_.reset(new Parse_CharAttrib);
                 ok &= loadFrom(s,*target._FinalAttrResistanceMax_);
             } else
@@ -104,11 +105,11 @@ bool loadFrom(BinStore *s, Parse_AllCharClasses &target)
     bool ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Class")==0) {
+        if("Class"==_name) {
             target.emplace_back();
             ok &= loadFrom(s,target.back());
         } else
@@ -117,39 +118,6 @@ bool loadFrom(BinStore *s, Parse_AllCharClasses &target)
     }
     assert(ok);
     return ok;
-}
-
-template<class Archive>
-static void serialize(Archive &archive, ClassMod_Data &src)
-{
-    archive(cereal::make_nvp("Name",src.Name));
-    archive(cereal::make_nvp("Values",src.Values));
-}
-
-template<class Archive>
-static void serialize(Archive & archive, CharClass_Data & src)
-{
-    archive(cereal::make_nvp("Name",src.m_Name));
-    archive(cereal::make_nvp("DisplayName",src.m_DisplayName));
-    archive(cereal::make_nvp("DisplayHelp",src.m_DisplayHelp));
-    archive(cereal::make_nvp("DisplayShortHelp",src.m_DisplayShortHelp));
-    archive(cereal::make_nvp("PrimaryCategory",src.m_PrimaryCategory));
-    archive(cereal::make_nvp("SecondaryCategory",src.m_SecondaryCategory));
-    archive(cereal::make_nvp("PowerPoolCategory",src.m_PowerPoolCategory));
-    archive(cereal::make_nvp("AttribMin",src.m_AttribMin));
-    archive(cereal::make_nvp("AttribBase",src.m_AttribBase));
-    archive(cereal::make_nvp("StrengthMin",src.m_StrengthMin));
-    archive(cereal::make_nvp("ResistanceMin",src.m_ResistanceMin));
-    archive(cereal::make_nvp("AttribMaxTable",src.m_AttribMaxTable));
-    archive(cereal::make_nvp("AttribMaxMaxTable",src.m_AttribMaxMaxTable));
-    archive(cereal::make_nvp("StrengthMaxTable",src.m_StrengthMaxTable));
-    archive(cereal::make_nvp("ResistanceMaxTable",src.m_ResistanceMaxTable));
-    archive(cereal::make_nvp("ModTable",src.m_ModTable));
-    archive(cereal::make_nvp("_FinalAttrMax_",src._FinalAttrMax_));
-    archive(cereal::make_nvp("_FinalAttrMaxMax_",src._FinalAttrMaxMax_));
-    archive(cereal::make_nvp("_FinalAttrStrengthMax_",src._FinalAttrStrengthMax_));
-    archive(cereal::make_nvp("_FinalAttrResistanceMax_",src._FinalAttrResistanceMax_));
-
 }
 
 void saveTo(const Parse_AllCharClasses & target, const QString & baseName, bool text_format)

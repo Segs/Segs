@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -12,6 +12,7 @@
 
 #include "bodypart_serializers.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 #include "bodypart_definitions.h"
 
 #include "DataStorage.h"
@@ -57,11 +58,11 @@ bool loadFrom(BinStore * s, AllBodyParts_Data * target)
     bool ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("BodyPart")==0) {
+        if("BodyPart"==_name) {
             BodyPart_Data nt;
             ok &= loadFrom(s,&nt);
             target->emplace_back(nt);

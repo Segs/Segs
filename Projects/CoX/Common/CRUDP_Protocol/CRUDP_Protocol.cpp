@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -14,6 +14,8 @@
 #include "CRUDP_Protocol.h"
 
 #include "PacketCodec.h"
+#include "BitStream.h"
+
 
 #include <cassert>
 
@@ -246,7 +248,7 @@ CrudP_Packet *CrudP_Protocol::mergeSiblings(uint32_t id)
 {
     auto store_iter = sibling_map.find(id);
     pPacketStorage &storage(store_iter->second);
-    assert(storage.size()>=1); // wtf ??
+    assert(!storage.empty()); // wtf ??
     BitStream *bs=new BitStream(32);
     CrudP_Packet *res= new CrudP_Packet(*storage[0]); //copy packet info from first sibling
     for(CrudP_Packet *pak : storage)
@@ -498,7 +500,7 @@ bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)
         qDebug() << "Unresponsive link";
         return false;
     }
-    // move some packaets from reliable_packets to retransmit_queue
+    // move some packets from reliable_packets to retransmit_queue
     processRetransmits();
     // first handle retransmit queue
     CrudP_Packet *pak;

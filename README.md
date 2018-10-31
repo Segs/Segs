@@ -21,6 +21,7 @@ Some other useful links:
 * Our [Discord](https://discord.segs.io/)
 * Our [wiki](https://github.com/Segs/Segs/wiki)
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
+* How Can I Help? [Specific Tasks to Help](https://github.com/Segs/Segs/issues/519)
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide)
 
 Basic instructions for compiling SEGS in Linux and Windows are below, however for more detailed visual instructions, visit https://segs.io/developers
@@ -110,7 +111,7 @@ BUILD SEGS
 **1. Start QTCreator and Clone Git Repository**
 
 Start QTCreator and select New Project. The _New Project_ dialog box will appear. From the list on the left, select `Import Project`, and from the middle column `Git Clone`, then press the `Choose...` button at the bottom right of the dialog window.
-![New Project Dialog Screenshot](https://segs.nemerle.eu/user/pages/02.developers/newProject.png "New Project Dialog Screenshot")
+![New Project Dialog Screenshot](https://segs.io/user/pages/02.developers/newProject.png "New Project Dialog Screenshot")
 
 The dialog box will change to show the _Git Clone_ dialog, which contains configuration options for importing a project from Git. 
 
@@ -128,7 +129,7 @@ Next, QTCreator will ask you to configuration your project. This is where you'll
 > QTCreator uses kits to group various settings for building and running projects.
 
 Begin by selecting MinGW 32bit.
-![Project Configuration](https://segs.nemerle.eu/user/pages/02.developers/ProjectConfiguration.png "Project Configuration")
+![Project Configuration](https://segs.io/user/pages/02.developers/ProjectConfiguration.png "Project Configuration")
 
 You may select the `Details` button next to MinGW if you'd like to customize the paths where QTCreator will store temporary build files.
 
@@ -158,6 +159,37 @@ cmake ..
 make
 ```
 
+**ADVANCED: Using Build Scripts**
+
+If you're using docker, run the following commands
+
+```
+cp activate.env.template activate.env
+source activate.env # set ENV variables and add ./scripts to PATH
+
+docker-build Dockerfile # build the docker image (only needed once)
+docker-up # Ctrl-D to run in background
+
+docker-forward segs bootstrap # set up cmake / clean build
+docker-forward segs build # build all components
+docker-forward segs build gameserver_lib # build a single component
+```
+
+This will also run on Ubuntu 18.04 with the following:
+
+```
+cp activate.env.template activate.env
+source activate.env # set ENV variables and add ./scripts to PATH
+
+sudo segs install_deps_ubuntu # install development tools (only needed once)
+
+segs bootstrap # set up cmake / clean build
+segs build # build all components
+segs build gameserver_lib # build a single component
+```
+
+Note: if you choose not to `source activate.env`, you can run the commands via `scripts/segs` instead
+
 
 CONTRIBUTE TO DEVELOPMENT
 ------
@@ -168,6 +200,7 @@ Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to
 
 * Our GitHub: https://github.com/Segs/Segs
 * The Issue Queue: https://github.com/Segs/Segs/issues
+* How Can I Help Issue: https://github.com/Segs/Segs/issues/519
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide))
 * Join us on [Chat!](./docs/CONTRIBUTING.md#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
 
@@ -176,6 +209,8 @@ SETTING UP SEGS SERVER AND PLAYING
 ------
 
 After compiling, you'll need to setup your SEGS Server and Databases. You'll also need to download a specific version of the client compatible with SEGS.
+
+In order to run SEGSAdmin, certain OpenSSL DLLs are required: `libeay32.dll` and `ssleay32.dll`. These must be placed in the directory that the `SEGSAdmin.exe` application resides, which will typically be your output directory. If you do not have them, you can download them here: https://slproweb.com/products/Win32OpenSSL.html. Depending on whether your system is 32-bit or 64-bit, you will either download `Win32 OpenSSL v1.0.2p Light` or `Win64 OpenSSL v1.0.2p Light`. Simply navigate to the directory you install it to, and copy/paste the necessary DLLs to the output directory.	
 
 **IMPORTANT:** You can find information on setting up and running your SEGS server by reading the README.md located in your output directory (typically `out`). You can also read a copy of that [README.md here](./Projects/CoX/docs/README.md)
 

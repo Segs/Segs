@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -29,19 +29,25 @@ SEGS_LOGGING_CATEGORY(logDB,           "log.db")
 SEGS_LOGGING_CATEGORY(logInput,        "log.input")
 SEGS_LOGGING_CATEGORY(logOrientation,  "log.orientation")
 SEGS_LOGGING_CATEGORY(logPosition,     "log.position")
+SEGS_LOGGING_CATEGORY(logMovement,     "log.movement")
 SEGS_LOGGING_CATEGORY(logChat,         "log.chat")
 SEGS_LOGGING_CATEGORY(logInfoMsg,      "log.infomsg")
 SEGS_LOGGING_CATEGORY(logEmotes,       "log.emotes")
 SEGS_LOGGING_CATEGORY(logTarget,       "log.target")
 SEGS_LOGGING_CATEGORY(logSpawn,        "log.spawn")
 SEGS_LOGGING_CATEGORY(logMapEvents,    "log.mapevents")
+SEGS_LOGGING_CATEGORY(logMapXfers,     "log.mapxfers")
 SEGS_LOGGING_CATEGORY(logSlashCommand, "log.slashcommand")
+SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logDescription,  "log.description")
 SEGS_LOGGING_CATEGORY(logFriends,      "log.friends")
 SEGS_LOGGING_CATEGORY(logMiniMap,      "log.minimap")
 SEGS_LOGGING_CATEGORY(logLFG,          "log.lfg")
 SEGS_LOGGING_CATEGORY(logNPCs,         "log.npcs")
-SEGS_LOGGING_CATEGORY(logAnimations,         "log.animations")
+SEGS_LOGGING_CATEGORY(logAnimations,   "log.animations")
+SEGS_LOGGING_CATEGORY(logPowers,       "log.powers")
+SEGS_LOGGING_CATEGORY(logTrades,       "log.trades")
+SEGS_LOGGING_CATEGORY(logSceneGraph,   "log.scenegraph")
 
 void setLoggingFilter()
 {
@@ -58,12 +64,14 @@ void setLoggingFilter()
     filter_rules += "\nlog.input="          + config.value("log_input","false").toString();
     filter_rules += "\nlog.position="       + config.value("log_position","false").toString();
     filter_rules += "\nlog.orientation="    + config.value("log_orientation","false").toString();
+    filter_rules += "\nlog.movement="       + config.value("log_movement","false").toString();
     filter_rules += "\nlog.chat="           + config.value("log_chat","false").toString();
     filter_rules += "\nlog.infomsg="        + config.value("log_infomsg","false").toString();
     filter_rules += "\nlog.emotes="         + config.value("log_emotes","true").toString();
     filter_rules += "\nlog.target="         + config.value("log_target","false").toString();
     filter_rules += "\nlog.spawn="          + config.value("log_spawn","false").toString();
     filter_rules += "\nlog.mapevents="      + config.value("log_mapevents","true").toString();
+    filter_rules += "\nlog.mapxfers="       + config.value("log.mapxfers", "true").toString();
     filter_rules += "\nlog.slashcommand="   + config.value("log_slashcommand","true").toString();
     filter_rules += "\nlog.description="    + config.value("log_description","false").toString();
     filter_rules += "\nlog.friends="        + config.value("log_friends","false").toString();
@@ -71,6 +79,10 @@ void setLoggingFilter()
     filter_rules += "\nlog.lfg="            + config.value("log_lfg","false").toString();
     filter_rules += "\nlog.npcs="           + config.value("log_npcs","false").toString();
     filter_rules += "\nlog.animations="     + config.value("log_animations","false").toString();
+    filter_rules += "\nlog.powers="         + config.value("log_powers","false").toString(); 
+    filter_rules += "\nlog.trades="         + config.value("log_trades","false").toString();
+    filter_rules += "\nlog.scripts="        + config.value("log_scripts","false").toString();
+    filter_rules += "\nlog.scenegraph="     + config.value("log_scenegraph","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -101,8 +113,10 @@ void toggleLogging(QString &category)
         cat = &logInput();
     else if(category.contains("position",Qt::CaseInsensitive))
         cat = &logPosition();
-    else if(category.contains("orentation",Qt::CaseInsensitive))
+    else if(category.contains("orientation",Qt::CaseInsensitive))
         cat = &logOrientation();
+    else if(category.contains("movement",Qt::CaseInsensitive))
+        cat = &logMovement();
     else if(category.contains("chat",Qt::CaseInsensitive))
         cat = &logChat();
     else if(category.contains("infomsg",Qt::CaseInsensitive))
@@ -115,6 +129,8 @@ void toggleLogging(QString &category)
         cat = &logSpawn();
     else if(category.contains("mapevents",Qt::CaseInsensitive))
         cat = &logMapEvents();
+    else if (category.contains("mapxfers",Qt::CaseInsensitive))
+        cat = &logMapXfers();
     else if(category.contains("slashcommand",Qt::CaseInsensitive))
         cat = &logSlashCommand();
     else if(category.contains("description",Qt::CaseInsensitive))
@@ -129,6 +145,14 @@ void toggleLogging(QString &category)
         cat = &logNPCs();
     else if(category.contains("animations",Qt::CaseInsensitive))
         cat = &logAnimations();
+    else if(category.contains("powers",Qt::CaseInsensitive))
+        cat = &logPowers();
+    else if(category.contains("trades",Qt::CaseInsensitive))
+        cat = &logTrades();
+    else if(category.contains("scripts", Qt::CaseInsensitive))
+        cat = &logScripts();
+    else if(category.contains("scenegraph",Qt::CaseInsensitive))
+        cat = &logSceneGraph();
     else
         return;
 
@@ -150,8 +174,9 @@ void dumpLogging()
     output += "\n\t teams: "        + QString::number(logTeams().isDebugEnabled());
     output += "\n\t db: "           + QString::number(logDB().isDebugEnabled());
     output += "\n\t input: "        + QString::number(logInput().isDebugEnabled());
-    output += "\n\t position: "     + QString::number(logLFG().isDebugEnabled());
+    output += "\n\t position: "     + QString::number(logPosition().isDebugEnabled());
     output += "\n\t orientation: "  + QString::number(logOrientation().isDebugEnabled());
+    output += "\n\t movement: "     + QString::number(logMovement().isDebugEnabled());
     output += "\n\t chat: "         + QString::number(logChat().isDebugEnabled());
     output += "\n\t infomsg: "      + QString::number(logInfoMsg().isDebugEnabled());
     output += "\n\t emotes: "       + QString::number(logEmotes().isDebugEnabled());
@@ -165,6 +190,9 @@ void dumpLogging()
     output += "\n\t lfg: "          + QString::number(logLFG().isDebugEnabled());
     output += "\n\t npcs: "         + QString::number(logNPCs().isDebugEnabled());
     output += "\n\t animations: "   + QString::number(logAnimations().isDebugEnabled());
+    output += "\n\t powers: "       + QString::number(logPowers().isDebugEnabled());
+    output += "\n\t trades: "       + QString::number(logTrades().isDebugEnabled());
+    output += "\n\t scenegraph: "   + QString::number(logSceneGraph().isDebugEnabled());
 
     qDebug().noquote() << output;
 }

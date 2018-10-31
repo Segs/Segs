@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -14,6 +14,7 @@
 
 #include "anim_serializers.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 #include "trick_definitions.h"
 #include "DataStorage.h"
 
@@ -68,11 +69,11 @@ namespace
         ok &= s->prepare_nested(); // will update the file size left
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("StAnim")==0) {
+            if("StAnim"==_name) {
                 target.StAnim.emplace_back();
                 ok &= loadFrom(s,target.StAnim.back());
             } else
@@ -84,22 +85,22 @@ namespace
     }
 } // namespace
 
-bool loadFrom(BinStore * s, AllTricks_Data *target)
+bool loadFrom(BinStore * s, SceneModifiers &target)
 {
     s->prepare();
     bool ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Trick")==0) {
-            target->geometry_mods.emplace_back();
-            ok &= loadFrom(s,target->geometry_mods.back());
-        } else if(_name.compare("Texture")==0) {
-            target->texture_mods.emplace_back();
-            ok &= loadFrom(s,target->texture_mods.back());
+        if("Trick"==_name) {
+            target.geometry_mods.emplace_back();
+            ok &= loadFrom(s,target.geometry_mods.back());
+        } else if("Texture"==_name) {
+            target.texture_mods.emplace_back();
+            ok &= loadFrom(s,target.texture_mods.back());
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
@@ -159,21 +160,21 @@ static void serialize(Archive & archive, GeometryModifiers & m)
 }
 
 template<class Archive>
-static void serialize(Archive & archive, AllTricks_Data & m)
+static void serialize(Archive & archive, SceneModifiers & m)
 {
     archive(cereal::make_nvp("Texture",m.texture_mods));
     archive(cereal::make_nvp("Geometry",m.geometry_mods));
 }
 
-void saveTo(const AllTricks_Data &target, const QString &baseName, bool text_format)
+void saveTo(const SceneModifiers &target, const QString &baseName, bool text_format)
 {
     commonSaveTo(target,"Tricks",baseName,text_format);
 }
-bool loadFrom(const QString &filepath, AllTricks_Data &target)
+bool loadFrom(const QString &filepath, SceneModifiers &target)
 {
     return commonReadFrom(filepath,"Tricks",target);
 }
-bool LoadModifiersData(const QString &fname, AllTricks_Data &m)
+bool LoadModifiersData(const QString &fname, SceneModifiers &m)
 {
     BinStore binfile;
 
@@ -194,7 +195,7 @@ bool LoadModifiersData(const QString &fname, AllTricks_Data &m)
         qCritical() << "Failed to open original bin:" << fname;
         return false;
     }
-    if (!loadFrom(&binfile, &m))
+    if (!loadFrom(&binfile, m))
     {
         qCritical() << "Failed to load data from original bin:" << fname;
         return false;

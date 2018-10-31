@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -16,6 +16,11 @@
 #include "CohModelConverter.h"
 #include "CohTextureConverter.h"
 #include "SideWindow.h"
+#include "Common/Runtime/Prefab.h"
+#include "Common/Runtime/SceneGraph.h"
+#include "Common/Runtime/RuntimeData.h"
+#include "Common/GameData/GameDataStore.h"
+
 
 #include <Lutefisk3D/Core/Context.h>
 #include <Lutefisk3D/Core/CoreEvents.h>
@@ -26,8 +31,8 @@
 #include <Lutefisk3D/UI/Text3D.h>
 #include <Lutefisk3D/UI/Font.h>
 #include <Lutefisk3D/UI/UI.h>
-#include <Lutefisk3D/UI/Console.h>
-#include <Lutefisk3D/UI/DebugHud.h>
+#include <Lutefisk3D/SystemUI/Console.h>
+#include <Lutefisk3D/SystemUI/DebugHud.h>
 #include <Lutefisk3D/UI/BorderImage.h>
 #include <Lutefisk3D/Scene/Scene.h>
 #include <Lutefisk3D/Scene/Node.h>
@@ -45,6 +50,7 @@
 #include <QSettings>
 #include <QtCore/QDebug>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QMessageBox>
 
 using namespace Urho3D;
 
@@ -70,11 +76,12 @@ void MapViewerApp::Setup()
 void MapViewerApp::CreateBaseScene()
 {
     // Create a basic plane, a light and a camera
-    ResourceCache* cache = m_context->m_ResourceCache.get();
-    m_scene = new Scene(m_context);
+    ResourceCache* cache = GetContext()->m_ResourceCache.get();
+    cache->AddResourceDir("./converted");
+    m_scene = new Scene(GetContext());
     m_scene->CreateComponent<DebugRenderer>();
     Octree *oct=m_scene->CreateComponent<Octree>();
-    oct->SetSize(BoundingBox(-32767,32768),8);
+    oct->SetSize(BoundingBox(-7000,7000),8);
 
     Node* zoneNode = m_scene->CreateChild("Zone");
     Zone* zone = zoneNode->CreateComponent<Zone>();
@@ -102,37 +109,28 @@ void MapViewerApp::CreateBaseScene()
     Camera *cam = m_camera_node->CreateComponent<Camera>();
     m_camera_node->SetPosition(Vector3(0.0f, 5.0f, 0.0f));
     emit cameraLocationChanged(0.0f, 5.0f, 0.0f);
-    cam->SetFarClip(1500);
+    cam->setFarClipDistance(1500);
 }
 
 void MapViewerApp::SetupViewport() {
-    Renderer *renderer = m_context->m_Renderer.get();
+    Renderer *renderer = GetContext()->m_Renderer.get();
     SharedPtr<Viewport> viewport(
-                new Viewport(m_context, m_scene, m_camera_node->GetComponent<Camera>()));
+                new Viewport(GetContext(), m_scene, m_camera_node->GetComponent<Camera>()));
     renderer->SetViewport(0, viewport);
 }
 
 void MapViewerApp::CreateConsoleAndDebugHud()
 {
-    // Get default style
-    ResourceCache* cache = m_context->m_ResourceCache.get();
-    XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
-
     // Create console
-    Console* console = engine_->CreateConsole();
-    console->SetDefaultStyle(xmlFile);
-    console->GetBackground()->SetOpacity(0.8f);
-    console->SetNumBufferedRows(20);
-    console->SetNumHistoryRows(0);
+    engine_->CreateConsole();
 
     // Create debug HUD.
-    DebugHud* debugHud = engine_->CreateDebugHud();
-    debugHud->SetDefaultStyle(xmlFile);
+    engine_->CreateDebugHud();
 }
 
 void MapViewerApp::prepareSideWindow()
 {
-    Graphics *graphics = m_context->m_Graphics.get();
+    Graphics *graphics = GetContext()->m_Graphics.get();
     m_sidewindow = new SideWindow(nullptr);
     m_sidewindow->move(0,graphics->GetWindowPosition().y_);
     m_sidewindow->resize(graphics->GetWindowPosition().x_-20,graphics->GetHeight());
@@ -149,15 +147,15 @@ void MapViewerApp::prepareSideWindow()
 
 void MapViewerApp::prepareCursor()
 {
-    ResourceCache* cache = m_context->m_ResourceCache.get();
-    UI* ui = m_context->m_UISystem.get();
-    Input* input = m_context->m_InputSystem.get();
+    ResourceCache* cache = GetContext()->m_ResourceCache.get();
+    UI* ui = GetContext()->m_UISystem.get();
+    Input* input = GetContext()->m_InputSystem.get();
     XMLFile* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     ui->GetRoot()->SetDefaultStyle(style);
 
     // Create a Cursor UI element because we want to be able to hide and show it at will. When hidden, the mouse cursor
     // will control the camera, and when visible, it will interact with the scene
-    SharedPtr<Cursor> cursor(new Cursor(m_context));
+    SharedPtr<Cursor> cursor(new Cursor(GetContext()));
     cursor->SetStyleAuto();
     ui->SetCursor(cursor);
     // Set starting position of the cursor at the rendering window center
@@ -183,12 +181,16 @@ void MapViewerApp::Start()
     g_coreSignals.update.Connect(this,&MapViewerApp::HandleUpdate);
     g_coreSignals.postRenderUpdate.Connect(this,&MapViewerApp::HandlePostRenderUpdate);
 
-    Input* input = m_context->m_InputSystem.get();
+    Input* input = GetContext()->m_InputSystem.get();
     input->SetMouseMode(MM_FREE);//,MM_RELATIVE
 
-    if(!prepareGeoLookupArray())
-        return;
-    preloadTextureNames();
+    if(!getRuntimeData().prepare(basepath))
+    {
+        QMessageBox::critical(nullptr,"Missing files","At least some of the required bin/* files are missing");
+        exit(1);
+    }
+
+    SEGS::preloadTextureNames(basepath);
     prepareSideWindow();
 }
 
@@ -200,12 +202,11 @@ void MapViewerApp::loadSelectedSceneGraph(const QString &path)
         m_scene->RemoveChild(v.second);
     }
     m_converted_nodes.clear();
-    m_coh_scene.reset(new CoHSceneGraph);
-    loadSceneGraph(*m_coh_scene,path);
+    m_coh_scene.reset(SEGS::loadWholeMap(path));
     emit scenegraphLoaded(*m_coh_scene);
 }
 
-void MapViewerApp::onNodeSelected(CoHNode * n)
+void MapViewerApp::onNodeSelected(SEGS::SceneNode * n)
 {
     m_current_selected_node = n;
 }
@@ -213,7 +214,7 @@ void MapViewerApp::onNodeSelected(CoHNode * n)
 #define MAX_GRAPH_DEPTH 80
 
 int created_node_count = 0;
-void MapViewerApp::onDisplayRef(ConvertedRootNode *root,bool show_all)
+void MapViewerApp::onDisplayRef(SEGS::RootNode *root,bool show_all)
 {
     if(nullptr==root)
     {
@@ -240,9 +241,8 @@ void MapViewerApp::onDisplayRef(ConvertedRootNode *root,bool show_all)
         fromglm.m13_ = root->mat[3][1];
         fromglm.m23_ = root->mat[3][2];
 
-        boxNode = convertedNodeToLutefisk(root->node, fromglm, m_context, MAX_GRAPH_DEPTH,
+        boxNode = convertedNodeToLutefisk(root->node, m_scene,fromglm, GetContext(), MAX_GRAPH_DEPTH,
                                           show_all ? CONVERT_EDITOR_MARKERS : CONVERT_MINIMAL);
-        m_scene->AddChild(boxNode);
         m_converted_nodes[root->node] = boxNode;
     }
     else
@@ -250,7 +250,7 @@ void MapViewerApp::onDisplayRef(ConvertedRootNode *root,bool show_all)
     boxNode->SetEnabledRecursive(!boxNode->IsEnabled());
     m_currently_shown_node = boxNode;
 }
-void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
+void MapViewerApp::onDisplayNode(SEGS::SceneNode *n,bool rootnode)
 {
     if(nullptr==n)
     {
@@ -263,8 +263,7 @@ void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
     Node *boxNode;
     if (iter == m_converted_nodes.end())
     {
-        boxNode = convertedNodeToLutefisk(n, Matrix3x4::IDENTITY, m_context, MAX_GRAPH_DEPTH,rootnode ? CONVERT_MINIMAL : CONVERT_EDITOR_MARKERS);
-        m_scene->AddChild(boxNode);
+        boxNode = convertedNodeToLutefisk(n,m_scene, Matrix3x4::IDENTITY, GetContext(), MAX_GRAPH_DEPTH,rootnode ? CONVERT_MINIMAL : CONVERT_EDITOR_MARKERS);
         m_converted_nodes[n] = boxNode;
     }
     else
@@ -273,9 +272,9 @@ void MapViewerApp::onDisplayNode(CoHNode *n,bool rootnode)
     if(boxNode!=nullptr)
     {
         m_camera_node->LookAt(boxNode->GetWorldPosition());
-        Vector3 nodecenter=n->m_bbox.Center();
+        Vector3 nodecenter = fromGLM(n->m_bbox.center());
         Vector3 dir = (m_camera_node->GetWorldPosition() - nodecenter).Normalized();
-        Vector3 newpos = nodecenter + dir*n->m_bbox.size().Length()*1.5f;
+        Vector3 newpos = nodecenter + dir*n->m_bbox.size().length()*1.5f;
         //m_camera_node->SetPosition(newpos);
         Quaternion camrot=m_camera_node->GetRotation();
         pitch_=camrot.PitchAngle();
@@ -312,15 +311,15 @@ void MapViewerApp::HandleKeyDown(int key,int scancode,unsigned buttons,int quali
 {
     // Toggle console with F1
     if (key == KEY_F1)
-        m_context->GetSubsystemT<Console>()->Toggle();
+        GetContext()->GetSubsystemT<Console>()->Toggle();
 
     // Toggle debug HUD with F2
     else if (key == KEY_F2)
-        m_context->GetSubsystemT<DebugHud>()->ToggleAll();
+        GetContext()->GetSubsystemT<DebugHud>()->ToggleAll();
     if (key == '9')
     {
-        Graphics* graphics = m_context->m_Graphics.get();
-        Image screenshot(m_context);
+        Graphics* graphics = GetContext()->m_Graphics.get();
+        Image screenshot(GetContext());
         graphics->TakeScreenShot(screenshot);
         // Here we save in the Data folder with date and time appended
         screenshot.SavePNG("Data/Screenshot_" +
@@ -333,13 +332,13 @@ bool MapViewerApp::Raycast(float maxDistance)
     Vector3 hitPos;
     Drawable* hitDrawable = nullptr;
 
-    UI* ui = m_context->m_UISystem.get();
+    UI* ui = GetContext()->m_UISystem.get();
     IntVector2 pos = ui->GetCursorPosition();
     // Check the cursor is visible and there is no UI element in front of the cursor
     if (!ui->GetCursor()->IsVisible() || ui->GetElementAt(pos, true))
         return false;
 
-    Graphics* graphics = m_context->m_Graphics.get();
+    Graphics* graphics = GetContext()->m_Graphics.get();
     Camera* camera = m_camera_node->GetComponent<Camera>();
     Ray cameraRay = camera->GetScreenRay((float)pos.x_ / graphics->GetWidth(), (float)pos.y_ / graphics->GetHeight());
     // Pick only geometry objects, not eg. zones or lights, only get the first (closest) hit
@@ -356,7 +355,7 @@ bool MapViewerApp::Raycast(float maxDistance)
         if(stored!=Variant::EMPTY)
         {
             m_selected_drawable = hitDrawable;
-            emit modelSelected((CoHNode *)stored_node.GetVoidPtr(),(CoHModel *)stored.GetVoidPtr(),hitDrawable);
+            emit modelSelected((SEGS::SceneNode *)stored_node.GetVoidPtr(),(SEGS::Model *)stored.GetVoidPtr(),hitDrawable);
         }
         return true;
     }
@@ -367,10 +366,10 @@ bool MapViewerApp::Raycast(float maxDistance)
 
 void MapViewerApp::HandleUpdate(float timeStep)
 {
-    Input* input = m_context->m_InputSystem.get();
+    Input* input = GetContext()->m_InputSystem.get();
     qApp->processEvents();
-    UI* ui = m_context->m_UISystem.get();
-    ui->GetCursor()->SetVisible(!input->GetMouseButtonDown(MouseButton::RIGHT));
+    UI* ui = GetContext()->m_UISystem.get();
+    ui->GetCursor()->SetVisible(!input->GetMouseButtonDown(MouseButton::MOUSEB_RIGHT));
     input->SetMouseMode(ui->GetCursor()->IsVisible() ? MM_FREE : MM_RELATIVE);//,MM_RELATIVE
 
     // Movement speed as world units per second
@@ -422,7 +421,7 @@ void MapViewerApp::HandleUpdate(float timeStep)
         Vector3 pos=m_camera_node->GetPosition();
         emit cameraLocationChanged(pos.x_,pos.y_,pos.z_);
     }
-    if (ui->GetCursor()->IsVisible() && input->GetMouseButtonPress(MouseButton::LEFT))
+    if (ui->GetCursor()->IsVisible() && input->GetMouseButtonPress(MouseButton::MOUSEB_LEFT))
         Raycast(8500);
 }
 
@@ -432,11 +431,25 @@ void MapViewerApp::HandlePostRenderUpdate(float ts)
     if (m_selected_drawable) {
         m_selected_drawable->DrawDebugGeometry(m_scene->GetComponent<DebugRenderer>(),true);
     }
-    if(m_current_selected_node) {
-        BoundingBox bbox(m_current_selected_node->m_bbox);
-        auto weak_node(m_current_selected_node->m_lutefisk_result);
-        if(weak_node)
-            bbox.Transform(weak_node->GetWorldTransform());
+    if(!m_current_selected_node)
+        return;
+    BoundingBox bbox(fromGLM(m_current_selected_node->m_bbox.m_min),fromGLM(m_current_selected_node->m_bbox.m_max));
+    auto instantiations_iter=g_node_to_converted.find(m_current_selected_node);
+    if(instantiations_iter!=g_node_to_converted.end())
+    {
+        const ConvertedInstance &inst(g_converted_instances[instantiations_iter->second]);
+        for(auto weak_node : inst.m_instances)
+        {
+            if(weak_node)
+            {
+                bbox.Transform(weak_node->GetWorldTransform());
+                m_scene->GetComponent<DebugRenderer>()->AddBoundingBox(bbox,Color::BLUE,false);
+            }
+        }
+
+    }
+    else
+    {
         m_scene->GetComponent<DebugRenderer>()->AddBoundingBox(bbox,Color::BLUE,false);
     }
 }

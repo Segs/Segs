@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -38,7 +38,10 @@ int ScriptingEngine::loadAndRunFile(const QString &path)
     Q_UNUSED(path);
     return -1;
 }
-
+bool ScriptingEngine::setIncludeDir(const QString &)
+{
+    return false;
+}
 std::string ScriptingEngine::callFunc(const char *name, int arg1)
 {
     Q_UNUSED(name);
@@ -46,11 +49,53 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     return "";
 }
 
+std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
+{
+    Q_UNUSED(name);
+    Q_UNUSED(arg1);
+    Q_UNUSED(loc);
+    return "";
+}
+
+std::string ScriptingEngine::callFunc(const char *name, const char *arg1, glm::vec3 loc)
+{
+    Q_UNUSED(name);
+    Q_UNUSED(arg1);
+    Q_UNUSED(loc);
+    return "";
+}
+
+std::string ScriptingEngine::callFunc(const char *name, std::vector<Contact> contact_list)
+{
+    Q_UNUSED(name);
+    Q_UNUSED(contact_list);
+    return "";
+}
+
+
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
     Q_UNUSED(client);
     Q_UNUSED(name);
     Q_UNUSED(arg1);
+    return "";
+}
+
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, glm::vec3 loc)
+{
+    Q_UNUSED(client);
+    Q_UNUSED(name);
+    Q_UNUSED(arg1);
+    Q_UNUSED(loc);
+    return "";
+}
+
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, const char *arg1, glm::vec3 loc)
+{
+    Q_UNUSED(client);
+    Q_UNUSED(name);
+    Q_UNUSED(arg1);
+    Q_UNUSED(loc);
     return "";
 }
 

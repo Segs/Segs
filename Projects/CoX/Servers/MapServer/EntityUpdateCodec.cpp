@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -13,10 +13,10 @@
 #include "EntityUpdateCodec.h"
 #include "MapClientSession.h"
 
-#include "NetStructures/Character.h"
-#include "NetStructures/Entity.h"
+#include "GameData/Character.h"
+#include "GameData/Entity.h"
 #include "MapServer.h"
-#include "MapServerData.h"
+#include "GameData/GameDataStore.h"
 #include "GameData/CoHMath.h"
 #include "DataHelpers.h"
 #include "Logging.h"
@@ -65,33 +65,32 @@ void storeCreation(const Entity &src, BitStream &bs)
     if(src.m_hasname)
         bs.StoreString(src.m_char->getName());
     PUTDEBUG("after names");
-    bool fadin = true;
-    bs.StoreBits(1,fadin); // Is entity being faded in ?
+    bs.StoreBits(1,src.m_is_fading); // Is entity being faded in ?
     // the following is used as an input to LCG float generator, generated float (0-1) is used as
-    // linear interpolation factor betwwen scale_min and scale_max
-    bs.StoreBits(32,src.m_randSeed);
-    bs.StoreBits(1,src.m_has_supergroup); // TODO: This appears to actually be for Villain Groups
-    if(src.m_has_supergroup)
+    // linear interpolation factor between scale_min and scale_max
+    bs.StoreBits(32, src.m_randSeed);
+    bs.StoreBits(1, src.m_faction_data.m_has_faction);
+    if(src.m_faction_data.m_has_faction)
     {
-        bs.StorePackedBits(2,src.m_supergroup.m_SG_rank);   // this will be put in field_1830 (iRank) of created entity
-        bs.StoreString(src.m_supergroup.m_SG_name);         // villain group name?
+        bs.StorePackedBits(2, src.m_faction_data.m_rank);    // this will be put in field_1830 (iRank) of created entity
+        bs.StoreString(src.m_faction_data.m_faction_name);  // villain group name?
     }
     PUTDEBUG("end storeCreation");
 }
 
-void sendStateMode(const Entity &src,BitStream &bs)
+void sendStateMode(const Entity &src, BitStream &bs)
 {
+    // if(state_mode & 2) then RespawnIfDead, AliveEnough==true, close some windows
     PUTDEBUG("before sendStateMode");
-    bs.StoreBits(1,src.m_state_mode_send); // no state mode
+    bs.StoreBits(1,src.m_has_state_mode);
     PUTDEBUG("before sendStateMode 2");
-    if(src.m_state_mode_send)
-    {
-        storePackedBitsConditional(bs,3,src.m_state_mode);
-    }
+    if(src.m_has_state_mode)
+        storePackedBitsConditional(bs, 3, uint32_t(src.m_state_mode));
+
     PUTDEBUG("after sendStateMode");
 }
 
-void storeUnknownBinTree(const Entity &/*src*/,BitStream &bs)
+void storeInterpolationTree(const Entity &/*src*/,BitStream &bs)
 {
     bs.StoreBits(1,0);
 }
@@ -136,7 +135,7 @@ void storeOrientation(const Entity &src,BitStream &bs)
     // output everything
     qCDebug(logOrientation, "Player: %d", src.m_idx);
     qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
-    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.inp_state.m_camera_pyr).c_str());
+    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.m_states.current()->m_camera_pyr).c_str());
     qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
     qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
     qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);
@@ -162,101 +161,94 @@ void storePosUpdate(const Entity &src, bool just_created, BitStream &bs)
     {
         // if position has changed
         // prepare interpolation table, given previous position
-        bs.StoreBits(1, src.m_extra_info); // not extra_info
-        if(src.m_extra_info) {
+        bs.StoreBits(1, src.m_has_interp);
+        if(src.m_has_interp)
+        {
             bs.StoreBits(1, src.m_move_instantly);
-            // Bintree sending happens here
-            storeUnknownBinTree(src, bs);
+            if(!src.m_move_instantly)
+                storeInterpolationTree(src, bs); // Bintree sending happens here
         }
-        // if extra_inf
     }
     PUTDEBUG("before storeOrientation");
     storeOrientation(src,bs);
     PUTDEBUG("after storeOrientation");
 }
 
-void sendSeqMoveUpdate(const Entity &src,BitStream &bs)
+void sendSeqMoveUpdate(const Entity &src, BitStream &bs)
 {
-    qCDebug(logAnimations, "Sending seq mode update %d", src.m_seq_update);
+    if(src.m_type == EntType::PLAYER)
+        qCDebug(logAnimations, "Sending seq mode update %d", src.m_seq_update);
 
     PUTDEBUG("before sendSeqMoveUpdate");
-    bs.StoreBits(1,src.m_seq_update); // no seq update
+    bs.StoreBits(1, src.m_seq_update); // no seq update
     if(src.m_seq_update)
     {
-        storePackedBitsConditional(bs,8,src.m_seq_upd_num1); // move index
-        storePackedBitsConditional(bs,4,src.m_seq_upd_num2); // maxval is 255
+        storePackedBitsConditional(bs, 8, src.m_seq_move_idx); // move index
+        storePackedBitsConditional(bs, 4, src.m_seq_move_change_time); // maxval is 255
     }
 }
-void sendSeqTriggeredMoves(const Entity &/*src*/,BitStream &bs)
+void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
-    uint32_t num_moves = 0; // FixMe: num_moves is never modified and the body of the for loop below will never fire.
-    qCDebug(logAnimations, "Sending seq triggered moves %d", num_moves);
+    if(src.m_type == EntType::PLAYER)
+        qCDebug(logAnimations, "Sending seq triggered moves %d", src.m_triggered_moves.size());
 
-    bs.StorePackedBits(1,num_moves); // num moves
-    for (uint32_t idx = 0; idx < num_moves; ++idx )
+    // client appears to process only the last 20 triggered moves
+    bs.StorePackedBits(1, src.m_triggered_moves.size()); // num moves
+    for(const TriggeredMove &move : src.m_triggered_moves)
     {
-        bs.StorePackedBits(16, 0);  // 2  EntityStoredMoveP->field_2
-        bs.StorePackedBits(6, 0);   // 0  EntityStoredMoveP->field_0
-        storePackedBitsConditional(bs, 16, 0);  // 1 EntityStoredMoveP->field_1
+        bs.StorePackedBits(10, move.m_move_idx);                   // 2  triggeredMoveIDX
+        bs.StorePackedBits(6, move.m_ticks_to_delay);              // 0  ticksToDelay
+        storePackedBitsConditional(bs, 16, move.m_trigger_fx_idx); // 1 triggerFxNetId
     }
 }
 
-void sendNetFx(const Entity &src,BitStream &bs)
+void sendNetFx(const Entity &src, BitStream &bs)
 {
-    bs.StorePackedBits(1,src.m_num_fx); // num fx
-    //NetFx.serializeto();
-    for(int i=0; i<src.m_num_fx; i++)
+    bs.StorePackedBits(1, src.m_net_fx.size()); // num fx
+    for(const NetFx &fx : src.m_net_fx)
     {
-        bs.StoreBits(8,src.m_fx1[i].command); // command
-        bs.StoreBits(32,src.m_fx1[i].net_id); // NetID
-        bs.StoreBits(1,src.m_fx1[i].pitch_to_target);
-        storePackedBitsConditional(bs,10, src.m_fx1[i].handle); // handle
-        storeBitsConditional(bs,4,0); // client timer
-        storeBitsConditional(bs,32,0); // clientTriggerFx
-        storeFloatConditional(bs,0.0); // duration
-        storeFloatConditional(bs,10.0); // radius
-        storeBitsConditional(bs,4,10);  // power
-        storeBitsConditional(bs,32,0);  // debris
-        int val=0; // FixMe: if comparison below is never true due to this explicit assignment of 0.
-        storeBitsConditional(bs,2,val); // origiType
-        if(val==1)
-        {
-            bs.StoreFloat(0.0); // origin Pos
-            bs.StoreFloat(0.0);
-            bs.StoreFloat(0.0);
-        }
-        else
-        {
-            if(val)
-            {
-                //"netbug"
-            }
-            else
-            {
-                storePackedBitsConditional(bs,8,0); // origin entity
-                bs.StorePackedBits(2,0); // bone id
+        // refactor as fx.serializeto() ?
+        bs.StoreBits(8, fx.command); // command
+        bs.StoreBits(32, fx.net_id); // NetID
+        bs.StoreBits(1, fx.pitch_to_target);
+        storePackedBitsConditional(bs, 10, fx.handle); // handle
+        storeBitsConditional(bs, 4, fx.client_timer); // client timer
+        storeBitsConditional(bs, 32, fx.client_trigger_fx); // clientTriggerFx
+        storeFloatConditional(bs, fx.duration); // duration
+        storeFloatConditional(bs, fx.radius); // radius
+        storeBitsConditional(bs, 4, fx.power);  // power
+        storeBitsConditional(bs, 32, fx.debris);  // debris
 
-            }
-        }
-        storeBitsConditional(bs,2,0); // target type
-        if(false)
+        storeBitsConditional(bs, 2, fx.origin.type_is_location); // origiType
+        if(fx.origin.type_is_location)
         {
-            bs.StoreFloat(0); // targetPos
-            bs.StoreFloat(0);
-            bs.StoreFloat(0);
+            bs.StoreFloat(fx.target.pos.x); // origin Pos
+            bs.StoreFloat(fx.target.pos.y);
+            bs.StoreFloat(fx.target.pos.z);
         }
         else
         {
-            storePackedBitsConditional(bs,12,0x19b); // target entity
+            storePackedBitsConditional(bs, 8, fx.origin.ent_idx); // origin entity
+            bs.StorePackedBits(2,fx.bone_id); // bone id
         }
+
+        storeBitsConditional(bs, 2, fx.target.type_is_location); // target type
+        if(fx.target.type_is_location)
+        {
+            bs.StoreFloat(fx.target.pos.x); // targetPos x
+            bs.StoreFloat(fx.target.pos.y); // targetPos y
+            bs.StoreFloat(fx.target.pos.z); // targetPos z
+        }
+        else
+            storePackedBitsConditional(bs, 12, fx.target.ent_idx); // target entity
     }
 }
 
 void sendCostumes(const Entity &src,BitStream &bs)
 {
     //NOTE: this will only be initialized once, and no changes later on will influence this
-    static const ColorAndPartPacker *packer = g_GlobalMapServer->runtimeData().getPacker();
+    static const ColorAndPartPacker *packer = getGameData().getPacker();
     PUTDEBUG("before sendCostumes");
     storePackedBitsConditional(bs,2,uint8_t(src.m_costume_type));
     switch(src.m_costume_type)
@@ -312,15 +304,11 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
     serializeStats(*src.m_char,bs,false);
 }
 
-void sendBuffsConditional(const Entity &src,BitStream &bs)
+void sendBuffsConditional(const Entity &src, BitStream &bs)
 {
-    //TODO: implement this
-    bool have_buffs = false;
-    bs.StoreBits(1,have_buffs); // nothing here for now
-    if(have_buffs)
-    {
+    bs.StoreBits(1, src.m_update_buffs);
+    if(src.m_update_buffs)
         sendBuffs(src,bs);
-    }
 }
 
 void sendTargetUpdate(const Entity &src,BitStream &bs)
@@ -358,7 +346,7 @@ void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 void sendEntCollision(const Entity &src,BitStream &bs)
 {
     // if 1 is sent, client will disregard it's own collision processing.
-    bs.StoreBits(1, src.inp_state.m_no_collision); // 1/0 only
+    bs.StoreBits(1, src.m_motion_state.m_no_collision); // 1/0 only
 }
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)
@@ -409,9 +397,11 @@ void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStrea
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 } // end of anonoymous namespace
-void sendBuffs(const Entity &/*src*/,BitStream &bs)
+void sendBuffs(const Entity &src, BitStream &bs)
 {
-    bs.StorePackedBits(5,0);
+    bs.StorePackedBits(5, src.m_buffs.size());
+    for(const Buffs &buff : src.m_buffs)
+        buff.m_buff_info.serializeto(bs);
 }
 
 void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream &bs )
@@ -431,20 +421,20 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bs.StoreBits(1,src.might_have_rare); //var_C
+    bs.StoreBits(1,src.m_update_anims); //var_C
 
-    if(src.might_have_rare)
-        bs.StoreBits(1,src.m_rare_bits);
+    if(src.m_update_anims)
+        bs.StoreBits(1,src.m_rare_update);
 
-    if(src.m_rare_bits)
+    if(src.m_rare_update)
         sendStateMode(src,bs);
 
     storePosUpdate(src,update_existence && ent_exists, bs);
 
-    if(src.might_have_rare)
+    if(src.m_update_anims)
         sendSeqMoveUpdate(src,bs);
 
-    if(src.m_rare_bits)
+    if(src.m_rare_update)
         sendSeqTriggeredMoves(src,bs);
 
     // NPC -> m_pchar_things=0 ?
@@ -454,7 +444,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     {
         sendNetFx(src,bs);
     }
-    if(src.m_rare_bits)
+    if(src.m_rare_update)
     {
         sendCostumes(src,bs);
         sendXLuency(bs,src.translucency);
@@ -468,7 +458,7 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
         sendBuffsConditional(src,bs);
         sendTargetUpdate(src,bs);
     }
-    if(src.m_rare_bits)
+    if(src.m_rare_update)
     {
         sendOnOddSend(src,bs); // is one on client end
         sendWhichSideOfTheForce(src,bs);

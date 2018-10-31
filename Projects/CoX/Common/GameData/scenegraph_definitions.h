@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -13,15 +13,15 @@
 
 struct GroupLoc_Data
 {
-    QString name;
+    QByteArray name;
     glm::vec3 pos {0,0,0};
     glm::vec3 rot {0,0,0};
 };
 
 struct GroupProperty_Data
 {
-    QString propName;
-    QString propValue;
+    QByteArray propName;
+    QByteArray propValue;
     int propertyType; // 1 - propValue contains float radius, 0 propValue is plain string
 };
 
@@ -34,15 +34,12 @@ struct TintColor_Data
 struct ReplaceTex_Data
 {
     int texIdxToReplace;
-    QString repl_with;
+    QByteArray repl_with;
 };
 
 struct DefSound_Data
 {
-    enum {
-        Exclude = 1
-    };
-    QString name;
+    QByteArray name;
     float volRel1;
     float sndRadius;
     float snd_ramp_feet;
@@ -67,7 +64,7 @@ struct DefOmni_Data
 
 struct DefBeacon_Data
 {
-    QString name;
+    QByteArray name;
     float amplitude; // maybe rotation speed ?
 };
 
@@ -87,9 +84,14 @@ struct DefAmbient_Data
 
 struct SceneGraphNode_Data
 {
-    QString name;
-    QString p_Obj;
-    QString type;
+    enum
+    {
+        Ungroupable = 1,
+        FadeNode = 2,
+    };
+    QByteArray name;
+    QByteArray p_Obj;
+    QByteArray type;
     int flags;
     std::vector<GroupLoc_Data> p_Grp;
     std::vector<GroupProperty_Data> p_Property;
@@ -105,15 +107,15 @@ struct SceneGraphNode_Data
 
 struct SceneRootNode_Data
 {
-    QString name;
+    QByteArray name;
     glm::vec3 pos {0,0,0};
     glm::vec3 rot {0,0,0};
 };
 
 struct SceneGraph_Data
 {
-    int Version;
     std::vector<SceneGraphNode_Data> Def;
     std::vector<SceneRootNode_Data> Ref;
-    QString Scenefile;
+    QByteArray Scenefile;
+    int Version;
 };

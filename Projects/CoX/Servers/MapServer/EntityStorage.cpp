@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -11,11 +11,11 @@
  */
 
 #include "EntityStorage.h"
-#include "NetStructures/Entity.h"
+#include "GameData/Entity.h"
 #include "EntityUpdateCodec.h"
 #include "MapClientSession.h"
 #include "MapServer/MapServer.h"
-#include "MapServer/MapServerData.h"
+#include "GameData/GameDataStore.h"
 
 #include <QtCore/QDebug>
 #include <algorithm>
@@ -77,11 +77,16 @@ void EntityManager::sendGlobalEntDebugInfo( BitStream &tgt ) const
     // third while loop here
 }
 
-void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
+/**
+ * @brief send the Entity removals to bring the world-state beliefs between server and \a client into sync
+ * @param tgt is the bitstream that will contain the serialized deletes
+ * @param client is used to compare the current world-state beliefs between server and given player
+ */
+void EntityManager::sendDeletes( BitStream &tgt,MapClientSession &client ) const
 {
     std::vector<int> entities_to_remove;
     // find the entities this client believes exist, but they are no longer amongst us.
-    for(const std::pair<const int,ClientEntityStateBelief> &entry : client->m_worldstate_belief)
+    for(const std::pair<const int,ClientEntityStateBelief> &entry : client.m_worldstate_belief)
     {
         if(entry.second.m_entity==nullptr)
             continue;
@@ -93,7 +98,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
     {
         tgt.StorePackedBits(12,idx);//index
         tgt.StorePackedBits(12,idx);//
-        client->m_worldstate_belief.erase(idx);
+        client.m_worldstate_belief.erase(idx);
     }
 }
 
@@ -101,10 +106,10 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession *client ) const
  *  \par self_idx index of the entity that is receiving the packet, this is used to prevent marking every entity as a current player
  *
  */
-void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool /*is_incremental*/) const
+void EntityManager::sendEntities(BitStream& bs, MapClientSession &target, bool /*is_incremental*/) const
 {
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_mutex);
-    uint32_t self_idx = getIdx(*target->m_ent);
+    uint32_t self_idx = getIdx(*target.m_ent);
     int prev_idx = -1;
     int delta;
     if(m_live_entlist.empty())
@@ -115,7 +120,7 @@ void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool /
 
     lEntity to_send = m_live_entlist;
     lEntity client_belief_set;
-
+    PUTDEBUG("before ent recv loop");
     for (Entity* pEnt : m_live_entlist)
     {
         bool client_believes_this_entity_exists=client_belief_set.find(pEnt)!=client_belief_set.end();
@@ -126,8 +131,8 @@ void EntityManager::sendEntities(BitStream& bs, MapClientSession *target, bool /
 
         bs.StorePackedBits(1, delta);
         prev_idx = getIdx(*pEnt);
-        ClientEntityStateBelief &belief(target->m_worldstate_belief[pEnt->m_idx]);
-        if(!target->m_in_map)
+        ClientEntityStateBelief &belief(target.m_worldstate_belief[pEnt->m_idx]);
+        if(!target.m_in_map)
             belief.m_entity = nullptr; // force full creates until client is actualy in map
         serializeto(*pEnt,belief, bs);
         PUTDEBUG("end of entity");
@@ -152,20 +157,20 @@ Entity * EntityManager::CreatePlayer()
     return res;
 }
 
-Entity * EntityManager::CreateNpc(const Parse_NPC &tpl,int idx,int variant)
+Entity * EntityManager::CreateNpc(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant)
 {
     Entity *res = m_store.get();
     m_live_entlist.insert(res);
 
-    initializeNewNpcEntity(*res,&tpl,idx,variant);
+    initializeNewNpcEntity(data,*res,&tpl,idx,variant);
     return res;
 }
-Entity * EntityManager::CreateGeneric(const Parse_NPC &tpl,int idx,int variant,EntType type)
+Entity * EntityManager::CreateGeneric(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant,EntType type)
 {
     Entity *res = m_store.get();
     m_live_entlist.insert(res);
 
-    initializeNewNpcEntity(*res,&tpl,idx,variant);
+    initializeNewNpcEntity(data,*res,&tpl,idx,variant);
     res->m_type = type;
     return res;
 }

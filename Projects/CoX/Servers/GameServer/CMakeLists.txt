@@ -1,7 +1,6 @@
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/GameHandler.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/GameServer.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/GameEvents.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/GameEventFactory.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/GameLink.cpp
 )
@@ -9,19 +8,35 @@ SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/GameServer.h
 ${CMAKE_CURRENT_SOURCE_DIR}/GameHandler.h
 ${CMAKE_CURRENT_SOURCE_DIR}/GameEventFactory.h
-${CMAKE_CURRENT_SOURCE_DIR}/GameEvents.h
 ${CMAKE_CURRENT_SOURCE_DIR}/GameLink.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-SET(target_DEPENDS "")
 
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 
 SET (target_SOURCES
-${target_CPP}
-${target_INCLUDE}
+    ${target_CPP}
+    ${target_INCLUDE}
 )
-ADD_LIBRARY(gameserver_lib STATIC ${target_SOURCES})
-target_link_libraries(gameserver_lib PUBLIC Qt5::Core)
-ADD_DEPENDENCIES(gameserver_lib gameData ${target_DEPENDS})
+
+add_handler(GameServer ${target_SOURCES})
+
+target_link_libraries(GameServer PUBLIC Qt5::Core)
+target_link_libraries(GameServer INTERFACE SEGS_Components gameData )
+
+add_subdirectory(FriendshipService)
+add_subdirectory(EmailService)
+
+target_link_libraries(GameServer PUBLIC Qt5::Core FriendshipService EmailService )
+target_link_libraries(GameServer INTERFACE SEGS_Components gameData)
+
+if(ENABLE_TESTS)
+    add_subdirectory(UnitTests)
+endif()
+
+get_target_property(TARGET_SOURCES GameServer SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (GameServer PROPERTIES
+    FOLDER Projects/CoX/Servers
+)

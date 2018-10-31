@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -63,6 +63,11 @@ mutable std::mutex m_store_mutex;
         }
 
 public:
+        const vClients& get_active_sessions()
+        {
+            return m_active_sessions;
+        }
+
         ivClients begin()
         {
             return m_active_sessions.begin();
@@ -113,7 +118,7 @@ public:
             assert(iter != m_token_to_session.end());
             return iter->second;
         }
-        SESSION_CLASS &session_from_event(SEGSEvent *ev)
+        SESSION_CLASS &session_from_event(SEGSEvents::Event *ev)
         {
             assert(dynamic_cast<LinkBase *>(ev->src())!=nullptr); // make sure the event source is a Link
             LinkBase * lnk = (LinkBase *)ev->src();
@@ -124,7 +129,7 @@ public:
             return session;
         }
 
-        SESSION_CLASS &session_from_event(InternalEvent *ev)
+        SESSION_CLASS &session_from_event(SEGSEvents::InternalEvent *ev)
         {
             auto iter = m_token_to_session.find(ev->session_token());
             assert(iter != m_token_to_session.end());
@@ -221,7 +226,7 @@ public:
         }
         void create_reaping_timer(EventProcessor *tgt, uint32_t id, ACE_Time_Value interval)
         {
-            m_session_reaper_timer.reset(new SEGSTimer(tgt, (void *)(intptr_t)id, interval, false));
+            m_session_reaper_timer.reset(new SEGSTimer(tgt, id, interval, false));
         }
         void mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token)
         {
@@ -266,7 +271,7 @@ public:
                     if(waiting_session.m_session->link()) // it's a temporary session
                     {
                         // telling the temporary link to close.
-                        waiting_session.m_session->link()->putq(SEGSEvent::s_ev_finish.shallow_copy());
+                        waiting_session.m_session->link()->putq(SEGSEvents::Finish::s_instance->shallow_copy());
                     }
                     // we destroy the session object
                     remove_by_token(waiting_session.m_session_token, waiting_session.m_session->auth_id());

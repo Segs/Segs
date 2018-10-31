@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -13,6 +13,7 @@
 #include "SideWindow.h"
 #include "ui_SideWindow.h"
 
+#include "Common/Runtime/Prefab.h"
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
 #include "CoHModelLoader.h"
@@ -20,6 +21,7 @@
 #include "DataPathsDialog.h"
 
 #include "glm/gtc/quaternion.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 #include <QtWidgets/QFileDialog>
 #include <QtCore/QDebug>
@@ -76,7 +78,7 @@ void SideWindow::onCameraPositionChanged(float x, float y, float z)
                                .arg(z, 5, 'f', 2, QChar(' ')));
 }
 
-void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
+void SideWindow::onModelSelected(SEGS::SceneNode *n, SEGS::Model *m, Urho3D::Drawable *d)
 {
     if(!m)
     {
@@ -97,7 +99,7 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
     else
         ui->txtTrickName->setText("none");
     QString          matDesc;
-    ConvertedGeoSet *geoset = m->geoset;
+    SEGS::GeoSet *geoset = m->geoset;
     StaticModel *    model  = (StaticModel *)d;
     matDesc += "<p>Geometries:<b>";
     QSet<void *> dumpedmats;
@@ -123,7 +125,7 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
         matDesc += "</p>";
     }
     matDesc+="Textures in use<br>";
-    for(TextureBind tbind : m->texture_bind_info) {
+    for(SEGS::TextureBind tbind : m->texture_bind_info) {
         matDesc += "Tex:<b>"+ geoset->tex_names[tbind.tex_idx]+"</b><br>";
     }
     ui->matDescriptionTxt->setHtml(matDesc);
@@ -146,7 +148,10 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
                 prop_text += QString("%1\n").arg(cn->name);
                 for(const GroupProperty_Data &prop : *cn->properties)
                 {
-                    prop_text += QString("%2 - %3 [%4]\n").arg(prop.propName).arg(prop.propValue).arg(prop.propertyType);
+                    prop_text += QString("%2 - %3 [%4]\n")
+                            .arg(QString(prop.propName))
+                            .arg(QString(prop.propValue))
+                            .arg(prop.propertyType);
                 }
             }
         }
@@ -162,15 +167,15 @@ static QStandardItem * fillModel(CoHNode *node)
     root->setData(QVariant::fromValue((void*)node),Qt::UserRole);
     root->setData(QVariant::fromValue(false),Qt::UserRole+1); // not a root node
 
-    for(auto child : node->children)
+    for(const SEGS::SceneNodeChildTransform &child : node->children)
     {
-        QStandardItem *rowItem = fillModel(child.m_def);
+        QStandardItem *rowItem = fillModel(child.node);
         root->appendRow(rowItem);
     }
     return root;
 }
 
-void SideWindow::onScenegraphLoaded(const CoHSceneGraph & sc)
+void SideWindow::onScenegraphLoaded(const SEGS::SceneGraph & sc)
 {
     QStandardItemModel *m=new QStandardItemModel();
     QStandardItem *item = m->invisibleRootItem();
@@ -188,7 +193,7 @@ void SideWindow::onScenegraphLoaded(const CoHSceneGraph & sc)
         for(auto node : sc.all_converted_defs)
         {
             for(auto chld : node->children)
-                ischild.insert(chld.m_def);
+                ischild.insert(chld.node);
         }
         for(auto node : sc.all_converted_defs) {
             if(ischild.contains(node))
@@ -219,7 +224,7 @@ void SideWindow::on_nodeList_clicked(const QModelIndex &index)
     QVariant v=m_model->data(index,Qt::UserRole);
     QVariant isroot=m_model->data(index,Qt::UserRole+1);
     CoHNode *n = (CoHNode *)v.value<void *>();
-    ConvertedRootNode *ref = (ConvertedRootNode *)v.value<void *>();
+    SEGS::RootNode *ref = (SEGS::RootNode *)v.value<void *>();
 
     if(isroot.isValid() && isroot.toBool())
         emit nodeSelected(ref->node);
@@ -247,10 +252,11 @@ void SideWindow::on_nodeList_clicked(const QModelIndex &index)
     CoHNode *parent_node = (CoHNode *)parentv.value<void *>();
     if(!parent_node)
         return;
-    for(auto chld : parent_node->children)
+    for(const SEGS::SceneNodeChildTransform &chld : parent_node->children)
     {
-        if(chld.m_def==n) {
-            Urho3D::Quaternion quat=chld.m_matrix.Rotation();
+        if(chld.node==n) {
+            glm::quat q = glm::quat_cast(chld.m_matrix2);
+            Urho3D::Quaternion quat(q.w,q.x,q.y,q.z);
             ui->pitchEdt->setText(QString::number(quat.PitchAngle()));
             ui->yawEdt->setText(QString::number(quat.YawAngle()));
             ui->rollEdt->setText(QString::number(quat.RollAngle()));
@@ -270,13 +276,13 @@ void SideWindow::on_nodeList_doubleClicked(const QModelIndex &index)
         {
             if(isroot.toBool())
             {
-                ConvertedRootNode *n = (ConvertedRootNode *)val;
+                SEGS::RootNode *n = (SEGS::RootNode *)val;
 
                 emit refDisplayRequest(n,ui->show_editor_nodes->isChecked());
             }
             else
             {
-                CoHNode *n = (CoHNode *)val;
+                SEGS::SceneNode *n = (SEGS::SceneNode *)val;
                 emit nodeDisplayRequest(n,isroot.value<bool>());
             }
             return;

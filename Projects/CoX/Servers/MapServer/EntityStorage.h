@@ -1,13 +1,13 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
 
-#include "NetStructures/Entity.h"
+#include "GameData/Entity.h"
 #include "Servers/MapServer/DataHelpers.h"
 
 #include <ace/Thread_Mutex.h>
@@ -45,12 +45,12 @@ public:
                     EntityManager();
     void            sendDebuggedEntities(BitStream &tgt) const;
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
-    void            sendDeletes(BitStream &tgt, MapClientSession *client) const;
-    void            sendEntities(BitStream &tgt, MapClientSession *target, bool is_incremental) const;
+    void            sendDeletes(BitStream &tgt, MapClientSession &client) const;
+    void            sendEntities(BitStream &tgt, MapClientSession &target, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
-    Entity *        CreateNpc(const Parse_NPC &tpl, int idx, int variant);
-    Entity *        CreateGeneric(const Parse_NPC &tpl, int idx, int variant, EntType type);
+    Entity *        CreateNpc(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant);
+    Entity *        CreateGeneric(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant, EntType type);
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }

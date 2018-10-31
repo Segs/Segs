@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -77,7 +77,6 @@ static void deskey(const unsigned char *key,short edf) /* Thanks to James Gillog
         }
     }
     cookey(kn);
-    return;
 }
 static void cookey(unsigned long *raw1)
 {
@@ -342,7 +341,6 @@ static void desfunc(unsigned long *block,const unsigned long *keys)
     right ^= (work << 4);
     *block++ = right;
     *block = leftt;
-    return;
 }
 void AuthPacketCodec::SetDesKey(uint64_t key)
 {

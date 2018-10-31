@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -47,17 +47,15 @@ public:
 
 class NetCommandManager
 {
-    typedef std::vector<NetCommand *> vNetCommand;
-    QHash<QString,NetCommand *> m_name_to_command;
-    vNetCommand m_commands_level0;
-    void            serializeto(BitStream &tgt,
-                                const vNetCommand &commands,
-                                const vNetCommand &commands2);
+using   vNetCommand = std::vector<NetCommand *>;
+
+        QHash<QString, NetCommand *> m_name_to_command;
+        vNetCommand                  m_commands_level0;
+        void                         serializeto(BitStream &tgt, const vNetCommand &commands);
+
 public:
-    void            SendCommandShortcuts(MapClientSession *client,
-                                         BitStream &tgt,
-                                         const std::vector<NetCommand *> &commands2);
-    NetCommand *    getCommandByName(const QString &name);
-    void            addCommand(NetCommand *cmd);
+        void        UpdateCommandShortcuts(MapClientSession *client, std::vector<QString> &commands);
+        NetCommand *getCommandByName(const QString &name);
+        void        addCommand(NetCommand *cmd);
 };
 typedef ACE_Singleton<NetCommandManager,ACE_Thread_Mutex> NetCommandManagerSingleton; // AdminServer Interface

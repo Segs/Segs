@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -12,8 +12,8 @@
 
 #include "AuthDBSyncContext.h"
 
-#include "AuthDBSyncEvents.h"
-#include "PasswordHasher/PasswordHasher.h"
+#include "Messages/AuthDatabase/AuthDBSyncEvents.h"
+#include "PasswordHasher.h"
 #include "Settings.h"
 
 #include <ace/Thread.h>
@@ -25,8 +25,29 @@
 #include <QSqlQuery>
 #include <cassert>
 
+using namespace SEGSEvents;
+
 namespace
 {
+    static const auto DATABASE_DRIVERS = QStringList {"QSQLITE", "QPSQL", "QMYSQL"};
+
+    static constexpr int64_t INVALID_DB_VERSION = -1;
+
+    static constexpr auto FETCH_DB_VERSION_QUERY =
+        "SELECT version FROM table_versions WHERE table_name = 'accounts' LIMIT 1";
+
+    static constexpr auto ADD_ACCOUNT_QUERY =
+        "INSERT INTO accounts (username, passw, access_level, salt) VALUES (?, ?, ?, ?);";
+
+    static constexpr auto SELECT_ACCOUNT_BY_USERNAME_QUERY =
+        "SELECT * FROM accounts WHERE username = ?;";
+
+    static constexpr auto SELECT_ACCOUNT_BY_ID_QUERY =
+        "SELECT * FROM accounts WHERE id = ?;";
+
+    static constexpr auto SELECT_ACCOUNT_PASSWORD_QUERY =
+        "SELECT passw, salt FROM accounts WHERE username = ?;";
+
     //! @image html dbschema/segs_dbschema.png
     bool GetAccount(RetrieveAccountResponseData &client, QSqlQuery &results)
     {
@@ -40,35 +61,41 @@ namespace
         //  client->setCreationDate(creation);
         return true;
     }
+
+    int64_t getDatabaseVersion(QSqlDatabase &database)
+    {
+        QSqlQuery query(FETCH_DB_VERSION_QUERY, database);
+
+        if (!query.exec())
+        {
+            qDebug() << query.lastError();
+            return INVALID_DB_VERSION;
+        }
+
+        if (!query.next())
+        {
+            qCritical() << "No rows found when fetching database version.";
+            return INVALID_DB_VERSION;
+        }
+
+        return query.value(0).toLongLong();
+    }
+
+
 } // namespace
 
 AuthDbSyncContext::AuthDbSyncContext() {}
 
 AuthDbSyncContext::~AuthDbSyncContext() {}
 
-int64_t AuthDbSyncContext::getDbVersion(QSqlDatabase &db)
-{
-    QSqlQuery version_query(
-        QStringLiteral("SELECT version FROM table_versions WHERE table_name='db_version' ORDER BY id DESC LIMIT 1"),
-        db);
-    if (!version_query.exec())
-    {
-        qDebug() << version_query.lastError();
-        return -1;
-    }
-    if (!version_query.next())
-        return -1;
-    return version_query.value(0).toInt();
-}
-
 // Maybe one day we'll need to read different db configs per-thread, for now all just read the same file.
 bool AuthDbSyncContext::loadAndConfigure()
 {
-    char          thread_name_buf[16];
     ACE_Thread_ID our_id;
+
     if (m_setup_complete)
     {
-        qCritical() << "This AuthDbSyncContext has already been configured";
+        qCritical() << "This AuthDBSyncContext has already been configured!";
         return false;
     }
 
@@ -76,11 +103,7 @@ bool AuthDbSyncContext::loadAndConfigure()
     QSettings config(Settings::getSettingsPath(), QSettings::IniFormat, nullptr);
 
     config.beginGroup(QStringLiteral("AdminServer"));
-    QStringList driver_list {"QSQLITE", "QPSQL", "QMYSQL"};
-    our_id.to_string(thread_name_buf); // Ace is using template specialization to acquire the lenght of passed buffer
-
     config.beginGroup(QStringLiteral("AccountDatabase"));
-    // this indent is here to mark the nesting of config block
     QString dbdriver = config.value(QStringLiteral("db_driver"), "QSQLITE").toString();
     QString dbhost   = config.value(QStringLiteral("db_host"), "127.0.0.1").toString();
     int     dbport   = config.value(QStringLiteral("db_port"), "5432").toInt();
@@ -90,11 +113,15 @@ bool AuthDbSyncContext::loadAndConfigure()
     config.endGroup(); // CharacterDatabase
     config.endGroup(); // AdminServer
 
-    if (!driver_list.contains(dbdriver.toUpper()))
+    if (!DATABASE_DRIVERS.contains(dbdriver.toUpper()))
     {
-        qWarning() << "Database driver" << dbdriver << " not supported";
+        qWarning() << "Database driver" << dbdriver << "is not supported.";
         return false;
     }
+
+    char thread_name_buf[16];
+    our_id.to_string(thread_name_buf); // Ace is using template specialization to acquire the length of passed buffer
+
     QSqlDatabase *db2 =
         new QSqlDatabase(QSqlDatabase::addDatabase(dbdriver, QStringLiteral("AdminDatabase_") + thread_name_buf));
     db2->setHostName(dbhost);
@@ -103,39 +130,46 @@ bool AuthDbSyncContext::loadAndConfigure()
     db2->setUserName(dbuser);
     db2->setPassword(dbpass);
     m_db.reset(db2); // at this point we become owner of the db
+
     if (!m_db->open())
     {
         qCritical().noquote() << "Failed to open database:" << dbname;
         return false;
     }
-    int db_version = getDbVersion(*m_db);
-    if (db_version != required_db_version)
+
+    int64_t db_version = getDatabaseVersion(*m_db);
+    if (db_version != REQUIRED_DB_VERSION)
     {
-        qCritical() << "Wrong db version:" << db_version
-                    << "this GameDatabase service requires:" << required_db_version;
+        qCritical() << "Wrong database version:" << db_version;
+        qCritical() << "Auth database requires version:" << REQUIRED_DB_VERSION;
+
         return false;
     }
+
     m_add_account_query.reset(new QSqlQuery(*m_db));
     m_prepared_select_account_by_username.reset(new QSqlQuery(*m_db));
     m_prepared_select_account_by_id.reset(new QSqlQuery(*m_db));
     m_prepared_select_account_passw.reset(new QSqlQuery(*m_db));
 
-    if (!m_add_account_query->prepare("INSERT INTO accounts (username,passw,access_level,salt) VALUES (?,?,?,?);"))
+    if (!m_add_account_query->prepare(ADD_ACCOUNT_QUERY))
     {
         qDebug() << "SQL_ERROR:" << m_add_account_query->lastError();
         return false;
     }
-    if (!m_prepared_select_account_by_username->prepare("SELECT * FROM accounts WHERE username=?;"))
+
+    if (!m_prepared_select_account_by_username->prepare(SELECT_ACCOUNT_BY_USERNAME_QUERY))
     {
         qDebug() << "SQL_ERROR:" << m_prepared_select_account_by_username->lastError();
         return false;
     }
-    if (!m_prepared_select_account_by_id->prepare("SELECT * FROM accounts WHERE id=?;"))
+      
+    if (!m_prepared_select_account_by_id->prepare(SELECT_ACCOUNT_BY_ID_QUERY))
     {
         qDebug() << "SQL_ERROR:" << m_prepared_select_account_by_id->lastError();
         return false;
     }
-    if (!m_prepared_select_account_passw->prepare("SELECT passw,salt FROM accounts WHERE username = ?;"))
+
+    if (!m_prepared_select_account_passw->prepare(SELECT_ACCOUNT_PASSWORD_QUERY))
     {
         qDebug() << "SQL_ERROR:" << m_prepared_select_account_passw->lastError();
         return false;
@@ -186,6 +220,7 @@ bool AuthDbSyncContext::addAccount(const CreateAccountData &data)
 //        return GetAccount(result,*m_prepared_select_account_by_username);
 //    }
 //}
+
 bool AuthDbSyncContext::checkPassword(const QString &login, const QString &password)
 {
     m_prepared_select_account_passw->bindValue(0, login);
@@ -207,28 +242,34 @@ bool AuthDbSyncContext::checkPassword(const QString &login, const QString &passw
     QByteArray hashed_password = hasher.hashPassword(password.toUtf8(), salt);
     return hashed_password == required_pass;
 }
-bool AuthDbSyncContext::retrieveAccountAndCheckPassword(const RetrieveAccountRequestData &data,
-                                                        RetrieveAccountResponseData &     result)
+
+bool AuthDbSyncContext::retrieveAccountAndCheckPassword(
+    const RetrieveAccountRequestData &request, RetrieveAccountResponseData &response)
 {
-    result.m_acc_server_acc_id = 0;
-    assert(data.m_id == 0);
-    if (!checkPassword(data.m_login, data.m_password))
+    response.m_acc_server_acc_id = RetrieveAccountResponseData::INVALID_ACCOUNT_ID;
+    assert(request.m_id == 0);
+
+    if (!checkPassword(request.m_login, request.m_password))
     {
-        if(!last_error)
+        if (!last_error)
         {
-            result.m_acc_server_acc_id = 0;
+            response.m_acc_server_acc_id = RetrieveAccountResponseData::INVALID_ACCOUNT_ID;
             return true;
         }
+
         return !last_error->isValid();
     }
-    m_prepared_select_account_by_username->bindValue(0, data.m_login);
+
+    m_prepared_select_account_by_username->bindValue(0, request.m_login);
+
     if (!m_prepared_select_account_by_username->exec())
     {
         last_error.reset(new QSqlError(m_prepared_select_account_by_username->lastError()));
         qDebug() << "SQL_ERROR:" << *last_error; // Why the query failed
         return false;
     }
-    return GetAccount(result, *m_prepared_select_account_by_username);
+
+    return GetAccount(response, *m_prepared_select_account_by_username);
 }
 
 bool AuthDbSyncContext::getPasswordValidity(const ValidatePasswordRequestData &data,

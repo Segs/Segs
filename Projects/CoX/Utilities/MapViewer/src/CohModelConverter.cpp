@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -19,6 +19,9 @@
 #include "GameData/DataStorage.h"
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
+#include "Common/Runtime/Model.h"
+#include "Common/Runtime/Texture.h"
+#include "Common/Runtime/Prefab.h"
 
 #include <Lutefisk3D/Scene/Node.h>
 #include <Lutefisk3D/Core/Context.h>
@@ -59,27 +62,9 @@ struct TexBlockInfo
     uint32_t tex_binds_size;
 };
 
-struct GeosetHeader32
-{
-    char name[124];
-    int  parent_idx;
-    int  unkn1;
-    int  subs_idx;
-    int  num_subs;
-};
-
-struct PackInfo
-{
-    int      compressed_size;
-    uint32_t uncomp_size;
-    int      compressed_data_off;
-};
-static_assert(sizeof(PackInfo) == 12, "sizeof(PackInfo)==12");
-
-AllTricks_Data s_tricks_store;
-/// this map is used too lookup converted models by the CoHModel pointer
-std::unordered_map<CoHModel *,Urho3D::SharedPtr<Model>> s_coh_model_to_renderable;
-QHash<QString,ConvertedGeoSet *> s_name_to_geoset;
+/// this map is used too lookup converted models by the SEGS::Model pointer
+std::unordered_map<SEGS::Model *,Urho3D::SharedPtr<Urho3D::Model>> s_coh_model_to_engine_model;
+std::unordered_map<SEGS::Model *,Urho3D::SharedPtr<Urho3D::StaticModel>> s_coh_model_to_static_model;
 
 void reportUnhandled(const QString &message)
 {
@@ -90,15 +75,15 @@ void reportUnhandled(const QString &message)
     already_reported.insert(message);
 }
 
-void modelCreateObjectFromModel(Urho3D::Context *ctx,CoHModel *model,std::vector<TextureWrapper> &textures)
+SharedPtr<Urho3D::Model> modelCreateObjectFromModel(Urho3D::Context *ctx,SEGS::Model *model,std::vector<SEGS::HTexture> &textures)
 {
-    initLoadedModel([ctx](const QString &v) -> TextureWrapper { return tryLoadTexture(ctx, v); }, model, textures);
-    std::unique_ptr<VBOPointers> vbo(getVBO(*model));
+    initLoadedModel([ctx](const QString &v) -> SEGS::HTexture { return tryLoadTexture(ctx, v); }, model, textures);
+    SEGS::fillVBO(*model);
+    std::unique_ptr<SEGS::VBOPointers> &vbo(model->vbo);
     vbo->assigned_textures.reserve(textures.size());
-    for(TextureBind tbind : model->texture_bind_info)
+    for(SEGS::TextureBind tbind : model->texture_bind_info)
     {
-        TextureWrapper &texb(textures[tbind.tex_idx]);
-        vbo->assigned_textures.emplace_back(texb);
+        vbo->assigned_textures.emplace_back(textures[tbind.tex_idx]);
     }
 
     SharedPtr<Urho3D::Model> fromScratchModel(new Urho3D::Model(ctx));
@@ -126,13 +111,13 @@ void modelCreateObjectFromModel(Urho3D::Context *ctx,CoHModel *model,std::vector
     fromScratchModel->SetVertexBuffers({vb},{},{});
     fromScratchModel->SetIndexBuffers({ib});
 
-    BoundingBox bbox(toUrho(model->m_min),toUrho(model->m_max));
+    BoundingBox bbox(toUrho(model->box.m_min),toUrho(model->box.m_max));
     unsigned geom_count = model->texture_bind_info.size();
     fromScratchModel->SetNumGeometries(geom_count);
     unsigned face_offset=0;
     for(unsigned i=0; i<geom_count; ++i)
     {
-        const TextureBind &tbind(model->texture_bind_info[i]);
+        const SEGS::TextureBind &tbind(model->texture_bind_info[i]);
         fromScratchModel->SetNumGeometryLodLevels(i, 1);
         SharedPtr<Geometry> geom(new Geometry(ctx));
         geom->SetVertexBuffer(0, vb);
@@ -143,19 +128,19 @@ void modelCreateObjectFromModel(Urho3D::Context *ctx,CoHModel *model,std::vector
     }
     assert(face_offset==model->model_tri_count*3);
     fromScratchModel->SetBoundingBox(bbox);
-    s_coh_model_to_renderable[model] = fromScratchModel;
+    return fromScratchModel;
 }
 
-void addModelData(Urho3D::Context *ctx,ConvertedGeoSet *geoset)
+void createEngineModelsFromPrefabSet(Urho3D::Context *ctx,SEGS::GeoSet *geoset)
 {
-    std::vector<TextureWrapper> v2 = getModelTextures(ctx,geoset->tex_names);
-    for(CoHModel * model : geoset->subs)
+    std::vector<SEGS::HTexture> model_textures = getModelTextures(ctx,geoset->tex_names);
+    for(SEGS::Model * model : geoset->subs)
     {
-        modelCreateObjectFromModel(ctx,model, v2);
+        s_coh_model_to_engine_model[model] = modelCreateObjectFromModel(ctx,model, model_textures);
     }
 }
 
-Urho3D::Model *buildModel(Urho3D::Context *ctx,CoHModel *mdl)
+Urho3D::Model *buildModel(Urho3D::Context *ctx,SEGS::Model *mdl)
 {
     ResourceCache* cache = ctx->m_ResourceCache.get();
     auto parts=mdl->geoset->geopath.split('/');
@@ -168,19 +153,18 @@ Urho3D::Model *buildModel(Urho3D::Context *ctx,CoHModel *mdl)
     QString cache_path="converted/Models/"+parts.join('/')+"/"+mdl->name+".mdl";
     if(cache->Exists(cache_path))
     {
-        auto lf3d_model=cache->GetResource<Model>(cache_path);
+        auto lf3d_model=cache->GetResource<Urho3D::Model>(cache_path);
         if(lf3d_model)
         {
-            std::vector<TextureWrapper> v2 = getModelTextures(ctx,mdl->geoset->tex_names);
-            initLoadedModel([ctx](const QString &v) -> TextureWrapper { return tryLoadTexture(ctx, v); },mdl,v2);
-            s_coh_model_to_renderable[mdl] = lf3d_model;
+            std::vector<SEGS::HTexture> v2 = getModelTextures(ctx,mdl->geoset->tex_names);
+            initLoadedModel([ctx](const QString &v) -> SEGS::HTexture { return tryLoadTexture(ctx, v); },mdl,v2);
             return lf3d_model;
         }
     }
     QFile fl(basepath+mdl->geoset->geopath);
-    if(!fl.exists() || !fl.open(QFile::ReadOnly) || s_coh_model_to_renderable.size()>5000)
+    if(!fl.exists() || !fl.open(QFile::ReadOnly) || s_coh_model_to_engine_model.size()>5000)
     {
-        if(s_coh_model_to_renderable.size()<=3) // this will report first few missing geometry files
+        if(s_coh_model_to_engine_model.size()<=3) // this will report first few missing geometry files
         {
             qDebug() << "Missing geo file" << basepath+mdl->geoset->geopath;
         }
@@ -189,19 +173,22 @@ Urho3D::Model *buildModel(Urho3D::Context *ctx,CoHModel *mdl)
     if(!mdl->geoset->data_loaded) {
         geosetLoadData(fl,mdl->geoset);
         if (!mdl->geoset->subs.empty())
-            addModelData(ctx,mdl->geoset);
+            createEngineModelsFromPrefabSet(ctx,mdl->geoset);
 
     }
     QDir modeldir("converted/Models");
     modeldir.mkpath(parts.join('/'));
-    auto res=s_coh_model_to_renderable[mdl];
+    auto res_static=s_coh_model_to_engine_model[mdl];
     File model_res(ctx,cache_path,FILE_WRITE);
-    res->Save(model_res);
-    return res;
+    res_static->Save(model_res);
+    res_static->SetName("Models/"+parts.join('/')+"/"+mdl->name+".mdl");
+    cache->AddManualResource(res_static);
+    return res_static;
 }
 
 void convertMaterial(Urho3D::Context *ctx,CoHModel *mdl,StaticModel* boxObject)
 {
+    using namespace SEGS;
     static std::unordered_set<CoHModel *> already_converted;
     if (already_converted.find(mdl) == already_converted.end())
     {
@@ -269,15 +256,15 @@ void convertMaterial(Urho3D::Context *ctx,CoHModel *mdl,StaticModel* boxObject)
         if ( tflags & TexBias )
             reportUnhandled("Unhandled TexBias");
     }
-    auto whitetex = tryLoadTexture(ctx,"white.tga");
+    HTexture whitetex = tryLoadTexture(ctx,"white.tga");
     QStringList vertex_defines;
     QStringList pixel_defines;
     SharedPtr<Material> preconverted;
     if(cache->Exists("./converted/Materials/"+model_base_name+"_mtl.xml"))
         preconverted = cache->GetResource<Material>("./converted/Materials/"+model_base_name+"_mtl.xml");
-    bool noLightAngle= mdl->flags & OBJ_NOLIGHTANGLE;
+    bool noLightAngle= mdl->flags & SEGS::OBJ_NOLIGHTANGLE;
     if(!preconverted) {
-        if(mdl->flags&OBJ_TREE)
+        if(mdl->flags&SEGS::OBJ_TREE)
         {
             preconverted = cache->GetResource<Material>("Materials/DefaultVegetation.xml")->Clone();
         }
@@ -346,43 +333,48 @@ void convertMaterial(Urho3D::Context *ctx,CoHModel *mdl,StaticModel* boxObject)
     for(auto & texbind : mdl->texture_bind_info)
     {
         const QString &texname(mdl->geoset->tex_names[texbind.tex_idx]);
-        TextureWrapper tex = tryLoadTexture(ctx,texname);
-        if(tex.base)
-        {
-            result = is_single_mat ? preconverted : preconverted->Clone();
-            result->SetTexture(TU_DIFFUSE,tex.base);
-            if(tex.info) {
-                if(!tex.info->Blend.isEmpty())
-                {
-                    TextureWrapper detail = tryLoadTexture(ctx,tex.info->Blend);
-                    result->SetTexture(TU_CUSTOM1,detail.base);
-                }
-                else
-                    result->SetTexture(TU_CUSTOM1,whitetex.base);
-
-                if(!tex.info->BumpMap.isEmpty())
-                {
-                    TextureWrapper normal = tryLoadTexture(ctx,tex.info->BumpMap);
-                    result->SetTexture(TU_NORMAL,normal.base);
-                }
-            }
-            else
-                result->SetTexture(TU_CUSTOM1,whitetex.base);
-
-            boxObject->SetMaterial(geomidx,result);
-            QDir modeldir("converted/");
-            assert(modeldir.mkpath("Materials"));
-            QString cache_path("./converted/Materials/" + model_base_name + QString::number(geomidx)+"_mtl.xml");
-            auto res = s_coh_model_to_renderable[mdl];
-            File model_res(ctx, cache_path, FILE_WRITE);
-            result->Save(model_res);
-        }
+        HTexture tex = tryLoadTexture(ctx,texname);
+        auto iter = g_converted_textures.find(tex.idx);
         geomidx++;
+        if(iter==g_converted_textures.end())
+            continue;
+        QString mat_name = QString("Materials/%1%2_mtl.xml").arg(model_base_name).arg(geomidx-1);
+        Urho3D::Material *cached_mat = cache->GetResource<Material>(mat_name,false);
+        Urho3D::SharedPtr<Urho3D::Texture> &engine_tex(iter->second);
+        if(cached_mat && cached_mat->GetTexture(TU_DIFFUSE)==engine_tex)
+        {
+            boxObject->SetMaterial(geomidx-1,cached_mat);
+            continue;
+        }
+        result = is_single_mat ? preconverted : preconverted->Clone();
+        result->SetTexture(TU_DIFFUSE,engine_tex);
+        HTexture custom1 = whitetex;
+        HTexture bump_tex = {};
+        if(tex->info)
+        {
+            if(!tex->info->Blend.isEmpty())
+                custom1 = tryLoadTexture(ctx,tex->info->Blend);
+            if(!tex->info->BumpMap.isEmpty())
+                bump_tex = tryLoadTexture(ctx,tex->info->BumpMap);
+        }
+        result->SetTexture(TU_CUSTOM1,g_converted_textures[custom1.idx]);
+        if(bump_tex)
+            result->SetTexture(TU_NORMAL,g_converted_textures[bump_tex.idx]);
+
+        QDir modeldir("converted/");
+        bool created = modeldir.mkpath("Materials");
+        assert(created);
+        QString cache_path="./converted/"+mat_name;
+        File mat_res(ctx, cache_path, FILE_WRITE);
+        result->SetName(mat_name);
+        result->Save(mat_res);
+        cache->AddManualResource(result);
+        boxObject->SetMaterial(geomidx-1,cache->GetResource<Material>(mat_name));
     }
 
 }
 
-void copyStaticModel(const Urho3D::StaticModel *src, Urho3D::StaticModel *tgt)
+void copyStaticModel(Urho3D::StaticModel *src, Urho3D::StaticModel *tgt)
 {
     tgt->SetModel(src->GetModel());
     int geoms = src->GetNumGeometries();
@@ -393,23 +385,23 @@ void copyStaticModel(const Urho3D::StaticModel *src, Urho3D::StaticModel *tgt)
 }
 } // end of anonymus namespace
 
-Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, CoHNode *node, int opt)
+Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, SEGS::SceneNode *node, int opt)
 {
-    CoHModel *mdl = node->model;
-    if (mdl&&mdl->converted_model)
+    SEGS::Model *mdl = node->model;
+    Urho3D::StaticModel * converted=nullptr;
+    auto loc = s_coh_model_to_static_model.find(mdl);
+    if (loc != s_coh_model_to_static_model.end())
+        converted = loc->second.Get();
+
+    if (mdl && converted)
     {
         float per_node_draw_distance = node->lod_far + node->lod_far_fade;
-        //if (mdl->converted_model->GetDrawDistance() == per_node_draw_distance) // same draw distance as default, nothing to do
-            //return mdl->converted_model;
         StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
-        copyStaticModel(mdl->converted_model, boxObject);
-        boxObject->SetDrawDistance(node->lod_far + node->lod_far_fade);
+        copyStaticModel(converted, boxObject);
+        boxObject->SetDrawDistance(per_node_draw_distance);
         return boxObject;
     }
-    Model * modelptr=nullptr;
-    auto loc = s_coh_model_to_renderable.find(mdl);
-    if (loc != s_coh_model_to_renderable.end())
-        modelptr = loc->second.Get();
+
     ModelModifiers *model_trick = mdl->trck_node;
     if (model_trick)
     {
@@ -434,18 +426,15 @@ Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node
             return nullptr;
         }
     }
-    if (modelptr == nullptr)
-    {
-        modelptr = buildModel(ctx, mdl);
-        modelptr->SetName(mdl->name);
-    }
+    Urho3D::Model *modelptr = buildModel(ctx, mdl);
     if(!modelptr)
         return nullptr;
     StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
-    //boxObject->SetDrawDistance(node->lod_far+node->lod_far_fade);
+
+    boxObject->SetDrawDistance(node->lod_far+node->lod_far_fade);
     boxObject->SetModel(modelptr);
     convertMaterial(ctx,mdl,boxObject);
-    mdl->converted_model = boxObject;
+    s_coh_model_to_static_model[mdl] = boxObject;
     return boxObject;
 }
 

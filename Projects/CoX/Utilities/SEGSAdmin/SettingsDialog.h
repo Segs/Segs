@@ -2,6 +2,8 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
+#include <QValidator>
+#include <QCheckBox>
 
 namespace Ui {
 class SettingsDialog;
@@ -24,6 +26,11 @@ public slots:
     void generate_default_config_file(QString server_name, QString ip);
     void save_changes_config_file();
     void auto_populate_ip_main(QString local_ip);
+    void field_validator();
+    void set_default_values();
+    void text_edit_updater();
+    void slider_updater();
+    void auto_logout_checkbox_validator();
 
 signals:
    void checkForConfigFile();
@@ -33,6 +40,8 @@ signals:
 
 private:
     Ui::SettingsDialog *ui;
+
+
 };
 
 #endif // SETTINGSDIALOG_H

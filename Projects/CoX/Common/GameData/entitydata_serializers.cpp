@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -15,6 +15,7 @@
 #include "entitydata_definitions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
 const constexpr uint32_t EntityData::class_version;
 CEREAL_CLASS_VERSION(EntityData, EntityData::class_version) // register EntityData class version

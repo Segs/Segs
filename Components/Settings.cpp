@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 /*!
@@ -132,7 +132,21 @@ void Settings::setDefaultSettings()
     config.beginGroup("MapServer");
         config.setValue("listen_addr","127.0.0.1:7003");
         config.setValue("location_addr","127.0.0.1:7003");
+        config.setValue("maps","DefaultMapInstances");
         config.setValue("player_fade_in", "380.0");
+    config.endGroup();
+    config.beginGroup("AFK Settings");
+        config.setValue("time_to_afk","300");
+        config.setValue("time_to_logout_msg","1080");
+        config.setValue("time_to_auto_logout","120");
+        config.setValue("uses_auto_logout", "true");
+    config.endGroup();
+    config.beginGroup("StartingCharacter");
+        config.setValue("inherent_powers","Brawl");
+        config.setValue("starting_temps","EMP_Glove");
+        config.setValue("starting_inspirations","Resurgence");
+        config.setValue("starting_level", 1);
+        config.setValue("starting_inf", 0);
     config.endGroup();
     config.beginGroup("Logging");
         config.setValue("log_logging","false");
@@ -144,12 +158,14 @@ void Settings::setDefaultSettings()
         config.setValue("log_input","false");
         config.setValue("log_position","false");
         config.setValue("log_orientation","false");
+        config.setValue("log_movement","false");
         config.setValue("log_chat","false");
         config.setValue("log_infomsg","false");
         config.setValue("log_emotes","false");
         config.setValue("log_target","false");
         config.setValue("log_spawn","false");
         config.setValue("log_mapevents","false");
+        config.setValue("log_mapxfers", "false");
         config.setValue("log_slashcommands","false");
         config.setValue("log_description","false");
         config.setValue("log_friends","false");
@@ -157,6 +173,10 @@ void Settings::setDefaultSettings()
         config.setValue("log_lfg","false");
         config.setValue("log_npcs","false");
         config.setValue("log_animations","false");
+        config.setValue("log_powers","false");
+        config.setValue("log_trades","false");
+        config.setValue("log_scripts","false");
+        config.setValue("log_scenegraph","false");
     config.endGroup();
 
     config.sync(); // sync changes or they wont be saved to file.

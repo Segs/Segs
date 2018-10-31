@@ -1,8 +1,8 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
- * This software is licensed! (See License.txt for details)
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
@@ -11,7 +11,7 @@
 
 struct GameLink : public CRUDLink
 {
-    GameLink(EventProcessor *tgt,EventProcessor *net_layer)
+    GameLink(EventSrc *tgt,EventSrc *net_layer)
     {
         m_net_layer = net_layer;
         m_target = tgt;
