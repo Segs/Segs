@@ -105,22 +105,22 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     }
 
     // Recharging Timers -- iterate through and remove finished timers
-    auto rpow_idx = e->m_recharging_powers.begin();
-    for(QueuedPowers &rpow : e->m_recharging_powers)
+    for(auto rpow_idx = e->m_recharging_powers.begin(); rpow_idx != e->m_recharging_powers.end(); /*rpow_idx updated inside loop*/ )
     {
-        rpow.m_recharge_time -= (float(msec)/1000);
+        rpow_idx->m_recharge_time -= (float(msec)/1000);
 
-        if(rpow.m_recharge_time <= 0)
+        if(rpow_idx->m_recharge_time <= 0)
         {
+            PowerVecIndexes power_idx(rpow_idx->m_pow_idxs);
             rpow_idx = e->m_recharging_powers.erase(rpow_idx);
 
             // Check if rpow is default power, if so usePower again
             if(e->m_char->m_char_data.m_trays.m_has_default_power)
             {
-                if(rpow.m_pow_idxs.m_pset_vec_idx == e->m_char->m_char_data.m_trays.m_default_pset_idx
-                        && rpow.m_pow_idxs.m_pow_vec_idx == e->m_char->m_char_data.m_trays.m_default_pow_idx)
+                if(power_idx.m_pset_vec_idx == e->m_char->m_char_data.m_trays.m_default_pset_idx
+                        && power_idx.m_pow_vec_idx == e->m_char->m_char_data.m_trays.m_default_pow_idx)
                 {
-                    usePower(*e, rpow.m_pow_idxs.m_pset_vec_idx, rpow.m_pow_idxs.m_pow_vec_idx, getTargetIdx(*e), getTargetIdx(*e));
+                    usePower(*e, power_idx.m_pset_vec_idx, power_idx.m_pow_vec_idx, getTargetIdx(*e), getTargetIdx(*e));
                 }
             }
 
@@ -131,12 +131,11 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     }
 
     // Buffs
-    auto buff_idx = e->m_buffs.begin();
-    for(Buffs &buff : e->m_buffs)
+    for(auto buff_idx = e->m_buffs.begin(); buff_idx!=e->m_buffs.end(); /*buff_idx updated inside loop*/)
     {
-        buff.m_activate_period -= (float(msec)/1000); // activate period is in minutes
+        buff_idx->m_activate_period -= (float(msec)/1000); // activate period is in minutes
 
-        if(buff.m_activate_period <= 0)
+        if(buff_idx->m_activate_period <= 0)
             buff_idx = e->m_buffs.erase(buff_idx);
         else
             ++buff_idx;
@@ -146,7 +145,7 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
 bool World::isPlayerDead(Entity *e)
 {
     if(e->m_type == EntType::PLAYER
-            && getHP(*e->m_char) == 0.0)
+            && getHP(*e->m_char) == 0.0f)
     {
         setStateMode(*e, ClientStates::DEAD);
         return true;
@@ -163,8 +162,8 @@ void World::regenHealthEnd(Entity *e, uint32_t msec)
         float hp = getHP(*e->m_char);
         float end = getEnd(*e->m_char);
 
-        float regeneration = hp * (1.0/20.0) * msec/1000/12;
-        float recovery = end * (1.0/15.0) * msec/1000/12;
+        float regeneration = hp * (1.0f/20.0f) * float(msec)/1000/12;
+        float recovery = end * (1.0f/15.0f) * float(msec)/1000/12;
         setHP(*e->m_char, hp + regeneration);
         setEnd(*e->m_char, end + recovery);
     }
