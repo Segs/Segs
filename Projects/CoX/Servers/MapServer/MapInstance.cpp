@@ -170,6 +170,11 @@ void MapInstance::start(const QString &scenegraph_path)
             m_npc_generators.generate(this);
             }, "Spawning npcs");
         qInfo() << "Loading custom scripts";
+
+        //Global script for zone
+        QString global_scriptname="scripts/global.lua";
+        loadAndRunLua(m_scripting_interface,global_scriptname);
+
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
         QString entities_scriptname=m_data_path+'/'+"entities.lua";

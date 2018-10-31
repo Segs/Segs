@@ -118,6 +118,8 @@ void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Revive(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
 
+void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
+
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
 // Access Level 2[GM] Commands
@@ -227,6 +229,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setstatemode"}, "Send StateMode. Send StateMode to client", cmdHandler_SetStateMode, 9},
     {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
     {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
+    {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -2006,6 +2009,34 @@ bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src)
     sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
     return false;
 }
+
+void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess)
+{
+    Task tk;
+    tk.m_db_id = 1;
+    tk.setDescription("Task Description Goes Here");
+    tk.setOwner("OfficerFlint");
+    tk.setState("In Progress");
+    tk.setDetail("Task detail goes here");
+    tk.m_is_complete = false;
+    tk.m_in_progress_maybe = true;
+    tk.m_is_abandoned = false;
+    tk.m_has_location = false;
+    tk.m_detail_invalid = true; // aka "needs update"
+    tk.m_board_train = false;
+    tk.m_location.location = glm::vec3(-83.0, 0.0, 1334.0);
+    tk.m_location.setLocationMapName("Outbreak");
+    tk.m_location.setLocationName("Outbreak");
+    tk.m_finish_time = 0;
+    tk.m_unknown_1 = 0;
+    tk.m_unknown_2 = 0;
+    tk.m_task_idx = 0;
+
+    sendUpdateTaskStatusList(sess, tk);
+    QString msg = "Sending Test Task to client";
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
 } // end of anonymous namespace
 
 /*
@@ -2025,6 +2056,8 @@ void runCommand(const QString &str, MapClientSession &e)
     }
     qCDebug(logSlashCommand) << "Unknown game command:" << str;
 }
+
+
 
 //! @}
 
