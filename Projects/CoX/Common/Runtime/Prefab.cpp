@@ -150,3 +150,10 @@ GeoStoreDef * PrefabStore::groupGetFileEntryPtr(const QString &full_name)
     key = key.mid(0, key.indexOf("__"));
     return m_modelname_to_geostore.value(key, nullptr);
 }
+void PrefabStore::sceneGraphWasReset()
+{
+    for(auto & v : m_dir_to_geoset)
+    {
+        v.loaded = false;
+    }
+}

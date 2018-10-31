@@ -101,7 +101,7 @@ SceneNode * getNodeByName(const SceneGraph &graph,const QString &name)
         filename = name;
     else
         filename = name.mid(idx+1);
-    return graph.name_to_node.value(filename.toLower(),nullptr);
+    return graph.name_to_node.value(filename.toLower(), nullptr);
 }
 
 }
@@ -219,6 +219,7 @@ SceneNode *newDef(SceneGraph &scene)
     SceneNode *res = new SceneNode;
     res->m_index_in_scenegraph = scene.all_converted_defs.size();
     scene.all_converted_defs.emplace_back(res);
+    res->in_use = true;
     return res;
 }
 void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
@@ -235,9 +236,9 @@ void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
     QString lowkey = key.toString().toLower();
     auto iter = scene.name_to_node.find(lowkey);
     if(iter==scene.name_to_node.end()) {
-        iter=scene.name_to_node.insert(lowkey,node);
+        scene.name_to_node[lowkey] = node;
     }
-    node->name = iter.key();
+    node->name = key.toString();
     node->dir.clear();
     if ( key.position() != 0 )
         node->dir = result.mid(0,key.position()-1);
@@ -254,7 +255,8 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
         child.node = getNodeByName(*ctx.m_target,new_name);
         if ( !child.node )
         {
-            store.loadNamedPrefab(new_name,ctx);
+            bool loaded=store.loadNamedPrefab(new_name,ctx);
+            assert(loaded);
             child.node = getNodeByName(*ctx.m_target,new_name);
         }
         // construct from euler angles
@@ -546,6 +548,7 @@ SceneGraph *loadWholeMap(const QString &filename)
     QString upcase_city = filename;
     upcase_city.replace("city","City");
     upcase_city.replace("zones","Zones");
+    rd.m_prefab_mapping->sceneGraphWasReset();
     bool res = loadSceneGraph(upcase_city.mid(maps_idx), ctx, *rd.m_prefab_mapping);
     if (!res)
     {
