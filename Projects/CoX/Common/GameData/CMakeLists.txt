@@ -17,6 +17,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Trade.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/chardata_serializers.cpp
@@ -74,6 +75,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Task.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Trade.h
     ${CMAKE_CURRENT_SOURCE_DIR}/chardata_serializers.h

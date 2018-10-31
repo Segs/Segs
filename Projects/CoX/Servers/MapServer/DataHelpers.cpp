@@ -29,6 +29,7 @@
 #include "Common/Messages/Map/EmailRead.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
 #include "Common/Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/Tasks.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -1272,6 +1273,129 @@ void giveXp(MapClientSession &sess, int xp)
     }
     qCDebug(logScripts) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void addListOfTasks(MapClientSession *cl, vTaskList task_list)
+{
+    //Send contactList to client
+    TaskEntry task_entry;
+    task_entry.m_db_id = cl->m_ent->m_db_id;
+    task_entry.m_reset_selected_task = true; // Expose to Lua?
+    task_entry.m_task_list = task_list;
+    vTaskEntryList task_entry_list;
+    task_entry_list.push_back(task_entry);
+
+    //update database task list
+    cl->m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
+
+    cl->addCommandToSendNextUpdate(std::unique_ptr<TaskStatusList>(new TaskStatusList(task_entry_list)));
+    qCDebug(logScripts) << "Sending New TaskStatusList";
+}
+
+void sendUpdateTaskStatusList(MapClientSession &src, Task task)
+{
+    vTaskEntryList task_entry_list = src.m_ent->m_char->m_char_data.m_tasks_entry_list;
+    //find task
+    bool found = false;
+
+    for (uint32_t i = 0; i < task_entry_list.size(); ++i)
+    {
+       for(uint32_t t = 0; t < task_entry_list[i].m_task_list.size(); ++t)
+        if(task_entry_list[i].m_task_list[t].m_task_idx == task.m_task_idx) // maybe npcId instead?
+        {
+            found = true;
+            //contact already in list, update task;
+            task_entry_list[i].m_task_list.at(t) = task;
+            break;
+        }
+
+       if(found)
+           break;
+    }
+
+    if(!found)
+    {
+        uint32_t listSize = task_entry_list.size();
+        if(task_entry_list.size() > 0)
+        {
+            task_entry_list[listSize].m_task_list.push_back(task); // Just use last task entry, Should only be one.
+        }
+        else
+        {
+            std::vector<Task> task_list;
+            task_list.push_back(task);
+            TaskEntry t_entry;
+            t_entry.m_db_id = src.m_ent->m_db_id;
+            t_entry.m_reset_selected_task = false;
+            t_entry.m_task_list = task_list;
+            task_entry_list.push_back(t_entry);
+        }
+    }
+
+    //update database Task list
+    src.m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
+    qCDebug(logScripts) << "SendUpdateTaskStatusList DB Task list updated";
+
+    //Send contactList to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<TaskStatusList>(new TaskStatusList(task_entry_list)));
+    qCDebug(logScripts) << "SendUpdateTaskStatusList List updated";
+}
+
+void selectTask(MapClientSession &src, Task task)
+{
+    src.addCommandToSendNextUpdate(std::unique_ptr<TaskSelect>(new TaskSelect(task)));
+    qCDebug(logScripts) << "SelectTask";
+}
+
+void sendTaskStatusList(MapClientSession &src)
+{
+    vTaskEntryList task_entry_list = src.m_ent->m_char->m_char_data.m_tasks_entry_list;
+
+    //Send taskList to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<TaskStatusList>(new TaskStatusList(task_entry_list)));
+    qCDebug(logScripts) << "SendTaskStatusList";
+}
+
+void updateTaskDetail(MapClientSession &src, Task task)
+{
+    //Send task detail to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<TaskDetail>(new TaskDetail(task.m_db_id, task.m_task_idx, task.m_detail)));
+    qCDebug(logScripts) << "Sending TaskDetail";
+}
+
+void removeTask(MapClientSession &src, Task task)
+{
+    vTaskEntryList task_entry_list = src.m_ent->m_char->m_char_data.m_tasks_entry_list;
+    //find task
+    bool found = false;
+
+    for (uint32_t i = 0; i < task_entry_list.size(); ++i)
+    {
+       for(uint32_t t = 0; t < task_entry_list[i].m_task_list.size(); ++t)
+        if(task_entry_list[i].m_task_list[t].m_task_idx == task.m_task_idx) // maybe db_id
+        {
+            found = true;
+            task_entry_list[i].m_task_list.erase(task_entry_list[i].m_task_list.begin() + t);
+            break;
+        }
+
+       if(found)
+           break;
+    }
+
+    if(!found)
+    {
+        qCDebug(logScripts) << "Remove Task. Task not found";
+    }
+    else
+    {
+        //update database Task list
+        src.m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
+
+        //Send contactList to client
+        src.addCommandToSendNextUpdate(std::unique_ptr<TaskStatusList>(new TaskStatusList(task_entry_list)));
+        qCDebug(logScripts) << "Remove Task. Sending updated TaskStatusList";
+    }
 }
 
 

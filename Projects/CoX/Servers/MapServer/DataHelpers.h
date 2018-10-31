@@ -9,6 +9,7 @@
 #include "Messages/Map/MessageChannels.h"
 #include "Messages/Map/FloatingInfoStyles.h"
 #include "Common/GameData/Contact.h"
+#include "Common/GameData/Task.h"
 #include "glm/vec3.hpp"
 #include <QString>
 #include <cstdint>
@@ -178,3 +179,9 @@ void giveHp(MapClientSession &sess, float hp);
 void giveInf(MapClientSession &sess, int inf);
 void giveInsp(MapClientSession &sess, QString &name);
 void giveXp(MapClientSession &sess, int xp);
+void addListOfTasks(MapClientSession *cl, vTaskList task_list);
+void sendUpdateTaskStatusList(MapClientSession &src, Task task);
+void selectTask(MapClientSession &src, Task task);
+void sendTaskStatusList(MapClientSession &src);
+void updateTaskDetail(MapClientSession &src, Task task);
+void removeTask(MapClientSession &src, Task task);
