@@ -113,18 +113,12 @@ bool inviteTeam(Entity &src, Entity &tgt)
         src.m_team->addTeamMember(&tgt,0);
         return true;
     }
-    else if (src.m_has_team && src.m_team->isTeamLeader(&src))
+    if (src.m_has_team && src.m_team->isTeamLeader(&src))
     {
         src.m_team->addTeamMember(&tgt,0);
         return true;
     }
-    else
-    {
-        qCDebug(logTeams) << src.name() << "is not team leader.";
-        return false;
-    }
-
-    qCWarning(logTeams) << "How did we get here in inviteTeam?";
+    qCDebug(logTeams) << src.name() << "is not team leader.";
     return false;
 }
 

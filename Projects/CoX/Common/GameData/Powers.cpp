@@ -326,7 +326,7 @@ CharacterPower *getOwnedPowerByVecIdx(Entity &e, uint32_t pset_idx, uint32_t pow
     bool fail = false;
     CharacterData *cd = &e.m_char->m_char_data;
 
-    if(pset_idx > cd->m_powersets.size())
+    if(pset_idx >= cd->m_powersets.size())
         fail = true;
     else if(pow_idx > cd->m_powersets.at(pset_idx).m_powers.size()) // must check after confirming pset_idx is valid
         fail = true;
@@ -1009,17 +1009,16 @@ void buyEnhancementSlots(Entity &ent, uint32_t available_slots, std::vector<int>
 
     for(int i = 0; i < available_slots; ++i)
     {
-        CharacterPower * pow = nullptr;
-        pow = getOwnedPowerByVecIdx(ent, pset_idx[i], pow_idx[i]);
+        CharacterPower * pow = getOwnedPowerByVecIdx(ent, pset_idx[i], pow_idx[i]);
+
+        if(pow == nullptr || pow->getPowerTemplate().m_Name.isEmpty())
+            qFatal("Cannot find Power for buying enhancement slot: %d %d", pset_idx[i], pow_idx[i]);
 
         qCDebug(logPowers) << "Power for EH slot:" << i
-                           << pow->getPowerTemplate().m_Name
-                           << "indexes" << pow->m_power_info.m_pcat_idx
-                           << pow->m_power_info.m_pset_idx
-                           << pow->m_power_info.m_pow_idx;
-
-        if(pow == nullptr && pow->getPowerTemplate().m_Name.isEmpty())
-            qFatal("Cannot find Power for buying enhancement slot: %d %d", pset_idx[i], pow_idx[i]);
+            << pow->getPowerTemplate().m_Name
+            << "indexes" << pow->m_power_info.m_pcat_idx
+            << pow->m_power_info.m_pset_idx
+            << pow->m_power_info.m_pow_idx;
 
         //++pow->m_total_eh_slots;
         reserveEnhancementSlot(pow, getLevel(*ent.m_char));

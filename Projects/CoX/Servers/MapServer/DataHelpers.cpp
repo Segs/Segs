@@ -69,14 +69,12 @@ void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
 
 void    setTeamID(Entity &e, uint8_t team_id)
 {
+    e.m_has_team = team_id != 0;
     if(team_id == 0)
     {
-        e.m_has_team            = false;
         delete e.m_team;
         e.m_team = nullptr;
     }
-    else
-        e.m_has_team            = true;
 
     if(!e.m_team)
         return;
