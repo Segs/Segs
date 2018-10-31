@@ -1,14 +1,15 @@
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Lutefisk3D/CMake/LutefiskOptions.cmake")
+	message(FATAL_ERROR "Lutefisk3D git submodule has not been checked out.")
+endif()
 if(FALSE)
     set(LUTEFISK3D_NETWORK OFF) # don't need it, and it doesn't compile anyway :)
-    add_subdirectory(Lute)
+    add_subdirectory(Lutefisk3D)
 else()
 	#NOTE: by default lutefisk builds in RelWithDebInfo
 	# for our use case this seems the most optimal build type.
     libname(lutefisk3d Lutefisk3D)
     # add the main options for lutefisk, 
-    # NOTE: this only works when Lutefisk is aleady checked-out submodule
-    # this will likely happen, but not just yet.
-    #include(${CMAKE_CURRENT_SOURCE_DIR}/Lute/CMake/LutefiskOptions.cmake)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/Lutefisk3D/CMake/LutefiskOptions.cmake)
     set(LUTEFISK3D_NETWORK OFF) # don't need it, and it doesn't compile anyway :)
 
     set(lutefisk_cmake_options
@@ -30,9 +31,7 @@ else()
 
     ExternalProject_Add(
        l3d_BUILD
-    #   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Lute
-       GIT_REPOSITORY https://github.com/Lutefisk3D/lutefisk3d
-       GIT_SHALLOW 1
+       SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Lutefisk3D
        UPDATE_COMMAND ""
        INSTALL_DIR ${ThirdParty_Install_Dir}
        CMAKE_ARGS ${lutefisk_cmake_options}
