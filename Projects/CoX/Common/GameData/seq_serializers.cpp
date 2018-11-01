@@ -14,11 +14,22 @@
 #include "seq_definitions.h"
 #include "DataStorage.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
 //#include <optional> // Requires C++17
+//template<class Archive,class Type>
+//static void serialize_as_optional(Archive & archive, const char *name, Type & m)
+//{
+//    std::optional<Type> opt_str;
+//    if(!(m==Type()))
+//        opt_str = m;
+
+//    archive(cereal::make_nvp(name,opt_str));
+//    m = opt_str.value_or(m);
+//}
 
 namespace
 {
@@ -112,14 +123,14 @@ namespace
             s->nest_in();
             if("Anim"==_name)
             {
-                SeqMoveDataTypeAnim *nt = new SeqMoveDataTypeAnim;
-                ok &= loadFrom(s,nt);
+                SeqMoveDataTypeAnim nt;
+                ok &= loadFrom(s,&nt);
                 target->m_Anim.push_back(nt);
             }
             else if("PlayFx"==_name)
             {
-                Parser_PlayFx *nt = new Parser_PlayFx;
-                ok &= loadFrom(s,nt);
+                Parser_PlayFx nt;
+                ok &= loadFrom(s,&nt);
                 target->m_PlayFx.push_back(nt);
             }
             else
@@ -157,20 +168,20 @@ namespace
             s->nest_in();
             if("NextMove"==_name)
             {
-                SeqNextMoveData *nt = new SeqNextMoveData;
-                ok &= loadFrom(s,nt);
+                SeqNextMoveData nt;
+                ok &= loadFrom(s,&nt);
                 target->m_NextMove.push_back(nt);
             }
             else if("CycleMove"==_name)
             {
-                SeqCycleMoveData *nt = new SeqCycleMoveData;
-                ok &= loadFrom(s,nt);
+                SeqCycleMoveData nt;
+                ok &= loadFrom(s,&nt);
                 target->m_CycleMove.push_back(nt);
             }
             else if("Type"==_name)
             {
-                SeqMoveTypeData *nt = new SeqMoveTypeData;
-                ok &= loadFrom(s,nt);
+                SeqMoveTypeData nt;
+                ok &= loadFrom(s,&nt);
                 target->m_Type.push_back(nt);
             }
             else
@@ -222,22 +233,22 @@ namespace
             s->nest_in();
             if("TypeDef"==_name)
             {
-                SeqTypeDefData *nt = new SeqTypeDefData;
-                ok &= loadFrom(s,nt);
+                SeqTypeDefData nt;
+                ok &= loadFrom(s,&nt);
                 assert(ok);
                 target->m_TypeDef.push_back(nt);
             }
             else if("Group"==_name)
             {
-                SeqGroupNameData *nt = new SeqGroupNameData;
-                ok &= loadFrom(s,nt);
+                SeqGroupNameData nt;
+                ok &= loadFrom(s,&nt);
                 assert(ok);
                 target->m_Group.push_back(nt);
             }
             else if("Move"==_name)
             {
-                SeqMoveData *nt = new SeqMoveData;
-                ok &= loadFrom(s,nt);
+                SeqMoveData nt;
+                ok &= loadFrom(s,&nt);
                 assert(ok);
                 target->m_Move.push_back(nt);
             }
@@ -268,7 +279,8 @@ bool loadFrom(BinStore *s, SequencerList *target)
             SequencerData nt;
             ok &= loadFrom(s,&nt);
             seqCleanSeqFileName(nt.name);       // this was done after reading, no reason to not do this now.
-            target->m_Sequencers[QString(nt.name).toLower()] = nt;
+            target->sq_list.push_back(nt);
+            target->m_Sequencers[QString(nt.name).toLower()] = target->sq_list.size()-1;
             s->nest_out();
         }
         else
@@ -278,25 +290,92 @@ bool loadFrom(BinStore *s, SequencerList *target)
     assert(ok);
     return ok;
 }
+template<class Archive>
+void serialize(Archive & archive, Parser_PlayFx & m)
+{
+    archive(cereal::make_nvp("name",m.name));
+    archive(cereal::make_nvp("delay",m.delay));
+    archive(cereal::make_nvp("flags",m.flags));
+}
+template<class Archive>
+void serialize(Archive & archive, SeqMoveDataTypeAnim & m)
+{
+    archive(cereal::make_nvp("name",m.name));
+    archive(cereal::make_nvp("firstFrame",m.firstFrame));
+    archive(cereal::make_nvp("lastFrame",m.lastFrame));
+}
+template<class Archive>
+void serialize(Archive & archive, SeqMoveTypeData & m)
+{
+    archive(cereal::make_nvp("name",m.name));
+    archive(cereal::make_nvp("Anim",m.m_Anim));
+    archive(cereal::make_nvp("PlayFx",m.m_PlayFx));
+    archive(cereal::make_nvp("Scale",m.Scale));
+    archive(cereal::make_nvp("MoveRate",m.MoveRate));
+    archive(cereal::make_nvp("PitchAngle",m.PitchAngle));
+    archive(cereal::make_nvp("PitchRate",m.PitchRate));
+    archive(cereal::make_nvp("PitchStart",m.PitchStart));
+    archive(cereal::make_nvp("PitchEnd",m.PitchEnd));
+    archive(cereal::make_nvp("SmoothSprint",m.SmoothSprint));
+}
+template<class Archive>
+void serialize(Archive & archive, SeqNextMoveData & m)
+{
+    archive(cereal::make_nvp("name",m.name));
+}
+template<class Archive>
+void serialize(Archive & archive, SeqCycleMoveData & m)
+{
+    archive(cereal::make_nvp("name",m.name));
+}
+template<class Archive>
+void serialize(Archive & archive, SeqMoveData & m)
+{
+    archive(cereal::make_nvp("name",m.name));
+    archive(cereal::make_nvp("Scale",m.Scale));
+    archive(cereal::make_nvp("MoveRate",m.MoveRate));
+    archive(cereal::make_nvp("Interpolate",m.Interpolate));
+    archive(cereal::make_nvp("Priority",m.Priority));
+    archive(cereal::make_nvp("Flags",m.Flags));
+    archive(cereal::make_nvp("NextMove",m.m_NextMove));
+    archive(cereal::make_nvp("CycleMove",m.m_CycleMove));
+    archive(cereal::make_nvp("Type",m.m_Type));
+    archive(cereal::make_nvp("SticksOnChild",m.SticksOnChild));
+    archive(cereal::make_nvp("SetsOnChild",m.SetsOnChild));
+    archive(cereal::make_nvp("Sets",m.Sets));
+    archive(cereal::make_nvp("Requires",m.Requires));
+    archive(cereal::make_nvp("Member",m.Member));
+    archive(cereal::make_nvp("Interrupts",m.Interrupts));
+}
+template<class Archive>
+void serialize(Archive & archive, SeqGroupNameData & m)
+{
+    archive(cereal::make_nvp("name",m.name));
+}
+template<class Archive>
+void serialize(Archive & archive, SeqTypeDefData & m)
+{
+    archive(cereal::make_nvp("name",m.name));
+    archive(cereal::make_nvp("BaseSkeleton",m.pBaseSkeleton));
+    archive(cereal::make_nvp("ParentType",m.pParentType));
+}
+template<class Archive>
+void serialize(Archive & archive, SequencerData & m)
+{
+    archive(cereal::make_nvp("name",m.name));
+    archive(cereal::make_nvp("TypeDef",m.m_TypeDef));
+    archive(cereal::make_nvp("Group",m.m_Group));
+    archive(cereal::make_nvp("Move",m.m_Move));
+}
 
 void saveTo(const SequencerList & target, const QString & baseName, bool text_format)
 {
-    assert(false);
+    commonSaveTo(target.sq_list,"SequencerList",baseName,text_format);
 }
 
 
 /* Requires C++17 for std::optional
 
-template<class Archive,class Type>
-static void serialize_as_optional(Archive & archive, const char *name, Type & m)
-{
-    std::optional<Type> opt_str;
-    if(!(m==Type()))
-        opt_str = m;
-
-    archive(cereal::make_nvp(name,opt_str));
-    m = opt_str.value_or(m);
-}
 
 template<class Archive>
 static void serialize(Archive & archive, SeqType & m)
