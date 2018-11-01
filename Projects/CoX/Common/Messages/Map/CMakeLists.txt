@@ -24,7 +24,6 @@ set(SOURCES
     FriendsListUpdate.h
     GameCommand.h
     GameCommandList.h
-    InfoMessageCmd.cpp
     InfoMessageCmd.h
     InputState.cpp
     InputState.h

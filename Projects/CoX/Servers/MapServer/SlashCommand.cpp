@@ -26,6 +26,7 @@
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
 #include "GameData/Entity.h"
+#include "GameData/EntityHelpers.h"
 #include "GameData/LFG.h"
 #include "GameData/Trade.h"
 #include "Settings.h"
@@ -569,7 +570,7 @@ void cmdHandler_SetCombatLevel(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_UpdateChar(const QString &cmd, MapClientSession &sess)
 {
-    charUpdateDB(sess.m_ent);
+    markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
 
     QString msg = "Updating Character in Database: " + sess.m_ent->name();
     qCDebug(logSlashCommand) << cmd << ":" << msg;
@@ -1031,7 +1032,7 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
         sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
         return;
     }
-    sendFaceEntity(*sess.m_ent, tgt->m_idx);
+    sendFaceEntity(sess, tgt->m_idx);
 }
 
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
@@ -1052,7 +1053,7 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
       parts[3].toFloat()
     };
 
-    sendFaceLocation(*sess.m_ent, loc);
+    sendFaceLocation(sess, loc);
 }
 
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
@@ -1409,7 +1410,7 @@ void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess)
     if(!val.isEmpty())
         select_origin = true;
 
-    sendChangeTitle(sess.m_ent, select_origin);
+    sendChangeTitle(sess, select_origin);
 }
 
 void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess)
@@ -1519,7 +1520,7 @@ void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
         }
     }
 
-    sendTeamOffer(sess.m_ent, tgt);
+    sendTeamOffer(sess, *tgt->m_client);
 }
 
 void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
@@ -1551,7 +1552,7 @@ void cmdHandler_LeaveTeam(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
 {
-    findTeamMember(*sess.m_ent);
+    sendTeamLooking(sess);
     QString msg = "Finding Team Member";
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::CHAT_TEXT, msg, sess);
@@ -1579,6 +1580,11 @@ void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
 {
+    // it appears that `/assist` should target the target of your current target
+    // but it also seems that what we call m_assist_target_idx is actually
+    // the last friendly target you selected. We need to check target type
+    // and set m_target_idx or m_assist_target_idx depending on result.
+
     Entity *target_ent = getEntity(&sess, getTargetIdx(*sess.m_ent));
     if(target_ent == nullptr)
         return;
@@ -1587,7 +1593,10 @@ void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
     if(new_target == 0)
         return;
 
-    setTarget(*sess.m_ent, new_target);
+    if(target_ent->m_is_villian)
+        setTarget(*sess.m_ent, new_target);
+    else
+        setAssistTarget(*sess.m_ent, new_target);
 
     QString msg = "Now targeting " + target_ent->name() + "'s target";
     sendInfoMessage(MessageChannel::TEAM, msg, sess);
@@ -1614,12 +1623,12 @@ void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)
     if(res==SidekickChangeStatus::SUCCESS)
     {
         // sendSidekickOffer
-        sendSidekickOffer(tgt, sess.m_ent->m_db_id); // tgt gets dialog, src.db_id is named.
+        sendSidekickOffer(*tgt->m_client, sess.m_ent->m_db_id); // tgt gets dialog, src.db_id is named.
     }
     else
     {
         qCDebug(logTeams).noquote() << possible_messages[int(res)-1];
-        messageOutput(MessageChannel::USER_ERROR, possible_messages[int(res)-1], *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, possible_messages[int(res)-1], sess);
     }
 }
 
@@ -1635,7 +1644,7 @@ void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
     {
         msg = "You are not sidekicked with anyone.";
         qCDebug(logTeams).noquote() << msg;
-        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
     }
     else if(res==SidekickChangeStatus::SUCCESS)
     {
@@ -1645,11 +1654,11 @@ void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
         {
             // src is mentor, tgt is sidekick
             msg = QString("You are no longer mentoring %1.").arg(tgt_name);
-            messageOutput(MessageChannel::TEAM, msg, *sess.m_ent);
+            sendInfoMessage(MessageChannel::TEAM, msg, sess);
             if(tgt)
             {
                 msg = QString("%1 is no longer mentoring you.").arg(sess.m_ent->name());
-                messageOutput(MessageChannel::TEAM, msg, *tgt);
+                sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
             }
         }
         else
@@ -1658,16 +1667,16 @@ void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
             if(tgt)
             {
                 msg = QString("You are no longer mentoring %1.").arg(sess.m_ent->name());
-                messageOutput(MessageChannel::TEAM, msg, *tgt);
+                sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
             }
             msg = QString("%1 is no longer mentoring you.").arg(tgt_name);
-            messageOutput(MessageChannel::TEAM, msg, *sess.m_ent);
+            sendInfoMessage(MessageChannel::TEAM, msg, sess);
         }
     }
     else if(res==SidekickChangeStatus::NOT_SIDEKICKED_CURRENTLY)
     {
         msg = QString("You are no longer sidekicked with anyone.");
-        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
     }
 }
 
@@ -1692,15 +1701,15 @@ void cmdHandler_Friend(const QString &cmd, MapClientSession &sess)
     {
         QString msg = "You cannot have more than " + QString::number(g_max_friends) + " friends.";
         qCDebug(logFriends).noquote() << msg;
-        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
     }
     else
     {
         QString msg = "Adding " + tgt->name() + " to your friendlist.";
         qCDebug(logFriends).noquote() << msg;
-        messageOutput(MessageChannel::FRIENDS, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::FRIENDS, msg, sess);
         // Send FriendsListUpdate
-        sendFriendsListUpdate(sess.m_ent, sess.m_ent->m_char->m_char_data.m_friendlist);
+        sendFriendsListUpdate(sess, sess.m_ent->m_char->m_char_data.m_friendlist);
     }
 }
 
@@ -1722,15 +1731,15 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
     if(status==FriendListChangeStatus::FRIEND_REMOVED)
     {
         QString msg = "Removing " + name + " from your friends list.";
-        messageOutput(MessageChannel::FRIENDS, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::FRIENDS, msg, sess);
 
         // Send FriendsListUpdate
-        sendFriendsListUpdate(sess.m_ent, sess.m_ent->m_char->m_char_data.m_friendlist);
+        sendFriendsListUpdate(sess, sess.m_ent->m_char->m_char_data.m_friendlist);
     }
     else
     {
         QString msg = name + " is not on your friends list.";
-        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
     }
 }
 
@@ -1776,11 +1785,37 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
 {
     Entity* const tgt = getEntityFromCommand(cmd, sess);
     if (tgt == nullptr || sess.m_ent == nullptr)
-    {
         return;
+
+    QString msg, tgt_msg;
+    TradeSystemMessages result;
+    result = requestTrade(*sess.m_ent, *tgt);
+
+    switch(result)
+    {
+    case TradeSystemMessages::SRC_ALREADY_IN_TRADE:
+        msg = "You are already in a trade.";
+        break;
+    case TradeSystemMessages::SRC_CONSIDERING_ANOTHER_TRADE:
+        msg = "You are already considering a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_ALREADY_IN_TRADE:
+        msg = tgt->name() + " is already in a trade.";
+        break;
+    case TradeSystemMessages::TGT_CONSIDERING_ANOTHER_TRADE:
+        msg = tgt->name() + " is already considering a trade offer.";
+        break;
+    case TradeSystemMessages::SEND_TRADE_OFFER:
+        sendTradeOffer(*tgt->m_client, sess.m_ent->name()); // send tradeOffer
+        msg = QString("You sent a trade request to %1.").arg(tgt->name());
+        tgt_msg = sess.m_ent->name() + " sent a trade request.";
+        sendInfoMessage(MessageChannel::SERVER, tgt_msg, *tgt->m_client);
+        break;
+    default:
+        msg = "Something went wrong with trade request!"; // this should never happen
     }
 
-    requestTrade(*sess.m_ent, *tgt);
+    sendInfoMessage(MessageChannel::SERVER, msg, *sess.m_ent->m_client);
 }
 
 void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
@@ -1880,9 +1915,9 @@ void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)
     addSidekick(*sess.m_ent,*tgt);
     // Send message to each player
     QString msg = QString("You are now Mentoring %1.").arg(tgt->name()); // Customize for src.
-    messageOutput(MessageChannel::TEAM, msg, *sess.m_ent);
+    sendInfoMessage(MessageChannel::TEAM, msg, sess);
     msg = QString("%1 is now Mentoring you.").arg(sess.m_ent->name()); // Customize for src.
-    messageOutput(MessageChannel::TEAM, msg, *tgt);
+    sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
 }
 
 void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
@@ -1969,7 +2004,32 @@ void cmdHandler_TradeAccept(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    acceptTrade(*sess.m_ent, *from_ent);
+    QString msg, tgt_msg;
+    TradeSystemMessages result;
+    result = acceptTrade(*sess.m_ent, *from_ent);
+
+    switch(result)
+    {
+    case TradeSystemMessages::HAS_SENT_NO_TRADE:
+        msg = "You have not sent a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_RECV_NO_TRADE:
+        msg = QString("%1 has not received a trade offer.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::SRC_RECV_NO_TRADE:
+        msg = QString("You are not considering a trade offer from %1.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::ACCEPTED_TRADE:
+        sendTradeInit(*sess.m_ent->m_client, *from_ent->m_client); // Initiate trade
+        msg = QString("You accepted the trade invite from %1.").arg(from_ent->name());
+        tgt_msg = sess.m_ent->name() + " accepted your trade invite.";
+        sendInfoMessage(MessageChannel::SERVER, tgt_msg, *from_ent->m_client);
+        break;
+    default:
+        msg = "Something went wrong with trade accept!"; // this should never happen
+    }
+
+    sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
@@ -1978,7 +2038,7 @@ void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
     const QStringList args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
     if (args.size() < 4)
     {
-        qWarning() << "Wrong number of arguments for TradeAccept:" << cmd;
+        qWarning() << "Wrong number of arguments for TradeDecline:" << cmd;
         discardTrade(*sess.m_ent);
         return;
     }
@@ -1992,7 +2052,31 @@ void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    declineTrade(*sess.m_ent, *from_ent);
+    QString msg, tgt_msg;
+    TradeSystemMessages result;
+    result = declineTrade(*sess.m_ent, *from_ent);
+
+    switch(result)
+    {
+    case TradeSystemMessages::HAS_SENT_NO_TRADE:
+        msg = "You have not sent a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_RECV_NO_TRADE:
+        msg = QString("%1 has not received a trade offer.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::SRC_RECV_NO_TRADE:
+        msg = QString("You are not considering a trade offer from %1.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::DECLINED_TRADE:
+        msg = QString("You declined the trade invite from %1.").arg(from_ent->name());
+        tgt_msg = sess.m_ent->name() + " declined your trade invite.";
+        sendInfoMessage(MessageChannel::SERVER, tgt_msg, *from_ent->m_client);
+        break;
+    default:
+        msg = "Something went wrong with trade decline!"; // this should never happen
+    }
+
+    sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src)

@@ -1,5 +1,6 @@
 #include "MessageHelpers.h"
 
+#include "DataHelpers.h"
 #include "EntityStorage.h"
 #include "EntityUpdateCodec.h"
 #include "MapClientSession.h"
@@ -18,10 +19,9 @@
 #include <glm/gtx/string_cast.hpp>
 
 
-
 using namespace SEGSEvents;
 
-void sendChatMessage(MessageChannel t,const QString &msg, MapClientSession *src, MapClientSession &tgt)
+void sendChatMessage(MessageChannel t, const QString &msg, MapClientSession *src, MapClientSession &tgt)
 {
     ChatMessage * res = new ChatMessage(t,msg);
     res->m_source_player_id = getIdx(*src->m_ent);
@@ -37,17 +37,13 @@ void sendChatMessage(MessageChannel t,const QString &msg, MapClientSession *src,
 }
 void sendInfoMessage(MessageChannel t, const QString &msg, MapClientSession &tgt)
 {
-
-    InfoMessageCmd * res = new InfoMessageCmd(t,msg);
-    res->m_target_player_id = getIdx(*tgt.m_ent);
-
-    tgt.addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(res));
-
+    uint32_t idx = getIdx(*tgt.m_ent);
+    tgt.addCommand<InfoMessageCmd>(t, idx, msg);
 
     qCDebug(logInfoMsg).noquote() << "InfoMessage:"
-             << "\n  Channel:" << int(res->m_channel_type)
-             << "\n  Target:" << res->m_target_player_id
-             << "\n  Message:" << res->m_msg;
+             << "\n  Channel:" << static_cast<int>(t)
+             << "\n  Target:" << idx
+             << "\n  Message:" << msg;
 }
 
 void storeEntityResponseCommands(BitStream &bs,float time_of_day)

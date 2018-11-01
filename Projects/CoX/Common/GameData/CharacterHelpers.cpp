@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+ */
+
+/*!
+ * @addtogroup NetStructures Projects/CoX/Common/NetStructures
+ * @{
+ */
+
 #include "CharacterHelpers.h"
 #include "Character.h"
 #include <QDateTime>
@@ -72,14 +84,20 @@ void setMaxEnd(Character &c)
     setEnd(c, getMaxEnd(c));
 }
 
-void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
+void setLastCostumeId(Character &c, uint64_t val)
+{
+    c.m_char_data.m_last_costume_id = val;
+}
 
 void setXP(Character &c, uint32_t val)
 {
     c.m_char_data.m_experience_points = val;
 }
 
-void setDebt(Character &c, uint32_t val) { c.m_char_data.m_experience_debt = val; }
+void setDebt(Character &c, uint32_t val)
+{
+    c.m_char_data.m_experience_debt = val;
+}
 
 void setTitles(Character &c, bool prefix, QString generic, QString origin, QString special)
 {
@@ -101,9 +119,20 @@ void setTitles(Character &c, bool prefix, QString generic, QString origin, QStri
     c.m_char_data.m_titles[2] = special;
 }
 
-void setInf(Character &c, uint32_t val) { c.m_char_data.m_influence = val; }
-void setDescription(Character &c, QString val) { c.m_char_data.m_character_description = val; }
-void setBattleCry(Character &c, QString val) { c.m_char_data.m_battle_cry = val; }
+void setInf(Character &c, uint32_t val)
+{
+    c.m_char_data.m_influence = val;
+}
+
+void setDescription(Character &c, QString val)
+{
+    c.m_char_data.m_character_description = val;
+}
+
+void setBattleCry(Character &c, QString val)
+{
+    c.m_char_data.m_battle_cry = val;
+}
 
 void updateLastOnline(Character &c)
 {
@@ -123,3 +152,68 @@ void toggleAFK(Character &c, QString msg)
 {
     toggleAFK(c, !c.m_char_data.m_afk, msg);
 }
+
+
+/*
+ * Titles -- TODO: get titles from texts/English/titles_def
+ */
+static const QStringList g_generic_titles =
+{
+    "NULL",
+    "Awesome",
+    "Bold",
+    "Courageous",
+    "Daring",
+    "Extraordinary",
+    "Famous",
+    "Gallant",
+    "Heroic",
+    "Incomparable",
+    "Legendary",
+    "Magnificent",
+    "Outstanding",
+    "Powerful",
+    "Remarkable",
+    "Startling",
+    "Terrific",
+    "Ultimate",
+    "Valiant",
+    "Wonderful",
+};
+
+// TODO: get titles from texts/English/titles_def
+static const QStringList g_origin_titles =
+{
+    "NULL",
+    "Adept",
+    "Bright",
+    "Curious",
+    "Deductiv",
+    "Exceptional",
+    "Far Seeing",
+    "Glorious",
+    "Honorable",
+    "Indescribable",
+    "Lucky",
+    "Majestic",
+    "Otherworldly",
+    "Phenomenal",
+    "Redoubtable",
+    "Stupendous",
+    "Thoughtful",
+    "Unearthly",
+    "Venturous",
+    "Watchful",
+};
+
+const QString &getGenericTitle(uint32_t val)
+{
+    return g_generic_titles.at(val);
+}
+
+const QString &getOriginTitle(uint32_t val)
+{
+    return g_origin_titles.at(val);
+}
+
+//! @}

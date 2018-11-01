@@ -22,6 +22,7 @@
 #include "GameData/power_definitions.h"
 #include "Common/GameData/CharacterHelpers.h"
 #include "Common/GameData/Character.h"
+#include "Common/GameData/EntityHelpers.h"
 #include "Common/GameData/Team.h"
 #include "Common/GameData/LFG.h"
 #include "Common/Messages/Map/ContactList.h"
@@ -37,146 +38,8 @@
 #include <random>
 
 using namespace SEGSEvents;
-/*
- * Entity Methods
- */
-// Getters
-uint32_t    getIdx(const Entity &e) { return e.m_idx; }
-uint32_t    getDbId(const Entity &e) { return e.m_db_id; }
-uint32_t    getAccessLevel(const Entity &e) { return e.m_entity_data.m_access_level; }
-uint32_t    getTargetIdx(const Entity &e) { return e.m_target_idx; }
-uint32_t    getAssistTargetIdx(const Entity &e) { return e.m_assist_target_idx; }
-glm::vec3   getSpeed(const Entity &e) { return e.m_motion_state.m_speed; }
-float       getBackupSpd(const Entity &e) { return e.m_motion_state.m_backup_spd; }
-float       getJumpHeight(const Entity &e) { return e.m_motion_state.m_jump_height; }
-uint8_t     getUpdateId(const Entity &e) { return e.m_update_id; }
-Destination     getCurrentDestination(const Entity &e) { return e.m_cur_destination; }
-ClientStates    getStateMode(const Entity &e) { return e.m_state_mode; }
 
-// Setters
-void    setDbId(Entity &e, uint8_t val) { e.m_char->m_db_id = val; e.m_db_id = val; }
-void    setMapIdx(Entity &e, uint32_t val) { e.m_entity_data.m_map_idx = val; }
-void    setSpeed(Entity &e, float v1, float v2, float v3)
-{
-    // TODO: we really shouldn't modify surface-mods here. But currently this appears
-    // to be the only way to adjust speed. This is a work-around until a fix can be found.
-    e.m_motion_state.m_surf_mods->max_speed = std::max({v1, v2, v3});
-    e.m_motion_state.m_speed = {v1,v2,v3};
-}
-void    setBackupSpd(Entity &e, float val) { e.m_motion_state.m_backup_spd = val; }
-void    setJumpHeight(Entity &e, float val) { e.m_motion_state.m_jump_height = val; }
-void    setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
-
-void    setTeamID(Entity &e, uint8_t team_id)
-{
-    e.m_has_team = team_id != 0;
-    if(team_id == 0)
-    {
-        delete e.m_team;
-        e.m_team = nullptr;
-    }
-
-    if(!e.m_team)
-        return;
-
-    qDebug().noquote() << "Team Info:"
-                       << "\n  Has Team:" << e.m_has_team
-                       << "\n  ID:" << e.m_team->m_team_idx
-                       << "\n  Size:" << e.m_team->m_team_members.size()
-                       << "\n  Members:" << e.m_team->m_team_members.data();
-}
-
-void    setSuperGroup(Entity &e, int sg_id, QString sg_name, uint32_t sg_rank)
-{
-    // TODO: provide method for updating SuperGroup Colors
-    if(sg_id == 0)
-    {
-        e.m_has_supergroup          = false;
-        e.m_supergroup.m_SG_id      = 0;
-        e.m_supergroup.m_SG_name    = "";
-        e.m_supergroup.m_SG_color1  = 0x996633FF;
-        e.m_supergroup.m_SG_color2  = 0x336699FF;
-        e.m_supergroup.m_SG_rank    = 0;
-    }
-    else
-    {
-        e.m_has_supergroup          = true;
-        e.m_supergroup.m_SG_id      = sg_id;
-        e.m_supergroup.m_SG_name    = sg_name;
-        e.m_supergroup.m_SG_color1  = 0xAA3366FF;
-        e.m_supergroup.m_SG_color2  = 0x66AA33FF;
-        e.m_supergroup.m_SG_rank    = sg_rank;
-    }
-    qDebug().noquote() << "SG Info:"
-             << "\n  Has Team:" << e.m_has_supergroup
-             << "\n  ID:" << e.m_supergroup.m_SG_id
-             << "\n  Name:" << e.m_supergroup.m_SG_name
-             << "\n  Color1:" << e.m_supergroup.m_SG_color1
-             << "\n  Color2:" << e.m_supergroup.m_SG_color2
-             << "\n  Rank:" << e.m_supergroup.m_SG_rank;
-}
-
-void setTarget(Entity &e, uint32_t target_idx)
-{
-    e.m_target_idx = target_idx;
-    setAssistTarget(e);
-}
-
-void setAssistTarget(Entity &e)
-{
-    if(getTargetIdx(e) == 0)
-    {
-        e.m_assist_target_idx = 0;
-        return;
-    }
-
-    Entity *target_ent = getEntity(e.m_client, getTargetIdx(e));
-    if(target_ent == nullptr)
-    {
-        e.m_assist_target_idx = 0;
-        return;
-    }
-
-    // TODO: are there any entity types that are invalid assist targets?
-    e.m_assist_target_idx = getTargetIdx(*target_ent);
-
-    qCDebug(logTarget) << "Assist Target is:" << getAssistTargetIdx(e);
-}
-
-void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
-{
-    e.m_cur_destination.point_idx = point_idx;
-    e.m_cur_destination.location = location;
-}
-
-// For live debugging
-void    setu1(Entity &e, int val) { e.u1 = val; }
-
-// Toggles
-void    toggleFlying(Entity &e) { e.m_motion_state.m_is_flying = !e.m_motion_state.m_is_flying; }
-void    toggleFalling(Entity &e) { e.m_motion_state.m_is_falling = !e.m_motion_state.m_is_falling; }
-void    toggleJumping(Entity &e) { e.m_motion_state.m_is_jumping = !e.m_motion_state.m_is_jumping; }
-void    toggleSliding(Entity &e) { e.m_motion_state.m_is_sliding = !e.m_motion_state.m_is_sliding; }
-
-void toggleStunned(Entity &e)
-{
-    e.m_motion_state.m_is_stunned = !e.m_motion_state.m_is_stunned;
-    // TODO: toggle stunned FX above head
-}
-
-void toggleJumppack(Entity &e)
-{
-    e.m_motion_state.m_has_jumppack = !e.m_motion_state.m_has_jumppack;
-    // TODO: toggle costume part for jetpack back item.
-}
-
-void    toggleControlsDisabled(Entity &e) { e.m_motion_state.m_controls_disabled = !e.m_motion_state.m_controls_disabled; }
-void    toggleFullUpdate(Entity &e) { e.m_full_update = !e.m_full_update; }
-void    toggleControlId(Entity &e) { e.m_has_control_id = !e.m_has_control_id; }
-void    toggleInterp(Entity &e) { e.m_has_interp = !e.m_has_interp; }
-void    toggleMoveInstantly(Entity &e) { e.m_move_instantly = !e.m_move_instantly; }
-void    toggleTeamBuffs(PlayerData &c) { c.m_gui.m_team_buffs = !c.m_gui.m_team_buffs; }
-
+// toggleLFG must be here because it relies on sendInfoMessage()
 void toggleLFG(Entity &e)
 {
     CharacterData *cd = &e.m_char->m_char_data;
@@ -196,35 +59,9 @@ void toggleLFG(Entity &e)
     else
     {
         addLFG(e);
-        sendTeamLooking(&e);
+        sendTeamLooking(*e.m_client);
     }
 }
-
-void toggleCollision(Entity &e)
-{
-    e.m_motion_state.m_no_collision = !e.m_motion_state.m_no_collision;
-
-    if (e.m_motion_state.m_no_collision)
-        e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
-    else
-        e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
-
-    qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.m_motion_state.m_no_collision;
-}
-
-void toggleMovementAuthority(Entity &e)
-{
-    toggleFullUpdate(e);
-    toggleControlId(e);
-}
-
-
-// Misc Methods
-void charUpdateDB(Entity *e)
-{
-    markEntityForDbStore(e,DbStoreFlags::Full);
-}
-
 
 // Poll EntityManager to return Entity by Name or IDX
 Entity * getEntity(MapClientSession *src, const QString &name)
@@ -345,6 +182,39 @@ void positionTest(MapClientSession *tgt)
     sendInfoMessage(MessageChannel::DEBUG_INFO, output, *tgt);
 }
 
+bool isFriendOnline(Entity &src, uint32_t db_id)
+{
+    // TODO: src is needed for mapclient
+    return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
+}
+
+void setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits)
+{
+    g_interpolating = active;
+    g_interpolation_level = level;
+    g_interpolation_bits = bits;
+     QString output = QString("Setting Interpolation Settings (active, level, bits): %1, %2, %3")
+            .arg(g_interpolating)
+            .arg(g_interpolation_level)
+            .arg(g_interpolation_bits);
+     sendInfoMessage(MessageChannel::DEBUG_INFO, output, *sess);
+    qCDebug(logPosition) << output;
+}
+
+QString createMapMenu() // TODO: compileMonorailMenu() as well
+{
+    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
+    for (auto &map_data : getAllMapData())
+    {
+        uint32_t map_idx = map_data.m_map_idx;
+        QString map_name = getDisplayMapName(map_idx);
+        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_idx).arg(map_name));
+    }
+    msg_body.append("</table>");
+
+    return msg_body;
+}
+
 
 /*
  * sendEmail Wrappers for providing access to Email Database
@@ -413,123 +283,20 @@ void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id)
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
-bool isFriendOnline(Entity &src, uint32_t db_id)
-{
-    // TODO: src is needed for mapclient
-    return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
-}
-
-void setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits)
-{
-    g_interpolating = active;
-    g_interpolation_level = level;
-    g_interpolation_bits = bits;
-     QString output = QString("Setting Interpolation Settings (active, level, bits): %1, %2, %3")
-            .arg(g_interpolating)
-            .arg(g_interpolation_level)
-            .arg(g_interpolation_bits);
-     sendInfoMessage(MessageChannel::DEBUG_INFO, output, *sess);
-    qCDebug(logPosition) << output;
-}
-
-QString createMapMenu() // TODO: compileMonorailMenu() as well
-{
-    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
-    for (auto &map_data : getAllMapData())
-    {
-        uint32_t map_idx = map_data.m_map_idx;
-        QString map_name = getDisplayMapName(map_idx);
-        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_idx).arg(map_name));
-    }
-    msg_body.append("</table>");
-
-    return msg_body;
-}
-
 
 /*
- * Titles -- TODO: get titles from texts/English/titles_def
+ * SendUpdate Wrappers
  */
-static const QStringList g_generic_titles =
-{
-    "NULL",
-    "Awesome",
-    "Bold",
-    "Courageous",
-    "Daring",
-    "Extraordinary",
-    "Famous",
-    "Gallant",
-    "Heroic",
-    "Incomparable",
-    "Legendary",
-    "Magnificent",
-    "Outstanding",
-    "Powerful",
-    "Remarkable",
-    "Startling",
-    "Terrific",
-    "Ultimate",
-    "Valiant",
-    "Wonderful",
-};
-
-// TODO: get titles from texts/English/titles_def
-static const QStringList g_origin_titles =
-{
-    "NULL",
-    "Adept",
-    "Bright",
-    "Curious",
-    "Deductiv",
-    "Exceptional",
-    "Far Seeing",
-    "Glorious",
-    "Honorable",
-    "Indescribable",
-    "Lucky",
-    "Majestic",
-    "Otherworldly",
-    "Phenomenal",
-    "Redoubtable",
-    "Stupendous",
-    "Thoughtful",
-    "Unearthly",
-    "Venturous",
-    "Watchful",
-};
-
-const QString &getGenericTitle(uint32_t val)
-{
-    return g_generic_titles.at(val);
-}
-
-const QString &getOriginTitle(uint32_t val)
-{
-    return g_origin_titles.at(val);
-}
-
-/*
- * sendInfoMessage wrapper to provide access to NetStructures
- */
-void messageOutput(MessageChannel ch, const QString &msg, Entity &tgt)
-{
-    sendInfoMessage(ch, msg, *tgt.m_client);
-}
-
-/*
- * SendUpdate Wrappers to provide access to NetStructures
- */
-void sendTimeStateLog(MapClientSession &src, uint32_t control_log)
+void sendTimeStateLog(MapClientSession &sess, uint32_t control_log)
 {
     qCDebug(logSlashCommand, "Sending TimeStateLog %d", control_log);
-    src.addCommand<AddTimeStateLog>(control_log);
+    sess.addCommand<AddTimeStateLog>(control_log);
 }
 
-void sendTimeUpdate(MapClientSession &src, int32_t sec_since_jan_1_2000)
+void sendTimeUpdate(MapClientSession &sess, int32_t sec_since_jan_1_2000)
 {
     qCDebug(logSlashCommand, "Sending TimeUpdate %d", sec_since_jan_1_2000);
-    src.addCommand<TimeUpdate>(sec_since_jan_1_2000);
+    sess.addCommand<TimeUpdate>(sec_since_jan_1_2000);
 }
 
 void sendClientState(MapClientSession &sess, ClientStates client_state)
@@ -545,168 +312,167 @@ void showMapXferList(MapClientSession &sess, bool has_location, glm::vec3 &locat
     sess.addCommand<MapXferList>(has_location, location, name);
 }
 
-void sendFloatingInfo(MapClientSession &tgt, QString &msg, FloatingInfoStyle style, float delay)
+void sendFloatingInfo(MapClientSession &sess, QString &msg, FloatingInfoStyle style, float delay)
 {
     qCDebug(logSlashCommand) << "Sending FloatingInfo:" << msg;
-    tgt.addCommand<FloatingInfo>(tgt.m_ent->m_idx, msg, style, delay);
+    sess.addCommand<FloatingInfo>(sess.m_ent->m_idx, msg, style, delay);
 }
 
-void sendFloatingNumbers(MapClientSession &src, uint32_t tgt_idx, int32_t amount)
+void sendFloatingNumbers(MapClientSession &sess, uint32_t tgt_idx, int32_t amount)
 {
-    qCDebug(logSlashCommand, "Sending %d FloatingNumbers from %d to %d", amount, src.m_ent->m_idx, tgt_idx);
-    src.addCommand<FloatingDamage>(src.m_ent->m_idx, tgt_idx, amount);
+    qCDebug(logSlashCommand, "Sending %d FloatingNumbers from %d to %d", amount, sess.m_ent->m_idx, tgt_idx);
+    sess.addCommand<FloatingDamage>(sess.m_ent->m_idx, tgt_idx, amount);
 }
 
-void sendLevelUp(MapClientSession &src)
+void sendLevelUp(MapClientSession &sess)
 {
     //qCDebug(logSlashCommand) << "Sending LevelUp:" << src.m_idx;
-    src.addCommand<LevelUp>();
+    sess.addCommand<LevelUp>();
 }
 
-void sendEnhanceCombineResponse(Entity *tgt, bool success, bool destroy)
+void sendEnhanceCombineResponse(MapClientSession &sess, bool success, bool destroy)
 {
-    //qCDebug(logSlashCommand) << "Sending CombineEnhanceResponse:" << tgt->m_idx;
-    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<CombineEnhanceResponse>(new CombineEnhanceResponse(success, destroy)));
+    //qCDebug(logSlashCommand) << "Sending CombineEnhanceResponse:" << sess.m_ent->m_idx;
+    sess.addCommand<CombineEnhanceResponse>(success, destroy);
 }
 
-void sendChangeTitle(Entity *tgt, bool select_origin)
+void sendChangeTitle(MapClientSession &sess, bool select_origin)
 {
-    //qCDebug(logSlashCommand) << "Sending ChangeTitle Dialog:" << tgt->m_idx << "select_origin:" << select_origin;
-    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<ChangeTitle>(new ChangeTitle(select_origin)));
+    //qCDebug(logSlashCommand) << "Sending ChangeTitle Dialog:" << sess.m_ent->m_idx << "select_origin:" << select_origin;
+    sess.addCommand<ChangeTitle>(select_origin);
 }
 
-void sendTrayAdd(Entity *tgt, uint32_t pset_idx, uint32_t pow_idx)
+void sendTrayAdd(MapClientSession &sess, uint32_t pset_idx, uint32_t pow_idx)
 {
-    qCDebug(logSlashCommand) << "Sending TrayAdd:" << tgt->m_idx << pset_idx << pow_idx;
-    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TrayAdd>(new TrayAdd(pset_idx, pow_idx)));
+    qCDebug(logSlashCommand) << "Sending TrayAdd:" << sess.m_ent->m_idx << pset_idx << pow_idx;
+    sess.addCommand<TrayAdd>(pset_idx, pow_idx);
 }
 
-void sendFriendsListUpdate(Entity *src, const FriendsList &friends_list)
+void sendFriendsListUpdate(MapClientSession &sess, const FriendsList &friends_list)
 {
     qCDebug(logFriends) << "Sending FriendsList Update.";
-    src->m_client->addCommandToSendNextUpdate(std::unique_ptr<FriendsListUpdate>(new FriendsListUpdate(friends_list)));
+    sess.addCommand<FriendsListUpdate>(friends_list);
 }
 
-void sendSidekickOffer(Entity *tgt, uint32_t src_db_id)
+void sendSidekickOffer(MapClientSession &sess, uint32_t src_db_id)
 {
-    qCDebug(logTeams) << "Sending Sidekick Offer" << tgt->name() << "from" << src_db_id;
-    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<SidekickOffer>(new SidekickOffer(src_db_id)));
+    qCDebug(logTeams) << "Sending Sidekick Offer" << sess.m_ent->name() << "from" << src_db_id;
+    sess.addCommand<SidekickOffer>(src_db_id);
 }
 
-void sendTeamLooking(Entity *tgt)
+void sendTeamLooking(MapClientSession &sess)
 {
     std::vector<LFGMember> list = g_lfg_list;
 
-    qCDebug(logLFG) << "Sending Team Looking to" << tgt->name();
-    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamLooking>(new TeamLooking(list)));
+    qCDebug(logLFG) << "Sending Team Looking to" << sess.m_ent->name();
+    sess.addCommand<TeamLooking>(list);
 }
 
-void sendTeamOffer(Entity *src, Entity *tgt)
+void sendTeamOffer(MapClientSession &src, MapClientSession &tgt)
 {
-    QString name        = src->name();
-    uint32_t db_id      = tgt->m_db_id;
-    TeamOfferType type  = NoMission;
+    QString name        = src.m_ent->name();
+    uint32_t db_id      = tgt.m_ent->m_db_id;
+    TeamOfferType type  = TeamOfferType::NoMission;
 
     // Check for mission, send appropriate TeamOfferType
-    if(src->m_has_team && src->m_team != nullptr)
-        if(src->m_team->m_team_has_mission)
-            type = WithMission; // TODO: Check for invalid missions to send `LeaveMission` instead
+    if(src.m_ent->m_has_team && src.m_ent->m_team != nullptr)
+        if(src.m_ent->m_team->m_team_has_mission)
+            type = TeamOfferType::WithMission; // TODO: Check for invalid missions to send `LeaveMission` instead
 
-    qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << type;
-    tgt->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
+    qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << static_cast<uint8_t>(type);
+    tgt.addCommand<TeamOffer>(db_id, name, type);
 }
 
-void sendFaceEntity(Entity &src, int32_t tgt_idx)
+void sendFaceEntity(MapClientSession &sess, int32_t tgt_idx)
 {
     qCDebug(logOrientation) << QString("Sending Face Entity to %1").arg(tgt_idx);
-    src.m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceEntity>(new FaceEntity(tgt_idx)));
+    sess.addCommand<FaceEntity>(tgt_idx);
 }
 
-void sendFaceLocation(Entity &src, glm::vec3 &loc)
+void sendFaceLocation(MapClientSession &sess, glm::vec3 &loc)
 {
     qCDebug(logOrientation) << QString("Sending Face Location to x: %1 y: %2 z: %3").arg(loc.x).arg(loc.y).arg(loc.z);
-    src.m_client->addCommandToSendNextUpdate(std::unique_ptr<FaceLocation>(new FaceLocation(loc)));
+    sess.addCommand<FaceLocation>(loc);
 }
 
-void sendDoorMessage(MapClientSession &tgt, uint32_t delay_status, QString &msg)
+void sendDoorMessage(MapClientSession &sess, uint32_t delay_status, QString &msg)
 {
     qCDebug(logMapXfers).noquote() << QString("Sending Door Message; delay: %1; msg: %2").arg(delay_status).arg(msg);
-    tgt.addCommand<DoorMessage>(DoorMessageStatus(delay_status), msg);
+    sess.addCommand<DoorMessage>(DoorMessageStatus(delay_status), msg);
 }
 
-void sendBrowser(MapClientSession &tgt, QString &content)
+void sendBrowser(MapClientSession &sess, QString &content)
 {
     qCDebug(logMapEvents) << QString("Sending Browser");
-    tgt.addCommand<Browser>(content);
+    sess.addCommand<Browser>(content);
 }
 
-void sendTradeOffer(const Entity& src, Entity& tgt)
+void sendTradeOffer(MapClientSession &tgt, const QString &name)
 {
-    const QString &name = src.name();
-    const uint32_t db_id = tgt.m_db_id;
+    const uint32_t db_id = tgt.m_ent->m_db_id;
 
     qCDebug(logTrades) << "Sending Trade Offer" << db_id << name;
-    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeOffer>(db_id, name));
+    tgt.addCommand<TradeOffer>(db_id, name);
 }
 
-void sendTradeInit(Entity& src, Entity& tgt)
+void sendTradeInit(MapClientSession &src, MapClientSession &tgt)
 {
-    const uint32_t src_db_id = src.m_db_id;
-    const uint32_t tgt_db_id = tgt.m_db_id;
+    const uint32_t src_db_id = src.m_ent->m_db_id;
+    const uint32_t tgt_db_id = tgt.m_ent->m_db_id;
 
     qCDebug(logTrades) << "Sending Trade Init" << src_db_id << tgt_db_id;
-    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeInit>(src_db_id));
-    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeInit>(tgt_db_id));
+    tgt.addCommand<TradeInit>(src_db_id);
+    src.addCommand<TradeInit>(tgt_db_id);
 }
 
-void sendTradeCancel(Entity& ent, const QString& msg)
+void sendTradeCancel(MapClientSession &sess, const QString &msg)
 {
     qCDebug(logTrades) << "Sending Trade Cancel" << msg;
-    ent.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeCancel>(msg));
+    sess.addCommand<TradeCancel>(msg);
 }
 
-void sendTradeUpdate(Entity& src, Entity& tgt, const TradeMember& trade_src, const TradeMember& trade_tgt)
+void sendTradeUpdate(MapClientSession &src, MapClientSession &tgt, const TradeMember& trade_src, const TradeMember& trade_tgt)
 {
     qCDebug(logTrades) << "Sending Trade Update";
-    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_src, trade_tgt, tgt));
-    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeUpdate>(trade_tgt, trade_src, src));
+    src.addCommand<TradeUpdate>(trade_src, trade_tgt, *tgt.m_ent);
+    tgt.addCommand<TradeUpdate>(trade_tgt, trade_src, *src.m_ent);
 }
 
-void sendTradeSuccess(Entity& src, Entity& tgt)
+void sendTradeSuccess(MapClientSession &src, MapClientSession &tgt)
 {
-    const QString msg_src = "Trade with " + tgt.name() + " was a success.";
-    const QString msg_tgt = "Trade with " + src.name() + " was a success.";
+    const QString msg_src = "Trade with " + tgt.m_ent->name() + " was a success.";
+    const QString msg_tgt = "Trade with " + src.m_ent->name() + " was a success.";
 
     qCDebug(logTrades) << "Sending Trade Success";
-    src.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_src));
-    tgt.m_client->addCommandToSendNextUpdate(std::make_unique<SEGSEvents::TradeSuccess>(msg_tgt));
+    src.addCommand<TradeSuccess>(msg_src);
+    tgt.addCommand<TradeSuccess>(msg_tgt);
 }
 
-void sendContactDialog(MapClientSession &src, QString msg_body, std::vector<ContactEntry> active_contacts)
+void sendContactDialog(MapClientSession &sess, QString msg_body, std::vector<ContactEntry> active_contacts)
 {
     qCDebug(logSlashCommand) << "Sending ContactDialog:" << msg_body;
-    src.addCommand<ContactDialog>(msg_body, active_contacts);
+    sess.addCommand<ContactDialog>(msg_body, active_contacts);
 }
 
-void sendContactDialogYesNoOk(MapClientSession &src, QString msg_body, bool has_yesno)
+void sendContactDialogYesNoOk(MapClientSession &sess, QString msg_body, bool has_yesno)
 {
     qCDebug(logSlashCommand) << "Sending ContactDialogYesNo:" << has_yesno << msg_body;
 
     if(has_yesno)
-        src.addCommand<ContactDialogYesNo>(msg_body);
+        sess.addCommand<ContactDialogYesNo>(msg_body);
     else
-        src.addCommand<ContactDialogOk>(msg_body);
+        sess.addCommand<ContactDialogOk>(msg_body);
 }
 
-void sendContactDialogClose(MapClientSession &src)
+void sendContactDialogClose(MapClientSession &sess)
 {
     qCDebug(logSlashCommand) << "Sending ContactDialogClose";
-    src.addCommand<ContactDialogClose>();
+    sess.addCommand<ContactDialogClose>();
 }
 
-void updateContactStatusList(MapClientSession &src, const Contact &updated_contact_data)
+void updateContactStatusList(MapClientSession &sess, const Contact &updated_contact_data)
 {
-    vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
+    vContactList contacts = sess.m_ent->m_char->m_char_data.m_contacts;
     //find contact
     bool found = false;
 
@@ -725,23 +491,24 @@ void updateContactStatusList(MapClientSession &src, const Contact &updated_conta
         contacts.push_back(updated_contact_data);
 
     //update database contactList
-    src.m_ent->m_char->m_char_data.m_contacts = contacts;
-    qCDebug(logScripts) << "Sending Character Contact Database updated";
+    sess.m_ent->m_char->m_char_data.m_contacts = contacts;
+    markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
+    qCDebug(logSlashCommand) << "Sending Character Contact Database updated";
 
     //Send contactList to client
-    src.addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contacts)));
-    qCDebug(logScripts) << "Sending ContactStatusList";
+    qCDebug(logSlashCommand) << "Sending ContactStatusList";
+    sess.addCommand<ContactStatusList>(contacts);
 }
 
-void sendContactStatusList(MapClientSession &src)
+void sendContactStatusList(MapClientSession &sess)
 {
-    vContactList contacts = src.m_ent->m_char->m_char_data.m_contacts;
+    vContactList contacts = sess.m_ent->m_char->m_char_data.m_contacts;
     //Send contactList to client
-    src.addCommandToSendNextUpdate(std::unique_ptr<ContactStatusList>(new ContactStatusList(contacts)));
-    qCDebug(logScripts) << "Sending ContactStatusList";
+    sess.addCommand<ContactStatusList>(contacts);
+    qCDebug(logSlashCommand) << "Sending ContactStatusList";
 }
 
-void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 &location)
+void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location)
 {
     qCDebug(logSlashCommand) << QString("Sending SendWaypoint: %1 <%2, %3, %4>")
                                 .arg(point_idx)
@@ -749,13 +516,13 @@ void sendWaypoint(MapClientSession &src, int point_idx, glm::vec3 &location)
                                 .arg(location.y, 0, 'f', 1)
                                 .arg(location.z, 0, 'f', 1);
 
-    src.addCommand<SendWaypoint>(point_idx, location);
+    sess.addCommand<SendWaypoint>(point_idx, location);
 }
 
-void sendStance(MapClientSession &src, PowerStance stance)
+void sendStance(MapClientSession &sess, PowerStance &stance)
 {
     qCDebug(logSlashCommand) << "Sending new PowerStance";
-    src.addCommand<SendStance>(stance);
+    sess.addCommand<SendStance>(stance);
 }
 
 void sendDeadNoGurney(MapClientSession &sess)
@@ -788,7 +555,8 @@ void sendDoorAnimExit(MapClientSession &sess, bool force_move)
 
 
 /*
- * usePower here to provide access to messageOutput
+ * usePower and increaseLevel here to provide access to
+ * both Entity and sendInfoMessage
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id)
 {
@@ -846,7 +614,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         {
             if(!target_ent->m_is_villian /*&& !pvp_ok*/)
             {
-                messageOutput(MessageChannel::COMBAT, QString("You cannot target allies with this power."), ent);
+                sendInfoMessage(MessageChannel::COMBAT, QString("You cannot target allies with this power."), *ent.m_client);
                 return;
             }
         }
@@ -854,7 +622,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         {
             if(target_ent->m_is_villian)
             {
-                messageOutput(MessageChannel::COMBAT, QString("You must target allies with this power."), ent);
+                sendInfoMessage(MessageChannel::COMBAT, QString("You must target allies with this power."), *ent.m_client);
                 return;
             }
         }
@@ -871,7 +639,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         }
 
         // Face towards your target
-        sendFaceEntity(ent, tgt_idx);
+        sendFaceEntity(*ent.m_client, tgt_idx);
     }
 
     // Send PowerStance to client
@@ -1036,25 +804,19 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
             }
 
             // Send message to source combat window
-            messageOutput(MessageChannel::COMBAT, from_msg, ent);
+            sendInfoMessage(MessageChannel::COMBAT, from_msg, *ent.m_client);
 
             // Send message to another player target
             if(target_ent->m_type == EntType::PLAYER && tgt_idx != ent.m_idx)
-                messageOutput(MessageChannel::DAMAGE, to_msg, *target_ent);
+                sendInfoMessage(MessageChannel::DAMAGE, to_msg, *target_ent->m_client);
         }
     }
 
     // TODO: Do actual power animations. For now, show silly message to source.
-    QStringList batman_kerpow{"AIEEE!", "ARRRGH!", "AWKKKKKK!", "BAM!", "BANG!", "BAP!",
-                     "BIFF!", "BLOOP!", "BLURP!", "BOFF!", "BONK!", "CLANK!",
-                     "CLASH!", "CLUNK!", "CRAAACK!", "CRASH!", "CRUNCH!", "EEE-YOW!",
-                     "FLRBBBBB!", "GLIPP!", "GLURPP!", "KAPOW!", "KER-PLOP!", "KLONK!",
-                     "KRUNCH!", "OOOFF!", "OUCH!", "OWWW!", "PAM!", "PLOP!",
-                     "POW!", "POWIE!", "QUNCKKK!", "RAKKK!", "RIP!", "SLOSH!",
-                     "SOCK!", "SPLAAT!", "SWAAP!", "SWISH!", "SWOOSH!", "THUNK!",
-                     "THWACK!", "THWAPP!", "TOUCHÉ!", "UGGH!", "URKK!", "VRONK!",
-                     "WHACK!", "WHAMM!", "WHAP!", "ZAM!", "ZAP!", "ZGRUPPP!",
-                     "ZLONK!", "ZLOPP!", "ZLOTT!", "ZOK!", "ZOWIE!", "ZWAPP!"};
+    QStringList batman_kerpow{"BAM!", "BANG!", "BONK!", "CLANK!", "CLASH!",
+                              "CRAAACK!", "CRASH!", "CRUNCH!", "EEE-YOW!",
+                              "KAPOW!", "KER-PLOP!", "OUCH!", "POW!", "TOUCHÉ!",
+                              "UGGH!", "WHACK!", "WHAMM!", "ZAM!", "ZAP!"};
 
     std::random_device rng;
     std::mt19937 urng(rng());
@@ -1075,7 +837,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
 
     // Send message to source
     console_msg = floating_msg + " You hit " + target_ent->name() + " for " + QString::number(damage) + " damage!";
-    messageOutput(MessageChannel::COMBAT, console_msg, ent);
+    sendInfoMessage(MessageChannel::COMBAT, console_msg, *ent.m_client);
 
     // Deal Damage
     sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
@@ -1090,7 +852,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
 
     sendFloatingInfo(*target_ent->m_client, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
     console_msg = floating_msg + " You were hit by " + ent.name() + " for " + QString::number(damage) + " damage!";
-    messageOutput(MessageChannel::COMBAT, console_msg, *target_ent);
+    sendInfoMessage(MessageChannel::COMBAT, console_msg, *target_ent->m_client);
 }
 
 void increaseLevel(Entity &ent)
@@ -1104,14 +866,6 @@ void increaseLevel(Entity &ent)
     sendFloatingInfo(*ent.m_client, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
 }
 
-
-/*
- * Team related helpers
- */
-void findTeamMember(Entity &tgt)
-{
-    sendTeamLooking(&tgt);
-}
 
 /*
  * Lua Functions
@@ -1234,8 +988,7 @@ void giveXp(MapClientSession &sess, int xp)
     uint32_t lvl = getLevel(*sess.m_ent->m_char);
     uint32_t current_xp = getXP(*sess.m_ent->m_char);
 
-    // Calculate XP - Debt difference by server settings?
-
+    // TODO: Calculate XP - Debt difference by server settings?
     uint32_t current_debt = getDebt(*sess.m_ent->m_char);
     if(current_debt > 0)
     {
@@ -1259,8 +1012,8 @@ void giveXp(MapClientSession &sess, int xp)
     setXP(*sess.m_ent->m_char, xp_to_give);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were awarded %1 XP").arg(xp), sess);
     QString msg = "Setting XP to " + QString::number(xp_to_give);
-    uint32_t new_lvl = getLevel(*sess.m_ent->m_char);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were lvl %1 now %2").arg(lvl).arg(new_lvl), sess);
+    uint32_t new_lvl = lvl+1;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You are now ready to level up to %1. Please visit the nearest trainer to finish your level up.").arg(new_lvl), sess);
 
     //This check doesn't show level change
     if(new_lvl != lvl)

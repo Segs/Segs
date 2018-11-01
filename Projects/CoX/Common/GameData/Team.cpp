@@ -267,7 +267,7 @@ uint32_t getSidekickId(const Character &src)
     return src_sk.m_db_id;
 }
 
-SidekickChangeStatus removeSidekick(Entity &src, uint32_t sidekick_id)
+SidekickChangeStatus removeSidekick(Entity &src, uint32_t /*sidekick_id*/)
 {
     //TODO: this function should actually post messages related to de-sidekicking to our target entity.
     QString     msg = "Unable to remove sidekick.";

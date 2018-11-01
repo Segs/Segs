@@ -13,6 +13,7 @@
 #include "WorldSimulation.h"
 
 #include "Common/Servers/Database.h"
+#include "DataHelpers.h"
 #include "Messages/Map/GameCommandList.h"
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
