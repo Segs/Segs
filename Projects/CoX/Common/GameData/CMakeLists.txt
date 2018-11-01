@@ -10,6 +10,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/Contact.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Costume.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Entity.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/EntityHelpers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Friend.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.cpp
@@ -67,6 +68,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterHelpers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Costume.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Entity.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/EntityHelpers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Friend.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Contact.h
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.h

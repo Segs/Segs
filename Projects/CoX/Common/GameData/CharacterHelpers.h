@@ -61,3 +61,9 @@ void    updateLastOnline(Character &c);
 // Toggles
 void    toggleAFK(Character &c, const bool isTrue, QString msg = "");
 void    toggleAFK(Character &c, QString msg = "");
+
+/*
+ * Titles -- TODO: get titles from texts/English/titles_def
+ */
+const QString &getGenericTitle(uint32_t val);
+const QString &getOriginTitle(uint32_t val);

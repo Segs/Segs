@@ -1000,7 +1000,7 @@ void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     CombineResult res=combineEnhancements(*session.m_ent, ev->first_power, ev->second_power);
-    sendEnhanceCombineResponse(session.m_ent, res.success, res.destroyed);
+    sendEnhanceCombineResponse(session, res.success, res.destroyed);
     session.m_ent->m_char->m_char_data.m_has_updated_powers = res.success || res.destroyed;
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
@@ -2294,7 +2294,7 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     // TODO: Check that target is valid, then Do Power!
     QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
     sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    sendFaceLocation(*session.m_ent, ev->location);
+    sendFaceLocation(session, ev->location);
 
     qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 }
@@ -2800,13 +2800,81 @@ void MapInstance::on_email_send_error(EmailSendErrorMessage *msg)
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
 {
     MapClientSession& session = m_session_store.session_from_event(ev);
-    cancelTrade(*session.m_ent);
+
+    if (session.m_ent->m_trade == nullptr)
+    {
+        // Trade already cancelled.
+        // The client sends this many times while closing the trade window for some reason.
+        return;
+    }
+
+    const uint32_t tgt_db_id = session.m_ent->m_trade->getOtherMember(*session.m_ent).m_db_id;
+    Entity* const tgt = getEntityByDBID(session.m_ent->m_client->m_current_map, tgt_db_id);
+    if (tgt == nullptr)
+    {
+        // Only one side left in the game.
+        discardTrade(*session.m_ent);
+
+        const QString msg = "Trade cancelled because the other player left.";
+        sendTradeCancel(session, msg);
+
+        qCDebug(logTrades) << session.m_ent->name() << "cancelled a trade where target has disappeared";
+        return;
+    }
+
+    discardTrade(*session.m_ent);
+    discardTrade(*tgt);
+
+    const QString msg_src = "You cancelled the trade with " + tgt->name() + ".";
+    const QString msg_tgt = session.m_ent->name() + " canceled the trade.";
+    sendTradeCancel(session, msg_src);
+    sendTradeCancel(*tgt->m_client, msg_tgt);
+
+    qCDebug(logTrades) << session.m_ent->name() << "cancelled a trade with" << tgt->name();
 }
 
 void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
 {
     MapClientSession& session = m_session_store.session_from_event(ev);
-    updateTrade(*session.m_ent, ev->m_info);
+
+    Entity* const tgt = getEntityByDBID(session.m_current_map, ev->m_info.m_db_id);
+    if (tgt == nullptr)
+        return;
+
+    QString msg;
+    TradeSystemMessages result;
+    result = updateTrade(*session.m_ent, *tgt, ev->m_info);
+    switch(result)
+    {
+    case TradeSystemMessages::HAS_SENT_NO_TRADE:
+        msg = "You have not sent a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_RECV_NO_TRADE:
+        msg = QString("%1 has not received a trade offer.").arg(tgt->name());
+        break;
+    case TradeSystemMessages::SRC_RECV_NO_TRADE:
+        msg = QString("You are not considering a trade offer from %1.").arg(tgt->name());
+        break;
+    case TradeSystemMessages::SUCCESS:
+    {
+        // send tradeUpdate pkt to client
+        Trade& trade = *session.m_ent->m_trade;
+        TradeMember& trade_src = trade.getMember(*session.m_ent);
+        TradeMember& trade_tgt = trade.getMember(*tgt);
+        sendTradeUpdate(session, *tgt->m_client, trade_src, trade_tgt);
+
+        if (session.m_ent->m_trade->isAccepted())
+        {
+            finishTrade(*session.m_ent, *tgt); // finish handling trade
+            sendTradeSuccess(session, *tgt->m_client); // send tradeSuccess pkt to client
+        }
+        break;
+    }
+    default:
+        msg = "Something went wrong with trade update!"; // this should never happen
+    }
+
+    sendInfoMessage(MessageChannel::SERVER, msg, session);
 }
 
 //! @}

@@ -15,6 +15,7 @@
 
 #include "GameData/Character.h"
 #include "GameData/Entity.h"
+#include "GameData/EntityHelpers.h"
 #include "MapServer.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/CoHMath.h"
