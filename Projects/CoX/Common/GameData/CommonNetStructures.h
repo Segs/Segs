@@ -45,6 +45,17 @@ public:
     virtual void packPartname(const QString &c,BitStream &into) const =0;
     virtual void unpackPartname(BitStream &from,QString &tgt) const =0;
 };
+///
+/// \brief The IndexedStringPacker class is responsible for storing a mapping from string to index
+/// So when sending a new string to the client, the contents can be sent only once, and afterwards the index is used instead.
+///
+class IndexedStringPacker
+{
+public:
+    virtual void addString(const QString &) = 0;
+    /// return index of a string, or 0 if the string has not been added yet.
+    virtual int getIndex(const QString &) const =0;
+};
 extern  void        storeBitsConditional(BitStream &bs, uint8_t numbits, int bits);
 extern  int         getBitsConditional(BitStream &bs, uint32_t numbits);
 extern  void        storePackedBitsConditional(BitStream &bs, uint8_t numbits, int bits);
