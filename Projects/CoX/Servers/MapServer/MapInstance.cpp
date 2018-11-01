@@ -1129,7 +1129,8 @@ QString process_replacement_strings(MapClientSession *sender,const QString &msg_
     if(target_idx > 0)
     {
         Entity   *tgt    = getEntity(sender,target_idx);
-        target_char_name = tgt->name();
+        if(tgt)
+            target_char_name = tgt->name();
     }
     else
         target_char_name = c.getName();

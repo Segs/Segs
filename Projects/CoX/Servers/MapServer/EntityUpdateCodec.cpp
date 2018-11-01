@@ -223,9 +223,9 @@ void sendNetFx(const Entity &src, BitStream &bs)
         storeBitsConditional(bs, 2, fx.origin.type_is_location); // origiType
         if(fx.origin.type_is_location)
         {
-            bs.StoreFloat(fx.target.pos.x); // origin Pos
-            bs.StoreFloat(fx.target.pos.y);
-            bs.StoreFloat(fx.target.pos.z);
+            bs.StoreFloat(fx.origin.pos.x); // origin Pos
+            bs.StoreFloat(fx.origin.pos.y);
+            bs.StoreFloat(fx.origin.pos.z);
         }
         else
         {

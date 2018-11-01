@@ -544,6 +544,11 @@ Power_Data * GameDataStore::editable_power_tpl(uint32_t pcat_idx, uint32_t pset_
     return &m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
 }
 
+int GameDataStore::net_fx_handle(const QString &name)
+{
+    return m_index_based_packer->getIndex(name);
+}
+
 const StoredPowerCategory& GameDataStore::get_power_category(uint32_t pcat_idx)
 {
     return m_all_powers.m_categories.at(pcat_idx);
