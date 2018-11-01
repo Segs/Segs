@@ -41,6 +41,16 @@ inline void prologue(JSONInputArchive &, QString const &) { }
 inline void prologue(BinaryOutputArchive &, QString const &) { }
 inline void prologue(BinaryInputArchive &, QString const &) { }
 
+inline void epilogue(BinaryOutputArchive &, QByteArray const &) { }
+inline void epilogue(BinaryInputArchive &, QByteArray const &) { }
+inline void epilogue(JSONOutputArchive &, QByteArray const &) { }
+inline void epilogue(JSONInputArchive &, QByteArray const &) { }
+
+inline void prologue(JSONOutputArchive &, QByteArray const &) { }
+inline void prologue(JSONInputArchive &, QByteArray const &) { }
+inline void prologue(BinaryOutputArchive &, QByteArray const &) { }
+inline void prologue(BinaryInputArchive &, QByteArray const &) { }
+
 template<class Archive>
 inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, ::QString const & str)
 {
@@ -50,7 +60,7 @@ inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, ::QString const & str)
 template<class Archive>
 inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, ::QByteArray const & str)
 {
-    // make sure we actually have a latin1 string in str
+    // make sure we actually have a latin1 string in str, and not something that has strange ascii chars
     assert(QString(str).toLatin1()==str);
     ar( str.toStdString() );
 }
