@@ -31,7 +31,7 @@ namespace SEGSEvents
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 45
             bs.StorePackedBits(1, m_task_entry_list.size());
 
-            uint32_t loop_count_2 = 1;
+            uint32_t loop_count_2 = 0;
             for(const TaskEntry &task_entry: m_task_entry_list)
             {
 

@@ -67,7 +67,7 @@ public:
 
     uint32_t m_db_id;
     vTaskList m_task_list;
-    bool m_reset_selected_task = false;
+    bool m_reset_selected_task = true;
 
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version);

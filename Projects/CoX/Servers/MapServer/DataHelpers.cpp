@@ -1302,6 +1302,7 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
         if(task_entry_list[i].m_task_list[t].m_task_idx == task.m_task_idx) // maybe npcId instead?
         {
             found = true;
+            qCDebug(logScripts) << "SendUpdateTaskStatusList Updating old task";
             //contact already in list, update task;
             task_entry_list[i].m_task_list.at(t) = task;
             break;
@@ -1313,18 +1314,21 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
 
     if(!found)
     {
+        qCDebug(logScripts) << "SendUpdateTaskStatusList Creating new task";
         uint32_t listSize = task_entry_list.size();
         if(task_entry_list.size() > 0)
         {
+            qCDebug(logScripts) << "SendUpdateTaskStatusList task list not empty";
             task_entry_list[listSize].m_task_list.push_back(task); // Just use last task entry, Should only be one.
         }
         else
         {
+            qCDebug(logScripts) << "SendUpdateTaskStatusList task list empty";
             std::vector<Task> task_list;
             task_list.push_back(task);
             TaskEntry t_entry;
             t_entry.m_db_id = src.m_ent->m_db_id;
-            t_entry.m_reset_selected_task = false;
+            t_entry.m_reset_selected_task = true;
             t_entry.m_task_list = task_list;
             task_entry_list.push_back(t_entry);
         }
