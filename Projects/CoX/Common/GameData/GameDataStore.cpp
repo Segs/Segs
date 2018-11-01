@@ -19,6 +19,8 @@
 #include "Common/GameData/charclass_serializers.h"
 #include "Common/GameData/keybind_serializers.h"
 #include "Common/GameData/npc_serializers.h"
+#include "Common/GameData/fx_definitions.h"
+#include "Common/GameData/fx_serializers.h"
 #include "Common/GameData/power_serializers.h"
 #include "Common/GameData/trick_serializers.h"
 #include "Common/GameData/CommonNetStructures.h"
@@ -26,6 +28,7 @@
 #include "Settings.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QString>
 
 
 namespace
@@ -37,6 +40,40 @@ uint32_t color_to_4ub(const glm::vec3 &rgb)
 {
     return ((uint32_t)rgb[0]) | (((uint32_t)rgb[1])<<8) | (((uint32_t)rgb[2])<<16) | (0xFFu<<24);
 }
+class IndexedPacker final : public IndexedStringPacker
+{
+    std::vector<QString> m_known_strings;
+    QHash<QString,int> m_string_to_index;
+
+public:
+    void sortEntries() {
+        std::sort(m_known_strings.begin(),m_known_strings.end(),[](const QString &a,const QString &b)->bool {
+            // all added strings have been lower-cased, so no need to case-insensitive compare here.
+            return a.compare(b)<0;
+        });
+        // record the new order in map.
+        int i=1;
+        for(const QString &str : m_known_strings)
+            m_string_to_index[str] = i++;
+    }
+
+    // IndexedStringPacker interface
+    void addString(const QString &str)
+    {
+        int idx = m_string_to_index.value(str.toLower(),0);
+        if(idx)
+        {
+            assert(0==m_known_strings[idx-1].compare(str,Qt::CaseInsensitive));
+            return;
+        }
+        m_known_strings.push_back(str.toLower());
+        m_string_to_index[str.toLower()] = m_known_strings.size();
+    }
+    int getIndex(const QString &str) const
+    {
+        return m_string_to_index.value(str.toLower(),0);
+    }
+};
 
 class HashBasedPacker final : public ColorAndPartPacker
 {
@@ -49,7 +86,6 @@ class HashBasedPacker final : public ColorAndPartPacker
             uint32_t color=color_to_4ub(idx.color);
             m_colors.insert_entry(color,color);
         }
-
     }
 public:
     ~HashBasedPacker() = default;
@@ -216,17 +252,21 @@ GameDataStore::GameDataStore()
         qCritical() << "Multiple instances of GameDataStore created in a single process, expect trouble";
     }
     packer_instance = new HashBasedPacker;
+    m_index_based_packer = new IndexedPacker;
 }
 
 GameDataStore::~GameDataStore()
 {
     delete (HashBasedPacker *)packer_instance;
+    delete (IndexedPacker *)m_index_based_packer;
     packer_instance = nullptr;
 }
 
 bool GameDataStore::read_game_data(const QString &directory_path)
 {
     qInfo().noquote() << "Reading game data from" << directory_path << "folder";
+    QElapsedTimer load_timer;
+    load_timer.start();
 
     if (!read_costumes(directory_path))
         return false;
@@ -254,11 +294,19 @@ bool GameDataStore::read_game_data(const QString &directory_path)
         return false;
     if(!read_pi_schedule(directory_path))
         return false;
-    qInfo().noquote() << "Finished reading game data.";
+    if(!read_fx(directory_path))
+        return false;
+    qInfo().noquote() << "Finished reading game data:  done in"<<float(load_timer.elapsed())/1000.0f<<"s";
     {
         TIMED_LOG({
                       static_cast<HashBasedPacker *>(packer_instance)->fill_hashes(*this);
                       m_npc_store.prepare_dictionaries();
+                      auto packer = static_cast<IndexedPacker *>(m_index_based_packer);
+                      for(const FxInfo &fx : m_fx_infos)
+                      {
+                          packer->addString(fx.fxname);
+                      }
+                      packer->sortEntries();
                   },"Postprocessing runtime data .. ");
 
     }
@@ -471,7 +519,14 @@ bool GameDataStore::read_pi_schedule(const QString &directory_path)
 {
     qDebug() << "Loading PI Schedule:";
     return read_data_to<Parse_PI_Schedule, pischedule_i0_requiredCrc>(directory_path, "bin/schedules.bin",
-                                                                   m_pi_schedule);
+                                                                      m_pi_schedule);
+}
+
+bool GameDataStore::read_fx(const QString &directory_path)
+{
+    qDebug() << "Loading FX Information:";
+    return read_data_to<std::vector<struct FxInfo>, fxinfos_i0_requiredCrc>(directory_path, "bin/fxinfo.bin",
+                                                                            m_fx_infos);
 }
 
 const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)

@@ -25,10 +25,10 @@
 #include <glm/ext.hpp>
 #include <chrono>
 
-static glm::mat3    s_identity_matrix = glm::mat3(1.0f);
+static const glm::mat3  s_identity_matrix = glm::mat3(1.0f);
 static int          s_landed_on_ground = 0;
 //static CollInfo     s_last_surf;
-static int          s_reverse_control_dir[6] = {
+static const int s_reverse_control_dir[6] = {
     BinaryControl::BACKWARD,
     BinaryControl::FORWARD,
     BinaryControl::RIGHT,
@@ -132,9 +132,9 @@ void setVelocity(Entity &e) // pmotionSetVel
             else if (press_time >= 75)
             {
                 if (press_time < 75 || press_time >= 100)
-                    control_amounts[i] = (float)(press_time - 100) * 0.004f / 9.0f + 0.6f;
+                    control_amounts[i] = (press_time - 100) * 0.004f / 9.0f + 0.6f;
                 else
-                    control_amounts[i] = std::pow(float(press_time - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
+                    control_amounts[i] = std::pow((press_time - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
             }
             else
                 control_amounts[i] = 0.2f;

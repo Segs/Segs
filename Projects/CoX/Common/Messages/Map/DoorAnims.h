@@ -115,7 +115,7 @@ namespace SEGSEvents
         {
             bs.StorePackedBits(1,13);
         }
-        void serializefrom(BitStream &bs) override
+        void serializefrom(BitStream &/*bs*/) override
         {
             // nothing received from client
         }

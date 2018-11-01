@@ -19,6 +19,7 @@
 #include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/CoHMath.h"
+#include "Common/GameData/Contact.h"
 
 #include <glm/gtc/constants.hpp>
 
@@ -39,11 +40,7 @@ enum class FadeDirection
     Out
 };
 
-struct Destination // aka waypoint
-{
-    int point_idx = 0;
-    glm::vec3 location;
-};
+
 
 // returned by getEntityFromDB()
 struct CharacterFromDB

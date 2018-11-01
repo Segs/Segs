@@ -20,16 +20,16 @@
 #include "GameData/map_definitions.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/power_definitions.h"
-#include "GameData/EntityHelpers.h"
-#include "GameData/CharacterHelpers.h"
-#include "GameData/Character.h"
-#include "GameData/Contact.h"
-#include "GameData/Team.h"
-#include "GameData/LFG.h"
-#include "Messages/Map/EmailHeaders.h"
-#include "Messages/Map/EmailRead.h"
-#include "Messages/EmailService/EmailEvents.h"
-#include "Messages/Map/MapEvents.h"
+#include "Common/GameData/CharacterHelpers.h"
+#include "Common/GameData/Character.h"
+#include "Common/GameData/EntityHelpers.h"
+#include "Common/GameData/Team.h"
+#include "Common/GameData/LFG.h"
+#include "Common/Messages/Map/ContactList.h"
+#include "Common/Messages/Map/EmailHeaders.h"
+#include "Common/Messages/Map/EmailRead.h"
+#include "Common/Messages/EmailService/EmailEvents.h"
+#include "Common/Messages/Map/MapEvents.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -470,6 +470,44 @@ void sendContactDialogClose(MapClientSession &sess)
     sess.addCommand<ContactDialogClose>();
 }
 
+void updateContactStatusList(MapClientSession &sess, const Contact &updated_contact_data)
+{
+    vContactList contacts = sess.m_ent->m_char->m_char_data.m_contacts;
+    //find contact
+    bool found = false;
+
+    for (Contact & contact : contacts)
+    {
+        if(contact.m_npc_id == updated_contact_data.m_npc_id)
+        {
+            found = true;
+            //contact already in list, update contact;
+            contact = updated_contact_data;
+            break;
+        }
+    }
+
+    if(!found)
+        contacts.push_back(updated_contact_data);
+
+    //update database contactList
+    sess.m_ent->m_char->m_char_data.m_contacts = contacts;
+    markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
+    qCDebug(logSlashCommand) << "Sending Character Contact Database updated";
+
+    //Send contactList to client
+    qCDebug(logSlashCommand) << "Sending ContactStatusList";
+    sess.addCommand<ContactStatusList>(contacts);
+}
+
+void sendContactStatusList(MapClientSession &sess)
+{
+    vContactList contacts = sess.m_ent->m_char->m_char_data.m_contacts;
+    //Send contactList to client
+    sess.addCommand<ContactStatusList>(contacts);
+    qCDebug(logSlashCommand) << "Sending ContactStatusList";
+}
+
 void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location)
 {
     qCDebug(logSlashCommand) << QString("Sending SendWaypoint: %1 <%2, %3, %4>")
@@ -495,15 +533,16 @@ void sendDeadNoGurney(MapClientSession &sess)
 
 void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state)
 {
-    qCDebug(logSlashCommand).noquote() << QString("Sending DoorAnimStart: entry<%1, %2, %3>  target<%4, %5, %6>  has_anims: %7  seq_state: %8")
-                                .arg(entry_pos.x, 0, 'f', 1)
-                                .arg(entry_pos.y, 0, 'f', 1)
-                                .arg(entry_pos.z, 0, 'f', 1)
-                                .arg(target_pos.x, 0, 'f', 1)
-                                .arg(target_pos.y, 0, 'f', 1)
-                                .arg(target_pos.z, 0, 'f', 1)
-                                .arg(has_anims)
-                                .arg(seq_state);
+    qCDebug(logSlashCommand).noquote()
+        << QString("Sending DoorAnimStart: entry<%1, %2, %3>  target<%4, %5, %6>  has_anims: %7  seq_state: %8")
+               .arg(entry_pos.x, 0, 'f', 1)
+               .arg(entry_pos.y, 0, 'f', 1)
+               .arg(entry_pos.z, 0, 'f', 1)
+               .arg(target_pos.x, 0, 'f', 1)
+               .arg(target_pos.y, 0, 'f', 1)
+               .arg(target_pos.z, 0, 'f', 1)
+               .arg(has_anims)
+               .arg(seq_state);
 
     sess.addCommand<DoorAnimStart>(entry_pos, target_pos, has_anims, seq_state);
 }
@@ -650,6 +689,31 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     ent.m_queued_powers.push_back(qpowers); // Activation Queue
     ent.m_recharging_powers.push_back(qpowers); // Recharging Queue
 
+    // TODO: Refactor this out
+    QStringList fly_names = {
+        "Combat_Flight",
+        "Fly",
+        "Group_Fly",
+    };
+    if(fly_names.contains(powtpl.m_Name, Qt::CaseInsensitive))
+    {
+        toggleFlying(ent);
+
+        if(getSpeed(ent) == glm::vec3(1.0f, 1.0f, 1.0f))
+            setSpeed(ent, 5.0f, 5.0f, 5.0f);
+        else
+            setSpeed(ent, 1.0f, 1.0f, 1.0f);
+    }
+
+    // TODO: Refactor this out
+    if(powtpl.m_Name == "Super_Speed")
+    {
+        if(getSpeed(ent) == glm::vec3(1.0f, 1.0f, 1.0f))
+            setSpeed(ent, 5.0f, 5.0f, 5.0f);
+        else
+            setSpeed(ent, 1.0f, 1.0f, 1.0f);
+    }
+
     // If there are charges remaining, use them.
     if(ppower->m_is_limited && ppower->m_charges_remaining)
         --ppower->m_charges_remaining;
@@ -732,7 +796,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
                         .arg(QString(powtpl.m_Name));
 
                 if (powtpl.pAttribMod[i].Duration > 0)
-                    to_msg.append(" for a duration of %1").arg(powtpl.pAttribMod[i].Duration);
+                    to_msg.append(QString(" for a duration of %1").arg(powtpl.pAttribMod[i].Duration));
 
                 // Build target specific messages
                 from_msg = QString("You cause ").append(to_msg);
@@ -749,16 +813,10 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     }
 
     // TODO: Do actual power animations. For now, show silly message to source.
-    QStringList batman_kerpow{"AIEEE!", "ARRRGH!", "AWKKKKKK!", "BAM!", "BANG!", "BAP!",
-                     "BIFF!", "BLOOP!", "BLURP!", "BOFF!", "BONK!", "CLANK!",
-                     "CLASH!", "CLUNK!", "CRAAACK!", "CRASH!", "CRUNCH!", "EEE-YOW!",
-                     "FLRBBBBB!", "GLIPP!", "GLURPP!", "KAPOW!", "KER-PLOP!", "KLONK!",
-                     "KRUNCH!", "OOOFF!", "OUCH!", "OWWW!", "PAM!", "PLOP!",
-                     "POW!", "POWIE!", "QUNCKKK!", "RAKKK!", "RIP!", "SLOSH!",
-                     "SOCK!", "SPLAAT!", "SWAAP!", "SWISH!", "SWOOSH!", "THUNK!",
-                     "THWACK!", "THWAPP!", "TOUCHÉ!", "UGGH!", "URKK!", "VRONK!",
-                     "WHACK!", "WHAMM!", "WHAP!", "ZAM!", "ZAP!", "ZGRUPPP!",
-                     "ZLONK!", "ZLOPP!", "ZLOTT!", "ZOK!", "ZOWIE!", "ZWAPP!"};
+    QStringList batman_kerpow{"BAM!", "BANG!", "BONK!", "CLANK!", "CLASH!",
+                              "CRAAACK!", "CRASH!", "CRUNCH!", "EEE-YOW!",
+                              "KAPOW!", "KER-PLOP!", "OUCH!", "POW!", "TOUCHÉ!",
+                              "UGGH!", "WHACK!", "WHAMM!", "ZAM!", "ZAP!"};
 
     std::random_device rng;
     std::mt19937 urng(rng());
@@ -828,14 +886,30 @@ void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation
     Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
 
     forcePosition(*e, loc);
-    e->m_motion_state.m_velocity = {0,0,0};
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx: %1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 
-void giveEnhancement(MapClientSession &sess, const char* e_name, int e_level)
+void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori)
+{
+    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
+    const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
+    if(!npc_def)
+    {
+        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
+        return;
+    }
+
+    int idx = npc_store.npc_idx(npc_def);
+    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
+
+    forcePosition(*e, loc);
+    forceOrientation(*e, ori);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
+}
+
+void giveEnhancement(MapClientSession &sess, QString &name, int e_level)
 {
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
-    QString name = QString::fromUtf8(e_name);
     uint32_t level = e_level;
     QString msg = "You do not have room for any more enhancements!";
 
@@ -914,8 +988,7 @@ void giveXp(MapClientSession &sess, int xp)
     uint32_t lvl = getLevel(*sess.m_ent->m_char);
     uint32_t current_xp = getXP(*sess.m_ent->m_char);
 
-    // Calculate XP - Debt difference by server settings?
-
+    // TODO: Calculate XP - Debt difference by server settings?
     uint32_t current_debt = getDebt(*sess.m_ent->m_char);
     if(current_debt > 0)
     {
@@ -939,8 +1012,8 @@ void giveXp(MapClientSession &sess, int xp)
     setXP(*sess.m_ent->m_char, xp_to_give);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were awarded %1 XP").arg(xp), sess);
     QString msg = "Setting XP to " + QString::number(xp_to_give);
-    uint32_t new_lvl = getLevel(*sess.m_ent->m_char);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were lvl %1 now %2").arg(lvl).arg(new_lvl), sess);
+    uint32_t new_lvl = lvl+1;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You are now ready to level up to %1. Please visit the nearest trainer to finish your level up.").arg(new_lvl), sess);
 
     //This check doesn't show level change
     if(new_lvl != lvl)

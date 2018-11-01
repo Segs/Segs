@@ -19,11 +19,13 @@
 #include "NpcStore.h"
 
 class ColorAndPartPacker;
+class IndexedStringPacker;
 class QString;
 class GameDataStore
 {
-        ColorAndPartPacker *packer_instance = nullptr;
-        LevelExpAndDebt     m_experience_and_debt_per_level;
+        ColorAndPartPacker * packer_instance      = nullptr;
+        IndexedStringPacker *m_index_based_packer = nullptr;
+        LevelExpAndDebt      m_experience_and_debt_per_level;
 
         bool            read_costumes(const QString &directory_path);
         bool            read_colors(const QString &src_filename);
@@ -38,6 +40,7 @@ class GameDataStore
         bool            read_combine_chances(const QString &directory_path);
         bool            read_effectiveness(const QString &directory_path);
         bool            read_pi_schedule(const QString &directory_path);
+        bool            read_fx(const QString &directory_path);
 public:
                         GameDataStore();
                         ~GameDataStore();
@@ -66,6 +69,7 @@ public:
         Parse_Effectiveness         m_effectiveness_above;
         Parse_Effectiveness         m_effectiveness_below;
         Parse_PI_Schedule           m_pi_schedule;
+        std::vector<struct FxInfo>  m_fx_infos;
         float                       m_player_fade_in;
 
         // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)

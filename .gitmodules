@@ -1,0 +1,3 @@
+[submodule "3rd_party/Lutefisk3D"]
+	path = 3rd_party/Lutefisk3D
+	url = https://github.com/Lutefisk3D/lutefisk3d

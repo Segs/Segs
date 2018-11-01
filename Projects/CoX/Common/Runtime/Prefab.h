@@ -58,6 +58,7 @@ struct PrefabStore
     bool loadNamedPrefab(const QString &name, LoadingContext &conv);
     Model *groupModelFind(const QString &path, LoadingContext &ctx);
     GeoStoreDef * groupGetFileEntryPtr(const QString &full_name);
+    void sceneGraphWasReset(); // reset 'loaded' flag on all geostores
 };
 
 } // namespace SEGS

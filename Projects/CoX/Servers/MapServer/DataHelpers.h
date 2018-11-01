@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Messages/Map/MessageChannels.h"
+#include "Common/GameData/Contact.h"
 #include "glm/vec3.hpp"
 #include <vector>
 
@@ -78,6 +79,8 @@ void sendTradeSuccess(MapClientSession &src, MapClientSession &tgt);
 void sendContactDialog(MapClientSession &sess, QString msg_body, std::vector<ContactEntry> active_contacts);
 void sendContactDialogYesNoOk(MapClientSession &sess, QString msg_body, bool has_yesno);
 void sendContactDialogClose(MapClientSession &sess);
+void updateContactStatusList(MapClientSession &sess, const Contact &contact_to_update);
+void sendContactStatusList(MapClientSession &sess);
 void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location);
 void sendStance(MapClientSession &sess, PowerStance &stance);
 void sendDeadNoGurney(MapClientSession &sess);
@@ -95,7 +98,8 @@ void increaseLevel(Entity &ent);
  * Lua Functions
  */
 void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation);
-void giveEnhancement(MapClientSession &sess, const char* name, int level);
+void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori);
+void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);
 void giveEnd(MapClientSession &sess, float end);
 void giveHp(MapClientSession &sess, float hp);
