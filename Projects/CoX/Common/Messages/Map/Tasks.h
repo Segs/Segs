@@ -27,7 +27,7 @@ namespace SEGSEvents
 
         void serializeto(BitStream &bs) const override
         {
-            qDebug() << "Sending packet 45";
+            qCDebug(logMapEvents) << "Sending packet 45";
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 45
             bs.StorePackedBits(1, m_task_entry_list.size());
 
@@ -67,12 +67,12 @@ namespace SEGSEvents
                         bs.StoreString(task.m_location.m_location_name);
                     }
 
-                     qDebug() << "taskEntry Task: " << loop_count_2 << " Entered ";
+                     qCDebug(logTasks) << "taskEntry Task: " << loop_count_2 << " Entered ";
                     ++loop_count_2;
                 }
             }
 
-            qDebug() << "Sent packet 45";
+            qCDebug(logMapEvents) << "Sent packet 45";
         }
         EVENT_IMPL(TaskStatusList)
     };
@@ -90,9 +90,9 @@ namespace SEGSEvents
 
         void serializeto(BitStream &bs) const override
         {
-            qDebug() << "Sending packet 46";
+            qCDebug(logMapEvents) << "Sending packet 46";
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 46
-            qDebug() << "Sending m_selected_task.m_task_idx: " << m_selected_task.m_task_idx;
+            qCDebug(logTasks) << "Sending m_selected_task.m_task_idx: " << m_selected_task.m_task_idx;
             bs.StorePackedBits(1, m_selected_task.m_task_idx);
         }
 
@@ -103,13 +103,11 @@ namespace SEGSEvents
     class TaskListRemoveTeammates : public GameCommandEvent
     {
     public:
-        // [[ev_def:field]
-        Task m_task;
+
         explicit TaskListRemoveTeammates() : GameCommandEvent(MapEventTypes::evTaskListRemoveTeammates){}
         void serializeto(BitStream &bs) const override
         {
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 47
-           //bs.StorePackedBits(1, m_selected_task.m_db_id);
         }
 
         EVENT_IMPL(TaskListRemoveTeammates)
@@ -136,13 +134,10 @@ namespace SEGSEvents
 
         void serializeto(BitStream &bs) const override
         {
-            qDebug() << "Sending packet 75";
+            qCDebug(logMapEvents) << "Sending packet 75";
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 75
-            qDebug() << "Sending m_db_id" << m_db_id;
             bs.StorePackedBits(1, m_db_id);
-            qDebug() << "Sending m_task_idx" << m_task_idx;
             bs.StorePackedBits(1, m_task_idx);
-            qDebug() << "Sending m_task_detail" << m_task_detail;
             bs.StoreString(m_task_detail);
         }
 

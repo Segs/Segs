@@ -113,3 +113,6 @@ void selectTask(MapClientSession &src, Task task);
 void sendTaskStatusList(MapClientSession &src);
 void updateTaskDetail(MapClientSession &src, Task task);
 void removeTask(MapClientSession &src, Task task);
+void train (MapClientSession &sess);
+void setTitle (MapClientSession &sess, QString title);
+void showMapMenu(MapClientSession &sess);

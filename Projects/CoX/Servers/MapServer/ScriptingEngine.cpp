@@ -260,15 +260,17 @@ void ScriptingEngine::registerTypes()
             addNpcWithOrientation(*cl, npc_name, loc, variation, ori);
         },
         "forceOrientation", [](MapClientSession *cl, int entity_idx, glm::vec3 ori)
+        {
+            Entity *e = getEntity(cl, entity_idx);
+            if(e != nullptr)
             {
-                Entity *e = getEntity(cl, entity_idx);
-                if(e != nullptr)
-                {
-                    forceOrientation(*e, ori);
-                    QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entity_idx).arg(ori.x).arg(ori.y).arg(ori.z);
-                    qCDebug(logScripts) << msg;
-                }
+                forceOrientation(*e, ori);
+                QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entity_idx).arg(ori.x).arg(ori.y).arg(ori.z);
+                qCDebug(logScripts) << msg;
+
             }
+        },
+        "mapMenu", showMapMenu
         );
 
     m_private->m_lua.new_usertype<Character>("Character",
@@ -325,7 +327,14 @@ void ScriptingEngine::registerTypes()
         "setInf", [](MapClientSession *cl, int inf)
         {
             setInf(*cl->m_ent->m_char, inf);
+        },
+        "levelUp", train,
+        "setTitle", [](MapClientSession *cl, const char* title)
+        {
+            QString title_string = QString::fromUtf8(title);
+            setTitle(*cl, title_string);
         }
+
     );
 
     m_private->m_lua.new_usertype<Entity>( "Entity",
@@ -370,9 +379,10 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
-    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0){
-            m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
-        }
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
     return callFunc(name,arg1);
 }
 
@@ -382,9 +392,10 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
-    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0){
-            m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
-        }
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
     return callFunc(name,arg1,loc);
 }
 
@@ -394,9 +405,10 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
-    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0){
-            m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
-        }
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
     return callFunc(name,arg1,loc);
 }
 

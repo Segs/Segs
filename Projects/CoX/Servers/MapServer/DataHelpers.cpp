@@ -1174,5 +1174,45 @@ void removeTask(MapClientSession &src, Task task)
     }
 }
 
+void train (MapClientSession &sess)
+{
+    int level = getLevel(*sess.m_ent->m_char)+1;
 
+    // XP must be high enough for the level you're advancing to
+    GameDataStore &data(getGameData());
+    if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
+    {
+        QString msg = "You do not have enough Experience Points to train to the next level!";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        return;
+    }
+
+    qCDebug(logPowers) << "LEVELUP" << sess.m_ent->name() << "to" << level+1
+                       << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data, false) // no temps
+                       << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
+
+    // send levelup pkt to client
+    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
+    sendLevelUp(sess);
+}
+
+void setTitle (MapClientSession &sess, QString title)
+{
+    bool select_origin = false;
+    if(!title.isEmpty())
+          select_origin = true;
+
+    sendChangeTitle(sess, select_origin);
+}
+
+void showMapMenu(MapClientSession &sess)
+{
+    // if has_location == true, then player cannot be more than 400
+    // units away from pos or window will close
+    bool has_location = false;
+    glm::vec3 location = sess.m_ent->m_entity_data.m_pos;
+    QString msg_body = createMapMenu();
+    showMapXferList(sess, has_location, location, msg_body);
+}
 //! @}

@@ -1,3 +1,5 @@
+--- OUTBREAK
+
 LuaBot = {}
 LuaBot.spawned = false;
 LuaBot.contactDialogs = {}
@@ -44,7 +46,9 @@ LuaBot.contact = Contact.new()
 function player_connected(id)
     --Id is player entity Id
     printDebug('player_connected Id: ' .. tostring(id))
-    
+
+    UpdateTasksForZone('OutBreak')
+
     --Spawn LuaBot  NPCID = 1144
     if not LuaBot.spawned then
         LuaBot.expected = true
@@ -59,12 +63,13 @@ function player_connected(id)
             button1 = {"Player Stats","CONTACTLINK_HELLO"},
             button2 = {"Contacts","CONTACTLINK_MAIN"},
             button3 = {"Tasks","CONTACTLINK_MISSIONS"}, -- 4
-            button4 = {"",""} ,
-            button5 = {"Leave","CONTACTLINK_BYE"} ,
+            button4 = {"MapMenu","CONTACTLINK_LONGMISSION"}, -- 4
+            button5 = {"",""} ,
+            button6 = {"Leave","CONTACTLINK_BYE"} ,
         }
     }
 
-    LuaBot.contactDialogs[2] = {
+    LuaBot.contactDialogs[20] = {
         message = [[<img src="npc:1144" align="left"><b>Player Stats</b><br><br>Choose an item below to adjust the corresponding player stat.<br>
                     Don't worry these will not kill you.....permanently.<br>]],
         buttons = {
@@ -75,9 +80,27 @@ function player_connected(id)
             button05 = {"Give 1000 XP","CONTACTLINK_LONGMISSION"} ,
             button06 = {"Give 1000 Debt","CONTACTLINK_SHORTMISSION"} ,
             button07 = {"Give 1000 Inf","CONTACTLINK_ACCEPTLONG"} ,
-            button08 = {"Give Random Inspiration","CONTACTLINK_ACCEPTSHORT"} ,
-            button09 = {"Give Random Enhancement","CONTACTLINK_INTRODUCE"} ,
-            button10 = {"Reset Stats","CONTACTLINK_NOTLEADER"} ,
+            button08 = {"Level up/Train","CONTACTLINK_ACCEPTSHORT"} ,
+            button09 = {"Reset Stats","CONTACTLINK_INTRODUCE"} ,
+            button10 = {"More","CONTACTLINK_NOTLEADER"} ,
+            button11 = {"Back","CONTACTLINK_WRONGMODE"} 
+        }
+    } 
+
+    LuaBot.contactDialogs[21] = {
+        message = [[<img src="npc:1144" align="left"><b>Player Stats Page 2</b><br><br>Choose an item below to adjust the corresponding player stat.<br>
+                    Don't worry these will not kill you.....permanently.<br>]],
+        buttons = {
+            button01 = {"Give Random Inspiration","CONTACTLINK_HELLO"},
+            button02 = {"Give Random Enhancement","CONTACTLINK_MAIN"},
+            button03 = {"Set Title","CONTACTLINK_MISSIONS"},
+            button04 = {"Give Temp Power","CONTACTLINK_LONGMISSION"} ,
+            --button05 = {"Give 1000 XP","CONTACTLINK_LONGMISSION"} ,
+            --button06 = {"Give 1000 Debt","CONTACTLINK_SHORTMISSION"} ,
+            --button07 = {"Give 1000 Inf","CONTACTLINK_ACCEPTLONG"} ,
+            --button08 = {"Give Random Inspiration","CONTACTLINK_ACCEPTSHORT"} ,
+            --button09 = {"Give Random Enhancement","CONTACTLINK_INTRODUCE"} ,
+            --button10 = {"Reset Stats","CONTACTLINK_NOTLEADER"} ,
             button11 = {"Back","CONTACTLINK_WRONGMODE"} 
         }
     } 
@@ -122,7 +145,8 @@ function player_connected(id)
             button04 = {"Set Task to another zone","CONTACTLINK_LONGMISSION"} , -- Test mission complete sounds?
             button05 = {"Complete Task","CONTACTLINK_SHORTMISSION"} ,
             button06 = {"Remove Task","CONTACTLINK_ACCEPTLONG"} ,
-            button07 = {"Back","CONTACTLINK_INTRODUCE"}
+            button07 = {"Task to Atlas Park","CONTACTLINK_ACCEPTSHORT"},
+            button08 = {"Back","CONTACTLINK_INTRODUCE"}
         }
     } 
 
@@ -163,20 +187,27 @@ dialog_button = function(id)
     printDebug("buttonId: " .. tostring(id))
 
     if (LuaBot.id ~= nil) then
-        if(LuaBot.Mode == nil) then -- using mode to reuse button Ids
+        if(LuaBot.settingTitle) then -- Title selection buttons trigger dialog_button
+            LuaBot.settingTitle = false
+            LuaBot.Mode = nil
+        elseif(LuaBot.Mode == nil) then -- using mode to reuse button Ids
             if (id == 1) then
                 printDebug("LuaBot moving to stat mode: " .. tostring(id))
                 LuaBot.Mode = 1 -- Player stats
-                MapClientSession.contact_dialog(client, LuaBot.contactDialogs[2].message, LuaBot.contactDialogs[2].buttons)
+                MapClientSession.contact_dialog(client, LuaBot.contactDialogs[20].message, LuaBot.contactDialogs[20].buttons)
             elseif (id == 2) then
                 printDebug("LuaBot moving to contact mode: " .. tostring(id))
                 LuaBot.Mode = 2 -- Contacts
                 MapClientSession.contact_dialog(client, LuaBot.contactDialogs[3].message, LuaBot.contactDialogs[3].buttons)
+            elseif (id == 3) then
+                LuaBot.Mode = nil
             elseif (id == 4) then
                 printDebug("LuaBot moving to task mode: " .. tostring(id))
                 LuaBot.Mode = 4
                 MapClientSession.contact_dialog(client, LuaBot.contactDialogs[5].message, LuaBot.contactDialogs[5].buttons)
                 Player.AddUpdateContact(LuaBot.contact)
+            elseif (id == 5) then
+                MapClientSession.mapMenu(client)
             end
         elseif (LuaBot.Mode == 1) then
             printDebug("LuaBot in stat mode: " .. tostring(id))
@@ -184,6 +215,8 @@ dialog_button = function(id)
                 Player.SetHp(1)
             elseif (id == 2) then
                 Player.GiveHp(99999) -- Should be max
+            elseif (id == 3) then
+                LuaBot.Mode = nil
             elseif (id == 17) then
                 Player.SetEnd(1)
             elseif (id == 4) then
@@ -195,19 +228,41 @@ dialog_button = function(id)
             elseif (id == 7) then
                 Player.GiveInf(1000)
             elseif (id == 8) then
-                Player.GiveRandomInsp()
+                --Train/Level
+                Player.LevelUp()
             elseif (id == 9) then
-                Player.GiveRandomEnhancement(1)
-            elseif (id == 16 or id == 3) then
-                LuaBot.Mode = nil
-                MapClientSession.contact_dialog(client, LuaBot.contactDialogs[1].message, LuaBot.contactDialogs[1].buttons)
-            elseif (id == 18) then
                 --reset stats
                 Player.GiveHp(99999)
                 Player.GiveEnd(100)
                 Player.SetXp(0)
                 Player.SetDebt(0)
                 Player.SetInf(0)
+            elseif (id == 16 or id == 3) then
+                -- Back
+                LuaBot.Mode = nil
+                MapClientSession.contact_dialog(client, LuaBot.contactDialogs[1].message, LuaBot.contactDialogs[1].buttons)
+            elseif (id == 18) then
+                --More 
+                LuaBot.Mode = 21
+                MapClientSession.contact_dialog(client, LuaBot.contactDialogs[21].message, LuaBot.contactDialogs[21].buttons)
+            end
+        elseif (LuaBot.Mode == 21) then
+            if (id == 1) then
+                Player.GiveRandomInsp()
+            elseif (id == 2) then
+                Player.GiveRandomEnhancement(1)
+            elseif (id == 3) then
+                LuaBot.Mode = nil
+            elseif (id == 4) then
+                Player.SetTitle("You're a hero!")
+                LuaBot.settingTitle = true
+            elseif (id == 5) then
+                --  Not added
+                --Player.GiveTempPower()
+            elseif (id == 16 or id == 3) then
+                -- Back
+                LuaBot.Mode = 1
+                MapClientSession.contact_dialog(client, LuaBot.contactDialogs[20].message, LuaBot.contactDialogs[20].buttons)
             end
 
         elseif (LuaBot.Mode == 2) then -- Contacts
@@ -217,6 +272,8 @@ dialog_button = function(id)
             elseif (id == 2) then
                 LuaBot.contact.currentStanding = LuaBot.contact.currentStanding + 1
                 Player.AddUpdateContact(LuaBot.contact)
+            elseif (id == 3) then
+                LuaBot.Mode = nil
             elseif (id == 4) then
                 LuaBot.contact.currentStanding = LuaBot.contact.currentStanding - 1
                 Player.AddUpdateContact(LuaBot.contact)
@@ -257,6 +314,8 @@ dialog_button = function(id)
                 Player.AddUpdateTask(LuaBot.task)
             elseif (id == 2) then
                 Player.SelectTask(LuaBot.task)
+            elseif (id == 3) then
+                LuaBot.Mode = nil
             elseif (id == 4) then
                 LuaBot.task.description = 'Task Updated - Talked to LuaBot'
                 Player.AddUpdateTask(LuaBot.task)
@@ -272,6 +331,30 @@ dialog_button = function(id)
             elseif (id == 7) then
                 LuaBot.task = Task.new() -- empty task
                 Player.AddUpdateTask(LuaBot.task)
+            elseif (id == 8) then
+                -- Task to LuaBot in Atlas
+
+                LuaBot.task = Task.new()
+                LuaBot.task.dbId = 1 -- 1939 - 200
+                LuaBot.task.taskIdx = 0
+                LuaBot.task.description = "Deliver Bit to LuaBot in Atlas Park"
+                LuaBot.task.owner = "LuaBot"
+                LuaBot.task.detail = "LuaBot in Outbreak requests you to deliver a test bit to LuaBot in Atlas Park. Use the /mapmenu or the mapmenu in LuaBot's contact dialog to travel."
+                LuaBot.task.state = ""
+                LuaBot.task.inProgressMaybe = true
+                LuaBot.task.isComplete = false
+                LuaBot.task.isAbandoned = false
+                LuaBot.task.finishTime = 0
+                LuaBot.task.unknownInt1 = 1
+                LuaBot.task.unknownInt2 = 1
+                LuaBot.task.hasLocation = true
+                LuaBot.task.boardTrain = true
+                LuaBot.task.location = Destination.new()
+                LuaBot.task.location.location = vec3.new(112, 16, -216)
+                LuaBot.task.location.name  = "City_01_01"
+                LuaBot.task.location.mapName = "Atlas Park"
+                Player.AddUpdateTask(LuaBot.task)
+
             elseif (id == 9) then
                 --Reset task - Back
                 LuaBot.task = Task.new()
@@ -316,3 +399,4 @@ contact_call = function(contactIndex)
 
     return ""
 end
+

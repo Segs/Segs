@@ -6,8 +6,8 @@ local enhancements = {
     'Generic_Hold', 'Generic_Run'
 }
 
-local inspirations = { 'Insight', 'Enrage', 'Luck', 'Catch_A_Breath', 'Respite', 'Sturdy',
- 'Break_Free', 'Awaken'
+local inspirations = { 'Insight', 'Enrage', 'Luck', 'Catch_A_Breath', 'Respite',
+ 'Discipline', 'Awaken'
 
 }
 -- Wrapper for Character class
@@ -66,9 +66,17 @@ function Player.SelectTask(task)
     Character.selectTask(client, task)
 end
 
+function Player.LevelUp()
+    Character.levelUp(client)
+end
+
+function Player.SetTitle(title)
+    Character.setTitle(client, title)
+end
+
 --Just for testing
 function Player.GiveRandomInsp()
-    local randomIndex = math.random(1, 8)
+    local randomIndex = math.random(1, 7)
     printDebug(tostring(randomIndex))
     Character.giveInsp(client, inspirations[randomIndex])
 end
@@ -137,5 +145,56 @@ function FindTaskByTaskIdx (taskIdx)
     return task
 end
 
+function UpdateTasksForZone(zone)
+    printDebug("Zone to find tasks for: " .. zone)
+    if vTaskList ~= nil then
+        for key, value in pairs(vTaskList) do
+            printDebug(value.location.mapName)
+            if value.location.mapName == zone then
+                printDebug("zone found")
+                value.boardTrain = false
+                Player.AddUpdateTask(value)
+                break
+            else
+                value.boardTrain = true
+                Player.AddUpdateTask(value)
+            end
+        end
+    end
+end
+
 
 printDebug('global script loaded')
+
+--Notes for scriping
+-- 112, 16, -216
+-- 11 buttons is the max you can have displayed at once. 
+--  Anymore and the client will crash
+--[[
+        Contact Dialog buttons    
+    {"CONTACTLINK_HELLO"                ,1},
+    {"CONTACTLINK_MAIN"                 ,2},
+    {"CONTACTLINK_BYE"                  ,3},
+    {"CONTACTLINK_MISSIONS"             ,4},
+    {"CONTACTLINK_LONGMISSION"          ,5},
+    {"CONTACTLINK_SHORTMISSION"         ,6},
+    {"CONTACTLINK_ACCEPTLONG"           ,7},
+    {"CONTACTLINK_ACCEPTSHORT"          ,8},
+    {"CONTACTLINK_INTRODUCE"            ,9},
+    {"CONTACTLINK_INTRODUCE_CONTACT1"   ,0x0A},
+    {"CONTACTLINK_INTRODUCE_CONTACT2"   ,0x0B},
+    {"CONTACTLINK_ACCEPT_CONTACT2"      ,0x0D},
+    {"CONTACTLINK_ACCEPT_CONTACT2"      ,0x0D},
+    {"CONTACTLINK_GOTOSTORE"            ,0x0E},
+    {"CONTACTLINK_TRAIN"                ,0x0F},
+    {"CONTACTLINK_WRONGMODE"            ,0x10},
+    {"CONTACTLINK_DONTKNOW"             ,0x11},
+    {"CONTACTLINK_NOTLEADER"            ,0x12},
+    {"CONTACTLINK_BADCELLCALL"          ,0x13},
+    {"CONTACTLINK_ABOUT"                ,0x14},
+    {"CONTACTLINK_IDENTIFYCLUE"         ,0x15},
+    {"CONTACTLINK_NEWPLAYERTELEPORT_AP" ,0x16},
+    {"CONTACTLINK_NEWPLAYERTELEPORT_GC" ,0x17},
+    {"CONTACTLINK_FORMTASKFORCE"        ,0x18},
+    {"CONTACTLINK_CHOOSE_TITLE"         ,0x19},
+    {"CONTACTLINK_GOTOTAILOR"           ,0x1A},]]

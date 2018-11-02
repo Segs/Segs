@@ -2029,6 +2029,9 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         // TODO: check if there's a better place to complete the map transfer..
         map_server->session_xfer_complete(session.link()->session_token());
     }
+
+    // Call Lua Connected function.
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
 }
 
 void MapInstance::on_location_visited(LocationVisited *ev)
