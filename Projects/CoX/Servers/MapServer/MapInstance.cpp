@@ -134,6 +134,9 @@ void MapInstance::start(const QString &scenegraph_path)
     {
         qInfo() << "Loading map instance data...";
         m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",EntType::NPC,{}};
+        m_npc_generators.m_generators["EG_PoliceDrone"] = {"Police_Drone",EntType::NPC,{}};
+        m_npc_generators.m_generators["monorail_tunnel"] = {"Car_Monorail",EntType::CAR,{}};
+        m_npc_generators.m_generators["flight_start_128"] = {"Car_Blimp",EntType::CAR,{}};
         for(int i=0; i<7; ++i)
         {
             QString right_whare=QString("Door_Right_Whare_0%1").arg(i);
@@ -148,13 +151,45 @@ void MapInstance::start(const QString &scenegraph_path)
             m_npc_generators.m_generators[right_store] = {right_store,EntType::DOOR,{}};
             QString left_store=QString("Door_Left_Store_0%1").arg(i);
             m_npc_generators.m_generators[left_store] = {left_store,EntType::DOOR,{}};
+            QString left_city_b=QString("Door_City_0%1_L").arg(i);
+            m_npc_generators.m_generators[left_city_b] = {left_store,EntType::DOOR,{}};
+            QString right_city_b=QString("Door_City_0%1_R").arg(i);
+            m_npc_generators.m_generators[right_city_b] = {left_store,EntType::DOOR,{}};
+            QString left_ind=QString("Door_Ind_0%1_L").arg(i);
+            m_npc_generators.m_generators[left_ind] = {left_store,EntType::DOOR,{}};
+            QString right_ind=QString("Door_Ind_0%1_R").arg(i);
+            m_npc_generators.m_generators[right_ind] = {left_store,EntType::DOOR,{}};
+            QString left_res=QString("Door_Res_0%1_L").arg(i);
+            m_npc_generators.m_generators[left_res] = {left_store,EntType::DOOR,{}};
+            QString right_res=QString("Door_Res_0%1_R").arg(i);
+            m_npc_generators.m_generators[right_res] = {left_store,EntType::DOOR,{}};
+            QString left_ruin=QString("Door_Ruin_0%1_L").arg(i);
+            m_npc_generators.m_generators[left_ruin] = {left_store,EntType::DOOR,{}};
+            QString right_ruin=QString("Door_Ruin_0%1_R").arg(i);
+            m_npc_generators.m_generators[right_ruin] = {left_store,EntType::DOOR,{}};
+            QString left_slum=QString("Door_Slum_0%1_L").arg(i);
+            m_npc_generators.m_generators[left_slum] = {left_store,EntType::DOOR,{}};
+            QString right_slum=QString("Door_Slum_0%1_R").arg(i);
+            m_npc_generators.m_generators[right_slum] = {left_store,EntType::DOOR,{}};
+            QString left_store_b=QString("Door_Store_0%1_L").arg(i);
+            m_npc_generators.m_generators[left_store_b] = {left_store,EntType::DOOR,{}};
+            QString right_store_b=QString("Door_Store_0%1_R").arg(i);
+            m_npc_generators.m_generators[right_store_b] = {left_store,EntType::DOOR,{}};
+            QString left_whare_b=QString("Door_Whare_0%1_L").arg(i);
+            m_npc_generators.m_generators[left_whare_b] = {left_store,EntType::DOOR,{}};
+            QString right_whare_b=QString("Door_Whare_0%1_R").arg(i);
+            m_npc_generators.m_generators[right_whare_b] = {left_store,EntType::DOOR,{}};
+            QString sewer_door=QString("Door_Sewer_0%1").arg(i);
+            m_npc_generators.m_generators[sewer_door] = {left_store,EntType::DOOR,{}};
         }
-        m_npc_generators.m_generators["Door_reclpad"] = {"Door_reclpad",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_elevator"] = {"Door_elevator",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_Left_Res_03"] = {"Door_Left_Res_03",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_Right_Res_03"] = {"Door_Right_Res_03",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_Right_Ind_01"] = {"Door_Right_Ind_01",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_Left_Ind_01"] = {"Door_Left_Ind_01",EntType::DOOR,{}};
+        m_npc_generators.m_generators["Door_reclpad"] = {"Door_reclpad",EntType::MAPXFERDOOR,{}};
+        m_npc_generators.m_generators["Door_elevator"] = {"Door_elevator",EntType::MAPXFERDOOR,{}};
+        m_npc_generators.m_generators["Door_Cot_dbl_01"] = {"Door_Cot_dbl_01",EntType::MAPXFERDOOR,{}};
+        m_npc_generators.m_generators["Door_Trial_Door"] = {"Door_Trial_Door",EntType::MAPXFERDOOR,{}};
+        m_npc_generators.m_generators["Door_5col_01_R"] = {"Door_5col_01_R",EntType::MAPXFERDOOR,{}};
+        m_npc_generators.m_generators["Door_Cave_01"] = {"Door_Cave_01",EntType::MAPXFERDOOR,{}};
+        m_npc_generators.m_generators["Door_Cave_02"] = {"Door_Cave_02",EntType::MAPXFERDOOR,{}};
+        m_npc_generators.m_generators["Door_EdenTrial_01"] = {"Door_EdenTrial_01",EntType::MAPXFERDOOR,{}};
 
         bool scene_graph_loaded = false;
         Q_UNUSED(scene_graph_loaded);

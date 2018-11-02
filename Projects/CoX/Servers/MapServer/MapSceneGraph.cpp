@@ -68,38 +68,70 @@ void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function
 }
 static QString convertNpcName(const QString &n)
 {
+    // Outbreak
     if(n.contains("Sergeant_Hicks"))
-    {
         return "Model_SergeantHicks";
-    }
     if (n.contains("Officer_Parks"))
-    {
         return "Model_OfficerParks";
-    }
     if (n.contains("Doctor_Miller"))
-    {
         return "Model_DoctorMiller";
-    }
     if (n.contains("Detective_Wright"))
-    {
         return "Model_DetectiveWright";
-    }
     if (n.contains("Officer_Flint"))
-    {
         return "Model_OfficerFlint";
-    }
     if(n.contains("Paragon_SWAT"))
-    {
-        return "CSE_01";
-    }
+        return "CSE_02";
     if(n.contains("Professor_Hoffman"))
-    {
         return "Model_ProfessorHoffman";
-    }
     if(n.contains("Lt_MacReady"))
-    {
+        return "CSE_01";
+
+    // Atlas Park
+    if(n.contains("Henry_Peter_Wong"))
+        return "Model_HenryWong";
+    if(n.contains("Laurence_Mansfield"))
+        return "Model_LaurenceMansfield";
+    if(n.contains("Iris_Parker"))
+        return "Model_IrisParker";
+    if(n.contains("Sarah_Juarez"))
+        return "Model_SarahJuarez";
+    if(n.contains("Security_Chief_01"))
+        return "Model_SecurityChief";
+    if(n.contains("Security_Chief_04"))
+        return "Model_SecurityChief";
+    if(n.contains("City_Representative"))
+        return "Model_CityRepresentative";
+    if(n.contains("SuperGroupRegistrar"))
+        return "Model_SuperGroupRegistrar";
+    if(n.contains("Charlie"))
+        return "Model_Charlie";
+    if(n.contains("Susan_Davies"))
         return "Model_SusanDavies";
-    }
+    if(n.contains("Antonio_Nash"))
+        return "Model_AntonioNash";
+    if(n.contains("Rick_Davies"))
+        return "Model_RickDavies";
+    if(n.contains("Johnathan_Smythe"))
+        return "Model_JonathanSmythe";
+    if(n.contains("Azuria"))
+        return "Model_Azuria";
+    if(n.contains("MsLiberty"))
+        return "Model_MsLiberty";
+    if(n.contains("Tony_Kord"))
+        return "Model_TonyKord";
+    if(n.contains("Jose_Brogan"))
+        return "Model_JoseBrogan";
+    if(n.contains("Sarah_Peters"))
+        return "Model_SarahPeters";
+    if(n.contains("FreedomCorp_City_01_01"))
+        return "Freedom_Corp_Male_01";
+    if(n.contains("FreedomCorp_City_01_01b"))
+        return "Freedom_Corp_Male_02";
+    if(n.contains("FreedomCorp_City_01_01c"))
+        return "Freedom_Corp_Male_03";
+    if(n.contains("FreedomCorp_City_01_03"))
+        return "Freedom_Corp_Male_04";
+
     return "ChessPawn";
 }
 

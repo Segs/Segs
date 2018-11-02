@@ -22,7 +22,7 @@ void NpcGenerator::generate(MapInstance *map_instance)
     for(const glm::mat4 &v : initial_positions)
     {
         int idx = npc_store.npc_idx(npc_def);
-        Entity *e = map_instance->m_entities.CreateGeneric(getGameData(), *npc_def, idx, 0,type);
+        Entity *e = map_instance->m_entities.CreateGeneric(getGameData(), *npc_def, idx, 0, type);
         e->m_char->setName(makeReadableName(costume_name));
         forcePosition(*e, glm::vec3(v[3]));
         auto valquat = glm::quat_cast(v);
