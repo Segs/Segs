@@ -41,6 +41,7 @@ SEGS_DECLARE_LOGGING_CATEGORY(logAnimations)
 SEGS_DECLARE_LOGGING_CATEGORY(logPowers)
 SEGS_DECLARE_LOGGING_CATEGORY(logTrades)
 SEGS_DECLARE_LOGGING_CATEGORY(logSceneGraph)
+SEGS_DECLARE_LOGGING_CATEGORY(logTasks)
 
 void    setLoggingFilter();
 void    toggleLogging(QString &category);

@@ -177,6 +177,7 @@ void Settings::setDefaultSettings()
         config.setValue("log_trades","false");
         config.setValue("log_scripts","false");
         config.setValue("log_scenegraph","false");
+        config.setValue("log_tasks","false");
     config.endGroup();
 
     config.sync(); // sync changes or they wont be saved to file.

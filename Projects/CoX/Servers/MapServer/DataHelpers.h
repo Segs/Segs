@@ -8,6 +8,7 @@
 #pragma once
 #include "Messages/Map/MessageChannels.h"
 #include "Common/GameData/Contact.h"
+#include "Common/GameData/Task.h"
 #include "glm/vec3.hpp"
 #include <vector>
 
@@ -97,7 +98,7 @@ void increaseLevel(Entity &ent);
 /*
  * Lua Functions
  */
-void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation);
+void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name);
 void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori);
 void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);
@@ -106,3 +107,12 @@ void giveHp(MapClientSession &sess, float hp);
 void giveInf(MapClientSession &sess, int inf);
 void giveInsp(MapClientSession &sess, QString &name);
 void giveXp(MapClientSession &sess, int xp);
+void addListOfTasks(MapClientSession *cl, vTaskList task_list);
+void sendUpdateTaskStatusList(MapClientSession &src, Task task);
+void selectTask(MapClientSession &src, Task task);
+void sendTaskStatusList(MapClientSession &src);
+void updateTaskDetail(MapClientSession &src, Task task);
+void removeTask(MapClientSession &src, Task task);
+void train (MapClientSession &sess);
+void setTitle (MapClientSession &sess, QString title);
+void showMapMenu(MapClientSession &sess);

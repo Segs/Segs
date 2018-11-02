@@ -28,6 +28,7 @@
 #include "Common/GameData/Contact.h"
 #include "Common/GameData/Entity.h"
 #include "Common/GameData/Contact.h"
+#include "Common/GameData/Task.h"
 #define SOL_CHECK_ARGUMENTS 1
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
@@ -154,7 +155,8 @@ void ScriptingEngine::registerTypes()
         "confidantThreshold", &Contact::m_confidant_threshold,
         "friendThreshold", &Contact::m_friend_threshold,
         "completeThreshold", &Contact::m_complete_threshold,
-        "canUseCell", &Contact::m_can_use_cell
+        "canUseCell", &Contact::m_can_use_cell,
+        "contactId", &Contact::m_contact_idx
     );
 
     m_private->m_lua.new_usertype<Destination>("Destination",
@@ -164,6 +166,33 @@ void ScriptingEngine::registerTypes()
         "name", sol::property(&Destination::getLocationName, &Destination::setLocationName),
         "mapName", sol::property(&Destination::getLocationMapName, &Destination::setLocationMapName)
     );
+
+    m_private->m_lua.new_usertype<TaskEntry>("TaskEntry",
+          sol::constructors<TaskEntry()>(),
+          "dbId", &TaskEntry::m_db_id,
+          "taskList", &TaskEntry::m_task_list,
+          "resetSelectedTask", &TaskEntry::m_task_list
+          );
+
+      m_private->m_lua.new_usertype<Task>("Task",
+          sol::constructors<Task()>(),
+          "dbId", &Task::m_db_id,
+          "description", sol::property(&Task::getDescription, &Task::setDescription),
+          "owner", sol::property(&Task::getOwner, &Task::setOwner),
+          "detail", sol::property(&Task::getDetail, &Task::setDetail),
+          "state", sol::property(&Task::getState, &Task::setState),
+          "isComplete", &Task::m_is_complete,
+          "inProgressMaybe", &Task::m_in_progress_maybe,
+          "hasLocation", &Task::m_has_location,
+          "isDetailInvalid", &Task::m_detail_invalid,
+          "location", &Task::m_location,
+          "finishTime", &Task::m_finish_time,
+          "taskIdx", &Task::m_task_idx,
+          "isAbandoned", &Task::m_is_abandoned,
+          "unknownInt1", &Task::m_unknown_1,
+          "unknownInt2", &Task::m_unknown_2,
+          "boardTrain", &Task::m_board_train
+      );
 
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
 
@@ -219,16 +248,29 @@ void ScriptingEngine::registerTypes()
         {
             sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
         },
-        "addNpc", [](MapClientSession *cl, const char* name, glm::vec3 &loc, int variation)
+        "addNpc", [](MapClientSession *cl, const char* npc_def, glm::vec3 &loc, int variation, const char* npc_name)
         {
-            QString npc_name = QString::fromUtf8(name);
-            addNpc(*cl, npc_name, loc, variation);
+            QString npc_def_name = QString::fromUtf8(npc_def);
+            QString name = QString::fromUtf8(npc_name);
+            addNpc(*cl, npc_def_name, loc, variation, name);
         },
         "addNpcWithOrientation", [](MapClientSession *cl, const char* name, glm::vec3 &loc, int variation, glm::vec3 &ori)
         {
             QString npc_name = QString::fromUtf8(name);
             addNpcWithOrientation(*cl, npc_name, loc, variation, ori);
-        }
+        },
+        "forceOrientation", [](MapClientSession *cl, int entity_idx, glm::vec3 ori)
+        {
+            Entity *e = getEntity(cl, entity_idx);
+            if(e != nullptr)
+            {
+                forceOrientation(*e, ori);
+                QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entity_idx).arg(ori.x).arg(ori.y).arg(ori.z);
+                qCDebug(logScripts) << msg;
+
+            }
+        },
+        "mapMenu", showMapMenu
         );
 
     m_private->m_lua.new_usertype<Character>("Character",
@@ -250,7 +292,49 @@ void ScriptingEngine::registerTypes()
         "sendFloatingDamage",sendFloatingNumbers,
         "faceEntity",sendFaceEntity,
         "faceLocation",  sendFaceLocation,
-        "addUpdateContactList", updateContactStatusList
+        "addUpdateContactList", updateContactStatusList,
+        "updateTaskDetail", updateTaskDetail,
+        "addListOfTasks", [](MapClientSession *cl, sol::as_table_t<std::vector<Task>> task_list)
+        {
+            const auto& listMap = task_list.source;
+            vTaskList listToSend;
+            for (const auto& kvp : listMap)
+            {
+                listToSend.push_back(kvp);
+            }
+            addListOfTasks(cl, listToSend);
+        },
+        "addTask", sendUpdateTaskStatusList,
+        "removeTask", removeTask,
+        "selectTask", selectTask,
+        "setWaypoint", sendWaypoint,
+        "setHp", [](MapClientSession *cl, float hp)
+        {
+            setHP(*cl->m_ent->m_char, hp);
+        },
+        "setEnd", [](MapClientSession *cl, float end)
+        {
+            setEnd(*cl->m_ent->m_char, end);
+        },
+        "setXp", [](MapClientSession *cl, int xp)
+        {
+            setXP(*cl->m_ent->m_char, xp);
+        },
+        "setDebt", [](MapClientSession *cl, int debt)
+        {
+            setDebt(*cl->m_ent->m_char, debt);
+        },
+        "setInf", [](MapClientSession *cl, int inf)
+        {
+            setInf(*cl->m_ent->m_char, inf);
+        },
+        "levelUp", train,
+        "setTitle", [](MapClientSession *cl, const char* title)
+        {
+            QString title_string = QString::fromUtf8(title);
+            setTitle(*cl, title_string);
+        }
+
     );
 
     m_private->m_lua.new_usertype<Entity>( "Entity",
@@ -294,6 +378,11 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     m_private->m_lua["client"] = client;
     m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
+    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
     return callFunc(name,arg1);
 }
 
@@ -302,6 +391,11 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     m_private->m_lua["client"] = client;
     m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
+    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
     return callFunc(name,arg1,loc);
 }
 
@@ -310,6 +404,11 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     m_private->m_lua["client"] = client;
     m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
+    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
     return callFunc(name,arg1,loc);
 }
 

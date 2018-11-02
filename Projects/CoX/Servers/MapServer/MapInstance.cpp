@@ -52,6 +52,7 @@
 #include "Messages/Map/MapEvents.h"
 #include "Messages/Map/MapXferRequest.h"
 #include "Messages/Map/MapXferWait.h"
+#include "Messages/Map/Tasks.h"
 
 #include <ace/Reactor.h>
 
@@ -169,6 +170,12 @@ void MapInstance::start(const QString &scenegraph_path)
             m_npc_generators.generate(this);
             }, "Spawning npcs");
         qInfo() << "Loading custom scripts";
+
+        //Global script
+        QString global_scriptname="scripts/global.lua";
+        loadAndRunLua(m_scripting_interface,global_scriptname);
+
+        //Scripts for zone
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
         QString entities_scriptname=m_data_path+'/'+"entities.lua";
@@ -523,6 +530,9 @@ void MapInstance::dispatch( Event *ev )
         case evReceiveContactStatus:
             on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
             break;
+        case evReceiveTaskDetailRequest:
+            on_receive_task_detail_request(static_cast<ReceiveTaskDetailRequest *>(ev));
+        break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
@@ -1023,7 +1033,7 @@ void MapInstance::on_input_state(RecvInputState *st)
     {
         ent->m_has_input_on_timeframe = true;
         setTarget(*ent, st->m_next_state.m_target_idx);
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target",qHash(st->m_next_state.m_target_idx));
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
     }
 
     // Set Orientation
@@ -1996,6 +2006,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     {
         // Send current contact list
         sendContactStatusList(session);
+        sendTaskStatusList(session);
         // Force position and orientation to fix #617 spawn at 0,0,0 bug
         forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
         forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
@@ -2008,6 +2019,9 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),session);
 
         sendServerMOTD(&session);
+
+        // send Lua connection method?
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
     }
     else
     {
@@ -2015,6 +2029,9 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         // TODO: check if there's a better place to complete the map transfer..
         map_server->session_xfer_complete(session.link()->session_token());
     }
+
+    // Call Lua Connected function.
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
 }
 
 void MapInstance::on_location_visited(LocationVisited *ev)
@@ -2402,6 +2419,46 @@ void MapInstance::on_receive_contact_status(ReceiveContactStatus *ev)
     qCDebug(logMapEvents) << "ReceiveContactStatus Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"contact_call",ev->m_srv_idx);
 }
+
+void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    qCDebug(logMapEvents) << "ReceiveTaskDetailRequest Entity: " << session.m_ent->m_idx << "wants detail for task " << ev->m_task_idx;
+    QString detail = "Testind Task Detail Request";
+
+    TaskDetail test_task;
+    test_task.m_task_idx = ev->m_task_idx;
+    test_task.m_db_id = ev->m_db_id;
+
+    vTaskEntryList task_entry_list = session.m_ent->m_char->m_char_data.m_tasks_entry_list;
+    //find task
+    bool found = false;
+
+    for (uint32_t i = 0; i < task_entry_list.size(); ++i)
+    {
+       for(uint32_t t = 0; t < task_entry_list[i].m_task_list.size(); ++t)
+        if(task_entry_list[i].m_task_list[t].m_task_idx == ev->m_task_idx)
+        {
+            found = true;
+            //contact already in list, update task;
+            test_task.m_task_detail = task_entry_list[i].m_task_list[t].m_detail;
+            break;
+        }
+
+       if(found)
+           break;
+    }
+
+    if(!found)
+    {
+       qCDebug(logMapEvents) << "ReceiveTaskDetailRequest m_task_idx: " << ev->m_task_idx << " not found.";
+       test_task.m_task_detail = "Not found";
+    }
+
+    session.addCommandToSendNextUpdate(std::unique_ptr<TaskDetail>(new TaskDetail(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail)));
+}
+
 
 void MapInstance::on_move_inspiration(MoveInspiration *ev)
 {
