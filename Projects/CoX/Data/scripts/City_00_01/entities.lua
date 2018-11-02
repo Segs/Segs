@@ -195,6 +195,11 @@ dialog_button = function(id)
                 printDebug("LuaBot moving to stat mode: " .. tostring(id))
                 LuaBot.Mode = 1 -- Player stats
                 MapClientSession.contact_dialog(client, LuaBot.contactDialogs[20].message, LuaBot.contactDialogs[20].buttons)
+                
+                local LuaBotMission = FindTaskByTaskIdx(0)
+                if(LuaBotMission ~= false) then
+                    resetTask()
+                end
             elseif (id == 2) then
                 printDebug("LuaBot moving to contact mode: " .. tostring(id))
                 LuaBot.Mode = 2 -- Contacts
@@ -357,25 +362,7 @@ dialog_button = function(id)
 
             elseif (id == 9) then
                 --Reset task - Back
-                LuaBot.task = Task.new()
-                LuaBot.task.dbId = 1 -- 1939 - 200
-                LuaBot.task.taskIdx = 0
-                LuaBot.task.description = "Talk with LuaBot"
-                LuaBot.task.owner = "LuaBot"
-                LuaBot.task.detail = "LuaBot Task testing detail........<br><br>Accessing.......<br><br>Accessing.......<br><br>Accessing.......Data not found"
-                LuaBot.task.state = ""
-                LuaBot.task.inProgressMaybe = true
-                LuaBot.task.isComplete = false
-                LuaBot.task.isAbandoned = false
-                LuaBot.task.finishTime = 0
-                LuaBot.task.unknownInt1 = 1
-                LuaBot.task.unknownInt2 = 1
-                LuaBot.task.hasLocation = true
-                LuaBot.task.boardTrain = false
-                LuaBot.task.location = Destination.new()
-                LuaBot.task.location.location = vec3.new(20, 0, 586)
-                LuaBot.task.location.name  = "Outbreak"
-                LuaBot.task.location.mapName = "Outbreak"
+                resetTask()
 
                 LuaBot.Mode = nil
                 MapClientSession.contact_dialog(client, LuaBot.contactDialogs[1].message, LuaBot.contactDialogs[1].buttons)
@@ -384,6 +371,30 @@ dialog_button = function(id)
     end
 
     return ""
+end
+
+function resetTask()
+     --Reset task - Back
+     LuaBot.task = Task.new()
+     LuaBot.task.dbId = 1 -- 1939 - 200
+     LuaBot.task.taskIdx = 0
+     LuaBot.task.description = "Talk with LuaBot"
+     LuaBot.task.owner = "LuaBot"
+     LuaBot.task.detail = "LuaBot Task testing detail........<br><br>Accessing.......<br><br>Accessing.......<br><br>Accessing.......Data not found"
+     LuaBot.task.state = ""
+     LuaBot.task.inProgressMaybe = true
+     LuaBot.task.isComplete = false
+     LuaBot.task.isAbandoned = false
+     LuaBot.task.finishTime = 0
+     LuaBot.task.unknownInt1 = 1
+     LuaBot.task.unknownInt2 = 1
+     LuaBot.task.hasLocation = true
+     LuaBot.task.boardTrain = false
+     LuaBot.task.location = Destination.new()
+     LuaBot.task.location.location = vec3.new(20, 0, 586)
+     LuaBot.task.location.name  = "Outbreak"
+     LuaBot.task.location.mapName = "Outbreak"
+     Player.AddUpdateTask(LuaBot.task)
 end
 
 
