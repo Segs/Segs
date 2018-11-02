@@ -171,10 +171,11 @@ void MapInstance::start(const QString &scenegraph_path)
             }, "Spawning npcs");
         qInfo() << "Loading custom scripts";
 
-        //Global script for zone
+        //Global script
         QString global_scriptname="scripts/global.lua";
         loadAndRunLua(m_scripting_interface,global_scriptname);
 
+        //Scripts for zone
         QString locations_scriptname=m_data_path+'/'+"locations.lua";
         QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
         QString entities_scriptname=m_data_path+'/'+"entities.lua";
@@ -1032,7 +1033,7 @@ void MapInstance::on_input_state(RecvInputState *st)
     {
         ent->m_has_input_on_timeframe = true;
         setTarget(*ent, st->m_next_state.m_target_idx);
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target",qHash(st->m_next_state.m_target_idx));
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
     }
 
     // Set Orientation
@@ -2018,6 +2019,9 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),session);
 
         sendServerMOTD(&session);
+
+        // send Lua connection method?
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
     }
     else
     {

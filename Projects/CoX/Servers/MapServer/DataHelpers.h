@@ -98,7 +98,7 @@ void increaseLevel(Entity &ent);
 /*
  * Lua Functions
  */
-void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation);
+void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name);
 void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori);
 void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);

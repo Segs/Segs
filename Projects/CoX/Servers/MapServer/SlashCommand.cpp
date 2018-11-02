@@ -1308,7 +1308,7 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     QString name = parts[1].toString();
     glm::vec3 offset = glm::vec3 {2,0,1};
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos + offset;
-    addNpc(sess, name, gm_loc, variation);
+    addNpc(sess, name, gm_loc, variation, name);
 }
 
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)

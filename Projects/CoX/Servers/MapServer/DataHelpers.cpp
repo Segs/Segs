@@ -873,7 +873,7 @@ void increaseLevel(Entity &ent)
  */
 //
 
-void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation)
+/*void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -889,6 +889,27 @@ void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation
     forcePosition(*e, loc);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
+*/
+void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name)
+{
+    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
+    const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_name);
+    if(!npc_def)
+    {
+        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
+        return;
+    }
+
+    int idx = npc_store.npc_idx(npc_def);
+    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
+    e->m_char->setName(name);
+
+    forcePosition(*e, loc);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
+
+    auto val = sess.m_current_map->m_scripting_interface->callFuncWithClientContext(&sess, "npc_added", e->m_idx);
+}
+
 
 void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori)
 {

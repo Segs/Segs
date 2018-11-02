@@ -248,10 +248,11 @@ void ScriptingEngine::registerTypes()
         {
             sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
         },
-        "addNpc", [](MapClientSession *cl, const char* name, glm::vec3 &loc, int variation)
+        "addNpc", [](MapClientSession *cl, const char* npc_def, glm::vec3 &loc, int variation, const char* npc_name)
         {
-            QString npc_name = QString::fromUtf8(name);
-            addNpc(*cl, npc_name, loc, variation);
+            QString npc_def_name = QString::fromUtf8(npc_def);
+            QString name = QString::fromUtf8(npc_name);
+            addNpc(*cl, npc_def_name, loc, variation, name);
         },
         "addNpcWithOrientation", [](MapClientSession *cl, const char* name, glm::vec3 &loc, int variation, glm::vec3 &ori)
         {
@@ -304,7 +305,27 @@ void ScriptingEngine::registerTypes()
         "addTask", sendUpdateTaskStatusList,
         "removeTask", removeTask,
         "selectTask", selectTask,
-        "setWaypoint", sendWaypoint
+        "setWaypoint", sendWaypoint,
+        "setHp", [](MapClientSession *cl, float hp)
+        {
+            setHP(*cl->m_ent->m_char, hp);
+        },
+        "setEnd", [](MapClientSession *cl, float end)
+        {
+            setEnd(*cl->m_ent->m_char, end);
+        },
+        "setXp", [](MapClientSession *cl, int xp)
+        {
+            setXP(*cl->m_ent->m_char, xp);
+        },
+        "setDebt", [](MapClientSession *cl, int debt)
+        {
+            setDebt(*cl->m_ent->m_char, debt);
+        },
+        "setInf", [](MapClientSession *cl, int inf)
+        {
+            setInf(*cl->m_ent->m_char, inf);
+        }
     );
 
     m_private->m_lua.new_usertype<Entity>( "Entity",
