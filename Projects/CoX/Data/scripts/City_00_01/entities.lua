@@ -262,8 +262,7 @@ dialog_button = function(id)
                 Player.SetTitle("You're a hero!")
                 LuaBot.settingTitle = true
             elseif (id == 5) then
-                --  Not added
-                --Player.GiveTempPower()
+                Player.GiveRandomTempPower()
             elseif (id == 16 or id == 3) then
                 -- Back
                 LuaBot.Mode = 1

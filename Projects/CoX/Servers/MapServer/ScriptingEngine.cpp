@@ -333,6 +333,29 @@ void ScriptingEngine::registerTypes()
         {
             QString title_string = QString::fromUtf8(title);
             setTitle(*cl, title_string);
+        },
+        "giveTempPower", [](MapClientSession *cl, const char* power)
+        {
+            CharacterData &cd = cl->m_ent->m_char->m_char_data;
+            PowerPool_Info ppool;
+            QString temp_power_set = "Temporary_Powers";
+
+            ppool.m_pcat_idx = getPowerCatByName(temp_power_set);
+            ppool.m_pset_idx = getPowerSetByName(temp_power_set, ppool.m_pcat_idx);
+
+            Parse_PowerSet pset = getGameData().get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
+
+            for(size_t i = 0; i < pset.Available.size(); ++i)
+            {
+                qCDebug(logScripts) << "giveTempPower Name: " << pset.m_Powers[i].m_Name;
+                if(pset.m_Powers[i].m_Name == power)
+                {
+                    qCDebug(logScripts) << "giveTempPower PowerFound";
+                    ppool.m_pow_idx = uint32_t(i);
+                    addPower(cd, ppool);
+                    break;
+                }
+            }
         }
 
     );

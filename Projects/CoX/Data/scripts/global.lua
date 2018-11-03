@@ -10,6 +10,12 @@ local inspirations = { 'Insight', 'Enrage', 'Luck', 'Catch_A_Breath', 'Respite',
  'Discipline', 'Awaken'
 
 }
+
+local tempPowers = {
+    'Jump_Pack', 'Thermite_Cannon', 'Dimensional_Shield', 'EMP_Glove',
+    'Cryoprojection_Bracers'
+
+}
 -- Wrapper for Character class
 
 
@@ -87,6 +93,11 @@ function Player.GiveRandomEnhancement(level)
     Character.giveEnhancement(client, enhancements[randomIndex], level)
 end
 
+function Player.GiveRandomTempPower()
+    local randomIndex = math.random(1, 5)
+    printDebug(tostring(randomIndex))
+    Character.giveTempPower(client, tempPowers[randomIndex])
+end
 
 
 
