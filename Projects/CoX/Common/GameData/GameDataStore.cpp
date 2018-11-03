@@ -315,13 +315,13 @@ bool GameDataStore::read_game_data(const QString &directory_path)
 
 uint32_t GameDataStore::expForLevel(uint32_t lev) const
 {
-    lev = std::max<uint32_t>(0,std::min<uint32_t>(49, lev));
+    lev = std::max<uint32_t>(0,std::min<uint32_t>(expMaxLevel(), lev));
     return m_experience_and_debt_per_level.m_ExperienceRequired.at(lev);
 }
 
 uint32_t GameDataStore::expDebtForLevel(uint32_t lev) const
 {
-    lev = std::max<uint32_t>(0,std::min<uint32_t>(49, lev));
+    lev = std::max<uint32_t>(0,std::min<uint32_t>(expMaxLevel(), lev));
     return m_experience_and_debt_per_level.m_DefeatPenalty.at(lev);
 }
 

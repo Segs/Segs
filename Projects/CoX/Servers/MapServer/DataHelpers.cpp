@@ -1177,7 +1177,8 @@ void removeTask(MapClientSession &src, Task task)
 void train (MapClientSession &sess)
 {
     uint level = getLevel(*sess.m_ent->m_char)+1;
-    if (level > 49)
+    GameDataStore &data(getGameData());
+    if (level > data.expMaxLevel())
     {
         QString msg = "You are already at the max level!";
         qCDebug(logSlashCommand) << msg;
@@ -1186,7 +1187,6 @@ void train (MapClientSession &sess)
     }
 
     // XP must be high enough for the level you're advancing to
-    GameDataStore &data(getGameData());
     if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
     {
         QString msg = "You do not have enough Experience Points to train to the next level!";
