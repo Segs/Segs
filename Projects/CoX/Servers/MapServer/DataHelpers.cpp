@@ -1176,7 +1176,14 @@ void removeTask(MapClientSession &src, Task task)
 
 void train (MapClientSession &sess)
 {
-    int level = getLevel(*sess.m_ent->m_char)+1;
+    uint level = getLevel(*sess.m_ent->m_char)+1;
+    if (level > 49)
+    {
+        QString msg = "You are already at the max level!";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        return;
+    }
 
     // XP must be high enough for the level you're advancing to
     GameDataStore &data(getGameData());
