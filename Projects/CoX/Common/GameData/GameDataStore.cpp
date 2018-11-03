@@ -478,17 +478,27 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "Healing";
-    temppower = editable_power_tpl(26,0,7);    // rest
-    temppower->pAttribMod.push_back(temp);
     temppower = editable_power_tpl(27,0,24);   // medkit
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "Speed_Boost";
     temp.Magnitude = 0.5;
+    temp.Duration = 0.5;
+    temp.name = "Flight";
     temppower = editable_power_tpl(26,0,6);    // sprint
     temppower->pAttribMod.push_back(temp);
+    temp.Magnitude = 5.0;
+  //  temppower = editable_power_tpl(26,0,6);    // superspeed
+  //  temppower->pAttribMod.push_back(temp);
 
-    return true;
+    temp.name = "Regeneration";
+    temppower = editable_power_tpl(26,0,7);    // rest
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "Teleport";
+    //temppower = editable_power_tpl(26,0,7);    // rest
+   // temppower->pAttribMod.push_back(temp);
+            return true;
 }
 
 bool GameDataStore::read_combine_chances(const QString &directory_path)

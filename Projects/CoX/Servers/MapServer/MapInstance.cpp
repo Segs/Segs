@@ -2284,19 +2284,23 @@ void MapInstance::on_activate_power(ActivatePower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_has_input_on_timeframe = true;
-    uint32_t tgt_idx = ev->target_idx;
+    int tgt_idx = ev->target_idx;
 
-    if(ev->target_idx <= 0 || ev->target_idx == session.m_ent->m_idx)
-        tgt_idx = -1;
-
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
+    Entity *target_ent = getEntity(&session, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
+    qWarning() << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
 }
 
 void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_has_input_on_timeframe = true;
+    qWarning() << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 
     // TODO: Check that target is valid, then Do Power!
     QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);

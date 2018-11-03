@@ -12,6 +12,8 @@
 #include "glm/vec3.hpp"
 #include <vector>
 
+#include "Common/GameData/Powers.h"
+
 class QString;
 class Entity;
 class Character;
@@ -92,7 +94,8 @@ void sendDoorAnimExit(MapClientSession &sess, bool force_move);
  * usePower and increaseLevel here to provide access to
  * both Entity and sendInfoMessage
  */
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx);
+void doPower(Entity &ent, QueuedPowers powerinput);
 void increaseLevel(Entity &ent);
 
 /*

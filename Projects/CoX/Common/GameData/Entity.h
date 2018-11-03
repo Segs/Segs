@@ -173,10 +173,10 @@ public:
 
         std::vector<Buffs>          m_buffs;
         QQueue<QueuedPowers>        m_queued_powers;
+        std::vector<QueuedPowers>   m_auto_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
         PowerStance                 m_stance;
         bool                        m_update_buffs  = false;
-
 
         // Animations: Sequencers, NetFx, and TriggeredMoves
         std::vector<NetFx>  m_net_fx;
@@ -240,6 +240,8 @@ public:
 
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
+        bool                validTarget(StoredEntEnum);
+        void                addBuff(Buffs &buff);
 
         const QString &     name() const;
         void                fillFromCharacter(const GameDataStore &data);

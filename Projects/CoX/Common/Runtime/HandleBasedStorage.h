@@ -10,6 +10,7 @@
 #include "Handle.h"
 #include <cassert>
 #include <vector>
+#include "stddef.h"
 
 template <class T>
 struct HandleBasedStorage

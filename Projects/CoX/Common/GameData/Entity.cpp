@@ -43,6 +43,40 @@ void Entity::sendPvP(BitStream &bs)
     bs.StorePackedBits(5,0);
     bs.StoreBits(1,0);
 }
+bool Entity::validTarget(StoredEntEnum target)
+{
+    if (target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate || target == StoredEntEnum::DeadVillain)
+        if (m_char->getHealth() != 0.0)
+            return false;
+    switch(target)
+    {
+        case StoredEntEnum::Any:
+            return true;
+        case StoredEntEnum::Location:        //This is an entety, so never a location
+        case StoredEntEnum::Teleport:        //ditto
+        case StoredEntEnum::None:
+            return false;
+        case StoredEntEnum::DeadVillain:
+        case StoredEntEnum::Enemy:
+        case StoredEntEnum::Foe:
+        case StoredEntEnum::NPC:
+            return m_is_villian;
+        case StoredEntEnum::DeadTeammate:
+        case StoredEntEnum::Teammate:
+        case StoredEntEnum::DeadOrAliveTeammate:        // will need to do a check for teams seperately
+        case StoredEntEnum::Friend:
+        case StoredEntEnum::Caster:
+        case StoredEntEnum::Player:
+        case StoredEntEnum::DeadPlayer:
+            return m_is_hero;
+    }
+}
+void Entity::addBuff(Buffs &buff)
+{
+    m_buffs.push_back(buff);
+    m_update_buffs = true;
+    modifyAttrib(this, buff.m_name, buff.m_value);
+}
 
 void Entity::fillFromCharacter(const GameDataStore &data)
 {

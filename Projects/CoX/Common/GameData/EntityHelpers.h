@@ -57,6 +57,7 @@ void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e, uint32_t target_idx);
 void    setCurrentDestination(Entity &e, int point_idx, glm::vec3 location);
 void    setStateMode(Entity &e, ClientStates state);
+void    modifyAttrib(Entity &e, QString name, float value);
 
 // For live debugging
 void    setu1(Entity &e, int val);

@@ -18,7 +18,7 @@
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
 #include <glm/gtx/vector_query.hpp>
-
+#include "DataHelpers.h"
 void World::update(const ACE_Time_Value &tick_timer)
 {
     ACE_Time_Value delta;
@@ -91,18 +91,19 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     if(e->m_queued_powers.size() > 0)
     {
         QueuedPowers &qpow = e->m_queued_powers.front();
-        qpow.m_activate_period -= (float(msec)/1000);
+        qpow.m_time_to_activate -= (float(msec)/1000);
 
-        // this must come before the activation_period check
-        // to ensure that the queued power ui-effect is reset properly
-        if(qpow.m_activation_state == false)
-        {
+        if(qpow.m_time_to_activate <= 0){
+            CharacterPower * ppower = nullptr;
+            ppower = getOwnedPowerByVecIdx(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx);
+            const Power_Data powtpl = ppower->getPowerTemplate();
+            if (powtpl.Type == PowerType::Toggle)
+                e->m_auto_powers.push_back(qpow);
+            else doPower(*e, qpow);
+            qpow.m_activation_state = false;
             e->m_queued_powers.dequeue(); // remove first from queue
             e->m_char->m_char_data.m_has_updated_powers = true;
         }
-
-        if(qpow.m_activate_period <= 0)
-            qpow.m_activation_state = false;
     }
 
     // Recharging Timers -- iterate through and remove finished timers
@@ -112,35 +113,53 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
 
         if(rpow_idx->m_recharge_time <= 0)
         {
-            PowerVecIndexes power_idx(rpow_idx->m_pow_idxs);
             rpow_idx = e->m_recharging_powers.erase(rpow_idx);
-
+/*
             // Check if rpow is default power, if so usePower again
             if(e->m_char->m_char_data.m_trays.m_has_default_power)
             {
                 if(power_idx.m_pset_vec_idx == e->m_char->m_char_data.m_trays.m_default_pset_idx
                         && power_idx.m_pow_vec_idx == e->m_char->m_char_data.m_trays.m_default_pow_idx)
                 {
-                    usePower(*e, power_idx.m_pset_vec_idx, power_idx.m_pow_vec_idx, getTargetIdx(*e), getTargetIdx(*e));
+                    usePower(*e, power_idx.m_pset_vec_idx, power_idx.m_pow_vec_idx, getTargetIdx(*e));
                 }
             }
-
+*/
             e->m_char->m_char_data.m_has_updated_powers = true;
         }
         else
             ++rpow_idx;
-    }
+        }
 
+    // Auto and Toggle Power Activation Timers
+    for(auto rpow_idx = e->m_auto_powers.begin(); rpow_idx != e->m_auto_powers.end(); /*rpow_idx updated inside loop*/ )
+    {
+        rpow_idx->m_recharge_time -= (float(msec)/1000);
+
+        if(rpow_idx->m_recharge_time <= 0)
+        {
+            CharacterPower * ppower = nullptr;
+            ppower = getOwnedPowerByVecIdx(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx);
+            const Power_Data powtpl = ppower->getPowerTemplate();
+            doPower(*e, *rpow_idx.base());
+                rpow_idx->m_recharge_time += 1 + powtpl.ActivatePeriod;
+                qWarning() << "reupped";
+        }
+        ++rpow_idx;
+    }
     // Buffs
     for(auto buff_idx = e->m_buffs.begin(); buff_idx!=e->m_buffs.end(); /*buff_idx updated inside loop*/)
     {
         buff_idx->m_activate_period -= (float(msec)/1000); // activate period is in minutes
 
         if(buff_idx->m_activate_period <= 0)
-            buff_idx = e->m_buffs.erase(buff_idx);
+        {
+
+            buff_idx = e->m_buffs.erase(buff_idx);//remove buff: modifyAttrib(buff_idx->m_name, buff_idx->m_value)
+            }
         else
             ++buff_idx;
-    }
+        }
 }
 
 bool World::isPlayerDead(Entity *e)
@@ -163,7 +182,7 @@ void World::regenHealthEnd(Entity *e, uint32_t msec)
         float hp = getHP(*e->m_char);
         float end = getEnd(*e->m_char);
 
-        float regeneration = hp * (1.0f/20.0f) * float(msec)/1000/12;
+        float regeneration = e->m_char->m_char_data.m_current_attribs.m_Regeneration * (1.0f/20.0f) * float(msec)/1000/12;
         float recovery = end * (1.0f/15.0f) * float(msec)/1000/12;
         setHP(*e->m_char, hp + regeneration);
         setEnd(*e->m_char, end + recovery);
