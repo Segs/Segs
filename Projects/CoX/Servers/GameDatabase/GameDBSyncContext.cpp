@@ -547,7 +547,7 @@ bool GameDbSyncContext::fillEmailRecipientId(const FillEmailRecipientIdRequestDa
 
     result.m_sender_id = data.m_sender_id;
     result.m_sender_name = data.m_sender_name;
-    result.m_recipient_name = data.m_recipient_name
+    result.m_recipient_name = data.m_recipient_name;
     result.m_subject = data.m_subject;
     result.m_message = data.m_message;
     result.m_timestamp = data.m_timestamp;
