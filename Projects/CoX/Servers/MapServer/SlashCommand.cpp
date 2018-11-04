@@ -1905,7 +1905,6 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
-    sendEmailHeaders(sess);
 }
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
@@ -1913,10 +1912,6 @@ void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
     uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
     readEmailMessage(sess, id);
-
-    QString msg = "Opening Email ID: " + QString::number(id);
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)

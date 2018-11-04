@@ -17,49 +17,19 @@ namespace SEGSEvents
 
 enum EmailEventTypes : uint32_t
 {
-    evEmailHeaderRequest = Internal_EventTypes::ID_LAST_Internal_EventTypes,
-    evEmailHeaderResponse,
-    evEmailHeadersToClientMessage,
+    evEmailHeadersToClientMessage = Internal_EventTypes::ID_LAST_Internal_EventTypes,
+    evEmailHeaderToClientMessage,
     evEmailReadRequest,
     evEmailReadResponse,
     evEmailSendMessage,
     evEmailSendErrorMessage,
+    evEmailCreateStatusMessage,
     evEmailDeleteMessage,
     evEmailWasReadByRecipientMessage
 };
 
 // when tokens are brought up, use sess.link()->session_token()
 // 'id' below is the email id
-
-struct EmailHeaderRequestData
-{
-    uint32_t m_sender_id;
-    QString m_sender_name;
-    QString m_subject;
-    uint32_t m_timestamp;
-
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar(m_sender_id, m_sender_name, m_subject, m_timestamp);
-    }
-};
-
-struct EmailHeaderResponseData
-{
-    uint32_t m_email_id;
-    QString m_sender_name;
-    QString m_subject;
-    uint32_t m_timestamp;
-
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar(m_email_id, m_sender_name, m_subject, m_timestamp);
-    }
-};
-//[[ev_def:macro]]
-TWO_WAY_MESSAGE(EmailEventTypes,EmailHeader)
 
 struct EmailHeadersToClientData
 {
@@ -74,6 +44,22 @@ struct EmailHeadersToClientData
 };
 //[[ev_def:macro]]
 ONE_WAY_MESSAGE(EmailEventTypes,EmailHeadersToClient)
+
+struct EmailHeaderToClientData
+{
+    uint32_t m_email_id;
+    QString m_sender_name;
+    QString m_subject;
+    uint32_t m_timestamp;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_sender_name, m_subject, m_timestamp);
+    }
+};
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(EmailEventTypes,EmailHeaderToClient)
 
 struct EmailReadRequestData
 {
@@ -158,5 +144,19 @@ struct EmailWasReadByRecipientData
 };
 //[[ev_def:macro]]
 ONE_WAY_MESSAGE(EmailEventTypes,EmailWasReadByRecipient)
+
+struct EmailCreateStatusData
+{
+    bool m_status;
+    QString m_recipient_name;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_status, m_recipient_name);
+    }
+};
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(EmailEventTypes,EmailCreateStatus)
 
 } // end of SEGSEvent namespace
