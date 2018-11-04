@@ -62,10 +62,11 @@ function player_connected(id)
         buttons =  {
             button1 = {"Player Stats","CONTACTLINK_HELLO"},
             button2 = {"Contacts","CONTACTLINK_MAIN"},
-            button3 = {"Tasks","CONTACTLINK_MISSIONS"}, -- 4
-            button4 = {"MapMenu","CONTACTLINK_LONGMISSION"}, -- 4
-            button5 = {"",""} ,
-            button6 = {"Leave","CONTACTLINK_BYE"} ,
+            button3 = {"Tasks","CONTACTLINK_MISSIONS"}, 
+            button4 = {"MapMenu","CONTACTLINK_LONGMISSION"}, 
+            button5 = {"Clues","CONTACTLINK_SHORTMISSION"}, 
+            button6 = {"",""} ,
+            button7 = {"Leave","CONTACTLINK_BYE"} ,
         }
     }
 
@@ -94,7 +95,7 @@ function player_connected(id)
             button01 = {"Give Random Inspiration","CONTACTLINK_HELLO"},
             button02 = {"Give Random Enhancement","CONTACTLINK_MAIN"},
             button03 = {"Set Title","CONTACTLINK_MISSIONS"},
-            button04 = {"Give Temp Power","CONTACTLINK_LONGMISSION"} ,
+            button04 = {"Give Random Temp Power","CONTACTLINK_LONGMISSION"} ,
             --button05 = {"Give 1000 XP","CONTACTLINK_LONGMISSION"} ,
             --button06 = {"Give 1000 Debt","CONTACTLINK_SHORTMISSION"} ,
             --button07 = {"Give 1000 Inf","CONTACTLINK_ACCEPTLONG"} ,
@@ -146,6 +147,21 @@ function player_connected(id)
             button05 = {"Complete Task","CONTACTLINK_SHORTMISSION"} ,
             button06 = {"Remove Task","CONTACTLINK_ACCEPTLONG"} ,
             button07 = {"Task to Atlas Park","CONTACTLINK_ACCEPTSHORT"},
+            button08 = {"Back","CONTACTLINK_INTRODUCE"}
+        }
+    } 
+
+    LuaBot.contactDialogs[6] = {
+        message = [[<img src="npc:1144" align="left"><b>Clues/Souvenirs</b><br><br>Choose an item below to test Clues and Souvenirs.<br><br>
+                    <color #2189b9>Open the Clue/Souvenir list to see the changes.</color>]],
+        buttons = {
+            button01 = {"Add Clue","CONTACTLINK_HELLO"},
+            button02 = {"Add Souvenir","CONTACTLINK_MAIN"},
+            --button03 = {"Update Task Name","CONTACTLINK_MISSIONS"}, 
+            --button04 = {"Set Task to another zone","CONTACTLINK_LONGMISSION"} 
+            --button05 = {"Complete Task","CONTACTLINK_SHORTMISSION"} ,
+            --button06 = {"Remove Task","CONTACTLINK_ACCEPTLONG"} ,
+            button07 = {"",""},
             button08 = {"Back","CONTACTLINK_INTRODUCE"}
         }
     } 
@@ -213,6 +229,11 @@ dialog_button = function(id)
                 Player.AddUpdateContact(LuaBot.contact)
             elseif (id == 5) then
                 MapClientSession.mapMenu(client)
+            elseif (id == 6) then
+                printDebug("LuaBot moving to clue/souvenir mode: " .. tostring(id))
+                LuaBot.Mode = 6
+                MapClientSession.contact_dialog(client, LuaBot.contactDialogs[6].message, LuaBot.contactDialogs[6].buttons)
+
             end
         elseif (LuaBot.Mode == 1) then
             printDebug("LuaBot in stat mode: " .. tostring(id))
@@ -363,6 +384,27 @@ dialog_button = function(id)
                 --Reset task - Back
                 resetTask()
 
+                LuaBot.Mode = nil
+                MapClientSession.contact_dialog(client, LuaBot.contactDialogs[1].message, LuaBot.contactDialogs[1].buttons)
+            end
+        elseif (LuaBot.Mode == 6) then -- Clue/Souvenirs
+            if (id == 1) then
+                --add clue
+                local clue = Clue.new()
+                clue.name = "LuaBot Test Clue"
+                clue.displayName = "LuaBot Clue"
+                clue.detail = "Test clue from LuaBot"
+                clue.iconFile = "icon" -- Client file name?
+                Player.AddClue(clue)
+            elseif (id == 2) then
+                --add souvenir
+                local souvenir = Souvenir.new()
+                souvenir.name = "LuaBot souvenir"
+                souvenir.description = "A Souvenir from LuaBot"
+                souvenir.icon = "icon" -- unknown?
+                souvenir.displayName = "LuaBot souvenir displayName"
+                Player.AddSouvenir(souvenir)
+            elseif (id == 9) then
                 LuaBot.Mode = nil
                 MapClientSession.contact_dialog(client, LuaBot.contactDialogs[1].message, LuaBot.contactDialogs[1].buttons)
             end

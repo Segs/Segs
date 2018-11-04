@@ -80,6 +80,15 @@ function Player.SetTitle(title)
     Character.setTitle(client, title)
 end
 
+function Player.AddClue(clue)
+    Character.addClue(client, clue)
+    MapClientSession.sendFloatingInfo(client,5) -- Clue
+end
+
+function Player.AddSouvenir(souvenir)
+    Character.addSouvenir(client, souvenir)
+end
+
 --Just for testing
 function Player.GiveRandomInsp()
     local randomIndex = math.random(1, 7)

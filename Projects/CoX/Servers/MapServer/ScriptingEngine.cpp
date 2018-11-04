@@ -159,6 +159,24 @@ void ScriptingEngine::registerTypes()
         "contactId", &Contact::m_contact_idx
     );
 
+    m_private->m_lua.new_usertype<Clue>("Clue",
+        sol::constructors<Clue()>(),
+        "name", sol::property(&Clue::getName, &Clue::setName),
+        "displayName", sol::property(&Clue::getDisplayName, &Clue::setDisplayName),
+        "detail", sol::property(&Clue::getDetailText, &Clue::setDetailText),
+        "iconFile", sol::property(&Clue::getIconFile, &Clue::setIconFile)
+    );
+
+    m_private->m_lua.new_usertype<Souvenir>("Souvenir",
+        sol::constructors<Souvenir()>(),
+        "name", sol::property(&Souvenir::getName, &Souvenir::setName),
+        "description", sol::property(&Souvenir::getDescription, &Souvenir::setDescription),
+        "icon", sol::property(&Souvenir::getIcon, &Souvenir::setIcon),
+        "displayName", sol::property(&Souvenir::getDisplayName, &Souvenir::setDisplayName)
+        //Server will pass the index for this
+        //"souvenirIdx", &Souvenir::m_idx
+    );
+
     m_private->m_lua.new_usertype<Destination>("Destination",
         sol::constructors<Destination()>(),
         "pointIdx", &Destination::point_idx,
@@ -356,7 +374,9 @@ void ScriptingEngine::registerTypes()
                     break;
                 }
             }
-        }
+        },
+        "addClue", addClue,
+        "addSouvenir", addSouvenir
 
     );
 

@@ -1,6 +1,7 @@
 find_package(Qt5 COMPONENTS Core REQUIRED)
 
 SET(target_CPP
+    ${CMAKE_CURRENT_SOURCE_DIR}/Clue.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Character.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterAttributes.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterClass.cpp
@@ -60,6 +61,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/CoHMath.h
 )
 SET(target_INCLUDE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Clue.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Character.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterAttributes.h

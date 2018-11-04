@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Messages/Map/MessageChannels.h"
+#include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
 #include "Common/GameData/Task.h"
 #include "glm/vec3.hpp"
@@ -87,6 +88,8 @@ void sendStance(MapClientSession &sess, PowerStance &stance);
 void sendDeadNoGurney(MapClientSession &sess);
 void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state);
 void sendDoorAnimExit(MapClientSession &sess, bool force_move);
+void sendClueList(MapClientSession &sess);
+void sendSouvenirList(MapClientSession &sess);
 
 /*
  * usePower and increaseLevel here to provide access to
@@ -116,3 +119,5 @@ void removeTask(MapClientSession &src, Task task);
 void train (MapClientSession &sess);
 void setTitle (MapClientSession &sess, QString title);
 void showMapMenu(MapClientSession &sess);
+void addClue(MapClientSession &cl, Clue clue);
+void addSouvenir(MapClientSession &cl, Souvenir souvenir);

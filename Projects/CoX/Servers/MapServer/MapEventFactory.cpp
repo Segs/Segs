@@ -12,6 +12,7 @@
 
 #include "MapEventFactory.h"
 #include "Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/ClueList.h"
 #include "Common/Messages/Map/ContactList.h"
 #include "Common/Messages/Map/Tasks.h"
 
@@ -106,6 +107,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 65: return new SaveClientOptions;
         case 66: return new RecvSelectedTitles;
         case 67: return new DescriptionAndBattleCry;
+        case 68: return new SouvenirDetailRequest;
         case 77: return new BrowserClose;
     }
     qCWarning(logMapEvents, "Unhandled command event type %d", opcode);

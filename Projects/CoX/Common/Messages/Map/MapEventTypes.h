@@ -87,7 +87,9 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evEmailRead                  ,166)
     EVENT_DECL(MapEventTypes, evEmailMessageStatus         ,167)
     EVENT_DECL(MapEventTypes, evEntityInfoResponse         ,169) // Send entity info (description)
-//    EVENT_DECL(MapEventTypes, evClueUpdate               ,170)
+    EVENT_DECL(MapEventTypes, evClueList                   ,170)
+    EVENT_DECL(MapEventTypes, evSouvenirListHeaders        ,171)
+    EVENT_DECL(MapEventTypes, evSouvenirDetail             ,172)
     EVENT_DECL(MapEventTypes, evTaskDetail                 ,175)
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
     EVENT_DECL(MapEventTypes, evTrayAdd                    ,182)
@@ -142,6 +144,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evSaveClientOptions          ,265)
     EVENT_DECL(MapEventTypes, evRecvSelectedTitles         ,266)
     EVENT_DECL(MapEventTypes, evDescriptionAndBattleCry    ,267)
+    EVENT_DECL(MapEventTypes, evSouvenirDetailRequest      ,268)
     EVENT_DECL(MapEventTypes, evBrowserClose               ,277)
 
 
