@@ -20,6 +20,8 @@
 #include "Common/GameData/map_serializers.h"
 #include "Common/GameData/scenegraph_definitions.h"
 #include "Common/GameData/scenegraph_serializers.h"
+#include "Common/GameData/seq_definitions.h"
+#include "Common/GameData/seq_serializers.h"
 #include "Common/GameData/shop_definitions.h"
 #include "Common/GameData/shop_serializers.h"
 #include "Common/GameData/power_definitions.h"
@@ -71,6 +73,7 @@ enum BinType {
     eNpcDefinitions,
     eFxBehavior_Definitions,
     eFxInfo_Definitions,
+    eSeq_Definitions,
 };
 
 const QHash<uint32_t,BinType> knownSerializers = {
@@ -98,6 +101,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {npccostumesets_i0_requiredCrc      , eNpcDefinitions},
     {fxbehaviors_i0_requiredCrc         , eFxBehavior_Definitions},
     {fxinfos_i0_requiredCrc             , eFxInfo_Definitions},
+    {seqencerlist_i0_requiredCrc        , eSeq_Definitions},
 };
 
 BinType getLoader(const QString &fname)
@@ -167,6 +171,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(npccostumesets_i0_requiredCrc,16)<<"> NPC definitions - 'VillainCostume.bin'";
     qDebug()<<"   I0<"<<QString::number(fxbehaviors_i0_requiredCrc,16)<<"> FxBehavior definitions - 'behaviors.bin'";
     qDebug()<<"   I0<"<<QString::number(fxinfos_i0_requiredCrc,16)<<"> FxInfo definitions - 'fxinfo.bin'";
+    qDebug()<<"   I0<"<<QString::number(seqencerlist_i0_requiredCrc,16)<<"> Sequencer definitions - 'sequencers.bin'";
     qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
 }
 } // end of anonymous namespace
@@ -238,6 +243,7 @@ int main(int argc,char **argv)
           break;
           case eFxBehavior_Definitions: doConvert(doLoadRef<Fx_AllBehaviors>(&binfile),target_basename,json_output); break;
           case eFxInfo_Definitions: doConvert(doLoadRef<Fx_AllInfos>(&binfile),target_basename,json_output); break;
+          case eSeq_Definitions: doConvert(doLoad<SequencerList>(&binfile),target_basename,json_output); break;
           default:
               break;
       }

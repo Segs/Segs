@@ -416,8 +416,8 @@ struct Parser_PlayFx
 struct SeqMoveTypeData
 {
     QByteArray                         name;
-    std::vector<SeqMoveDataTypeAnim *> m_Anim;
-    std::vector<Parser_PlayFx *>       m_PlayFx;
+    std::vector<SeqMoveDataTypeAnim>   m_Anim;
+    std::vector<Parser_PlayFx>         m_PlayFx;
     AnimTrack *                        anm_track;
     float                              Scale;
     float                              MoveRate;
@@ -466,9 +466,9 @@ struct SeqMoveData
     uint32_t Flags;
     int idx;
     SeqMoveRawData raw;
-    std::vector<SeqNextMoveData*> m_NextMove;
-    std::vector<SeqCycleMoveData*> m_CycleMove;
-    std::vector<SeqMoveTypeData*> m_Type;
+    std::vector<SeqNextMoveData> m_NextMove;
+    std::vector<SeqCycleMoveData> m_CycleMove;
+    std::vector<SeqMoveTypeData> m_Type;
     std::vector<QByteArray > SticksOnChild;
     std::vector<QByteArray > SetsOnChild;
     std::vector<QByteArray > Sets;
@@ -511,16 +511,16 @@ struct SeqTypeDefData
 struct SequencerData
 {
     QByteArray name;
-    std::vector<SeqTypeDefData *> m_TypeDef;
-    std::vector<SeqGroupNameData *> m_Group;
-    std::vector<SeqMoveData *> m_Move;
+    std::vector<SeqTypeDefData> m_TypeDef;
+    std::vector<SeqGroupNameData> m_Group;
+    std::vector<SeqMoveData> m_Move;
     int m_lastChangeDate;
     int initialized = 0;
 };
 
 struct SequencerList
 {
-    std::vector<SequencerData *> sq_list;
+    std::vector<SequencerData> sq_list;
     int dev_seqInfoCount;
-    QMap<QString, SequencerData> m_Sequencers; // ordered by sequencer's name ( implemented by 'operator <' )
+    QMap<QString, int> m_Sequencers; // ordered by sequencer's name ( implemented by 'operator <' )
 };

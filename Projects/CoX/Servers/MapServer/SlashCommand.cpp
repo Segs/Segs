@@ -919,6 +919,7 @@ void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:" << cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation: " + cmd, sess);
+        return;
     }
 
     QString msg = QString("Granting Entire PowerSet <%1, %2> to %3").arg(v1).arg(v2).arg(sess.m_ent->name());
@@ -1319,6 +1320,7 @@ void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+        return;
     }
 
     glm::vec3 new_pos {
@@ -1929,7 +1931,11 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
             result.push_back(parts[i]);
     }
 
-    assert(result.size() >= 5);
+    if (result.size() >= 5)
+    {
+        sendInfoMessage(MessageChannel::SERVER, "Too many arguements!", sess);
+        return;
+    }
     result[1].replace("\\q ", "");
     result[1].replace("\\q", "");
 
