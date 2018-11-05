@@ -366,7 +366,7 @@ void  nodeSetVisBounds(SceneNode *group)
         {
             group->lod_far = (maxrad + 10.0f) * 10.0f;
             group->lod_far_fade = group->lod_far * 0.25f;
-            group->lod_autogen = true;
+            // lod_far is autogenned here
         }
         maxvis = group->lod_far + group->lod_far_fade;
     }
