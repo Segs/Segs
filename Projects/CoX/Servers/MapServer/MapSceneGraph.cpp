@@ -44,9 +44,9 @@ bool MapSceneGraph::loadFromFile(const QString &filename)
     m_scene_graph.reset(loadWholeMap(filename));
     if(!m_scene_graph)
         return false;
-    for(const auto &def : m_scene_graph->all_converted_defs)
+    for(SceneNode *def : m_scene_graph->all_converted_defs)
     {
-        if(def->properties)
+        if(def->m_properties)
         {
             m_nodes_with_properties.emplace_back(def);
         }
@@ -58,7 +58,7 @@ void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function
     if (!visit_func(self, accumulated))
         return;
 
-    for(const auto & child : self->children)
+    for(const auto & child : self->m_children)
     {
         glm::mat4 transform(child.m_matrix2);
         transform[3] = glm::vec4(child.m_translation,1);
@@ -114,7 +114,7 @@ struct NpcCreator
         assert(map_instance);
         bool has_npc = false;
         QString persistent_name;
-        for (GroupProperty_Data &prop : *n->properties)
+        for (GroupProperty_Data &prop : *n->m_properties)
         {
             if(prop.propName=="PersistentNPC")
             {
@@ -153,7 +153,7 @@ struct NpcCreator
         if(!generators)
             return false;
         QString generator_type;
-        for (GroupProperty_Data &prop : *n->properties)
+        for (GroupProperty_Data &prop : *n->m_properties)
         {
             if(prop.propName=="Generator")
             {
@@ -176,7 +176,7 @@ struct NpcCreator
     }
     bool operator()(SceneNode *n, const glm::mat4 &v)
     {
-        if (!n->properties)
+        if (!n->m_properties)
             return true;
         checkPersistent(n,v);
         checkGenerators(n,v);
@@ -216,9 +216,9 @@ struct SpawnPointLocator
     {}
     bool operator()(SceneNode *n, const glm::mat4 &v)
     {
-        if (!n->properties)
+        if (!n->m_properties)
             return true;
-        for (GroupProperty_Data &prop : *n->properties)
+        for (GroupProperty_Data &prop : *n->m_properties)
         {
             if(prop.propName=="SpawnLocation" && prop.propValue==m_kind)
             {
