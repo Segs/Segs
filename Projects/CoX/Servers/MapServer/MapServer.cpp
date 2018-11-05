@@ -315,10 +315,11 @@ void MapServer::route_opaque_message(UserRouterOpaqueRequest *msg)
         return;
     }
 
-    Event *e = from_byte_array(msg->m_data.m_payload);
+    InternalEvent *e = static_cast<InternalEvent *>(__route_unpack(msg->m_data.m_payload));
+	e->session_token(msg->session_token());
 
     ins->putq(e, 0);
-	msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data, UserRouterError::OK}, 0));
+	msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data, UserRouterError::OK}, msg->session_token()));
 }
 
 void MapServer::route_info_message(UserRouterInfoMessage *msg) 

@@ -25,8 +25,8 @@ const char *event_name(uint32_t type_id);
 Event *from_storage(std::istream &istr);
 void to_storage(std::ostream &ostr,Event *ev);
 
-Event *from_byte_array(QByteArray &arr);
-QByteArray to_byte_array(Event *ev);
+Event *__route_unpack(QByteArray &arr);
+QByteArray __route(Event *ev);
 
 }
 

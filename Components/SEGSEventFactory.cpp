@@ -86,19 +86,18 @@ void to_storage(std::ostream &ostr,Event *ev)
     ev->do_serialize(ostr);
 }
 
-Event *from_byte_array(QByteArray &arr)
+Event *__route_unpack(QByteArray &arr)
 {
     std::stringstream event_stream;
 	event_stream.write(arr.constData(), arr.size());
 
     return from_storage(event_stream);
 }
-QByteArray to_byte_array(Event *ev)
+QByteArray __route(Event *ev)
 {
 	std::stringstream stream;
     to_storage(stream, ev);
 
 	return QByteArray::fromStdString(stream.str());
 }
-
 }

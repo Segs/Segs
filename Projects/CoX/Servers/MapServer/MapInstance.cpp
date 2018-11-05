@@ -527,6 +527,12 @@ void MapInstance::dispatch( Event *ev )
         case evTeamMemberInvitedMessage:
             on_team_member_invited(static_cast<TeamMemberInvitedMessage *>(ev));
             break;
+        case evTeamToggleLFGMessage:
+            on_team_toggle_lfg(static_cast<TeamToggleLFGMessage *>(ev));
+            break;
+        case evTeamRefreshLFGMessage:
+            on_team_refresh_lfg(static_cast<TeamRefreshLFGMessage *>(ev));
+            break;
         case evReceiveTaskDetailRequest:
             on_receive_task_detail_request(static_cast<ReceiveTaskDetailRequest *>(ev));
             break;
@@ -3090,9 +3096,8 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
         qCDebug(logStores) << "Error processing buyItem";
 }
 
-void MapInstance::on_team_member_invited(TeamMemberInvitedMessage *msg) {
-
-
+void MapInstance::on_team_member_invited(TeamMemberInvitedMessage *msg)
+{
     for (MapClientSession *cl : m_session_store)
     {
         if (cl->m_ent->name() != msg->m_data.m_invitee_name)
@@ -3106,6 +3111,18 @@ void MapInstance::on_team_member_invited(TeamMemberInvitedMessage *msg) {
 
 		cl->m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
     }
+}
+
+void MapInstance::on_team_toggle_lfg(TeamToggleLFGMessage *msg)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+	map_session.m_ent->m_char->m_char_data.m_lfg = msg->m_data.m_char_data.m_lfg;
+}
+
+void MapInstance::on_team_refresh_lfg(TeamRefreshLFGMessage *msg)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    map_session.addCommand<TeamLooking>(msg->m_data.m_lfg_list);
 }
 
 //! @}

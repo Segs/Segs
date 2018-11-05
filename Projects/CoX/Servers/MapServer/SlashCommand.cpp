@@ -1566,10 +1566,8 @@ void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess)
 {
-    toggleLFG(*sess.m_ent);
-    QString msg = "Toggling " + cmd;
-    qCDebug(logSlashCommand) << msg;
-    sendInfoMessage(MessageChannel::SERVER, msg, sess);
+    qCDebug(logTeams) << "Sending TeamToggleLFGMessage to TeamService";
+    HandlerLocator::getTeam_Handler()->putq(new TeamToggleLFGMessage({sess.m_ent->m_db_id, sess.m_ent->name(), sess.m_ent->m_char->m_char_data}, sess.link()->session_token()));
 }
 
 void cmdHandler_MOTD(const QString &/*cmd*/, MapClientSession &sess)
@@ -1592,7 +1590,7 @@ void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
 	}
 
     qCDebug(logTeams) << "Sending TeamMemberInvitedMessage to TeamService";
-    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInvitedMessage({sess.m_ent->name(), sess.m_ent->m_db_id, sess.m_ent->m_char->m_char_data, invitee_name}, sess.link()->session_token()));
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInvitedMessage({sess.m_ent->name(), sess.m_ent->m_db_id, invitee_name}, sess.link()->session_token()));
 }
 
 void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
@@ -1619,12 +1617,9 @@ void cmdHandler_LeaveTeam(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
 {
-    sendTeamLooking(sess);
-    QString msg = "Finding Team Member";
-    qCDebug(logSlashCommand).noquote() << msg;
-    sendInfoMessage(MessageChannel::CHAT_TEXT, msg, sess);
+    qCDebug(logTeams) << "Sending TeamRefreshLFGMessage to TeamService";
+    HandlerLocator::getTeam_Handler()->putq(new TeamRefreshLFGMessage({sess.m_ent->m_db_id, sess.m_ent->name(), {}}, sess.link()->session_token()));
 }
-
 
 void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
 {

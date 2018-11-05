@@ -23,6 +23,19 @@
  */
 uint32_t Team::m_team_idx_counter = 0;
 
+bool Team::isNamePending(const QString &name)
+{
+    for (const TeamMember &tm : m_team_members) 
+    {
+        if (tm.tm_name == name && tm.tm_pending) 
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool Team::isFull() 
 {
     return m_team_members.size() >= m_max_team_size;
@@ -79,7 +92,7 @@ TeamingError Team::addTeamMember(const QString &name)
     // create new team member
     TeamMember new_member;
     new_member.tm_name = name;
-	new_member.tm_pending = true;
+	new_member.tm_pending = true; // since added via name
 
     m_team_members.emplace_back(new_member);
     

@@ -12,6 +12,7 @@ class Entity;
 
 struct LFGMember
 {
+    uint32_t m_db_id;       // player DBID
     QString m_name;         // player name
     QString m_classname;    // player class
     QString m_origin;       // player origin
@@ -19,7 +20,7 @@ struct LFGMember
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_name,m_classname,m_origin,m_level);
+        ar(m_db_id, m_name, m_classname, m_origin, m_level);
     }
 };
 

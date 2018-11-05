@@ -11,6 +11,7 @@
 #include "Servers/InternalEvents.h"
 #include "Common/Servers/ClientManager.h"
 #include "GameData/Team.h"
+#include "GameData/LFG.h"
 #include "GameData/CharacterData.h"
 #include <unordered_map>
 #include <set>
@@ -22,6 +23,10 @@ namespace SEGSEvents
     struct TeamMemberKickedMessage;
     struct TeamMemberInviteAcceptedMessage;
     struct TeamMemberInviteDeclinedMessage;
+
+	struct TeamToggleLFGMessage;
+	struct TeamRefreshLFGMessage;
+
     struct UserRouterQueryRequest;
     struct UserRouterQueryResponse;
     struct UserRouterOpaqueRequest;
@@ -34,7 +39,8 @@ struct TeamHandlerState
     int m_game_server_id;
     EventProcessor *m_map_handler;
 
-    std::vector<Team *> m_teams;
+    std::vector<Team *> m_team_list;
+	std::vector<LFGMember> m_lfg_list;
 
     std::map<uint32_t, QString> m_id_to_name;
     std::multimap<QString, SEGSEvents::Event *> m_pending_events;
@@ -62,6 +68,17 @@ private:
     void on_team_member_kicked(SEGSEvents::TeamMemberKickedMessage *msg);
     void on_team_member_invite_accepted(SEGSEvents::TeamMemberInviteAcceptedMessage *msg);
     void on_team_member_invite_declined(SEGSEvents::TeamMemberInviteDeclinedMessage *msg);
+
+    void on_team_toggle_lfg(SEGSEvents::TeamToggleLFGMessage *msg);
+    void on_team_refresh_lfg(SEGSEvents::TeamRefreshLFGMessage *msg);
+
+	bool name_is_lfg(const QString &name);
+	bool db_id_is_lfg(const uint32_t db_id);
+	void add_lfg(LFGMember m);
+	void remove_lfg(const uint32_t db_id);
+	Team* team_for_db_id(const uint32_t db_id);
+	Team* team_for_name(const QString &name);
+
 
     // EventProcessor interface
 protected:

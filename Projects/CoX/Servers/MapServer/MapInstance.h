@@ -261,4 +261,6 @@ protected:
         void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
         void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
         void on_team_member_invited(SEGSEvents::TeamMemberInvitedMessage *msg);
+        void on_team_toggle_lfg(SEGSEvents::TeamToggleLFGMessage *msg);
+        void on_team_refresh_lfg(SEGSEvents::TeamRefreshLFGMessage *msg);
 };

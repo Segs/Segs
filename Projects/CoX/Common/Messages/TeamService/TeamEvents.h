@@ -9,8 +9,9 @@
 
 #include "Messages/UserRouterService/UserRouterEvents.h"
 #include "Servers/InternalEvents.h"
-#include "GameData/Team.h"
 #include "GameData/CharacterData.h"
+#include "GameData/Team.h"
+#include "GameData/LFG.h"
 
 namespace SEGSEvents
 {
@@ -21,6 +22,8 @@ enum TeamEventTypes : uint32_t
     evTeamMemberKickedMessage,
     evTeamMemberInviteAcceptedMessage,
     evTeamMemberInviteDeclinedMessage,
+	evTeamToggleLFGMessage,
+	evTeamRefreshLFGMessage,
     // evTeamLeaveTeamMessage,
     // evTeamMakeLeaderMessage,
     // evTeamToggleBuffsViewMessage,
@@ -30,12 +33,11 @@ struct TeamMemberInvitedData
 {
     QString m_leader_name;
     uint32_t m_leader_id;
-    CharacterData m_leader_data;
     QString m_invitee_name;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_leader_name, m_leader_id, m_leader_data, m_invitee_name);
+        ar(m_leader_name, m_leader_id, m_invitee_name);
     }
 };
 
@@ -87,5 +89,37 @@ struct TeamMemberInviteDeclinedData
 
 //[[ev_def:macro]]
 ONE_WAY_MESSAGE(TeamEventTypes,TeamMemberInviteDeclined)
+
+struct TeamToggleLFGData
+{
+    uint32_t m_db_id;
+	QString m_name;
+	CharacterData m_char_data;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_db_id, m_name, m_char_data);
+    }
+};
+
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(TeamEventTypes,TeamToggleLFG)
+
+struct TeamRefreshLFGData
+{
+    uint32_t m_db_id;
+	QString m_name;
+	std::vector<LFGMember> m_lfg_list;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_db_id, m_name, m_lfg_list);
+    }
+};
+
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(TeamEventTypes,TeamRefreshLFG)
 
 } // end of namespace SEGSEvents

@@ -61,6 +61,8 @@ const   uint32_t    m_team_idx          = 0;
         bool                containsEntityName(const QString &name);
         bool                isFull();
 
+		bool 				isNamePending(const QString &name);
+
 private:
 static  uint32_t    m_team_idx_counter;
 };
