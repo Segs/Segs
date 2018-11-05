@@ -1918,36 +1918,42 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
 {
     QStringList parts = cmd.split("\"");
     QStringList result;
-    for(int i = 0; i < parts.size(); i++)
+
+    for (const auto &part : parts)
     {
-        if(parts[i].endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
-            result.back() += parts[i]+"\"";
+        if(part.endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
+            result.back() += part+"\"";
         else
-            result.push_back(parts[i]);
+            result.push_back(part);
     }
 
-    if (result.size() >= 5)
+    if (result.size() > 5)
     {
-        sendInfoMessage(MessageChannel::SERVER, "Too many arguements!", sess);
+        sendInfoMessage(MessageChannel::SERVER, "Too many arguments!", sess);
         return;
     }
-    result[1].replace("\\q ", "");
+
+    result[1].replace("\\q ", ";");
     result[1].replace("\\q", "");
 
-    // 1 -> recipient name, 3 -> email subject, 4 -> email message
+    // result[1] -> recipient name, 3 -> email subject, 4 -> email message
+    // attempt to parse names if sending to multiple recipients
+    QStringList recipients = result[1].split(";");
+
+    // the last element will be empty in all cases (if sent through email window), so remove it
+    recipients.pop_back();
+
+    // first, check if your own character is one of the recipients in the email
     // cannot send email to self as that will trigger /emailRead without the data in db nor EmailHandler
     // and that will segfault the server :)
-    if (result[1] == sess.m_ent->m_char->getName())
+    if (recipients.contains(sess.m_ent->m_char->getName()))
     {
         sendInfoMessage(MessageChannel::SERVER, "You cannot send an email to yourself!", sess);
         return;
     }
 
-    sendEmail(sess, result[1], result[3], result[4]);
-
-    QString msg = "Email Sent to recipient: " + result[1];
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::SERVER, msg, sess);
+    for (const auto &recipient : recipients)
+        sendEmail(sess, recipient, result[3], result[4]);
 }
 
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)

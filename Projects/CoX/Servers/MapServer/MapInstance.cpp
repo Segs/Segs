@@ -2802,8 +2802,18 @@ void MapInstance::on_email_create_status(EmailCreateStatusMessage *msg)
 {
     MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
 
-    EmailMessageStatus* msg_status = new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name);
-    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(msg_status));
+    // for some reason EmailMessageStatus with the boolean set to true will crash the client
+    // so this will be sent only for false cases
+    if (!msg->m_data.m_status)
+    {
+        EmailMessageStatus* msg_status = new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name);
+        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(msg_status));
+    }
+    else
+    {
+        QString successMsg = QString("Successfully sent email to %1!").arg(msg->m_data.m_recipient_name);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, successMsg, map_session);
+    }
 }
 
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)

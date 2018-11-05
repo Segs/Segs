@@ -193,6 +193,7 @@ void EmailHandler::on_fill_email_recipient_id_response(FillEmailRecipientIdRespo
     m_db_handler->putq(new EmailCreateRequest({
                                                   msg->m_data.m_sender_id,
                                                   msg->m_data.m_recipient_id, //recipient id
+                                                  msg->m_data.m_recipient_name,
                                                   cerealizedEmailData
                                               }, uint64_t(1)));
 }
