@@ -62,7 +62,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
-#include <QtCore/QDirIterator>
 #include <random>
 #include <stdlib.h>
 
@@ -141,9 +140,9 @@ void MapInstance::start(const QString &scenegraph_path)
         m_npc_generators.m_generators["MonorailGenerator"] = {"Car_Monorail",EntType::MOBILEGEOMETRY,{},{}};
         m_npc_generators.m_generators["BlimpGenerator"] = {"Car_Blimp",EntType::MOBILEGEOMETRY,{},{}};
 
-        m_npc_generators.m_generators["E5_Robot1_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
-        m_npc_generators.m_generators["E5_Robot2_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
-        m_npc_generators.m_generators["E5_Robot3_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
+        m_npc_generators.m_generators["ES_Robot1_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
+        m_npc_generators.m_generators["ES_Robot2_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
+        m_npc_generators.m_generators["ES_Robot3_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
 
         for(auto door : s_all_doors)
             m_npc_generators.m_generators[door] = {door, EntType::DOOR,{},{}};
@@ -177,12 +176,15 @@ void MapInstance::start(const QString &scenegraph_path)
         QString global_scriptname="scripts/global.lua";
         loadAndRunLua(m_scripting_interface,global_scriptname);
 
-        QDirIterator it(m_data_path, QStringList() << "*.lua", QDir::Files | QDir::Readable, QDirIterator::Subdirectories);
-        while(it.hasNext())
-        {
-            qCDebug(logScripts) << "Loading" << it.next();
-            loadAndRunLua(m_scripting_interface, it.next());
-        }
+        //Scripts for zone
+        QString locations_scriptname=m_data_path+'/'+"locations.lua";
+        QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
+        QString entities_scriptname=m_data_path+'/'+"entities.lua";
+        QString missions_scriptname=m_data_path+'/'+"missions.lua";
+        loadAndRunLua(m_scripting_interface,locations_scriptname);
+        loadAndRunLua(m_scripting_interface,plaques_scriptname);
+        loadAndRunLua(m_scripting_interface,entities_scriptname);
+        loadAndRunLua(m_scripting_interface,missions_scriptname);
     }
     else
     {
