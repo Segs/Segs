@@ -13,6 +13,7 @@
 #include "MapEventFactory.h"
 #include "Messages/Map/MapEvents.h"
 #include "Common/Messages/Map/ContactList.h"
+#include "Common/Messages/Map/Tasks.h"
 
 using namespace SEGSEvents;
 
@@ -100,6 +101,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 55: return new TradeWasUpdatedMessage;
         case 56: return new EntityInfoRequest;
         case 62: return new LocationVisited;
+        case 63: return new ReceiveTaskDetailRequest;
         case 64: return new SwitchViewPoint;
         case 65: return new SaveClientOptions;
         case 66: return new RecvSelectedTitles;

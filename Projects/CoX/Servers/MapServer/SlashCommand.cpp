@@ -119,6 +119,8 @@ void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Revive(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
 
+void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
+
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
 // Access Level 2[GM] Commands
@@ -228,6 +230,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setstatemode"}, "Send StateMode. Send StateMode to client", cmdHandler_SetStateMode, 9},
     {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
     {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
+    {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -916,6 +919,7 @@ void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:" << cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation: " + cmd, sess);
+        return;
     }
 
     QString msg = QString("Granting Entire PowerSet <%1, %2> to %3").arg(v1).arg(v2).arg(sess.m_ent->name());
@@ -1305,7 +1309,7 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     QString name = parts[1].toString();
     glm::vec3 offset = glm::vec3 {2,0,1};
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos + offset;
-    addNpc(sess, name, gm_loc, variation);
+    addNpc(sess, name, gm_loc, variation, name);
 }
 
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
@@ -1316,6 +1320,7 @@ void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+        return;
     }
 
     glm::vec3 new_pos {
@@ -1403,14 +1408,10 @@ void cmdHandler_WhoAll(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess)
 {
-    bool        select_origin = false;
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
 
-    if(!val.isEmpty())
-        select_origin = true;
-
-    sendChangeTitle(sess, select_origin);
+    setTitle(sess, val);
 }
 
 void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess)
@@ -1753,12 +1754,7 @@ void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_MapXferList(const QString &/*cmd*/, MapClientSession &sess)
 {
-    // if has_location == true, then player cannot be more than 400
-    // units away from pos or window will close
-    bool has_location = false;
-    glm::vec3 location = sess.m_ent->m_entity_data.m_pos;
-    QString msg_body = createMapMenu();
-    showMapXferList(sess, has_location, location, msg_body);
+    showMapMenu(sess);
 }
 
 void cmdHandler_ReSpec(const QString &/*cmd*/, MapClientSession &sess)
@@ -1820,25 +1816,7 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
 {
-    int level = getLevel(*sess.m_ent->m_char)+1;
-
-    // XP must be high enough for the level you're advancing to
-    GameDataStore &data(getGameData());
-    if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
-    {
-        QString msg = "You do not have enough Experience Points to train to the next level!";
-        qCDebug(logSlashCommand) << msg;
-        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
-        return;
-    }
-
-    qCDebug(logPowers) << "LEVELUP" << sess.m_ent->name() << "to" << level+1
-                       << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data, false) // no temps
-                       << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
-
-    // send levelup pkt to client
-    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
-    sendLevelUp(sess);
+    train(sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1953,7 +1931,11 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
             result.push_back(parts[i]);
     }
 
-    assert(result.size() >= 5);
+    if (result.size() >= 5)
+    {
+        sendInfoMessage(MessageChannel::SERVER, "Too many arguements!", sess);
+        return;
+    }
     result[1].replace("\\q ", "");
     result[1].replace("\\q", "");
 
@@ -2090,6 +2072,34 @@ bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src)
     sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
     return false;
 }
+
+void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess)
+{
+    Task tk;
+    tk.m_db_id = 1;
+    tk.setDescription("Task Description Goes Here");
+    tk.setOwner("OfficerFlint");
+    tk.setState("In Progress");
+    tk.setDetail("Task detail goes here");
+    tk.m_is_complete = false;
+    tk.m_in_progress_maybe = true;
+    tk.m_is_abandoned = false;
+    tk.m_has_location = false;
+    tk.m_detail_invalid = true; // aka "needs update"
+    tk.m_board_train = false;
+    tk.m_location.location = glm::vec3(-83.0, 0.0, 1334.0);
+    tk.m_location.setLocationMapName("Outbreak");
+    tk.m_location.setLocationName("Outbreak");
+    tk.m_finish_time = 0;
+    tk.m_unknown_1 = 0;
+    tk.m_unknown_2 = 0;
+    tk.m_task_idx = 0;
+
+    sendUpdateTaskStatusList(sess, tk);
+    QString msg = "Sending Test Task to client";
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
 } // end of anonymous namespace
 
 /*
@@ -2109,6 +2119,8 @@ void runCommand(const QString &str, MapClientSession &e)
     }
     qCDebug(logSlashCommand) << "Unknown game command:" << str;
 }
+
+
 
 //! @}
 

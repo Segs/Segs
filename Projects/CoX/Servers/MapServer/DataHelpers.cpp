@@ -30,6 +30,7 @@
 #include "Common/Messages/Map/EmailRead.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
 #include "Common/Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/Tasks.h"
 #include "Logging.h"
 
 #include <QtCore/QFile>
@@ -872,7 +873,7 @@ void increaseLevel(Entity &ent)
  */
 //
 
-void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation)
+/*void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -888,6 +889,27 @@ void addNpc(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation
     forcePosition(*e, loc);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
+*/
+void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name)
+{
+    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
+    const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_name);
+    if(!npc_def)
+    {
+        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
+        return;
+    }
+
+    int idx = npc_store.npc_idx(npc_def);
+    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
+    e->m_char->setName(name);
+
+    forcePosition(*e, loc);
+    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
+
+    auto val = sess.m_current_map->m_scripting_interface->callFuncWithClientContext(&sess, "npc_added", e->m_idx);
+}
+
 
 void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori)
 {
@@ -1025,5 +1047,179 @@ void giveXp(MapClientSession &sess, int xp)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
+void addListOfTasks(MapClientSession *cl, vTaskList task_list)
+{
+    //Send contactList to client
+    TaskEntry task_entry;
+    task_entry.m_db_id = cl->m_ent->m_db_id;
+    task_entry.m_reset_selected_task = true; // Expose to Lua?
+    task_entry.m_task_list = task_list;
+    vTaskEntryList task_entry_list;
+    task_entry_list.push_back(task_entry);
 
+    //update database task list
+    cl->m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
+
+    cl->addCommandToSendNextUpdate(std::unique_ptr<TaskStatusList>(new TaskStatusList(task_entry_list)));
+    qCDebug(logScripts) << "Sending New TaskStatusList";
+}
+
+void sendUpdateTaskStatusList(MapClientSession &src, Task task)
+{
+    vTaskEntryList task_entry_list = src.m_ent->m_char->m_char_data.m_tasks_entry_list;
+    //find task
+    bool found = false;
+
+    for (uint32_t i = 0; i < task_entry_list.size(); ++i)
+    {
+       for(uint32_t t = 0; t < task_entry_list[i].m_task_list.size(); ++t)
+        if(task_entry_list[i].m_task_list[t].m_task_idx == task.m_task_idx) // maybe npcId instead?
+        {
+            found = true;
+            qCDebug(logScripts) << "SendUpdateTaskStatusList Updating old task";
+            //contact already in list, update task;
+            task_entry_list[i].m_task_list.at(t) = task;
+            break;
+        }
+
+       if(found)
+           break;
+    }
+
+    if(!found)
+    {
+        qCDebug(logScripts) << "SendUpdateTaskStatusList Creating new task";
+        uint32_t listSize = task_entry_list.size();
+        if(task_entry_list.size() > 0)
+        {
+            qCDebug(logScripts) << "SendUpdateTaskStatusList task list not empty";
+            task_entry_list[listSize].m_task_list.push_back(task); // Just use last task entry, Should only be one.
+        }
+        else
+        {
+            qCDebug(logScripts) << "SendUpdateTaskStatusList task list empty";
+            std::vector<Task> task_list;
+            task_list.push_back(task);
+            TaskEntry t_entry;
+            t_entry.m_db_id = src.m_ent->m_db_id;
+            t_entry.m_reset_selected_task = true;
+            t_entry.m_task_list = task_list;
+            task_entry_list.push_back(t_entry);
+        }
+    }
+
+    //update database Task list
+    src.m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
+    qCDebug(logScripts) << "SendUpdateTaskStatusList DB Task list updated";
+
+    //Send contactList to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<TaskStatusList>(new TaskStatusList(task_entry_list)));
+    qCDebug(logScripts) << "SendUpdateTaskStatusList List updated";
+}
+
+void selectTask(MapClientSession &src, Task task)
+{
+    src.addCommandToSendNextUpdate(std::unique_ptr<TaskSelect>(new TaskSelect(task)));
+    qCDebug(logScripts) << "SelectTask";
+}
+
+void sendTaskStatusList(MapClientSession &src)
+{
+    vTaskEntryList task_entry_list = src.m_ent->m_char->m_char_data.m_tasks_entry_list;
+
+    //Send taskList to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<TaskStatusList>(new TaskStatusList(task_entry_list)));
+    qCDebug(logScripts) << "SendTaskStatusList";
+}
+
+void updateTaskDetail(MapClientSession &src, Task task)
+{
+    //Send task detail to client
+    src.addCommandToSendNextUpdate(std::unique_ptr<TaskDetail>(new TaskDetail(task.m_db_id, task.m_task_idx, task.m_detail)));
+    qCDebug(logScripts) << "Sending TaskDetail";
+}
+
+void removeTask(MapClientSession &src, Task task)
+{
+    vTaskEntryList task_entry_list = src.m_ent->m_char->m_char_data.m_tasks_entry_list;
+    //find task
+    bool found = false;
+
+    for (uint32_t i = 0; i < task_entry_list.size(); ++i)
+    {
+       for(uint32_t t = 0; t < task_entry_list[i].m_task_list.size(); ++t)
+        if(task_entry_list[i].m_task_list[t].m_task_idx == task.m_task_idx) // maybe db_id
+        {
+            found = true;
+            task_entry_list[i].m_task_list.erase(task_entry_list[i].m_task_list.begin() + t);
+            break;
+        }
+
+       if(found)
+           break;
+    }
+
+    if(!found)
+    {
+        qCDebug(logScripts) << "Remove Task. Task not found";
+    }
+    else
+    {
+        //update database Task list
+        src.m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
+
+        //Send contactList to client
+        src.addCommandToSendNextUpdate(std::unique_ptr<TaskStatusList>(new TaskStatusList(task_entry_list)));
+        qCDebug(logScripts) << "Remove Task. Sending updated TaskStatusList";
+    }
+}
+
+void train (MapClientSession &sess)
+{
+    uint level = getLevel(*sess.m_ent->m_char)+1;
+    GameDataStore &data(getGameData());
+    if (level > data.expMaxLevel())
+    {
+        QString msg = "You are already at the max level!";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        return;
+    }
+
+    // XP must be high enough for the level you're advancing to
+    if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
+    {
+        QString msg = "You do not have enough Experience Points to train to the next level!";
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        return;
+    }
+
+    qCDebug(logPowers) << "LEVELUP" << sess.m_ent->name() << "to" << level+1
+                       << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data, false) // no temps
+                       << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
+
+    // send levelup pkt to client
+    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
+    sendLevelUp(sess);
+}
+
+void setTitle (MapClientSession &sess, QString title)
+{
+    bool select_origin = false;
+    if(!title.isEmpty())
+          select_origin = true;
+
+    sendChangeTitle(sess, select_origin);
+}
+
+void showMapMenu(MapClientSession &sess)
+{
+    // if has_location == true, then player cannot be more than 400
+    // units away from pos or window will close
+    bool has_location = false;
+    glm::vec3 location = sess.m_ent->m_entity_data.m_pos;
+    QString msg_body = createMapMenu();
+    showMapXferList(sess, has_location, location, msg_body);
+}
 //! @}

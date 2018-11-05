@@ -48,6 +48,7 @@ SEGS_LOGGING_CATEGORY(logPowers,       "log.powers")
 SEGS_LOGGING_CATEGORY(logTrades,       "log.trades")
 SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logSceneGraph,   "log.scenegraph")
+SEGS_LOGGING_CATEGORY(logTasks,        "log.tasks")
 
 void setLoggingFilter()
 {
