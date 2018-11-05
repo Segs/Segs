@@ -14,7 +14,6 @@
 
 #include "CharacterHelpers.h"
 #include "Entity.h"
-#include "LFG.h"
 #include "Logging.h"
 #include "Character.h"
 
@@ -106,9 +105,6 @@ TeamingError Team::addTeamMember(Entity *e,uint32_t teammate_map_idx)
 
     if(e->m_has_team)
         return TeamingError::INVITEE_HAS_TEAM;
-
-    if(e->m_char->m_char_data.m_lfg)
-        removeLFG(*e);
 
     m_team_members.emplace_back(TeamMember{e->m_db_id, e->name(),"Map",teammate_map_idx});
     e->m_has_team = true;

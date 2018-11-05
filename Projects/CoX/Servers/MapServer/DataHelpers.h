@@ -69,9 +69,6 @@ void sendEnhanceCombineResponse(MapClientSession &sess, bool success, bool destr
 void sendChangeTitle(MapClientSession &sess, bool select_origin);
 void sendTrayAdd(MapClientSession &sess, uint32_t pset_idx, uint32_t pow_idx);
 void sendFriendsListUpdate(MapClientSession &sess, const FriendsList &friends_list);
-void sendSidekickOffer(MapClientSession &sess, uint32_t src_db_id);
-void sendTeamLooking(MapClientSession &sess);
-void sendTeamOffer(MapClientSession &src, MapClientSession &tgt);
 void sendFaceEntity(MapClientSession &src, int32_t tgt_idx);
 void sendFaceLocation(MapClientSession &sess, glm::vec3 &loc);
 void sendDoorMessage(MapClientSession &sess, uint32_t delay_status, QString &msg);

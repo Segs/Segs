@@ -42,27 +42,6 @@ void setBackupSpd(Entity &e, float val) { e.m_motion_state.m_backup_spd = val; }
 void setJumpHeight(Entity &e, float val) { e.m_motion_state.m_jump_height = val; }
 void setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
 
-void setTeamID(Entity &e, uint8_t team_id)
-{
-    if(team_id == 0)
-    {
-        e.m_has_team            = false;
-        delete e.m_team;
-        e.m_team = nullptr;
-    }
-    else
-        e.m_has_team            = true;
-
-    if(!e.m_team)
-        return;
-
-    qDebug().noquote() << "Team Info:"
-                       << "\n  Has Team:" << e.m_has_team
-                       << "\n  ID:" << e.m_team->m_team_idx
-                       << "\n  Size:" << e.m_team->m_team_members.size()
-                       << "\n  Members:" << e.m_team->m_team_members.data();
-}
-
 void setSuperGroup(Entity &e, int sg_id, QString sg_name, uint32_t sg_rank)
 {
     // TODO: provide method for updating SuperGroup Colors

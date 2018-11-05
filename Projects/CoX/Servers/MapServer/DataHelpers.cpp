@@ -45,30 +45,6 @@
 
 using namespace SEGSEvents;
 
-// toggleLFG must be here because it relies on sendInfoMessage()
-void toggleLFG(Entity &e)
-{
-    CharacterData *cd = &e.m_char->m_char_data;
-
-    if(e.m_has_team)
-    {
-        QString errormsg = "You're already on a team! You cannot toggle LFG.";
-        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *e.m_client);
-        errormsg = e.name() + "is already on a team and cannot toggle LFG.";
-        qCDebug(logTeams) << errormsg;
-        removeLFG(e); // just in-case
-        return;
-    }
-
-    if(cd->m_lfg)
-        removeLFG(e);
-    else
-    {
-        addLFG(e);
-        sendTeamLooking(*e.m_client);
-    }
-}
-
 // Poll EntityManager to return Entity by Name or IDX
 Entity * getEntity(MapClientSession *src, const QString &name)
 {
@@ -361,6 +337,7 @@ void sendFriendsListUpdate(MapClientSession &sess, const FriendsList &friends_li
     sess.addCommand<FriendsListUpdate>(friends_list);
 }
 
+<<<<<<< HEAD
 void sendSidekickOffer(MapClientSession &sess, uint32_t src_db_id)
 {
     qCDebug(logTeams) << "Sending Sidekick Offer" << sess.m_ent->name() << "from" << src_db_id;
@@ -391,6 +368,14 @@ void sendTeamOffer(MapClientSession &src, MapClientSession &tgt)
     qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << static_cast<uint8_t>(type);
     tgt.addCommand<TeamOffer>(db_id, name, type);
 }
+=======
+// TODO: move to TeamService
+//void sendSidekickOffer(MapClientSession &sess, uint32_t src_db_id)
+//{
+//    qCDebug(logTeams) << "Sending Sidekick Offer" << sess.m_ent->name() << "from" << src_db_id;
+//    sess.addCommand<SidekickOffer>(src_db_id);
+//}
+>>>>>>> a55501a5... remove or comment old team/lfg stuff
 
 void sendFaceEntity(MapClientSession &sess, int32_t tgt_idx)
 {

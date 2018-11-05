@@ -39,9 +39,6 @@ public:
             bs.StoreString(m.m_origin);
             bs.StoreBits(32,m.m_level);
         }
-
-        if(logLFG().isDebugEnabled())
-            dumpLFGList();
     }
     EVENT_IMPL(TeamLooking)
 };

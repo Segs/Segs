@@ -87,7 +87,6 @@ void cmdHandler_ControlsDisabled(const QString &cmd, MapClientSession &sess);
 void cmdHandler_UpdateId(const QString &cmd, MapClientSession &sess);
 void cmdHandler_FullUpdate(const QString &cmd, MapClientSession &sess);
 void cmdHandler_HasControlId(const QString &cmd, MapClientSession &sess);
-void cmdHandler_SetTeam(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetSuperGroup(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SettingsDump(const QString &cmd, MapClientSession &sess);
 void cmdHandler_TeamDebug(const QString &cmd, MapClientSession &sess);
@@ -209,7 +208,6 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"updateid"},"Update ID", cmdHandler_UpdateId, 9},
     {{"fullupdate"},"Full Update", cmdHandler_FullUpdate, 9},
     {{"hascontrolid"},"Force the server to acknowledge input ids", cmdHandler_HasControlId, 9},
-    {{"setTeam", "setTeamID"},"Set the team idx", cmdHandler_SetTeam, 9},
     {{"setSuperGroup","setSG"},"Set your Super Group", cmdHandler_SetSuperGroup, 9},
     {{"settingsDump","settingsDebug"},"Output settings.cfg to console", cmdHandler_SettingsDump, 9},
     {{"teamDump", "teamDebug"}, "Output team settings to console", cmdHandler_TeamDebug, 9},
@@ -661,17 +659,6 @@ void cmdHandler_HasControlId(const QString &cmd, MapClientSession &sess)
     toggleControlId(*sess.m_ent);
 
     QString msg = "Toggling " + cmd;
-    qCDebug(logSlashCommand) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
-}
-
-void cmdHandler_SetTeam(const QString &cmd, MapClientSession &sess)
-{
-    uint8_t val = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
-
-    setTeamID(*sess.m_ent, val);
-
-    QString msg = "Set Team ID to: " + QString::number(val);
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
@@ -1623,21 +1610,21 @@ void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if(tgt == nullptr)
-    {
-        return;
-    }
+    //Entity* const tgt = getEntityFromCommand(cmd, sess);
+    //if (tgt == nullptr)
+    //{
+    //    return;
+    //}
 
-    const QString name = tgt->name();
-    QString msg;
-    if(makeTeamLeader(*sess.m_ent,*tgt))
-        msg = "Making " + name + " team leader.";
-    else
-        msg = "Failed to make " + name + " team leader.";
+    //const QString name = tgt->name();
+    //QString msg;
+    //if (makeTeamLeader(*sess.m_ent,*tgt))
+    //    msg = "Making " + name + " team leader.";
+    //else
+    //    msg = "Failed to make " + name + " team leader.";
 
-    qCDebug(logSlashCommand).noquote() << msg;
-    sendInfoMessage(MessageChannel::TEAM, msg, sess);
+    //qCDebug(logSlashCommand).noquote() << msg;
+    //sendInfoMessage(MessageChannel::TEAM, msg, sess);
 }
 
 void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
@@ -1667,79 +1654,79 @@ void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
-    {
-        return;
-    }
-
-    auto res=inviteSidekick(*sess.m_ent, *tgt);
-    static const QLatin1Literal possible_messages[] = {
-        QLatin1String("Unable to add sidekick."),
-        QLatin1String("To Mentor another player, you must be at least 3 levels higher than them."),
-        QLatin1String("To Mentor another player, you must be at least level 10."),
-        QLatin1String("You are already Mentoring someone."),
-        QLatin1String("Target is already a sidekick."),
-        QLatin1String("To Mentor another player, you must be on the same team."),
-    };
-    if(res==SidekickChangeStatus::SUCCESS)
-    {
-        // sendSidekickOffer
-        sendSidekickOffer(*tgt->m_client, sess.m_ent->m_db_id); // tgt gets dialog, src.db_id is named.
-    }
-    else
-    {
-        qCDebug(logTeams).noquote() << possible_messages[int(res)-1];
-        sendInfoMessage(MessageChannel::USER_ERROR, possible_messages[int(res)-1], sess);
-    }
+//    Entity* const tgt = getEntityFromCommand(cmd, sess);
+//    if (tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
+//    {
+//        return;
+//    }
+//
+//    auto res=inviteSidekick(*sess.m_ent, *tgt);
+//    static const QLatin1Literal possible_messages[] = {
+//        QLatin1String("Unable to add sidekick."),
+//        QLatin1String("To Mentor another player, you must be at least 3 levels higher than them."),
+//        QLatin1String("To Mentor another player, you must be at least level 10."),
+//        QLatin1String("You are already Mentoring someone."),
+//        QLatin1String("Target is already a sidekick."),
+//        QLatin1String("To Mentor another player, you must be on the same team."),
+//    };
+//    if(res==SidekickChangeStatus::SUCCESS)
+//    {
+//        // sendSidekickOffer
+//        //sendSidekickOffer(*tgt->m_client, sess.m_ent->m_db_id); // tgt gets dialog, src.db_id is named.
+//    }
+//    else
+//    {
+//        qCDebug(logTeams).noquote() << possible_messages[int(res)-1];
+//        sendInfoMessage(MessageChannel::USER_ERROR, possible_messages[int(res)-1], sess);
+//    }
 }
 
 void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
 {
-    if(sess.m_ent->m_char->isEmpty())
-        return;
-    QString msg;
-
-    uint32_t sidekick_id = getSidekickId(*sess.m_ent->m_char);
-    auto res = removeSidekick(*sess.m_ent, sidekick_id);
-    if(res==SidekickChangeStatus::GENERIC_FAILURE)
-    {
-        msg = "You are not sidekicked with anyone.";
-        qCDebug(logTeams).noquote() << msg;
-        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
-    }
-    else if(res==SidekickChangeStatus::SUCCESS)
-    {
-        Entity *tgt = getEntityByDBID(sess.m_current_map, sidekick_id);
-        QString tgt_name = tgt ? tgt->name() : "Unknown Player";
-        if(isSidekickMentor(*sess.m_ent))
-        {
-            // src is mentor, tgt is sidekick
-            msg = QString("You are no longer mentoring %1.").arg(tgt_name);
-            sendInfoMessage(MessageChannel::TEAM, msg, sess);
-            if(tgt)
-            {
-                msg = QString("%1 is no longer mentoring you.").arg(sess.m_ent->name());
-                sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
-            }
-        }
-        else
-        {
-            // src is sidekick, tgt is mentor
-            if(tgt)
-            {
-                msg = QString("You are no longer mentoring %1.").arg(sess.m_ent->name());
-                sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
-            }
-            msg = QString("%1 is no longer mentoring you.").arg(tgt_name);
-            sendInfoMessage(MessageChannel::TEAM, msg, sess);
-        }
-    }
-    else if(res==SidekickChangeStatus::NOT_SIDEKICKED_CURRENTLY)
-    {
-        msg = QString("You are no longer sidekicked with anyone.");
-        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
-    }
+//    if(sess.m_ent->m_char->isEmpty())
+//        return;
+//    QString msg;
+//
+//    uint32_t sidekick_id = getSidekickId(*sess.m_ent->m_char);
+//    auto res = removeSidekick(*sess.m_ent, sidekick_id);
+//    if(res==SidekickChangeStatus::GENERIC_FAILURE)
+//    {
+//        msg = "You are not sidekicked with anyone.";
+//        qCDebug(logTeams).noquote() << msg;
+//        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+//    }
+//    else if(res==SidekickChangeStatus::SUCCESS)
+//    {
+//        Entity *tgt = getEntityByDBID(sess.m_current_map, sidekick_id);
+//        QString tgt_name = tgt ? tgt->name() : "Unknown Player";
+//        if(isSidekickMentor(*sess.m_ent))
+//        {
+//            // src is mentor, tgt is sidekick
+//            msg = QString("You are no longer mentoring %1.").arg(tgt_name);
+//            sendInfoMessage(MessageChannel::TEAM, msg, sess);
+//            if(tgt)
+//            {
+//                msg = QString("%1 is no longer mentoring you.").arg(sess.m_ent->name());
+//                sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
+//            }
+//        }
+//        else
+//        {
+//            // src is sidekick, tgt is mentor
+//            if(tgt)
+//            {
+//                msg = QString("You are no longer mentoring %1.").arg(sess.m_ent->name());
+//                sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
+//            }
+//            msg = QString("%1 is no longer mentoring you.").arg(tgt_name);
+//            sendInfoMessage(MessageChannel::TEAM, msg, sess);
+//        }
+//    }
+//    else if(res==SidekickChangeStatus::NOT_SIDEKICKED_CURRENTLY)
+//    {
+//        msg = QString("You are no longer sidekicked with anyone.");
+//        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+//    }
 }
 
 void cmdHandler_TeamBuffs(const QString & /*cmd*/, MapClientSession &sess)

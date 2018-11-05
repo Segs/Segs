@@ -678,8 +678,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     HandlerLocator::getGame_Handler(m_game_server_id)
             ->putq(new ClientDisconnectedMessage({session_token,session.m_ent->m_char->m_db_id},0));
 
-    //removeLFG(*ent);
-    //leaveTeam(*ent);
+	// TODO: notify TeamService (or all, somehow...)
     updateLastOnline(*ent->m_char);
 
     // one last character update for the disconnecting entity

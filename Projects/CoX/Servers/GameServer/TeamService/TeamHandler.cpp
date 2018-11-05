@@ -342,6 +342,12 @@ void TeamHandler::on_team_toggle_lfg(TeamToggleLFGMessage *msg)
 	m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
 		{__route(msg), db_id, db_id, name, name}, 
 		msg->session_token(), this));
+
+	// since the LFG flag is true
+	// send message to pop up window also
+	m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
+		{__route(new TeamRefreshLFGMessage({db_id, name, m_state.m_lfg_list}, 0)), db_id, db_id, name, name}, 
+		msg->session_token(), this));
 }
 
 void TeamHandler::dispatch(SEGSEvents::Event *ev)

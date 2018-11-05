@@ -23,12 +23,3 @@ struct LFGMember
         ar(m_db_id, m_name, m_classname, m_origin, m_level);
     }
 };
-
-/*
- * LFG Methods
- */
-extern std::vector<LFGMember> g_lfg_list;
-
-void addLFG(Entity &src);
-void removeLFG(Entity &src);
-void dumpLFGList();
