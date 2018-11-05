@@ -67,13 +67,13 @@ struct UserRouterOpaqueRequestData
 
 struct UserRouterOpaqueResponseData
 {
-	uint32_t m_sender_id;
+	UserRouterOpaqueRequestData m_req;
 	UserRouterError m_error;
 
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_error);
+        ar(m_req, m_error);
     }
 };
 

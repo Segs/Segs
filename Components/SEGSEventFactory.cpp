@@ -7,6 +7,8 @@
 #include <vector>
 #include <cassert>
 
+#include <QByteArray>
+
 namespace
 {
     struct EventDescriptorEntry
@@ -83,4 +85,20 @@ void to_storage(std::ostream &ostr,Event *ev)
     oarchive(type_id);
     ev->do_serialize(ostr);
 }
+
+Event *from_byte_array(QByteArray &arr)
+{
+    std::stringstream event_stream;
+	event_stream.write(arr.constData(), arr.size());
+
+    return from_storage(event_stream);
+}
+QByteArray to_byte_array(Event *ev)
+{
+	std::stringstream stream;
+    to_storage(stream, ev);
+
+	return QByteArray::fromStdString(stream.str());
+}
+
 }

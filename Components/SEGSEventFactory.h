@@ -12,6 +12,8 @@
  * @{
  */
 class EventSrc;
+class QByteArray;
+
 namespace SEGSEvents
 {
 class Event;
@@ -19,8 +21,13 @@ void register_event_type(const char *name, uint32_t type_id, std::function<Event
 Event *create_by_id(uint32_t type_id, EventSrc *src=nullptr);
 Event *create_by_name(const char* name,EventSrc *src=nullptr);
 const char *event_name(uint32_t type_id);
+
 Event *from_storage(std::istream &istr);
 void to_storage(std::ostream &ostr,Event *ev);
+
+Event *from_byte_array(QByteArray &arr);
+QByteArray to_byte_array(Event *ev);
+
 }
 
 class EventStreamBuffer : public std::streambuf

@@ -37,16 +37,23 @@ bool TeamHandler::name_known(const QString &name)
 
 void TeamHandler::on_user_router_opaque_response(UserRouterOpaqueResponse *msg)
 {
-	if (msg->m_data.m_error == UserRouterError::USER_OFFLINE)
+	const uint32_t sender_id = msg->m_data.m_req.m_sender_id;
+	const UserRouterError e = msg->m_data.m_error;
+
+	QString m = "Unknown Error";
+	MessageChannel c = MessageChannel::USER_ERROR;
+
+	if (e == UserRouterError::USER_OFFLINE)
 	{
-		QString m = "The user you invited is offline.";
-		m_state.m_map_handler->putq(new UserRouterInfoMessage({m, MessageChannel::USER_ERROR, msg->m_data.m_sender_id, msg->m_data.m_sender_id}, 0));
+		m = "The user you invited is offline.";
 	}
 	else 
 	{
-		QString m = "Team invite sent!";
-		m_state.m_map_handler->putq(new UserRouterInfoMessage({m, MessageChannel::TEAM, msg->m_data.m_sender_id, msg->m_data.m_sender_id}, 0));
+		m = "Team invite sent!";
+		c = MessageChannel::TEAM;
 	}
+
+	m_state.m_map_handler->putq(new UserRouterInfoMessage({m, c, sender_id, sender_id}, 0));
 }
 
 void TeamHandler::on_user_router_query_response(UserRouterQueryResponse *msg)
@@ -151,9 +158,7 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
 
     qCDebug(logTeams) << "team invite sent_by: " << leader_name << "(" << leader_id << ") | sent_to: " << invitee_name;
 
-	std::stringstream stream;
-    to_storage(stream, msg);
-	QByteArray payload(QByteArray::fromStdString(stream.str()));
+	QByteArray payload = to_byte_array(msg);
 
     // forward Opaque Invite message to UserRouter
     // This will cause MapInstance to send a TeamOffer to the Invitee

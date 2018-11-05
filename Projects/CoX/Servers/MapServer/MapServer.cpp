@@ -311,17 +311,14 @@ void MapServer::route_opaque_message(UserRouterOpaqueRequest *msg)
     if (ins == nullptr) {
 		qCDebug(logLogging) << "error routing message to map instance:" << msg->m_data.m_target_id;
 
-		msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data.m_sender_id, UserRouterError::USER_OFFLINE}, 0));
+		msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data, UserRouterError::USER_OFFLINE}, 0));
         return;
     }
 
-    std::stringstream event_stream ;
-	event_stream.write(msg->m_data.m_payload.constData(), msg->m_data.m_payload.size());
-
-    Event *e = from_storage(event_stream);
+    Event *e = from_byte_array(msg->m_data.m_payload);
 
     ins->putq(e, 0);
-	msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data.m_sender_id, UserRouterError::OK}, 0));
+	msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data, UserRouterError::OK}, 0));
 }
 
 void MapServer::route_info_message(UserRouterInfoMessage *msg) 

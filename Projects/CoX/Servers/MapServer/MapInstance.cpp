@@ -56,6 +56,7 @@
 #include "Messages/Map/MapXferWait.h"
 #include "Messages/Map/StoresEvents.h"
 #include "Messages/Map/Tasks.h"
+#include "Messages/Map/TeamOffer.h"
 
 #include <ace/Reactor.h>
 
@@ -3099,9 +3100,9 @@ void MapInstance::on_team_member_invited(TeamMemberInvitedMessage *msg) {
 
 		QString name = msg->m_data.m_leader_name;
 		uint32_t db_id = cl->m_ent->m_db_id;
-		TeamOfferType type = NoMission;
+		TeamOfferType type = TeamOfferType::NoMission;
 
-		qCDebug(logLogging) << "Sending Teamup Offer" << db_id << name << type;
+		qCDebug(logLogging) << "Sending Teamup Offer" << db_id << name << uint32_t(type);
 
 		cl->m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
     }
