@@ -24,6 +24,7 @@
 
 #include "glm/mat4x4.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <QString>
 #include <QSet>
 #include <memory>
 
@@ -37,7 +38,6 @@ MapSceneGraph::~MapSceneGraph()
 {
 
 }
-
 
 bool MapSceneGraph::loadFromFile(const QString &filename)
 {
@@ -53,6 +53,7 @@ bool MapSceneGraph::loadFromFile(const QString &filename)
     }
     return true;
 }
+
 void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function<bool(SceneNode *,const glm::mat4 &)> visit_func )
 {
     if (!visit_func(self, accumulated))
@@ -66,63 +67,20 @@ void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function
         walkSceneNode(child.node, accumulated * transform, visit_func);
     }
 }
-static QString convertNpcName(const QString &n)
+
+static QString getCostumeFromName(const QString &n)
 {
+    // Special cases will go here
     // Outbreak
-    if(n.contains("Sergeant_Hicks"))
-        return "Model_SergeantHicks";
-    if (n.contains("Officer_Parks"))
-        return "Model_OfficerParks";
-    if (n.contains("Doctor_Miller"))
-        return "Model_DoctorMiller";
-    if (n.contains("Detective_Wright"))
-        return "Model_DetectiveWright";
-    if (n.contains("Officer_Flint"))
-        return "Model_OfficerFlint";
     if(n.contains("Paragon_SWAT"))
         return "CSE_02";
-    if(n.contains("Professor_Hoffman"))
-        return "Model_ProfessorHoffman";
     if(n.contains("Lt_MacReady"))
         return "CSE_01";
-
-    // Atlas Park
-    if(n.contains("Henry_Peter_Wong"))
-        return "Model_HenryWong";
-    if(n.contains("Laurence_Mansfield"))
-        return "Model_LaurenceMansfield";
-    if(n.contains("Iris_Parker"))
-        return "Model_IrisParker";
-    if(n.contains("Sarah_Juarez"))
-        return "Model_SarahJuarez";
     if(n.contains("Security_Chief_01"))
         return "Model_SecurityChief";
     if(n.contains("Security_Chief_04"))
         return "Model_SecurityChief";
-    if(n.contains("City_Representative"))
-        return "Model_CityRepresentative";
-    if(n.contains("SuperGroupRegistrar"))
-        return "Model_SuperGroupRegistrar";
-    if(n.contains("Charlie"))
-        return "Model_Charlie";
-    if(n.contains("Susan_Davies"))
-        return "Model_SusanDavies";
-    if(n.contains("Antonio_Nash"))
-        return "Model_AntonioNash";
-    if(n.contains("Rick_Davies"))
-        return "Model_RickDavies";
-    if(n.contains("Johnathan_Smythe"))
-        return "Model_JonathanSmythe";
-    if(n.contains("Azuria"))
-        return "Model_Azuria";
-    if(n.contains("MsLiberty"))
-        return "Model_MsLiberty";
-    if(n.contains("Tony_Kord"))
-        return "Model_TonyKord";
-    if(n.contains("Jose_Brogan"))
-        return "Model_JoseBrogan";
-    if(n.contains("Sarah_Peters"))
-        return "Model_SarahPeters";
+    // Atlas Park
     if(n.contains("FreedomCorp_City_01_01"))
         return "Freedom_Corp_Male_01";
     if(n.contains("FreedomCorp_City_01_01b"))
@@ -132,7 +90,12 @@ static QString convertNpcName(const QString &n)
     if(n.contains("FreedomCorp_City_01_03"))
         return "Freedom_Corp_Male_04";
 
-    return "ChessPawn";
+    QString result = n;
+    result = makeReadableName(result);
+    result.remove(" ");
+    result.prepend("Model_");
+    qCDebug(logNPCs) << "NPC Costume:" << result;
+    return result;
 }
 
 struct NpcCreator
@@ -149,21 +112,22 @@ struct NpcCreator
         for (GroupProperty_Data &prop : *n->properties)
         {
             if(prop.propName=="PersistentNPC")
-            {
                 persistent_name = prop.propValue;
-            }
+
             if (prop.propName.toUpper().contains("NPC"))
             {
                 qCDebug(logNPCs) << prop.propName << '=' << prop.propValue;
                 has_npc = true;
             }
         }
+
         if(has_npc && map_instance)
         {
             qCDebug(logNPCs) << "Attempting to spawn npc" << persistent_name << "at" << v[3][0] << v[3][1] << v[3][2];
             const NPCStorage & npc_store(getGameData().getNPCDefinitions());
-            QString npc_costume_name = convertNpcName(persistent_name);
+            QString npc_costume_name = getCostumeFromName(persistent_name);
             const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
+
             if (npc_def)
             {
                 int idx = npc_store.npc_idx(npc_def);
@@ -178,22 +142,25 @@ struct NpcCreator
                 e->m_motion_state.m_velocity = { 0,0,0 };
             }
         }
+
         return true;
     }
+
     bool checkGenerators(SceneNode *n, const glm::mat4 &v)
     {
         if(!generators)
             return false;
+
         QString generator_type;
         for (GroupProperty_Data &prop : *n->properties)
         {
             if(prop.propName=="Generator")
-            {
                 generator_type = prop.propValue;
-            }
         }
+
         if(generator_type.isEmpty())
             return true;
+
         if(!generators->m_generators.contains(generator_type))
         {
             if(!m_reported_generators.contains(generator_type))
@@ -201,41 +168,35 @@ struct NpcCreator
                 qCDebug(logNPCs) << "Missing generator for" << generator_type;
                 m_reported_generators.insert(generator_type);
             }
+
             return true;
         }
-        generators->m_generators[generator_type].initial_positions.push_back(v);
+
+        generators->m_generators[generator_type].m_initial_positions.push_back(v);
+
         return true;
     }
+
     bool operator()(SceneNode *n, const glm::mat4 &v)
     {
         if (!n->properties)
             return true;
+
         checkPersistent(n,v);
         checkGenerators(n,v);
         return true;
     }
 };
+
 void MapSceneGraph::spawn_npcs(MapInstance *instance)
 {
-
-/*  glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos;
-    if (!npc_def)
-    {
-        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for:" + parts[1], &sess);
-        return;
-    }
-    glm::vec3 offset = glm::vec3{ 2,0,1 };
-    e->m_entity_data.m_pos = gm_loc + offset;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), &sess);
-    */
     NpcCreator creator;
     creator.generators = &instance->m_npc_generators;
     creator.map_instance = instance;
     glm::mat4 initial_pos(1);
+
     for(auto v : m_scene_graph->refs)
-    {
         walkSceneNode(v->node, v->mat, creator);
-    }
 }
 
 struct SpawnPointLocator
@@ -255,7 +216,7 @@ struct SpawnPointLocator
             if(prop.propName=="SpawnLocation" && prop.propValue==m_kind)
             {
                 m_targets->emplace_back(v);
-                return false; //
+                return false;
             }
         }
         return true;
@@ -265,11 +226,10 @@ struct SpawnPointLocator
 std::vector<glm::mat4> MapSceneGraph::spawn_points(const QString &kind) const
 {
     std::vector<glm::mat4> res;
-    SpawnPointLocator locator(kind,&res);
+    SpawnPointLocator locator(kind, &res);
     for(auto v : m_scene_graph->refs)
-    {
         walkSceneNode(v->node, v->mat, locator);
-    }
+
     return res;
 }
 

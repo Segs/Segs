@@ -37,6 +37,7 @@
 #include "GameData/CharacterHelpers.h"
 #include "GameData/Entity.h"
 #include "GameData/GameDataStore.h"
+#include "GameData/NpcCostumes.h"
 #include "GameData/Trade.h"
 #include "GameData/chardata_serializers.h"
 #include "GameData/clientoptions_serializers.h"
@@ -60,6 +61,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <QtCore/QDirIterator>
 #include <random>
 #include <stdlib.h>
 
@@ -133,63 +135,28 @@ void MapInstance::start(const QString &scenegraph_path)
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
-        m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",EntType::NPC,{}};
-        m_npc_generators.m_generators["EG_PoliceDrone"] = {"Police_Drone",EntType::NPC,{}};
-        m_npc_generators.m_generators["monorail_tunnel"] = {"Car_Monorail",EntType::CAR,{}};
-        m_npc_generators.m_generators["flight_start_128"] = {"Car_Blimp",EntType::CAR,{}};
-        for(int i=0; i<7; ++i)
-        {
-            QString right_whare=QString("Door_Right_Whare_0%1").arg(i);
-            m_npc_generators.m_generators[right_whare] = {right_whare, EntType::DOOR, {}};
-            QString left_whare=QString("Door_Left_Whare_0%1").arg(i);
-            m_npc_generators.m_generators[left_whare] = {left_whare,EntType::DOOR,{}};
-            QString left_city=QString("Door_Left_City_0%1").arg(i);
-            m_npc_generators.m_generators[left_city] = {left_city,EntType::DOOR,{}};
-            QString right_city=QString("Door_Right_City_0%1").arg(i);
-            m_npc_generators.m_generators[right_city] = {right_city,EntType::DOOR,{}};
-            QString right_store=QString("Door_Right_Store_0%1").arg(i);
-            m_npc_generators.m_generators[right_store] = {right_store,EntType::DOOR,{}};
-            QString left_store=QString("Door_Left_Store_0%1").arg(i);
-            m_npc_generators.m_generators[left_store] = {left_store,EntType::DOOR,{}};
-            QString left_city_b=QString("Door_City_0%1_L").arg(i);
-            m_npc_generators.m_generators[left_city_b] = {left_store,EntType::DOOR,{}};
-            QString right_city_b=QString("Door_City_0%1_R").arg(i);
-            m_npc_generators.m_generators[right_city_b] = {left_store,EntType::DOOR,{}};
-            QString left_ind=QString("Door_Ind_0%1_L").arg(i);
-            m_npc_generators.m_generators[left_ind] = {left_store,EntType::DOOR,{}};
-            QString right_ind=QString("Door_Ind_0%1_R").arg(i);
-            m_npc_generators.m_generators[right_ind] = {left_store,EntType::DOOR,{}};
-            QString left_res=QString("Door_Res_0%1_L").arg(i);
-            m_npc_generators.m_generators[left_res] = {left_store,EntType::DOOR,{}};
-            QString right_res=QString("Door_Res_0%1_R").arg(i);
-            m_npc_generators.m_generators[right_res] = {left_store,EntType::DOOR,{}};
-            QString left_ruin=QString("Door_Ruin_0%1_L").arg(i);
-            m_npc_generators.m_generators[left_ruin] = {left_store,EntType::DOOR,{}};
-            QString right_ruin=QString("Door_Ruin_0%1_R").arg(i);
-            m_npc_generators.m_generators[right_ruin] = {left_store,EntType::DOOR,{}};
-            QString left_slum=QString("Door_Slum_0%1_L").arg(i);
-            m_npc_generators.m_generators[left_slum] = {left_store,EntType::DOOR,{}};
-            QString right_slum=QString("Door_Slum_0%1_R").arg(i);
-            m_npc_generators.m_generators[right_slum] = {left_store,EntType::DOOR,{}};
-            QString left_store_b=QString("Door_Store_0%1_L").arg(i);
-            m_npc_generators.m_generators[left_store_b] = {left_store,EntType::DOOR,{}};
-            QString right_store_b=QString("Door_Store_0%1_R").arg(i);
-            m_npc_generators.m_generators[right_store_b] = {left_store,EntType::DOOR,{}};
-            QString left_whare_b=QString("Door_Whare_0%1_L").arg(i);
-            m_npc_generators.m_generators[left_whare_b] = {left_store,EntType::DOOR,{}};
-            QString right_whare_b=QString("Door_Whare_0%1_R").arg(i);
-            m_npc_generators.m_generators[right_whare_b] = {left_store,EntType::DOOR,{}};
-            QString sewer_door=QString("Door_Sewer_0%1").arg(i);
-            m_npc_generators.m_generators[sewer_door] = {left_store,EntType::DOOR,{}};
-        }
-        m_npc_generators.m_generators["Door_reclpad"] = {"Door_reclpad",EntType::MAPXFERDOOR,{}};
-        m_npc_generators.m_generators["Door_elevator"] = {"Door_elevator",EntType::MAPXFERDOOR,{}};
-        m_npc_generators.m_generators["Door_Cot_dbl_01"] = {"Door_Cot_dbl_01",EntType::MAPXFERDOOR,{}};
-        m_npc_generators.m_generators["Door_Trial_Door"] = {"Door_Trial_Door",EntType::MAPXFERDOOR,{}};
-        m_npc_generators.m_generators["Door_5col_01_R"] = {"Door_5col_01_R",EntType::MAPXFERDOOR,{}};
-        m_npc_generators.m_generators["Door_Cave_01"] = {"Door_Cave_01",EntType::MAPXFERDOOR,{}};
-        m_npc_generators.m_generators["Door_Cave_02"] = {"Door_Cave_02",EntType::MAPXFERDOOR,{}};
-        m_npc_generators.m_generators["Door_EdenTrial_01"] = {"Door_EdenTrial_01",EntType::MAPXFERDOOR,{}};
+        m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",EntType::NPC,{},{}};
+        m_npc_generators.m_generators["Nemesis_Drone"] = {"Nemesis_Drone",EntType::NPC,{},{}};
+        m_npc_generators.m_generators["MonorailGenerator"] = {"Car_Monorail",EntType::MOBILEGEOMETRY,{},{}};
+        m_npc_generators.m_generators["BlimpGenerator"] = {"Car_Blimp",EntType::MOBILEGEOMETRY,{},{}};
+
+        m_npc_generators.m_generators["E5_Robot1_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
+        m_npc_generators.m_generators["E5_Robot2_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
+        m_npc_generators.m_generators["E5_Robot3_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
+
+        for(auto door : s_all_doors)
+            m_npc_generators.m_generators[door] = {door, EntType::DOOR,{},{}};
+        for(auto xdoor : s_xfer_doors)
+            m_npc_generators.m_generators[xdoor] = {xdoor, EntType::MAPXFERDOOR,{},{}};
+        for(auto car : s_all_cars)
+            m_npc_generators.m_generators["CarGenerator"] = {car, EntType::CAR,{},{}};
+
+        for(auto ped : s_all_pedestrians)
+            m_npc_generators.m_generators["NPCGenerator"] = {ped, EntType::MOBILEGEOMETRY,{},{}};
+        for(auto doc : s_all_doctors)
+            m_npc_generators.m_generators["DoctorNPCGenerator"] = {doc, EntType::MOBILEGEOMETRY,{},{}};
+        for(auto biz : s_all_biznpcs)
+            m_npc_generators.m_generators["BusinessNPCGenerator"] = {biz, EntType::MOBILEGEOMETRY,{},{}};
 
         bool scene_graph_loaded = false;
         Q_UNUSED(scene_graph_loaded);
@@ -203,13 +170,14 @@ void MapInstance::start(const QString &scenegraph_path)
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
             }, "Spawning npcs");
+
         qInfo() << "Loading custom scripts";
-        QString locations_scriptname=m_data_path+'/'+"locations.lua";
-        QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
-        QString entities_scriptname=m_data_path+'/'+"entities.lua";
-        loadAndRunLua(m_scripting_interface,locations_scriptname);
-        loadAndRunLua(m_scripting_interface,plaques_scriptname);
-        loadAndRunLua(m_scripting_interface,entities_scriptname);
+        QDirIterator it(m_data_path, QStringList() << "*.lua", QDir::Files | QDir::Readable, QDirIterator::Subdirectories);
+        while(it.hasNext())
+        {
+            qCDebug(logScripts) << "Loading" << it.next();
+            loadAndRunLua(m_scripting_interface, it.next());
+        }
     }
     else
     {
@@ -2088,11 +2056,11 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
-    QString output_msg = "Door entry request to:" + ev->name;
+    QString output_msg = "Door entry request to: " + ev->name;
     if(ev->no_location)
         qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
     else
-        qCDebug(logMapXfers).noquote() << output_msg << ev->location.x << ev->location.y << ev->location.z;
+        qCDebug(logMapXfers).noquote() << output_msg << " loc:" << ev->location.x << ev->location.y << ev->location.z;
 
     // For now, let's test by making some of the door options random
     int randNum = std::rand() % 100;

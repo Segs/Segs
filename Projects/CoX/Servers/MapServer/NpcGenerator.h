@@ -15,17 +15,26 @@
 #include <vector>
 
 enum class EntType : uint8_t;
+struct NpcTemplate
+{
+    QString m_costume_name;
+    EntType m_type;
+    std::vector<glm::mat4> m_initial_positions;
+    // attributes/powers ?
+};
+
 struct NpcGenerator
 {
-    QString costume_name;
-    EntType type;
-    std::vector<glm::mat4> initial_positions;
+    QString m_costume_name;
+    EntType m_type;
+    std::vector<glm::mat4> m_initial_positions;
+    std::vector<NpcTemplate> m_possible_npcs;
     void generate(class MapInstance *);
 };
 
 struct NpcGeneratorStore
 {
-    QHash<QString,NpcGenerator> m_generators;
+    QHash<QString, NpcGenerator> m_generators;
     void generate(class MapInstance *instance);
 };
 
