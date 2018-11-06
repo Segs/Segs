@@ -78,7 +78,7 @@ void SideWindow::onCameraPositionChanged(float x, float y, float z)
                                .arg(z, 5, 'f', 2, QChar(' ')));
 }
 
-void SideWindow::onModelSelected(SEGS::SceneNode *n, SEGS::Model *m, Urho3D::Drawable *d)
+void SideWindow::onModelSelected(SEGS::SceneNode * /*n*/, SEGS::Model *m, Urho3D::Drawable *d)
 {
     if(!m)
     {
@@ -143,10 +143,10 @@ void SideWindow::onModelSelected(SEGS::SceneNode *n, SEGS::Model *m, Urho3D::Dra
         if(stored!=Variant::EMPTY)
         {
             CoHNode * cn = (CoHNode *)stored.GetVoidPtr();
-            if(cn->properties)
+            if(cn->m_properties)
             {
-                prop_text += QString("%1\n").arg(cn->name);
-                for(const GroupProperty_Data &prop : *cn->properties)
+                prop_text += QString("%1\n").arg(cn->m_name);
+                for(const GroupProperty_Data &prop : *cn->m_properties)
                 {
                     prop_text += QString("%2 - %3 [%4]\n")
                             .arg(QString(prop.propName))
@@ -163,11 +163,11 @@ void SideWindow::onModelSelected(SEGS::SceneNode *n, SEGS::Model *m, Urho3D::Dra
 static QStandardItem * fillModel(CoHNode *node)
 {
     QStandardItem *root = new QStandardItem;
-    root->setData(node->name + ": Children("+QString::number(node->children.size())+")",Qt::DisplayRole);
+    root->setData(node->m_name + ": Children("+QString::number(node->m_children.size())+")",Qt::DisplayRole);
     root->setData(QVariant::fromValue((void*)node),Qt::UserRole);
     root->setData(QVariant::fromValue(false),Qt::UserRole+1); // not a root node
 
-    for(const SEGS::SceneNodeChildTransform &child : node->children)
+    for(const SEGS::SceneNodeChildTransform &child : node->m_children)
     {
         QStandardItem *rowItem = fillModel(child.node);
         root->appendRow(rowItem);
@@ -182,7 +182,7 @@ void SideWindow::onScenegraphLoaded(const SEGS::SceneGraph & sc)
     for(auto ref : sc.refs)
     {
         QStandardItem *rowItem = new QStandardItem;
-        rowItem->setData(ref->node->name,Qt::DisplayRole);
+        rowItem->setData(ref->node->m_name,Qt::DisplayRole);
         rowItem->setData(QVariant::fromValue((void*)ref),Qt::UserRole);
         rowItem->setData(QVariant::fromValue(true),Qt::UserRole+1);
         item->appendRow(rowItem);
@@ -190,12 +190,12 @@ void SideWindow::onScenegraphLoaded(const SEGS::SceneGraph & sc)
     if(sc.refs.empty())  // no scene graph roots in the graph
     {
         QSet<void *> ischild;
-        for(auto node : sc.all_converted_defs)
+        for(SEGS::SceneNode *node : sc.all_converted_defs)
         {
-            for(auto chld : node->children)
+            for(auto chld : node->m_children)
                 ischild.insert(chld.node);
         }
-        for(auto node : sc.all_converted_defs) {
+        for(SEGS::SceneNode *node : sc.all_converted_defs) {
             if(ischild.contains(node))
                 continue;
             QStandardItem *rowItem = fillModel(node);
@@ -252,7 +252,7 @@ void SideWindow::on_nodeList_clicked(const QModelIndex &index)
     CoHNode *parent_node = (CoHNode *)parentv.value<void *>();
     if(!parent_node)
         return;
-    for(const SEGS::SceneNodeChildTransform &chld : parent_node->children)
+    for(const SEGS::SceneNodeChildTransform &chld : parent_node->m_children)
     {
         if(chld.node==n) {
             glm::quat q = glm::quat_cast(chld.m_matrix2);
