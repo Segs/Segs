@@ -243,7 +243,7 @@ int main(int argc,char **argv)
           break;
           case eFxBehavior_Definitions: doConvert(doLoadRef<Fx_AllBehaviors>(&binfile),target_basename,json_output); break;
           case eFxInfo_Definitions: doConvert(doLoadRef<Fx_AllInfos>(&binfile),target_basename,json_output); break;
-          case eSeq_Definitions: doConvert(doLoad<SequencerList>(&binfile),target_basename,json_output); break;
+          case eSeq_Definitions: doConvert(doLoadRef<SequencerList>(&binfile),target_basename,json_output); break;
           default:
               break;
       }
