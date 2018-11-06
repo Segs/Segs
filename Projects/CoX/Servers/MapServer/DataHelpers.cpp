@@ -229,8 +229,8 @@ void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, 
         return;
     }
 
-    uint32_t timestamp = 0;
-    // uint32_t timestamp = getCurrentTime();
+    // uint32_t timestamp = 0;
+    uint32_t timestamp = getCurrentTime();
 
     EmailSendMessage* msgToHandler = new EmailSendMessage({
                 sess.m_ent->m_char->m_db_id,
@@ -1211,7 +1211,8 @@ uint32_t getCurrentTime()
 {
     time_t timer;
     struct tm y2k = {0};
-    y2k.tm_hour = 0;   y2k.tm_min = 0; y2k.tm_sec = 0;
+    y2k.tm_hour = 0; y2k.tm_min = 0; y2k.tm_sec = 0;
+    y2k.tm_hour = 7;
 
     // year since 1900 = 100 (so this is 2000), month since January = 0, day of the month = 1
     y2k.tm_year = 100; y2k.tm_mon = 0; y2k.tm_mday = 1;
