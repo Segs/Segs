@@ -2917,7 +2917,7 @@ void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
         souvenir_detail.m_description = "Data not found";
 
     }
-    session.addCommandToSendNextUpdate(std::unique_ptr<SouvenirDetail>(new SouvenirDetail(souvenir_detail)));
+    session.addCommand<SouvenirDetail>(souvenir_detail);
 }
 
 

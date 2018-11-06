@@ -25,7 +25,6 @@ void Souvenir::serialize(Archive &archive, uint32_t const version)
      archive(cereal::make_nvp("Name",m_name));
      archive(cereal::make_nvp("Icon",m_icon));
      archive(cereal::make_nvp("Description",m_description));
-     archive(cereal::make_nvp("DisplayName",m_display_name));
  }
 
  CEREAL_CLASS_VERSION(Souvenir, Souvenir::class_version)   // register Souvenir class version

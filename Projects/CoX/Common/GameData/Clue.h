@@ -48,13 +48,9 @@ public:
      enum : uint32_t {class_version       = 1};
 
     uint32_t m_idx;
-    void *field4;
     QString m_name;
     QString m_icon;
     QString m_description;
-
-    // not listed but expected
-    QString m_display_name;
 
     // for scripting language access.
        std::string getName() const { return m_name.toStdString();}
@@ -65,9 +61,6 @@ public:
 
        std::string getDescription() const { return m_description.toStdString();}
        void setDescription(const char *n) { m_description = n; }
-
-       std::string getDisplayName() const { return m_display_name.toStdString();}
-       void setDisplayName(const char *n) { m_display_name = n; }
 
        template<class Archive>
        void serialize(Archive &archive, uint32_t const version);

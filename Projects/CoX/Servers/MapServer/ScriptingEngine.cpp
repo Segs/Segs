@@ -171,9 +171,8 @@ void ScriptingEngine::registerTypes()
         sol::constructors<Souvenir()>(),
         "name", sol::property(&Souvenir::getName, &Souvenir::setName),
         "description", sol::property(&Souvenir::getDescription, &Souvenir::setDescription),
-        "icon", sol::property(&Souvenir::getIcon, &Souvenir::setIcon),
-        "displayName", sol::property(&Souvenir::getDisplayName, &Souvenir::setDisplayName)
-        //Server will pass the index for this
+        "icon", sol::property(&Souvenir::getIcon, &Souvenir::setIcon)
+        //Server will set the index for this
         //"souvenirIdx", &Souvenir::m_idx
     );
 

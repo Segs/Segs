@@ -20,7 +20,7 @@ LuaBot.contact = Contact.new()
     LuaBot.contact.friendThreshold = 2
     LuaBot.contact.completeThreshold = 4
     LuaBot.contact.canUseCell = false
-
+    
     LuaBot.task = Task.new()
     LuaBot.task.dbId = 1 -- 1939 - 200
     LuaBot.task.taskIdx = 0
@@ -402,7 +402,6 @@ dialog_button = function(id)
                 souvenir.name = "LuaBot souvenir"
                 souvenir.description = "A Souvenir from LuaBot"
                 souvenir.icon = "icon" -- unknown?
-                souvenir.displayName = "LuaBot souvenir displayName"
                 Player.AddSouvenir(souvenir)
             elseif (id == 9) then
                 LuaBot.Mode = nil
@@ -436,6 +435,10 @@ function resetTask()
      LuaBot.task.location.name  = "Outbreak"
      LuaBot.task.location.mapName = "Outbreak"
      Player.AddUpdateTask(LuaBot.task)
+
+
+     
+ 
 end
 
 

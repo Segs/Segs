@@ -186,11 +186,13 @@ end
 
 printDebug('global script loaded')
 
---Notes for scriping
--- 112, 16, -216
--- 11 buttons is the max you can have displayed at once. 
---  Anymore and the client will crash
---[[
+--[[            Notes for scriping  
+
+To add scripts to lua use include_lua('path') to load each extra script
+
+For contact dialogs, 11 buttons is the max you can have displayed at once. 
+ Anymore and the client will crash
+
         Contact Dialog buttons    
     {"CONTACTLINK_HELLO"                ,1},
     {"CONTACTLINK_MAIN"                 ,2},
@@ -217,4 +219,5 @@ printDebug('global script loaded')
     {"CONTACTLINK_NEWPLAYERTELEPORT_GC" ,0x17},
     {"CONTACTLINK_FORMTASKFORCE"        ,0x18},
     {"CONTACTLINK_CHOOSE_TITLE"         ,0x19},
-    {"CONTACTLINK_GOTOTAILOR"           ,0x1A},]]
+    {"CONTACTLINK_GOTOTAILOR"           ,0x1A},
+  ]]

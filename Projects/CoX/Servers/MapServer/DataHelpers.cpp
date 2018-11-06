@@ -530,13 +530,13 @@ void sendStance(MapClientSession &sess, PowerStance &stance)
 void sendClueList(MapClientSession &sess)
 {
     vClueList clue_list = sess.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list;
-    sess.addCommandToSendNextUpdate(std::unique_ptr<ClueList>(new ClueList(clue_list)));
+    sess.addCommand<ClueList>(clue_list);
 }
 
 void sendSouvenirList(MapClientSession &sess)
 {
     vSouvenirList souvenir_list = sess.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
-    sess.addCommandToSendNextUpdate(std::unique_ptr<SouvenirListHeaders>(new SouvenirListHeaders(souvenir_list)));
+    sess.addCommand<SouvenirListHeaders>(souvenir_list);
 }
 
 void sendDeadNoGurney(MapClientSession &sess)
@@ -1241,20 +1241,19 @@ void addClue(MapClientSession &cl, Clue clue)
     vClueList clue_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list;
     clue_list.push_back(clue);
     cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list = clue_list;
-    cl.addCommandToSendNextUpdate(std::unique_ptr<ClueList>(new ClueList(clue_list)));
+    cl.addCommand<ClueList>(clue_list);
 }
 
 void addSouvenir(MapClientSession &cl, Souvenir souvenir)
 {
     vSouvenirList souvenir_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
     if (souvenir_list.size() > 0)
-        souvenir.m_idx = souvenir_list.size() + 1;
-    else
-        souvenir.m_idx = 0;
+        souvenir.m_idx = souvenir_list.size(); // Server sets the idx
 
+    qCDebug(logScripts) << "Souvenir m_idx: " << souvenir.m_idx << " about to be added";
     souvenir_list.push_back(souvenir);
     cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list = souvenir_list;
-    cl.addCommandToSendNextUpdate(std::unique_ptr<SouvenirListHeaders>(new SouvenirListHeaders(souvenir_list)));
+    cl.addCommand<SouvenirListHeaders>(souvenir_list);
 }
 
 //! @}

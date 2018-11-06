@@ -33,14 +33,12 @@ class ClueList final : public GameCommandEvent
         bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 70
 
         bs.StorePackedBits(1, m_clue_list.size());
-        int count = 0;
         for (const Clue &clue : m_clue_list)
         {
             bs.StoreString(clue.m_name);
             bs.StoreString(clue.m_display_name);
             bs.StoreString(clue.m_detail_text);
             bs.StoreString(clue.m_icon_file);
-            ++count;
         }
     }
 
@@ -65,13 +63,11 @@ class SouvenirListHeaders final : public GameCommandEvent
         bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 71
 
         bs.StorePackedBits(1, m_souvenir_list.size());
-        int count = 0;
         for (const Souvenir &souvenir : m_souvenir_list)
         {
-            bs.StoreBits(1, count);
+            bs.StorePackedBits(1, souvenir.m_idx);
             bs.StoreString(souvenir.m_name);
             bs.StoreString(souvenir.m_icon);
-            ++count;
         }
     }
 
@@ -116,7 +112,7 @@ class SouvenirDetail final : public GameCommandEvent
         {
             assert(!"SouvenirDetailRequest serializeto");
         }
-        void    serializefrom(BitStream &bs)
+        void serializefrom(BitStream &bs)    // Packet 68
         {
             m_souvenir_idx = bs.GetPackedBits(1);
             qCDebug(logMapEvents) << "SouvenirDetailRequest Event";
