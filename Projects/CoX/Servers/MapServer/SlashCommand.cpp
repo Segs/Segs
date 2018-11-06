@@ -1927,9 +1927,9 @@ void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
             result.push_back(part);
     }
 
-    if (result.size() > 5)
+    if (result.size() != 5)
     {
-        sendInfoMessage(MessageChannel::SERVER, "Too many arguments!", sess);
+        sendInfoMessage(MessageChannel::SERVER, "Argument count for sending email is not correct! Please send emails from the email window instead.", sess);
         return;
     }
 
