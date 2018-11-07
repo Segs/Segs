@@ -15,6 +15,7 @@
 #include "Common/GameData/other_definitions.h"
 #include "Common/GameData/npc_definitions.h"
 #include "Common/GameData/power_definitions.h"
+#include "Common/GameData/seq_definitions.h"
 
 #include "NpcStore.h"
 
@@ -41,6 +42,7 @@ class GameDataStore
         bool            read_effectiveness(const QString &directory_path);
         bool            read_pi_schedule(const QString &directory_path);
         bool            read_fx(const QString &directory_path);
+        bool            read_sequencer_definitions(const QString &directory_path);
 public:
                         GameDataStore();
                         ~GameDataStore();
@@ -71,6 +73,7 @@ public:
         Parse_PI_Schedule           m_pi_schedule;
         std::vector<struct FxInfo>  m_fx_infos;
         float                       m_player_fade_in;
+        SequencerList               m_seq_definitions; // animation sequencer definitions
 
         // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)
         const StoredPowerCategory&  get_power_category(uint32_t pcat_idx);
