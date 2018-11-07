@@ -126,7 +126,6 @@ SET(target_INCLUDE
         #particle_definitions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/DataStorage.h
     ${CMAKE_CURRENT_SOURCE_DIR}/GameDataStore.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/NpcCostumes.h
     ${CMAKE_CURRENT_SOURCE_DIR}/NpcStore.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ClientStates.h
 )

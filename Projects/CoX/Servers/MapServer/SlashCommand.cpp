@@ -118,8 +118,8 @@ void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Revive(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
-
 void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
 
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
@@ -231,6 +231,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
     {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
     {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
+    {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
 
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
@@ -2098,6 +2099,20 @@ void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess)
     sendUpdateTaskStatusList(sess, tk);
     QString msg = "Sending Test Task to client";
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess)
+{
+    qCDebug(logSlashCommand) << "Reloading all Lua scripts in" << sess.m_current_map->name();
+
+    // Reset script engine
+    sess.m_current_map->m_scripting_interface.reset(new ScriptingEngine);
+    sess.m_current_map->m_scripting_interface->setIncludeDir(sess.m_current_map->name());
+    sess.m_current_map->m_scripting_interface->registerTypes();
+
+    // load all scripts again
+    // TODO: this will regenerate any NPCs (luabot) that exist
+    sess.m_current_map->load_map_lua();
 }
 
 } // end of anonymous namespace

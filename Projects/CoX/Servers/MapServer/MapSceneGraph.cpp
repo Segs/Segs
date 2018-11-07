@@ -68,34 +68,89 @@ void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function
     }
 }
 
-static QString getCostumeFromName(const QString &n)
+static QString getRandCostumeFromName(const QString &n)
 {
-    // Special cases will go here
-    // Outbreak
-    if(n.contains("Paragon_SWAT"))
-        return "CSE_02";
-    if(n.contains("Lt_MacReady"))
-        return "CSE_01";
-    if(n.contains("Security_Chief_01"))
-        return "Model_SecurityChief";
-    if(n.contains("Security_Chief_04"))
-        return "Model_SecurityChief";
-    // Atlas Park
-    if(n.contains("FreedomCorp_City_01_01"))
-        return "Freedom_Corp_Male_01";
-    if(n.contains("FreedomCorp_City_01_01b"))
-        return "Freedom_Corp_Male_02";
-    if(n.contains("FreedomCorp_City_01_01c"))
-        return "Freedom_Corp_Male_03";
-    if(n.contains("FreedomCorp_City_01_03"))
-        return "Freedom_Corp_Male_04";
+    QStringList matching_costumes;
+    const NPCStorage &npc_store(getGameData().getNPCDefinitions());
+    for(const Parse_NPC &npc : npc_store.m_all_npcs)
+    {
+        QString name(npc.m_Name);
 
+        // skip some odd cases
+        if(name.contains("blimp", Qt::CaseInsensitive))
+            continue;
+        if(name.contains("monorail", Qt::CaseInsensitive))
+            continue;
+
+        if(name.contains(n, Qt::CaseInsensitive))
+            matching_costumes.push_back(QString(npc.m_Name));
+    }
+
+    if(matching_costumes.isEmpty())
+        return "ChessKing";
+
+    int rand_idx = rand() % matching_costumes.size();
+    return matching_costumes[rand_idx];
+}
+
+static bool checkCostumeExists(const QString &n)
+{
+    const NPCStorage &npc_store(getGameData().getNPCDefinitions());
+    for(const Parse_NPC &npc : npc_store.m_all_npcs)
+    {
+        if(npc.m_Name == n)
+            return true;
+    }
+
+    return false;
+}
+
+QString getCostumeFromName(const QString &n)
+{
+    // A lot of costumes are the object name
+    if(checkCostumeExists(n))
+        return n;
+
+    // Special cases will go here
+    // General
+    if(n.contains("CarGenerator", Qt::CaseInsensitive)) // must include underscore
+        return getRandCostumeFromName("Car_");
+    if(n.contains("NPCGenerator", Qt::CaseInsensitive))
+        return getRandCostumeFromName("maleNPC"); // will include females
+    if(n.contains("DoctorNPC", Qt::CaseInsensitive))
+        return getRandCostumeFromName("maleNPC"); // will include females
+    if(n.contains("BusinessNPC", Qt::CaseInsensitive))
+        return getRandCostumeFromName("maleNPC"); // will include females
+    if(n.contains("NPCDrones", Qt::CaseInsensitive))
+        return "Police_Drone";
+    if(n.contains("MonorailGenerator", Qt::CaseInsensitive))
+        return "Car_Monorail";
+    if(n.contains("BlimpGenerator", Qt::CaseInsensitive))
+        return "Car_Blimp";
+
+    // Outbreak
+    if(n.contains("Paragon_SWAT", Qt::CaseInsensitive))
+        return getRandCostumeFromName("MaleNPC_230");
+    if(n.contains("Lt_MacReady", Qt::CaseInsensitive))
+        return "CSE_01";
+    if(n.contains("Security_Chief", Qt::CaseInsensitive))
+        return getRandCostumeFromName("Security_Chief");
+
+    // Atlas Park
+    if(n.contains("FreedomCorp", Qt::CaseInsensitive))
+        return getRandCostumeFromName("Freedom_Corp");
+
+    // Most costumes are the object's name without spaces
+    // and with Model_ prepended. Assume this as fallback
     QString result = n;
     result = makeReadableName(result);
     result.remove(" ");
     result.prepend("Model_");
-    qCDebug(logNPCs) << "NPC Costume:" << result;
-    return result;
+    if(checkCostumeExists(result))
+        return result;
+
+    // As fallback, always return some costume
+    return "ChessPawn";
 }
 
 struct NpcCreator
@@ -163,17 +218,30 @@ struct NpcCreator
 
         if(!generators->m_generators.contains(generator_type))
         {
-            if(!m_reported_generators.contains(generator_type))
-            {
-                qCDebug(logNPCs) << "Missing generator for" << generator_type;
-                m_reported_generators.insert(generator_type);
-            }
+            qCDebug(logNPCs) << "Adding generator for" << generator_type;
 
-            return true;
+            // Get costume by generator name, includes overrides
+            NpcGenerator npcgen = {generator_type, EntType::NPC, {}, {}};
+
+            if(generator_type.contains("Door", Qt::CaseInsensitive))
+                npcgen.m_type = EntType::DOOR;
+            if(generator_type.contains("Cardrdr", Qt::CaseInsensitive))
+                npcgen.m_type = EntType::DOOR;
+            else if(generator_type.contains("Car_", Qt::CaseInsensitive))
+                npcgen.m_type = EntType::CAR;
+            else if(generator_type.contains("Nemesis_Drone", Qt::CaseInsensitive))
+                npcgen.m_type = EntType::CRITTER;
+            else if(generator_type.contains("Door_train", Qt::CaseInsensitive))
+                npcgen.m_type = EntType::MAPXFERDOOR;
+            else if(generator_type.contains("MonorailGenerator", Qt::CaseInsensitive))
+                npcgen.m_type = EntType::MOBILEGEOMETRY;
+            else if(generator_type.contains("BlimpGenerator", Qt::CaseInsensitive))
+                npcgen.m_type = EntType::MOBILEGEOMETRY;
+
+            generators->m_generators[generator_type] = npcgen;
         }
 
         generators->m_generators[generator_type].m_initial_positions.push_back(v);
-
         return true;
     }
 
@@ -223,12 +291,15 @@ struct SpawnPointLocator
     }
 };
 
-std::vector<glm::mat4> MapSceneGraph::spawn_points(const QString &kind) const
+std::vector<glm::mat4> MapSceneGraph::spawn_points(const QStringList &kinds) const
 {
     std::vector<glm::mat4> res;
-    SpawnPointLocator locator(kind, &res);
-    for(auto v : m_scene_graph->refs)
-        walkSceneNode(v->node, v->mat, locator);
+    for(const QString &kind : kinds)
+    {
+        SpawnPointLocator locator(kind, &res);
+        for(auto v : m_scene_graph->refs)
+            walkSceneNode(v->node, v->mat, locator);
+    }
 
     return res;
 }

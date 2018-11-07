@@ -1,4 +1,4 @@
-printDebug('global script loading...')
+printDebug('Loading global.lua...')
 
 local enhancements = {
     'Generic_Damage', 'Generic_Accuracy', 'Generic_Resistance', 'Generic_Defense',
@@ -164,7 +164,7 @@ function UpdateTasksForZone(zone)
 end
 
 
-printDebug('global script loaded')
+printDebug('Finished Loading global.lua')
 
 --Notes for scriping
 -- 112, 16, -216

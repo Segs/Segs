@@ -25,7 +25,7 @@ struct NpcTemplate
 
 struct NpcGenerator
 {
-    QString m_costume_name;
+    QString m_generator_name;
     EntType m_type;
     std::vector<glm::mat4> m_initial_positions;
     std::vector<NpcTemplate> m_possible_npcs;

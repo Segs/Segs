@@ -65,13 +65,13 @@ struct ScriptingEngine::ScriptingEnginePrivate
     {
         m_lua.open_libraries(sol::lib::base, sol::lib::coroutine, sol::lib::table, sol::lib::string, sol::lib::math,
                              sol::lib::utf8, sol::lib::debug);
-
     }
+
     bool performInclude(const char *path)
     {
         if(m_restricted_include_dir.isEmpty())
             return false;
-        QString full_path=QDir(m_restricted_include_dir).filePath(QDir::cleanPath(path));
+        QString full_path = QDir(m_restricted_include_dir).filePath(QDir::cleanPath(path));
         if(m_alread_included_and_ran.contains(full_path))
             return true;
         QFileInfo include_info(full_path);
@@ -82,10 +82,9 @@ struct ScriptingEngine::ScriptingEnginePrivate
             return false;
         QByteArray script_contents = content_file.read(MAX_INCLUDED_FILE_SIZE);
         if(script_contents.size()==MAX_INCLUDED_FILE_SIZE)
-        {
             return false;
-        }
-        sol::load_result load_res=m_lua.load(script_contents.toStdString(),qPrintable(include_info.filePath()));
+
+        sol::load_result load_res = m_lua.load(script_contents.toStdString(),qPrintable(include_info.filePath()));
         if(!load_res.valid())
         {
             sol::error err = load_res;
@@ -107,8 +106,6 @@ struct ScriptingEngine::ScriptingEnginePrivate
     sol::state m_lua;
     QString m_restricted_include_dir;
     QSet<QString> m_alread_included_and_ran;
-
-
 };
 
 ScriptingEngine::ScriptingEngine() : m_private(new ScriptingEnginePrivate)
@@ -117,8 +114,6 @@ ScriptingEngine::ScriptingEngine() : m_private(new ScriptingEnginePrivate)
 }
 
 ScriptingEngine::~ScriptingEngine() = default;
-
-
 
 
 template<class T>
@@ -356,13 +351,14 @@ void ScriptingEngine::registerTypes()
 
 int ScriptingEngine::loadAndRunFile(const QString &filename)
 {
-    sol::load_result load_res=m_private->m_lua.load_file(filename.toStdString());
+    sol::load_result load_res = m_private->m_lua.load_file(filename.toStdString());
     if(!load_res.valid())
     {
         sol::error err = load_res;
         qCritical() << err.what();
         return -1;
     }
+
     sol::protected_function_result script_result = load_res();
     if(!script_result.valid())
     {
@@ -370,6 +366,7 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
         qCritical() << err.what();
         return -1;
     }
+
     return 0;
 }
 

@@ -37,7 +37,6 @@
 #include "GameData/CharacterHelpers.h"
 #include "GameData/Entity.h"
 #include "GameData/GameDataStore.h"
-#include "GameData/NpcCostumes.h"
 #include "GameData/Trade.h"
 #include "GameData/chardata_serializers.h"
 #include "GameData/clientoptions_serializers.h"
@@ -87,18 +86,15 @@ namespace
     const ACE_Time_Value afk_update_interval(0, 1000 * 1000);
     const ACE_Time_Value resend_interval(0,250*1000);
     const CRUDLink::duration maximum_time_without_packets(2000);
-    const constexpr int MinPacketsToAck=5;
+    const constexpr int MinPacketsToAck = 5;
 
-    void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
+    void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua, const QString &locations_scriptname)
     {
-        if(QFile::exists(locations_scriptname))
-        {
-            lua->loadAndRunFile(locations_scriptname);
-        }
-        else
-        {
-            qDebug().noquote() << locations_scriptname <<"is missing; Process will continue without it.";
-        }
+        if(!QFile::exists(locations_scriptname))
+            qCDebug(logScripts).noquote() << locations_scriptname << "is missing; Process will continue without it.";
+
+        qCDebug(logScripts).noquote() << "Loading" << locations_scriptname;
+        lua->loadAndRunFile(locations_scriptname);
     }
 } // namespace
 
@@ -135,56 +131,24 @@ void MapInstance::start(const QString &scenegraph_path)
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
-        m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",EntType::NPC,{},{}};
-        m_npc_generators.m_generators["Nemesis_Drone"] = {"Nemesis_Drone",EntType::NPC,{},{}};
-        m_npc_generators.m_generators["MonorailGenerator"] = {"Car_Monorail",EntType::MOBILEGEOMETRY,{},{}};
-        m_npc_generators.m_generators["BlimpGenerator"] = {"Car_Blimp",EntType::MOBILEGEOMETRY,{},{}};
-
-        m_npc_generators.m_generators["ES_Robot1_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
-        m_npc_generators.m_generators["ES_Robot2_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
-        m_npc_generators.m_generators["ES_Robot3_City_00_01"] = {"Nemesis_Drone",EntType::NPC,{},{}};
-
-        for(auto door : s_all_doors)
-            m_npc_generators.m_generators[door] = {door, EntType::DOOR,{},{}};
-        for(auto xdoor : s_xfer_doors)
-            m_npc_generators.m_generators[xdoor] = {xdoor, EntType::MAPXFERDOOR,{},{}};
-        for(auto car : s_all_cars)
-            m_npc_generators.m_generators["CarGenerator"] = {car, EntType::CAR,{},{}};
-
-        for(auto ped : s_all_pedestrians)
-            m_npc_generators.m_generators["NPCGenerator"] = {ped, EntType::MOBILEGEOMETRY,{},{}};
-        for(auto doc : s_all_doctors)
-            m_npc_generators.m_generators["DoctorNPCGenerator"] = {doc, EntType::MOBILEGEOMETRY,{},{}};
-        for(auto biz : s_all_biznpcs)
-            m_npc_generators.m_generators["BusinessNPCGenerator"] = {biz, EntType::MOBILEGEOMETRY,{},{}};
-
         bool scene_graph_loaded = false;
         Q_UNUSED(scene_graph_loaded);
+
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
-                m_new_player_spawns = m_map_scenegraph->spawn_points("NewPlayer");
+                m_new_player_spawns = m_map_scenegraph->spawn_points(s_starting_spawn_nodes);
+                m_all_zone_spawns = m_map_scenegraph->spawn_points(s_spawn_nodes);
             }, "Loading original scene graph"
             );
+
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
             }, "Spawning npcs");
 
-        qInfo() << "Loading custom scripts";
-        //Global script
-        QString global_scriptname="scripts/global.lua";
-        loadAndRunLua(m_scripting_interface,global_scriptname);
-
-        //Scripts for zone
-        QString locations_scriptname=m_data_path+'/'+"locations.lua";
-        QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
-        QString entities_scriptname=m_data_path+'/'+"entities.lua";
-        QString missions_scriptname=m_data_path+'/'+"missions.lua";
-        loadAndRunLua(m_scripting_interface,locations_scriptname);
-        loadAndRunLua(m_scripting_interface,plaques_scriptname);
-        loadAndRunLua(m_scripting_interface,entities_scriptname);
-        loadAndRunLua(m_scripting_interface,missions_scriptname);
+        // Load Lua Scripts for this Map Instance
+        load_map_lua();
     }
     else
     {
@@ -207,6 +171,26 @@ void MapInstance::start(const QString &scenegraph_path)
     m_afk_update_timer = std::make_unique<SEGSTimer>(this, Afk_Update_Timer, afk_update_interval, false );
 
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
+}
+
+///
+/// \fn MapInstance::load_lua
+/// \brief This function should load the lua files from m_data_path
+void MapInstance::load_map_lua()
+{
+    qInfo() << "Loading custom scripts";
+
+    QStringList script_paths = {
+        "scripts/global.lua", // global helper script
+        // per zone scripts
+        m_data_path+'/'+"locations.lua",
+        m_data_path+'/'+"plaques.lua",
+        m_data_path+'/'+"entities.lua",
+        m_data_path+'/'+"missions.lua"
+    };
+
+    for(const QString &path : script_paths)
+        loadAndRunLua(m_scripting_interface, path);
 }
 
 ///
@@ -570,9 +554,11 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     map_server->putq(map_req);
 }
 
-void MapInstance::on_map_xfer_complete(MapXferComplete */*ev*/)
+void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
 {
     // TODO: Do anything necessary after connecting to new map instance here.
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    forcePosition(*session.m_ent, session.m_current_map->closest_safe_location(session.m_ent->m_entity_data.m_pos));
 }
 
 void MapInstance::on_idle(Idle *ev)
@@ -631,7 +617,6 @@ void MapInstance::on_client_quit(ClientQuit*ev)
         if (!session.m_ent->m_char->m_char_data.m_is_on_auto_logout)
             abortLogout(session.m_ent);
     }
-
     else
         session.m_ent->beginLogout(10);
 }
@@ -2370,10 +2355,12 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
 glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
 {
     Q_UNUSED(v);
+    // Prefer default spawners if available, otherwise, random.
     if(!m_new_player_spawns.empty())
-    {
-        return m_new_player_spawns.front()[3];
-    }
+        return m_new_player_spawns[rand()%m_new_player_spawns.size()][3];
+    if(!m_all_zone_spawns.empty())
+        return m_all_zone_spawns[rand()%m_all_zone_spawns.size()][3];
+
     return glm::vec3(0,0,0);
 }
 
