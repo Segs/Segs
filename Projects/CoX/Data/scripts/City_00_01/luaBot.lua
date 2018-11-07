@@ -168,6 +168,10 @@ LuaBot.callback = function(id)
         if(LuaBot.settingTitle) then -- Title selection buttons trigger dialog_button
             LuaBot.settingTitle = false
             LuaBot.Mode = nil
+            if(id == 1) then
+                LuaBot.Mode = 21 -- "Choose later" on set title will show previous screen.
+                -- Selecting the title will close the contact window.
+            end
         elseif(LuaBot.Mode == nil) then -- using mode to reuse button Ids
             if (id == 1) then
                 printDebug("LuaBot moving to stat mode: " .. tostring(id))
