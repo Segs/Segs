@@ -89,6 +89,10 @@ function Player.AddSouvenir(souvenir)
     Character.addSouvenir(client, souvenir)
 end
 
+function Player.SetActiveDialogCallback(callback)
+    Character.setActiveDialogCallback(client, callback)
+end
+
 --Just for testing
 function Player.GiveRandomInsp()
     local randomIndex = math.random(1, 7)

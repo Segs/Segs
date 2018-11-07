@@ -375,7 +375,11 @@ void ScriptingEngine::registerTypes()
             }
         },
         "addClue", addClue,
-        "addSouvenir", addSouvenir
+        "addSouvenir", addSouvenir,
+        "setActiveDialogCallback", [](MapClientSession *cl, std::function<void(int)> callback)
+        {
+           cl->m_ent->setActiveDialogCallback(callback);
+        }
 
     );
 

@@ -2522,7 +2522,16 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     }
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
+
+    if(session.m_ent->m_active_dialog != NULL)
+    {
+        session.m_ent->m_active_dialog(ev->button_id);
+    }
+    else
+    {
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
+    }
+
 }
 
 void MapInstance::on_move_enhancement(MoveEnhancement *ev)

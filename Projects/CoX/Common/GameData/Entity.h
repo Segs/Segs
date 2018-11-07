@@ -236,6 +236,8 @@ public:
         bool                m_destroyed                 = false;
         bool                m_is_fading                 = true;
 
+        std::function<void(int)>  m_active_dialog      = NULL;
+
         void                dump();
 
 static  void                sendAllyID(BitStream &bs);
@@ -244,4 +246,5 @@ static  void                sendPvP(BitStream &bs);
         const QString &     name() const;
         void                fillFromCharacter(const GameDataStore &data);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
+        void                setActiveDialogCallback(std::function<void(int)> callback);
 };
