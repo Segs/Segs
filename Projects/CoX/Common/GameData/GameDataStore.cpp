@@ -478,33 +478,79 @@ bool GameDataStore::read_powers(const QString &directory_path)
     StoredAttribMod temp;
     Power_Data *temppower = nullptr;
 
-    temp.name = "Damage";
     temp.Magnitude = 5;
+    temp.Duration = 1.0;
+    temp.name = "regeneration";
+    temppower = editable_power_tpl(26,0,7);    // rest
+    temppower->pAttribMod.push_back(temp);
+    temp.name = "recovery";
+    temppower->pAttribMod.push_back(temp);
+    temp.name = "immobilized";
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "damage";
     temppower = editable_power_tpl(26,0,0);    // brawl
     temppower->pAttribMod.push_back(temp);
 
-    temp.name = "Healing";
+    temp.name = "healing";
     temppower = editable_power_tpl(27,0,24);   // medkit
     temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(25,0,3);   // respite
+    temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(25,1,3);   // tier2 heal
+    temppower->pAttribMod.push_back(temp);
 
-    temp.name = "Speed_Boost";
+    temp.name = "speed_boost";
     temp.Magnitude = 0.5;
-    temp.Duration = 0.5;
-    temp.name = "Flight";
     temppower = editable_power_tpl(26,0,6);    // sprint
     temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(26,0,1);    // powerslide
+    temppower->pAttribMod.push_back(temp);
     temp.Magnitude = 5.0;
-  //  temppower = editable_power_tpl(26,0,6);    // superspeed
-  //  temppower->pAttribMod.push_back(temp);
-
-    temp.name = "Regeneration";
-    temppower = editable_power_tpl(26,0,7);    // rest
+    temppower = editable_power_tpl(28,8,2);    // superspeed
     temppower->pAttribMod.push_back(temp);
 
-    temp.name = "Teleport";
-    //temppower = editable_power_tpl(26,0,7);    // rest
-   // temppower->pAttribMod.push_back(temp);
-            return true;
+    temp.name = "flight";
+    temp.Magnitude = 0.5;
+    temppower = editable_power_tpl(28,1,0);    // hover
+    temppower->pAttribMod.push_back(temp);
+    temp.Magnitude = 5.0;
+    temppower = editable_power_tpl(28,1,2);    // flight
+    temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(28,1,3);    // group flight
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "teleport";
+    temppower = editable_power_tpl(28,9,2);    // teleport
+    temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(28,9,1);    // teleport foe
+    temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(28,9,0);    // teleport ally
+    temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(28,9,3);    // teleport team
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "defense";
+    temppower = editable_power_tpl(28,1,0);     //hover again
+    temppower->pAttribMod.push_back(temp);
+
+    temp.Duration = 30.0;
+    temppower = editable_power_tpl(25,0,0);    // luck
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "endurancemod";
+    temppower = editable_power_tpl(25,0,2);    // catch a breath
+    temppower->pAttribMod.push_back(temp);
+
+    temp.Magnitude = 0.2;
+    temp.name = "accuracy";
+    temppower = editable_power_tpl(25,0,1);    // insight
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "revive";
+    temppower = editable_power_tpl(25,0,6);    // awaken
+    temppower->pAttribMod.push_back(temp);
+    return true;
 }
 
 bool GameDataStore::read_combine_chances(const QString &directory_path)

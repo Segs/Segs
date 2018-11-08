@@ -67,14 +67,14 @@ struct Parse_CharAttrib
     float m_Knockup             = 0;
     float m_Knockback           = 0;
     float m_Repel               = 0;
-    float m_Accuracy            = 0;
-    float m_Radius              = 0;
-    float m_Arc                 = 0;
-    float m_Range               = 0;
-    float m_TimeToActivate      = 0;
-    float m_RechargeTime        = 0;
-    float m_InterruptTime       = 0;
-    float m_EnduranceDiscount   = 0;
+    float m_Accuracy            = 1;
+    float m_Radius              = 1;
+    float m_Arc                 = 1;
+    float m_Range               = 1;
+    float m_TimeToActivate      = 1;
+    float m_RechargeTime        = 1;
+    float m_InterruptTime       = 1;
+    float m_EnduranceDiscount   = 1;
     float *begin() { return &m_DamageTypes[0]; }
     float *end() { return (&m_EnduranceDiscount)+1; }
     const float *begin() const { return &m_DamageTypes[0]; }

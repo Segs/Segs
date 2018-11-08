@@ -11,6 +11,7 @@
  */
 
 #include "Powers.h"
+#include "../Servers/MapServer/DataHelpers.h"
 #include "Entity.h"
 #include "EntityHelpers.h"
 #include "Character.h"
@@ -527,7 +528,6 @@ void dumpOwnedPowers(CharacterData &cd)
     }
 }
 
-
 /*
  * Inspirations Methods
  */
@@ -686,7 +686,14 @@ bool useInspiration(Entity &ent, uint32_t col, uint32_t row)
 
     if(insp == nullptr)
         return 0;
-
+    QStringList revive_names = {
+        "Awaken",
+        "Bounce_Back",
+        "Restoration",
+    };
+    if(revive_names.contains(insp->m_name, Qt::CaseInsensitive))
+        if (ent.m_char->getHealth() != 0.0)         // isdead()?
+            return false;
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
     applyInspirationEffect(ent, col, row);
     removeInspiration(cd, col, row);
@@ -698,12 +705,10 @@ void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
     qCDebug(logPowers) << "Removing inspiration from " << col << "x" << row;
 
     int max_rows = cd.m_max_insp_rows;
-
     CharacterInspiration insp;
     insp.m_col = col;
     insp.m_row = row;
     cd.m_inspirations.at(col, row) = insp;
-
     for(int j = row; j < max_rows; ++j)
     {
         if(j+1 >= max_rows)
@@ -719,64 +724,9 @@ void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
 {
     const CharacterInspiration *insp = getInspiration(ent, col, row);
 
-    // TODO: Refactor this
-    QStringList health_names = {
-        "Respite",
-        "Dramatic_Improvement",
-        "Resurgence",
-    };
-
-    QStringList endurance_names = {
-        "Catch_a_Breath",
-        "Take_a_Breather",
-        "Second_Wind",
-    };
-
-    QStringList luck_names = {
-        "Luck",
-        "Good_Luck",
-        "Phenomenal_Luck",
-    };
-
-    QStringList revive_names = {
-        "Awaken",
-        "Bounce_Back",
-        "Restoration",
-    };
-
-    if(health_names.contains(insp->m_name, Qt::CaseInsensitive))
-        setHP(*ent.m_char, getHP(*ent.m_char) + 15);
-
-    if(endurance_names.contains(insp->m_name, Qt::CaseInsensitive))
-        setEnd(*ent.m_char, getEnd(*ent.m_char) + 15);
-
-    // Test Buff System. Refactor all of this out.
-    if(luck_names.contains(insp->m_name, Qt::CaseInsensitive))
-    {
-        Buffs buff;
-        buff.m_buff_info = insp->m_insp_info;
-        buff.m_activate_period = 30.0f; // hardcoded for now
-        ent.m_buffs.push_back(buff);
-        ent.m_update_buffs = true;
-    }
-
-    if(revive_names.contains(insp->m_name, Qt::CaseInsensitive))
-    {
-        if(getHP(*ent.m_char) > 0.0)
-            return;
-
-        ReviveLevel lvl;
-        if(insp->m_name.contains(revive_names[0], Qt::CaseInsensitive))
-            lvl = ReviveLevel::AWAKEN;
-        else if(insp->m_name.contains(revive_names[1], Qt::CaseInsensitive))
-            lvl = ReviveLevel::BOUNCE_BACK;
-        else if(insp->m_name.contains(revive_names[2], Qt::CaseInsensitive))
-            lvl = ReviveLevel::RESTORATION;
-        else
-            lvl = ReviveLevel::IMMORTAL_RECOVERY;
-
-        revivePlayer(ent, lvl);
-    }
+    CharacterPower temp;
+    temp.m_power_info = insp->m_insp_info;
+    doEffect(ent, &ent, &temp);
 }
 
 void dumpInspirations(CharacterData &cd)

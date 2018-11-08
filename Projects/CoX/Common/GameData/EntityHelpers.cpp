@@ -168,15 +168,19 @@ void toggleMovementAuthority(Entity &e)
 }
 void modifyAttrib(Entity &e, QString name, float value)
 {
-    if (name == "Regeneration")
+    if (name == "regeneration")
         e.m_char->m_char_data.m_current_attribs.m_Regeneration += value;
-    else if (name == "Speed_Boost")
+    else if (name == "recovery")
+        e.m_char->m_char_data.m_current_attribs.m_Recovery += value;
+    else if (name == "accuracy")
+        e.m_char->m_char_data.m_current_attribs.m_Accuracy += value;
+    else if (name == "speed_boost")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedRunning += value;
         setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
                  e.m_char->m_char_data.m_current_attribs.m_SpeedFlying);
     }
-    else if (name == "Flight")
+    else if (name == "flight")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedFlying += value;
         if (e.m_char->m_char_data.m_current_attribs.m_SpeedFlying > 1)
@@ -185,6 +189,14 @@ void modifyAttrib(Entity &e, QString name, float value)
             e.m_motion_state.m_is_flying = false;
         setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
                  e.m_char->m_char_data.m_current_attribs.m_SpeedFlying);
+    }
+    else if (name == "immobolized")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Immobilized += value;
+        if (e.m_char->m_char_data.m_current_attribs.m_Immobilized > 1)
+            e.m_motion_state.m_controls_disabled = true;
+        else
+            e.m_motion_state.m_controls_disabled = false;
     }
 }
 

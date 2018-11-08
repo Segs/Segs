@@ -170,6 +170,7 @@ public:
         glm::quat           m_direction;
         int32_t             m_target_idx            = -1;
         int32_t             m_assist_target_idx     = -1;
+        glm::vec3           m_target_loc;
 
         std::vector<Buffs>          m_buffs;
         QQueue<QueuedPowers>        m_queued_powers;
@@ -240,8 +241,8 @@ public:
 
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
-        bool                validTarget(StoredEntEnum);
-        void                addBuff(Buffs &buff);
+        bool                validTarget(StoredEntEnum, bool);
+        bool                validTarget(std::vector<StoredEntEnum>, bool);
 
         const QString &     name() const;
         void                fillFromCharacter(const GameDataStore &data);

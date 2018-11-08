@@ -79,14 +79,13 @@ struct PowerVecIndexes
 struct QueuedPowers
 {
     PowerVecIndexes m_pow_idxs;
-   // float           m_activate_period       = 0.0f;
+    float           m_activate_period       = 0.0f;
     float           m_recharge_time         = 0.0f;
     float           m_time_to_activate      = 0.0f;
     bool            m_active_state_change   = false;
     bool            m_activation_state      = false;
     bool            m_timer_updated         = false;
     int32_t         m_tgt_idx               = -1;
-    //target location xyz for use power at location
 };
 
 class PowerPool_Info
@@ -105,11 +104,12 @@ enum : uint32_t { class_version=1 };
 
 struct Buffs
 {
+    QString         m_name                  = "unknown";
     PowerPool_Info  m_buff_info;
     float           m_time_to_activate      = 0.0f;
     float           m_activate_period       = 0.0f;
     float           m_value                 = 0.0f;
-    QString         m_name                  = "unknown";
+    QString         m_value_name            = "unknown";
     int32_t         source_ent_idx          = -1;
 };
 
@@ -352,7 +352,6 @@ uint32_t countAllOwnedPowers(CharacterData &cd, bool include_temps);
 void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
 void dumpOwnedPowers(CharacterData &cd);
-
 
 /*
  * Inspirations Methods

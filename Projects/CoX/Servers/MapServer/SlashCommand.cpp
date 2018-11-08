@@ -126,6 +126,7 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Alignment(const QString &cmd, MapClientSession &sess);
 
 // Access Level 1 Commands
 void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess);
@@ -237,6 +238,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", cmdHandler_AddNPC, 2},
     {{"moveTo", "setpos", "setpospyr"},"set the gm's position to <x> <y> <z>", cmdHandler_MoveTo, 2},
+    {{"align", "alignment", "herostatus"},"set the gm's alignment to hero, villian, both, neither", cmdHandler_Alignment, 2},
 
     /* Access Level 1 Commands */
     {{"cmdlist","commandlist"},"List all accessible commands", cmdHandler_CmdList, 1},
@@ -1331,6 +1333,20 @@ void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
 
     forcePosition(*sess.m_ent,new_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("New position set"), sess);
+}
+void cmdHandler_Alignment(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+    if(parts.size() == 2)
+    {
+        setAlignment(*sess.m_ent, parts[1].toString());
+        sendInfoMessage(MessageChannel::DEBUG_INFO, "New alignment: "+parts[1], sess);
+        return;
+     }
+
+    qCDebug(logSlashCommand) << "Bad invocation: "<<cmd;
+    sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation: "+cmd, sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

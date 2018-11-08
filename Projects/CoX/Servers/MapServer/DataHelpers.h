@@ -86,6 +86,7 @@ void updateContactStatusList(MapClientSession &sess, const Contact &contact_to_u
 void sendContactStatusList(MapClientSession &sess);
 void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location);
 void sendStance(MapClientSession &sess, PowerStance &stance);
+void resetStance(MapClientSession &sess);
 void sendDeadNoGurney(MapClientSession &sess);
 void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state);
 void sendDoorAnimExit(MapClientSession &sess, bool force_move);
@@ -96,6 +97,10 @@ void sendDoorAnimExit(MapClientSession &sess, bool force_move);
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx);
 void doPower(Entity &ent, QueuedPowers powerinput);
+void doEffect(Entity &ent, Entity *target_ent, CharacterPower * ppower);
+void sendResult(Entity &src,Entity &tgt, QString name, float value);
+void removeBuff(Entity &ent, Buffs &buff);
+void addBuff(Entity &ent, Buffs &buff);
 void increaseLevel(Entity &ent);
 
 /*
@@ -119,3 +124,4 @@ void removeTask(MapClientSession &src, Task task);
 void train (MapClientSession &sess);
 void setTitle (MapClientSession &sess, QString title);
 void showMapMenu(MapClientSession &sess);
+void setAlignment(Entity &e, QString align);

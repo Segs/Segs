@@ -2292,7 +2292,7 @@ void MapInstance::on_activate_power(ActivatePower *ev)
         qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
         return;
     }
-    qWarning() << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+
     usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
 }
 
@@ -2300,14 +2300,34 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_has_input_on_timeframe = true;
-    qWarning() << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
 
-    // TODO: Check that target is valid, then Do Power!
-    QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    CharacterPower * ppower = nullptr;
+    ppower = getOwnedPowerByVecIdx(*session.m_ent, ev->pset_idx, ev->pow_idx);
+    const Power_Data powtpl = ppower->getPowerTemplate();
+    int tgt_idx = ev->target_idx;
+
+    Entity *target_ent = getEntity(&session, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
+    if (powtpl.Target == StoredEntEnum::Teleport && (powtpl.EntsAffected[0] == StoredEntEnum::Caster ))
+        tgt_idx = session.m_ent->m_idx;
+    qWarning() << "Entity: " << session.m_ent->m_idx << "has activated power" << powtpl.m_Name;
+
     sendFaceLocation(session, ev->location);
 
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+    session.m_ent->m_target_loc = ev->location;
+    QueuedPowers qpowers;
+    qpowers.m_pow_idxs = {ev->pset_idx, ev->pow_idx};
+    qpowers.m_active_state_change   = true;
+    qpowers.m_timer_updated         = true;
+    qpowers.m_tgt_idx = tgt_idx;
+    qpowers.m_recharge_time         = 0;
+    qpowers.m_activation_state      = true;
+    qpowers.m_time_to_activate      = powtpl.TimeToActivate;
+    session.m_ent->m_queued_powers.push_back(qpowers); // Activation Queue
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
