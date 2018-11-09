@@ -2030,6 +2030,11 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         map_server->session_xfer_complete(session.link()->session_token());
     }
 
+    Parse_CharAttrib replace;
+    replace.m_HitPoints = session.m_ent->m_char->getHealth();
+    replace.m_Endurance = 100;
+    session.m_ent->m_char->m_char_data.m_current_attribs = replace;
+
     // Call Lua Connected function.
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
 }
@@ -2314,7 +2319,6 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     }
     if (powtpl.Target == StoredEntEnum::Teleport && (powtpl.EntsAffected[0] == StoredEntEnum::Caster ))
         tgt_idx = session.m_ent->m_idx;
-    qWarning() << "Entity: " << session.m_ent->m_idx << "has activated power" << powtpl.m_Name;
 
     sendFaceLocation(session, ev->location);
 

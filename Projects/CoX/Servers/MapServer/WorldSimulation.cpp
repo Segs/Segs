@@ -101,9 +101,9 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
             qpow.m_activation_state      = false;
             qpow.m_active_state_change   = true;
             qpow.m_timer_updated         = true;
+            e->m_char->m_char_data.m_has_updated_powers = true;
 
             e->m_queued_powers.dequeue(); // remove first from queue
-            e->m_char->m_char_data.m_has_updated_powers = true;
         }
     }
 
@@ -142,7 +142,7 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
             CharacterPower * ppower = nullptr;
             ppower = getOwnedPowerByVecIdx(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx);
             const Power_Data powtpl = ppower->getPowerTemplate();
-            doPower(*e, *rpow_idx.base());
+            doPower(*e, *rpow_idx);
             rpow_idx->m_time_to_activate += 0.2F + powtpl.ActivatePeriod;
         }
         ++rpow_idx;

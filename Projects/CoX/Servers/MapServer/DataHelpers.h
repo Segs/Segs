@@ -101,6 +101,8 @@ void doEffect(Entity &ent, Entity *target_ent, CharacterPower * ppower);
 void sendResult(Entity &src,Entity &tgt, QString name, float value);
 void removeBuff(Entity &ent, Buffs &buff);
 void addBuff(Entity &ent, Buffs &buff);
+void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
+bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void increaseLevel(Entity &ent);
 
 /*

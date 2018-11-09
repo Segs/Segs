@@ -480,13 +480,20 @@ bool GameDataStore::read_powers(const QString &directory_path)
 
     temp.Magnitude = 5;
     temp.Duration = 1.0;
+
     temp.name = "regeneration";
+    temppower = editable_power_tpl(30,0,2);    // health
+    temppower->pAttribMod.push_back(temp);
+
     temppower = editable_power_tpl(26,0,7);    // rest
     temppower->pAttribMod.push_back(temp);
-    temp.name = "recovery";
-    temppower->pAttribMod.push_back(temp);
     temp.name = "immobilized";
+    temppower->pAttribMod.push_back(temp);      //rest
+
+    temp.name = "recovery";
+    temppower->pAttribMod.push_back(temp);      //rest
     temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(30,0,3);    // stamina
 
     temp.name = "damage";
     temppower = editable_power_tpl(26,0,0);    // brawl
@@ -504,6 +511,8 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temp.Magnitude = 0.5;
     temppower = editable_power_tpl(26,0,6);    // sprint
     temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(30,0,0);    // quick
+    temppower->pAttribMod.push_back(temp);
     temppower = editable_power_tpl(26,0,1);    // powerslide
     temppower->pAttribMod.push_back(temp);
     temp.Magnitude = 5.0;
@@ -517,6 +526,7 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temp.Magnitude = 5.0;
     temppower = editable_power_tpl(28,1,2);    // flight
     temppower->pAttribMod.push_back(temp);
+    temp.Duration = 4.0;
     temppower = editable_power_tpl(28,1,3);    // group flight
     temppower->pAttribMod.push_back(temp);
 
@@ -531,7 +541,8 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "defense";
-    temppower = editable_power_tpl(28,1,0);     //hover again
+    temp.Duration = 1.0;
+    temppower = editable_power_tpl(28,1,0);     //hover
     temppower->pAttribMod.push_back(temp);
 
     temp.Duration = 30.0;

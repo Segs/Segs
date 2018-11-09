@@ -11,7 +11,6 @@
  */
 
 #include "Powers.h"
-#include "../Servers/MapServer/DataHelpers.h"
 #include "Entity.h"
 #include "EntityHelpers.h"
 #include "Character.h"
@@ -679,27 +678,6 @@ void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint
     qCDebug(logPowers) << "Moving inspiration from" << src_col << "x" << src_row << "to" << dest_col << "x" << dest_row;
 }
 
-bool useInspiration(Entity &ent, uint32_t col, uint32_t row)
-{
-    CharacterData &cd = ent.m_char->m_char_data;
-    const CharacterInspiration *insp = getInspiration(ent, col, row);
-
-    if(insp == nullptr)
-        return 0;
-    QStringList revive_names = {
-        "Awaken",
-        "Bounce_Back",
-        "Restoration",
-    };
-    if(revive_names.contains(insp->m_name, Qt::CaseInsensitive))
-        if (ent.m_char->getHealth() != 0.0)         // isdead()?
-            return false;
-    qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
-    applyInspirationEffect(ent, col, row);
-    removeInspiration(cd, col, row);
-    return true;
-}
-
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
 {
     qCDebug(logPowers) << "Removing inspiration from " << col << "x" << row;
@@ -720,14 +698,6 @@ void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row)
     cd.m_has_updated_powers = true; // update client on power status
 }
 
-void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
-{
-    const CharacterInspiration *insp = getInspiration(ent, col, row);
-
-    CharacterPower temp;
-    temp.m_power_info = insp->m_insp_info;
-    doEffect(ent, &ent, &temp);
-}
 
 void dumpInspirations(CharacterData &cd)
 {

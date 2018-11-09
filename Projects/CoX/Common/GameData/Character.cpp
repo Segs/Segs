@@ -660,11 +660,6 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
         main_costume.setCharacterId(costume.m_character_id);
     }
 
-    Parse_CharAttrib replace;                   // not the best place to do this, but current attribs need to 0'd every log in
-    replace.m_HitPoints = tgt.getHealth();
-    replace.m_Endurance = 100;
-    cd.m_current_attribs = replace;
-                                                // search for auto powers, usepower to activate them
     return true;
 }
 

@@ -559,7 +559,7 @@ void sendDoorAnimExit(MapClientSession &sess, bool force_move)
  * usePower and increaseLevel here to provide access to
  * both Entity and sendInfoMessage
  */
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)//  ,int32_t tgt_id
 {
     QString from_msg, to_msg;
     CharacterPower * ppower = nullptr;
@@ -570,7 +570,9 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
     if(ppower == nullptr || powtpl.m_Name.isEmpty())
         return;
     if (powtpl.Type == PowerType::Toggle && (ent.m_auto_powers.size() > 0))             //checks if there are active toggles
+    {
         for(auto rpow_idx = ent.m_auto_powers.begin(); rpow_idx != ent.m_auto_powers.end();rpow_idx++)
+        {
             if (rpow_idx->m_pow_idxs.m_pow_vec_idx == pow_idx && rpow_idx->m_pow_idxs.m_pset_vec_idx == pset_idx)// this toggle is already on
             {
                 QueuedPowers qpowers;                                                            // so remove it and return
@@ -578,7 +580,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
                 qpowers.m_active_state_change   = true;
                 qpowers.m_timer_updated         = true;
                 qpowers.m_recharge_time = powtpl.RechargeTime;
-                qpowers.m_time_to_activate      = powtpl.TimeToActivate;
+                qpowers.m_time_to_activate      = 0;
                 qpowers.m_activate_period       = powtpl.TimeToActivate;
                 qpowers.m_activation_state      = false;
                 ent.m_recharging_powers.push_back(qpowers);         // put this into recharge Queue
@@ -586,17 +588,19 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
                 ent.m_auto_powers.erase(rpow_idx);
                 return;
             }
+        }
+    }
     // Target IDX of -1 is actually SELF
     if(tgt_idx == -1)
         tgt_idx = getIdx(ent);
 
     // Get target and check that it's valid
-        Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-        if(target_ent == nullptr)
-        {
-            qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
-            return;
-        }
+    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
     if (powtpl.Range == 0.0)   // skips the following checks, self targeted always are in range and valid target
     {
         target_ent = &ent;
@@ -664,9 +668,9 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
     }
     if(!ent.m_recharging_powers.empty())    //check if this is already recharging
     {
-        for (uint32_t i = 0; i<ent.m_recharging_powers.size();i++){
-            if (ent.m_recharging_powers[i].m_pow_idxs.m_pow_vec_idx == pow_idx
-                    && ent.m_recharging_powers[i].m_pow_idxs.m_pset_vec_idx == pset_idx)
+        for(const QueuedPowers & pow : ent.m_recharging_powers)
+        {
+            if (pow.m_pow_idxs.m_pow_vec_idx == pow_idx  && pow.m_pow_idxs.m_pset_vec_idx == pset_idx)
             {
                 from_msg = FloatingInfoMsg.find(FloatingMsg_Recharging).value();
                 sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
@@ -713,7 +717,8 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
         }
     }
 }
-void doPower(Entity &ent, QueuedPowers powerinput){
+void doPower(Entity &ent, QueuedPowers powerinput)
+{
     QString from_msg, to_msg;
     int tgt_idx = powerinput.m_tgt_idx;
     if(tgt_idx == -1)
@@ -731,14 +736,14 @@ void doPower(Entity &ent, QueuedPowers powerinput){
 
     setEnd(*ent.m_char, getEnd(*ent.m_char)-powtpl.EnduranceCost);
 
-    // Queue power and add to recharge queue if necessary
+    // Queue power
     // TODO: refactor as queuePower()
-    QueuedPowers qpowers = powerinput;
-    qpowers.m_active_state_change   = true;
-    qpowers.m_timer_updated         = true;
-    qpowers.m_recharge_time         = powtpl.RechargeTime;
-    if (powtpl.Type != PowerType::Toggle)
+    if (powtpl.Type == PowerType::Click)
     {
+        QueuedPowers qpowers = powerinput;
+        qpowers.m_active_state_change   = true;
+        qpowers.m_timer_updated         = true;
+        qpowers.m_recharge_time         = powtpl.RechargeTime;
         ent.m_recharging_powers.push_back(qpowers); // Recharging Queue
         ent.m_char->m_char_data.m_has_updated_powers = true; // this is really important!
     }
@@ -756,7 +761,7 @@ void doPower(Entity &ent, QueuedPowers powerinput){
     }
     // Update Powers to Client to show Recharging/Timers/Etc in UI
 
-    if (powtpl.Radius != 0.0)           // Only AoE have a radius
+    if (powtpl.Radius != 0.0f)           // Only AoE have a radius
     {
         glm::vec3 center;
         if (powtpl.EffectArea == StoredAffectArea::Location)
@@ -769,16 +774,21 @@ void doPower(Entity &ent, QueuedPowers powerinput){
         EntityManager &em(mi->m_entities);
 
         for (Entity* pEnt : em.m_live_entlist)
+        {
             if(pEnt->validTarget(powtpl.EntsAffected, ent.m_is_villian))
+            {
                 if (glm::distance(center, pEnt->m_entity_data.m_pos) < powtpl.Radius)
                     doEffect(ent, pEnt, ppower);
+            }
+        }
     }
     else
          doEffect(ent, target_ent, ppower);
 
 
 }
-void doEffect(Entity &ent, Entity *target_ent, CharacterPower * ppower){
+void doEffect(Entity &ent, Entity *target_ent, CharacterPower * ppower)
+{
     QString from_msg;
     const Power_Data powtpl = ppower->getPowerTemplate();
     if (!target_ent->validTarget(powtpl.EntsAutoHit, ent.m_is_villian))//
@@ -813,10 +823,21 @@ void doEffect(Entity &ent, Entity *target_ent, CharacterPower * ppower){
             else if (lower_name == "revive")
                 revivePlayer(*target_ent, ReviveLevel::AWAKEN);
             else if (lower_name == "teleport")
-               forcePosition(*target_ent, ent.m_target_loc);//
+            {
+               forcePosition(*target_ent, ent.m_target_loc);
+
+               Buffs buff;              // hard coding a 4 second hover buff, which is part of teleport effects
+               buff.m_name = powtpl.m_Name;
+               buff.m_buff_info = ppower->m_power_info;
+               buff.m_activate_period = 4.0;
+               buff.m_value_name = "flight";
+               buff.m_value = 1.0;
+               addBuff(*target_ent, buff);
+            }
             else if (lower_name == "spawn")
                ; //lots of work needed for this one
             else
+            {
                 if (powtpl.pAttribMod[i].Duration > 0)
                 {
                     Buffs buff;
@@ -824,9 +845,10 @@ void doEffect(Entity &ent, Entity *target_ent, CharacterPower * ppower){
                     buff.m_buff_info = ppower->m_power_info;
                     buff.m_activate_period = powtpl.pAttribMod[i].Duration ;
                     buff.m_value_name = lower_name;
-                    buff.m_value = powtpl.pAttribMod[i].Magnitude;
-                    addBuff(ent, buff);
+                              buff.m_value = powtpl.pAttribMod[i].Magnitude;
+                    addBuff(*target_ent, buff);
                 }
+            }
             sendResult(ent, *target_ent, lower_name, powtpl.pAttribMod[i].Magnitude);
         }
         return;
@@ -858,12 +880,12 @@ void sendResult(Entity &src,Entity &tgt, QString name, float value)
         if (name == "damage")
         {
            sendFloatingNumbers(*tgt.m_client, src.m_idx, value);   // this sends damage without needing the FloatingInfo_Damage
-           sendInfoMessage(MessageChannel::DAMAGE, QString("You recive %1 damage from %2") .arg(value) .arg(tgt.name()) , *src.m_client);
+           sendInfoMessage(MessageChannel::DAMAGE, QString("You receive %1 damage from %2") .arg(value) .arg(tgt.name()) , *src.m_client);
         }
         else
         {
             sendFloatingInfo(*src.m_client, name , FloatingInfoStyle::FloatingInfo_Info, 0.0);
-            sendInfoMessage(MessageChannel::COMBAT, QString("%1 causes you to recive (%2 mag) %3") .arg(src.name() .arg(name) .arg(value) ) , *src.m_client);
+            sendInfoMessage(MessageChannel::COMBAT, QString("%1 causes you to receive (%2 mag) %3") .arg(src.name() .arg(name) .arg(value) ) , *src.m_client);
         }
     }// no aggro in this case
 }
@@ -891,6 +913,32 @@ void addBuff(Entity &ent, Buffs &buff)
     ent.m_buffs.push_back(buff);
     ent.m_update_buffs = true;
     modifyAttrib(ent, buff.m_value_name, buff.m_value);
+}
+
+void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
+{
+    const CharacterInspiration *insp = getInspiration(ent, col, row);
+
+    CharacterPower temp;
+    temp.m_power_info = insp->m_insp_info;
+    doEffect(ent, &ent, &temp);
+}
+
+bool useInspiration(Entity &ent, uint32_t col, uint32_t row)
+{
+    CharacterData &cd = ent.m_char->m_char_data;
+    const CharacterInspiration *insp = getInspiration(ent, col, row);
+
+    if(insp == nullptr)
+        return true;
+    QStringList revive_names = {"Awaken","Bounce_Back","Restoration",};
+    if(revive_names.contains(insp->m_name, Qt::CaseInsensitive))
+        if (ent.m_char->getHealth() != 0.0f)         // isdead()?
+            return false;
+    qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
+    applyInspirationEffect(ent, col, row);
+    removeInspiration(cd, col, row);
+    return true;
 }
 
 void increaseLevel(Entity &ent)
@@ -1261,22 +1309,22 @@ void showMapMenu(MapClientSession &sess)
 }
 void setAlignment(Entity &e, QString align)
 {
-    if (align == "hero")
+    if (align.compare("hero", Qt::CaseInsensitive))
     {
         e.m_is_hero = true;
         e.m_is_villian = false;
     }
-    else if (align == "villian")
+    else if (align.compare("villian", Qt::CaseInsensitive))
     {
         e.m_is_villian = true;
         e.m_is_hero = false;
     }
-    else if (align == "both")
+    else if (align.compare("both", Qt::CaseInsensitive))
     {
         e.m_is_villian = true;
         e.m_is_hero = true;
     }
-    else if (align == "neither" || align == "none")
+    else if (align.compare("neither", Qt::CaseInsensitive)  || align.compare("none", Qt::CaseInsensitive))
     {
         e.m_is_villian = false;
         e.m_is_hero = false;
