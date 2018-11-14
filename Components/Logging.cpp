@@ -38,7 +38,6 @@ SEGS_LOGGING_CATEGORY(logSpawn,        "log.spawn")
 SEGS_LOGGING_CATEGORY(logMapEvents,    "log.mapevents")
 SEGS_LOGGING_CATEGORY(logMapXfers,     "log.mapxfers")
 SEGS_LOGGING_CATEGORY(logSlashCommand, "log.slashcommand")
-SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logDescription,  "log.description")
 SEGS_LOGGING_CATEGORY(logFriends,      "log.friends")
 SEGS_LOGGING_CATEGORY(logMiniMap,      "log.minimap")
@@ -47,6 +46,7 @@ SEGS_LOGGING_CATEGORY(logNPCs,         "log.npcs")
 SEGS_LOGGING_CATEGORY(logAnimations,   "log.animations")
 SEGS_LOGGING_CATEGORY(logPowers,       "log.powers")
 SEGS_LOGGING_CATEGORY(logTrades,       "log.trades")
+SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logSceneGraph,   "log.scenegraph")
 SEGS_LOGGING_CATEGORY(logTasks,        "log.tasks")
 
@@ -193,6 +193,7 @@ void dumpLogging()
     output += "\n\t animations: "   + QString::number(logAnimations().isDebugEnabled());
     output += "\n\t powers: "       + QString::number(logPowers().isDebugEnabled());
     output += "\n\t trades: "       + QString::number(logTrades().isDebugEnabled());
+    output += "\n\t scripts: "      + QString::number(logScripts().isDebugEnabled());
     output += "\n\t scenegraph: "   + QString::number(logSceneGraph().isDebugEnabled());
 
     qDebug().noquote() << output;

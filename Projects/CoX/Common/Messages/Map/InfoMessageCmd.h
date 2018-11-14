@@ -20,22 +20,19 @@ class InfoMessageCmd : public GameCommandEvent
 {
 public:
     // [[ev_def:field]]
-    QString         m_msg;
-    // [[ev_def:field]]
     MessageChannel  m_channel_type;
     // [[ev_def:field]]
-    int             m_target_player_id;
+    QString         m_msg;
 
 explicit InfoMessageCmd() : GameCommandEvent(evInfoMessageCmd) {}
-    InfoMessageCmd(MessageChannel ch, int tgt, const QString &msg) : GameCommandEvent(evInfoMessageCmd),
+    InfoMessageCmd(MessageChannel ch, const QString &msg) : GameCommandEvent(evInfoMessageCmd),
         m_channel_type(ch),
-        m_target_player_id(tgt),
         m_msg(msg)
     {
     }
     void serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 15
         bs.StorePackedBits(2, static_cast<uint8_t>(m_channel_type));
         bs.StoreString(m_msg);
     }

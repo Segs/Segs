@@ -138,7 +138,7 @@ public:
     void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,12); // opcode
-        bs.StoreString(reason); // opcode
+        bs.StoreString(reason);
     }
     void serializefrom(BitStream &bs) override
     {

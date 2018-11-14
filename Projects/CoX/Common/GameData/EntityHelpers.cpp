@@ -225,7 +225,7 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_type                            = EntType::NPC; // 2
     e.m_create_player                   = false;
     e.m_is_hero                         = false;
-    e.m_is_villian                      = true;
+    e.m_is_villian                      = false; // only Critters are Villains
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
     e.m_hasname                         = true;

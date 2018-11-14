@@ -37,12 +37,10 @@ void sendChatMessage(MessageChannel t, const QString &msg, MapClientSession *src
 }
 void sendInfoMessage(MessageChannel t, const QString &msg, MapClientSession &tgt)
 {
-    uint32_t idx = getIdx(*tgt.m_ent);
-    tgt.addCommand<InfoMessageCmd>(t, idx, msg);
+    tgt.addCommand<InfoMessageCmd>(t, msg);
 
     qCDebug(logInfoMsg).noquote() << "InfoMessage:"
              << "\n  Channel:" << static_cast<int>(t)
-             << "\n  Target:" << idx
              << "\n  Message:" << msg;
 }
 
