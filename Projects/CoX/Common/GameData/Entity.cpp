@@ -100,6 +100,11 @@ void Entity::dump()
     dumpFriends(*this);
 }
 
+void Entity::setActiveDialogCallback(std::function<void(int)> callback)
+{
+    this->m_active_dialog = callback;
+}
+
 Entity::Entity()
 {
 }

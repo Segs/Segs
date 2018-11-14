@@ -10,6 +10,12 @@ local inspirations = { 'Insight', 'Enrage', 'Luck', 'Catch_A_Breath', 'Respite',
  'Discipline', 'Awaken'
 
 }
+
+local tempPowers = {
+    'Jump_Pack', 'Thermite_Cannon', 'Dimensional_Shield', 'EMP_Glove',
+    'Cryoprojection_Bracers'
+
+}
 -- Wrapper for Character class
 
 
@@ -74,6 +80,19 @@ function Player.SetTitle(title)
     Character.setTitle(client, title)
 end
 
+function Player.AddClue(clue)
+    Character.addClue(client, clue)
+    MapClientSession.sendFloatingInfo(client,5) -- Clue
+end
+
+function Player.AddSouvenir(souvenir)
+    Character.addSouvenir(client, souvenir)
+end
+
+function Player.SetActiveDialogCallback(callback)
+    Character.setActiveDialogCallback(client, callback)
+end
+
 --Just for testing
 function Player.GiveRandomInsp()
     local randomIndex = math.random(1, 7)
@@ -87,6 +106,11 @@ function Player.GiveRandomEnhancement(level)
     Character.giveEnhancement(client, enhancements[randomIndex], level)
 end
 
+function Player.GiveRandomTempPower()
+    local randomIndex = math.random(1, 5)
+    printDebug(tostring(randomIndex))
+    Character.giveTempPower(client, tempPowers[randomIndex])
+end
 
 
 
@@ -166,11 +190,13 @@ end
 
 printDebug('global script loaded')
 
---Notes for scriping
--- 112, 16, -216
--- 11 buttons is the max you can have displayed at once. 
---  Anymore and the client will crash
---[[
+--[[            Notes for scriping  
+
+To add scripts to lua use include_lua('path') to load each extra script
+
+For contact dialogs, 11 buttons is the max you can have displayed at once. 
+ Anymore and the client will crash
+
         Contact Dialog buttons    
     {"CONTACTLINK_HELLO"                ,1},
     {"CONTACTLINK_MAIN"                 ,2},
@@ -197,4 +223,5 @@ printDebug('global script loaded')
     {"CONTACTLINK_NEWPLAYERTELEPORT_GC" ,0x17},
     {"CONTACTLINK_FORMTASKFORCE"        ,0x18},
     {"CONTACTLINK_CHOOSE_TITLE"         ,0x19},
-    {"CONTACTLINK_GOTOTAILOR"           ,0x1A},]]
+    {"CONTACTLINK_GOTOTAILOR"           ,0x1A},
+  ]]

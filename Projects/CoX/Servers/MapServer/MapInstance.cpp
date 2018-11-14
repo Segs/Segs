@@ -48,6 +48,7 @@
 #include "Messages/EmailService/EmailEvents.h"
 #include "Messages/Game/GameEvents.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
+#include "Messages/Map/ClueList.h"
 #include "Messages/Map/ContactList.h"
 #include "Messages/Map/MapEvents.h"
 #include "Messages/Map/MapXferRequest.h"
@@ -532,7 +533,10 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evReceiveTaskDetailRequest:
             on_receive_task_detail_request(static_cast<ReceiveTaskDetailRequest *>(ev));
-        break;
+            break;
+        case evSouvenirDetailRequest:
+            on_souvenir_detail_request(static_cast<SouvenirDetailRequest *>(ev));
+            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
@@ -2007,6 +2011,10 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         // Send current contact list
         sendContactStatusList(session);
         sendTaskStatusList(session);
+
+        //Should these be combined?
+        sendSouvenirList(session);
+        sendClueList(session);
         // Force position and orientation to fix #617 spawn at 0,0,0 bug
         forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
         forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
@@ -2514,7 +2522,16 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     }
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
+
+    if(session.m_ent->m_active_dialog != NULL)
+    {
+        session.m_ent->m_active_dialog(ev->button_id);
+    }
+    else
+    {
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
+    }
+
 }
 
 void MapInstance::on_move_enhancement(MoveEnhancement *ev)
@@ -2883,5 +2900,34 @@ void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
 
     sendInfoMessage(MessageChannel::SERVER, msg, session);
 }
+
+void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
+{
+    MapClientSession& session = m_session_store.session_from_event(ev);
+    vSouvenirList sl = session.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
+
+    Souvenir souvenir_detail;
+    bool found = false;
+    for(const Souvenir &s: sl)
+    {
+        if(s.m_idx == ev->m_souvenir_idx)
+        {
+            souvenir_detail = s;
+            found = true;
+            qCDebug(logScripts) << "SouvenirDetail Souvenir " << ev->m_souvenir_idx << " found";
+            break;
+        }
+    }
+
+    if(!found)
+    {
+        qCDebug(logScripts) << "SouvenirDetail Souvenir " << ev->m_souvenir_idx << " not found";
+        souvenir_detail.m_idx = 0; // Should always be found?
+        souvenir_detail.m_description = "Data not found";
+
+    }
+    session.addCommand<SouvenirDetail>(souvenir_detail);
+}
+
 
 //! @}
