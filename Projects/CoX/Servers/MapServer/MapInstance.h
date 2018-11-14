@@ -29,7 +29,7 @@ class GameDataStore;
 class MapSceneGraph;
 namespace SEGSEvents
 {
-class InputState;
+class RecvInputState;
 class Idle;
 class DisconnectRequest;
 class SceneRequest;
@@ -49,8 +49,8 @@ class PlaqueVisited;
 class InspirationDockMode;
 class EnterDoor;
 class ChangeStance;
-class SendStance;
 class SetDestination;
+class HasEnteredDoor;
 class AbortQueuedPower;
 class DescriptionAndBattleCry;
 class EntityInfoRequest;
@@ -85,7 +85,7 @@ class EmailHeaderResponse;
 class EmailReadResponse;
 class EmailWasReadByRecipientMessage;
 class EmailHeadersToClientMessage;
-class EmailSendErrorMessage;
+struct EmailSendErrorMessage;
 class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
@@ -95,6 +95,9 @@ class LevelUpResponse;
 class TradeWasCancelledMessage;
 class TradeWasUpdatedMessage;
 class DeadNoGurneyOK;
+class ReceiveContactStatus;
+class ReceiveTaskDetailRequest;
+class SouvenirDetailRequest;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -112,6 +115,7 @@ class MapInstance final : public EventProcessor
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
         std::vector<glm::mat4>  m_new_player_spawns;
+        std::vector<glm::mat4>  m_all_zone_spawns;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
@@ -140,6 +144,7 @@ public:
         void                    dispatch(SEGSEvents::Event *ev) override;
 
         const QString &         name() const { return m_data_path; }
+        void                    load_map_lua();
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         void                    start(const QString &scenegraph_path);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
@@ -174,7 +179,7 @@ protected:
         void on_entities_request(SEGSEvents::EntitiesRequest *ev);
         void on_create_map_entity(SEGSEvents::NewEntity *ev);
         void on_timeout(SEGSEvents::Timeout *ev);
-        void on_input_state(SEGSEvents::InputState *st);
+        void on_input_state(SEGSEvents::RecvInputState *st);
         void on_idle(SEGSEvents::Idle *ev);
         void on_shortcuts_request(SEGSEvents::ShortcutsRequest *ev);
 
@@ -198,8 +203,8 @@ protected:
         void on_inspiration_dockmode(SEGSEvents::InspirationDockMode *ev);
         void on_enter_door(SEGSEvents::EnterDoor *ev);
         void on_change_stance(SEGSEvents::ChangeStance *ev);
-        void on_send_stance(SEGSEvents::SendStance *ev);
         void on_set_destination(SEGSEvents::SetDestination *ev);
+        void on_has_entered_door(SEGSEvents::HasEnteredDoor *ev);
         void on_abort_queued_power(SEGSEvents::AbortQueuedPower *ev);
         void on_description_and_battlecry(SEGSEvents::DescriptionAndBattleCry *ev);
         void on_entity_info_request(SEGSEvents::EntityInfoRequest *ev);
@@ -242,4 +247,7 @@ protected:
         void on_levelup_response(SEGSEvents::LevelUpResponse *ev);
         void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
         void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);
+        void on_receive_contact_status(SEGSEvents::ReceiveContactStatus *ev);
+        void on_receive_task_detail_request(SEGSEvents::ReceiveTaskDetailRequest *ev);
+        void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
 };

@@ -11,7 +11,8 @@
  */
 
 #include "AuthEventFactory.h"
-#include "AuthEvents.h"
+#include "AuthOpcodes.h"
+#include "Auth/AuthEvents.h"
 
 using namespace SEGSEvents;
 AuthLinkEvent *AuthEventFactory::EventForType(eAuthPacketType type)

@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QValidator>
+#include <QCheckBox>
 
 namespace Ui {
 class SettingsDialog;
@@ -29,6 +30,7 @@ public slots:
     void set_default_values();
     void text_edit_updater();
     void slider_updater();
+    void auto_logout_checkbox_validator();
 
 signals:
    void checkForConfigFile();
@@ -38,6 +40,7 @@ signals:
 
 private:
     Ui::SettingsDialog *ui;
+
 
 };
 

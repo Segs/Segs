@@ -4,15 +4,22 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt5 COMPONENTS Core Quick REQUIRED)
 
-add_executable(${PROJECT_NAME} "main.cpp" "qml.qrc")
+add_executable(qml_dummy "main.cpp" "qml.qrc")
 
-target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Quick)
+target_link_libraries(qml_dummy Qt5::Core Qt5::Quick)
 
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS qml_dummy
     DESTINATION deploy
 )
 IF(WIN32)
     include(Windeployqt)
-    windeployqt(${PROJECT_NAME} deploy)
+    windeployqt(qml_dummy deploy)
 ENDIF()
+
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES qml_dummy SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (qml_dummy PROPERTIES
+    FOLDER Projects/CoX/Clients
+)

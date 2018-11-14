@@ -9,6 +9,7 @@
 #define SCRIPTINGENGINE_H
 #include <memory>
 #include <string>
+#include "Common/GameData/Contact.h"
 
 class QString;
 struct MapClientSession;
@@ -21,7 +22,12 @@ public:
     void registerTypes();
     int loadAndRunFile(const QString &path);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1);
+    std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1, glm::vec3 loc);
+    std::string callFuncWithClientContext(MapClientSession *client, const char *name, const char *arg1, glm::vec3 loc);
     std::string callFunc(const char *name,int arg1);
+    std::string callFunc(const char *name,int arg1, glm::vec3 loc);
+    std::string callFunc(const char *name, const char *arg1, glm::vec3 loc);
+    std::string callFunc(const char *name, std::vector<Contact> contact_list);
     int runScript(const QString &script_contents,const char *script_name="unnamed script");
     int runScript(MapClientSession *client,const QString &script_contents,const char *script_name="unnamed script");
     bool setIncludeDir(const QString &path);

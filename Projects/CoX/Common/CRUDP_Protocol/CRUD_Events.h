@@ -41,14 +41,14 @@ public:
     }
     std::unique_ptr<CrudP_Packet> m_pkt;
     ACE_INET_Addr  target;
-    const uint8_t *bytes() const { return m_pkt->GetStream()->read_ptr(); }
-    size_t         size() const { return m_pkt->GetStream()->GetReadableDataSize(); }
+    const uint8_t *bytes() const;
+    size_t         size() const;
     EVENT_IMPL(Packet)
 };
 class CRUDLink_Event : public Event
 {
 public:
-    CRUDLink_Event(size_t evtype, EventSrc *ev_src = nullptr) : Event(evtype, ev_src) //,LINK
+    CRUDLink_Event(uint32_t evtype, EventSrc *ev_src = nullptr) : Event(evtype, ev_src) //,LINK
     {
     }
     virtual void serializeto(BitStream &) const = 0;
@@ -62,17 +62,8 @@ class ConnectRequest : public CRUDLink_Event
 {
 public:
     ConnectRequest() : CRUDLink_Event(CRUD_EventTypes::evConnectRequest) {}
-    void serializeto(BitStream &tgt) const override
-    {
-        tgt.StorePackedBits(1, 1); // opcode 1
-        tgt.StorePackedBits(1, m_tickcount);
-        tgt.StorePackedBits(1, m_version);
-    }
-    void serializefrom(BitStream &src) override
-    {
-        m_tickcount = src.GetPackedBits(1);
-        m_version   = src.GetPackedBits(1);
-    }
+    void serializeto(BitStream &tgt) const override;
+    void serializefrom(BitStream &src) override;
     // [[ev_def:field]]
     uint32_t m_tickcount;
     // [[ev_def:field]]
@@ -85,11 +76,7 @@ class ConnectResponse : public CRUDLink_Event
 {
 public:
     ConnectResponse() : CRUDLink_Event(CRUD_EventTypes::evConnectResponse) {}
-    void serializeto(BitStream &tgt) const override
-    {
-        tgt.StorePackedBits(1, 0); // ctrl opcode
-        tgt.StorePackedBits(1, 4); // opcode
-    }
+    void serializeto(BitStream &tgt) const override;
     void serializefrom(BitStream &) override {}
     EVENT_IMPL(ConnectResponse)
 };
@@ -98,16 +85,8 @@ class DisconnectRequest : public CRUDLink_Event
 {
 public:
     DisconnectRequest() : CRUDLink_Event(CRUD_EventTypes::evDisconnectRequest) {}
-    void serializefrom(BitStream &bs) override
-    {
-        bs.GetPackedBits(1);
-        bs.GetPackedBits(1);
-    }
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1, 0);
-        bs.StorePackedBits(1, 5);
-    }
+    void serializefrom(BitStream &bs) override;
+    void serializeto(BitStream &bs) const override;
     EVENT_IMPL(DisconnectRequest)
 };
 // [[ev_def:type]]
@@ -115,16 +94,8 @@ class DisconnectResponse : public CRUDLink_Event
 {
 public:
     DisconnectResponse() : CRUDLink_Event(CRUD_EventTypes::evDisconnectResponse) {}
-    void serializefrom(BitStream &bs) override
-    {
-        bs.GetPackedBits(1);
-        bs.GetPackedBits(1);
-    }
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1, 0);
-        bs.StorePackedBits(1, 6);
-    }
+    void serializefrom(BitStream &bs) override;
+    void serializeto(BitStream &bs) const override;
     EVENT_IMPL(DisconnectResponse)
 };
 // [[ev_def:type]]
@@ -132,17 +103,8 @@ class Idle : public CRUDLink_Event
 {
 public:
     Idle() : CRUDLink_Event(CRUD_EventTypes::evIdle) {}
-    void serializefrom(BitStream &bs) override
-    {
-        // TODO: check this
-        bs.GetPackedBits(1);
-        bs.GetPackedBits(1);
-    }
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1, 0);
-        bs.StorePackedBits(1, 0);
-    }
+    void serializefrom(BitStream &bs) override;
+    void serializeto(BitStream &bs) const override;
     EVENT_IMPL(Idle)
 };
 // [[ev_def:type]]
@@ -159,23 +121,6 @@ public:
 class CRUD_EventFactory
 {
 public:
-    virtual SEGSEvents::CRUDLink_Event *EventFromStream(BitStream &bs)
-    {
-        int32_t opcode = bs.GetPackedBits(1);
-        if (opcode != 0)
-            return nullptr;
-        // it seems idle commands can be shortened to only contain opcode==0.
-        int32_t control_opcode = bs.GetReadableBits() == 0 ? 0 : bs.GetPackedBits(1);
-        switch (control_opcode)
-        {
-        case 0:
-            return new SEGSEvents::Idle(); // CTRL_IDLE
-        case 5:
-            return new SEGSEvents::DisconnectRequest(); // CTRL_DISCONNECT_REQ
-        default: break;
-        }
-        qWarning("Unhandled control event type %d", control_opcode);
-        return nullptr;
-    }
+    virtual SEGSEvents::CRUDLink_Event *EventFromStream(BitStream &bs);
 };
 

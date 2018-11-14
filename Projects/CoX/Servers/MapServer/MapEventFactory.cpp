@@ -10,7 +10,11 @@
  * @{
  */
 
-#include "MapEvents.h"
+#include "MapEventFactory.h"
+#include "Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/ClueList.h"
+#include "Common/Messages/Map/ContactList.h"
+#include "Common/Messages/Map/Tasks.h"
 
 using namespace SEGSEvents;
 
@@ -29,7 +33,7 @@ MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
     switch(opcode) // this is the actual clientside packet Opcode
     {
         case 1: return new ConnectRequest;
-        case 2: return new InputState;
+        case 2: return new RecvInputState;
         case 3: return new SceneRequest;
         case 4: return new ShortcutsRequest;
         case 5: return new EntitiesRequest;
@@ -62,6 +66,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 9: return new EnterDoor;
         case 10: return new AwaitingDeadNoGurney;
         case 11: return new SetDestination;
+        case 13: return new HasEnteredDoor;
         case 14: return new WindowState;
         case 16: return new ChatDividerMoved;
         case 17: return new InspirationDockMode;
@@ -71,6 +76,7 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 21: return new ResetKeybinds;
         case 22: return new SelectKeybindProfile;
         case 24: return new DialogButton;
+        case 26: return new ReceiveContactStatus;
         case 27: return new ActivatePower;
         case 28: return new ActivatePowerAtLocation;
         case 29: return new ActivateInspiration;
@@ -96,10 +102,12 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 55: return new TradeWasUpdatedMessage;
         case 56: return new EntityInfoRequest;
         case 62: return new LocationVisited;
+        case 63: return new ReceiveTaskDetailRequest;
         case 64: return new SwitchViewPoint;
         case 65: return new SaveClientOptions;
         case 66: return new RecvSelectedTitles;
         case 67: return new DescriptionAndBattleCry;
+        case 68: return new SouvenirDetailRequest;
         case 77: return new BrowserClose;
     }
     qCWarning(logMapEvents, "Unhandled command event type %d", opcode);

@@ -14,6 +14,7 @@
 
 #include "CRUD_Events.h"
 #include "PacketCodec.h"
+#include "BitStream.h"
 
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
@@ -79,7 +80,7 @@ void CRUDLink::packets_for_event(Event *ev)
     // create one or more properly formated CrudP_Packets in the protocol object
     // qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);
-    if (false == m_protocol.batchSend(packets_to_send))
+    if (!m_protocol.batchSend(packets_to_send))
     {
         // link is unresponsive, tell our target object
         target()->putq(new Disconnect(this));
@@ -139,7 +140,6 @@ int CRUDLink::handle_output( ACE_HANDLE )
                 break;
             case evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
                 event_for_packet(static_cast<Packet *>(ev));
-                connection_update(); // we've received some bytes -> connection update
                 break;
             default:
                 packets_for_event(static_cast<CRUDLink_Event *>(ev));

@@ -9,23 +9,26 @@
  * @addtogroup MapServer Projects/CoX/Servers/MapServer
  * @{
  */
-
-#include "Character.h"
-#include "CharacterHelpers.h"
-#include "Contact.h"
-#include "DataHelpers.h"
+#pragma once
 #include "ScriptingEngine.h"
-#include "MapClientSession.h"
-#include "MapSceneGraph.h"
-#include "Entity.h"
 
-#include "Events/Browser.h"
-#include "Events/ChatMessage.h"
-#include "Events/FloatingDamage.h"
-#include "Events/StandardDialogCmd.h"
-#include "Events/InfoMessageCmd.h"
-#include "Common/NetStructures/Entity.h"
-#include "Common/NetStructures/Contact.h"
+#include "DataHelpers.h"
+#include "MessageHelpers.h"
+#include "MapClientSession.h"
+#include "MapInstance.h"
+#include "MapSceneGraph.h"
+
+#include "Messages/Map/Browser.h"
+#include "Messages/Map/ChatMessage.h"
+#include "Messages/Map/FloatingDamage.h"
+#include "Messages/Map/StandardDialogCmd.h"
+#include "Messages/Map/InfoMessageCmd.h"
+#include "Common/GameData/Character.h"
+#include "Common/GameData/CharacterHelpers.h"
+#include "Common/GameData/Contact.h"
+#include "Common/GameData/Entity.h"
+#include "Common/GameData/Contact.h"
+#include "Common/GameData/Task.h"
 #define SOL_CHECK_ARGUMENTS 1
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
@@ -33,6 +36,8 @@
 #include <QtCore/QFileInfo> // for include support
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
+
+
 
 using namespace SEGSEvents;
 static constexpr const int MAX_INCLUDED_FILE_SIZE=1024*1024; // 1MB of lua code should be enough for anyone :P
@@ -60,13 +65,13 @@ struct ScriptingEngine::ScriptingEnginePrivate
     {
         m_lua.open_libraries(sol::lib::base, sol::lib::coroutine, sol::lib::table, sol::lib::string, sol::lib::math,
                              sol::lib::utf8, sol::lib::debug);
-
     }
+
     bool performInclude(const char *path)
     {
         if(m_restricted_include_dir.isEmpty())
             return false;
-        QString full_path=QDir(m_restricted_include_dir).filePath(QDir::cleanPath(path));
+        QString full_path = QDir(m_restricted_include_dir).filePath(QDir::cleanPath(path));
         if(m_alread_included_and_ran.contains(full_path))
             return true;
         QFileInfo include_info(full_path);
@@ -77,10 +82,9 @@ struct ScriptingEngine::ScriptingEnginePrivate
             return false;
         QByteArray script_contents = content_file.read(MAX_INCLUDED_FILE_SIZE);
         if(script_contents.size()==MAX_INCLUDED_FILE_SIZE)
-        {
             return false;
-        }
-        sol::load_result load_res=m_lua.load(script_contents.toStdString(),qPrintable(include_info.filePath()));
+
+        sol::load_result load_res = m_lua.load(script_contents.toStdString(),qPrintable(include_info.filePath()));
         if(!load_res.valid())
         {
             sol::error err = load_res;
@@ -111,11 +115,14 @@ ScriptingEngine::ScriptingEngine() : m_private(new ScriptingEnginePrivate)
 
 ScriptingEngine::~ScriptingEngine() = default;
 
+
 template<class T>
 static void destruction_is_an_error(T &/*v*/)
 {
     assert(false);
 }
+
+
 void ScriptingEngine::registerTypes()
 {
     m_private->m_lua.new_usertype<glm::vec3>( "vec3",
@@ -124,13 +131,81 @@ void ScriptingEngine::registerTypes()
         "y", &glm::vec3::y,
         "z", &glm::vec3::z
     );
+
+    m_private->m_lua.new_usertype<QString>( "QString",
+        sol::constructors<QString(), QString(const char*)>()
+    );
     m_private->m_lua.new_usertype<Contact>( "Contact",
         // 3 constructors
         sol::constructors<Contact()>(),
         // gets or set the value using member variable syntax
         "name", sol::property(&Contact::getName, &Contact::setName),
-        "display_name", &Contact::m_display_name
+        "locationDescription", sol::property(&Contact::getLocationDescription, &Contact::setLocationDescription),
+        "npcId", &Contact::m_npc_id,
+        "currentStanding", &Contact::m_current_standing,
+        "notifyPlayer", &Contact::m_notify_player,
+        "taskIndex", &Contact::m_task_index,
+        "hasLocation", &Contact::m_has_location,
+        "location", &Contact::m_location,
+        "confidantThreshold", &Contact::m_confidant_threshold,
+        "friendThreshold", &Contact::m_friend_threshold,
+        "completeThreshold", &Contact::m_complete_threshold,
+        "canUseCell", &Contact::m_can_use_cell,
+        "contactId", &Contact::m_contact_idx
     );
+
+    m_private->m_lua.new_usertype<Clue>("Clue",
+        sol::constructors<Clue()>(),
+        "name", sol::property(&Clue::getName, &Clue::setName),
+        "displayName", sol::property(&Clue::getDisplayName, &Clue::setDisplayName),
+        "detail", sol::property(&Clue::getDetailText, &Clue::setDetailText),
+        "iconFile", sol::property(&Clue::getIconFile, &Clue::setIconFile)
+    );
+
+    m_private->m_lua.new_usertype<Souvenir>("Souvenir",
+        sol::constructors<Souvenir()>(),
+        "name", sol::property(&Souvenir::getName, &Souvenir::setName),
+        "description", sol::property(&Souvenir::getDescription, &Souvenir::setDescription),
+        "icon", sol::property(&Souvenir::getIcon, &Souvenir::setIcon)
+        //Server will set the index for this
+        //"souvenirIdx", &Souvenir::m_idx
+    );
+
+    m_private->m_lua.new_usertype<Destination>("Destination",
+        sol::constructors<Destination()>(),
+        "pointIdx", &Destination::point_idx,
+        "location", &Destination::location,
+        "name", sol::property(&Destination::getLocationName, &Destination::setLocationName),
+        "mapName", sol::property(&Destination::getLocationMapName, &Destination::setLocationMapName)
+    );
+
+    m_private->m_lua.new_usertype<TaskEntry>("TaskEntry",
+          sol::constructors<TaskEntry()>(),
+          "dbId", &TaskEntry::m_db_id,
+          "taskList", &TaskEntry::m_task_list,
+          "resetSelectedTask", &TaskEntry::m_task_list
+          );
+
+      m_private->m_lua.new_usertype<Task>("Task",
+          sol::constructors<Task()>(),
+          "dbId", &Task::m_db_id,
+          "description", sol::property(&Task::getDescription, &Task::setDescription),
+          "owner", sol::property(&Task::getOwner, &Task::setOwner),
+          "detail", sol::property(&Task::getDetail, &Task::setDetail),
+          "state", sol::property(&Task::getState, &Task::setState),
+          "isComplete", &Task::m_is_complete,
+          "inProgressMaybe", &Task::m_in_progress_maybe,
+          "hasLocation", &Task::m_has_location,
+          "isDetailInvalid", &Task::m_detail_invalid,
+          "location", &Task::m_location,
+          "finishTime", &Task::m_finish_time,
+          "taskIdx", &Task::m_task_idx,
+          "isAbandoned", &Task::m_is_abandoned,
+          "unknownInt1", &Task::m_unknown_1,
+          "unknownInt2", &Task::m_unknown_2,
+          "boardTrain", &Task::m_board_train
+      );
+
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
 
         "new", sol::no_constructor, // The client links are not constructible from the script side.
@@ -145,6 +220,7 @@ void ScriptingEngine::registerTypes()
         {
             cl->addCommand<Browser>(content);
         },
+
         "contact_dialog",[](MapClientSession *cl, const char *message, sol::as_table_t<std::map<std::string, sol::as_table_t<std::vector<std::string>>>> buttons)
         {
             std::vector<ContactEntry> active_contacts;
@@ -168,7 +244,7 @@ void ScriptingEngine::registerTypes()
                 }
                 active_contacts.push_back(con);
             }
-            cl->addCommand<ContactDialog>(message, active_contacts);
+            sendContactDialog(*cl, message, active_contacts);
         },
         "close_dialog", [](MapClientSession *cl)
         {
@@ -179,145 +255,127 @@ void ScriptingEngine::registerTypes()
             FloatingInfoMsgKey f_info_message = static_cast<FloatingInfoMsgKey>(message_type);
             QString message = FloatingInfoMsg.find(f_info_message).value();
             cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, message, FloatingInfo_Attention , 4.0);
-        }
+        },
+        "sendInfoMessage", [](MapClientSession *cl, int channel, const char* message)
+        {
+            sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
+        },
+        "addNpc", [](MapClientSession *cl, const char* npc_def, glm::vec3 &loc, int variation, const char* npc_name)
+        {
+            QString npc_def_name = QString::fromUtf8(npc_def);
+            QString name = QString::fromUtf8(npc_name);
+            addNpc(*cl, npc_def_name, loc, variation, name);
+        },
+        "addNpcWithOrientation", [](MapClientSession *cl, const char* name, glm::vec3 &loc, int variation, glm::vec3 &ori)
+        {
+            QString npc_name = QString::fromUtf8(name);
+            addNpcWithOrientation(*cl, npc_name, loc, variation, ori);
+        },
+        "forceOrientation", [](MapClientSession *cl, int entity_idx, glm::vec3 ori)
+        {
+            Entity *e = getEntity(cl, entity_idx);
+            if(e != nullptr)
+            {
+                forceOrientation(*e, ori);
+                QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entity_idx).arg(ori.x).arg(ori.y).arg(ori.z);
+                qCDebug(logScripts) << msg;
+
+            }
+        },
+        "mapMenu", showMapMenu
         );
 
     m_private->m_lua.new_usertype<Character>("Character",
-    "giveDebt", [](MapClientSession *cl, int debt)
-    {
-        uint32_t current_debt = getDebt(*cl->m_ent->m_char);
-        uint32_t debt_to_give = current_debt + debt;
-        setDebt(*cl->m_ent->m_char, debt_to_give);
-        QString msg = "Setting Debt to " + QString::number(debt_to_give);
-        qCDebug(logSlashCommand) << msg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
-    },
-    "giveEnhancement",[](MapClientSession *cl, sol::as_table_t<std::vector<std::string>> enhancement)
-    {
-
-        CharacterData &cd = cl->m_ent->m_char->m_char_data;
-        QString name;
-        uint32_t level;
-        QString msg = "You do not have room for any more enhancements!";
-
-        const auto& strings = enhancement.source;
-        int count = 0;
-        for (const auto& s : strings)
+        "giveDebt", giveDebt,
+        "giveEnhancement", [](MapClientSession *cl, const char* name, int level)
         {
-            if(count == 0)
-                name = QString::fromStdString(s);
-            else
-                level = QString::fromStdString(s).toInt();
-
-            count++;
-        }
-
-        if(getNumberEnhancements(cd) < 10)
+            QString e_name = QString::fromUtf8(name);
+            giveEnhancement(*cl, e_name, level);
+        },
+        "giveEnd", giveEnd,
+        "giveHp", giveHp,
+        "giveInf",giveInf,
+        "giveInsp",[](MapClientSession *cl, const char* name)
         {
-            msg = "Awarding Enhancement '" + name + "' to " + cl->m_ent->name();
-
-            addEnhancementByName(cd, name, level);
-
-            QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
-            sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-        }
-
-        qCDebug(logSlashCommand).noquote() << msg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
-    },
-    "giveEnd", [](MapClientSession *cl, float end)
-    {
-        float current_end = getEnd(*cl->m_ent->m_char);
-        float end_to_set = current_end + end;
-        setEnd(*cl->m_ent->m_char, end_to_set);
-        QString msg = QString("Setting Endurance to: %1").arg(end_to_set);
-        qCDebug(logSlashCommand) << msg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
-    },
-    "giveHp", [](MapClientSession *cl, float hp)
-    {
-        float current_hp = getHP(*cl->m_ent->m_char);
-        float hp_to_set = current_hp + hp;
-        setHP(*cl->m_ent->m_char, hp_to_set);
-        QString msg = QString("Setting HP to: %1").arg(hp_to_set);
-        qCDebug(logSlashCommand) << msg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
-    },
-    "giveInf", [](MapClientSession *cl, int inf)
-    {
-        uint32_t current_inf = getInf(*cl->m_ent->m_char);
-        uint32_t inf_to_set = current_inf + inf;
-        setInf(*cl->m_ent->m_char, inf_to_set);
-        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Setting inf to %1").arg(inf_to_set), *cl);
-    },
-    "giveInsp", [](MapClientSession *cl, const char *value)
-    {
-
-        CharacterData &cd = cl->m_ent->m_char->m_char_data;
-        QString val = QString::fromUtf8(value);
-        QString msg = "You do not have room for any more inspirations!";
-
-        if(getNumberInspirations(cd) < getMaxNumberInspirations(cd))
+            QString e_name = QString::fromUtf8(name);
+            giveInsp(*cl, e_name);
+        },
+        "giveXp", giveXp,
+        "sendFloatingDamage",sendFloatingNumbers,
+        "faceEntity",sendFaceEntity,
+        "faceLocation",  sendFaceLocation,
+        "addUpdateContactList", updateContactStatusList,
+        "updateTaskDetail", updateTaskDetail,
+        "addListOfTasks", [](MapClientSession *cl, sol::as_table_t<std::vector<Task>> task_list)
         {
-            msg = "Awarding Inspiration '" + val + "' to " + cl->m_ent->name();
-
-            addInspirationByName(cd, val);
-
-            // NOTE: floating message shows no message here, but plays the awarding insp sound!
-            QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
-            sendFloatingInfo(*cl, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-        }
-
-        qCDebug(logSlashCommand).noquote() << msg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
-    },
-    "giveXp", [](MapClientSession *cl, int xp)
-    {
-        uint32_t lvl = getLevel(*cl->m_ent->m_char);
-        uint32_t current_xp = getXP(*cl->m_ent->m_char);
-
-        // Calculate XP - Debt difference by server settings?
-
-        uint32_t current_debt = getDebt(*cl->m_ent->m_char);
-        if(current_debt > 0)
-        {
-            uint32_t debt_to_pay = 0;
-            uint32_t half_xp = xp / 2;
-            if(current_debt > half_xp)
+            const auto& listMap = task_list.source;
+            vTaskList listToSend;
+            for (const auto& kvp : listMap)
             {
-                debt_to_pay = half_xp; //Half to debt
-                xp = half_xp;
+                listToSend.push_back(kvp);
             }
-            else
-            {
-                debt_to_pay = current_debt;
-                xp = xp - current_debt;
-            }
-            uint32_t newDebt = current_debt - debt_to_pay;
-            setDebt(*cl->m_ent->m_char, newDebt);
-            sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You paid %1 to your debt").arg(debt_to_pay), *cl);
-        }
-        uint32_t xp_to_give = current_xp + xp;
-        setXP(*cl->m_ent->m_char, xp_to_give);
-        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were awarded %1 XP").arg(xp), *cl);
-        QString msg = "Setting XP to " + QString::number(xp_to_give);
-        uint32_t new_lvl = getLevel(*cl->m_ent->m_char);
-        sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were lvl %1 now %2").arg(lvl).arg(new_lvl), *cl);
-
-        //This check doesn't show level change
-
-        if(new_lvl != lvl)
+            addListOfTasks(cl, listToSend);
+        },
+        "addTask", sendUpdateTaskStatusList,
+        "removeTask", removeTask,
+        "selectTask", selectTask,
+        "setWaypoint", sendWaypoint,
+        "setHp", [](MapClientSession *cl, float hp)
         {
-            cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, FloatingInfoMsg.find(FloatingMsg_Leveled).value(), FloatingInfo_Attention , 4.0);
-            msg += " and LVL to " + QString::number(new_lvl);
+            setHP(*cl->m_ent->m_char, hp);
+        },
+        "setEnd", [](MapClientSession *cl, float end)
+        {
+            setEnd(*cl->m_ent->m_char, end);
+        },
+        "setXp", [](MapClientSession *cl, int xp)
+        {
+            setXP(*cl->m_ent->m_char, xp);
+        },
+        "setDebt", [](MapClientSession *cl, int debt)
+        {
+            setDebt(*cl->m_ent->m_char, debt);
+        },
+        "setInf", [](MapClientSession *cl, int inf)
+        {
+            setInf(*cl->m_ent->m_char, inf);
+        },
+        "levelUp", train,
+        "setTitle", [](MapClientSession *cl, const char* title)
+        {
+            QString title_string = QString::fromUtf8(title);
+            setTitle(*cl, title_string);
+        },
+        "giveTempPower", [](MapClientSession *cl, const char* power)
+        {
+            CharacterData &cd = cl->m_ent->m_char->m_char_data;
+            PowerPool_Info ppool;
+            QString temp_power_set = "Temporary_Powers";
+
+            ppool.m_pcat_idx = getPowerCatByName(temp_power_set);
+            ppool.m_pset_idx = getPowerSetByName(temp_power_set, ppool.m_pcat_idx);
+
+            Parse_PowerSet pset = getGameData().get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
+
+            for(size_t i = 0; i < pset.Available.size(); ++i)
+            {
+                qCDebug(logScripts) << "giveTempPower Name: " << pset.m_Powers[i].m_Name;
+                if(pset.m_Powers[i].m_Name == power)
+                {
+                    qCDebug(logScripts) << "giveTempPower PowerFound";
+                    ppool.m_pow_idx = uint32_t(i);
+                    addPower(cd, ppool);
+                    break;
+                }
+            }
+        },
+        "addClue", addClue,
+        "addSouvenir", addSouvenir,
+        "setActiveDialogCallback", [](MapClientSession *cl, std::function<void(int)> callback)
+        {
+           cl->m_ent->setActiveDialogCallback(callback);
         }
-        qCDebug(logSlashCommand) << msg;
-        sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *cl);
-    },
-    "sendFloatingDamage", [](MapClientSession *cl, int target, int amount)
-    {
-         cl->addCommand<FloatingDamage>(cl->m_ent->m_idx, target, amount);
-    }
+
     );
 
     m_private->m_lua.new_usertype<Entity>( "Entity",
@@ -331,18 +389,22 @@ void ScriptingEngine::registerTypes()
         "set_default_spawn_point", &MapSceneGraph::set_default_spawn_point
     );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
-    m_private->m_lua["contactTable"] = m_private->m_lua.create_named_table("contactTable");
+    m_private->m_lua["printDebug"] = [](const char* msg)
+    {
+        qCDebug(logScripts) << msg;
+    };
 }
 
 int ScriptingEngine::loadAndRunFile(const QString &filename)
 {
-    sol::load_result load_res=m_private->m_lua.load_file(filename.toStdString());
+    sol::load_result load_res = m_private->m_lua.load_file(filename.toStdString());
     if(!load_res.valid())
     {
         sol::error err = load_res;
         qCritical() << err.what();
         return -1;
     }
+
     sol::protected_function_result script_result = load_res();
     if(!script_result.valid())
     {
@@ -350,15 +412,49 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
         qCritical() << err.what();
         return -1;
     }
+
     return 0;
 }
 
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
     m_private->m_lua["client"] = client;
+    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
+    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
     return callFunc(name,arg1);
 }
+
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, glm::vec3 loc)
+{
+    m_private->m_lua["client"] = client;
+    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
+    m_private->m_lua["heroName"] = qPrintable(client->m_name);
+    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
+    return callFunc(name,arg1,loc);
+}
+
+std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, const char *arg1, glm::vec3 loc)
+{
+    m_private->m_lua["client"] = client;
+    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
+    m_private->m_lua["heroName"] = qPrintable(client->m_name);
+    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
+    return callFunc(name,arg1,loc);
+}
+
 
 std::string ScriptingEngine::callFunc(const char *name, int arg1)
 {
@@ -366,10 +462,70 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
     if(!funcwrap.valid())
     {
-        qCritical() << "Failed to retrieve script func:"<<name;
+        qCritical() << "Failed to retrieve script func:" << name;
         return "";
     }
     auto result = funcwrap(arg1);
+    if(!result.valid())
+    {
+        sol::error err = result;
+        qCritical() << "Failed to run script func:" << name << err.what();
+        return "";
+    }
+    return result.get<std::string>();
+}
+
+std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
+{
+    sol::protected_function funcwrap = m_private->m_lua[name];
+    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+
+    if(!funcwrap.valid())
+    {
+        qCritical() << "Failed to retrieve script func:" << name;
+        return "";
+    }
+    auto result = funcwrap(arg1, loc);
+    if(!result.valid())
+    {
+        sol::error err = result;
+        qCritical() << "Failed to run script func:"<<name<<err.what();
+        return "";
+    }
+    return result.get<std::string>();
+}
+
+std::string ScriptingEngine::callFunc(const char *name, const char *arg1, glm::vec3 loc)
+{
+    sol::protected_function funcwrap = m_private->m_lua[name];
+    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+
+    if(!funcwrap.valid())
+    {
+        qCritical() << "Failed to retrieve script func:"<<name;
+        return "";
+    }
+    auto result = funcwrap(arg1, loc);
+    if(!result.valid())
+    {
+        sol::error err = result;
+        qCritical() << "Failed to run script func:"<<name<<err.what();
+        return "";
+    }
+    return result.get<std::string>();
+}
+
+std::string ScriptingEngine::callFunc(const char *name, std::vector<Contact> contact_list)
+{
+    sol::protected_function funcwrap = m_private->m_lua[name];
+    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+
+    if(!funcwrap.valid())
+    {
+        qCritical() << "Failed to retrieve script func:"<<name;
+        return "";
+    }
+    auto result = funcwrap(contact_list);
     if(!result.valid())
     {
         sol::error err = result;
@@ -427,5 +583,7 @@ bool ScriptingEngine::setIncludeDir(const QString &path)
         return false;
     }
     m_private->m_restricted_include_dir = fi.absoluteFilePath();
+    return true;
 }
+
 //! @}

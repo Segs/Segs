@@ -1,11 +1,13 @@
 language: generic # prevent travis from overriding provided compilers.
 cache:
-  directories:
-    - $HOME/.ccache
+  ccache: true    # includes $HOME/.ccache and adds /usr/lib/ccache to $PATH
+# directories:
+#   - 3rd_party   # this is sometimes breaking subsequent Travis builds
 dist: trusty
 
 notifications:
   email: false
+  webhooks: https://segs.io/travis/travis-ci.php
     
 env:
   global:
@@ -62,10 +64,11 @@ matrix:
       compiler: "gcc-7"
       env: BUILD='Debug' CC=gcc-7 CXX=g++-7
       addons: *gcc7
-    - os: osx
-      osx_image: xcode9.2
-      compiler: clang
-      env: BUILD='Debug'
+# Disabling macOS builds temporarily until the app bundle issue can be resolved
+#   - os: osx
+#     osx_image: xcode9.2
+#     compiler: clang
+#     env: BUILD='Debug'
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository ppa:beineri/opt-qt593-trusty -y; fi
@@ -85,11 +88,12 @@ install:
 #    fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      sudo apt-get install -qq qt59base qt59declarative qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
+      sudo apt-get install -qq qt59base qt59declarative qt59websockets qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
       CMAKE_OPTS="";
     else
       brew install cppcheck qt;
       brew link --force qt;
+      export PATH="/usr/local/opt/qt/bin:$PATH" # missing mkspecs fix
       QT5_CMAKE_PREFIX=$(ls -d $(brew --cellar)/qt/*/lib/cmake);
       CMAKE_OPTS="-DCMAKE_PREFIX_PATH=${QT5_CMAKE_PREFIX}";
     fi

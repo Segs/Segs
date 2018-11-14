@@ -7,12 +7,13 @@
 
 #pragma once
 #include "CRUDP_Protocol/CRUD_Events.h"
-#include "Common/CRUDP_Protocol/CRUD_Link.h"
+
 namespace SEGSEvents
 {
 using GameLinkEvent = CRUDLink_Event;
 }
 class CharacterClient;
+class BitStream;
 
 // TODO: Is GameEventFactory a misleading name, since this class is not a factory for 'all' game events ?
 class GameEventFactory final : public CRUD_EventFactory

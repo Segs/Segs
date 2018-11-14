@@ -29,6 +29,7 @@ class SEGSAdminTool : public QMainWindow
     class NetworkManager *m_network_manager;
     class UpdateDetailDialog *m_update_dialog;
     class AboutDialog *m_about_dialog;
+    class SelectScriptDialog *m_script_dialog;
     bool m_server_running = false;
 
 public:
@@ -39,11 +40,11 @@ public slots:
     void commit_user(QString username, QString password, QString acclevel);
     void create_databases(bool overwrite);
     void check_db_exist(bool on_startup);
-    void start_auth_server();
-    void stop_auth_server();
+    void start_segs_server();
+    void stop_segs_server();
     void read_createuser();
     void read_createDB();
-    void read_authserver();
+    void read_segsserver();
     void check_for_config_file();
     void check_data_and_dir(QString maps_dir);
     void read_release_info(const QString &error);
@@ -64,7 +65,7 @@ private:
     void is_server_running();
     QProcess *m_createUser;
     QProcess *m_createDB;
-    QProcess *m_start_auth_server;
+    QProcess *m_start_segs_server;
     QStringList m_segs_releases;
 };
 

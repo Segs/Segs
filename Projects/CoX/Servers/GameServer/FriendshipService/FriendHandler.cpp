@@ -6,9 +6,9 @@
  */
 
 #include "FriendHandler.h"
-#include "Servers/GameServer/GameEvents.h"
+#include "Messages/Game/GameEvents.h"
 #include "Common/Servers/HandlerLocator.h"
-#include "FriendHandlerEvents.h"
+#include "Messages/FriendshipService/FriendHandlerEvents.h"
 #include <QtCore/QDebug>
 
 using namespace SEGSEvents;

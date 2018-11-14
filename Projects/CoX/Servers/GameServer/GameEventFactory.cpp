@@ -11,7 +11,7 @@
  */
 
 #include "GameEventFactory.h"
-#include "GameEvents.h"
+#include "Messages/Game/GameEvents.h"
 
 using namespace SEGSEvents;
 

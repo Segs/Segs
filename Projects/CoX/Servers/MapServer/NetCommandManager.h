@@ -47,15 +47,15 @@ public:
 
 class NetCommandManager
 {
-    typedef std::vector<NetCommand *> vNetCommand;
-    QHash<QString,NetCommand *> m_name_to_command;
-    vNetCommand m_commands_level0;
-    void            serializeto(BitStream &tgt,
-                                const vNetCommand &commands);
+using   vNetCommand = std::vector<NetCommand *>;
+
+        QHash<QString, NetCommand *> m_name_to_command;
+        vNetCommand                  m_commands_level0;
+        void                         serializeto(BitStream &tgt, const vNetCommand &commands);
+
 public:
-    void            SendCommandShortcuts(MapClientSession *client,
-                                         BitStream &tgt);
-    NetCommand *    getCommandByName(const QString &name);
-    void            addCommand(NetCommand *cmd);
+        void        UpdateCommandShortcuts(MapClientSession *client, std::vector<QString> &commands);
+        NetCommand *getCommandByName(const QString &name);
+        void        addCommand(NetCommand *cmd);
 };
 typedef ACE_Singleton<NetCommandManager,ACE_Thread_Mutex> NetCommandManagerSingleton; // AdminServer Interface

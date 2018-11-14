@@ -21,6 +21,7 @@
 #include "NetworkManager.h"
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
+#include "SelectScriptDialog.h"
 #include "version.h"
 #include <QDebug>
 #include <QtGlobal>
@@ -52,6 +53,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     m_network_manager = new NetworkManager();
     m_update_dialog = new UpdateDetailDialog(this);
     m_about_dialog = new AboutDialog(this);
+    m_script_dialog = new SelectScriptDialog(this);
 
     // SEGSAdminTool Signals
     connect(this,&SEGSAdminTool::checkForDB,this,&SEGSAdminTool::check_db_exist);
@@ -67,6 +69,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(ui->settings_button,&QPushButton::clicked,m_settings_dialog,&SettingsDialog::open_settings_dialog);
     connect(ui->gen_config_file,&QPushButton::clicked,m_generate_config_dialog,&GenerateConfigFileDialog::on_generate_config_file);
     connect(ui->authserver_start,&QPushButton::clicked,this,&SEGSAdminTool::is_server_running);
+    connect(ui->motd_editor,&QPushButton::clicked,m_script_dialog,&SelectScriptDialog::show_dialog);
 
     // GenerateConfigFileDialog Signals
     connect(m_generate_config_dialog,&GenerateConfigFileDialog::sendInputConfigFile,m_settings_dialog,&SettingsDialog::generate_default_config_file);
@@ -273,7 +276,8 @@ void SEGSAdminTool::create_databases(bool overwrite)
     }
     else
     {
-        ui->output->appendPlainText("Failed to start DBTool Add User...");
+        ui->output->appendPlainText("Failed to start DBTool Add User... "
+                                    "**Please ensure you are NOT running as an administrator or sudo user**");
         qDebug() <<"Failed to start DBTool Add User...";
         emit checkForDB(true);
         qApp->processEvents();
@@ -299,39 +303,39 @@ void SEGSAdminTool::is_server_running()
 {
     if (m_server_running == true)
     {
-        SEGSAdminTool::stop_auth_server();
+        SEGSAdminTool::stop_segs_server();
     }
     else
     {
-        SEGSAdminTool::start_auth_server();
+        SEGSAdminTool::start_segs_server();
     }
 }
-void SEGSAdminTool::start_auth_server()
+void SEGSAdminTool::start_segs_server()
 {
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
-    QString program = "authserver";
+    QString program = "segs_server";
     #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
     program.prepend("./");
     #endif
-    m_start_auth_server = new QProcess(this);
-    m_start_auth_server->start(program);
+    m_start_segs_server = new QProcess(this);
+    m_start_segs_server->start(program);
 
-    if (m_start_auth_server->waitForStarted())
+    if (m_start_segs_server->waitForStarted())
     {
 
         ui->authserver_start->setText("Please Wait...");
-        ui->output->appendPlainText("Starting AuthServer...");
+        ui->output->appendPlainText("Starting SEGS Server...");
         ui->authserver_status->setText("STARTING");
         ui->authserver_status->setStyleSheet("QLabel {color: rgb(255, 153, 51)}");
         qApp->processEvents();
-        qDebug() << "Starting AuthServer...";
-        connect(m_start_auth_server,&QProcess::readyReadStandardError,this,&SEGSAdminTool::read_authserver);
-        connect(m_start_auth_server,&QProcess::readyReadStandardOutput,this,&SEGSAdminTool::read_authserver);
-        m_start_auth_server->waitForFinished(2000);
-        if(m_start_auth_server->state()==QProcess::Running)
+        qDebug() << "Starting SEGS Server...";
+        connect(m_start_segs_server,&QProcess::readyReadStandardError,this,&SEGSAdminTool::read_segsserver);
+        connect(m_start_segs_server,&QProcess::readyReadStandardOutput,this,&SEGSAdminTool::read_segsserver);
+        m_start_segs_server->waitForFinished(2000);
+        if(m_start_segs_server->state()==QProcess::Running)
         {
-            ui->output->appendPlainText("*** AuthServer Running ***");
+            ui->output->appendPlainText("*** SEGS Server Running ***");
             ui->authserver_status->setText("RUNNING");
             ui->authserver_status->setStyleSheet("QLabel {color: rgb(0, 200, 0)}");
             ui->authserver_start->setStyleSheet("color: rgb(255, 0, 0);");
@@ -340,11 +344,11 @@ void SEGSAdminTool::start_auth_server()
             ui->user_box->setEnabled(false);
             ui->server_setup_box->setEnabled(false);
             ui->server_config->setEnabled(false);
-            //qint64 pid = m_start_auth_server->processId();
+            //qint64 pid = m_start_segs_server->processId();
             //qDebug()<<pid;
             m_server_running = true;
         }
-        if(m_start_auth_server->state()==QProcess::NotRunning)
+        if(m_start_segs_server->state()==QProcess::NotRunning)
         {
             ui->output->appendPlainText("*** AUTHSERVER NOT RUNNING... Have you setup your piggs and settings files? ***");
             ui->authserver_start->setText("Start Server");
@@ -356,8 +360,8 @@ void SEGSAdminTool::start_auth_server()
     }
     else
     {
-        ui->output->appendPlainText("Failed to start AuthServer...");
-        qDebug() <<"Failed to start AuthServer...";
+        ui->output->appendPlainText("Failed to start SEGS Server...");
+        qDebug() <<"Failed to start SEGS Server...";
         ui->authserver_start->setText("Start Server");
         ui->authserver_start->setEnabled(true);
         qApp->processEvents();
@@ -365,10 +369,10 @@ void SEGSAdminTool::start_auth_server()
 
 }
 
-void SEGSAdminTool::read_authserver()
+void SEGSAdminTool::read_segsserver()
 {
-    QByteArray out_err = m_start_auth_server->readAllStandardError();
-    QByteArray out_std = m_start_auth_server->readAllStandardOutput();
+    QByteArray out_err = m_start_segs_server->readAllStandardError();
+    QByteArray out_std = m_start_segs_server->readAllStandardOutput();
     qDebug().noquote()<<QString(out_err);
     qDebug().noquote()<<QString(out_std);
     QString output_err = out_err;
@@ -380,14 +384,14 @@ void SEGSAdminTool::read_authserver()
     qApp->processEvents();
 }
 
-void SEGSAdminTool::stop_auth_server()
+void SEGSAdminTool::stop_segs_server()
 {
-    m_start_auth_server->close();
-    if(m_start_auth_server->state()==QProcess::Running)
+    m_start_segs_server->close();
+    if(m_start_segs_server->state()==QProcess::Running)
     {
-        ui->output->appendPlainText("*** AuthServer Failed to Stop ***");
+        ui->output->appendPlainText("*** SEGS Server Failed to Stop ***");
     }
-    if(m_start_auth_server->state()==QProcess::NotRunning)
+    if(m_start_segs_server->state()==QProcess::NotRunning)
     {
         ui->authserver_start->setEnabled(true);
         ui->authserver_status->setText("STOPPED");
@@ -399,7 +403,7 @@ void SEGSAdminTool::stop_auth_server()
         ui->server_setup_box->setEnabled(true);
         ui->server_config->setEnabled(true);
         m_server_running = false;
-        ui->output->appendPlainText("*** AuthServer Stopped ***");
+        ui->output->appendPlainText("*** SEGS Server Stopped ***");
     }
 }
 
@@ -436,6 +440,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
 
 void SEGSAdminTool::read_release_info(const QString &error)
 {
+    ui->output->appendPlainText("Checking for Updates...");
     QString version_number = VersionInfo::getAuthVersionNumber();
     version_number.prepend("v");
     if (!g_segs_release_info.isEmpty())
@@ -444,13 +449,15 @@ void SEGSAdminTool::read_release_info(const QString &error)
         if (g_segs_release_info[0].tag_name == version_number)
         {
 
-            qDebug()<<"CURRENT VERSION";
+            qDebug()<<"Current Version";
+            ui->output->appendPlainText("No updates available");
             ui->update_detail->setText("Up to date");
             ui->update_detail->setStyleSheet("color: rgb(0, 200, 0)");
         }
         else
         {
-            qDebug()<<"NEW VERSION";
+            qDebug()<<"New Version Available";
+            ui->output->appendPlainText("New Update Found!");
             ui->update_detail->setEnabled(true);
             ui->update_detail->setStyleSheet("color: rgb(204, 0, 0)");
             ui->update_detail->setText("Update available!");

@@ -11,7 +11,7 @@
  */
 
 #include "Common/GameData/DataStorage.h"
-#include "Common/GameData/attrib_definitions.h"
+#include "Common/GameData/CharacterAttributes.h"
 #include "Common/GameData/attrib_serializers.h"
 #include "Common/GameData/bodypart_serializers.h"
 #include "Common/GameData/costume_definitions.h"
@@ -20,6 +20,8 @@
 #include "Common/GameData/map_serializers.h"
 #include "Common/GameData/scenegraph_definitions.h"
 #include "Common/GameData/scenegraph_serializers.h"
+#include "Common/GameData/seq_definitions.h"
+#include "Common/GameData/seq_serializers.h"
 #include "Common/GameData/shop_definitions.h"
 #include "Common/GameData/shop_serializers.h"
 #include "Common/GameData/power_definitions.h"
@@ -30,7 +32,7 @@
 #include "Common/GameData/trick_serializers.h"
 #include "Common/GameData/fx_definitions.h"
 #include "Common/GameData/fx_serializers.h"
-#include "Common/GameData/charclass_definitions.h"
+#include "Common/GameData/CharacterClass.h"
 #include "Common/GameData/charclass_serializers.h"
 #include "Common/GameData/def_serializers.h"
 #include "Common/GameData/other_definitions.h"
@@ -71,6 +73,7 @@ enum BinType {
     eNpcDefinitions,
     eFxBehavior_Definitions,
     eFxInfo_Definitions,
+    eSeq_Definitions,
 };
 
 const QHash<uint32_t,BinType> knownSerializers = {
@@ -98,6 +101,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {npccostumesets_i0_requiredCrc      , eNpcDefinitions},
     {fxbehaviors_i0_requiredCrc         , eFxBehavior_Definitions},
     {fxinfos_i0_requiredCrc             , eFxInfo_Definitions},
+    {seqencerlist_i0_requiredCrc        , eSeq_Definitions},
 };
 
 BinType getLoader(const QString &fname)
@@ -167,6 +171,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(npccostumesets_i0_requiredCrc,16)<<"> NPC definitions - 'VillainCostume.bin'";
     qDebug()<<"   I0<"<<QString::number(fxbehaviors_i0_requiredCrc,16)<<"> FxBehavior definitions - 'behaviors.bin'";
     qDebug()<<"   I0<"<<QString::number(fxinfos_i0_requiredCrc,16)<<"> FxInfo definitions - 'fxinfo.bin'";
+    qDebug()<<"   I0<"<<QString::number(seqencerlist_i0_requiredCrc,16)<<"> Sequencer definitions - 'sequencers.bin'";
     qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
 }
 } // end of anonymous namespace
@@ -212,7 +217,7 @@ int main(int argc,char **argv)
           case eZones:        doConvert(doLoadRef<AllMaps_Data>(&binfile),target_basename,json_output); break;
           case eAttribNames:  doConvert(doLoadRef<AttribNames_Data>(&binfile),target_basename,json_output); break;
           case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(&binfile),target_basename,json_output); break;
-          case eTrickDefinitions: doConvert(doLoad<AllTricks_Data>(&binfile),target_basename,json_output); break;
+          case eTrickDefinitions: doConvert(doLoadRef<SceneModifiers>(&binfile),target_basename,json_output); break;
           case eEntityClasses: doConvert(doLoadRef<Parse_AllCharClasses>(&binfile),target_basename,json_output); break;
           case eEntityOrigins: doConvert(doLoadRef<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
           case ePowerDefinitions: doConvert(doLoadRef<AllPowerCategories>(&binfile),target_basename,json_output); break;
@@ -223,7 +228,7 @@ int main(int argc,char **argv)
             {
                 QString name_to_find = app.arguments()[2];
                 std::sort(data->begin(), data->end(), [](const Parse_NPC &a, const Parse_NPC &b) -> bool {
-                    return a.m_Name.compare(b.m_Name, Qt::CaseInsensitive) < 0;
+                    return QString(a.m_Name).compare(QString(b.m_Name), Qt::CaseInsensitive) < 0;
                 });
                 auto iter = std::find_if(data->begin(), data->end(), [name_to_find](const Parse_NPC &n) -> bool {
                     if (n.m_Name == name_to_find)
@@ -238,6 +243,7 @@ int main(int argc,char **argv)
           break;
           case eFxBehavior_Definitions: doConvert(doLoadRef<Fx_AllBehaviors>(&binfile),target_basename,json_output); break;
           case eFxInfo_Definitions: doConvert(doLoadRef<Fx_AllInfos>(&binfile),target_basename,json_output); break;
+          case eSeq_Definitions: doConvert(doLoadRef<SequencerList>(&binfile),target_basename,json_output); break;
           default:
               break;
       }

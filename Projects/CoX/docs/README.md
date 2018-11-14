@@ -26,7 +26,7 @@ REQUIREMENTS AND NOTES
 
 SEGS requires:
 
-- A copy of the CoH client from Issue 0 (release) version 0.22. This can be found through various sources online, or via magnet link: 
+- A copy of the CoH client from Issue 1 (beta) version 0.22. This can be found through various sources online, or via magnet link:
   `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
 
 For more detailed version of this guide or for help, visit our discord or forums by using the links below:

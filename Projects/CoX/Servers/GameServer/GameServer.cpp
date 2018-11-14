@@ -11,14 +11,14 @@
  */
 
 #include "GameServer.h"
-#include "GameEvents.h"
+#include "Messages/Game/GameEvents.h"
 
 #include "FriendshipService/FriendHandler.h"
 #include "ConfigExtension.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
 #include "Common/Servers/ServerEndpoint.h"
-#include "EmailHandler.h"
+#include "EmailService/EmailHandler.h"
 #include "Settings.h"
 
 #include <ace/Synch.h>
@@ -72,6 +72,8 @@ public:
         shutdown_event_processor_and_wait(m_handler);
         // tell our friendship service to close too
         shutdown_event_processor_and_wait(m_friendship_service.get());
+	// tell our email service to close too
+	shutdown_event_processor_and_wait(m_email_service.get());
     }
 };
 
