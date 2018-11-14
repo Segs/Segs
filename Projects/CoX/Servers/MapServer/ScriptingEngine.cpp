@@ -154,6 +154,23 @@ void ScriptingEngine::registerTypes()
         "contactId", &Contact::m_contact_idx
     );
 
+    m_private->m_lua.new_usertype<Clue>("Clue",
+        sol::constructors<Clue()>(),
+        "name", sol::property(&Clue::getName, &Clue::setName),
+        "displayName", sol::property(&Clue::getDisplayName, &Clue::setDisplayName),
+        "detail", sol::property(&Clue::getDetailText, &Clue::setDetailText),
+        "iconFile", sol::property(&Clue::getIconFile, &Clue::setIconFile)
+    );
+
+    m_private->m_lua.new_usertype<Souvenir>("Souvenir",
+        sol::constructors<Souvenir()>(),
+        "name", sol::property(&Souvenir::getName, &Souvenir::setName),
+        "description", sol::property(&Souvenir::getDescription, &Souvenir::setDescription),
+        "icon", sol::property(&Souvenir::getIcon, &Souvenir::setIcon)
+        //Server will set the index for this
+        //"souvenirIdx", &Souvenir::m_idx
+    );
+
     m_private->m_lua.new_usertype<Destination>("Destination",
         sol::constructors<Destination()>(),
         "pointIdx", &Destination::point_idx,
@@ -328,6 +345,35 @@ void ScriptingEngine::registerTypes()
         {
             QString title_string = QString::fromUtf8(title);
             setTitle(*cl, title_string);
+        },
+        "giveTempPower", [](MapClientSession *cl, const char* power)
+        {
+            CharacterData &cd = cl->m_ent->m_char->m_char_data;
+            PowerPool_Info ppool;
+            QString temp_power_set = "Temporary_Powers";
+
+            ppool.m_pcat_idx = getPowerCatByName(temp_power_set);
+            ppool.m_pset_idx = getPowerSetByName(temp_power_set, ppool.m_pcat_idx);
+
+            Parse_PowerSet pset = getGameData().get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
+
+            for(size_t i = 0; i < pset.Available.size(); ++i)
+            {
+                qCDebug(logScripts) << "giveTempPower Name: " << pset.m_Powers[i].m_Name;
+                if(pset.m_Powers[i].m_Name == power)
+                {
+                    qCDebug(logScripts) << "giveTempPower PowerFound";
+                    ppool.m_pow_idx = uint32_t(i);
+                    addPower(cd, ppool);
+                    break;
+                }
+            }
+        },
+        "addClue", addClue,
+        "addSouvenir", addSouvenir,
+        "setActiveDialogCallback", [](MapClientSession *cl, std::function<void(int)> callback)
+        {
+           cl->m_ent->setActiveDialogCallback(callback);
         }
 
     );

@@ -1,6 +1,7 @@
 set(SOURCES
     AddTimeStateLog.h
     Browser.h
+    ClueList.h
     ChangeTitle.h
     ChatDividerMoved.cpp
     ChatDividerMoved.h

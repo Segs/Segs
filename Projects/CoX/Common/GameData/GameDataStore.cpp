@@ -23,6 +23,7 @@
 #include "Common/GameData/fx_serializers.h"
 #include "Common/GameData/power_serializers.h"
 #include "Common/GameData/trick_serializers.h"
+#include "Common/GameData/seq_serializers.h"
 #include "Common/GameData/CommonNetStructures.h"
 #include "Logging.h"
 #include "Settings.h"
@@ -218,8 +219,11 @@ public:
 template<class TARGET,unsigned int CRC>
 bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
 {
+    QElapsedTimer timer;
+    
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading "<<directory_path<<storage<<" ... ";
+    timer.start();
     BinStore bin_store;
     if(!bin_store.open(directory_path+storage,CRC))
     {
@@ -231,7 +235,7 @@ bool read_data_to(const QString &directory_path,const QString &storage,TARGET &t
 
     bool res=loadFrom(&bin_store,target);
     if(res)
-        deb << "OK";
+        deb << " OK in "<<QString::number(float(timer.elapsed())/1000.0f,'g',4)<<"s";
     else
     {
         deb << "failure";
@@ -295,6 +299,8 @@ bool GameDataStore::read_game_data(const QString &directory_path)
     if(!read_pi_schedule(directory_path))
         return false;
     if(!read_fx(directory_path))
+        return false;
+    if(!read_sequencer_definitions(directory_path))
         return false;
     qInfo().noquote() << "Finished reading game data:  done in"<<float(load_timer.elapsed())/1000.0f<<"s";
     {
@@ -528,7 +534,10 @@ bool GameDataStore::read_fx(const QString &directory_path)
     return read_data_to<std::vector<struct FxInfo>, fxinfos_i0_requiredCrc>(directory_path, "bin/fxinfo.bin",
                                                                             m_fx_infos);
 }
-
+bool GameDataStore::read_sequencer_definitions(const QString &directory_path)
+{
+    return read_data_to<SequencerList, seqencerlist_i0_requiredCrc>(directory_path, "bin/sequencers.bin",m_seq_definitions);
+}
 const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
 {
     return m_all_powers.m_categories.at(pcat_idx).m_PowerSets.at(pset_idx);

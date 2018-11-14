@@ -478,21 +478,21 @@ struct SeqMoveData
 
     enum eFlags
     {
-        Cycle=1,
-        GlobalAnim=2,
-        FinishCycle=4,
-        ReqInputs=8,
-        ComplexCycle=0x10,
-        NoInterp=0x20,
-        HitReact=0x40,
-        NoSizeScale=0x80,
-        MoveScale=0x100,
-        NotSelectable=0x200,
-        SmoothSprint=0x400,
-        PitchToTarget=0x800,
-        PickRandomly=0x1000,
-        FullSizeScale=0x2000,
-        AlwaysSizeScale=0x4000
+        Cycle           = 1,
+        GlobalAnim      = 2,
+        FinishCycle     = 4,
+        ReqInputs       = 8,
+        ComplexCycle    = 0x10,
+        NoInterp        = 0x20,
+        HitReact        = 0x40,
+        NoSizeScale     = 0x80,
+        MoveScale       = 0x100,
+        NotSelectable   = 0x200,
+        SmoothSprint    = 0x400,
+        PitchToTarget   = 0x800,
+        PickRandomly    = 0x1000,
+        FullSizeScale   = 0x2000,
+        AlwaysSizeScale = 0x4000
     };
 };
 
