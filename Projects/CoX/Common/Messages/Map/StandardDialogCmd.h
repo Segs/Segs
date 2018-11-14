@@ -26,7 +26,7 @@ public:
                 }
 
         void    serializeto(BitStream &bs) const override {
-                    bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+                    bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 14
                     bs.StoreString(m_msg);
                 }
         EVENT_IMPL(StandardDialogCmd)

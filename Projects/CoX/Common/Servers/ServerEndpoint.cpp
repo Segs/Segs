@@ -97,7 +97,8 @@ int ServerEndpoint::open(void *p)
     return 0;
 }
 
-CRUDLink *ServerEndpoint::createLinkInstance() {
+CRUDLink *ServerEndpoint::createLinkInstance()
+{
     CRUDLink *res = createLink(m_downstream); // create a new client handler
     res->reactor(reactor());
     if(-1==res->open())

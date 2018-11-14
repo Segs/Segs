@@ -246,7 +246,8 @@ void GameHandler::on_timeout(Timeout *ev)
     //   Disconnect given link.
 
     intptr_t timer_id = ev->timer_id();
-    switch (timer_id) {
+    switch (timer_id)
+    {
         case Link_Idle_Timer:
             on_check_links();
         break;

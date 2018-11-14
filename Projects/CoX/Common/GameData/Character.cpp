@@ -109,30 +109,18 @@ void Character::finalizeLevel()
     m_char_data.m_max_insp_cols = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationCol);
     m_char_data.m_max_enhance_slots = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_BoostSlot);
 
-    if (m_char_data.m_sidekick.m_type  != SidekickType::IsSidekick)
-    {
+    if(m_char_data.m_sidekick.m_type != SidekickType::IsSidekick)
          m_char_data.m_combat_level = m_char_data.m_level;              // if sidekicked, m_combat_level is linked to
-         finalizeCombatLevel();
-    }
-    //if (m_char_data.m_sidekick.m_type   == SidekickType::IsMentor)       //todo: set sidekick's level to keep up with mentor
+    //if (m_char_data.m_sidekick.m_type == SidekickType::IsMentor)    // TODO: set sidekick's level to keep up with mentor
 
     m_char_data.m_security_threat = m_char_data.m_level;
+    finalizeCombatLevel();
 
     // client will only accept 5col x 4row of insps MAX
     assert(m_char_data.m_max_insp_cols <= 5 || m_char_data.m_max_insp_rows <= 4);
 
     // Add inherent powers for this level
     addPowersByLevel(QStringLiteral("Inherent"), QStringLiteral("Inherent"), m_char_data.m_level);
-
-    /*
-    int num_powersets = m_char_data.m_powersets.size();
-    for(int idx = 1; idx < num_powersets; ++idx) // Skipping 0 powerset (temporary powers)
-    {
-        CharacterPowerSet pset = m_char_data.m_powersets[idx];
-        for(CharacterPower &pow : pset.m_powers)
-            reserveEnhancementSlot(&pow, m_char_data.m_level);
-    }
-    */
 
     m_char_data.m_has_updated_powers = true; // this must be true, because we're updating powers
     m_char_data.m_reset_powersets = true; // possible that we need to reset the powerset array client side
@@ -226,8 +214,8 @@ void Character::GetCharBuildInfo(BitStream &src)
 
     // Now that character is created. Finalize level and update hp and end
     finalizeLevel();
-    setMaxHP(*this); // set max hp
-    setMaxEnd(*this); // set max end
+    setHPToMax(*this); // set max hp
+    setEndToMax(*this); // set max end
 
     // This must come after finalize
     addStartingInspirations(starting_insps);      // resurgence and phenomenal_luck

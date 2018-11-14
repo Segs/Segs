@@ -39,7 +39,8 @@ void FileSignatureWorker::process()
               continue;
           }
 
-          while(!file.atEnd()){
+          while(!file.atEnd())
+          {
             crypto.addData(file.read(8192));
           }
           QByteArray hash = crypto.result();

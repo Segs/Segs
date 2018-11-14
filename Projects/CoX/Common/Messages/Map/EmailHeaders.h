@@ -49,7 +49,8 @@ public:
         bs.StorePackedBits(1, m_fullupdate);
         bs.StorePackedBits(1, m_emails.size());
 
-        for(const EmailHeader &hdr : m_emails){
+        for(const EmailHeader &hdr : m_emails)
+        {
             bs.StoreBits(1, true); //"valid" flag
             bs.StoreBits(32, hdr.id);
             bs.StoreString(hdr.sender);

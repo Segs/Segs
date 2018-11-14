@@ -934,7 +934,8 @@ void MapInstance::on_timeout(Timeout *ev)
     //   Disconnect given link.
 
     auto timer_id = ev->timer_id();
-    switch (timer_id) {
+    switch (timer_id)
+    {
         case World_Update_Timer:
             m_world->update(ev->arrival_time());
             break;
@@ -1123,19 +1124,18 @@ QString process_replacement_strings(MapClientSession *sender,const QString &msg_
     QString  sender_char_name   = c.getName();
     QString  sender_origin      = getOrigin(c);
     uint32_t target_idx         = getTargetIdx(*sender->m_ent);
-    QString  target_char_name;
+    QString  target_char_name   = c.getName();
 
     qCDebug(logChat) << "src -> tgt: " << sender->m_ent->m_idx  << "->" << target_idx;
 
     if(target_idx > 0)
     {
         Entity   *tgt    = getEntity(sender,target_idx);
-        target_char_name = tgt->name();
+        target_char_name = tgt->name(); // change name
     }
-    else
-        target_char_name = c.getName();
 
-    foreach (const QString &str, replacements) {
+    foreach (const QString &str, replacements)
+    {
         if(str == "\\$archetype")
             new_msg.replace(QRegularExpression(str), sender_class);
         else if(str == "\\$battlecry")
@@ -1151,7 +1151,7 @@ QString process_replacement_strings(MapClientSession *sender,const QString &msg_
         else if(str == "\\$\\$")
         {
             if(new_msg.contains(str))
-                qCDebug(logChat) << "need to send newline for" << str; // TODO: Need method for returning newline in str
+                qCDebug(logChat) << "need to send newline for" << str;
         }
     }
     return new_msg;
@@ -2482,20 +2482,17 @@ void MapInstance::on_dialog_button(DialogButton *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
+    if(ev->success) // only sent by contactresponse
+        qCDebug(logMapEvents) << "Dialog success" << ev->success;
+
     switch(ev->button_id)
     {
     case 0:
         // cancel?
-        if(ev->success) // only sent by contactresponse
-            qDebug() << "success" << ev->success;
-
         break;
     case 1:
         // accept?
-        if(ev->success) // only sent by contactresponse
-            qDebug() << "success" << ev->success;
-
-        if(session.m_ent->m_char->m_in_training)
+        if(session.m_ent->m_char->m_in_training) // if training, raise level
             increaseLevel(*session.m_ent);
 
         break;
@@ -2513,13 +2510,9 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
 
     if(session.m_ent->m_active_dialog != NULL)
-    {
         session.m_ent->m_active_dialog(ev->button_id);
-    }
     else
-    {
         auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
-    }
 
 }
 
@@ -2607,7 +2600,8 @@ void MapInstance::on_levelup_response(LevelUpResponse *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     // if successful, set level
-    increaseLevel(*session.m_ent);
+    if(session.m_ent->m_char->m_in_training) // if training, raise level
+        increaseLevel(*session.m_ent);
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received LevelUpResponse" << ev->button_id << ev->result;
 }

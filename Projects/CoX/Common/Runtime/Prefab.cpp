@@ -44,7 +44,8 @@ Model *modelFind(const QString &geoset_name, const QString &model_name,LoadingCo
 {
     Model *ptr_sub = nullptr;
 
-    if (model_name.isEmpty() || geoset_name.isEmpty()) {
+    if (model_name.isEmpty() || geoset_name.isEmpty())
+    {
         qCritical() << "Bad model/geometry set requested:";
         if (!model_name.isEmpty())
             qCritical() << "Model: " << model_name;

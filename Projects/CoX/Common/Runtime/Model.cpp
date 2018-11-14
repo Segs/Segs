@@ -286,9 +286,9 @@ void geosetLoadHeader(QFile &fp, GeoSet *geoset)
     {
         const Model32 *sub_model = &ptr_subs[idx];
         std::vector<TextureBind> binds;
-        if (info->tex_binds_size) {
+        if (info->tex_binds_size)
             binds = convertTexBinds(sub_model->num_textures, sub_model->texture_bind_offsets + stream_pos_1);
-        }
+
         Model *m    = convertAndInsertModel(*geoset, sub_model);
         m->texture_bind_info = binds;
         m->geoset       = geoset;
@@ -360,7 +360,8 @@ void modelFixup(const Model &model,VBOPointers &vbo)
         triangle_offset += bind_tri_count;
     }
 }
-static bool bumpMapped(const Model &model) {
+static bool bumpMapped(const Model &model)
+{
     return model.flags & (OBJ_DRAW_AS_ENT | OBJ_BUMPMAP);
 }
 

@@ -127,13 +127,15 @@ void preloadTextureNames(const QString &basepath)
     RuntimeData &rd(getRuntimeData());
     //TODO: store texture headers into an array, and only rescan directories when forced ?
     QDirIterator iter(basepath+"texture_library", QDir::Files, QDirIterator::Subdirectories);
-    while (iter.hasNext()) {
+    while (iter.hasNext())
+    {
         QString fpath = iter.next();
         QString texture_key = iter.fileInfo().baseName().toLower();
         rd.m_texture_paths[texture_key] = fpath;
         loadTexHeader(fpath);
     }
 }
+
 } //end of SEGS namespace
 
 

@@ -27,8 +27,8 @@ SEGS_LOGGING_CATEGORY(logGUI,          "log.gui")
 SEGS_LOGGING_CATEGORY(logTeams,        "log.teams")
 SEGS_LOGGING_CATEGORY(logDB,           "log.db")
 SEGS_LOGGING_CATEGORY(logInput,        "log.input")
-SEGS_LOGGING_CATEGORY(logOrientation,  "log.orientation")
 SEGS_LOGGING_CATEGORY(logPosition,     "log.position")
+SEGS_LOGGING_CATEGORY(logOrientation,  "log.orientation")
 SEGS_LOGGING_CATEGORY(logMovement,     "log.movement")
 SEGS_LOGGING_CATEGORY(logChat,         "log.chat")
 SEGS_LOGGING_CATEGORY(logInfoMsg,      "log.infomsg")
@@ -84,6 +84,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.trades="         + config.value("log_trades","false").toString();
     filter_rules += "\nlog.scripts="        + config.value("log_scripts","false").toString();
     filter_rules += "\nlog.scenegraph="     + config.value("log_scenegraph","false").toString();
+    filter_rules += "\nlog.tasks="     + config.value("log_tasks","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -154,6 +155,8 @@ void toggleLogging(QString &category)
         cat = &logScripts();
     else if(category.contains("scenegraph",Qt::CaseInsensitive))
         cat = &logSceneGraph();
+    else if(category.contains("tasks",Qt::CaseInsensitive))
+        cat = &logTasks();
     else
         return;
 

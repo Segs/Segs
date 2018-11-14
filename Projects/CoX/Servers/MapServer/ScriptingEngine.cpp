@@ -9,7 +9,6 @@
  * @addtogroup MapServer Projects/CoX/Servers/MapServer
  * @{
  */
-#pragma once
 #include "ScriptingEngine.h"
 
 #include "DataHelpers.h"
@@ -340,7 +339,7 @@ void ScriptingEngine::registerTypes()
         {
             setInf(*cl->m_ent->m_char, inf);
         },
-        "levelUp", train,
+        "levelUp", playerTrain,
         "setTitle", [](MapClientSession *cl, const char* title)
         {
             QString title_string = QString::fromUtf8(title);

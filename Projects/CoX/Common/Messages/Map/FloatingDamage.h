@@ -31,8 +31,9 @@ public:
         m_amount(amount)
     {
     }
-    void    serializeto(BitStream &bs) const override {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+    void    serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 21
 
         bs.StorePackedBits(1,m_damage_source);
         bs.StorePackedBits(1,m_damage_target);

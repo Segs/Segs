@@ -1719,12 +1719,11 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
 {
     // Cannot use getEntityFromCommand as we need to be able to unfriend logged out characters.
     QString name = getCommandParameter(cmd);
-    if (name.isEmpty()) {
+    if (name.isEmpty())
+    {
         const Entity* const tgt = getTargetEntity(sess);
         if (tgt == nullptr)
-        {
             return;
-        }
 
         name = tgt->name();
     }
@@ -1817,7 +1816,7 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
 {
-    train(sess);
+    playerTrain(sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -34,7 +34,8 @@ using namespace SEGSEvents;
 
 namespace
 {
-    bool prepQuery(QSqlQuery &qr,const QString &txt) {
+    bool prepQuery(QSqlQuery &qr,const QString &txt)
+    {
         if(!qr.prepare(txt))
         {
             qDebug() << "SQL_ERROR:"<<qr.lastError();
@@ -42,7 +43,8 @@ namespace
         }
         return true;
     }
-    bool doIt(QSqlQuery &qr) {
+    bool doIt(QSqlQuery &qr)
+    {
         if(!qr.exec())
         {
             qDebug() << "SQL_ERROR:"<<qr.lastError();

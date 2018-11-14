@@ -114,7 +114,8 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
 void AuthHandler::on_timeout(Timeout *ev)
 {
     uint64_t timer_id = ev->timer_id();
-    switch (timer_id) {
+    switch (timer_id)
+    {
         case Session_Reaper_Timer:
             reap_stale_links();
         break;
@@ -215,7 +216,8 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     RetrieveAccountResponseData & acc_inf(msg->m_data);  // all the account info you can eat!
 
     // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
-    if(acc_inf.isBlocked()) {
+    if(acc_inf.isBlocked())
+    {
         lnk->putq(s_auth_error_locked_account.shallow_copy());
         return;
     }

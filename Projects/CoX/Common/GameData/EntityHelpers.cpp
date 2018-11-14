@@ -314,7 +314,7 @@ void revivePlayer(Entity &e, ReviveLevel lvl)
         setHP(*e.m_char, getMaxHP(*e.m_char)*0.75f);
         break;
     case ReviveLevel::IMMORTAL_RECOVERY:
-        setMaxHP(*e.m_char);
+        setHPToMax(*e.m_char);
         break;
     case ReviveLevel::REGEN_REVIVE:
         setHP(*e.m_char, getMaxHP(*e.m_char)*0.75f);
@@ -323,8 +323,8 @@ void revivePlayer(Entity &e, ReviveLevel lvl)
     case ReviveLevel::FULL:
     default:
         // Set HP and End to Max
-        setMaxHP(*e.m_char);
-        setMaxEnd(*e.m_char);
+        setHPToMax(*e.m_char);
+        setEndToMax(*e.m_char);
         break;
     }
 
