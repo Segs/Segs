@@ -213,12 +213,12 @@ bool MapInstance::spin_up_for(uint8_t game_server_id,uint32_t owner_id,uint32_t 
     m_game_server_id = game_server_id;
     m_owner_id = owner_id;
     m_instance_id = instance_id;
-    if (ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
+    if(ACE_Reactor::instance()->register_handler(m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
     {
         qWarning() << "MapInstance::spin_up_for failed to register_handler, port already open";
         return false;
     }
-    if (m_endpoint->open() == -1) // will register notifications with current reactor
+    if(m_endpoint->open() == -1) // will register notifications with current reactor
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) MapInstance: ServerEndpoint::open\n"),false);
 
     qInfo() << "Spun up MapInstance" << m_instance_id << "for MapServer" << m_owner_id;
@@ -536,7 +536,7 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    if (!map_server->session_has_xfer_in_progress(lnk->session_token()))
+    if(!map_server->session_has_xfer_in_progress(lnk->session_token()))
     {
          qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
          return;
@@ -617,7 +617,7 @@ void MapInstance::on_client_quit(ClientQuit*ev)
     {
         // forbid the player from aborting logout,
         // if logout is called automatically (through a loooong period of AFK)
-        if (!session.m_ent->m_char->m_char_data.m_is_on_auto_logout)
+        if(!session.m_ent->m_char->m_char_data.m_is_on_auto_logout)
             abortLogout(session.m_ent);
     }
     else
@@ -721,7 +721,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     map_session.is_connected_to_game_server_id = m_game_server_id;
     cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
-    if (request_data.char_from_db_data.isEmpty())
+    if(request_data.char_from_db_data.isEmpty())
     {
         EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
         game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
@@ -781,7 +781,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     // make sure to 'off' the AFK from the character in db first
     toggleAFK(*e->m_char, false);
 
-    if (logSpawn().isDebugEnabled())
+    if(logSpawn().isDebugEnabled())
     {
         qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
@@ -814,7 +814,7 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
     // Can't pass direction through cereal, so let's update it here.
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
-    if (logSpawn().isDebugEnabled())
+    if(logSpawn().isDebugEnabled())
     {
         qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
@@ -842,7 +842,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     MapClientSession &map_session(m_session_store.session_from_token(token));
     map_session.link(lnk);
     lnk->session_token(token);
-    if (ev->m_new_character)
+    if(ev->m_new_character)
     {
         QString ent_data;
         Entity *e = m_entities.CreatePlayer();
@@ -968,7 +968,7 @@ void MapInstance::sendState()
     for(;iter!=end; ++iter)
     {
         MapClientSession *cl = *iter;
-        if (!cl->m_in_map)
+        if(!cl->m_in_map)
             continue;
 
         EntitiesResponse *res = new EntitiesResponse();
@@ -1013,11 +1013,11 @@ void MapInstance::on_input_state(RecvInputState *st)
     ent->m_states.addNewState(st->m_next_state);
 
     // Set current Input Packet ID
-    if (st->m_next_state.m_full_input_packet)
+    if(st->m_next_state.m_full_input_packet)
         ent->m_input_pkt_id = st->m_next_state.m_send_id;
 
     // Check for input
-    if (st->m_next_state.m_input_received)
+    if(st->m_next_state.m_input_received)
         ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
 
     // Set Target
@@ -1993,7 +1993,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
     if(!session.m_in_map)
         session.m_in_map = true;
-    if (!map_server->session_has_xfer_in_progress(session.link()->session_token()))
+    if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
         // Send current contact list
         sendContactStatusList(session);
@@ -2081,13 +2081,13 @@ void MapInstance::on_enter_door(EnterDoor *ev)
         if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
         {
             uint8_t map_idx = ev->name.toInt();
-            if (!ev->no_location)
+            if(!ev->no_location)
                  map_idx = std::rand() % 23;
 
              // TODO: change this to not be hacky.
              // change the map idx if you're trying to load the map you're currently on
              // this should only ever happen with /movezone commands after doors work correctly.
-             if (map_idx == m_index)
+             if(map_idx == m_index)
                  map_idx = (map_idx + 1) % 23;
              map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
              session.link()->putq(new MapXferWait(getMapPath(map_idx)));
@@ -2617,7 +2617,7 @@ void MapInstance::on_afk_update()
         Entity *e = sess->m_ent;
         CharacterData* cd = &e->m_char->m_char_data;
 
-        if (e->m_has_input_on_timeframe == false)
+        if(e->m_has_input_on_timeframe == false)
             cd->m_idle_time += afk_update_interval.sec();
         else
         {
@@ -2625,14 +2625,14 @@ void MapInstance::on_afk_update()
             qCDebug(logInput) << msg;
             cd->m_idle_time = 0;
 
-            if (cd->m_afk)
+            if(cd->m_afk)
                 toggleAFK(*e->m_char, false);
             cd->m_is_on_auto_logout = false;
 
             e->m_has_input_on_timeframe = false;
         }
 
-        if (cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
+        if(cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
             toggleAFK(* e->m_char, true, "Auto AFK");
             msg = QString("You are AFKed after %1 seconds of inactivity.").arg(data.m_time_to_afk);
@@ -2640,11 +2640,11 @@ void MapInstance::on_afk_update()
         }
 
 
-        if (data.m_uses_auto_logout && cd->m_idle_time >= data.m_time_to_logout_msg)
+        if(data.m_uses_auto_logout && cd->m_idle_time >= data.m_time_to_logout_msg)
         {
             // give message that character will be auto logged out in 2 mins
             // player must not be on task force and is not on mission map for this to happen
-            if (!cd->m_is_on_task_force && !isEntityOnMissionMap(e->m_entity_data) && !cd->m_is_on_auto_logout)
+            if(!cd->m_is_on_task_force && !isEntityOnMissionMap(e->m_entity_data) && !cd->m_is_on_auto_logout)
             {
                 cd->m_is_on_auto_logout = true;
                 msg = QString("You have been inactive for %1 seconds. You will automatically ").arg(data.m_time_to_logout_msg) +
@@ -2653,7 +2653,7 @@ void MapInstance::on_afk_update()
             }
         }
 
-        if (cd->m_is_on_auto_logout && cd->m_idle_time >=
+        if(cd->m_is_on_auto_logout && cd->m_idle_time >=
                 data.m_time_to_logout_msg + data.m_time_to_auto_logout
                 && !e->m_is_logging_out)
         {
@@ -2679,10 +2679,10 @@ void MapInstance::on_update_entities()
         /* at the moment we are forcing full character updates, so I'll leave this commented for now
 
         // full character update
-        if (e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
+        if(e->m_db_store_flags & uint32_t(DbStoreFlags::Full))
             send_character_update(e);
         // update only player data
-        else if (e->m_db_store_flags & uint32_t(DbStoreFlags::PlayerData))
+        else if(e->m_db_store_flags & uint32_t(DbStoreFlags::PlayerData))
             send_player_update(e);
 
         */
@@ -2808,7 +2808,7 @@ void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
 {
     MapClientSession& session = m_session_store.session_from_event(ev);
 
-    if (session.m_ent->m_trade == nullptr)
+    if(session.m_ent->m_trade == nullptr)
     {
         // Trade already cancelled.
         // The client sends this many times while closing the trade window for some reason.
@@ -2817,7 +2817,7 @@ void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
 
     const uint32_t tgt_db_id = session.m_ent->m_trade->getOtherMember(*session.m_ent).m_db_id;
     Entity* const tgt = getEntityByDBID(session.m_ent->m_client->m_current_map, tgt_db_id);
-    if (tgt == nullptr)
+    if(tgt == nullptr)
     {
         // Only one side left in the game.
         discardTrade(*session.m_ent);
@@ -2845,7 +2845,7 @@ void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
     MapClientSession& session = m_session_store.session_from_event(ev);
 
     Entity* const tgt = getEntityByDBID(session.m_current_map, ev->m_info.m_db_id);
-    if (tgt == nullptr)
+    if(tgt == nullptr)
         return;
 
     QString msg;
@@ -2870,7 +2870,7 @@ void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
         TradeMember& trade_tgt = trade.getMember(*tgt);
         sendTradeUpdate(session, *tgt->m_client, trade_src, trade_tgt);
 
-        if (session.m_ent->m_trade->isAccepted())
+        if(session.m_ent->m_trade->isAccepted())
         {
             finishTrade(*session.m_ent, *tgt); // finish handling trade
             sendTradeSuccess(session, *tgt->m_client); // send tradeSuccess pkt to client

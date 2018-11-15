@@ -558,14 +558,14 @@ int ScriptingEngine::runScript(MapClientSession * client, const QString &script_
 int ScriptingEngine::runScript(const QString &script_contents, const char *script_name)
 {
     sol::load_result load_res = m_private->m_lua.load(script_contents.toStdString(), script_name);
-    if (!load_res.valid())
+    if(!load_res.valid())
     {
         sol::error err = load_res;
         // TODO: report error here.
         return -1;
     }
     sol::protected_function_result script_result = load_res();
-    if (!script_result.valid())
+    if(!script_result.valid())
     {
         sol::error err = script_result;
         // TODO: report error here.

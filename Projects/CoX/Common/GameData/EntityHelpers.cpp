@@ -153,7 +153,7 @@ void toggleCollision(Entity &e)
 {
     e.m_motion_state.m_no_collision = !e.m_motion_state.m_no_collision;
 
-    if (e.m_motion_state.m_no_collision)
+    if(e.m_motion_state.m_no_collision)
         e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
     else
         e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;

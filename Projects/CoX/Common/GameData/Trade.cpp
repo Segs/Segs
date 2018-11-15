@@ -28,7 +28,7 @@ static TradeSystemMessages hasRoomForTradeInfluence(Entity& src)
     const TradeInfo& info_tgt = trade.getOtherMember(src).m_info;
 
     const uint32_t inf = (getInf(*src.m_char) - info_src.m_influence) + info_tgt.m_influence;
-    if (inf < info_tgt.m_influence) // Standard overflow check (only works with unsigned integers).
+    if(inf < info_tgt.m_influence) // Standard overflow check (only works with unsigned integers).
         return TradeSystemMessages::NOT_ENOUGH_ROOM_INFLUENCE;
 
     return TradeSystemMessages::SUCCESS;
@@ -45,7 +45,7 @@ static TradeSystemMessages hasRoomForTradeEnhancements(Entity& src)
     const int num_enh_tgt = static_cast<int>(info_tgt.m_enhancements.size());
     const int num_enh = getNumberEnhancements(cd) - num_enh_src + num_enh_tgt;
     const int max_num_enh = getMaxNumberEnhancements(cd);
-    if (num_enh > max_num_enh)
+    if(num_enh > max_num_enh)
         return TradeSystemMessages::NOT_ENOUGH_ROOM_ENHANCEMENTS;
 
     return TradeSystemMessages::SUCCESS;
@@ -62,7 +62,7 @@ static TradeSystemMessages hasRoomForTradeInspirations(Entity& src)
     const int num_insp_tgt = static_cast<int>(info_tgt.m_inspirations.size());
     const int num_insp = getNumberInspirations(cd) - num_insp_src + num_insp_tgt;
     const int max_num_insp = getMaxNumberInspirations(cd);
-    if (num_insp > max_num_insp)
+    if(num_insp > max_num_insp)
         return TradeSystemMessages::NOT_ENOUGH_ROOM_INSPIRATIONS;
 
     return TradeSystemMessages::SUCCESS;
@@ -94,7 +94,7 @@ static std::vector<CharacterEnhancement> removeTradedEnhancements(Entity& ent, c
     for (const uint32_t idx : info.m_enhancements)
     {
         const CharacterEnhancement* const enh = getEnhancement(ent, idx);
-        if (enh == nullptr)
+        if(enh == nullptr)
             continue;
 
         result.push_back(*enh);
@@ -120,7 +120,7 @@ static std::vector<CharacterInspiration> removeTradedInspirations(Entity& ent, c
     for (const TradeInspiration& trade_insp : info.m_inspirations)
     {
         const CharacterInspiration* const insp = getInspiration(ent, trade_insp.m_col, trade_insp.m_row);
-        if (insp == nullptr)
+        if(insp == nullptr)
             continue;
 
         result.push_back(*insp);
@@ -142,21 +142,21 @@ static TradeSystemMessages checkValidTradeResponse(Entity &src, Entity &tgt)
 {
     // These checks should never trigger.
     // If they do, then something is seriously wrong with the client.
-    if (src.m_trade == nullptr)
+    if(src.m_trade == nullptr)
     {
         qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:"
                    << "Source sent no trade offer.";
         return TradeSystemMessages::HAS_SENT_NO_TRADE;
     }
 
-    if (tgt.m_trade == nullptr)
+    if(tgt.m_trade == nullptr)
     {
         qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:"
                    << "Target has not received a trade offer";
         return TradeSystemMessages::TGT_RECV_NO_TRADE;
     }
 
-    if (src.m_trade != tgt.m_trade)
+    if(src.m_trade != tgt.m_trade)
     {
         qWarning() << "Trade decline from" << src.name() << "to" << tgt.name() << "failed:"
                    << "These are not trading partners.";
@@ -209,7 +209,7 @@ Trade::Trade(const Entity& ent_a, const Entity& ent_b)
 
 TradeMember& Trade::getMember(const Entity& ent)
 {
-    if (m_member_a.m_db_id == getDbId(ent))
+    if(m_member_a.m_db_id == getDbId(ent))
         return m_member_a;
 
     return m_member_b;
@@ -217,7 +217,7 @@ TradeMember& Trade::getMember(const Entity& ent)
 
 const TradeMember& Trade::getMember(const Entity& ent) const
 {
-    if (m_member_a.m_db_id == getDbId(ent))
+    if(m_member_a.m_db_id == getDbId(ent))
         return m_member_a;
 
     return m_member_b;
@@ -225,7 +225,7 @@ const TradeMember& Trade::getMember(const Entity& ent) const
 
 TradeMember& Trade::getOtherMember(const Entity& ent)
 {
-    if (m_member_a.m_db_id == getDbId(ent))
+    if(m_member_a.m_db_id == getDbId(ent))
         return m_member_b;
 
     return m_member_a;
@@ -233,7 +233,7 @@ TradeMember& Trade::getOtherMember(const Entity& ent)
 
 const TradeMember& Trade::getOtherMember(const Entity& ent) const
 {
-    if (m_member_a.m_db_id == getDbId(ent))
+    if(m_member_a.m_db_id == getDbId(ent))
         return m_member_b;
 
     return m_member_a;
@@ -254,7 +254,7 @@ TradeSystemMessages requestTrade(Entity& src, Entity& tgt)
     //         - If the player who sent the request logs out, then we need to cancel the offer.
     //           Will a TradeCancel event work?
     // NOTE: This will be done when moving this code into a "TradeService", similar to "FriendshipService".
-    if (src.m_trade != nullptr)
+    if(src.m_trade != nullptr)
     {
         qCDebug(logTrades) << "Trade invite from" << src.name() << "to" << tgt.name() << "failed:"
                            << src.m_trade->m_invite_accepted;
@@ -264,7 +264,7 @@ TradeSystemMessages requestTrade(Entity& src, Entity& tgt)
             return TradeSystemMessages::SRC_CONSIDERING_ANOTHER_TRADE;
     }
 
-    if (tgt.m_trade != nullptr)
+    if(tgt.m_trade != nullptr)
     {
         qCDebug(logTrades) << "Trade invite from" << src.name() << "to" << tgt.name() << "failed:"
                            << tgt.m_trade->m_invite_accepted;
@@ -319,14 +319,14 @@ TradeSystemMessages declineTrade(Entity& src, Entity& tgt)
 
 TradeSystemMessages updateTrade(Entity &src, Entity &tgt, const TradeInfo &info)
 {
-    if (src.m_trade != tgt.m_trade)
+    if(src.m_trade != tgt.m_trade)
     {
         qWarning() << "Received trade update for entities not trading with each other:"
                    << src.name() << "and" << tgt.name();
         return TradeSystemMessages::GENERIC_FAILURE;
     }
 
-    if (src.m_trade == nullptr || tgt.m_trade == nullptr)
+    if(src.m_trade == nullptr || tgt.m_trade == nullptr)
     {
         qWarning() << "Received trade update for entities not trading:" << src.name() << "and" << tgt.name();
         return TradeSystemMessages::GENERIC_FAILURE;
@@ -339,7 +339,7 @@ TradeSystemMessages updateTrade(Entity &src, Entity &tgt, const TradeInfo &info)
     trade_src.m_info = info;
 
     // Trade acceptance must be canceled if the trade content has changed.
-    if (is_content_modified)
+    if(is_content_modified)
     {
         trade_src.m_info.m_accepted = false;
         trade_tgt.m_info.m_accepted = false;

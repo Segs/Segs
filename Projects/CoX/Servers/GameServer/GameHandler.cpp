@@ -348,7 +348,7 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
     const GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_index);
 
     // check if character exists, and if it's name is the same as the one passed here
-    if (selected_slot.m_name == ev->m_char_name)
+    if(selected_slot.m_name == ev->m_char_name)
     {
         game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, selected_slot.index},
                                                  lnk->session_token(), this));
@@ -374,7 +374,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
     GameSession &session = m_session_store.session_from_event(ev);
-    if (!session.m_game_account.valid())
+    if(!session.m_game_account.valid())
         return; // TODO:  return some kind of error.
 
     GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);

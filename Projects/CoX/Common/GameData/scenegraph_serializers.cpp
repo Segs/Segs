@@ -376,21 +376,21 @@ bool LoadSceneData(const QString &fname, SceneGraph_Data &scenegraph)
 {
     BinStore binfile;
 
-    if (fname.contains(".crl"))
+    if(fname.contains(".crl"))
     {
-        if (!loadFrom(fname, scenegraph))
+        if(!loadFrom(fname, scenegraph))
         {
             qCritical() << "Failed to serialize data from crl:" << fname;
             return false;
         }
         return true;
     }
-    if (!binfile.open(fname, scenegraph_i0_2_requiredCrc))
+    if(!binfile.open(fname, scenegraph_i0_2_requiredCrc))
     {
         qCritical() << "Failed to open original bin:" << fname;
         return false;
     }
-    if (!loadFrom(&binfile, scenegraph))
+    if(!loadFrom(&binfile, scenegraph))
     {
         qCritical() << "Failed to load data from original bin:" << fname;
         return false;

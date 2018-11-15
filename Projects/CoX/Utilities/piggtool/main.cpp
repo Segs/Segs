@@ -112,12 +112,12 @@ bool loadPigg(const QString &fname,PiggFile &pigg)
         qDebug() << "Bad juju!";
         return false;
     }
-    if (pigg.hdr.version > 2)
+    if(pigg.hdr.version > 2)
     {
         qDebug() << "File" <<fname<< "has bad pigg version"<<pigg.hdr.version;
         return  false;
     }
-    if (pigg.hdr.header_size != 0x10)
+    if(pigg.hdr.header_size != 0x10)
         src_fl.seek(src_fl.pos()+pigg.hdr.header_size - 0x10);
     pigg.headers.resize(pigg.hdr.num_entries);
     assert(pigg.hdr.used_header_bytes==0x30);
@@ -128,18 +128,18 @@ bool loadPigg(const QString &fname,PiggFile &pigg)
     int idx=0;
     for(PiggInternalHeader &in_hdr : pigg.headers )
     {
-        if (in_hdr.flag != 0x3456)
+        if(in_hdr.flag != 0x3456)
         {
             qDebug() << "Bad flag on fileheader #"<<idx;
             return false;
         }
         uint32_t internal_fsize = in_hdr.packed_size ? in_hdr.packed_size : in_hdr.size;
-        if (in_hdr.offset + internal_fsize - 1 > src_fl.size())
+        if(in_hdr.offset + internal_fsize - 1 > src_fl.size())
         {
             qDebug() << "File larger than available pigg data - probably corrupt .pigg file!  #"<<idx;
             return false;
         }
-        if (in_hdr.name_id < 0)
+        if(in_hdr.name_id < 0)
         {
             qDebug() << "Name id is invalid in #"<<idx;
             return false;
@@ -149,12 +149,12 @@ bool loadPigg(const QString &fname,PiggFile &pigg)
     loadDataTable(src_fl,pigg.strings_table);
     Pigg_DataTable headers_table; // 'headers' table is not used/needed during file listing/extraction operations
     loadDataTable(src_fl,headers_table);
-    if (pigg.strings_table.datapool_flag != 0x6789)
+    if(pigg.strings_table.datapool_flag != 0x6789)
     {
         qDebug() << "Bad string table magic";
         return false;
     }
-    if (headers_table.datapool_flag != 0x9ABC) {
+    if(headers_table.datapool_flag != 0x9ABC) {
         qDebug() << "Bad headers table magic";
         return false;
     }
@@ -190,7 +190,7 @@ bool extractAllFiles(PiggFile &pigg, const QString &tgt_path)
 {
     QFile src_fl(pigg.fname);
 
-    if (!src_fl.open(QFile::ReadOnly))
+    if(!src_fl.open(QFile::ReadOnly))
     {
         qWarning() << "failed to open source file" << pigg.fname;
         return false;
@@ -232,7 +232,7 @@ bool extractFile(const QString &pigg_filename, const QString &target_directory)
 
     PiggFile header;
 
-    if (!loadPigg(pigg_filename, header))
+    if(!loadPigg(pigg_filename, header))
     {
         qCritical() << "Failed to read Pigg file:" << pigg_filename;
         return false;
@@ -245,7 +245,7 @@ void extractFilesFromPath(const QString &source_path, const QString &target_dire
 {
     const QFileInfo file_info(source_path);
 
-    if (file_info.isDir())
+    if(file_info.isDir())
     {
         const auto files = QDir(source_path).entryList(QStringList() << "*.pigg", QDir::Files);
         qInfo() << "Found" << files.size() << ".pigg files.";
@@ -253,7 +253,7 @@ void extractFilesFromPath(const QString &source_path, const QString &target_dire
         for (const auto file : files)
             extractFile(source_path + "/" + file, target_directory);
     }
-    else if (file_info.isFile())
+    else if(file_info.isFile())
     {
         extractFile(source_path, target_directory);
     }
@@ -276,21 +276,21 @@ int main(int argc, char **argv)
 
     parser.process(app);
 
-    if (parser.positionalArguments().isEmpty() || parser.optionNames().isEmpty())
+    if(parser.positionalArguments().isEmpty() || parser.optionNames().isEmpty())
         parser.showHelp(0);
 
     QStringList positionals = parser.positionalArguments();
     const QString &pigg_name = positionals.constFirst();
     QString target_dir = positionals.count()>1 ? positionals[1] : "data";
 
-    if (parser.isSet("l"))
+    if(parser.isSet("l"))
     {
         PiggFile header;
 
-        if (loadPigg(pigg_name, header))
+        if(loadPigg(pigg_name, header))
           dumpFileList(header);
     }
-    else if (parser.isSet("x"))
+    else if(parser.isSet("x"))
     {
         extractFilesFromPath(pigg_name, target_dir);
     }

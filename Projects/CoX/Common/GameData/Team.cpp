@@ -113,7 +113,7 @@ bool inviteTeam(Entity &src, Entity &tgt)
         src.m_team->addTeamMember(&tgt,0);
         return true;
     }
-    if (src.m_has_team && src.m_team->isTeamLeader(&src))
+    if(src.m_has_team && src.m_team->isTeamLeader(&src))
     {
         src.m_team->addTeamMember(&tgt,0);
         return true;
@@ -124,7 +124,7 @@ bool inviteTeam(Entity &src, Entity &tgt)
 
 bool kickTeam(Entity &tgt)
 {
-    if (!tgt.m_has_team)
+    if(!tgt.m_has_team)
         return false;
 
     removeTeamMember(*tgt.m_team, &tgt);
@@ -220,7 +220,7 @@ SidekickChangeStatus inviteSidekick(Entity &src, Entity &tgt)
         return SidekickChangeStatus::CANNOT_MENTOR_YET;
     if(src_sk.m_has_sidekick)
         return SidekickChangeStatus::HAVE_SIDEKICK_ALREADY;
-    if (tgt_sk.m_has_sidekick)
+    if(tgt_sk.m_has_sidekick)
         return SidekickChangeStatus::TARGET_IS_SIDEKICKING_ALREADY;
     if(!src.m_has_team || !tgt.m_has_team || src.m_team == nullptr || tgt.m_team == nullptr)
         return SidekickChangeStatus::NO_TEAM_OR_SAME_TEAM_REQUIRED;

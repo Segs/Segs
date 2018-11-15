@@ -18,8 +18,8 @@ namespace SEGSEvents
     class FaceLocation : public GameCommandEvent
     {
     public:
-        explicit FaceLocation() : GameCommandEvent(MapEventTypes::evFaceLocation) {}
-        FaceLocation(glm::vec3 loc) : GameCommandEvent(MapEventTypes::evFaceLocation),
+        explicit FaceLocation() : GameCommandEvent(evFaceLocation) {}
+        FaceLocation(glm::vec3 loc) : GameCommandEvent(evFaceLocation),
             m_loc(loc)
         {}
 
@@ -28,7 +28,7 @@ namespace SEGSEvents
         {}
         void serializeto(BitStream &bs) const override
         {
-            bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+            bs.StorePackedBits(1,type()-evFirstServerToClient);
             bs.StoreFloat(m_loc.x);
             bs.StoreFloat(m_loc.y);
             bs.StoreFloat(m_loc.z);

@@ -17,7 +17,8 @@ namespace SEGSEvents
 class EmailHeaders final : public GameCommandEvent
 {
 public:
-    struct EmailHeader {
+    struct EmailHeader
+    {
         int id;
         QString sender;
         QString subject;
@@ -39,13 +40,14 @@ public:
 
     /*Defines a single email header to send*/
     EmailHeaders(const int &id, const QString &sender, const QString &subject, const int &timestamp)
-        : GameCommandEvent(MapEventTypes::evEmailHeaders), m_fullupdate(false)
+        : GameCommandEvent(evEmailHeaders), m_fullupdate(false)
     {
         m_emails.push_back(EmailHeader{ id, sender, subject, timestamp });
     }
 
-    void    serializeto(BitStream &bs) const override {
-        bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient);
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1, type()-evFirstServerToClient);
         bs.StorePackedBits(1, m_fullupdate);
         bs.StorePackedBits(1, m_emails.size());
 
@@ -61,10 +63,11 @@ public:
 
     // [[ev_def:field]]
     bool    m_fullupdate; //Forces a refresh of the email window
-
     // [[ev_def:field]]
     std::vector<EmailHeader> m_emails;
+
     EVENT_IMPL(EmailHeaders)
 };
+
 } // end of SEGSEvents namespace
 

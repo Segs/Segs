@@ -22,14 +22,14 @@ public:
     // [[ev_def:field]]
     FriendsList m_list;
 
-    FriendsListUpdate(const FriendsList &friends_list) : GameCommandEvent(MapEventTypes::evFriendsListUpdate),
+    FriendsListUpdate(const FriendsList &friends_list) : GameCommandEvent(evFriendsListUpdate),
         m_list(friends_list)
     {
     }
-    explicit FriendsListUpdate() : GameCommandEvent(MapEventTypes::evFriendsListUpdate) {}
+    explicit FriendsListUpdate() : GameCommandEvent(evFriendsListUpdate) {}
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 37
+        bs.StorePackedBits(1,type()-evFirstServerToClient); // 37
 
         qCDebug(logFriends) << "FL Update:" << m_list.m_has_friends << m_list.m_friends_count << m_list.m_friends.size();
         bs.StorePackedBits(1,1); // v2 = force_update

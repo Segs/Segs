@@ -56,7 +56,7 @@ bool MapSceneGraph::loadFromFile(const QString &filename)
 
 void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function<bool(SceneNode *,const glm::mat4 &)> visit_func )
 {
-    if (!visit_func(self, accumulated))
+    if(!visit_func(self, accumulated))
         return;
 
     for(const auto & child : self->m_children)
@@ -169,7 +169,7 @@ struct NpcCreator
             if(prop.propName=="PersistentNPC")
                 persistent_name = prop.propValue;
 
-            if (prop.propName.toUpper().contains("NPC"))
+            if(prop.propName.toUpper().contains("NPC"))
             {
                 qCDebug(logNPCs) << prop.propName << '=' << prop.propValue;
                 has_npc = true;
@@ -183,7 +183,7 @@ struct NpcCreator
             QString npc_costume_name = getCostumeFromName(persistent_name);
             const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
 
-            if (npc_def)
+            if(npc_def)
             {
                 int idx = npc_store.npc_idx(npc_def);
                 Entity *e = map_instance->m_entities.CreateNpc(getGameData(),*npc_def, idx, 0);
@@ -247,7 +247,7 @@ struct NpcCreator
 
     bool operator()(SceneNode *n, const glm::mat4 &v)
     {
-        if (!n->m_properties)
+        if(!n->m_properties)
             return true;
 
         checkPersistent(n,v);
@@ -277,7 +277,7 @@ struct SpawnPointLocator
     {}
     bool operator()(SceneNode *n, const glm::mat4 &v)
     {
-        if (!n->m_properties)
+        if(!n->m_properties)
             return true;
         for (GroupProperty_Data &prop : *n->m_properties)
         {

@@ -111,7 +111,7 @@ void Character::finalizeLevel()
 
     if(m_char_data.m_sidekick.m_type != SidekickType::IsSidekick)
          m_char_data.m_combat_level = m_char_data.m_level;              // if sidekicked, m_combat_level is linked to
-    //if (m_char_data.m_sidekick.m_type == SidekickType::IsMentor)    // TODO: set sidekick's level to keep up with mentor
+    //if(m_char_data.m_sidekick.m_type == SidekickType::IsMentor)    // TODO: set sidekick's level to keep up with mentor
 
     m_char_data.m_security_threat = m_char_data.m_level;
     finalizeCombatLevel();

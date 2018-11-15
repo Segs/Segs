@@ -75,7 +75,7 @@ Entity * getEntity(MapClientSession *src, const QString &name)
     // Iterate through all active entities and return entity by name
     for (Entity* pEnt : em.m_live_entlist)
     {
-        if (pEnt->name() == name)
+        if(pEnt->name() == name)
             return pEnt;
     }
 
@@ -96,7 +96,7 @@ Entity * getEntity(MapClientSession *src, uint32_t idx)
         // Iterate through all active entities and return entity by idx
         for (Entity* pEnt : em.m_live_entlist)
         {
-            if (pEnt->m_idx == idx)
+            if(pEnt->m_idx == idx)
                 return pEnt;
         }
     }
@@ -117,12 +117,12 @@ Entity *getEntityByDBID(MapInstance *mi,uint32_t db_id)
     EntityManager &em(mi->m_entities);
     QString        errormsg;
 
-    if (db_id == 0)
+    if(db_id == 0)
         return nullptr;
     // TODO: Iterate through all entities in Database and return entity by db_id
     for (Entity *pEnt : em.m_live_entlist)
     {
-        if (pEnt->m_db_id == db_id)
+        if(pEnt->m_db_id == db_id)
             return pEnt;
     }
     return nullptr;
@@ -587,7 +587,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         //dumpPower(*ppower);
 
     //treat toggle as clicks, ignore everything else for now
-    if (powtpl.Type != PowerType::Toggle && powtpl.Type != PowerType::Click)
+    if(powtpl.Type != PowerType::Toggle && powtpl.Type != PowerType::Click)
         return;
 
     // Target IDX of -1 is actually SELF
@@ -608,7 +608,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     // Check Range -- TODO: refactor as checkRange() and checkTarget()
     // self targeting doesn't need these checks
     // we can check EntsAffected for StoredEntsEnum::CASTER here
-    if (powtpl.Range == float(0.0))
+    if(powtpl.Range == float(0.0))
     {
         target_ent = &ent;
         tgt_idx = ent.m_idx;
@@ -645,7 +645,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         glm::vec3 senderpos = ent.m_entity_data.m_pos;
         glm::vec3 recpos = target_ent->m_entity_data.m_pos;
 
-        if (glm::distance(senderpos,recpos) > powtpl.Range)
+        if(glm::distance(senderpos,recpos) > powtpl.Range)
         {
             from_msg = FloatingInfoMsg.find(FloatingMsg_OutOfRange).value();
             sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
@@ -751,7 +751,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         int chance = int(powtpl.Accuracy * 75);
 
         qCDebug(logPowers) << "Power hit chance: " << roll << " / " << chance;
-        if (roll > chance)
+        if(roll > chance)
         {
             from_msg = "miss";
             sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
@@ -760,7 +760,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     }
 
     // TODO: check for auto hit EntsAutoHit for StoredEntsEnum::CASTER
-    //   if (powtpl.EffectArea == StoredAffectArea::Character)//single target so do the following once
+    //   if(powtpl.EffectArea == StoredAffectArea::Character)//single target so do the following once
     //   else                                                // AOE has to check all valid targets, and do the following
 
     if(!powtpl.pAttribMod.empty())
@@ -769,7 +769,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         for(uint32_t i = 0; i<powtpl.pAttribMod.size(); i++)
         {
             QByteArray lower_name = powtpl.pAttribMod[i].name.toLower();
-            if (lower_name == "Damage")
+            if(lower_name == "Damage")
             {
                 // Deal Damage
                 sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);
@@ -783,7 +783,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
                         .arg(ent.name())
                         .arg(powtpl.pAttribMod[i].Magnitude)  + powtpl.m_Name;
             }
-            else if ("Healing" == lower_name)
+            else if("Healing" == lower_name)
             {
                 // Do Healing
                 sendFloatingNumbers(*ent.m_client, tgt_idx, powtpl.pAttribMod[i].Magnitude);
@@ -808,7 +808,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
                         .arg(QString(powtpl.pAttribMod[i].name))
                         .arg(QString(powtpl.m_Name));
 
-                if (powtpl.pAttribMod[i].Duration > 0)
+                if(powtpl.pAttribMod[i].Duration > 0)
                     to_msg.append(QString(" for a duration of %1").arg(powtpl.pAttribMod[i].Duration));
 
                 // Build target specific messages
@@ -1254,7 +1254,7 @@ void addClue(MapClientSession &cl, Clue clue)
 void addSouvenir(MapClientSession &cl, Souvenir souvenir)
 {
     vSouvenirList souvenir_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
-    if (souvenir_list.size() > 0)
+    if(souvenir_list.size() > 0)
         souvenir.m_idx = souvenir_list.size(); // Server sets the idx
 
     qCDebug(logScripts) << "Souvenir m_idx: " << souvenir.m_idx << " about to be added";

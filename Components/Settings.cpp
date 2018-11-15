@@ -48,7 +48,7 @@ QString Settings::getSettingsPath()
 
 void Settings::createSettingsFile()
 {
-    if (!fileExists(Settings::getSettingsPath()))
+    if(!fileExists(Settings::getSettingsPath()))
     {
         qCritical() << "Settings file" << Settings::getSettingsPath() <<"does not exist. Creating it now...";
         QFile sfile(Settings::getSettingsPath());

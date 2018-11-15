@@ -149,17 +149,17 @@ void AuthHandler::on_disconnect(Disconnect *ev)
     }
     AuthSession &session(m_sessions.session_from_token(ev->m_session_token));
     session.m_state = AuthSession::NOT_LOGGED_IN;
-    if (!session.m_auth_data)
+    if(!session.m_auth_data)
     {
         qWarning("Client disconnected without a valid login attempt. Old client ?");
     }
     {
         SessionStore::MTGuard guard(m_sessions.reap_lock());
-        if (session.is_connected_to_game_server_id == 0)
+        if(session.is_connected_to_game_server_id == 0)
             m_sessions.mark_session_for_reaping(&session, session.link()->session_token());
     }
 
-    if (session.link())
+    if(session.link())
     {
         session.link(nullptr);
         m_sessions.remove_from_active_sessions(&session);
@@ -287,7 +287,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     }
 
     // if password is too long
-    if (ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
+    if(ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;

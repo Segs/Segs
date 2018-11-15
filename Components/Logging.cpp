@@ -84,7 +84,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.trades="         + config.value("log_trades","false").toString();
     filter_rules += "\nlog.scripts="        + config.value("log_scripts","false").toString();
     filter_rules += "\nlog.scenegraph="     + config.value("log_scenegraph","false").toString();
-    filter_rules += "\nlog.tasks="     + config.value("log_tasks","false").toString();
+    filter_rules += "\nlog.tasks="          + config.value("log_tasks","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -131,7 +131,7 @@ void toggleLogging(QString &category)
         cat = &logSpawn();
     else if(category.contains("mapevents",Qt::CaseInsensitive))
         cat = &logMapEvents();
-    else if (category.contains("mapxfers",Qt::CaseInsensitive))
+    else if(category.contains("mapxfers",Qt::CaseInsensitive))
         cat = &logMapXfers();
     else if(category.contains("slashcommand",Qt::CaseInsensitive))
         cat = &logSlashCommand();

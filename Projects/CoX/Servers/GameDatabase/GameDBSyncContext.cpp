@@ -455,7 +455,7 @@ bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
     m_prepared_options_update->bindValue(":id", data.m_client_id); // for WHERE statement only
     m_prepared_options_update->bindValue(":options", data.m_options);
     m_prepared_options_update->bindValue(":keybinds", data.m_keybinds);
-    if (!doIt(*m_prepared_options_update))
+    if(!doIt(*m_prepared_options_update))
         return false;
     return true;
 }
@@ -468,7 +468,7 @@ bool GameDbSyncContext::createEmail(const EmailCreateRequestData &data, EmailCre
     m_prepared_email_insert->bindValue(":recipient_id", data.m_recipient_id);
     m_prepared_email_insert->bindValue(":email_data", data.m_email_data);
 
-    if (!doIt(*m_prepared_email_insert))
+    if(!doIt(*m_prepared_email_insert))
         return false;
 
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
@@ -508,9 +508,9 @@ bool GameDbSyncContext::getEmail(const GetEmailRequestData &data, GetEmailRespon
 {
     m_prepared_email_select->bindValue(0, data.m_email_id);
 
-    if (!doIt(*m_prepared_email_select))
+    if(!doIt(*m_prepared_email_select))
         return false;
-    if (!m_prepared_email_select->next())
+    if(!m_prepared_email_select->next())
         return false;
 
     result.m_email_id = m_prepared_email_select->value("id").toUInt();
@@ -522,7 +522,7 @@ bool GameDbSyncContext::getEmail(const GetEmailRequestData &data, GetEmailRespon
 // GetEmailsRequestData has 0 params
 bool GameDbSyncContext::getEmails(const GetEmailsRequestData &/*data*/, GetEmailsResponseData &result)
 {
-    if (!doIt(*m_prepared_email_select_all))
+    if(!doIt(*m_prepared_email_select_all))
         return false;
 
     while (m_prepared_email_select_all->next())
