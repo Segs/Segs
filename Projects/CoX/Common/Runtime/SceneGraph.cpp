@@ -87,7 +87,9 @@ bool groupInLibSub(const QString &name)
     }
     return !name.startsWith("grp");
 }
-
+uint32_t is_flag_set(uint32_t bf,GroupFlags flg) {
+    return (bf&flg)!=0;
+}
 } // end of anonymous namespace
 
 namespace SEGS
@@ -238,16 +240,16 @@ void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
     if(iter==scene.name_to_node.end()) {
         scene.name_to_node[lowkey] = node;
     }
-    node->name = key.toString();
-    node->dir.clear();
+    node->m_name = key.toString();
+    node->m_dir.clear();
     if ( key.position() != 0 )
-        node->dir = result.mid(0,key.position()-1);
+        node->m_dir = result.mid(0,key.position()-1);
 }
 void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, LoadingContext &ctx, PrefabStore &store)
 {
     if ( inp_data.p_Grp.empty() )
         return;
-    node->children.reserve(inp_data.p_Grp.size());
+    node->m_children.reserve(inp_data.p_Grp.size());
     for(const GroupLoc_Data & dat : inp_data.p_Grp)
     {
         const QString new_name = groupRename(ctx, dat.name, false);
@@ -268,10 +270,10 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
         child.m_matrix2 = glm::mat3(rotQuat);
         child.m_translation = dat.pos;
         if ( child.node )
-            node->children.emplace_back(child);
+            node->m_children.emplace_back(child);
         else
         {
-            qCritical() << "Node"<<node->name<<"\ncan't find member" << dat.name;
+            qCritical() << "Node"<<node->m_name<<"\ncan't find member" << dat.name;
         }
     }
 }
@@ -296,7 +298,7 @@ void postprocessLight(const std::vector<DefOmni_Data> & light_data, SceneNode *n
     if ( light_data.empty() )
         return;
     const DefOmni_Data &omnid(light_data.front());
-    node->light = std::make_unique<LightProperties>(LightProperties{
+    node->m_light = std::make_unique<LightProperties>(LightProperties{
         RGBA(omnid.omniColor).toFloats(),
         omnid.Size,
         omnid.isNegative
@@ -311,17 +313,17 @@ bool nodeCalculateBounds(SceneNode *group)
     bool set = false;
     if ( !group )
         return false;
-    if ( group->model )
+    if ( group->m_model )
     {
-        model = group->model;
+        model = group->m_model;
         bbox.merge(model->box);
 
         geometry_radius = glm::length(bbox.size()) * 0.5f;
         set = true;
     }
-    for ( SceneNodeChildTransform & child : group->children )
+    for ( SceneNodeChildTransform & child : group->m_children )
     {
-        glm::vec3 dst(child.node->center * child.m_matrix2 + child.m_translation);
+        glm::vec3 dst(child.node->m_center * child.m_matrix2 + child.m_translation);
         glm::vec3 v_radius(child.node->radius,child.node->radius,child.node->radius);
         bbox.merge(dst+v_radius);
         bbox.merge(dst-v_radius);
@@ -333,17 +335,17 @@ bool nodeCalculateBounds(SceneNode *group)
     }
     group->radius = glm::length(bbox.size()) * 0.5f;
     group->m_bbox = bbox;
-    group->center = bbox.center(); // center
-    for ( SceneNodeChildTransform & child : group->children )
+    group->m_center = bbox.center(); // center
+    for ( SceneNodeChildTransform & child : group->m_children )
     {
-        glm::vec3 toChildCenter = (child.m_matrix2 * child.node->center + child.m_translation) - group->center;
+        glm::vec3 toChildCenter = (child.m_matrix2 * child.node->m_center + child.m_translation) - group->m_center;
         float r = glm::length(toChildCenter) + child.node->radius;
         maxrad = std::max(maxrad,r);
     }
     if ( maxrad != 0.0f )
         group->radius = maxrad;
     group->radius = std::max(geometry_radius,group->radius);
-    return group->radius == 0.0f && !group->children.empty();
+    return group->radius == 0.0f && !group->m_children.empty();
 }
 void  nodeSetVisBounds(SceneNode *group)
 {
@@ -355,23 +357,23 @@ void  nodeSetVisBounds(SceneNode *group)
         return;
     if ( group->lod_scale == 0.0f )
         group->lod_scale = 1.0f;
-    if ( group->model )
+    if ( group->m_model )
     {
-        Model *model = group->model;
+        Model *model = group->m_model;
         dv = model->box.size();
         maxrad = glm::length(dv) * 0.5f + group->shadow_dist;
         if ( group->lod_far == 0.0f )
         {
             group->lod_far = (maxrad + 10.0f) * 10.0f;
             group->lod_far_fade = group->lod_far * 0.25f;
-            group->lod_autogen = true;
+            // lod_far is autogenned here
         }
         maxvis = group->lod_far + group->lod_far_fade;
     }
-    for (SceneNodeChildTransform &entr : group->children)
+    for (SceneNodeChildTransform &entr : group->m_children)
     {
-        dv = entr.m_matrix2 * entr.node->center + entr.m_translation;
-        dv -= group->center;
+        dv = entr.m_matrix2 * entr.node->m_center + entr.m_translation;
+        dv -= group->m_center;
         maxrad = std::max(maxrad,glm::length(dv) + entr.node->radius + entr.node->shadow_dist);
         maxvis = std::max(maxvis,glm::length(dv) + entr.node->vis_dist * entr.node->lod_scale);
     }
@@ -466,6 +468,49 @@ void postprocessNodeFlags(const SceneGraphNode_Data & node_data, SceneNode * nod
         node->is_LOD_fade_node = 1;
     }
 }
+void  groupApplyModifiers(SceneNode *node)
+{
+    RuntimeData &rd(getRuntimeData());
+    
+    Model *model = node->m_model;
+    if ( !model )
+        return;
+    GeometryModifiers *mods = findGeomModifier(*rd.m_modifiers,model->name, node->m_dir);
+    if ( !mods )
+        return;
+
+    if ( mods->LodNear != 0.0f )
+        node->lod_near = mods->LodNear;
+    if ( mods->LodFar != 0.0f )
+        node->lod_far = mods->LodFar;
+    if ( mods->LodNearFade != 0.0f )
+        node->lod_near_fade = mods->LodNearFade;
+    if ( mods->LodFarFade != 0.0f )
+        node->lod_far_fade = mods->LodFarFade;
+    if ( mods->LodScale != 0.0f )
+        node->lod_scale = mods->LodScale;
+
+    uint32_t v1 = mods->GroupFlags;
+    node->shadow_dist    = mods->ShadowDist;
+    node->parent_fade    = is_flag_set(v1, ParentFade);
+    node->region_marker  = is_flag_set(v1, RegionMarker);
+    node->volume_trigger = is_flag_set(v1, VolumeTrigger);
+    node->water_volume   = is_flag_set(v1, WaterVolume);
+    node->lava_volume    = is_flag_set(v1, LavaVolume);
+    node->sewer_volume   = is_flag_set(v1, SewerWaterVolume);
+    node->door_volume    = is_flag_set(v1, DoorVolume);
+    node->key_light      = is_flag_set(v1, KeyLight);
+    node->tray           = is_flag_set(v1, VisTray) | is_flag_set(v1, VisOutside);
+
+    if (mods->LodNear != 0.0f || mods->LodFar != 0.0f || mods->LodNearFade != 0.0f || mods->LodFarFade != 0.0f || mods->LodScale != 0.0f)
+        node->lod_fromtrick = 1;
+    if ( mods->node._TrickFlags & NoColl )
+        ; //TODO: disable collisions for this node
+    if ( mods->node._TrickFlags & SelectOnly )
+        ; // set the model's triangles as only selectable ?? ( selection mesh ? )
+    if ( mods->node._TrickFlags & NotSelectable )
+        ; // 
+}
 bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore &prefabs)
 {
     if (defload.p_Grp.empty() && defload.p_Obj.isEmpty())
@@ -476,21 +521,21 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
     {
         node = newDef(*ctx.m_target);
         if (!defload.p_Property.empty())
-            node->properties = new std::vector<GroupProperty_Data> (defload.p_Property);
+            node->m_properties = new std::vector<GroupProperty_Data> (defload.p_Property);
     }
     if ( !defload.p_Obj.isEmpty() )
     {
-        node->model = prefabs.groupModelFind(defload.p_Obj,ctx);
-        if ( !node->model )
+        node->m_model = prefabs.groupModelFind(defload.p_Obj,ctx);
+        if ( !node->m_model )
         {
             qCritical() << "Cannot find root geometry in" << defload.p_Obj;
         }
-        //groupApplyModifiers(node);
+        groupApplyModifiers(node);
     }
     setNodeNameAndPath(*ctx.m_target,node,obj_path);
     addChildNodes(defload,node,ctx,prefabs);
 
-    if ( node->children.empty() && !node->model )
+    if ( node->m_children.empty() && !node->m_model )
     {
         qCDebug(logSceneGraph) << "Should delete def" << defload.name << " after conversion it has no children, nor models";
         return false;
@@ -507,7 +552,7 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
     postprocessLight(defload.p_Omni, node);
 
     if(!defload.type.isEmpty())
-        node->fx_name_hash  = CompileTimeUtils::hash_32_fnv1a_const(defload.type.toLower().constData());
+        node->m_fx_name_hash  = CompileTimeUtils::hash_32_fnv1a_const(defload.type.toLower().constData());
 
     nodeCalculateBounds(node);
     nodeSetVisBounds(node);

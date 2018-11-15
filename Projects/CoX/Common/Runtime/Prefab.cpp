@@ -105,14 +105,14 @@ bool PrefabStore::loadPrefabForNode(SceneNode *node, LoadingContext &ctx) //grou
     if (!node || !node->in_use)
         return false;
 
-    if (node->geoset_info)
-        gf = node->geoset_info;
+    if (node->m_geoset_info)
+        gf = node->m_geoset_info;
     else
     {
-        gf = groupGetFileEntryPtr(node->name);
-        node->geoset_info = gf;
-        if (!node->geoset_info)
-            node->geoset_info = (GeoStoreDef *)-1; // prevent future load attempts
+        gf = groupGetFileEntryPtr(node->m_name);
+        node->m_geoset_info = gf;
+        if (!node->m_geoset_info)
+            node->m_geoset_info = (GeoStoreDef *)-1; // prevent future load attempts
     }
     if (!gf || gf == (GeoStoreDef *)-1)
         return false;

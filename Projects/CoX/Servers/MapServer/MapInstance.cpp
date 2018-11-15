@@ -87,18 +87,15 @@ namespace
     const ACE_Time_Value afk_update_interval(0, 1000 * 1000);
     const ACE_Time_Value resend_interval(0,250*1000);
     const CRUDLink::duration maximum_time_without_packets(2000);
-    const constexpr int MinPacketsToAck=5;
+    const constexpr int MinPacketsToAck = 5;
 
-    void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua,const QString &locations_scriptname)
+    void loadAndRunLua(std::unique_ptr<ScriptingEngine> &lua, const QString &locations_scriptname)
     {
-        if(QFile::exists(locations_scriptname))
-        {
-            lua->loadAndRunFile(locations_scriptname);
-        }
-        else
-        {
-            qDebug().noquote() << locations_scriptname <<"is missing; Process will continue without it.";
-        }
+        if(!QFile::exists(locations_scriptname))
+            qCDebug(logScripts).noquote() << locations_scriptname << "is missing; Process will continue without it.";
+
+        qCDebug(logScripts).noquote() << "Loading" << locations_scriptname;
+        lua->loadAndRunFile(locations_scriptname);
     }
 } // namespace
 
@@ -135,54 +132,24 @@ void MapInstance::start(const QString &scenegraph_path)
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
-        m_npc_generators.m_generators["NPCDrones"] = {"Police_Drone",EntType::NPC,{}};
-        for(int i=0; i<7; ++i)
-        {
-            QString right_whare=QString("Door_Right_Whare_0%1").arg(i);
-            m_npc_generators.m_generators[right_whare] = {right_whare, EntType::DOOR, {}};
-            QString left_whare=QString("Door_Left_Whare_0%1").arg(i);
-            m_npc_generators.m_generators[left_whare] = {left_whare,EntType::DOOR,{}};
-            QString left_city=QString("Door_Left_City_0%1").arg(i);
-            m_npc_generators.m_generators[left_city] = {left_city,EntType::DOOR,{}};
-            QString right_city=QString("Door_Right_City_0%1").arg(i);
-            m_npc_generators.m_generators[right_city] = {right_city,EntType::DOOR,{}};
-            QString right_store=QString("Door_Right_Store_0%1").arg(i);
-            m_npc_generators.m_generators[right_store] = {right_store,EntType::DOOR,{}};
-            QString left_store=QString("Door_Left_Store_0%1").arg(i);
-            m_npc_generators.m_generators[left_store] = {left_store,EntType::DOOR,{}};
-        }
-        m_npc_generators.m_generators["Door_reclpad"] = {"Door_reclpad",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_elevator"] = {"Door_elevator",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_Left_Res_03"] = {"Door_Left_Res_03",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_Right_Res_03"] = {"Door_Right_Res_03",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_Right_Ind_01"] = {"Door_Right_Ind_01",EntType::DOOR,{}};
-        m_npc_generators.m_generators["Door_Left_Ind_01"] = {"Door_Left_Ind_01",EntType::DOOR,{}};
-
         bool scene_graph_loaded = false;
         Q_UNUSED(scene_graph_loaded);
+
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
-                m_new_player_spawns = m_map_scenegraph->spawn_points("NewPlayer");
+                m_new_player_spawns = m_map_scenegraph->spawn_points(s_starting_spawn_nodes);
+                m_all_zone_spawns = m_map_scenegraph->spawn_points(s_spawn_nodes);
             }, "Loading original scene graph"
             );
+
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
             }, "Spawning npcs");
-        qInfo() << "Loading custom scripts";
 
-        //Global script
-        QString global_scriptname="scripts/global.lua";
-        loadAndRunLua(m_scripting_interface,global_scriptname);
-
-        //Scripts for zone
-        QString locations_scriptname=m_data_path+'/'+"locations.lua";
-        QString plaques_scriptname=m_data_path+'/'+"plaques.lua";
-        QString entities_scriptname=m_data_path+'/'+"entities.lua";
-        loadAndRunLua(m_scripting_interface,locations_scriptname);
-        loadAndRunLua(m_scripting_interface,plaques_scriptname);
-        loadAndRunLua(m_scripting_interface,entities_scriptname);
+        // Load Lua Scripts for this Map Instance
+        load_map_lua();
     }
     else
     {
@@ -205,6 +172,26 @@ void MapInstance::start(const QString &scenegraph_path)
     m_afk_update_timer = std::make_unique<SEGSTimer>(this, Afk_Update_Timer, afk_update_interval, false );
 
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
+}
+
+///
+/// \fn MapInstance::load_lua
+/// \brief This function should load the lua files from m_data_path
+void MapInstance::load_map_lua()
+{
+    qInfo() << "Loading custom scripts";
+
+    QStringList script_paths = {
+        "scripts/global.lua", // global helper script
+        // per zone scripts
+        m_data_path+'/'+"locations.lua",
+        m_data_path+'/'+"plaques.lua",
+        m_data_path+'/'+"entities.lua",
+        m_data_path+'/'+"missions.lua"
+    };
+
+    for(const QString &path : script_paths)
+        loadAndRunLua(m_scripting_interface, path);
 }
 
 ///
@@ -571,9 +558,11 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     map_server->putq(map_req);
 }
 
-void MapInstance::on_map_xfer_complete(MapXferComplete */*ev*/)
+void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
 {
     // TODO: Do anything necessary after connecting to new map instance here.
+    MapClientSession &session(m_session_store.session_from_event(ev));
+    forcePosition(*session.m_ent, session.m_current_map->closest_safe_location(session.m_ent->m_entity_data.m_pos));
 }
 
 void MapInstance::on_idle(Idle *ev)
@@ -632,7 +621,6 @@ void MapInstance::on_client_quit(ClientQuit*ev)
         if (!session.m_ent->m_char->m_char_data.m_is_on_auto_logout)
             abortLogout(session.m_ent);
     }
-
     else
         session.m_ent->beginLogout(10);
 }
@@ -2078,11 +2066,11 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
-    QString output_msg = "Door entry request to:" + ev->name;
+    QString output_msg = "Door entry request to: " + ev->name;
     if(ev->no_location)
         qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
     else
-        qCDebug(logMapXfers).noquote() << output_msg << ev->location.x << ev->location.y << ev->location.z;
+        qCDebug(logMapXfers).noquote() << output_msg << " loc:" << ev->location.x << ev->location.y << ev->location.z;
 
     // For now, let's test by making some of the door options random
     int randNum = std::rand() % 100;
@@ -2375,10 +2363,12 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
 glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
 {
     Q_UNUSED(v);
+    // Prefer default spawners if available, otherwise, random.
     if(!m_new_player_spawns.empty())
-    {
-        return m_new_player_spawns.front()[3];
-    }
+        return m_new_player_spawns[rand()%m_new_player_spawns.size()][3];
+    if(!m_all_zone_spawns.empty())
+        return m_all_zone_spawns[rand()%m_all_zone_spawns.size()][3];
+
     return glm::vec3(0,0,0);
 }
 
