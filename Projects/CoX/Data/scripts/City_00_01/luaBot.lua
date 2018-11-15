@@ -221,6 +221,7 @@ LuaBot.callback = function(id)
             elseif (id == 7) then
                 Player.GiveInf(1000)
             elseif (id == 15) then
+                --Since LevelUp closes all dialogs, we need to reset this
                 LuaBot.Mode = nil
                 id = nil
                 --Train/Level
@@ -249,6 +250,9 @@ LuaBot.callback = function(id)
             elseif (id == 3) then
                 LuaBot.Mode = nil
             elseif (id == 25) then
+                --Since LevelUp closes all dialogs, we need to reset this
+                LuaBot.Mode = nil
+                id = nil
                 Player.SetTitle("You're a hero!")
                 LuaBot.settingTitle = true
             elseif (id == 5) then
