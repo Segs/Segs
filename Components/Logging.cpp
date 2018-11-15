@@ -27,8 +27,8 @@ SEGS_LOGGING_CATEGORY(logGUI,          "log.gui")
 SEGS_LOGGING_CATEGORY(logTeams,        "log.teams")
 SEGS_LOGGING_CATEGORY(logDB,           "log.db")
 SEGS_LOGGING_CATEGORY(logInput,        "log.input")
-SEGS_LOGGING_CATEGORY(logOrientation,  "log.orientation")
 SEGS_LOGGING_CATEGORY(logPosition,     "log.position")
+SEGS_LOGGING_CATEGORY(logOrientation,  "log.orientation")
 SEGS_LOGGING_CATEGORY(logMovement,     "log.movement")
 SEGS_LOGGING_CATEGORY(logChat,         "log.chat")
 SEGS_LOGGING_CATEGORY(logInfoMsg,      "log.infomsg")
@@ -38,7 +38,6 @@ SEGS_LOGGING_CATEGORY(logSpawn,        "log.spawn")
 SEGS_LOGGING_CATEGORY(logMapEvents,    "log.mapevents")
 SEGS_LOGGING_CATEGORY(logMapXfers,     "log.mapxfers")
 SEGS_LOGGING_CATEGORY(logSlashCommand, "log.slashcommand")
-SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logDescription,  "log.description")
 SEGS_LOGGING_CATEGORY(logFriends,      "log.friends")
 SEGS_LOGGING_CATEGORY(logMiniMap,      "log.minimap")
@@ -48,7 +47,9 @@ SEGS_LOGGING_CATEGORY(logAnimations,   "log.animations")
 SEGS_LOGGING_CATEGORY(logPowers,       "log.powers")
 SEGS_LOGGING_CATEGORY(logTrades,       "log.trades")
 SEGS_LOGGING_CATEGORY(logTailor,       "log.tailor")
+SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logSceneGraph,   "log.scenegraph")
+SEGS_LOGGING_CATEGORY(logTasks,        "log.tasks")
 
 void setLoggingFilter()
 {
@@ -85,6 +86,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.tailor="         + config.value("log_tailor","false").toString();
     filter_rules += "\nlog.scripts="        + config.value("log_scripts","false").toString();
     filter_rules += "\nlog.scenegraph="     + config.value("log_scenegraph","false").toString();
+    filter_rules += "\nlog.tasks="          + config.value("log_tasks","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -131,7 +133,7 @@ void toggleLogging(QString &category)
         cat = &logSpawn();
     else if(category.contains("mapevents",Qt::CaseInsensitive))
         cat = &logMapEvents();
-    else if (category.contains("mapxfers",Qt::CaseInsensitive))
+    else if(category.contains("mapxfers",Qt::CaseInsensitive))
         cat = &logMapXfers();
     else if(category.contains("slashcommand",Qt::CaseInsensitive))
         cat = &logSlashCommand();
@@ -157,6 +159,8 @@ void toggleLogging(QString &category)
         cat = &logScripts();
     else if(category.contains("scenegraph",Qt::CaseInsensitive))
         cat = &logSceneGraph();
+    else if(category.contains("tasks",Qt::CaseInsensitive))
+        cat = &logTasks();
     else
         return;
 
@@ -197,6 +201,7 @@ void dumpLogging()
     output += "\n\t powers: "       + QString::number(logPowers().isDebugEnabled());
     output += "\n\t trades: "       + QString::number(logTrades().isDebugEnabled());
     output += "\n\t tailor: "       + QString::number(logTailor().isDebugEnabled());
+    output += "\n\t scripts: "      + QString::number(logScripts().isDebugEnabled());
     output += "\n\t scenegraph: "   + QString::number(logSceneGraph().isDebugEnabled());
 
     qDebug().noquote() << output;

@@ -98,19 +98,19 @@ Urho3D::Node * convertedNodeToLutefisk(SEGS::SceneNode *conv_node, Urho3D::Node 
         node->SetParent(urho_parent);
         node->SetTransform(mat);
         node->SetVar("CoHNode",conv_node);
-        node->SetVar("CoHModel",conv_node->model);
+        node->SetVar("CoHModel",conv_node->m_model);
         created_node_count++;
         ci.m_instances.emplace_back(node);
         return node;
     }
-    node = urho_parent->CreateChild(conv_node->name);
+    node = urho_parent->CreateChild(conv_node->m_name);
     g_node_to_converted[conv_node] = g_converted_instances.size();
     g_converted_instances.emplace_back(ConvertedInstance{conv_node,Urho3D::SharedPtr<Node>(node),{}});
     g_converted_instances.back().m_instances.push_back(WeakPtr<Node>(node));
 
     created_node_count++;
     node->SetTransform(mat);
-    if(conv_node->model)
+    if(conv_node->m_model)
     {
         //assert(def->children.empty());
         StaticModel* conv_model = convertedModelToLutefisk(ctx,node,conv_node,opt);
@@ -121,7 +121,7 @@ Urho3D::Node * convertedNodeToLutefisk(SEGS::SceneNode *conv_node, Urho3D::Node 
             return nullptr;
         }
         node->SetVar("CoHNode",conv_node);
-        node->SetVar("CoHModel",conv_node->model);
+        node->SetVar("CoHModel",conv_node->m_model);
         // some nodes contain both a model and children nodes
         //return node;
     }
@@ -129,10 +129,10 @@ Urho3D::Node * convertedNodeToLutefisk(SEGS::SceneNode *conv_node, Urho3D::Node 
     if (depth > 0)
     {
         node->SetVar("CoHNode",conv_node);
-        for(SEGS::SceneNodeChildTransform &d : conv_node->children)
+        for(SEGS::SceneNodeChildTransform &d : conv_node->m_children)
         {
             //this is used to reject models for farther lods
-            if(d.node->model && d.node->lod_near!=0.0f)
+            if(d.node->m_model && d.node->lod_near!=0.0f)
                 continue;
             Urho3D::Node *newNode = convertedNodeToLutefisk(d.node, node, fromChildTransform(d), ctx, depth - 1,opt); // recursive call
             if (newNode)

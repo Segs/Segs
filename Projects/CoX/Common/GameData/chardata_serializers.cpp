@@ -23,6 +23,7 @@
 
 #include "Logging.h"
 
+
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)
 {
     commonSaveTo(target,"CharacterData",baseName,text_format);

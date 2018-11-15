@@ -72,7 +72,7 @@ const   QString &       getName() const { return m_name; }
         bool            isEmpty();
         void            serializefrom(BitStream &buffer);
         void            serializeto(BitStream &buffer) const;
-        void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
+        void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool send_all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
         void            finalizeLevel();
         void            addStartingInspirations(QStringList &starting_insps);
@@ -108,8 +108,7 @@ const   QString &       getName() const { return m_name; }
         uint32_t            m_account_id;
         uint32_t            m_db_id;
         bool                m_in_training   = false;
-        bool                m_add_new_costume = false;
-        QStringList         m_costume_slot_unlocks; // load once and use during finalizeLevel() which is called many times
+        bool                m_add_new_costume = true;
 
 protected:
         QString         m_name;

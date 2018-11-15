@@ -1,12 +1,14 @@
 set(SOURCES
     AddTimeStateLog.h
     Browser.h
+    ClueList.h
     ChangeTitle.h
     ChatDividerMoved.cpp
     ChatDividerMoved.h
     ChatMessage.cpp
     ChatMessage.h
     ContactDialogs.h
+    ContactList.h
     DeadNoGurney.h
     DoorAnims.h
     DoorMessage.h
@@ -23,7 +25,6 @@ set(SOURCES
     FriendsListUpdate.h
     GameCommand.h
     GameCommandList.h
-    InfoMessageCmd.cpp
     InfoMessageCmd.h
     InputState.cpp
     InputState.h
@@ -54,6 +55,7 @@ set(SOURCES
     SidekickOffer.h
     StandardDialogCmd.h
     TailorOpen.h
+    Tasks.h
     TeamLooking.h
     TeamOffer.h
     TimeUpdate.h

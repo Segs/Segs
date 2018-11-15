@@ -63,11 +63,11 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evContactDialogClose         ,140)
     EVENT_DECL(MapEventTypes, evContactDialogOk            ,141)
     EVENT_DECL(MapEventTypes, evContactDialogYesNo         ,142)
-//    EVENT_DECL(MapEventTypes, evContactStatusList        ,143)
-//    EVENT_DECL(MapEventTypes, evContactSelect            ,144)
-//    EVENT_DECL(MapEventTypes, evTaskStatusList           ,145)
-//    EVENT_DECL(MapEventTypes, evTaskSelect               ,146)
-//    EVENT_DECL(MapEventTypes, evTaskRemoveTeammates      ,147)
+    EVENT_DECL(MapEventTypes, evContactStatusList          ,143)
+    EVENT_DECL(MapEventTypes, evContactSelect              ,144)
+    EVENT_DECL(MapEventTypes, evTaskStatusList             ,145)
+    EVENT_DECL(MapEventTypes, evTaskSelect                 ,146)
+    EVENT_DECL(MapEventTypes, evTaskListRemoveTeammates    ,147)
     EVENT_DECL(MapEventTypes, evTimeUpdate                 ,148)
 //    EVENT_DECL(MapEventTypes, evMissionEntryText         ,149)
 //    EVENT_DECL(MapEventTypes, evMissionKick              ,150)
@@ -88,7 +88,10 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evEmailRead                  ,166)
     EVENT_DECL(MapEventTypes, evEmailMessageStatus         ,167)
     EVENT_DECL(MapEventTypes, evEntityInfoResponse         ,169) // Send entity info (description)
-//    EVENT_DECL(MapEventTypes, evClueUpdate               ,170)
+    EVENT_DECL(MapEventTypes, evClueList                   ,170)
+    EVENT_DECL(MapEventTypes, evSouvenirListHeaders        ,171)
+    EVENT_DECL(MapEventTypes, evSouvenirDetail             ,172)
+    EVENT_DECL(MapEventTypes, evTaskDetail                 ,175)
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
     EVENT_DECL(MapEventTypes, evTrayAdd                    ,182)
     EVENT_DECL(MapEventTypes, evCombineEnhanceResponse     ,183)
@@ -112,6 +115,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evResetKeybinds              ,221)
     EVENT_DECL(MapEventTypes, evSelectKeybindProfile       ,222)
     EVENT_DECL(MapEventTypes, evDialogButton               ,224)
+    EVENT_DECL(MapEventTypes, evReceiveContactStatus       ,226)
     EVENT_DECL(MapEventTypes, evActivatePower              ,227)
     EVENT_DECL(MapEventTypes, evActivatePowerAtLocation    ,228)
     EVENT_DECL(MapEventTypes, evActivateInspiration        ,229) // Hit F1, F2, F3, F4, F5 or Click on Inspiration in Tray
@@ -138,11 +142,15 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evEntityInfoRequest          ,256) // right-click entity select "Info"
     EVENT_DECL(MapEventTypes, evRecvCostumeChange          ,260)
     EVENT_DECL(MapEventTypes, evLocationVisited            ,262)
+    EVENT_DECL(MapEventTypes, evReceiveTaskDetailRequest   ,263)
     EVENT_DECL(MapEventTypes, evSwitchViewPoint            ,264)
     EVENT_DECL(MapEventTypes, evSaveClientOptions          ,265)
     EVENT_DECL(MapEventTypes, evRecvSelectedTitles         ,266)
     EVENT_DECL(MapEventTypes, evDescriptionAndBattleCry    ,267)
+    EVENT_DECL(MapEventTypes, evSouvenirDetailRequest      ,268)
     EVENT_DECL(MapEventTypes, evBrowserClose               ,277)
+
+
     END_EVENTS(MapEventTypes, 1500)
 };
 } // end of SEGSEvents namespace

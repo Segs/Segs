@@ -25,7 +25,8 @@ public:
     {
     }
 
-    void    serializeto(BitStream &bs) const override {
+    void serializeto(BitStream &bs) const override
+    {
         bs.StorePackedBits(1, type()-evFirstServerToClient);
         bs.StorePackedBits(1, m_status);
         bs.StoreString(m_recipient);
@@ -35,6 +36,8 @@ public:
     int m_status;
     // [[ev_def:field]]
     QString m_recipient;
+
     EVENT_IMPL(EmailMessageStatus)
 };
+
 }

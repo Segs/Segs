@@ -22,7 +22,7 @@ struct FixedSizePacketQueue
     bool                       isFull() const { return m_storage.size() >= size; }
     void                       push_back(CrudP_Packet *v)
     {
-        if (!isFull())
+        if(!isFull())
             m_storage.push_back(v);
     }
     void          pop_front() { m_storage.pop_front(); }

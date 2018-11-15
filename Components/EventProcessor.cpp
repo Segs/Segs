@@ -50,7 +50,7 @@ int EventProcessor::svc( )
     {
         if(mb->type()==evFinish)
         {
-            if (thr_count() > 1)
+            if(thr_count() > 1)
                 putq(mb); // put this back on our message queue, our siblings will receive it and shut down as well
             else
             {

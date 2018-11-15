@@ -36,7 +36,7 @@ const   uint32_t    m_team_idx          = 0;
 
         // Methods
         void        dump();
-        void        listTeamMembers();
+        void        dumpAllTeamMembers();
         void        addTeamMember(Entity *e, uint32_t teammate_map_idx);
         bool        isTeamLeader(Entity *e);
 
@@ -75,4 +75,4 @@ uint32_t getSidekickId(const class Character &src);
 bool isSidekickMentor(const Entity &e);
 SidekickChangeStatus inviteSidekick(Entity &src, Entity &tgt);
 void addSidekick(Entity &tgt, Entity &src);
-SidekickChangeStatus removeSidekick(Entity &src, Entity *tgt);
+SidekickChangeStatus removeSidekick(Entity &src, uint32_t sidekick_id);

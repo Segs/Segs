@@ -18,8 +18,8 @@ namespace SEGSEvents
     class FaceEntity : public GameCommandEvent
     {
     public:
-        explicit FaceEntity() : GameCommandEvent(MapEventTypes::evFaceEntity) {}
-        FaceEntity(uint32_t target) : GameCommandEvent(MapEventTypes::evFaceEntity),
+        explicit FaceEntity() : GameCommandEvent(evFaceEntity) {}
+        FaceEntity(uint32_t target) : GameCommandEvent(evFaceEntity),
             m_target(target)
         {}
 
@@ -27,7 +27,7 @@ namespace SEGSEvents
         void serializefrom(BitStream &/*src*/) override
         {}
         void serializeto(BitStream &bs) const override {
-            bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+            bs.StorePackedBits(1,type()-evFirstServerToClient);
             bs.StorePackedBits(3, m_target);
         }
         EVENT_IMPL(FaceEntity)

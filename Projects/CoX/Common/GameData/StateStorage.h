@@ -44,6 +44,7 @@ public:
 
 class InputState
 {
+    using FloatDuration = std::chrono::duration<float>;
 public:
     InputState()
     {
@@ -77,7 +78,7 @@ public:
     bool        m_pyr_valid[3]          = {false};
     glm::vec3   m_pos_delta             = {0.0f, 0.0f, 0.0f};
     std::chrono::steady_clock::time_point m_keypress_start[6];
-    std::chrono::steady_clock::duration m_svr_keypress_time[6]; // for debugging
+    FloatDuration m_svr_keypress_time[6]; // for debugging
     float       m_keypress_time[6]      = {0};  // total_move
     float       m_move_time             = 0.0f;
     float       m_ms_since_prev;

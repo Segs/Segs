@@ -34,7 +34,7 @@ using namespace SEGSEvents;
 
 Character::Character()
 {
-    m_add_new_costume                       = false;
+    m_add_new_costume                       = true;
     m_char_data.m_current_costume_idx       = 0;
     m_char_data.m_has_sg_costume            = false;
     m_char_data.m_using_sg_costume          = false;
@@ -67,7 +67,7 @@ void Character::reset()
     m_char_data.m_has_titles                = false;
     m_char_data.m_sidekick.m_has_sidekick   = false;
     m_char_data.m_powersets.clear();
-    m_add_new_costume                       = false;
+    m_add_new_costume                       = true;
     m_sg_costume                            = nullptr;
 }
 
@@ -106,13 +106,12 @@ void Character::finalizeLevel()
     m_char_data.m_max_insp_cols = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationCol);
     m_char_data.m_max_enhance_slots = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_BoostSlot);
 
-    if (m_char_data.m_sidekick.m_type  != SidekickType::IsSidekick){
+    if(m_char_data.m_sidekick.m_type != SidekickType::IsSidekick)
          m_char_data.m_combat_level = m_char_data.m_level;              // if sidekicked, m_combat_level is linked to
-         finalizeCombatLevel();
-    }
-    //if (m_char_data.m_sidekick.m_type   == SidekickType::IsMentor)       //todo: set sidekick's level to keep up with mentor
+    //if(m_char_data.m_sidekick.m_type == SidekickType::IsMentor)    // TODO: set sidekick's level to keep up with mentor
 
     m_char_data.m_security_threat = m_char_data.m_level;
+    finalizeCombatLevel();
 
     // client will only accept 5col x 4row of insps MAX
     assert(m_char_data.m_max_insp_cols <= 5 || m_char_data.m_max_insp_rows <= 4);
@@ -120,17 +119,7 @@ void Character::finalizeLevel()
     // Add inherent powers for this level
     addPowersByLevel(QStringLiteral("Inherent"), QStringLiteral("Inherent"), m_char_data.m_level);
 
-    /*
-    int num_powersets = m_char_data.m_powersets.size();
-    for(int idx = 1; idx < num_powersets; ++idx) // Skipping 0 powerset (temporary powers)
-    {
-        CharacterPowerSet pset = m_char_data.m_powersets[idx];
-        for(CharacterPower &pow : pset.m_powers)
-            reserveEnhancementSlot(&pow, m_char_data.m_level);
-    }
-    */
-
-    for(auto level : m_costume_slot_unlocks)
+    for(auto level : data.m_costume_slot_unlocks)
     {
         // add costume every time current level matches i
         // this would allow server operators to award all
@@ -213,12 +202,12 @@ void Character::GetCharBuildInfo(BitStream &src)
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
     config.beginGroup("StartingCharacter");
-        QStringList inherent_and_preorders = config.value(QStringLiteral("inherent_powers"), "Brawl").toString().split(',');
-        QStringList starting_temps = config.value(QStringLiteral("starting_temps"), "EMP_Glove").toString().split(',');
-        QStringList starting_insps = config.value(QStringLiteral("starting_inspirations"), "Resurgence").toString().split(',');
+        QRegExp space("\\s");
+        QStringList inherent_and_preorders = config.value(QStringLiteral("inherent_powers"), "Brawl").toString().remove(space).split(',');
+        QStringList starting_temps = config.value(QStringLiteral("starting_temps"), "EMP_Glove").toString().remove(space).split(',');
+        QStringList starting_insps = config.value(QStringLiteral("starting_inspirations"), "Resurgence").toString().remove(space).split(',');
         uint startlevel = config.value(QStringLiteral("starting_level"), "1").toUInt() -1; //convert from 1-50 to 0-49
         uint startinf = config.value(QStringLiteral("starting_inf"), "0").toUInt();
-        m_costume_slot_unlocks = config.value(QStringLiteral("costume_slot_unlocks"), "19,29,39,49").toString().split(',');
     config.endGroup();
 
     m_char_data.m_level = startlevel;
@@ -231,8 +220,8 @@ void Character::GetCharBuildInfo(BitStream &src)
 
     // Now that character is created. Finalize level and update hp and end
     finalizeLevel();
-    setMaxHP(*this); // set max hp
-    setMaxEnd(*this); // set max end
+    setHPToMax(*this); // set max hp
+    setEndToMax(*this); // set max end
 
     // This must come after finalize
     addStartingInspirations(starting_insps);      // resurgence and phenomenal_luck
@@ -368,6 +357,8 @@ void Character::addCostumeSlot()
     if(m_costumes.size() == static_cast<size_t>(g_max_num_costume_slots))
         return; // client cannot handle more than 4 costumes;
 
+    qCDebug(logTailor) << "Adding Costume Slot" << m_costumes.size();
+
     Costume new_costume = m_costumes.at(getCurrentCostumeIdx(*this));
     new_costume.m_index = m_costumes.size();
     m_costumes.emplace_back(new_costume);
@@ -385,10 +376,9 @@ void Character::saveCostume(uint32_t idx, Costume &new_costume)
     setCurrentCostumeIdx(*this, idx);
 }
 
-void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *packer , bool all_costumes) const
+void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *packer , bool send_all_costumes) const
 {
-    // full costume
-    if(all_costumes) // This is only sent to the current player
+    if(send_all_costumes) // This is only sent to the current player
     {
         bs.StoreBits(1, m_add_new_costume);
         if(m_add_new_costume)
@@ -405,9 +395,7 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
                 ::serializeto(c,bs,packer);
         }
         else
-        {
             ::serializeto(m_costumes[getCurrentCostumeIdx(*this)],bs,packer);
-        }
 
         bs.StoreBits(1, m_char_data.m_has_sg_costume);
         if(m_char_data.m_has_sg_costume)
@@ -417,9 +405,7 @@ void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *pack
         }
     }
     else // other player's costumes we're sending only their current.
-    {
         ::serializeto(*getCurrentCostume(),bs,packer);
-    }
 }
 
 void Character::dumpSidekickInfo()
@@ -570,6 +556,7 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
+
 void Character::finalizeCombatLevel()
 {
     GameDataStore &data(getGameData());
@@ -579,6 +566,7 @@ void Character::finalizeCombatLevel()
     m_max_attribs.m_Endurance = data.m_player_classes[entclass].m_AttribMaxTable[0].m_Endurance[m_char_data.m_combat_level];
 
 }
+
 void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const
 {
     if(hasname == NameFlag::HasName)

@@ -108,6 +108,7 @@ void Costume::storeCharsel(BitStream &bs) const
 }
 
 template<class Archive>
+
 void serialize(Archive &arc, CostumePart &cp, uint32_t const version)
 {
     if (version != cp.class_version)
@@ -173,6 +174,11 @@ void Costume::serializeFromDb(const QString &src)
         cereal::JSONInputArchive ar(istr);
         ar(*this);
     }
+
+    // Set the part types
+    uint8_t part_type=0;
+    for(CostumePart & part : m_parts)
+        part.m_type = part_type++;
 }
 
 void Costume::dump() const

@@ -12,12 +12,14 @@
 
 #include "Powers.h"
 #include "Entity.h"
+#include "EntityHelpers.h"
 #include "Character.h"
+#include "CharacterHelpers.h"
 #include "Logging.h"
 #include "GameData/GameDataStore.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
-#include "CharacterHelpers.h"
+
 #include <random>
 
 void PowerTrayItem::serializeto(BitStream &tgt) const
@@ -76,10 +78,10 @@ void PowerTrayItem::Dump()
     {
     case TrayItemType::Power:
     case TrayItemType::Inspiration:
-            qDebug().noquote() << "[(" << QString::number(m_pset_idx,16) << ',' << QString::number(m_pow_idx,16)<<")]";
+        qDebug().noquote() << "[(" << QString::number(m_pset_idx,16) << ',' << QString::number(m_pow_idx,16)<<")]";
         break;
     case TrayItemType::Macro:
-            qDebug() << "[(" << m_command << ',' << m_short_name<<',' << m_icon_name<<")]";
+        qDebug() << "[(" << m_command << ',' << m_short_name<<',' << m_icon_name<<")]";
         break;
     case TrayItemType::None:
         break;
@@ -113,6 +115,7 @@ void PowerTrayGroup::serializefrom(BitStream &src)
     {
         tray.serializefrom(src);
     }
+
     m_has_default_power = src.GetBits(1);
     if(m_has_default_power)
     {
@@ -129,6 +132,7 @@ void PowerTrayGroup::dump()
     {
         if(m_trays[bar_num].setPowers()==0)
             continue;
+
         qDebug() << "Tray: " << bar_num;
         m_trays[bar_num].Dump();
     }
@@ -144,6 +148,7 @@ PowerTrayItem *PowerTray::getPowerTrayItem(size_t idx)
 {
     if(idx<10)
         return &m_tray_items[idx];
+
     return nullptr;
 }
 
@@ -151,9 +156,8 @@ int PowerTray::setPowers()
 {
     int res=0;
     for(const PowerTrayItem &pow : m_tray_items)
-    {
         res += (pow.m_entry_type!=TrayItemType::None);
-    }
+
     return res;
 }
 
@@ -172,10 +176,7 @@ void PowerTray::serializeto(BitStream &tgt) const
 void PowerTray::Dump()
 {
     for(PowerTrayItem &pow : m_tray_items)
-    {
         pow.Dump();
-    }
-
 }
 
 void PowerPool_Info::serializefrom(BitStream &src)
@@ -195,7 +196,7 @@ void PowerPool_Info::serializeto(BitStream &src) const
 template<class Archive>
 void PowerPool_Info::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != PowerPool_Info::class_version)
+    if(version != PowerPool_Info::class_version)
     {
         qCritical() << "Failed to serialize PowerPool_Info, incompatible serialization format version " << version;
         return;
@@ -326,7 +327,7 @@ CharacterPower *getOwnedPowerByVecIdx(Entity &e, uint32_t pset_idx, uint32_t pow
     bool fail = false;
     CharacterData *cd = &e.m_char->m_char_data;
 
-    if(pset_idx > cd->m_powersets.size())
+    if(pset_idx >= cd->m_powersets.size())
         fail = true;
     else if(pow_idx > cd->m_powersets.at(pset_idx).m_powers.size()) // must check after confirming pset_idx is valid
         fail = true;
@@ -582,7 +583,7 @@ void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp)
     {
         for (uint32_t col = 0; col < max_cols; ++col)
         {
-            if (!cd.m_inspirations.at(col, row).m_has_insp)
+            if(!cd.m_inspirations.at(col, row).m_has_insp)
             {
                 cd.m_inspirations.at(col, row) = insp;
                 cd.m_inspirations.at(col, row).m_col = col;
@@ -608,20 +609,20 @@ const CharacterInspiration* getInspiration(const Entity &ent, uint32_t col, uint
     const uint32_t max_cols = cd.m_max_insp_cols;
     const uint32_t max_rows = cd.m_max_insp_rows;
 
-    if (col >= max_cols)
+    if(col >= max_cols)
     {
         qCWarning(logPowers) << "getInspiration: Invalid inspiration column:" << col;
         return nullptr;
     }
 
-    if (row >= max_rows)
+    if(row >= max_rows)
     {
         qCWarning(logPowers) << "getInspiration: Invalid inspiration row:" << row;
         return nullptr;
     }
 
     const CharacterInspiration& insp = cd.m_inspirations.at(col, row);
-    if (!insp.m_has_insp)
+    if(!insp.m_has_insp)
     {
         qCWarning(logPowers) << "getInspiration: No inspiration at col:" << col << "row:" << row;
         return nullptr;
@@ -640,7 +641,7 @@ int getNumberInspirations(const CharacterData &cd)
     {
         for(uint32_t col = 0; col < max_cols; ++col)
         {
-            if (cd.m_inspirations.at(col, row).m_has_insp)
+            if(cd.m_inspirations.at(col, row).m_has_insp)
                 ++count;
         }
     }
@@ -852,7 +853,7 @@ void addEnhancementToChar(CharacterData &cd, const CharacterEnhancement& enh)
 {
     for (uint32_t idx = 0; idx < cd.m_enhancements.size(); ++idx)
     {
-        if (!cd.m_enhancements[idx].m_slot_used)
+        if(!cd.m_enhancements[idx].m_slot_used)
         {
             cd.m_enhancements[idx] = enh;
             cd.m_enhancements[idx].m_slot_idx = idx;
@@ -884,14 +885,14 @@ CharacterEnhancement *getSetEnhancementBySlot(Entity &e, uint32_t pset_idx_in_ar
 const CharacterEnhancement* getEnhancement(const Entity &ent, uint32_t idx)
 {
     const CharacterData& cd = ent.m_char->m_char_data;
-    if (idx >= cd.m_enhancements.size())
+    if(idx >= cd.m_enhancements.size())
     {
         qCWarning(logPowers) << "getEnhancement: Invalid enhancement index:" << idx;
         return nullptr;
     }
 
     const CharacterEnhancement& enh = cd.m_enhancements[idx];
-    if (!enh.m_slot_used)
+    if(!enh.m_slot_used)
     {
         qCWarning(logPowers) << "getEnhancement: No enhancement at index:" << idx;
         return nullptr;
@@ -1009,17 +1010,16 @@ void buyEnhancementSlots(Entity &ent, uint32_t available_slots, std::vector<int>
 
     for(int i = 0; i < available_slots; ++i)
     {
-        CharacterPower * pow = nullptr;
-        pow = getOwnedPowerByVecIdx(ent, pset_idx[i], pow_idx[i]);
+        CharacterPower * pow = getOwnedPowerByVecIdx(ent, pset_idx[i], pow_idx[i]);
+
+        if(pow == nullptr || pow->getPowerTemplate().m_Name.isEmpty())
+            qFatal("Cannot find Power for buying enhancement slot: %d %d", pset_idx[i], pow_idx[i]);
 
         qCDebug(logPowers) << "Power for EH slot:" << i
-                           << pow->getPowerTemplate().m_Name
-                           << "indexes" << pow->m_power_info.m_pcat_idx
-                           << pow->m_power_info.m_pset_idx
-                           << pow->m_power_info.m_pow_idx;
-
-        if(pow == nullptr && pow->getPowerTemplate().m_Name.isEmpty())
-            qFatal("Cannot find Power for buying enhancement slot: %d %d", pset_idx[i], pow_idx[i]);
+            << pow->getPowerTemplate().m_Name
+            << "indexes" << pow->m_power_info.m_pcat_idx
+            << pow->m_power_info.m_pset_idx
+            << pow->m_power_info.m_pow_idx;
 
         //++pow->m_total_eh_slots;
         reserveEnhancementSlot(pow, getLevel(*ent.m_char));
@@ -1050,9 +1050,9 @@ float enhancementCombineChances(CharacterEnhancement *eh1, CharacterEnhancement 
     int chance_count = combine_chances->size();
     qCDebug(logPowers) << "combine_chances size" << chance_count;
 
-    if ( chance_idx >= chance_count )
+    if( chance_idx >= chance_count )
     {
-        if ( chance_count > 0 )
+        if( chance_count > 0 )
             return combine_chances->at(chance_count - 1);
 
         return 0.0f;
@@ -1131,7 +1131,7 @@ void dumpEnhancements(CharacterData &cd)
 template<class Archive>
 void CharacterInspiration::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != CharacterInspiration::class_version)
+    if(version != CharacterInspiration::class_version)
     {
         qCritical() << "Failed to serialize CharacterInspiration, incompatible serialization format version " << version;
         return;
@@ -1149,7 +1149,7 @@ CEREAL_CLASS_VERSION(CharacterInspiration, CharacterInspiration::class_version) 
 template<class Archive>
 void vInspirations::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != vInspirations::class_version)
+    if(version != vInspirations::class_version)
     {
         qCritical() << "Failed to serialize vInspirations, incompatible serialization format version " << version;
         return;
@@ -1163,7 +1163,7 @@ CEREAL_CLASS_VERSION(vInspirations, vInspirations::class_version)   // register 
 template<class Archive>
 void CharacterEnhancement::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != CharacterEnhancement::class_version)
+    if(version != CharacterEnhancement::class_version)
     {
         qCritical() << "Failed to serialize CharacterPowerEnhancement, incompatible serialization format version " << version;
         return;
@@ -1186,7 +1186,7 @@ Power_Data CharacterPower::getPowerTemplate() const
 template<class Archive>
 void CharacterPower::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != CharacterPower::class_version)
+    if(version != CharacterPower::class_version)
     {
         qCritical() << "Failed to serialize CharacterPower, incompatible serialization format version " << version;
         return;
@@ -1208,7 +1208,7 @@ CEREAL_CLASS_VERSION(CharacterPower, CharacterPower::class_version)             
 template<class Archive>
 void CharacterPowerSet::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != CharacterPowerSet::class_version)
+    if(version != CharacterPowerSet::class_version)
     {
         qCritical() << "Failed to serialize CharacterPowerSet, incompatible serialization format version " << version;
         return;
@@ -1225,7 +1225,7 @@ CEREAL_CLASS_VERSION(CharacterPowerSet, CharacterPowerSet::class_version) // reg
 template<class Archive>
 void PowerTrayItem::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != PowerTrayItem::class_version)
+    if(version != PowerTrayItem::class_version)
     {
         qCritical() << "Failed to serialize PowerTrayItem, incompatible serialization format version " << version;
         return;
@@ -1244,7 +1244,7 @@ CEREAL_CLASS_VERSION(PowerTrayItem, PowerTrayItem::class_version)   // register 
 template<class Archive>
 void PowerTray::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != PowerTray::class_version)
+    if(version != PowerTray::class_version)
     {
         qCritical() << "Failed to serialize PowerTray, incompatible serialization format version " << version;
         return;
@@ -1258,7 +1258,7 @@ CEREAL_CLASS_VERSION(PowerTray, PowerTray::class_version)           // register 
 template<class Archive>
 void PowerTrayGroup::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != PowerTrayGroup::class_version)
+    if(version != PowerTrayGroup::class_version)
     {
         qCritical() << "Failed to serialize PowerTrayGroup, incompatible serialization format version " << version;
         return;

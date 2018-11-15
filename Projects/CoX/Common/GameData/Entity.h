@@ -19,6 +19,7 @@
 #include "Common/GameData/entitydata_definitions.h"
 #include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/CoHMath.h"
+#include "Common/GameData/Contact.h"
 
 #include <glm/gtc/constants.hpp>
 
@@ -31,7 +32,6 @@ class Team;
 class Trade;
 class Character;
 struct PlayerData;
-class GameDataStore;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 
 enum class FadeDirection
@@ -40,11 +40,7 @@ enum class FadeDirection
     Out
 };
 
-struct Destination // aka waypoint
-{
-    int point_idx = 0;
-    glm::vec3 location;
-};
+
 
 // returned by getEntityFromDB()
 struct CharacterFromDB
@@ -240,6 +236,8 @@ public:
         bool                m_destroyed                 = false;
         bool                m_is_fading                 = true;
 
+        std::function<void(int)>  m_active_dialog      = NULL;
+
         void                dump();
 
 static  void                sendAllyID(BitStream &bs);
@@ -248,19 +246,5 @@ static  void                sendPvP(BitStream &bs);
         const QString &     name() const;
         void                fillFromCharacter(const GameDataStore &data);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
+        void                setActiveDialogCallback(std::function<void(int)> callback);
 };
-
-enum class DbStoreFlags : uint32_t
-{
-    PlayerData = 1,
-    Full       = ~0U,
-};
-
-void markEntityForDbStore(Entity *e,DbStoreFlags f);
-void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
-void initializeNewPlayerEntity(Entity &e);
-void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
-void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
-extern void abortLogout(Entity *e);
-void revivePlayer(Entity &e, ReviveLevel lvl);
-void setStateMode(Entity &e, ClientStates state);

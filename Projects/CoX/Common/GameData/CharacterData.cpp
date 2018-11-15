@@ -7,7 +7,7 @@
 template<class Archive>
 void CharacterData::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != CharacterData::class_version)
+    if(version != CharacterData::class_version)
     {
         qCritical() << "Failed to serialize CharacterData, incompatible serialization format version " << version;
         return;
@@ -43,6 +43,9 @@ void CharacterData::serialize(Archive &archive, uint32_t const version)
     archive(cereal::make_nvp("PowerTrayGroups", m_trays));
     archive(cereal::make_nvp("Inspirations", m_inspirations));
     archive(cereal::make_nvp("Enhancements", m_enhancements));
+    archive(cereal::make_nvp("KnownContact", m_contacts));
+    archive(cereal::make_nvp("Tasks", m_tasks_entry_list));
+    archive(cereal::make_nvp("CluesSouvenirs", m_clue_souvenir_list));
     archive(cereal::make_nvp("MaxInspirationCols", m_max_insp_cols));
     archive(cereal::make_nvp("MaxInspirationRows", m_max_insp_rows));
     archive(cereal::make_nvp("MaxEnhancementSlots", m_max_enhance_slots));
@@ -50,3 +53,4 @@ void CharacterData::serialize(Archive &archive, uint32_t const version)
 
 SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(CharacterData)
 CEREAL_CLASS_VERSION(CharacterData, CharacterData::class_version) // register PowerTrayGroup class version
+

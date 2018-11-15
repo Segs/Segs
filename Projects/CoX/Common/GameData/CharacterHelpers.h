@@ -47,8 +47,8 @@ void    setCombatLevel(Character &c, uint32_t val);
 void    setSecurityThreat(Character &c, uint32_t val);
 void    setHP(Character &c, float val);
 void    setEnd(Character &c, float val);
-void    setMaxHP(Character &c);
-void    setMaxEnd(Character &c);
+void    setHPToMax(Character &c);
+void    setEndToMax(Character &c);
 void    setCurrentCostumeIdx(Character &c, uint32_t idx);
 void    setXP(Character &c, uint32_t val);
 void    setDebt(Character &c, uint32_t val);
@@ -61,3 +61,9 @@ void    updateLastOnline(Character &c);
 // Toggles
 void    toggleAFK(Character &c, const bool isTrue, QString msg = "");
 void    toggleAFK(Character &c, QString msg = "");
+
+/*
+ * Titles -- TODO: get titles from texts/English/titles_def
+ */
+const QString &getGenericTitle(uint32_t val);
+const QString &getOriginTitle(uint32_t val);

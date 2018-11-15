@@ -64,10 +64,11 @@ matrix:
       compiler: "gcc-7"
       env: BUILD='Debug' CC=gcc-7 CXX=g++-7
       addons: *gcc7
-    - os: osx
-      osx_image: xcode9.2
-      compiler: clang
-      env: BUILD='Debug'
+# Disabling macOS builds temporarily until the app bundle issue can be resolved
+#   - os: osx
+#     osx_image: xcode9.2
+#     compiler: clang
+#     env: BUILD='Debug'
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository ppa:beineri/opt-qt593-trusty -y; fi

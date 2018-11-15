@@ -48,7 +48,7 @@ QString Settings::getSettingsPath()
 
 void Settings::createSettingsFile()
 {
-    if (!fileExists(Settings::getSettingsPath()))
+    if(!fileExists(Settings::getSettingsPath()))
     {
         qCritical() << "Settings file" << Settings::getSettingsPath() <<"does not exist. Creating it now...";
         QFile sfile(Settings::getSettingsPath());
@@ -123,7 +123,6 @@ void Settings::setDefaultSettings()
         config.setValue("location_addr","127.0.0.1:2106");
     config.endGroup();
     config.beginGroup("GameServer");
-        config.setValue("server_name","SEGS Server");
         config.setValue("listen_addr","127.0.0.1:7002");
         config.setValue("location_addr","127.0.0.1:7002");
         config.setValue("max_players","200");
@@ -135,6 +134,7 @@ void Settings::setDefaultSettings()
         config.setValue("maps","DefaultMapInstances");
         config.setValue("player_fade_in", "380.0");
         config.setValue("motd_timer", "120.0");
+        config.setValue("costume_slot_unlocks", "19,29,39,49");
     config.endGroup();
     config.beginGroup("AFK Settings");
         config.setValue("time_to_afk","300");
@@ -148,7 +148,6 @@ void Settings::setDefaultSettings()
         config.setValue("starting_inspirations", "Resurgence");
         config.setValue("starting_level", 1);
         config.setValue("starting_inf", 0);
-        config.setValue("costume_slot_unlocks", "19,29,39,49");
     config.endGroup();
     config.beginGroup("Logging");
         config.setValue("log_logging","false");
@@ -180,6 +179,7 @@ void Settings::setDefaultSettings()
         config.setValue("log_tailor","false");
         config.setValue("log_scripts","false");
         config.setValue("log_scenegraph","false");
+        config.setValue("log_tasks","false");
     config.endGroup();
 
     config.sync(); // sync changes or they wont be saved to file.
