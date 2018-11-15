@@ -15,6 +15,7 @@
 
 namespace SEGSEvents
 {
+
 // [[ev_def:type]]
 class PlaqueVisited : public MapLinkEvent
 {
@@ -29,7 +30,9 @@ public:
     QString m_name;
     // [[ev_def:field]]
     glm::vec3 m_pos;
+
     EVENT_IMPL(PlaqueVisited)
 };
+
 } // end of SEGSEvents namespace
 

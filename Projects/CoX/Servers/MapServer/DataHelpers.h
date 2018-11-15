@@ -116,7 +116,7 @@ void selectTask(MapClientSession &src, Task task);
 void sendTaskStatusList(MapClientSession &src);
 void updateTaskDetail(MapClientSession &src, Task task);
 void removeTask(MapClientSession &src, Task task);
-void train (MapClientSession &sess);
+void playerTrain (MapClientSession &sess);
 void setTitle (MapClientSession &sess, QString title);
 void showMapMenu(MapClientSession &sess);
 void addClue(MapClientSession &cl, Clue clue);

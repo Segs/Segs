@@ -166,9 +166,9 @@ bool GameServer::ReadConfigAndRestart()
     d->m_endpoint = new GameLinkEndpoint(d->m_listen_point); //,this
     d->m_endpoint->set_downstream(d->m_handler);
 
-    if (ACE_Reactor::instance()->register_handler(d->m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
+    if(ACE_Reactor::instance()->register_handler(d->m_endpoint,ACE_Event_Handler::READ_MASK) == -1)
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ACE_Reactor::register_handle\n"),false);
-    if (d->m_endpoint->open() == -1) // will register notifications with current reactor
+    if(d->m_endpoint->open() == -1) // will register notifications with current reactor
         ACE_ERROR_RETURN ((LM_ERROR, "(%P|%t) GameServer: ServerEndpoint::open\n"),false);
 
     qInfo() << "Configurations loaded";

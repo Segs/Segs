@@ -31,7 +31,8 @@ void WindowState::serializefrom(BitStream &bs)
     wnd.m_color = bs.GetPackedBits(1);
     wnd.m_alpha = bs.GetPackedBits(1);
 
-    if((wnd.m_draggable_frame = bs.GetBits(1))) {
+    if((wnd.m_draggable_frame = bs.GetBits(1)))
+    {
         wnd.m_width = bs.GetPackedBits(1);
         wnd.m_height = bs.GetPackedBits(1);
     }

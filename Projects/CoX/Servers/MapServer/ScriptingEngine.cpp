@@ -9,7 +9,6 @@
  * @addtogroup MapServer Projects/CoX/Servers/MapServer
  * @{
  */
-#pragma once
 #include "ScriptingEngine.h"
 
 #include "DataHelpers.h"
@@ -216,7 +215,8 @@ void ScriptingEngine::registerTypes()
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         },
-        "browser", [](MapClientSession *cl, const char *content){
+        "browser", [](MapClientSession *cl, const char *content)
+        {
             cl->addCommand<Browser>(content);
         },
 
@@ -230,15 +230,13 @@ void ScriptingEngine::registerTypes()
                 const std::vector<std::string>& strings = kvp.second.source;
                 int count = 0;
                 ContactEntry con;
-                for (const auto& s: strings){
+                for (const auto& s: strings)
+                {
                     if(count == 0)
-                    {
                         con.m_response_text = QString::fromStdString(s);
-                    }
                     else
-                    {
-                         con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
-                    }
+                        con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
+
                     //sendInfoMessage(MessageChannel::ADMIN, QString::fromStdString(s) ,*cl);
 
                     count++;
@@ -247,7 +245,8 @@ void ScriptingEngine::registerTypes()
             }
             sendContactDialog(*cl, message, active_contacts);
         },
-        "close_dialog", [](MapClientSession *cl){
+        "close_dialog", [](MapClientSession *cl)
+        {
             cl->addCommand<ContactDialogClose>();
         },
         "sendFloatingInfo",[](MapClientSession *cl, int message_type)
@@ -340,7 +339,7 @@ void ScriptingEngine::registerTypes()
         {
             setInf(*cl->m_ent->m_char, inf);
         },
-        "levelUp", train,
+        "levelUp", playerTrain,
         "setTitle", [](MapClientSession *cl, const char* title)
         {
             QString title_string = QString::fromUtf8(title);
@@ -559,14 +558,14 @@ int ScriptingEngine::runScript(MapClientSession * client, const QString &script_
 int ScriptingEngine::runScript(const QString &script_contents, const char *script_name)
 {
     sol::load_result load_res = m_private->m_lua.load(script_contents.toStdString(), script_name);
-    if (!load_res.valid())
+    if(!load_res.valid())
     {
         sol::error err = load_res;
         // TODO: report error here.
         return -1;
     }
     sol::protected_function_result script_result = load_res();
-    if (!script_result.valid())
+    if(!script_result.valid())
     {
         sol::error err = script_result;
         // TODO: report error here.

@@ -7,7 +7,7 @@
 template<class Archive>
 void CharacterData::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != CharacterData::class_version)
+    if(version != CharacterData::class_version)
     {
         qCritical() << "Failed to serialize CharacterData, incompatible serialization format version " << version;
         return;

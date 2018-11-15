@@ -77,7 +77,7 @@ void SetUpData::check_client_version() // Generate SHA-1 hash of CoX.exe and com
     QCryptographicHash hash(QCryptographicHash::Sha1);
     QFile file(coxexe);
 
-    if (file.open(QIODevice::ReadOnly))
+    if(file.open(QIODevice::ReadOnly))
     {
         qDebug()<<"Generating SHA-1 Hash of CoX.exe";
         ui->piggtool_output->appendPlainText("Checking CoX client is correct version");
@@ -96,7 +96,7 @@ void SetUpData::check_client_version() // Generate SHA-1 hash of CoX.exe and com
     // qDebug()<<(clienthash);
 
     // Compare SHA1 hashes
-    if (clienthash == "\xFF""E0_\x1A\x84\x92\xB4\xCE\x84\xF7?\xFAk2JH\x8FM%")
+    if(clienthash == "\xFF""E0_\x1A\x84\x92\xB4\xCE\x84\xF7?\xFAk2JH\x8FM%")
     {
         ui->piggtool_output->appendPlainText("Correct client version found");
         emit readyToCopy();
@@ -241,7 +241,7 @@ void SetUpData::pigg_tool_worker(QString program) // Processes pigg file from di
     m_pigg_tool = new QProcess(this);
     m_pigg_tool->start(program);
 
-    if (m_pigg_tool->waitForStarted())
+    if(m_pigg_tool->waitForStarted())
     {
         connect(m_pigg_tool,&QProcess::readyReadStandardError,this,&SetUpData::read_piggtool);
         connect(m_pigg_tool,&QProcess::readyReadStandardOutput,this,&SetUpData::read_piggtool);

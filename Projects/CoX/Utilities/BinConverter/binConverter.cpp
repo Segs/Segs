@@ -224,14 +224,14 @@ int main(int argc,char **argv)
           case eNpcDefinitions:
          {
             auto data = doLoadRef<AllNpcs_Data>(&binfile);
-            if (qApp->arguments().size() > 2)
+            if(qApp->arguments().size() > 2)
             {
                 QString name_to_find = app.arguments()[2];
                 std::sort(data->begin(), data->end(), [](const Parse_NPC &a, const Parse_NPC &b) -> bool {
                     return QString(a.m_Name).compare(QString(b.m_Name), Qt::CaseInsensitive) < 0;
                 });
                 auto iter = std::find_if(data->begin(), data->end(), [name_to_find](const Parse_NPC &n) -> bool {
-                    if (n.m_Name == name_to_find)
+                    if(n.m_Name == name_to_find)
                         return true;
                     return false;
                 });

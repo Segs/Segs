@@ -70,7 +70,7 @@ bool MapServer::Run()
 {
     assert(m_owner_game_server_id != INVALID_GAME_SERVER_ID);
 
-    if (!getGameData().read_game_data(RUNTIME_DATA_PATH))
+    if(!getGameData().read_game_data(RUNTIME_DATA_PATH))
         return false;
 
     if(!getRuntimeData().prepare(RUNTIME_DATA_PATH))
@@ -193,7 +193,7 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
 
 void MapServer::on_client_map_xfer(ClientMapXferMessage *ev)
 {
-    if (m_current_map_xfers.find(ev->m_data.m_session) == m_current_map_xfers.end())
+    if(m_current_map_xfers.find(ev->m_data.m_session) == m_current_map_xfers.end())
     {
         m_current_map_xfers.insert(std::pair<uint64_t, uint8_t>(ev->m_data.m_session, ev->m_data.m_map_idx));
     }

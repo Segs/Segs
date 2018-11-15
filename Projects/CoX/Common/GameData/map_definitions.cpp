@@ -59,7 +59,7 @@ uint32_t getMapIndex(const QString &map_name)
 {
     for (const auto &map_data : g_defined_map_datas)
     {
-        if (map_name.contains(map_data.m_map_name, Qt::CaseInsensitive))
+        if(map_name.contains(map_data.m_map_name, Qt::CaseInsensitive))
             return map_data.m_map_idx;
     }
 
@@ -76,7 +76,7 @@ QString getDisplayMapName(const QString &map_name)
 {
     for (const auto &map_data : g_defined_map_datas)
     {
-        if (map_name.contains(map_data.m_map_name, Qt::CaseInsensitive))
+        if(map_name.contains(map_data.m_map_name, Qt::CaseInsensitive))
             return map_data.m_display_map_name;
     }
 
@@ -128,7 +128,8 @@ QString getMapName(size_t index)
 
 QString getMapPath(size_t index)
 {
-    if(index >= g_defined_map_datas.size()){
+    if(index >= g_defined_map_datas.size())
+    {
         qWarning() << "Sought map index was out of range."
                    << "Returning Outbreak's map path as default...";
         index = 0;

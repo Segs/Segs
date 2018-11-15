@@ -5,8 +5,7 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#ifndef SCRIPTINGENGINE_H
-#define SCRIPTINGENGINE_H
+#pragma once
 #include <memory>
 #include <string>
 #include "Common/GameData/Contact.h"
@@ -37,5 +36,3 @@ private:
     std::unique_ptr<ScriptingEnginePrivate> m_private;
 #endif
 };
-
-#endif // SCRIPTINGENGINE_H

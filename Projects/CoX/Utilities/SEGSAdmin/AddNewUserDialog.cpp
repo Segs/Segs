@@ -60,7 +60,7 @@ void AddNewUserDialog::capture_input()
     QString username = ui->usernameedit->text();
     QString password = ui->passedit->text();
     QString acclevel = ui->accleveledit->text();
-    if (username.toLatin1() == username && password.toLatin1() == password)
+    if(username.toLatin1() == username && password.toLatin1() == password)
     {
         emit sendInput(username,password,acclevel);
     }

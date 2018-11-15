@@ -34,7 +34,8 @@ using namespace SEGSEvents;
 
 namespace
 {
-    bool prepQuery(QSqlQuery &qr,const QString &txt) {
+    bool prepQuery(QSqlQuery &qr,const QString &txt)
+    {
         if(!qr.prepare(txt))
         {
             qDebug() << "SQL_ERROR:"<<qr.lastError();
@@ -42,7 +43,8 @@ namespace
         }
         return true;
     }
-    bool doIt(QSqlQuery &qr) {
+    bool doIt(QSqlQuery &qr)
+    {
         if(!qr.exec())
         {
             qDebug() << "SQL_ERROR:"<<qr.lastError();
@@ -105,10 +107,12 @@ bool GameDbSyncContext::loadAndConfigure()
     config.endGroup(); // AdminServer
 
     QSqlDatabase *db2;
-    if(!driver_list.contains(dbdriver.toUpper())) {
+    if(!driver_list.contains(dbdriver.toUpper()))
+    {
         qCritical() << "Database driver" << dbdriver << " not supported";
         return false;
     }
+
     db2 = new QSqlDatabase(QSqlDatabase::addDatabase(dbdriver,QStringLiteral("CharacterDatabase_")+thread_name_buf));
     db2->setHostName(dbhost);
     db2->setPort(dbport);
@@ -159,7 +163,6 @@ bool GameDbSyncContext::loadAndConfigure()
     m_prepared_email_fill_recipient_id = std::make_unique<QSqlQuery>(*m_db);
 
     // TO-DO: prepQuery for playerUpdate
-
     prepQuery(*m_prepared_char_update,
                 "UPDATE characters SET "
                 "char_name=:char_name, chardata=:chardata, entitydata=:entitydata, bodytype=:bodytype, "
@@ -452,7 +455,7 @@ bool GameDbSyncContext::updateClientOptions(const SetClientOptionsData &data)
     m_prepared_options_update->bindValue(":id", data.m_client_id); // for WHERE statement only
     m_prepared_options_update->bindValue(":options", data.m_options);
     m_prepared_options_update->bindValue(":keybinds", data.m_keybinds);
-    if (!doIt(*m_prepared_options_update))
+    if(!doIt(*m_prepared_options_update))
         return false;
     return true;
 }
@@ -465,7 +468,7 @@ bool GameDbSyncContext::createEmail(const EmailCreateRequestData &data, EmailCre
     m_prepared_email_insert->bindValue(":recipient_id", data.m_recipient_id);
     m_prepared_email_insert->bindValue(":email_data", data.m_email_data);
 
-    if (!doIt(*m_prepared_email_insert))
+    if(!doIt(*m_prepared_email_insert))
         return false;
 
     assert(m_db->driver()->hasFeature(QSqlDriver::LastInsertId));
@@ -505,9 +508,9 @@ bool GameDbSyncContext::getEmail(const GetEmailRequestData &data, GetEmailRespon
 {
     m_prepared_email_select->bindValue(0, data.m_email_id);
 
-    if (!doIt(*m_prepared_email_select))
+    if(!doIt(*m_prepared_email_select))
         return false;
-    if (!m_prepared_email_select->next())
+    if(!m_prepared_email_select->next())
         return false;
 
     result.m_email_id = m_prepared_email_select->value("id").toUInt();
@@ -519,7 +522,7 @@ bool GameDbSyncContext::getEmail(const GetEmailRequestData &data, GetEmailRespon
 // GetEmailsRequestData has 0 params
 bool GameDbSyncContext::getEmails(const GetEmailsRequestData &/*data*/, GetEmailsResponseData &result)
 {
-    if (!doIt(*m_prepared_email_select_all))
+    if(!doIt(*m_prepared_email_select_all))
         return false;
 
     while (m_prepared_email_select_all->next())

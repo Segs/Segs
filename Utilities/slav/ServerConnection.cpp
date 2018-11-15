@@ -45,7 +45,7 @@ void ServerConnection::httpDownloadFinished(QNetworkReply *reply)
 {
     auto op_iter = m_operations_in_flight.find(reply);
     assert(op_iter != m_operations_in_flight.end());
-    if (reply->error()) {
+    if(reply->error()) {
         emit networkFailure(tr("Download failure: %1").arg(reply->errorString()));
         m_operations_in_flight.erase(reply);
         reply->deleteLater();
@@ -55,7 +55,7 @@ void ServerConnection::httpDownloadFinished(QNetworkReply *reply)
     OperationData  op_data(op_iter->second);
     m_operations_in_flight.erase(reply);
 
-    if (!redirectionTarget.isNull()) {
+    if(!redirectionTarget.isNull()) {
         qCritical() << "Redirections are not handled yet";
     }
     op_data.target->write(reply->readAll());

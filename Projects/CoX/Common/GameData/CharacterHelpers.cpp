@@ -43,24 +43,29 @@ const QString &     getLastOnline(const Character &c) { return c.m_char_data.m_l
 // Setters
 void setLevel(Character &c, uint32_t val)
 {
-    if(val>49)
-        val = 49;
+    GameDataStore &data(getGameData());
+    if(val > data.expMaxLevel())
+        val = data.expMaxLevel();
     c.m_char_data.m_level = val; // client stores lvl arrays starting at 0
     c.finalizeLevel();
+    setHPToMax(c);
+    setEndToMax(c);
 }
 
 void setCombatLevel(Character &c, uint32_t val)
 {
-    if(val>49)
-        val = 49;
+    GameDataStore &data(getGameData());
+    if(val > data.expMaxLevel())
+        val = data.expMaxLevel();
     c.m_char_data.m_combat_level = val;
     c.finalizeCombatLevel();
 }
 
 void setSecurityThreat(Character &c, uint32_t val)
 {
-    if(val>49)
-        val = 49;
+    GameDataStore &data(getGameData());
+    if(val > data.expMaxLevel())
+        val = data.expMaxLevel();
     c.m_char_data.m_security_threat = val;
 }
 
@@ -69,7 +74,7 @@ void setHP(Character &c, float val)
     c.m_char_data.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
 }
 
-void setMaxHP(Character &c)
+void setHPToMax(Character &c)
 {
     setHP(c, getMaxHP(c));
 }
@@ -79,7 +84,7 @@ void setEnd(Character &c, float val)
     c.m_char_data.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
 }
 
-void setMaxEnd(Character &c)
+void setEndToMax(Character &c)
 {
     setEnd(c, getMaxEnd(c));
 }

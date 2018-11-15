@@ -46,8 +46,8 @@ inline      void            uPutString(const char *t);
                             template <typename T>
             void            Put(const T &val)
                             {
-                                if (sizeof(T) > GetAvailSize())
-                                    if (resize(m_write_off + sizeof(T)) == -1) // space exhausted
+                                if(sizeof(T) > GetAvailSize())
+                                    if(resize(m_write_off + sizeof(T)) == -1) // space exhausted
                                     {
                                         m_last_err = 1;
                                         return;
@@ -58,7 +58,7 @@ inline      void            uPutString(const char *t);
                             template <typename T>
             void            Get(T &val)
                             {
-                                if (GetReadableDataSize() < sizeof(T))
+                                if(GetReadableDataSize() < sizeof(T))
                                 {
                                     m_last_err = 1;
                                     return;

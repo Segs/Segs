@@ -78,12 +78,12 @@ void AuthDBSyncHandler::on_retrieve_account(RetrieveAccountRequest *msg)
     AuthDbSyncContext &db_ctx(m_db_context.localData());
     RetrieveAccountResponseData resp;
 
-    if (!db_ctx.retrieveAccountAndCheckPassword(msg->m_data, resp))
+    if(!db_ctx.retrieveAccountAndCheckPassword(msg->m_data, resp))
     {
         resp.mark_as_missing();
     }
 
-    if (db_ctx.getLastError())
+    if(db_ctx.getLastError())
         msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()},msg->session_token()));
     else
         msg->src()->putq(new RetrieveAccountResponse(std::move(resp), msg->session_token()));
