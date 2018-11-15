@@ -220,7 +220,7 @@ LuaBot.callback = function(id)
                 Player.GiveDebt(1000)
             elseif (id == 7) then
                 Player.GiveInf(1000)
-            elseif (id == 8) then
+            elseif (id == 15) then
                 --Train/Level
                 Player.LevelUp()
             elseif (id == 9) then
@@ -246,7 +246,7 @@ LuaBot.callback = function(id)
                 Player.GiveRandomEnhancement(1)
             elseif (id == 3) then
                 LuaBot.Mode = nil
-            elseif (id == 4) then
+            elseif (id == 25) then
                 Player.SetTitle("You're a hero!")
                 LuaBot.settingTitle = true
             elseif (id == 5) then
