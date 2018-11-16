@@ -127,6 +127,17 @@ bool MapServer::ReadConfigAndRestart()
         return false;
     }
 
+    QVariant motd_timer = config.value("motd_timer","120.0");
+    getGameData().m_motd_timer = motd_timer.toFloat(&ok);
+    if(!ok)
+    {
+        qCritical() << "Badly formed float for 'motd_timer': " << motd_timer.toString();
+        return false;
+    }
+
+    // get costume slot unlock levels for use in finalizeLevel()
+    getGameData().m_costume_slot_unlocks = config.value(QStringLiteral("costume_slot_unlocks"), "19,29,39,49").toString().remove(QRegExp("\\s")).split(',');
+
     config.endGroup(); // MapServer
 
     if(!d->m_manager.load_templates(map_templates_dir,m_owner_game_server_id,m_id,{m_base_listen_point,m_base_location}))

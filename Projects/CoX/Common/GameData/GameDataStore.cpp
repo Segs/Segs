@@ -379,6 +379,7 @@ bool GameDataStore::read_colors( const QString &directory_path )
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading " << directory_path << "bin/supergroupColors.bin ... ";
     BinStore sg_color_store;
+
     if(!sg_color_store.open(directory_path + "bin/supergroupColors.bin", palette_i0_requiredCrc))
     {
         deb << "failure";

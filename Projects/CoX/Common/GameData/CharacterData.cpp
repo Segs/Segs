@@ -29,11 +29,11 @@ void CharacterData::serialize(Archive &archive, uint32_t const version)
     archive(cereal::make_nvp("AfkMsg",m_afk_msg));
     archive(cereal::make_nvp("LFG",m_lfg));
     archive(cereal::make_nvp("Alignment",m_alignment));
-    archive(cereal::make_nvp("LastCostumeID",m_last_costume_id));
+    archive(cereal::make_nvp("LastCostumeID",m_current_costume_idx));
     archive(cereal::make_nvp("LastOnline",m_last_online));
     archive(cereal::make_nvp("Class",m_class_name));
     archive(cereal::make_nvp("Origin",m_origin_name));
-    archive(cereal::make_nvp("SuperGroupCostume",m_supergroup_costume));
+    archive(cereal::make_nvp("SuperGroupCostume",m_has_sg_costume));
     archive(cereal::make_nvp("UsingSGCostume",m_using_sg_costume));
     archive(cereal::make_nvp("SideKick",m_sidekick));
     archive(cereal::make_nvp("FriendList",m_friendlist));

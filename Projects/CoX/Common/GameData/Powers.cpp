@@ -1143,7 +1143,6 @@ void CharacterInspiration::serialize(Archive &archive, uint32_t const version)
     archive(cereal::make_nvp("Row", m_row));
     archive(cereal::make_nvp("HasInsp", m_has_insp));
 }
-
 SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(CharacterInspiration)
 CEREAL_CLASS_VERSION(CharacterInspiration, CharacterInspiration::class_version)   // register CharacterInspiration struct version
 

@@ -140,8 +140,8 @@ bool AuthDbSyncContext::loadAndConfigure()
     int64_t db_version = getDatabaseVersion(*m_db);
     if(db_version != REQUIRED_DB_VERSION)
     {
-        qCritical() << "Wrong database version:" << db_version;
-        qCritical() << "Auth database requires version:" << REQUIRED_DB_VERSION;
+        // we should just stop the server, it isn't going to work anyway
+        qFatal("Wrong database version (%d) Auth database requires version: %d", db_version, REQUIRED_DB_VERSION);
 
         return false;
     }

@@ -31,7 +31,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     ui->char_dbdriver->addItems(g_db_drivers);
     // Field Validators
     ui->map_player_fade_in_value->setValidator(new QIntValidator(0, 1000, this)); // Only allow int between 0 and 1000
-    ui->game_server_name->setMaxLength(32);
     m_get_ip = new GetIPDialog(this);
 
     // SettingsDialog Signals
@@ -124,7 +123,6 @@ void SettingsDialog::read_config_file(QString filePath)
         ui->auth_port->setValue(auth_port);
     config_file.endGroup(); // AuthServer
     config_file.beginGroup("GameServer");
-        QString game_server_name = config_file.value("server_name","").toString();
         QString game_listen_addr = config_file.value("listen_addr","").toString();
         QStringList game_listen_addr_portip = game_listen_addr.split(':');
         QString game_loc_addr = config_file.value("location_addr","").toString();
@@ -133,7 +131,6 @@ void SettingsDialog::read_config_file(QString filePath)
         int game_listen_addr_port = game_listen_addr_portip[1].toInt();
         int max_players = config_file.value("max_players","").toInt();
         int max_char_slots = config_file.value("max_character_slots","").toInt();
-        ui->game_server_name->setText(game_server_name);
         ui->game_listen_ip->setText(game_listen_addr_portip[0]);
         ui->game_listen_port->setValue(game_listen_addr_port);
         ui->game_loc_ip->setText(game_loc_addr_portip[0]);
@@ -150,12 +147,15 @@ void SettingsDialog::read_config_file(QString filePath)
         int map_loc_addr_port = map_loc_addr_portip[1].toInt();
         QString maps_loc = config_file.value("maps","DefaultMapInstances").toString();
         float player_fade_in = config_file.value("player_fade_in", "").toFloat();
+        float motd_timer = config_file.value("motd_timer", "").toFloat();
         ui->map_listen_ip->setText(map_listen_addr_portip[0]);
         ui->map_listen_port->setValue(map_listen_addr_port);
         ui->map_location_ip->setText(map_loc_addr_portip[0]);
         ui->map_location_port->setValue(map_loc_addr_port);
         ui->map_location->setText(maps_loc);
         ui->map_player_fade_in->setValue(player_fade_in);
+        ui->map_motd_timer->setValue(motd_timer);
+        ui->costume_slot_unlocks_edit->setText(QString(config_file.value("costume_slot_unlocks", "").toString()));
     config_file.endGroup(); // MapServer
     config_file.beginGroup("AFKSettings");
         ui->time_to_afk_spin->setValue(config_file.value("time_to_afk", "").toInt());
@@ -187,7 +187,7 @@ void SettingsDialog::read_config_file(QString filePath)
     config_file.endGroup(); // Logging
 }
 
-void SettingsDialog::generate_default_config_file(QString server_name, QString ip)
+void SettingsDialog::generate_default_config_file(QString ip)
 {
     QSettings config_file_write("settings.cfg", QSettings::IniFormat);
     QSettings settings_template("settings_template.cfg", QSettings::IniFormat);
@@ -213,7 +213,6 @@ void SettingsDialog::generate_default_config_file(QString server_name, QString i
         config_file_write.setValue("location_addr",ip+":2106");
     config_file_write.endGroup(); // AuthServer
     config_file_write.beginGroup("GameServer");
-        config_file_write.setValue("server_name",server_name);
         config_file_write.setValue("listen_addr",ip+":7002");
         config_file_write.setValue("location_addr",ip+":7002");
         config_file_write.setValue("max_players","200");
@@ -224,6 +223,7 @@ void SettingsDialog::generate_default_config_file(QString server_name, QString i
         config_file_write.setValue("location_addr",ip+":7003");
         config_file_write.setValue("maps","DefaultMapInstances");
         config_file_write.setValue("player_fade_in", "380.0");
+        config_file_write.setValue("costume_slot_unlocks", "19,29,39,49");
     config_file_write.endGroup(); // MapServer
     config_file_write.beginGroup("AFKSettings");
         config_file_write.setValue("time_to_afk", "300");
@@ -271,11 +271,11 @@ void SettingsDialog::save_changes_config_file()
         config_file_write.setValue("location_addr",ui->auth_ip->text()+":"+ui->auth_port->text());
     config_file_write.endGroup(); // AuthServer
     config_file_write.beginGroup("GameServer");
-        config_file_write.setValue("server_name",ui->game_server_name->text());
         config_file_write.setValue("listen_addr",ui->game_listen_ip->text()+":"+ui->game_listen_port->text());
         config_file_write.setValue("location_addr",ui->game_loc_ip->text()+":"+ui->game_loc_port->text());
         config_file_write.setValue("max_players",ui->game_max_players->text());
         config_file_write.setValue("max_character_slots",ui->game_max_slots->text());
+        config_file_write.setValue("costume_slot_unlocks", ui->costume_slot_unlocks_edit->text());
     config_file_write.endGroup(); // GameServer
     config_file_write.beginGroup("MapServer");
         config_file_write.setValue("listen_addr",ui->map_listen_ip->text()+":"+ui->map_listen_port->text());
@@ -283,6 +283,8 @@ void SettingsDialog::save_changes_config_file()
         config_file_write.setValue("maps",ui->map_location->text());
         QString player_fade_in = ui->map_player_fade_in_value->text() + ".0";
         config_file_write.setValue("player_fade_in",player_fade_in);
+        QString motd_timer = ui->map_motd_timer->text() + ".0";
+        config_file_write.setValue("motd_timer",motd_timer);
     config_file_write.endGroup(); // MapServer
     config_file_write.beginGroup("AFKSettings");
         config_file_write.setValue("time_to_afk", ui->time_to_afk_spin->value());
@@ -328,19 +330,20 @@ void SettingsDialog::set_default_values()
     ui->char_dbport->setValue(5432);
     ui->auth_ip->setText("127.0.0.1");
     ui->auth_port->setValue(2106);
-    ui->game_server_name->setText("SEGS_Server");
     ui->game_listen_ip->setText("127.0.0.1");
     ui->game_listen_port->setValue(7002);
     ui->game_loc_ip->setText("127.0.0.1");
     ui->game_loc_port->setValue(7002);
     ui->game_max_players->setValue(200);
     ui->game_max_slots->setValue(8);
+    ui->costume_slot_unlocks_edit->setText("19,29,39,49");
     ui->map_listen_ip->setText("127.0.0.1");
     ui->map_listen_port->setValue(7003);
     ui->map_location_ip->setText("127.0.0.1");
     ui->map_location_port->setValue(7003);
     ui->map_location->setText("DefaultMapInstances");
     ui->map_player_fade_in->setValue(380.0);
+    ui->map_motd_timer->setValue(120.0);
     ui->time_to_afk_spin->setValue(300);
     ui->time_to_logout_msg_spin->setValue(1080);
     ui->time_to_auto_logout_spin->setValue(120);

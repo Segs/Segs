@@ -6,6 +6,7 @@
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
 #include "GameData/DataStorage.h"
+#include "Logging.h"
 
 #include <QDirIterator>
 #include <QString>

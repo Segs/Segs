@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>260</width>
-    <height>105</height>
+    <height>76</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,37 +18,6 @@
   </property>
   <layout class="QFormLayout" name="formLayout">
    <item row="0" column="0">
-    <widget class="QLabel" name="config_server_name">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Server Name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="config_server_name_edit">
-     <property name="minimumSize">
-      <size>
-       <width>108</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>108</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="cursorMoveStyle">
-      <enum>Qt::LogicalMoveStyle</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
     <widget class="QLabel" name="config_ip">
      <property name="font">
       <font>
@@ -60,7 +29,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="0" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLineEdit" name="config_ip_edit">
@@ -118,7 +87,7 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0" colspan="2">
+   <item row="1" column="0" colspan="2">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -131,7 +100,6 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>config_server_name_edit</tabstop>
   <tabstop>config_ip_edit</tabstop>
  </tabstops>
  <resources>

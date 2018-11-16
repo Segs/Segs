@@ -340,6 +340,7 @@ void sendEnhanceCombineResponse(MapClientSession &sess, bool success, bool destr
 
 void sendChangeTitle(MapClientSession &sess, bool select_origin)
 {
+    sess.m_ent->m_rare_update = true; // titles have changed, resend them
     //qCDebug(logSlashCommand) << "Sending ChangeTitle Dialog:" << sess.m_ent->m_idx << "select_origin:" << select_origin;
     sess.addCommand<ChangeTitle>(select_origin);
 }
@@ -378,8 +379,10 @@ void sendTeamOffer(MapClientSession &src, MapClientSession &tgt)
 
     // Check for mission, send appropriate TeamOfferType
     if(src.m_ent->m_has_team && src.m_ent->m_team != nullptr)
-        if(src.m_ent->m_team->m_team_has_mission)
+    {
+        if(src.m_ent->m_team->m_has_taskforce)
             type = TeamOfferType::WithMission; // TODO: Check for invalid missions to send `LeaveMission` instead
+    }
 
     qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << static_cast<uint8_t>(type);
     tgt.addCommand<TeamOffer>(db_id, name, type);
@@ -407,6 +410,13 @@ void sendBrowser(MapClientSession &sess, QString &content)
 {
     qCDebug(logMapEvents) << QString("Sending Browser");
     sess.addCommand<Browser>(content);
+}
+
+void sendTailorOpen(MapClientSession &sess)
+{
+    sess.m_ent->m_rare_update = false;
+    qCDebug(logTailor) << QString("Sending TailorOpen");
+    sess.addCommand<TailorOpen>();
 }
 
 void sendTradeOffer(MapClientSession &tgt, const QString &name)

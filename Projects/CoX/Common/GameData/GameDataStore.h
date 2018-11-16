@@ -73,6 +73,8 @@ public:
         Parse_PI_Schedule           m_pi_schedule;
         std::vector<struct FxInfo>  m_fx_infos;
         float                       m_player_fade_in;
+        float                       m_motd_timer = 60 * 60; // default 1 hr
+        QStringList                 m_costume_slot_unlocks; // used in finalizeLevel() to award costume slots
         SequencerList               m_seq_definitions; // animation sequencer definitions
 
         // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)

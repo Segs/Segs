@@ -198,8 +198,6 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     assert(session.m_game_account.valid());
 
     ev->src()->putq(new CharacterResponse(this,ev->m_index,session.m_game_account));
-
-    // TODO: Do we update database here? issue #271
 }
 
 void GameHandler::on_idle(Idle */*ev*/)
@@ -350,7 +348,7 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
     // check if character exists, and if it's name is the same as the one passed here
     if(selected_slot.m_name == ev->m_char_name)
     {
-        game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, selected_slot.index},
+        game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, selected_slot.m_slot_idx},
                                                  lnk->session_token(), this));
     }
     else

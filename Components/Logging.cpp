@@ -46,6 +46,7 @@ SEGS_LOGGING_CATEGORY(logNPCs,         "log.npcs")
 SEGS_LOGGING_CATEGORY(logAnimations,   "log.animations")
 SEGS_LOGGING_CATEGORY(logPowers,       "log.powers")
 SEGS_LOGGING_CATEGORY(logTrades,       "log.trades")
+SEGS_LOGGING_CATEGORY(logTailor,       "log.tailor")
 SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logSceneGraph,   "log.scenegraph")
 SEGS_LOGGING_CATEGORY(logTasks,        "log.tasks")
@@ -82,6 +83,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.animations="     + config.value("log_animations","false").toString();
     filter_rules += "\nlog.powers="         + config.value("log_powers","false").toString(); 
     filter_rules += "\nlog.trades="         + config.value("log_trades","false").toString();
+    filter_rules += "\nlog.tailor="         + config.value("log_tailor","false").toString();
     filter_rules += "\nlog.scripts="        + config.value("log_scripts","false").toString();
     filter_rules += "\nlog.scenegraph="     + config.value("log_scenegraph","false").toString();
     filter_rules += "\nlog.tasks="          + config.value("log_tasks","false").toString();
@@ -151,6 +153,8 @@ void toggleLogging(QString &category)
         cat = &logPowers();
     else if(category.contains("trades",Qt::CaseInsensitive))
         cat = &logTrades();
+    else if(category.contains("tailor",Qt::CaseInsensitive))
+        cat = &logTailor();
     else if(category.contains("scripts", Qt::CaseInsensitive))
         cat = &logScripts();
     else if(category.contains("scenegraph",Qt::CaseInsensitive))
@@ -196,6 +200,7 @@ void dumpLogging()
     output += "\n\t animations: "   + QString::number(logAnimations().isDebugEnabled());
     output += "\n\t powers: "       + QString::number(logPowers().isDebugEnabled());
     output += "\n\t trades: "       + QString::number(logTrades().isDebugEnabled());
+    output += "\n\t tailor: "       + QString::number(logTailor().isDebugEnabled());
     output += "\n\t scripts: "      + QString::number(logScripts().isDebugEnabled());
     output += "\n\t scenegraph: "   + QString::number(logSceneGraph().isDebugEnabled());
 

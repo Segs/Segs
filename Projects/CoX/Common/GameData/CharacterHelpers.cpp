@@ -12,6 +12,7 @@
 
 #include "CharacterHelpers.h"
 #include "Character.h"
+#include "Costume.h"
 #include <QDateTime>
 
 /*
@@ -25,7 +26,7 @@ float               getHP(const Character &c) { return c.m_char_data.m_current_a
 float               getEnd(const Character &c) { return c.m_char_data.m_current_attribs.m_Endurance; }
 float               getMaxHP(const Character &c) { return c.m_max_attribs.m_HitPoints; }
 float               getMaxEnd(const Character &c) { return c.m_max_attribs.m_Endurance; }
-uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
+uint32_t            getCurrentCostumeIdx(const Character &c) { return c.m_char_data.m_current_costume_idx; }
 const QString &     getOrigin(const Character &c) { return c.m_char_data.m_origin_name; }
 const QString &     getClass(const Character &c) { return c.m_char_data.m_class_name; }
 uint32_t            getXP(const Character &c) { return c.m_char_data.m_experience_points; }
@@ -89,9 +90,10 @@ void setEndToMax(Character &c)
     setEnd(c, getMaxEnd(c));
 }
 
-void setLastCostumeId(Character &c, uint64_t val)
+void setCurrentCostumeIdx(Character &c, uint32_t idx)
 {
-    c.m_char_data.m_last_costume_id = val;
+    c.m_add_new_costume = true;
+    c.m_char_data.m_current_costume_idx = idx;
 }
 
 void setXP(Character &c, uint32_t val)

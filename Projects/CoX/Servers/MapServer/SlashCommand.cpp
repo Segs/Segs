@@ -117,10 +117,12 @@ void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &s
 void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Revive(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddCostumeSlot(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
 
+// For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
 // Access Level 2[GM] Commands
@@ -152,6 +154,8 @@ void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Tailor(const QString &cmd, MapClientSession &sess);
+void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Train(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
@@ -229,10 +233,12 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setwaypoint"}, "Test SendWaypoint. Send waypoint to client", cmdHandler_SendWaypoint, 9},
     {{"setstatemode"}, "Send StateMode. Send StateMode to client", cmdHandler_SetStateMode, 9},
     {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
+    {{"addcostumeslot"}, "Add a new costume slot to Character", cmdHandler_AddCostumeSlot, 9},
     {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
     {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
     {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
 
+    // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
     /* Access Level 2 Commands */
@@ -264,6 +270,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"MapXferList", "mapmenu"}, "Show MapXferList", cmdHandler_MapXferList, 1},
     {{"respec"}, "Start ReSpec", cmdHandler_ReSpec, 1},
     {{"trade"}, "Trade with player", cmdHandler_Trade, 1},
+    {{"tailor"}, "Open Tailor Window", cmdHandler_Tailor, 1},
+    {{"cc"}, "Costume Change", cmdHandler_CostumeChange, 1},
     {{"train"}, "Train Up Level", cmdHandler_Train, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
@@ -1237,6 +1245,17 @@ void cmdHandler_Revive(const QString &cmd, MapClientSession &sess)
     msg = "Reviving " + tgt->name();
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
+
+void cmdHandler_AddCostumeSlot(const QString &/*cmd*/, MapClientSession &sess)
+{
+    sess.m_ent->m_char->addCostumeSlot();
+    markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
+
+    QString msg = "Adding Costume Slot to " + sess.m_ent->name();
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
 {
     Contact startingContact;
@@ -1262,6 +1281,7 @@ void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
     QString msg = "Sending OfficerFlint to contactList";
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
+
 
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
@@ -1812,6 +1832,21 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
     }
 
     sendInfoMessage(MessageChannel::SERVER, msg, *sess.m_ent->m_client);
+}
+
+void cmdHandler_Tailor(const QString &/*cmd*/, MapClientSession &sess)
+{
+    sendTailorOpen(sess);
+}
+
+void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess)
+{
+    uint32_t costume_idx = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+
+    setCurrentCostumeIdx(*sess.m_ent->m_char, costume_idx);
+
+    QString msg = "Changing costume to: " + QString::number(costume_idx);
+    qCDebug(logTailor) << msg;
 }
 
 void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
