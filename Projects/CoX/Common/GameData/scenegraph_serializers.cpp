@@ -395,7 +395,7 @@ QString getFilepathCaseInsensitive(QString fpath)
     QStringList files = dir.entryList(QDir::Files | QDir::NoSymLinks);
     for(QString &f : files)
     {
-        qCDebug(logScenegraph) << "Comparing" << f << fpath;
+        qCDebug(logSceneGraph) << "Comparing" << f << fpath;
         if(fpath.endsWith(f, Qt::CaseInsensitive))
             fpath = base_path + "/" + f;
     }
