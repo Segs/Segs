@@ -282,12 +282,13 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
     {
         const QString new_name = groupRename(ctx, dat.name, false);
         SceneNodeChildTransform child;
-        child.node = getNodeByName(*ctx.m_target,new_name);
+        child.node = getNodeByName(*ctx.m_target, new_name);
         if( !child.node )
         {
-            bool loaded=store.loadNamedPrefab(new_name,ctx);
-            assert(loaded);
-            child.node = getNodeByName(*ctx.m_target,new_name);
+            bool loaded = store.loadNamedPrefab(new_name, ctx);
+            if(!loaded)
+                qCritical() << "Cannot load named prefab" << new_name << "result is" << loaded;
+            child.node = getNodeByName(*ctx.m_target, new_name);
         }
         // construct from euler angles
         glm::quat qPitch = glm::angleAxis(dat.rot.x, glm::vec3(-1, 0, 0));

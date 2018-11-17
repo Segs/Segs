@@ -2032,6 +2032,9 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     }
     else
     {
+        glm::vec3 spawn_loc = session.m_current_map->closest_safe_location(session.m_ent->m_entity_data.m_pos);
+        // force position into safe spawner. Works for most zones.
+        forcePosition(*session.m_ent, spawn_loc);
         // else don't send motd, as this is from a map transfer
         // TODO: check if there's a better place to complete the map transfer..
         map_server->session_xfer_complete(session.link()->session_token());
