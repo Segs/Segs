@@ -37,8 +37,8 @@ void NpcGenerator::generate(MapInstance *map_instance)
         Entity *e = map_instance->m_entities.CreateGeneric(getGameData(), *npc_def, idx, 0, m_type);
         e->m_char->setName(makeReadableName(npc_costume_name));
         forcePosition(*e, glm::vec3(v[3]));
-        auto valquat = glm::quat_cast(v);
 
+        auto valquat = glm::quat_cast(v);
         glm::vec3 angles = glm::eulerAngles(valquat);
         angles.y += glm::pi<float>();
         forceOrientation(*e, angles);

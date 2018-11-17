@@ -1480,7 +1480,8 @@ void cmdHandler_SetSpecialTitle(const QString &cmd, MapClientSession &sess)
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 {
     // TODO: Implement true move-to-safe-location-nearby logic
-    forcePosition(*sess.m_ent, sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
+    //forcePosition(*sess.m_ent, sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
+    sess.m_current_map->setPlayerSpawn(*sess.m_ent);
 
     QString msg = QString("Resetting location to default spawn <%1, %2, %3>")
             .arg(sess.m_ent->m_entity_data.m_pos.x, 0, 'f', 1)
