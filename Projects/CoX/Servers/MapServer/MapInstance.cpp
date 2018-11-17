@@ -137,10 +137,8 @@ void MapInstance::start(const QString &scenegraph_path)
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
-                m_new_player_spawns = m_map_scenegraph->spawn_points(s_starting_spawn_nodes);
-                m_all_zone_spawns = m_map_scenegraph->spawn_points(s_spawn_nodes);
-            }, "Loading original scene graph"
-            );
+                m_all_spawners = m_map_scenegraph->getSpawnPoints();
+            }, "Loading original scene graph");
 
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
@@ -153,7 +151,7 @@ void MapInstance::start(const QString &scenegraph_path)
     else
     {
         QDir::current().mkpath(m_data_path);
-        qWarning() << "FAILED to load map instance data. Check to see if file exists:"<< m_data_path;
+        qWarning() << "FAILED to load map instance data. Check to see if file exists:" << m_data_path;
     }
 
     // create a GameDbSyncService
@@ -856,10 +854,10 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         e->m_char->m_account_id = map_session.auth_id();
         e->m_client = &map_session;
         map_session.m_ent = e;
-        glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
-        if(!m_new_player_spawns.empty())
-            spawn_pos = glm::vec3(m_new_player_spawns[rand()%m_new_player_spawns.size()][3]);
-        forcePosition(*e,spawn_pos);
+
+        // Set player spawn position and PYR
+        setPlayerSpawn(*e);
+
         e->m_entity_data.m_access_level = map_session.m_access_level;
         // new characters are transmitted nameless, use the name provided in on_expect_client
         e->m_char->setName(map_session.m_name);
@@ -2032,9 +2030,8 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     }
     else
     {
-        glm::vec3 spawn_loc = session.m_current_map->closest_safe_location(session.m_ent->m_entity_data.m_pos);
-        // force position into safe spawner. Works for most zones.
-        forcePosition(*session.m_ent, spawn_loc);
+        setPlayerSpawn(*session.m_ent);
+
         // else don't send motd, as this is from a map transfer
         // TODO: check if there's a better place to complete the map transfer..
         map_server->session_xfer_complete(session.link()->session_token());
@@ -2374,16 +2371,70 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
     //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
+void MapInstance::setPlayerSpawn(Entity &e)
+{
+    // Spawn player position and PYR
+    glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
+    glm::vec3 spawn_pyr = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    if(!m_all_spawners.empty())
+    {
+        glm::mat4 v = glm::mat4(1.0f);
+
+        if(m_all_spawners.contains("NewPlayer"))
+            v = m_all_spawners.values("NewPlayer")[rand() % m_all_spawners.values("NewPlayer").size()];
+        else if(m_all_spawners.contains("PlayerSpawn"))
+            v = m_all_spawners.values("PlayerSpawn")[rand() % m_all_spawners.values("PlayerSpawn").size()];
+        else if(m_all_spawners.contains("Citywarp01"))
+            v = m_all_spawners.values("Citywarp01")[rand() % m_all_spawners.values("Citywarp01").size()];
+        else
+        {
+            qWarning() << "No default spawn location found. Spawning at random spawner";
+            v = m_all_spawners.values()[rand() % m_all_spawners.values().size()];
+        }
+
+        // Position
+        spawn_pos = glm::vec3(v[3]);
+
+        // Orientation
+        auto valquat = glm::quat_cast(v);
+        spawn_pyr = toCoH_YPR(valquat);
+    }
+
+    forcePosition(e, spawn_pos);
+    forceOrientation(e, spawn_pyr);
+}
+
 glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
 {
-    Q_UNUSED(v);
-    // Prefer default spawners if available, otherwise, random.
-    if(!m_new_player_spawns.empty())
-        return m_new_player_spawns[rand()%m_new_player_spawns.size()][3];
-    if(!m_all_zone_spawns.empty())
-        return m_all_zone_spawns[rand()%m_all_zone_spawns.size()][3];
+    // In the future this should get the closet NAV or NAVCMBT
+    // node and return it. For now let's just pick some known
+    // safe spawn locations
 
-    return glm::vec3(0,0,0);
+    Q_UNUSED(v);
+    glm::vec3 loc = glm::vec3(0,0,0);
+
+    // If no default spawners if available, spawn at 0,0,0
+    if(m_all_spawners.empty())
+        return loc;
+
+    // Try NewPlayer spawners first, then hospitals, then random
+    if(m_all_spawners.contains("NewPlayer"))
+        loc = m_all_spawners.values("NewPlayer")[rand() % m_all_spawners.values("NewPlayer").size()][3];
+    else if(m_all_spawners.contains("PlayerSpawn"))
+        loc = m_all_spawners.values("PlayerSpawn")[rand() % m_all_spawners.values("PlayerSpawn").size()][3];
+    else if(m_all_spawners.contains("LinkFrom_Monorail_Red"))
+        loc = m_all_spawners.values("LinkFrom_Monorail_Red")[rand() % m_all_spawners.values("LinkFrom_Monorail_Red").size()][3];
+    else if(m_all_spawners.contains("LinkFrom_Monorail_Blue"))
+        loc = m_all_spawners.values("LinkFrom_Monorail_Blue")[rand() % m_all_spawners.values("LinkFrom_Monorail_Blue").size()][3];
+    else if(m_all_spawners.contains("Citywarp01"))
+        loc = m_all_spawners.values("Citywarp01")[rand() % m_all_spawners.values("Citywarp01").size()][3];
+    else if(m_all_spawners.contains("Hospital_Exit"))
+        loc = m_all_spawners.values("Hospital_Exit")[rand() % m_all_spawners.values("Hospital_Exit").size()][3];
+    else
+        loc = m_all_spawners.values()[rand() % m_all_spawners.values().size()][3];
+
+    return loc;
 }
 
 void MapInstance::serialize_from(istream &/*is*/)

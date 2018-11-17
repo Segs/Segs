@@ -230,7 +230,7 @@ void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore
     }
     if(!def)
     {
-        qCritical() << "Missing reference:"<<newname;
+        qCritical() << "Missing reference:" << newname;
         return;
     }
     auto ref = newRef(*ctx.m_target);
@@ -639,8 +639,10 @@ SceneGraph *loadWholeMap(const QString &filename)
     ctx.m_base_path = filename.mid(0, geobin_idx);
     assert(rd.m_prefab_mapping);
     QString upcase_city = filename;
-    upcase_city.replace("city","City");
-    upcase_city.replace("zones","Zones");
+    upcase_city.replace("city", "City");
+    upcase_city.replace("hazard", "Hazard");
+    upcase_city.replace("trial", "Trial");
+    upcase_city.replace("zones", "Zones");
     rd.m_prefab_mapping->sceneGraphWasReset();
     bool res = loadSceneGraph(upcase_city.mid(maps_idx), ctx, *rd.m_prefab_mapping);
     if(!res)

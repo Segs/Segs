@@ -384,8 +384,7 @@ void ScriptingEngine::registerTypes()
         "begin_logout",  &Entity::beginLogout
     );
     m_private->m_lua.new_usertype<MapSceneGraph>( "MapSceneGraph",
-        "new", sol::no_constructor, // The client links are not constructible from the script side.
-        "set_default_spawn_point", &MapSceneGraph::set_default_spawn_point
+        "new", sol::no_constructor // The client links are not constructible from the script side.
     );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
     m_private->m_lua["printDebug"] = [](const char* msg)

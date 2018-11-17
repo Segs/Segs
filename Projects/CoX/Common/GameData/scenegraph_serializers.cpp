@@ -374,25 +374,53 @@ bool loadFrom(const QString &filepath, SceneGraph_Data &target)
 }
 bool LoadSceneData(const QString &fname, SceneGraph_Data &scenegraph)
 {
+    // Windows is far too lax about case sensitivity. Consequently
+    // filenames aren't consistent. This should derive the filename
+    // based upon a case-insensitive comparison, and use the actual
+    // formatted filepath when loading scene data.
+    QString fixed_path = fname;
+
+    // check file exists, if not, check filecase
+    if(!QFile(fixed_path).exists())
+    {
+    // get base from path
+    QStringList orig_path = fixed_path.split(QDir::separator());
+
+    if(orig_path.size()>1)
+        orig_path.pop_back(); // remove file name
+
+    QDir dir(orig_path.join('/'));
+    if (!dir.exists())
+        qWarning() << "Failed to open" << dir.absolutePath();
+
+        QStringList files = dir.entryList(QDir::Files | QDir::NoSymLinks);
+        for(QString &f : files)
+        {
+            //qWarning() << "Comparing" << f << fixed_path;
+            if(fixed_path.endsWith(f, Qt::CaseInsensitive))
+                fixed_path = orig_path.join('/') + "/" + f;
+        }
+    }
+
     BinStore binfile;
 
-    if(fname.contains(".crl"))
+    if(fixed_path.contains(".crl"))
     {
-        if(!loadFrom(fname, scenegraph))
+        if(!loadFrom(fixed_path, scenegraph))
         {
-            qCritical() << "Failed to serialize data from crl:" << fname;
+            qCritical() << "Failed to serialize data from crl:" << fixed_path;
             return false;
         }
         return true;
     }
-    if(!binfile.open(fname, scenegraph_i0_2_requiredCrc))
+    if(!binfile.open(fixed_path, scenegraph_i0_2_requiredCrc))
     {
-        qCritical() << "Failed to open original bin:" << fname;
+        qCritical() << "Failed to open original bin:" << fixed_path;
         return false;
     }
     if(!loadFrom(&binfile, scenegraph))
     {
-        qCritical() << "Failed to load data from original bin:" << fname;
+        qCritical() << "Failed to load data from original bin:" << fixed_path;
         return false;
     }
     return true;

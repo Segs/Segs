@@ -189,8 +189,8 @@ struct NpcCreator
                 Entity *e = map_instance->m_entities.CreateNpc(getGameData(),*npc_def, idx, 0);
                 e->m_char->setName(makeReadableName(persistent_name));
                 forcePosition(*e,glm::vec3(v[3]));
-                auto valquat = glm::quat_cast(v);
 
+                auto valquat = glm::quat_cast(v);
                 glm::vec3 angles = glm::eulerAngles(valquat);
                 angles.y += glm::pi<float>();
                 forceOrientation(*e, angles);
@@ -269,21 +269,21 @@ void MapSceneGraph::spawn_npcs(MapInstance *instance)
 
 struct SpawnPointLocator
 {
-    QString m_kind;
-    std::vector<glm::mat4> *m_targets;
-    SpawnPointLocator(const QString &kind,std::vector<glm::mat4> *targets) :
-        m_kind(kind),
+    QMultiHash<QString, glm::mat4> *m_targets;
+    SpawnPointLocator(QMultiHash<QString, glm::mat4> *targets) :
         m_targets(targets)
     {}
     bool operator()(SceneNode *n, const glm::mat4 &v)
     {
         if(!n->m_properties)
             return true;
+
         for (GroupProperty_Data &prop : *n->m_properties)
         {
-            if(prop.propName=="SpawnLocation" && prop.propValue==m_kind)
+            if(prop.propName == "SpawnLocation")
             {
-                m_targets->emplace_back(v);
+                qCDebug(logSpawn) << "Spawner:" << prop.propValue << prop.propertyType;
+                m_targets->insert(prop.propValue, v);
                 return false;
             }
         }
@@ -291,15 +291,12 @@ struct SpawnPointLocator
     }
 };
 
-std::vector<glm::mat4> MapSceneGraph::spawn_points(const QStringList &kinds) const
+QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
 {
-    std::vector<glm::mat4> res;
-    for(const QString &kind : kinds)
-    {
-        SpawnPointLocator locator(kind, &res);
-        for(auto v : m_scene_graph->refs)
-            walkSceneNode(v->node, v->mat, locator);
-    }
+    QMultiHash<QString, glm::mat4> res;
+    SpawnPointLocator locator(&res);
+    for(auto v : m_scene_graph->refs)
+        walkSceneNode(v->node, v->mat, locator);
 
     return res;
 }
