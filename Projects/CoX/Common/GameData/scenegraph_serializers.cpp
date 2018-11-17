@@ -16,6 +16,7 @@
 
 #include "DataStorage.h"
 #include "scenegraph_definitions.h"
+#include "Logging.h"
 
 namespace
 {
@@ -372,37 +373,40 @@ bool loadFrom(const QString &filepath, SceneGraph_Data &target)
 {
     return commonReadFrom(filepath,"SceneGraph",target);
 }
-bool LoadSceneData(const QString &fname, SceneGraph_Data &scenegraph)
+
+QString getFilepathCaseInsensitive(QString fpath)
 {
     // Windows is far too lax about case sensitivity. Consequently
     // filenames aren't consistent. This should derive the filename
     // based upon a case-insensitive comparison, and use the actual
     // formatted filepath when loading scene data.
-    QString fixed_path = fname;
 
-    // check file exists, if not, check filecase
-    if(!QFile(fixed_path).exists())
-    {
+    // check file exists, if so, return original path
+    if(QFile(fpath).exists())
+        return fpath;
+
     // get base from path
-    QStringList orig_path = fixed_path.split(QDir::separator());
+    QString base_path = QFileInfo(fpath).path();
+    QDir dir(base_path);
 
-    if(orig_path.size()>1)
-        orig_path.pop_back(); // remove file name
-
-    QDir dir(orig_path.join('/'));
     if (!dir.exists())
         qWarning() << "Failed to open" << dir.absolutePath();
 
-        QStringList files = dir.entryList(QDir::Files | QDir::NoSymLinks);
-        for(QString &f : files)
-        {
-            //qWarning() << "Comparing" << f << fixed_path;
-            if(fixed_path.endsWith(f, Qt::CaseInsensitive))
-                fixed_path = orig_path.join('/') + "/" + f;
-        }
+    QStringList files = dir.entryList(QDir::Files | QDir::NoSymLinks);
+    for(QString &f : files)
+    {
+        qCDebug(logScenegraph) << "Comparing" << f << fpath;
+        if(fpath.endsWith(f, Qt::CaseInsensitive))
+            fpath = base_path + "/" + f;
     }
 
+    return fpath;
+}
+
+bool LoadSceneData(const QString &fname, SceneGraph_Data &scenegraph)
+{
     BinStore binfile;
+    QString fixed_path = getFilepathCaseInsensitive(fname);
 
     if(fixed_path.contains(".crl"))
     {
