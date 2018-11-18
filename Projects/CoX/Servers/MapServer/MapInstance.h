@@ -94,6 +94,7 @@ class BrowserClose;
 class LevelUpResponse;
 class TradeWasCancelledMessage;
 class TradeWasUpdatedMessage;
+class RecvCostumeChange;
 class DeadNoGurneyOK;
 class ReceiveContactStatus;
 class ReceiveTaskDetailRequest;
@@ -114,8 +115,7 @@ class MapInstance final : public EventProcessor
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
-        std::vector<glm::mat4>  m_new_player_spawns;
-        std::vector<glm::mat4>  m_all_zone_spawns;
+        QMultiHash<QString, glm::mat4>  m_all_spawners;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
@@ -147,6 +147,7 @@ public:
         void                    load_map_lua();
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         void                    start(const QString &scenegraph_path);
+        void                    setPlayerSpawn(Entity &e);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
 
 protected:
@@ -244,6 +245,7 @@ protected:
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
         void on_dead_no_gurney_ok(SEGSEvents::DeadNoGurneyOK *ev);
         void on_browser_close(SEGSEvents::BrowserClose *ev);
+        void on_recv_costume_change(SEGSEvents::RecvCostumeChange *ev);
         void on_levelup_response(SEGSEvents::LevelUpResponse *ev);
         void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
         void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);

@@ -10,7 +10,8 @@
 #include "MapEventFactory.h"
 struct MapLink final : public CRUDLink
 {
-    MapLink(EventSrc *tgt,EventSrc *linktgt) : CRUDLink() {
+    MapLink(EventSrc *tgt,EventSrc *linktgt) : CRUDLink()
+    {
         m_net_layer = linktgt;
         m_target = tgt;
         assert(tgt);

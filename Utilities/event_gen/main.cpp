@@ -103,7 +103,7 @@ bool extract_annotated(const QString &hdr_contents,DefFile &tgt)
     while (i.hasNext())
     {
         QRegularExpressionMatch match = i.next();
-        if (match.hasMatch())
+        if(match.hasMatch())
         {
             QString event_classname = match.captured(1).trimmed().split(whitespace,QString::SkipEmptyParts)[1];
             QString parent_classname = match.captured(2).trimmed();
@@ -115,7 +115,7 @@ bool extract_annotated(const QString &hdr_contents,DefFile &tgt)
     while (iter2.hasNext())
     {
         QRegularExpressionMatch match = iter2.next();
-        if (match.hasMatch())
+        if(match.hasMatch())
         {
             bool is_one_way = match.captured(1)=="ONE";
             QString event_classname = match.captured(2);

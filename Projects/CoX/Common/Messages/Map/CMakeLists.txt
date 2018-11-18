@@ -54,6 +54,7 @@ set(SOURCES
     Shortcuts.h
     SidekickOffer.h
     StandardDialogCmd.h
+    TailorOpen.h
     Tasks.h
     TeamLooking.h
     TeamOffer.h

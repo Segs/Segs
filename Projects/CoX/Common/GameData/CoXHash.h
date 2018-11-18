@@ -127,7 +127,7 @@ public:
         if(in_use>=watermark || in_use>=m_storage.size())
         {
             uint32_t factor=1;
-            if ( in_use >= watermark || in_use >= m_storage.size() - 1 )
+            if( in_use >= watermark || in_use >= m_storage.size() - 1 )
                 factor=2;
             resize(factor*m_storage.size());
         }

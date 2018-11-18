@@ -52,7 +52,7 @@ LuaBot.contactDialogs[20] = {
         button05 = {"Give 1000 XP","CONTACTLINK_LONGMISSION"} ,
         button06 = {"Give 1000 Debt","CONTACTLINK_SHORTMISSION"} ,
         button07 = {"Give 1000 Inf","CONTACTLINK_ACCEPTLONG"} ,
-        button08 = {"Level up/Train","CONTACTLINK_ACCEPTSHORT"} ,
+        button08 = {"Level up/Train","CONTACTLINK_TRAIN"} ,
         button09 = {"Reset Stats","CONTACTLINK_INTRODUCE"} ,
         button10 = {"More","CONTACTLINK_NOTLEADER"} ,
         button11 = {"Back","CONTACTLINK_WRONGMODE"} 
@@ -65,7 +65,7 @@ LuaBot.contactDialogs[21] = {
     buttons = {
         button01 = {"Give Random Inspiration","CONTACTLINK_HELLO"},
         button02 = {"Give Random Enhancement","CONTACTLINK_MAIN"},
-        button03 = {"Set Title","CONTACTLINK_MISSIONS"},
+        button03 = {"Set Title","CONTACTLINK_CHOOSE_TITLE"},
         button04 = {"Give Random Temp Power","CONTACTLINK_LONGMISSION"} ,
         --button05 = {"Give 1000 XP","CONTACTLINK_LONGMISSION"} ,
         --button06 = {"Give 1000 Debt","CONTACTLINK_SHORTMISSION"} ,
@@ -220,7 +220,10 @@ LuaBot.callback = function(id)
                 Player.GiveDebt(1000)
             elseif (id == 7) then
                 Player.GiveInf(1000)
-            elseif (id == 8) then
+            elseif (id == 15) then
+                --Since LevelUp closes all dialogs, we need to reset this
+                LuaBot.Mode = nil
+                id = nil
                 --Train/Level
                 Player.LevelUp()
             elseif (id == 9) then
@@ -246,7 +249,10 @@ LuaBot.callback = function(id)
                 Player.GiveRandomEnhancement(1)
             elseif (id == 3) then
                 LuaBot.Mode = nil
-            elseif (id == 4) then
+            elseif (id == 25) then
+                --Since LevelUp closes all dialogs, we need to reset this
+                LuaBot.Mode = nil
+                id = nil
                 Player.SetTitle("You're a hero!")
                 LuaBot.settingTitle = true
             elseif (id == 5) then

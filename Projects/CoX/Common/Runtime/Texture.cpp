@@ -83,11 +83,11 @@ void loadTexHeader(const QString &fname)
     }
     QFileInfo actualFile(actualPath);
     QFile src_tex(actualPath);
-    if (src_tex.exists() && src_tex.open(QFile::ReadOnly))
+    if(src_tex.exists() && src_tex.open(QFile::ReadOnly))
     {
         TexFileHdr hdr;
         src_tex.read((char *)&hdr, sizeof(TexFileHdr));
-        if (0 == memcmp(hdr.magic, "TX2", 3))
+        if(0 == memcmp(hdr.magic, "TX2", 3))
         {
             if(hdr.alpha)
                 res.flags |= TextureWrapper::ALPHA;
@@ -95,31 +95,31 @@ void loadTexHeader(const QString &fname)
     }
     res.info = modFromTextureName(actualFile.path()+"/"+actualFile.baseName());
     uint32_t texopt_flags = 0;
-    if (res.info)
+    if(res.info)
         texopt_flags = res.info->Flags;
-    if (fname.contains("PLAYERS/",Qt::CaseInsensitive) ||
+    if(fname.contains("PLAYERS/",Qt::CaseInsensitive) ||
             fname.contains("ENEMIES/",Qt::CaseInsensitive) ||
             fname.contains("NPCS/",Qt::CaseInsensitive))
         res.flags |= TextureWrapper::BUMPMAP_MIRROR | TextureWrapper::CLAMP;
 
-    if (fname.contains("MAPS/",Qt::CaseInsensitive))
+    if(fname.contains("MAPS/",Qt::CaseInsensitive))
         res.flags |= TextureWrapper::CLAMP;
 
-    if (texopt_flags & REPLACEABLE)
+    if(texopt_flags & REPLACEABLE)
         res.flags |= TextureWrapper::REPLACEABLE;
 
-    if (texopt_flags & BUMPMAP)
+    if(texopt_flags & BUMPMAP)
         res.flags |= TextureWrapper::BUMPMAP;
 
     res.scaleUV0 = {1,1};
     res.scaleUV1 = {1,1};
 
-    if (res.info && !res.info->BumpMap.isEmpty())
+    if(res.info && !res.info->BumpMap.isEmpty())
         res.bumpmap = res.info->BumpMap;
     QString detailname;
-    if (texopt_flags & DUAL)
+    if(texopt_flags & DUAL)
     {
-        if (!res.info->Blend.isEmpty())
+        if(!res.info->Blend.isEmpty())
         {
             res.flags |= TextureWrapper::DUAL;
             res.BlendType = CoHBlendMode(res.info->BlendType);
@@ -127,7 +127,7 @@ void loadTexHeader(const QString &fname)
             res.scaleUV1 = {res.info->ScaleST1.x,res.info->ScaleST1.y};
             res.detailname = res.info->Blend;
 
-            if (res.BlendType == CoHBlendMode::ADDGLOW && 0==res.detailname.compare("grey",Qt::CaseInsensitive))
+            if(res.BlendType == CoHBlendMode::ADDGLOW && 0==res.detailname.compare("grey",Qt::CaseInsensitive))
             {
                 res.detailname = "black";
             }
@@ -138,7 +138,7 @@ void loadTexHeader(const QString &fname)
         qCDebug(logSceneGraph) << "Detail texture " << res.info->Blend << " does not exist for texture mod" << res.info->name;
         detailname = "grey";
     }
-    else if (lookupstring.compare("invisible")==0)
+    else if(lookupstring.compare("invisible")==0)
     {
         detailname = "invisible";
     }
@@ -146,7 +146,7 @@ void loadTexHeader(const QString &fname)
     {
         detailname = "grey";
     }
-    if (res.BlendType == CoHBlendMode::ADDGLOW && 0==detailname.compare("grey",Qt::CaseInsensitive))
+    if(res.BlendType == CoHBlendMode::ADDGLOW && 0==detailname.compare("grey",Qt::CaseInsensitive))
     {
         detailname = "black";
     }

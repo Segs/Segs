@@ -52,8 +52,8 @@ public:
     {
         qCDebug(logMapEvents) << "LevelUp Complete";
 
-        button_id = bs.GetPackedBits(1);
-        result = bs.GetPackedBits(1);
+        //button_id = bs.GetPackedBits(1);
+        //result = bs.GetPackedBits(1);
     }
 
     EVENT_IMPL(LevelUpResponse)

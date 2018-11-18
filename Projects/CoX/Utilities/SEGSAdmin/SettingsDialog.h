@@ -23,7 +23,7 @@ public slots:
     void send_maps_dir();
     void send_maps_dir_config_check();
     void read_config_file(QString filePath);
-    void generate_default_config_file(QString server_name, QString ip);
+    void generate_default_config_file(QString ip);
     void save_changes_config_file();
     void auto_populate_ip_main(QString local_ip);
     void field_validator();

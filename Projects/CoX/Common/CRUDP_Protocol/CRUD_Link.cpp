@@ -80,7 +80,7 @@ void CRUDLink::packets_for_event(Event *ev)
     // create one or more properly formated CrudP_Packets in the protocol object
     // qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);
-    if (!m_protocol.batchSend(packets_to_send))
+    if(!m_protocol.batchSend(packets_to_send))
     {
         // link is unresponsive, tell our target object
         target()->putq(new Disconnect(this));
@@ -111,7 +111,7 @@ void CRUDLink::connection_sent_packet()
 //! when queue() is not empty.
 int CRUDLink::open (void *p)
 {
-    if (super::open (p) == -1)
+    if(super::open (p) == -1)
         return -1;
     m_notifier.reactor(reactor());  // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue()
@@ -151,7 +151,7 @@ int CRUDLink::handle_output( ACE_HANDLE )
         //TODO: consider breaking out of this loop after processing N messages ?
     }
     // Now if our message queue is empty, we will wait unitl m_notifier awakens us.
-    if (msg_queue()->is_empty ()) // we don't want to be woken up
+    if(msg_queue()->is_empty ()) // we don't want to be woken up
         reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
     else // unless there is something to send still
         reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
