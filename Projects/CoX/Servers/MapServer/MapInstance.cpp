@@ -2636,10 +2636,17 @@ void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
     sendDeadNoGurney(session);
     */
     // otherwise
-    // Set statemode to Resurrect
-    setStateMode(*session.m_ent, ClientStates::RESURRECT);
-    // TODO: spawn in hospital, resurrect animations, "summoning sickness"
-    revivePlayer(*session.m_ent, ReviveLevel::FULL);
+
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"revive_ok", session.m_ent->m_idx);
+
+    if (val.empty())
+    {
+        // Set statemode to Resurrect
+        setStateMode(*session.m_ent, ClientStates::RESURRECT);
+        // TODO: spawn in hospital, resurrect animations, "summoning sickness"
+        revivePlayer(*session.m_ent, ReviveLevel::FULL);
+    }
+
 }
 
 void MapInstance::on_dead_no_gurney_ok(DeadNoGurneyOK *ev)

@@ -21,7 +21,7 @@ local tempPowers = {
 
 Player = {}
 function Player.SetHp(hp)
-    Character.setHp(client, hp)
+    Character.setHp(client.m_ent.m_char, hp)
 end
 
 function Player.GiveHp (hp)
@@ -29,7 +29,7 @@ function Player.GiveHp (hp)
 end
 
 function Player.SetEnd(endurance) -- end is keyword in Lua
-    Character.setEnd(client, endurance)
+    Character.setEnd(client.m_ent.m_char, endurance)
 end
 
 function Player.GiveEnd(endurance)
@@ -37,7 +37,7 @@ function Player.GiveEnd(endurance)
 end
 
 function Player.SetXp(xp)
-    Character.setXp(client, xp)
+    Character.setXp(client.m_ent.m_char, xp)
 end
 
 function Player.GiveXp(xp)
@@ -45,7 +45,7 @@ function Player.GiveXp(xp)
 end
 
 function Player.SetDebt(debt)
-    Character.setDebt(client, debt)
+    Character.setDebt(client.m_ent.m_char, debt)
 end
 
 function Player.GiveDebt(debt)
@@ -53,7 +53,7 @@ function Player.GiveDebt(debt)
 end
 
 function Player.SetInf(inf)
-    Character.setInf(client, inf)
+    Character.setInf(client.m_ent.m_char, inf)
 end
 
 function Player.GiveInf(inf)
@@ -92,6 +92,23 @@ end
 function Player.SetActiveDialogCallback(callback)
     Character.setActiveDialogCallback(client, callback)
 end
+
+function Player.Revive(level)
+    Character.revive(client, level)
+end
+
+function Player.ExitDoor(location)
+    Character.exitDoor(client, location)
+end
+
+--[[ Revive Levels
+0 = FULL:
+1 = AWAKEN:
+2 = BOUNCE_BACK:
+3 = RESTORATION:
+4 = IMMORTAL_RECOVERY:
+5 = REGEN_REVIVE:
+    ]]
 
 --Just for testing
 function Player.GiveRandomInsp()
@@ -224,3 +241,20 @@ For contact dialogs, 11 buttons is the max you can have displayed at once.
     {"CONTACTLINK_FORMTASKFORCE"        ,0x18},
     {"CONTACTLINK_GOTOTAILOR"           ,0x1A},
   ]]
+
+  --[[
+
+  Hospital_Entrance
+  Hospital_Exit
+
+  Gurney
+  spn_hosp_lobby01
+  spn_hosp_lobby02
+  spn_hosp_lobby03
+    
+  spn_hosp_fl1_01
+  spn_hosp_fl2
+  spn_hosp_fl3
+  ]]
+
+  --nocoll 1    No Clip

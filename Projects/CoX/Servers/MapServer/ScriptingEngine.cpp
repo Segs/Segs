@@ -237,17 +237,11 @@ void ScriptingEngine::registerTypes()
                     else
                         con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
 
-                    //sendInfoMessage(MessageChannel::ADMIN, QString::fromStdString(s) ,*cl);
-
                     count++;
                 }
                 active_contacts.push_back(con);
             }
             sendContactDialog(*cl, message, active_contacts);
-        },
-        "close_dialog", [](MapClientSession *cl)
-        {
-            cl->addCommand<ContactDialogClose>();
         },
         "sendFloatingInfo",[](MapClientSession *cl, int message_type)
         {
@@ -300,7 +294,7 @@ void ScriptingEngine::registerTypes()
             giveInsp(*cl, e_name);
         },
         "giveXp", giveXp,
-        "sendFloatingDamage",sendFloatingNumbers,
+        //"sendFloatingDamage",sendFloatingNumbers,
         "faceEntity",sendFaceEntity,
         "faceLocation",  sendFaceLocation,
         "addUpdateContactList", updateContactStatusList,
@@ -319,64 +313,29 @@ void ScriptingEngine::registerTypes()
         "removeTask", removeTask,
         "selectTask", selectTask,
         "setWaypoint", sendWaypoint,
-        "setHp", [](MapClientSession *cl, float hp)
-        {
-            setHP(*cl->m_ent->m_char, hp);
-        },
-        "setEnd", [](MapClientSession *cl, float end)
-        {
-            setEnd(*cl->m_ent->m_char, end);
-        },
-        "setXp", [](MapClientSession *cl, int xp)
-        {
-            setXP(*cl->m_ent->m_char, xp);
-        },
-        "setDebt", [](MapClientSession *cl, int debt)
-        {
-            setDebt(*cl->m_ent->m_char, debt);
-        },
-        "setInf", [](MapClientSession *cl, int inf)
-        {
-            setInf(*cl->m_ent->m_char, inf);
-        },
+        "setHp", setHP,
+        "setEnd", setEnd,
+        "setXp", setXP,
+        "setDebt", setDebt,
+        "setInf", setInf,
         "levelUp", playerTrain,
         "setTitle", [](MapClientSession *cl, const char* title)
         {
-            QString title_string = QString::fromUtf8(title);
-            setTitle(*cl, title_string);
+            QString title_name = QString::fromUtf8(title);
+            setTitle(*cl, title_name);
         },
-        "giveTempPower", [](MapClientSession *cl, const char* power)
-        {
-            CharacterData &cd = cl->m_ent->m_char->m_char_data;
-            PowerPool_Info ppool;
-            QString temp_power_set = "Temporary_Powers";
-
-            ppool.m_pcat_idx = getPowerCatByName(temp_power_set);
-            ppool.m_pset_idx = getPowerSetByName(temp_power_set, ppool.m_pcat_idx);
-
-            Parse_PowerSet pset = getGameData().get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
-
-            for(size_t i = 0; i < pset.Available.size(); ++i)
-            {
-                qCDebug(logScripts) << "giveTempPower Name: " << pset.m_Powers[i].m_Name;
-                if(pset.m_Powers[i].m_Name == power)
-                {
-                    qCDebug(logScripts) << "giveTempPower PowerFound";
-                    ppool.m_pow_idx = uint32_t(i);
-                    addPower(cd, ppool);
-                    break;
-                }
-            }
-        },
+        "giveTempPower", giveTempPower,
         "addClue", addClue,
         "addSouvenir", addSouvenir,
         "setActiveDialogCallback", [](MapClientSession *cl, std::function<void(int)> callback)
         {
            cl->m_ent->setActiveDialogCallback(callback);
-        }
+        },
+        "revive", revive,
+        "respawn", respawn
 
     );
-
+/*
     m_private->m_lua.new_usertype<Entity>( "Entity",
         "new",    sol::no_constructor, // not constructible from the script side.
         sol::meta_function::garbage_collect, sol::destructor( destruction_is_an_error<Entity> ),
@@ -385,7 +344,7 @@ void ScriptingEngine::registerTypes()
     );
     m_private->m_lua.new_usertype<MapSceneGraph>( "MapSceneGraph",
         "new", sol::no_constructor // The client links are not constructible from the script side.
-    );
+    );*/
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
     m_private->m_lua["printDebug"] = [](const char* msg)
     {

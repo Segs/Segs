@@ -1072,6 +1072,30 @@ void giveXp(MapClientSession &sess, int xp)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
+void giveTempPower(MapClientSession *cl, const char* power)
+{
+    CharacterData &cd = cl->m_ent->m_char->m_char_data;
+    PowerPool_Info ppool;
+    QString temp_power_set = "Temporary_Powers";
+
+    ppool.m_pcat_idx = getPowerCatByName(temp_power_set);
+    ppool.m_pset_idx = getPowerSetByName(temp_power_set, ppool.m_pcat_idx);
+
+    Parse_PowerSet pset = getGameData().get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
+
+    for(size_t i = 0; i < pset.Available.size(); ++i)
+    {
+        qCDebug(logScripts) << "giveTempPower Name: " << pset.m_Powers[i].m_Name;
+        if(pset.m_Powers[i].m_Name == power)
+        {
+            qCDebug(logScripts) << "giveTempPower PowerFound";
+            ppool.m_pow_idx = uint32_t(i);
+            addPower(cd, ppool);
+            break;
+        }
+    }
+}
+
 void addListOfTasks(MapClientSession *cl, vTaskList task_list)
 {
     //Send contactList to client
@@ -1232,7 +1256,7 @@ void playerTrain(MapClientSession &sess)
     sendLevelUp(sess);
 }
 
-void setTitle(MapClientSession &sess, QString title)
+void setTitle(MapClientSession &sess, QString &title)
 {
     bool select_origin = false;
     if(!title.isEmpty())
@@ -1271,6 +1295,49 @@ void addSouvenir(MapClientSession &cl, Souvenir souvenir)
     souvenir_list.push_back(souvenir);
     cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list = souvenir_list;
     cl.addCommand<SouvenirListHeaders>(souvenir_list);
+}
+
+void revive(MapClientSession *cl, int revive_lvl)
+{
+    setStateMode(*cl->m_ent, ClientStates::RESURRECT);
+    revivePlayer(*cl->m_ent, static_cast<ReviveLevel>(revive_lvl));
+}
+
+void respawn(MapClientSession &cl, const char* spawn_type)
+{
+    qCDebug(logScripts) << "respawn Called";
+
+    QString spawn_name = QString::fromUtf8(spawn_type);
+
+    // Spawn player position and PYR
+    //glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
+    //glm::vec3 spawn_pyr = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    auto spawners = cl.m_current_map->getSpawners();
+
+    if(!spawners.empty())
+    {
+        int count = 0;
+        auto spawn_list = spawners.values(spawn_name);
+
+        for(auto const &s: spawn_list)
+        {
+            glm::mat4 mat4 = glm::mat4(1.0f);
+            mat4 = spawn_list[count];
+            glm::vec3 loc = glm::vec3(128.0f,16.0f,-198.0f);
+            loc = glm::vec3(mat4[3]);
+            qCDebug(logScripts) << "Spawn: " << spawn_name << " loc x: " << loc.x << " y: " << loc.y << " z: " << loc.z ;
+            ++count;
+        }
+    }
+    else
+    {
+        qCDebug(logScripts) << "spawners empty";
+    }
+
+    //forcePosition(*e, spawn_pos);
+    //forceOrientation(*e, spawn_pyr);
+
 }
 
 //! @}
