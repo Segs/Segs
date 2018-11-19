@@ -18,7 +18,7 @@ using namespace SEGSEvents;
 
 void ChatMessage::serializeto(BitStream &bs) const
 {
-    bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient);
+    bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 20
     bs.StorePackedBits(10,m_source_player_id);
     bs.StorePackedBits(3,uint32_t(m_channel_type));
     bs.StoreString(m_msg);

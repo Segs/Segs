@@ -9,7 +9,6 @@
  * @addtogroup MapServer Projects/CoX/Servers/MapServer
  * @{
  */
-#pragma once
 #include "ScriptingEngine.h"
 
 #include "DataHelpers.h"
@@ -65,13 +64,13 @@ struct ScriptingEngine::ScriptingEnginePrivate
     {
         m_lua.open_libraries(sol::lib::base, sol::lib::coroutine, sol::lib::table, sol::lib::string, sol::lib::math,
                              sol::lib::utf8, sol::lib::debug);
-
     }
+
     bool performInclude(const char *path)
     {
         if(m_restricted_include_dir.isEmpty())
             return false;
-        QString full_path=QDir(m_restricted_include_dir).filePath(QDir::cleanPath(path));
+        QString full_path = QDir(m_restricted_include_dir).filePath(QDir::cleanPath(path));
         if(m_alread_included_and_ran.contains(full_path))
             return true;
         QFileInfo include_info(full_path);
@@ -82,10 +81,9 @@ struct ScriptingEngine::ScriptingEnginePrivate
             return false;
         QByteArray script_contents = content_file.read(MAX_INCLUDED_FILE_SIZE);
         if(script_contents.size()==MAX_INCLUDED_FILE_SIZE)
-        {
             return false;
-        }
-        sol::load_result load_res=m_lua.load(script_contents.toStdString(),qPrintable(include_info.filePath()));
+
+        sol::load_result load_res = m_lua.load(script_contents.toStdString(),qPrintable(include_info.filePath()));
         if(!load_res.valid())
         {
             sol::error err = load_res;
@@ -107,8 +105,6 @@ struct ScriptingEngine::ScriptingEnginePrivate
     sol::state m_lua;
     QString m_restricted_include_dir;
     QSet<QString> m_alread_included_and_ran;
-
-
 };
 
 ScriptingEngine::ScriptingEngine() : m_private(new ScriptingEnginePrivate)
@@ -117,8 +113,6 @@ ScriptingEngine::ScriptingEngine() : m_private(new ScriptingEnginePrivate)
 }
 
 ScriptingEngine::~ScriptingEngine() = default;
-
-
 
 
 template<class T>
@@ -157,6 +151,23 @@ void ScriptingEngine::registerTypes()
         "completeThreshold", &Contact::m_complete_threshold,
         "canUseCell", &Contact::m_can_use_cell,
         "contactId", &Contact::m_contact_idx
+    );
+
+    m_private->m_lua.new_usertype<Clue>("Clue",
+        sol::constructors<Clue()>(),
+        "name", sol::property(&Clue::getName, &Clue::setName),
+        "displayName", sol::property(&Clue::getDisplayName, &Clue::setDisplayName),
+        "detail", sol::property(&Clue::getDetailText, &Clue::setDetailText),
+        "iconFile", sol::property(&Clue::getIconFile, &Clue::setIconFile)
+    );
+
+    m_private->m_lua.new_usertype<Souvenir>("Souvenir",
+        sol::constructors<Souvenir()>(),
+        "name", sol::property(&Souvenir::getName, &Souvenir::setName),
+        "description", sol::property(&Souvenir::getDescription, &Souvenir::setDescription),
+        "icon", sol::property(&Souvenir::getIcon, &Souvenir::setIcon)
+        //Server will set the index for this
+        //"souvenirIdx", &Souvenir::m_idx
     );
 
     m_private->m_lua.new_usertype<Destination>("Destination",
@@ -204,7 +215,8 @@ void ScriptingEngine::registerTypes()
             auto n = new StandardDialogCmd(dlgtext);
             cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
         },
-        "browser", [](MapClientSession *cl, const char *content){
+        "browser", [](MapClientSession *cl, const char *content)
+        {
             cl->addCommand<Browser>(content);
         },
 
@@ -218,15 +230,13 @@ void ScriptingEngine::registerTypes()
                 const std::vector<std::string>& strings = kvp.second.source;
                 int count = 0;
                 ContactEntry con;
-                for (const auto& s: strings){
+                for (const auto& s: strings)
+                {
                     if(count == 0)
-                    {
                         con.m_response_text = QString::fromStdString(s);
-                    }
                     else
-                    {
-                         con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
-                    }
+                        con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
+
                     //sendInfoMessage(MessageChannel::ADMIN, QString::fromStdString(s) ,*cl);
 
                     count++;
@@ -235,7 +245,8 @@ void ScriptingEngine::registerTypes()
             }
             sendContactDialog(*cl, message, active_contacts);
         },
-        "close_dialog", [](MapClientSession *cl){
+        "close_dialog", [](MapClientSession *cl)
+        {
             cl->addCommand<ContactDialogClose>();
         },
         "sendFloatingInfo",[](MapClientSession *cl, int message_type)
@@ -328,11 +339,40 @@ void ScriptingEngine::registerTypes()
         {
             setInf(*cl->m_ent->m_char, inf);
         },
-        "levelUp", train,
+        "levelUp", playerTrain,
         "setTitle", [](MapClientSession *cl, const char* title)
         {
             QString title_string = QString::fromUtf8(title);
             setTitle(*cl, title_string);
+        },
+        "giveTempPower", [](MapClientSession *cl, const char* power)
+        {
+            CharacterData &cd = cl->m_ent->m_char->m_char_data;
+            PowerPool_Info ppool;
+            QString temp_power_set = "Temporary_Powers";
+
+            ppool.m_pcat_idx = getPowerCatByName(temp_power_set);
+            ppool.m_pset_idx = getPowerSetByName(temp_power_set, ppool.m_pcat_idx);
+
+            Parse_PowerSet pset = getGameData().get_powerset(ppool.m_pcat_idx, ppool.m_pset_idx);
+
+            for(size_t i = 0; i < pset.Available.size(); ++i)
+            {
+                qCDebug(logScripts) << "giveTempPower Name: " << pset.m_Powers[i].m_Name;
+                if(pset.m_Powers[i].m_Name == power)
+                {
+                    qCDebug(logScripts) << "giveTempPower PowerFound";
+                    ppool.m_pow_idx = uint32_t(i);
+                    addPower(cd, ppool);
+                    break;
+                }
+            }
+        },
+        "addClue", addClue,
+        "addSouvenir", addSouvenir,
+        "setActiveDialogCallback", [](MapClientSession *cl, std::function<void(int)> callback)
+        {
+           cl->m_ent->setActiveDialogCallback(callback);
         }
 
     );
@@ -344,8 +384,7 @@ void ScriptingEngine::registerTypes()
         "begin_logout",  &Entity::beginLogout
     );
     m_private->m_lua.new_usertype<MapSceneGraph>( "MapSceneGraph",
-        "new", sol::no_constructor, // The client links are not constructible from the script side.
-        "set_default_spawn_point", &MapSceneGraph::set_default_spawn_point
+        "new", sol::no_constructor // The client links are not constructible from the script side.
     );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
     m_private->m_lua["printDebug"] = [](const char* msg)
@@ -356,13 +395,14 @@ void ScriptingEngine::registerTypes()
 
 int ScriptingEngine::loadAndRunFile(const QString &filename)
 {
-    sol::load_result load_res=m_private->m_lua.load_file(filename.toStdString());
+    sol::load_result load_res = m_private->m_lua.load_file(filename.toStdString());
     if(!load_res.valid())
     {
         sol::error err = load_res;
         qCritical() << err.what();
         return -1;
     }
+
     sol::protected_function_result script_result = load_res();
     if(!script_result.valid())
     {
@@ -370,6 +410,7 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
         qCritical() << err.what();
         return -1;
     }
+
     return 0;
 }
 
@@ -516,14 +557,14 @@ int ScriptingEngine::runScript(MapClientSession * client, const QString &script_
 int ScriptingEngine::runScript(const QString &script_contents, const char *script_name)
 {
     sol::load_result load_res = m_private->m_lua.load(script_contents.toStdString(), script_name);
-    if (!load_res.valid())
+    if(!load_res.valid())
     {
         sol::error err = load_res;
         // TODO: report error here.
         return -1;
     }
     sol::protected_function_result script_result = load_res();
-    if (!script_result.valid())
+    if(!script_result.valid())
     {
         sol::error err = script_result;
         // TODO: report error here.

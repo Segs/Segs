@@ -6,7 +6,7 @@
 template<class Archive>
 void Sidekick::serialize(Archive &archive, uint32_t const version)
 {
-    if (version != Sidekick::class_version)
+    if(version != Sidekick::class_version)
     {
         qCritical() << "Failed to serialize Sidekick, incompatible serialization format version " << version;
         return;

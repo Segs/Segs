@@ -34,12 +34,11 @@ using namespace SEGSEvents;
 
 Character::Character()
 {
-    m_multiple_costumes                         = false;
-    m_current_costume_idx                       = 0;
-    m_current_costume_set                       = false;
-    m_char_data.m_supergroup_costume            = false;
-    m_sg_costume                                = nullptr;
-    m_char_data.m_using_sg_costume              = false;
+    m_add_new_costume                       = true;
+    m_char_data.m_current_costume_idx       = 0;
+    m_char_data.m_has_sg_costume            = false;
+    m_char_data.m_using_sg_costume          = false;
+    m_sg_costume                            = nullptr;
     m_char_data.m_has_titles = m_char_data.m_has_the_prefix
             || !m_char_data.m_titles[0].isEmpty()
             || !m_char_data.m_titles[1].isEmpty()
@@ -47,7 +46,7 @@ Character::Character()
     m_char_data.m_sidekick.m_has_sidekick = false;
     m_char_data.m_current_attribs.initAttribArrays();
 
-    int eh_idx = 0;
+    uint32_t eh_idx = 0;
     for(CharacterEnhancement &eh : m_char_data.m_enhancements)
     {
         eh.m_slot_idx = eh_idx;
@@ -57,21 +56,19 @@ Character::Character()
 
 void Character::reset()
 {
-    m_char_data.m_level = 0;
-    m_char_data.m_combat_level = m_char_data.m_level;
-    m_name="EMPTY";
-    m_char_data.m_class_name="EMPTY";
-    m_char_data.m_origin_name="EMPTY";
-    m_villain=false;
-    m_multiple_costumes=false;
-    m_current_costume_idx=0;
-    m_current_costume_set=false;
-    m_char_data.m_supergroup_costume=false;
-    m_sg_costume=nullptr;
-    m_char_data.m_using_sg_costume=false;
-    m_char_data.m_has_titles = false;
-    m_char_data.m_sidekick.m_has_sidekick = false;
+    m_name                                  = "EMPTY";
+    m_char_data.m_level                     = 0;
+    m_char_data.m_combat_level              = m_char_data.m_level;
+    m_char_data.m_class_name                = "EMPTY";
+    m_char_data.m_origin_name               = "EMPTY";
+    m_char_data.m_has_sg_costume            = false;
+    m_char_data.m_current_costume_idx       = 0;
+    m_char_data.m_using_sg_costume          = false;
+    m_char_data.m_has_titles                = false;
+    m_char_data.m_sidekick.m_has_sidekick   = false;
     m_char_data.m_powersets.clear();
+    m_add_new_costume                       = true;
+    m_sg_costume                            = nullptr;
 }
 
 
@@ -109,13 +106,12 @@ void Character::finalizeLevel()
     m_char_data.m_max_insp_cols = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_InspirationCol);
     m_char_data.m_max_enhance_slots = data.countForLevel(m_char_data.m_level, data.m_pi_schedule.m_BoostSlot);
 
-    if (m_char_data.m_sidekick.m_type  != SidekickType::IsSidekick){
+    if(m_char_data.m_sidekick.m_type != SidekickType::IsSidekick)
          m_char_data.m_combat_level = m_char_data.m_level;              // if sidekicked, m_combat_level is linked to
-         finalizeCombatLevel();
-    }
-    //if (m_char_data.m_sidekick.m_type   == SidekickType::IsMentor)       //todo: set sidekick's level to keep up with mentor
+    //if(m_char_data.m_sidekick.m_type == SidekickType::IsMentor)    // TODO: set sidekick's level to keep up with mentor
 
     m_char_data.m_security_threat = m_char_data.m_level;
+    finalizeCombatLevel();
 
     // client will only accept 5col x 4row of insps MAX
     assert(m_char_data.m_max_insp_cols <= 5 || m_char_data.m_max_insp_rows <= 4);
@@ -123,19 +119,17 @@ void Character::finalizeLevel()
     // Add inherent powers for this level
     addPowersByLevel(QStringLiteral("Inherent"), QStringLiteral("Inherent"), m_char_data.m_level);
 
-    /*
-    int num_powersets = m_char_data.m_powersets.size();
-    for(int idx = 1; idx < num_powersets; ++idx) // Skipping 0 powerset (temporary powers)
+    for(auto level : data.m_costume_slot_unlocks)
     {
-        CharacterPowerSet pset = m_char_data.m_powersets[idx];
-        for(CharacterPower &pow : pset.m_powers)
-            reserveEnhancementSlot(&pow, m_char_data.m_level);
+        // add costume every time current level matches i
+        // this would allow server operators to award all
+        // costumes at 10th level, or different levels
+        if(level.toUInt() == m_char_data.m_level)
+            addCostumeSlot();
     }
-    */
 
     m_char_data.m_has_updated_powers = true; // this must be true, because we're updating powers
     m_char_data.m_reset_powersets = true; // possible that we need to reset the powerset array client side
-
 }
 
 void Character::addStartingInspirations(QStringList &starting_insps)
@@ -208,9 +202,10 @@ void Character::GetCharBuildInfo(BitStream &src)
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
     config.beginGroup("StartingCharacter");
-        QStringList inherent_and_preorders = config.value("inherent_powers","Brawl").toString().split(',');
-        QStringList starting_temps = config.value("starting_temps","EMP_Glove").toString().split(',');
-        QStringList starting_insps = config.value("starting_inspirations","Resurgence").toString().split(',');
+        QRegExp space("\\s");
+        QStringList inherent_and_preorders = config.value(QStringLiteral("inherent_powers"), "Brawl").toString().remove(space).split(',');
+        QStringList starting_temps = config.value(QStringLiteral("starting_temps"), "EMP_Glove").toString().remove(space).split(',');
+        QStringList starting_insps = config.value(QStringLiteral("starting_inspirations"), "Resurgence").toString().remove(space).split(',');
         uint startlevel = config.value(QStringLiteral("starting_level"), "1").toUInt() -1; //convert from 1-50 to 0-49
         uint startinf = config.value(QStringLiteral("starting_inf"), "0").toUInt();
     config.endGroup();
@@ -225,8 +220,8 @@ void Character::GetCharBuildInfo(BitStream &src)
 
     // Now that character is created. Finalize level and update hp and end
     finalizeLevel();
-    setMaxHP(*this); // set max hp
-    setMaxEnd(*this); // set max end
+    setHPToMax(*this); // set max hp
+    setEndToMax(*this); // set max end
 
     // This must come after finalize
     addStartingInspirations(starting_insps);      // resurgence and phenomenal_luck
@@ -329,61 +324,88 @@ void Character::serializetoCharsel( BitStream &bs, const QString& entity_map_nam
     bs.StoreString(getName());
     bs.StoreString(getClass(c));
     bs.StoreString(getOrigin(c));
+
     if(m_costumes.empty())
     {
         assert(m_name.compare("EMPTY")==0); // only empty characters can have no costumes
-        CharacterCostume::NullCostume.storeCharsel(bs);
+        Costume::NullCostume.storeCharsel(bs);
     }
     else
-        m_costumes[m_current_costume_set].storeCharsel(bs);
+        getCurrentCostume()->storeCharsel(bs);
+
     bs.StoreString(entity_map_name);
-    bs.StorePackedBits(1,1);
+    bs.StorePackedBits(1,1); // field_1CC
 }
 
-const CharacterCostume * Character::getCurrentCostume() const
+const Costume * Character::getCurrentCostume() const
 {
     assert(!m_costumes.empty());
-    if(m_current_costume_set)
-        return &m_costumes[m_current_costume_idx];
+    if(m_costumes.size() > 1)
+        return &m_costumes[getCurrentCostumeIdx(*this)];
 
     return &m_costumes.front();
 }
 
-void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *packer , bool all_costumes) const
+const vCostumes * Character::getAllCostumes() const
 {
-    // full costume
-    if(all_costumes) // this is only sent to the current player
+    assert(!m_costumes.empty()); // should always have 1 costume
+    return &m_costumes;
+}
+
+void Character::addCostumeSlot()
+{
+    if(m_costumes.size() == static_cast<size_t>(g_max_num_costume_slots))
+        return; // client cannot handle more than 4 costumes;
+
+    qCDebug(logTailor) << "Adding Costume Slot" << m_costumes.size();
+
+    Costume new_costume = m_costumes.at(getCurrentCostumeIdx(*this));
+    new_costume.m_index = m_costumes.size();
+    m_costumes.emplace_back(new_costume);
+
+    m_add_new_costume = true; // must set this to reset costume array size
+
+    if(logTailor().isDebugEnabled())
+        dumpCostumes(m_costumes);
+}
+
+void Character::saveCostume(uint32_t idx, Costume &new_costume)
+{
+    new_costume.m_character_id = static_cast<uint64_t>(m_db_id);
+    m_costumes[idx] = new_costume;
+    setCurrentCostumeIdx(*this, idx);
+}
+
+void Character::serialize_costumes(BitStream &bs, const ColorAndPartPacker *packer , bool send_all_costumes) const
+{
+    if(send_all_costumes) // This is only sent to the current player
     {
-        bs.StoreBits(1,m_current_costume_set);
-        if(m_current_costume_set)
+        bs.StoreBits(1, m_add_new_costume);
+        if(m_add_new_costume)
         {
-            bs.StoreBits(32,m_current_costume_idx);
-            bs.StoreBits(32,uint32_t(m_costumes.size()));
+            bs.StoreBits(32, getCurrentCostumeIdx(*this));
+            bs.StoreBits(32, uint32_t(m_costumes.size())-1); // must be minus 1 because the client adds 1
         }
-        bs.StoreBits(1,m_multiple_costumes);
-        if(m_multiple_costumes)
+
+        bool multiple_costumes = m_costumes.size() > 1;
+        bs.StoreBits(1, multiple_costumes);
+        if(multiple_costumes)
         {
             for(const Costume & c : m_costumes)
-            {
                 ::serializeto(c,bs,packer);
-            }
         }
         else
-        {
-            ::serializeto(m_costumes[m_current_costume_idx],bs,packer);
-        }
-        bs.StoreBits(1,m_char_data.m_supergroup_costume);
-        if(m_char_data.m_supergroup_costume)
+            ::serializeto(m_costumes[getCurrentCostumeIdx(*this)],bs,packer);
+
+        bs.StoreBits(1, m_char_data.m_has_sg_costume);
+        if(m_char_data.m_has_sg_costume)
         {
             ::serializeto(*m_sg_costume,bs,packer);
-
-            bs.StoreBits(1,m_char_data.m_using_sg_costume);
+            bs.StoreBits(1, m_char_data.m_using_sg_costume);
         }
     }
     else // other player's costumes we're sending only their current.
-    {
         ::serializeto(*getCurrentCostume(),bs,packer);
-    }
 }
 
 void Character::dumpSidekickInfo()
@@ -431,16 +453,16 @@ void Character::dump()
     qDebug() << "//------------------Tray------------------";
     m_char_data.m_trays.dump();
     qDebug() << "//-----------------Costume-----------------";
-    if(!m_costumes.empty())
-        getCurrentCostume()->dump();
+    dumpCostumes(m_costumes);
 }
 
 void Character::recv_initial_costume( BitStream &src, const ColorAndPartPacker *packer )
 {
     assert(m_costumes.size()==0);
     m_costumes.emplace_back();
-    m_current_costume_idx=0;
-    ::serializefrom(m_costumes.back(),src,packer);
+    m_char_data.m_current_costume_idx = 0;
+    m_costumes.back().m_character_id = static_cast<uint64_t>(m_db_id);
+    ::serializefrom(m_costumes.back(), src, packer);
 }
 
 void serializeStats(const Parse_CharAttrib &src,BitStream &bs, bool /*sendAbsolute*/)
@@ -534,6 +556,7 @@ void Character::sendDescription(BitStream &bs) const
     bs.StoreString(m_char_data.m_character_description);
     bs.StoreString(m_char_data.m_battle_cry);
 }
+
 void Character::finalizeCombatLevel()
 {
     GameDataStore &data(getGameData());
@@ -543,6 +566,7 @@ void Character::finalizeCombatLevel()
     m_max_attribs.m_Endurance = data.m_player_classes[entclass].m_AttribMaxTable[0].m_Endurance[m_char_data.m_combat_level];
 
 }
+
 void Character::sendTitles(BitStream &bs, NameFlag hasname, ConditionalFlag conditional) const
 {
     if(hasname == NameFlag::HasName)
@@ -587,56 +611,24 @@ void Character::sendFriendList(BitStream &bs) const
     }
 }
 
-void toActualCostume(const GameAccountResponseCostumeData &src, Costume &tgt)
-{
-    tgt.skin_color = src.skin_color;
-    try
-    {
-        tgt.serializeFromDb(src.m_serialized_data);
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
-
-    tgt.m_send_full_costume = false;
-}
-
-void fromActualCostume(const Costume &src,GameAccountResponseCostumeData &tgt)
-{
-    tgt.skin_color = src.skin_color;
-    try
-    {
-        src.serializeToDb(tgt.m_serialized_data);
-    }
-    catch(cereal::RapidJSONException &e)
-    {
-        qWarning() << e.what();
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
-}
-
 bool toActualCharacter(const GameAccountResponseCharacterData &src,
-                       Character &tgt,PlayerData &player, EntityData &entity)
+                       Character &tgt, PlayerData &player, EntityData &entity)
 {
     CharacterData &  cd(tgt.m_char_data);
 
     tgt.m_db_id      = src.m_db_id;
     tgt.m_account_id = src.m_account_id;
     tgt.setName(src.m_name);
+    tgt.setIndex(src.m_slot_idx);
 
     try
     {
+        qCDebug(logDB) << src.m_name << src.m_db_id << src.m_account_id << src.m_slot_idx;
+        qCDebug(logDB).noquote() << "Costume:" << src.m_serialized_costume_data;
+        serializeFromQString(tgt.m_costumes, src.m_serialized_costume_data);
         serializeFromQString(cd, src.m_serialized_chardata);
-        serializeFromQString(player, src.m_serialized_player_data);
         serializeFromQString(entity, src.m_serialized_entity_data);
+        serializeFromQString(player, src.m_serialized_player_data);
     }
     catch(cereal::RapidJSONException &e)
     {
@@ -646,34 +638,22 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
     {
         qCritical() << e.what();
     }
-
-    for (const GameAccountResponseCostumeData &costume : src.m_costumes)
-    {
-        tgt.m_costumes.emplace_back();
-        CharacterCostume &main_costume(tgt.m_costumes.back());
-        toActualCostume(costume, main_costume);
-        // appearance related.
-        main_costume.m_body_type = src.m_costumes.back().m_body_type;
-        main_costume.m_height = src.m_costumes.back().m_height;
-        main_costume.m_physique = src.m_costumes.back().m_physique;
-        main_costume.setSlotIndex(costume.m_slot_index);
-        main_costume.setCharacterId(costume.m_character_id);
-    }
-
     return true;
 }
 
-bool fromActualCharacter(const Character &src,const PlayerData &player,
+bool fromActualCharacter(const Character &src, const PlayerData &player,
                          const EntityData &entity, GameAccountResponseCharacterData &tgt)
 {
     const CharacterData &  cd(src.m_char_data);
 
-    tgt.m_db_id      = src.m_db_id;
-    tgt.m_account_id = src.m_account_id;
-    tgt.m_name = src.getName();
+    tgt.m_db_id         = src.m_db_id;
+    tgt.m_account_id    = src.m_account_id;
+    tgt.m_slot_idx      = src.m_index;
+    tgt.m_name          = src.getName();
 
     try
     {
+        serializeToQString(src.m_costumes, tgt.m_serialized_costume_data);
         serializeToQString(cd, tgt.m_serialized_chardata);
         serializeToQString(player, tgt.m_serialized_player_data);
         serializeToQString(entity, tgt.m_serialized_entity_data);
@@ -687,18 +667,6 @@ bool fromActualCharacter(const Character &src,const PlayerData &player,
         qCritical() << e.what();
     }
 
-    for (const CharacterCostume &costume : src.m_costumes)
-    {
-        tgt.m_costumes.emplace_back();
-        GameAccountResponseCostumeData &main_costume(tgt.m_costumes.back());
-        fromActualCostume(costume, main_costume);
-        // appearance related.
-        main_costume.m_body_type = src.m_costumes.back().m_body_type;
-        main_costume.m_height = costume.m_height;
-        main_costume.m_physique = costume.m_physique;
-        main_costume.m_slot_index = costume.getSlotIndex();
-        main_costume.m_character_id= costume.getCharacterId();
-    }
     return true;
 }
 

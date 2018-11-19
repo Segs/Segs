@@ -103,7 +103,7 @@ struct PrefabStore;
 struct LoadingContext;
 
 bool loadSceneGraph(const QString &path, LoadingContext &ctx, PrefabStore &prefabs);
-SceneGraph *loadWholeMap(const QString &path);
+SceneGraph *loadWholeMap(const QString &filename);
 void loadSubgraph(const QString &filename, LoadingContext &ctx,PrefabStore &prefabs);
 SceneNode * getNodeByName(const SceneGraph &graph,const QString &name);
 } // and of SEGS namespace

@@ -91,9 +91,9 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     if(e->m_queued_powers.size() > 0)
     {
         QueuedPowers &qpow = e->m_queued_powers.front();
-        if(qpow.m_time_to_activate <= -0.3f)        // wait a little longe to make sure the activation state has been sent
+        if(qpow.m_time_to_activate <= -0.3f)        // wait a little longer to make sure the activation state has been sent
         {
-            e->m_queued_powers.dequeue();       // remove first from queue
+            e->m_queued_powers.dequeue();           // remove first from queue
             e->m_char->m_char_data.m_has_updated_powers = true;
 
         }
@@ -104,11 +104,11 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
             if (ppower->getPowerTemplate().Type == PowerType::Toggle)
             {
                 e->m_auto_powers.push_back(qpow);
-                qpow.m_activation_state      = false;
+                qpow.m_activation_state = false;
             }
             else
             {
-                qpow.m_activation_state      = false;
+                qpow.m_activation_state = false;
                 doPower(*e, qpow);
             }
         }
@@ -202,8 +202,11 @@ void World::regenHealthEnd(Entity *e, uint32_t msec)
 
         float regeneration = getMaxHP(*e->m_char) * (e->m_char->m_char_data.m_current_attribs.m_Regeneration/15.0f * float(msec)/1000/12);
         float recovery = getMaxEnd(*e->m_char) * (e->m_char->m_char_data.m_current_attribs.m_Recovery/15.0f * float(msec)/1000/12);
-        setHP(*e->m_char, hp + regeneration);
-        setEnd(*e->m_char, end + recovery);
+
+        if(hp < getMaxHP(*e->m_char))
+            setHP(*e->m_char, hp + regeneration);
+        if(end < getMaxEnd(*e->m_char))
+            setEnd(*e->m_char, end + recovery);
     }
 }
 

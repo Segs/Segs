@@ -22,7 +22,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evScene                      ,5)
     EVENT_DECL(MapEventTypes, evEntitiesRequest            ,6)
     EVENT_DECL(MapEventTypes, evEntitiesResponse           ,7)
-    EVENT_DECL(MapEventTypes, evRecvInputState                 ,8)
+    EVENT_DECL(MapEventTypes, evRecvInputState             ,8)
     EVENT_DECL(MapEventTypes, evClientQuit                 ,9)
     EVENT_DECL(MapEventTypes, evForcedLogout               ,10)
     EVENT_DECL(MapEventTypes, evInitiateMapXfer            ,11)
@@ -30,9 +30,10 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evChatDividerMoved           ,36)
 // server -> client commands
     EVENT_DECL(MapEventTypes, evFirstServerToClient        ,100)
-//    EVENT_DECL(MapEventTypes, evServerGameCommand        ,113) // 1013?
     EVENT_DECL(MapEventTypes, evMapXferWait                ,110)
     EVENT_DECL(MapEventTypes, evMapXferRequest             ,111)
+//    EVENT_DECL(MapEventTypes, evForceClientLogout        ,112)
+//    EVENT_DECL(MapEventTypes, evServerGameCommand        ,113) // 1013?
     EVENT_DECL(MapEventTypes, evStandardDialogCmd          ,114)
     EVENT_DECL(MapEventTypes, evInfoMessageCmd             ,115)
     EVENT_DECL(MapEventTypes, evDoorMessage                ,116)
@@ -87,11 +88,14 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evEmailRead                  ,166)
     EVENT_DECL(MapEventTypes, evEmailMessageStatus         ,167)
     EVENT_DECL(MapEventTypes, evEntityInfoResponse         ,169) // Send entity info (description)
-//    EVENT_DECL(MapEventTypes, evClueUpdate               ,170)
+    EVENT_DECL(MapEventTypes, evClueList                   ,170)
+    EVENT_DECL(MapEventTypes, evSouvenirListHeaders        ,171)
+    EVENT_DECL(MapEventTypes, evSouvenirDetail             ,172)
     EVENT_DECL(MapEventTypes, evTaskDetail                 ,175)
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
     EVENT_DECL(MapEventTypes, evTrayAdd                    ,182)
     EVENT_DECL(MapEventTypes, evCombineEnhanceResponse     ,183)
+    EVENT_DECL(MapEventTypes, evTailorOpen                 ,188)
 // client -> server commands
     EVENT_DECL(MapEventTypes, evConsoleCommand             ,200)
     EVENT_DECL(MapEventTypes, evMiniMapState               ,201)
@@ -136,12 +140,14 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evTradeWasCancelledMessage   ,254) // Trade window: player clicked "Cancel" or closed the window.
     EVENT_DECL(MapEventTypes, evTradeWasUpdatedMessage     ,255) // Trade window: player changed something in the window.
     EVENT_DECL(MapEventTypes, evEntityInfoRequest          ,256) // right-click entity select "Info"
+    EVENT_DECL(MapEventTypes, evRecvCostumeChange          ,260)
     EVENT_DECL(MapEventTypes, evLocationVisited            ,262)
     EVENT_DECL(MapEventTypes, evReceiveTaskDetailRequest   ,263)
     EVENT_DECL(MapEventTypes, evSwitchViewPoint            ,264)
     EVENT_DECL(MapEventTypes, evSaveClientOptions          ,265)
     EVENT_DECL(MapEventTypes, evRecvSelectedTitles         ,266)
     EVENT_DECL(MapEventTypes, evDescriptionAndBattleCry    ,267)
+    EVENT_DECL(MapEventTypes, evSouvenirDetailRequest      ,268)
     EVENT_DECL(MapEventTypes, evBrowserClose               ,277)
 
 

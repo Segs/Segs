@@ -91,7 +91,7 @@ struct QueuedPowers
 class PowerPool_Info
 {
 public:
-enum : uint32_t { class_version=1 };
+enum : uint32_t { class_version = 1 };
         uint32_t        m_pcat_idx          = 0;
         uint32_t        m_pset_idx          = 0;
         uint32_t        m_pow_idx           = 0;
@@ -138,9 +138,9 @@ struct vInspirations
 
     vInspirations(size_t cols = 5, size_t rows = 4)
     {
-        if (cols > 5)
+        if(cols > 5)
             qCritical() << "vInspirations has more than 5 columns!";
-        if (rows > 4)
+        if(rows > 4)
             qCritical() << "vInspirations has more than 4 rows!";
 
         m_cols = cols;
@@ -162,7 +162,7 @@ struct vInspirations
 
     CharacterInspiration& at (const size_t col, const size_t row)
     {
-        if (col >= m_cols || row >= m_rows)
+        if(col >= m_cols || row >= m_rows)
             qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
 
         return m_inspirations[col][row];
@@ -170,7 +170,7 @@ struct vInspirations
 
     const CharacterInspiration& at (const size_t col, const size_t row) const
     {
-        if (col >= m_cols || row >= m_rows)
+        if(col >= m_cols || row >= m_rows)
             qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
 
         return m_inspirations[col][row];
@@ -178,7 +178,7 @@ struct vInspirations
 
     CharacterInspiration& from_first_row (const size_t col)
     {
-        if (!m_inspirations[col][0].m_has_insp)
+        if(!m_inspirations[col][0].m_has_insp)
             push_to_first_row(col);
 
         return m_inspirations[col][0];
@@ -204,7 +204,7 @@ struct vInspirations
         size_t i = 1;
         while (m_inspirations[col][0].m_has_insp && i < m_rows)
         {
-            if (m_inspirations[col][i].m_has_insp)
+            if(m_inspirations[col][i].m_has_insp)
                 std::swap(m_inspirations[col][0], m_inspirations[col][i]);
             i++;
         }

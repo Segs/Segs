@@ -10,6 +10,7 @@
 #include <glm/mat4x4.hpp>
 #include <memory>
 #include <vector>
+#include <QStringList>
 
 class QString;
 
@@ -28,15 +29,14 @@ class MapSceneGraph
     //! Contains all nodes from the scene graph that have any properties set, for faster lookups.
     //! @todo consider creating a property-name => [SceneNode,SceneNode] mapping instead ?
     std::vector<SEGS::SceneNode *> m_nodes_with_properties;
-    glm::vec3 m_spawn_point;
 public:
     MapSceneGraph();
     ~MapSceneGraph();
     bool loadFromFile(const QString &mapname);
-    void set_default_spawn_point(glm::vec3 loc) { m_spawn_point = loc; }
-    glm::vec3 spawn_location() const { return m_spawn_point; }
-    std::vector<glm::mat4> spawn_points(const QString &kind) const;
+    QMultiHash<QString, glm::mat4> getSpawnPoints() const;
     void spawn_npcs(class MapInstance *instance);
     void build_combat_navigation_graph();
     void build_pedestrian_navigation_graph();
 };
+
+QString getCostumeFromName(const QString &n);

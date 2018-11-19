@@ -13,26 +13,31 @@
 
 namespace SEGSEvents
 {
-    // [[ev_def:type]]
+
+// [[ev_def:type]]
 class MapXferWait final : public MapLinkEvent
 {
 public:
-                MapXferWait() : MapLinkEvent(MapEventTypes::evMapXferWait)
-                {}
-                MapXferWait(QString map_name) : MapLinkEvent(MapEventTypes::evMapXferWait)
-                {
-                    m_map_name = map_name;
-                }
+    MapXferWait() : MapLinkEvent(MapEventTypes::evMapXferWait)
+    {}
+    MapXferWait(QString map_name) : MapLinkEvent(MapEventTypes::evMapXferWait)
+    {
+        m_map_name = map_name;
+    }
 
-    void        serializeto(BitStream &bs) const override {
-                    bs.StorePackedBits(1, 10);  // opcode 
-                    bs.StoreString(m_map_name);
-                }
-    void        serializefrom(BitStream &/*src*/) override
-                {
-                }
-    EVENT_IMPL(MapXferWait)
-            // [[ev_def:field]]
+    void serializeto(BitStream &bs) const override
+    {
+        bs.StorePackedBits(1, 10);  // opcode
+        bs.StoreString(m_map_name);
+    }
+    void serializefrom(BitStream &/*src*/) override
+    {
+    }
+
+    // [[ev_def:field]]
     QString     m_map_name;
+
+    EVENT_IMPL(MapXferWait)
 };
+
 } //end of SEGSEvents namespace

@@ -83,7 +83,7 @@ private:
     }
     uint32_t getNextFreeNode()
     {
-        if (m_free_list_head != HType::FREE_LIST_TERMINATOR)
+        if(m_free_list_head != HType::FREE_LIST_TERMINATOR)
             return m_free_list_head;
         //NOTE: we allocate 256 new 'nodes' each time
         uint32_t start_idx = m_sparse_array.size();

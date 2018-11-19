@@ -153,7 +153,7 @@ void toggleCollision(Entity &e)
 {
     e.m_motion_state.m_no_collision = !e.m_motion_state.m_no_collision;
 
-    if (e.m_motion_state.m_no_collision)
+    if(e.m_motion_state.m_no_collision)
         e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
     else
         e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
@@ -318,7 +318,7 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_type                            = EntType::NPC; // 2
     e.m_create_player                   = false;
     e.m_is_hero                         = false;
-    e.m_is_villian                      = true;
+    e.m_is_villian                      = false; // only Critters are Villains
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
     e.m_hasname                         = true;
@@ -407,7 +407,7 @@ void revivePlayer(Entity &e, ReviveLevel lvl)
         setHP(*e.m_char, getMaxHP(*e.m_char)*0.75f);
         break;
     case ReviveLevel::IMMORTAL_RECOVERY:
-        setMaxHP(*e.m_char);
+        setHPToMax(*e.m_char);
         break;
     case ReviveLevel::REGEN_REVIVE:
         setHP(*e.m_char, getMaxHP(*e.m_char)*0.75f);
@@ -416,8 +416,8 @@ void revivePlayer(Entity &e, ReviveLevel lvl)
     case ReviveLevel::FULL:
     default:
         // Set HP and End to Max
-        setMaxHP(*e.m_char);
-        setMaxEnd(*e.m_char);
+        setHPToMax(*e.m_char);
+        setEndToMax(*e.m_char);
         break;
     }
 

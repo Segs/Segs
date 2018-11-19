@@ -28,6 +28,8 @@ void GameDBSyncService::dispatch(Event *ev)
         on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
     case evPlayerUpdateMessage:
         on_player_update(static_cast<PlayerUpdateMessage *>(ev)); break;
+    case evCostumeUpdateMessage:
+        on_costume_update(static_cast<CostumeUpdateMessage *>(ev)); break;
     default: assert(false); break;
     }
 }
@@ -48,6 +50,26 @@ void GameDBSyncService::set_db_handler(const uint8_t id)
 }
 
 // they are quite literally the 'postman' between MapInstance and DbHandler :)
+void GameDBSyncService::on_character_update(CharacterUpdateMessage* msg)
+{
+    CharacterUpdateMessage* newMsg = new CharacterUpdateMessage(
+    {
+                    msg->m_data.m_char_name,
+
+                    // Cerealized blobs
+                    msg->m_data.m_costume_data,
+                    msg->m_data.m_char_data,
+                    msg->m_data.m_entitydata,
+                    msg->m_data.m_player_data,
+
+                    // plain values
+                    msg->m_data.m_supergroup_id,
+                    msg->m_data.m_id
+    }, uint64_t(1));
+
+    m_db_handler->putq(newMsg);
+}
+
 void GameDBSyncService::on_player_update(PlayerUpdateMessage * msg)
 {
     PlayerUpdateMessage* newMsg = new PlayerUpdateMessage(
@@ -59,24 +81,13 @@ void GameDBSyncService::on_player_update(PlayerUpdateMessage * msg)
     m_db_handler->putq(newMsg);
 }
 
-void GameDBSyncService::on_character_update(CharacterUpdateMessage* msg)
+void GameDBSyncService::on_costume_update(CostumeUpdateMessage * msg)
 {
-    CharacterUpdateMessage* newMsg = new CharacterUpdateMessage(
+    CostumeUpdateMessage* newMsg = new CostumeUpdateMessage(
     {
-                    msg->m_data.m_char_name,
-
-                    // Cerealized blobs
-                    msg->m_data.m_char_data,
-                    msg->m_data.m_entitydata,
-                    msg->m_data.m_player_data,
-
-                    // plain values
-                    msg->m_data.m_bodytype,
-                    msg->m_data.m_height,
-                    msg->m_data.m_physique,
-                    msg->m_data.m_supergroup_id,
-                    msg->m_data.m_id
-    }, uint64_t(1));
+                    msg->m_data.m_id,
+                    msg->m_data.m_costume_data
+                }, uint64_t(1));
 
     m_db_handler->putq(newMsg);
 }

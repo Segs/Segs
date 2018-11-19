@@ -23,7 +23,7 @@ CEREAL_CLASS_VERSION(EntityData, EntityData::class_version) // register EntityDa
 template<class Archive>
 void serialize(Archive & archive, EntityData &ed, uint32_t const version)
 {
-    if (version > EntityData::class_version || version < 2)
+    if(version > EntityData::class_version || version < 2)
     {
         qCritical() << "Failed to serialize EntityData, incompatible serialization format version " << version;
         return;

@@ -138,7 +138,7 @@ public:
     void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,12); // opcode
-        bs.StoreString(reason); // opcode
+        bs.StoreString(reason);
     }
     void serializefrom(BitStream &bs) override
     {
@@ -645,6 +645,7 @@ public:
 #include "Messages/Map/SceneEvent.h"
 #include "Messages/Map/SendStance.h"
 #include "Messages/Map/Shortcuts.h"
+#include "Messages/Map/TailorOpen.h"
 #include "Messages/Map/TradeCancel.h"
 #include "Messages/Map/TradeInit.h"
 #include "Messages/Map/TradeOffer.h"
