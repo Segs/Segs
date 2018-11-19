@@ -90,7 +90,6 @@ void updateContactStatusList(MapClientSession &sess, const Contact &contact_to_u
 void sendContactStatusList(MapClientSession &sess);
 void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location);
 void sendStance(MapClientSession &sess, PowerStance &stance);
-void resetStance(MapClientSession &sess);
 void sendDeadNoGurney(MapClientSession &sess);
 void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state);
 void sendDoorAnimExit(MapClientSession &sess, bool force_move);

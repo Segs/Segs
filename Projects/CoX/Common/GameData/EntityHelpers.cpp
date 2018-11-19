@@ -170,24 +170,28 @@ void toggleMovementAuthority(Entity &e)
 
 bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum target)
 {
+    if (&target_ent == nullptr)
+        return false;
+
     // first check if the target needs to be dead, and isn't dead yet
     if (target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate || target == StoredEntEnum::DeadVillain)
         if (target_ent.m_char->getHealth() != 0.0f)             // target.dead() maybe?
             return false;
+    if (&ent == &target_ent)
+        return (target == StoredEntEnum::Caster || target == StoredEntEnum::Any || target ==StoredEntEnum::Location || target == StoredEntEnum::Teleport);
     switch(target)
     {
         case StoredEntEnum::Any:
         case StoredEntEnum::Location:               // locations are always valid for this check
-        case StoredEntEnum::Teleport:               // ditto
             return true;
-        case StoredEntEnum::Caster:
-            return (&ent == &target_ent);
+        case StoredEntEnum::Teleport:
+        case StoredEntEnum::Caster:                 // these would have passed above
         case StoredEntEnum::None:
             return false;
         case StoredEntEnum::DeadVillain:
         case StoredEntEnum::Enemy:
         case StoredEntEnum::Foe:
-        case StoredEntEnum::NPC:                    // not sure if this is supposed to be neutral, couldn't find any usage
+        case StoredEntEnum::NPC:                    // powers never target npcs, but just in case...
             return (ent.m_is_villian ? target_ent.m_is_hero : target_ent.m_is_villian);    // if both are heroes, or both villians, not a valid foe
         case StoredEntEnum::DeadTeammate:
         case StoredEntEnum::Teammate:

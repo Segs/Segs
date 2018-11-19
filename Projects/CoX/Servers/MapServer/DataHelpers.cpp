@@ -612,7 +612,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
     if(tgt_idx == -1)
         tgt_idx = getIdx(ent);
 
-    // Get target and check that it's valid
+    // Get target and check that it's a valid entity
     Entity *target_ent = getEntity(ent.m_client, tgt_idx);
     if(target_ent == nullptr)
     {
@@ -620,34 +620,33 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
         return;
     }
 
-    // TODO: Check for PVP flags
-    // if(src.can_pvp && tgt.can_pvp) pvp_ok = true;
-
-    // Check Range -- TODO: refactor as checkRange() and checkTarget()
-    // self targeting doesn't need these checks
-    // we can check EntsAffected for StoredEntsEnum::CASTER here
-    if(powtpl.Range == float(0.0))
+    // Consider if target is valid target or not
+    if(validTarget(ent, ent, powtpl.Target))                //check self targetting first
     {
         target_ent = &ent;
         tgt_idx = ent.m_idx;
     }
-
-        // TODO: source should target last permitted target or
-        // if on a team, target target_ent's target instead
-        // of sending error messages.
-        // if(!targetValid(target)) target = last_valid_target;
-
-        // Consider if target is valid target or
-        // if target isn't villian, but needs to be
-    else if(!validTarget(*target_ent, ent, powtpl.Target))
+    else if(!validTarget(*target_ent, ent, powtpl.Target))      //if not self, and iof not select target...
     {
-        from_msg = "Invalid target";
-        sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
-        return;
-    }
-    else
+        if (ent.m_assist_target_idx != -1)              //try assist target
+            tgt_idx = ent.m_assist_target_idx;
+        else if (target_ent->m_target_idx != -1)        //try target of target
+            tgt_idx = target_ent->m_target_idx;
+
+        Entity *target_ent = getEntity(ent.m_client, tgt_idx);  //try getting a new entity
+
+        if (target_ent == nullptr || !validTarget(*target_ent, ent, powtpl.Target))
+        {
+            from_msg = "Invalid target";
+            sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
+            return;
+        }
+    }                                               // at this point the target is valid
+
+    // Check Range -- TODO: refactor as checkRange() and checkTarget()
+    // Check if the power uses range first
+    if(powtpl.Range != float(0.0))
     {
-        // Check if the target is in range
         glm::vec3 senderpos = ent.m_entity_data.m_pos;
         glm::vec3 recpos = target_ent->m_entity_data.m_pos;
 
@@ -716,7 +715,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
                     && powtpl.GroupMembership[0] == temppow.GroupMembership[0])    //and shut those off
             {
                 queueRecharge(ent, temppow.powerset_idx, temppow.power_index, temppow.RechargeTime);
-                rpow_idx = ent.m_auto_powers.erase(rpow_idx);                       //bug: doesn't turn off active state
+                ent.m_auto_powers.erase(rpow_idx);                              //bug: doesn't turn off active state
             }
             else
                 ++rpow_idx;
@@ -933,12 +932,12 @@ void sendResult(Entity &src,Entity &tgt, QString name, float value)
         else
         {
             sendFloatingInfo(*tgt.m_client, name , FloatingInfoStyle::FloatingInfo_Info, 0.0);
-            sendInfoMessage(MessageChannel::COMBAT, QString("%1 causes you to receive (%2 mag) %3") .arg(src.name() .arg(name) .arg(value) ) , *tgt.m_client);
+            sendInfoMessage(MessageChannel::COMBAT, QString("%1 causes you to receive (%2 mag) %3") .arg(src.name() .arg(value) .arg(name) ) , *tgt.m_client);
         }
     }// no aggro in this case
 }
 
-void removeBuff(Entity &ent, Buffs &buff)               // ended up not using this, as the buffs get removed when the time runs out
+void removeBuff(Entity &ent, Buffs &buff)
 {
     for(auto buff_idx = ent.m_buffs.begin(); buff_idx != ent.m_buffs.end();)
     {
@@ -1005,10 +1004,12 @@ bool useInspiration(Entity &ent, uint32_t col, uint32_t row)
 
     if(insp == nullptr)
         return true;
+
     QStringList revive_names = {"Awaken","Bounce_Back","Restoration",};
-    if(revive_names.contains(insp->m_name, Qt::CaseInsensitive))
-        if (ent.m_char->getHealth() != 0.0f)         // isdead()?
-            return false;
+    if (ent.m_char->getHealth() == 0.0f)                    // isdead()?
+        if(!revive_names.contains(insp->m_name, Qt::CaseInsensitive))
+            return false;                                   //only wakies can be used when dead, and can't be used any other time
+
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
     applyInspirationEffect(ent, col, row);
     removeInspiration(cd, col, row);
