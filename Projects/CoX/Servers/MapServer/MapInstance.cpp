@@ -2317,21 +2317,11 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
         qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
         return;
     }
-    if (powtpl.Target == StoredEntEnum::Teleport && (powtpl.EntsAffected[0] == StoredEntEnum::Caster ))
+    if ((powtpl.EntsAffected[0] == StoredEntEnum::Caster ))//powtpl.Target == StoredEntEnum::Teleport &&
         tgt_idx = session.m_ent->m_idx;
-
-    sendFaceLocation(session, ev->location);
-
     session.m_ent->m_target_loc = ev->location;
-    QueuedPowers qpowers;
-    qpowers.m_pow_idxs = {ev->pset_idx, ev->pow_idx};
-    qpowers.m_active_state_change   = true;
-    qpowers.m_timer_updated         = true;
-    qpowers.m_tgt_idx = tgt_idx;
-    qpowers.m_recharge_time         = 0;
-    qpowers.m_activation_state      = true;
-    qpowers.m_time_to_activate      = powtpl.TimeToActivate;
-    session.m_ent->m_queued_powers.push_back(qpowers); // Activation Queue
+    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
+    sendFaceLocation(session, ev->location);
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)

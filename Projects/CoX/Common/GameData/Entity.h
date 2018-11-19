@@ -241,8 +241,6 @@ public:
 
 static  void                sendAllyID(BitStream &bs);
 static  void                sendPvP(BitStream &bs);
-        bool                validTarget(StoredEntEnum, bool);
-        bool                validTarget(std::vector<StoredEntEnum>, bool);
 
         const QString &     name() const;
         void                fillFromCharacter(const GameDataStore &data);

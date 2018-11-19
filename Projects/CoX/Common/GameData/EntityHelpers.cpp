@@ -166,6 +166,53 @@ void toggleMovementAuthority(Entity &e)
     toggleFullUpdate(e);
     toggleControlId(e);
 }
+
+
+bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum target)
+{
+    // first check if the target needs to be dead, and isn't dead yet
+    if (target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate || target == StoredEntEnum::DeadVillain)
+        if (target_ent.m_char->getHealth() != 0.0f)             // target.dead() maybe?
+            return false;
+    switch(target)
+    {
+        case StoredEntEnum::Any:
+        case StoredEntEnum::Location:               // locations are always valid for this check
+        case StoredEntEnum::Teleport:               // ditto
+            return true;
+        case StoredEntEnum::Caster:
+            return (&ent == &target_ent);
+        case StoredEntEnum::None:
+            return false;
+        case StoredEntEnum::DeadVillain:
+        case StoredEntEnum::Enemy:
+        case StoredEntEnum::Foe:
+        case StoredEntEnum::NPC:                    // not sure if this is supposed to be neutral, couldn't find any usage
+            return (ent.m_is_villian ? target_ent.m_is_hero : target_ent.m_is_villian);    // if both are heroes, or both villians, not a valid foe
+        case StoredEntEnum::DeadTeammate:
+        case StoredEntEnum::Teammate:
+        case StoredEntEnum::DeadOrAliveTeammate:    // will need to do a check for teams
+        case StoredEntEnum::Friend:
+        case StoredEntEnum::Player:
+        case StoredEntEnum::DeadPlayer:
+            return (ent.m_is_hero ? target_ent.m_is_hero : target_ent.m_is_villian);       // both have to be heroes, or both villians
+    }
+}
+
+// checks a vector of possible targets
+bool validTargets(Entity &target_ent, Entity &ent, std::vector<StoredEntEnum> targets)
+{
+    if (targets.size() == 0)
+        return false;
+
+    for (uint i =0; i < targets.size(); ++i)
+    {
+        if (validTarget(target_ent, ent,targets.at(i)))
+            return true;                            // just needs 1 to be valid
+    }
+    return false;
+}
+
 void modifyAttrib(Entity &e, QString name, float value)
 {
     if (name == "regeneration")
@@ -174,6 +221,20 @@ void modifyAttrib(Entity &e, QString name, float value)
         e.m_char->m_char_data.m_current_attribs.m_Recovery += value;
     else if (name == "accuracy")
         e.m_char->m_char_data.m_current_attribs.m_Accuracy += value;
+    else if (name == "tohit")
+        e.m_char->m_char_data.m_current_attribs.m_ToHit += value;
+    else if (name == "defense")
+        e.m_char->m_char_data.m_current_attribs.m_Defense += value;         //general defense, added to specific def type
+    else if (name == "damage_boost")
+        e.m_char->m_char_data.m_current_attribs.m_DamageTypes[0] += value;  //dmg type 0 applies to all damage
+    else if (name == "jump_height")
+        e.m_char->m_char_data.m_current_attribs.m_jump_height += value;
+    else if (name == "jump_boost")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_SpeedJumping += value;
+        setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
+                 e.m_char->m_char_data.m_current_attribs.m_SpeedFlying);
+    }
     else if (name == "speed_boost")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedRunning += value;
@@ -190,7 +251,7 @@ void modifyAttrib(Entity &e, QString name, float value)
         setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
                  e.m_char->m_char_data.m_current_attribs.m_SpeedFlying);
     }
-    else if (name == "immobolized")
+    else if (name == "immobolized")//copy for hold, sleep,stun
     {
         e.m_char->m_char_data.m_current_attribs.m_Immobilized += value;
         if (e.m_char->m_char_data.m_current_attribs.m_Immobilized > 1)

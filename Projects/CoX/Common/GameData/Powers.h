@@ -107,9 +107,9 @@ struct Buffs
     QString         m_name                  = "unknown";
     PowerPool_Info  m_buff_info;
     float           m_time_to_activate      = 0.0f;
-    float           m_activate_period       = 0.0f;
-    float           m_value                 = 0.0f;
-    QString         m_value_name            = "unknown";
+    float           m_duration              = 0.0f;
+    std::vector<float>           m_value;
+    std::vector<QString>         m_value_name;
     int32_t         source_ent_idx          = -1;
 };
 

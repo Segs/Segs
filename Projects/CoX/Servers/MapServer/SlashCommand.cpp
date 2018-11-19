@@ -1343,8 +1343,7 @@ void cmdHandler_Alignment(const QString &cmd, MapClientSession &sess)
         setAlignment(*sess.m_ent, parts[1].toString());
         sendInfoMessage(MessageChannel::DEBUG_INFO, "New alignment: "+parts[1], sess);
         return;
-     }
-
+    }
     qCDebug(logSlashCommand) << "Bad invocation: "<<cmd;
     sendInfoMessage(MessageChannel::USER_ERROR, "Choose from hero, villian, both or none/neither: "+cmd, sess);
 }

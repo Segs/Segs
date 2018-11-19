@@ -478,7 +478,7 @@ bool GameDataStore::read_powers(const QString &directory_path)
     StoredAttribMod temp;
     Power_Data *temppower = nullptr;
 
-    temp.Magnitude = 5;
+    temp.Scale = 5;
     temp.Duration = 1.0;
 
     temp.name = "regeneration";
@@ -502,28 +502,30 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temp.name = "healing";
     temppower = editable_power_tpl(27,0,24);   // medkit
     temppower->pAttribMod.push_back(temp);
-    temppower = editable_power_tpl(25,0,3);   // respite
+    temppower = editable_power_tpl(25,0,3);    // respite
+    temp.Scale = 0.5;
+    temp.Aspect = AttribMod_Aspect::Current;
     temppower->pAttribMod.push_back(temp);
-    temppower = editable_power_tpl(25,1,3);   // tier2 heal
+    temppower = editable_power_tpl(25,2,3);    // Resurgence
     temppower->pAttribMod.push_back(temp);
+    temp.Aspect = AttribMod_Aspect::Absolute;
 
     temp.name = "speed_boost";
-    temp.Magnitude = 0.5;
     temppower = editable_power_tpl(26,0,6);    // sprint
     temppower->pAttribMod.push_back(temp);
     temppower = editable_power_tpl(30,0,0);    // quick
     temppower->pAttribMod.push_back(temp);
     temppower = editable_power_tpl(26,0,1);    // powerslide
     temppower->pAttribMod.push_back(temp);
-    temp.Magnitude = 5.0;
+    temp.Scale = 5.0;
     temppower = editable_power_tpl(28,8,2);    // superspeed
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "flight";
-    temp.Magnitude = 0.5;
+    temp.Scale = 0.5;
     temppower = editable_power_tpl(28,1,0);    // hover
     temppower->pAttribMod.push_back(temp);
-    temp.Magnitude = 5.0;
+    temp.Scale = 5.0;
     temppower = editable_power_tpl(28,1,2);    // flight
     temppower->pAttribMod.push_back(temp);
     temp.Duration = 4.0;
@@ -547,15 +549,22 @@ bool GameDataStore::read_powers(const QString &directory_path)
 
     temp.Duration = 30.0;
     temppower = editable_power_tpl(25,0,0);    // luck
+    temp.StackType = AttribStackType::Stack;
+    temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(25,2,0);     //Phenomenal_Luck
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "endurancemod";
     temppower = editable_power_tpl(25,0,2);    // catch a breath
     temppower->pAttribMod.push_back(temp);
 
-    temp.Magnitude = 0.2;
+    temp.Scale = 0.2;
     temp.name = "accuracy";
     temppower = editable_power_tpl(25,0,1);    // insight
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "damage_boost";
+    temppower = editable_power_tpl(25,0,4);    // enrage
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "revive";

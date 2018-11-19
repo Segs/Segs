@@ -11,6 +11,7 @@
 #include "glm/vec3.hpp"
 #include <stdint.h>
 #include <QString>
+#include "Powers.h"
 
 class Entity;
 struct PlayerData;
@@ -57,6 +58,8 @@ void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e, uint32_t target_idx);
 void    setCurrentDestination(Entity &e, int point_idx, glm::vec3 location);
 void    setStateMode(Entity &e, ClientStates state);
+bool    validTarget(Entity &target_ent, Entity &ent, StoredEntEnum target);
+bool    validTargets(Entity &target_ent, Entity &ent, std::vector<StoredEntEnum> targets);
 void    modifyAttrib(Entity &e, QString name, float value);
 
 // For live debugging

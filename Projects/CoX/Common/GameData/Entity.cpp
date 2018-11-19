@@ -43,49 +43,6 @@ void Entity::sendPvP(BitStream &bs)
     bs.StorePackedBits(5,0);
     bs.StoreBits(1,0);
 }
-bool Entity::validTarget(StoredEntEnum target, bool Iamvillian)
-{
-    // first check if the target needs to be dead, and isn't dead yet
-    if (target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate || target == StoredEntEnum::DeadVillain)
-        if (m_char->getHealth() != 0.0)             // target.dead() maybe?
-            return false;
-    switch(target)
-    {
-        case StoredEntEnum::Any:
-        case StoredEntEnum::Location:               // locations are always valid for this check
-        case StoredEntEnum::Teleport:               // ditto
-        case StoredEntEnum::Caster:                 // self is always a valid target
-            return true;
-        case StoredEntEnum::None:
-            return false;
-        case StoredEntEnum::DeadVillain:
-        case StoredEntEnum::Enemy:
-        case StoredEntEnum::Foe:
-        case StoredEntEnum::NPC:                    // not sure if this is supposed to be neutral, couldn't find any usage
-            return (Iamvillian != m_is_villian);    // if both are heroes, or both villians, not a valid foe
-        case StoredEntEnum::DeadTeammate:
-        case StoredEntEnum::Teammate:
-        case StoredEntEnum::DeadOrAliveTeammate:    // will need to do a check for teams seperately
-        case StoredEntEnum::Friend:
-        case StoredEntEnum::Player:
-        case StoredEntEnum::DeadPlayer:
-            return (Iamvillian != m_is_hero);       // both have to be heroes, or both villians
-    }
-}
-
-// checks a vector of possible targets
-bool Entity::validTarget(std::vector<StoredEntEnum> targets, bool Iamvillian)
-{
-    if (targets.size() == 0)
-        return false;
-
-    for (uint i =0; i < targets.size(); ++i)
-        if (validTarget(targets.at(i), Iamvillian))
-            return true;                            // just needs 1 to be valid
-
-    return false;
-}
-
 void Entity::fillFromCharacter(const GameDataStore &data)
 {
     m_hasname = !m_char->getName().isEmpty();

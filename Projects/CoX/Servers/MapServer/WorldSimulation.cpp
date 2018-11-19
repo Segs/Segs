@@ -91,19 +91,29 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     if(e->m_queued_powers.size() > 0)
     {
         QueuedPowers &qpow = e->m_queued_powers.front();
-        qpow.m_time_to_activate -= (float(msec)/1000);
-        if(qpow.m_time_to_activate <= 0){
-            CharacterPower * ppower = getOwnedPowerByVecIdx(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx);
-           if (ppower->getPowerTemplate().Type == PowerType::Toggle)
-                e->m_auto_powers.push_back(qpow);
-            else doPower(*e, qpow);
-
-            qpow.m_activation_state      = false;
-            qpow.m_active_state_change   = true;
-            qpow.m_timer_updated         = true;
+        if(qpow.m_time_to_activate <= -0.3f)        // wait a little longe to make sure the activation state has been sent
+        {
+            e->m_queued_powers.dequeue();       // remove first from queue
             e->m_char->m_char_data.m_has_updated_powers = true;
 
-            e->m_queued_powers.dequeue(); // remove first from queue
+        }
+        else
+        {
+        if(qpow.m_time_to_activate < 0 && qpow.m_activation_state == true){
+            CharacterPower * ppower = getOwnedPowerByVecIdx(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx);
+            if (ppower->getPowerTemplate().Type == PowerType::Toggle)
+            {
+                e->m_auto_powers.push_back(qpow);
+                qpow.m_activation_state      = false;
+            }
+            else
+            {
+                qpow.m_activation_state      = false;
+                doPower(*e, qpow);
+            }
+        }
+
+        qpow.m_time_to_activate -= (float(msec)/1000);
         }
     }
 
@@ -115,6 +125,9 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         if(rpow_idx->m_recharge_time <= 0)
         {
 
+            rpow_idx = e->m_recharging_powers.erase(rpow_idx);
+            e->m_char->m_char_data.m_has_updated_powers = true;
+
             // Check if rpow is default power, if so usePower again
             if(e->m_char->m_char_data.m_trays.m_has_default_power)
             {
@@ -124,9 +137,6 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
                     usePower(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx, getTargetIdx(*e));
                 }
             }
-            rpow_idx = e->m_recharging_powers.erase(rpow_idx);
-
-            e->m_char->m_char_data.m_has_updated_powers = true;
         }
         else
             ++rpow_idx;
@@ -142,23 +152,31 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
             CharacterPower * ppower = nullptr;
             ppower = getOwnedPowerByVecIdx(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx);
             const Power_Data powtpl = ppower->getPowerTemplate();
-            doPower(*e, *rpow_idx);
-            rpow_idx->m_time_to_activate += 0.2F + powtpl.ActivatePeriod;
+            if (powtpl.Type == PowerType::Toggle && (getHP(*e->m_char) == 0.0f || getEnd(*e->m_char) < powtpl.EnduranceCost))
+            {
+                queueRecharge(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx, powtpl.RechargeTime);
+                rpow_idx = e->m_auto_powers.erase(rpow_idx);--rpow_idx;
+            }
+            else
+            {
+                doPower(*e, *rpow_idx);
+                rpow_idx->m_time_to_activate += 0.2F + powtpl.ActivatePeriod;
+
+            }
         }
         ++rpow_idx;
     }
     // Buffs
-    for(auto buff_idx = e->m_buffs.begin(); buff_idx!=e->m_buffs.end(); /*buff_idx updated inside loop*/)
+    for (int i =0; i<e->m_buffs.size();)
     {
-        buff_idx->m_activate_period -= (float(msec)/1000); // activate period is in minutes
+        e->m_buffs[i].m_duration -= (float(msec)/1000); // activate period is in minutes
 
-        if(buff_idx->m_activate_period <= 0)
+        if(e->m_buffs[i].m_duration <= 0)
         {
-            modifyAttrib(*e, buff_idx->m_value_name, -buff_idx->m_value);
-            buff_idx = e->m_buffs.erase(buff_idx);
-            }
+            removeBuff(*e, e->m_buffs[i]);
+        }
         else
-            ++buff_idx;
+            i++;
         }
 }
 

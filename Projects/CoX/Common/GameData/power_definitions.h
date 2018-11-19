@@ -153,26 +153,26 @@ struct StoredAttribMod
     // to members. Otherwise, moc files are not generated properly under certain conditions.
     Q_GADGET
 public:
-    QByteArray         name         = "unknown";
+    QByteArray         name             = "unknown";
     int                index_in_power;
     QByteArray         DisplayAttackerHit;
     QByteArray         DisplayVictimHit;
     struct Power_Data *parent_StoredPower;
-    AttribModTarget    Target       = AttribModTarget::Target;
+    AttribModTarget    Target           = AttribModTarget::Target;
     QByteArray         Table;
-    float              Scale;
+    float              Scale            = 1.0;
     int                Attrib; //
     AttribMod_Aspect   Aspect;
-    AttribModType      Type;
+    AttribModType      Type             = AttribModType::Magnitude;
     float              Duration; // Special values in DurationEnum
-    float              Magnitude;
-    int                Delay;
-    int                Period;
-    int                Chance           = 100;// are we sure this isn't a float?
-    int                CancelOnMiss;
-    int                NearGround;
-    int                AllowStrength;           //bool?
-    int                AllowResistance;         //bool?
+    float              Magnitude        = 1.0;
+    int                Delay            = 0;
+    int                Period           = 0;
+    int                Chance           = 100;  // are we sure this isn't a float?
+    int                CancelOnMiss;            // bool?
+    int                NearGround;              // bool?
+    int                AllowStrength;           // bool?
+    int                AllowResistance;         // bool?
     AttribStackType    StackType     = AttribStackType::Replace;
     std::vector<int>   ContinuingBits;
     QByteArray         ContinuingFX;
