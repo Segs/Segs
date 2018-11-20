@@ -200,7 +200,7 @@ LuaBot.callback = function(id)
                 LuaBot.Mode = 6
                 MapClientSession.contact_dialog(client, LuaBot.contactDialogs[6].message, LuaBot.contactDialogs[6].buttons)
             elseif (id == 7) then 
-                MapClientSession.forceClientLogout(client, "Bad Hero")
+                --MapClientSession.forceClientLogout(client, "player", "Bad Hero")
             end
         elseif (LuaBot.Mode == 1) then
             printDebug("LuaBot in stat mode: " .. tostring(id))

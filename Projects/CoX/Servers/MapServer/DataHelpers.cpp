@@ -30,7 +30,7 @@
 #include "Common/Messages/Map/EmailHeaders.h"
 #include "Common/Messages/Map/EmailRead.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
-#include "Common/Messages/Map/ForceClientLogout.h"
+#include "Common/Messages/Map/ForceLogout.h"
 #include "Common/Messages/Map/MapEvents.h"
 #include "Common/Messages/Map/Tasks.h"
 #include "Logging.h"
@@ -1274,10 +1274,24 @@ void addSouvenir(MapClientSession &cl, Souvenir souvenir)
     cl.addCommand<SouvenirListHeaders>(souvenir_list);
 }
 
-void sendForceLogout(MapClientSession &cl, const char* message)
+void sendForceLogout(MapClientSession &cl, const char* name, const char* message)
 {
+    QString player_name = QString::fromUtf8(name);
     QString logout_message = QString::fromUtf8(message);
-    qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
-    cl.addCommand<ForceLogout>(logout_message);
+
+    Entity* e = getEntity(&cl, player_name);
+
+    if(e == nullptr)
+    {
+        qCDebug(logSlashCommand) << "Entity: " << player_name << " not found";
+    }
+    else
+    {
+        MapClientSession *session = new MapClientSession();
+        session->m_ent = e;
+        qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
+        session->addCommand<ForceLogout>(logout_message);
+    }
 }
+
 //! @}

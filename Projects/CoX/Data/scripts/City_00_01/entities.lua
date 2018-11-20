@@ -24,7 +24,7 @@ function player_connected(id)
             button3 = {"Tasks","CONTACTLINK_MISSIONS"}, 
             button4 = {"MapMenu","CONTACTLINK_LONGMISSION"}, 
             button5 = {"Clues","CONTACTLINK_SHORTMISSION"}, 
-            button6 = {"Force Logout","CONTACTLINK_ACCEPTLONG"}, 
+            --button6 = {"Force Logout","CONTACTLINK_ACCEPTLONG"}, 
             button7 = {"",""} ,
             button8 = {"Leave","CONTACTLINK_BYE"} ,
         }

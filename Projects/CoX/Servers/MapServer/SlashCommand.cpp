@@ -14,6 +14,7 @@
 
 #include "DataHelpers.h"
 #include "MessageHelpers.h"
+#include "Messages/Map/ForceLogout.h"
 #include "Messages/Map/GameCommandList.h"
 #include "Messages/Map/MapXferWait.h"
 #include "GameData/ClientStates.h"
@@ -121,6 +122,7 @@ void cmdHandler_AddCostumeSlot(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -237,6 +239,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
     {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
     {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
+    {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -2148,6 +2151,21 @@ void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess)
     // load all scripts again
     // TODO: this will regenerate any NPCs (luabot) that exist
     sess.m_current_map->load_map_lua();
+}
+
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() < 2)
+    {
+        qCDebug(logSlashCommand) << "Bad invocation: " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + cmd, sess);
+        return;
+    }
+
+    sendForceLogout(sess, parts[1].toUtf8(), parts[2].toUtf8());
 }
 
 } // end of anonymous namespace
