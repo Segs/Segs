@@ -19,18 +19,17 @@ class ForceLogout final : public GameCommandEvent
 public:
     // [[ev_def:field]]
     QString reason;
-    ForceLogout() :GameCommandEvent(MapEventTypes::evForceLogout) {}
-    ForceLogout(const QString &_reason) :GameCommandEvent(MapEventTypes::evForceLogout),reason(_reason)
+    ForceLogout() :GameCommandEvent(evForceLogout) {}
+    ForceLogout(const QString &_reason) :GameCommandEvent(evForceLogout),reason(_reason)
     {}
     void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1, type()-evFirstServerToClient); //packet 12
-        //bs.StorePackedBits(1,12); // opcode
         bs.StoreString(reason); // opcode
     }
     void serializefrom(BitStream &bs) override
     {
-        bs.GetString(reason);
+        qWarning() << "Server does not receive ForceLogout packet from Client.";
     }
     EVENT_IMPL(ForceLogout)
 };
