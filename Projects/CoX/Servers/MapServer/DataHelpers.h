@@ -124,3 +124,4 @@ void setTitle (MapClientSession &sess, QString title);
 void showMapMenu(MapClientSession &sess);
 void addClue(MapClientSession &cl, Clue clue);
 void addSouvenir(MapClientSession &cl, Souvenir souvenir);
+void sendForceLogout(MapClientSession &cl, const char* message);

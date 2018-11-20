@@ -30,6 +30,7 @@
 #include "Common/Messages/Map/EmailHeaders.h"
 #include "Common/Messages/Map/EmailRead.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
+#include "Common/Messages/Map/ForceClientLogout.h"
 #include "Common/Messages/Map/MapEvents.h"
 #include "Common/Messages/Map/Tasks.h"
 #include "Logging.h"
@@ -1273,4 +1274,10 @@ void addSouvenir(MapClientSession &cl, Souvenir souvenir)
     cl.addCommand<SouvenirListHeaders>(souvenir_list);
 }
 
+void sendForceLogout(MapClientSession &cl, const char* message)
+{
+    QString logout_message = QString::fromUtf8(message);
+    qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
+    cl.addCommand<ForceLogout>(logout_message);
+}
 //! @}

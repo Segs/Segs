@@ -281,7 +281,8 @@ void ScriptingEngine::registerTypes()
 
             }
         },
-        "mapMenu", showMapMenu
+        "mapMenu", showMapMenu,
+        "forceClientLogout", sendForceLogout
         );
 
     m_private->m_lua.new_usertype<Character>("Character",
