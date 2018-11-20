@@ -28,7 +28,7 @@ SET(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
 SET(UNICODE TRUE)
 set(INSTALLED_TARGETS)
-OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" OFF)
+OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
 OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
 
