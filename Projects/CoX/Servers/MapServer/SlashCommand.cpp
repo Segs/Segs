@@ -223,7 +223,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
-    {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
+    {{"movezone", "mz", "mapmove"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},

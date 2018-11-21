@@ -28,7 +28,7 @@ SET(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
 SET(UNICODE TRUE)
 set(INSTALLED_TARGETS)
-OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" OFF)
+OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
 OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
 
@@ -56,6 +56,10 @@ if(ENABLE_TESTS)
         target_link_libraries(${testname}
             Qt5::Test
             ${ARGN}
+        )
+        set_target_properties (${testname} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
         )
     endmacro()
 endif()
@@ -117,6 +121,8 @@ macro(add_messages_library name )
 	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN}) 
 	set_target_properties (${name}_interface PROPERTIES
 		FOLDER Projects/CoX/Common/Messages
+                RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+                RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
 	)
 endmacro()
 
@@ -154,3 +160,6 @@ set(MAPNAMES
 foreach(MAPDIR ${MAPNAMES})
   file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/${MAPDIR})
 endforeach(MAPDIR)
+
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scripts)
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default_setup)

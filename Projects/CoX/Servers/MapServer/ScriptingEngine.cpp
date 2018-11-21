@@ -183,9 +183,9 @@ void ScriptingEngine::registerTypes()
           "dbId", &TaskEntry::m_db_id,
           "taskList", &TaskEntry::m_task_list,
           "resetSelectedTask", &TaskEntry::m_task_list
-          );
+    );
 
-      m_private->m_lua.new_usertype<Task>("Task",
+    m_private->m_lua.new_usertype<Task>("Task",
           sol::constructors<Task()>(),
           "dbId", &Task::m_db_id,
           "description", sol::property(&Task::getDescription, &Task::setDescription),
@@ -203,7 +203,7 @@ void ScriptingEngine::registerTypes()
           "unknownInt1", &Task::m_unknown_1,
           "unknownInt2", &Task::m_unknown_2,
           "boardTrain", &Task::m_board_train
-      );
+    );
 
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
 
@@ -219,7 +219,6 @@ void ScriptingEngine::registerTypes()
         {
             cl->addCommand<Browser>(content);
         },
-
         "contact_dialog",[](MapClientSession *cl, const char *message, sol::as_table_t<std::map<std::string, sol::as_table_t<std::vector<std::string>>>> buttons)
         {
             std::vector<ContactEntry> active_contacts;
@@ -278,11 +277,10 @@ void ScriptingEngine::registerTypes()
                 forceOrientation(*e, ori);
                 QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entity_idx).arg(ori.x).arg(ori.y).arg(ori.z);
                 qCDebug(logScripts) << msg;
-
             }
         },
         "mapMenu", showMapMenu
-        );
+    );
 
     m_private->m_lua.new_usertype<Character>("Character",
         "giveDebt", giveDebt,

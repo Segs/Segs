@@ -11,14 +11,20 @@
  */
 
 #include "Settings.h"
+#include "Logging.h"
 
 #include <QFileInfo>
 #include <QDebug>
 #include <QFile>
+#include <QDir>
 
+QString Settings::m_segs_dir;
 QString Settings::m_settings_path = QStringLiteral("settings.cfg"); // default path 'settings.cfg' from args
+QString Settings::m_default_tpl_dir = QStringLiteral("default_setup"); // default folder 'default_setup'
+QString Settings::m_default_settings_path = QStringLiteral("settings_template.cfg"); // default template from folder 'default_setup'
 
-static bool fileExists(const QString &path) {
+bool fileExists(const QString &path)
+{
     QFileInfo check_file(path);
     // check if file exists and if yes: Is it really a file and not a directory?
     return check_file.exists() && check_file.isFile();
@@ -32,10 +38,11 @@ Settings::Settings()
 
 void Settings::setSettingsPath(const QString path)
 {
-    if(path == nullptr)
+    if(path.isEmpty())
         qCritical() << "Settings path not defined? This is unpossible!";
 
-    m_settings_path = path;
+    m_settings_path = getSEGSDir() + QDir::separator() + path;
+    qCDebug(logSettings) << "Settings Path" << m_settings_path;
 }
 
 QString Settings::getSettingsPath()
@@ -44,6 +51,54 @@ QString Settings::getSettingsPath()
         setSettingsPath("settings.cfg"); // set default path to "settings.cfg"
 
     return m_settings_path;
+}
+
+void Settings::setSEGSDir()
+{
+    // Get the current SEGS directory. This library is shared
+    // by dbtool and others, so make sure we're in the correct
+    // working directory
+    QDir curdir(QDir::current());
+    qCDebug(logSettings) << "Settings Dir" << curdir.absolutePath();
+
+    // if called from utilities, move up one directory
+    if(curdir.absolutePath().endsWith("utilities", Qt::CaseInsensitive))
+    {
+        curdir.cdUp();
+        qCDebug(logSettings) << "Modified Dir" << curdir.absolutePath();
+    }
+
+    if(!fileExists(curdir.absolutePath() + QDir::separator() + "segs_server"))
+        qWarning() << "Cannot find SEGS Server!";
+
+    m_segs_dir = curdir.absolutePath();
+}
+
+QString Settings::getSEGSDir()
+{
+    // if m_segs_dir is not empty, we've set it, return that instead
+    if(m_segs_dir.isEmpty())
+        setSEGSDir();
+
+    return m_segs_dir;
+}
+
+QString Settings::getSettingsTplPath()
+{
+    QDir curdir(getSEGSDir()); // Get the SEGS working directory
+    if(!fileExists(curdir.absolutePath() + QDir::separator() + m_default_settings_path))
+        qWarning() << "Cannot find" << m_default_settings_path;
+
+    return curdir.absolutePath() + QDir::separator() + m_default_settings_path;
+}
+
+QString Settings::getDefaultDirPath()
+{
+    QDir curdir(getSEGSDir()); // Get the SEGS working directory
+    if(!QDir(curdir.absolutePath() + QDir::separator() + m_default_tpl_dir).exists())
+        qWarning() << "Cannot find directory" << m_default_tpl_dir;
+
+    return curdir.absolutePath() + QDir::separator() + m_default_tpl_dir;
 }
 
 void Settings::createSettingsFile()
@@ -58,34 +113,9 @@ void Settings::createSettingsFile()
             return;
         }
 
-        QTextStream header(&sfile);
-        header << "##############################################################"
-                 << "\n#    SEGS configuration file."
-                 << "\n#"
-                 << "\n#    listen_addr values below should contain the IP the"
-                 << "\n#      clients will connect to."
-                 << "\n#"
-                 << "\n#    location_addr values below should contain the IP the"
-                 << "\n#      clients will receive data from."
-                 << "\n#"
-                 << "\n#    Both values are set to 127.0.0.1 by default but should"
-                 << "\n#      be set to your local IP address on the network"
-                 << "\n#      for example: 10.0.0.2"
-                 << "\n#"
-                 << "\n#    Default ports are listed below:"
-                 << "\n#      AccountDatabase db_port:		5432"
-                 << "\n#      CharacterDatabase db_port:	5432"
-                 << "\n#      AuthServer location_addr:		2106"
-                 << "\n#      GameServer listen_addr:		7002"
-                 << "\n#      GameServer location_addr:     7002"
-                 << "\n#      MapServer listen_addr:		7003"
-                 << "\n#      MapServer location_addr:		7003"
-                 << "\n#"
-                 << "\n##############################################################";
-
-        sfile.close();
-
-        setDefaultSettings();
+        // QSettings setValue() methods delete all file comments, it's better to
+        // simply copy the template over to our destination directory.
+        QFile::copy(Settings::getSettingsTplPath(), Settings::getSettingsPath());
 
         return;
     }

@@ -204,32 +204,37 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     log_buffer[0] = 0;
     category_text[0] = 0;
     if(strcmp(context.category,"default")!=0)
-        snprintf(category_text,sizeof(category_text),"[%s]",context.category);
+        snprintf(category_text, sizeof(category_text), "[%s]", context.category);
     QFile segs_log_target;
     segs_log_target.setFileName("output.log");
     if(!segs_log_target.open(QFile::WriteOnly | QFile::Append))
     {
         fprintf(stderr,"Failed to open log file in write mode, will procede with console only logging");
     }
-    QByteArray localMsg = msg.toLocal8Bit();
 
+    // if this log file has gotten too big, clear it. Issue #602
+    if(segs_log_target.size() > 500000) // 0.5mb seems sufficient?
+        segs_log_target.resize(0);
+
+    QByteArray localMsg = msg.toLocal8Bit();
     switch (type)
     {
         case QtDebugMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"%sDebug   : %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "%sDebug   : %s\n", category_text, localMsg.constData());
             break;
         case QtInfoMsg:
             // no prefix or category for informational messages, as these are end-user facing
-            snprintf(log_buffer,sizeof(log_buffer),"%s\n",localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "%s\n", localMsg.constData());
             break;
         case QtWarningMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"%sWarning : %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "%sWarning : %s\n", category_text, localMsg.constData());
             break;
         case QtCriticalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"%sCritical: %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "%sCritical: %s\n", category_text, localMsg.constData());
             break;
         case QtFatalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"%sFatal: %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "%sFatal: %s\n", category_text, localMsg.constData());
+            break;
     }
     fprintf(stdout, "%s", log_buffer);
     fflush(stdout);
@@ -279,12 +284,11 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ServerStopper st(SIGINT); // it'll register itself with current reactor, and shut it down on sigint
     ACE_Reactor::instance()->register_handler(interesting_signals,&st);
 
-    // Print out startup copyright messages
-
+    // Print out today's date and startup copyright messages
+    qInfo().noquote() << endl << endl;
+    qInfo().noquote() << QDateTime::currentDateTime().toString() << endl;
     qInfo().noquote() << VersionInfo::getCopyright();
     qInfo().noquote() << VersionInfo::getAuthVersion();
-
-    qInfo().noquote() << "main";
 
     // Create websocket jsonrpc admin interface
     startWebSocketServer();

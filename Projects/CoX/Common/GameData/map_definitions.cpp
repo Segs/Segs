@@ -64,8 +64,8 @@ uint32_t getMapIndex(const QString &map_name)
     }
 
     // log a warning because this part of the code is called when things went wrong
-    qWarning() << "No matching map name in g_defined_map_datas to sent map name."
-               << "Returning Outbreak's map index as default...";
+    qWarning() << "No match for \"" << map_name << "\" in g_defined_map_datas."
+               << "Returning Outbreak's map data as default...";
 
     // defaulting to Outbreak's map name
     return 0;

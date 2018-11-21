@@ -341,7 +341,7 @@ void SettingsDialog::set_default_values()
     ui->map_listen_port->setValue(7003);
     ui->map_location_ip->setText("127.0.0.1");
     ui->map_location_port->setValue(7003);
-    ui->map_location->setText("DefaultMapInstances");
+    ui->map_location->setText("maps");
     ui->map_player_fade_in->setValue(380.0);
     ui->map_motd_timer->setValue(120.0);
     ui->time_to_afk_spin->setValue(300);
