@@ -1297,6 +1297,61 @@ void addSouvenir(MapClientSession &cl, Souvenir souvenir)
     cl.addCommand<SouvenirListHeaders>(souvenir_list);
 }
 
+void setEndurance(MapClientSession &sess, float end)
+{
+    setEnd(*sess.m_ent->m_char, end);
+}
+
+void setHp(MapClientSession &sess, float hp)
+{
+    setHP(*sess.m_ent->m_char, hp);
+}
+
+void setXp(MapClientSession &sess, int xp)
+{
+    setXP(*sess.m_ent->m_char, xp);
+}
+
+void setXpDebt(MapClientSession &sess, int debt)
+{
+    setDebt(*sess.m_ent->m_char, debt);
+}
+
+void setInfluence(MapClientSession &sess, int inf)
+{
+    setInf(*sess.m_ent->m_char, inf);
+}
+
+void removeContact(MapClientSession &sess, Contact contact)
+{
+    vContactList contacts = sess.m_ent->m_char->m_char_data.m_contacts;
+
+    bool found = false;
+    int count = 0;
+    for (Contact & c : contacts)
+    {
+        if(c.m_npc_id == contact.m_npc_id)
+        {
+            found = true;
+            break;
+        }
+        ++count;
+    }
+
+    if(!found)
+    {
+        qCDebug(logScripts) << "Contact " << contact.m_name << " not found";
+    }
+    else
+    {
+        contacts.erase(contacts.begin() + count);
+        sess.m_ent->m_char->m_char_data.m_contacts = contacts;
+        markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
+        sess.addCommand<ContactStatusList>(contacts);
+    }
+
+}
+
 void revive(MapClientSession *cl, int revive_lvl)
 {
     setStateMode(*cl->m_ent, ClientStates::RESURRECT);

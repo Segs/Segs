@@ -1,10 +1,11 @@
+-- ATLAS PARK 
 printDebug('luaBot script loading...')
 
 local LuaBot = {}
 LuaBot.spawned = false;
 LuaBot.name = 'LuaBot'
 LuaBot.model = 'Jumpbot_02'
-LuaBot.location = vec3.new(-90, 0, 170)
+LuaBot.location = vec3.new(107, 16, -215)
 LuaBot.variation = 1
 LuaBot.expected = false
 LuaBot.entityId = nil
@@ -29,21 +30,6 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
         }
     }
 
-    LuaBot.contactDialogs[9] = {
-        message = string.format([[<img src="npc:1144" align="left"><br>Ah %s, I see you have the test bit.<br>
-                    Please hand the bit to me now.<br>]], heroName),
-        buttons = {
-            button01 = {"Deliver Bit","CONTACTLINK_MISSIONS"},
-            --button02 = {"Mapmenu","CONTACTLINK_MAIN"},
-            --button03 = {"Update Task Name","CONTACTLINK_MISSIONS"}, 
-            --button04 = {"Set Task to another zone","CONTACTLINK_LONGMISSION"} 
-            --button05 = {"Complete Task","CONTACTLINK_SHORTMISSION"} ,
-            --button06 = {"Remove Task","CONTACTLINK_ACCEPTLONG"} ,
-            button07 = {"",""},
-            button08 = {"Leave","CONTACTLINK_BYE"}
-        }
-    }
-
 end
 
 LuaBot.startDialogs = function()
@@ -51,12 +37,12 @@ LuaBot.startDialogs = function()
     
     local contactStatus = FindContactByName("LuaBot")
     if(contactStatus ~= false and contactStatus.currentStanding < 6) then
-        contactStatus.currentStanding = 0
-        contactStatus.locationDescription = "Outbreak"
+        contactStatus.currentStanding = 0;
+        contactStatus.locationDescription = "Atlas Park"
         contactStatus.location = Destination.new()
-        contactStatus.location.location = vec3.new(-90, 0, 170)
-        contactStatus.location.name = "Outbreak"
-        contactStatus.location.mapName = "Outbreak"
+        contactStatus.location.location = vec3.new(107, 16, -215)
+        contactStatus.location.name = "Atlas Park"
+        contactStatus.location.mapName =  "Atlas Park"
         Player.AddUpdateContact(contactStatus)
     elseif(contactStatus == false) then
         contactStatus = contacts.LuaBot.CreateContact()
@@ -65,11 +51,11 @@ LuaBot.startDialogs = function()
 
     local testTask = FindTaskByTaskIdx(0);
     if(contactStatus.currentStanding == 6 and testTask ~= false) then -- Test bit
-        if(testTask.location.mapName == "Outbreak") then
+        if(testTask.location.mapName == "Atlas Park") then
             MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[9].message, contacts.LuaBot.contactDialogs[9].buttons)
         end
     elseif (contactStatus.currentStanding == 7 and testTask ~= false) then -- return after test bit
-        if(testTask.location.mapName == "Outbreak" and testTask.isComplete) then
+        if(testTask.location.mapName == "Atlas Park" and testTask.isComplete) then
             MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[11].message, contacts.LuaBot.contactDialogs[11].buttons)
         else
             MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[10].message, contacts.LuaBot.contactDialogs[10].buttons)
@@ -251,8 +237,8 @@ LuaBot.callback = function(id)
                 local task = Task.new() -- empty task
                 Player.AddUpdateTask(task)
             elseif (id == 8) then
-                -- Task to LuaBot in Atlas
-                testTask = contacts.LuaBot.CreateAtlasTask()
+                -- Task to LuaBot in Outbreak
+                testTask = contacts.LuaBot.CreateOutbreakTask()
                 contactStatus.currentStanding = 6
                 Player.AddUpdateTask(testTask)
                 MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[8].message, contacts.LuaBot.contactDialogs[8].buttons)
@@ -295,7 +281,7 @@ LuaBot.callback = function(id)
             elseif (id == 4) then -- deliver bit
                 contactStatus.currentStanding = 7;
                 testTask.isComplete = true;
-                testTask.location.mapName = "Atlas Park"; -- set return location
+                testTask.location.mapName = "Outbreak"; -- set return
                 testTask.state = "Return to LuaBot";
                 Player.AddUpdateTask(testTask);
                 MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[10].message, contacts.LuaBot.contactDialogs[10].buttons)
@@ -328,11 +314,11 @@ LuaBot.CreateContact = function()
     contact.npcId = 1144
     contact.hasLocation = true
     contact.taskIndex = 0
-    contact.locationDescription = "Outbreak"
+    contact.locationDescription = "Atlas Park"
     contact.location = Destination.new()
-    contact.location.location = vec3.new(-90, 0, 170)
-    contact.location.name = "Outbreak"
-    contact.location.mapName =  "Outbreak"
+    contact.location.location = vec3.new(107, 16, -215)
+    contact.location.name = "Atlas Park"
+    contact.location.mapName =  "Atlas Park"
     contact.confidantThreshold = 2
     contact.friendThreshold = 4
     contact.completeThreshold = 6
@@ -349,11 +335,11 @@ LuaBot.CreateTestContact = function()
     contact.npcId = 1143
     contact.hasLocation = true
     contact.taskIndex = 1
-    contact.locationDescription = "Outbreak"
+    contact.locationDescription = "Atlas Park"
     contact.location = Destination.new()
-    contact.location.location = vec3.new(-90, 0, 170)
-    contact.location.name = "Outbreak"
-    contact.location.mapName =  "Outbreak"
+    contact.location.location = vec3.new(107, 16, -215)
+    contact.location.name = "Atlas Park"
+    contact.location.mapName =  "Atlas Park"
     contact.confidantThreshold = 3
     contact.friendThreshold = 5
     contact.completeThreshold = 7
@@ -387,13 +373,13 @@ LuaBot.CreateTask = function()
     
 end
  
-LuaBot.CreateAtlasTask = function()
+LuaBot.CreateOutbreakTask = function()
     local task = Task.new()
     task.dbId = 1 -- 1939 - 200
     task.taskIdx = 0
-    task.description = "Deliver Bit to LuaBot in Atlas Park"
+    task.description = "Deliver Bit to LuaBot in Outbreak"
     task.owner = "LuaBot"
-    task.detail = "LuaBot in Outbreak requests you to deliver a test bit to LuaBot in Atlas Park. Use the /mapmenu or the mapmenu in LuaBot's contact dialog to travel."
+    task.detail = "LuaBot in Atlas Park requests you to deliver a test bit to LuaBot in Outbreak. Use the /mapmenu or the mapmenu in LuaBot's contact dialog to travel."
     task.state = ""
     task.inProgressMaybe = true
     task.isComplete = false
@@ -405,8 +391,8 @@ LuaBot.CreateAtlasTask = function()
     task.boardTrain = true
     task.location = Destination.new()
     task.location.location = vec3.new(112, 16, -216)
-    task.location.name  = "City_01_01"
-    task.location.mapName = "Atlas Park"
+    task.location.name  = "City_00_01"
+    task.location.mapName = "Outbreak"
 
     return task
 end
@@ -489,7 +475,7 @@ end
             button04 = {"Set Task to another zone","CONTACTLINK_LONGMISSION"} , -- Test mission complete sounds?
             button05 = {"Complete Task","CONTACTLINK_SHORTMISSION"} ,
             button06 = {"Remove Task","CONTACTLINK_ACCEPTLONG"} ,
-            button07 = {"Task to Atlas Park","CONTACTLINK_ACCEPTSHORT"},
+            button07 = {"Task to Outbreak","CONTACTLINK_ACCEPTSHORT"},
             button08 = {"Back","CONTACTLINK_INTRODUCE"}
         }
     } 
@@ -511,7 +497,7 @@ end
 
     LuaBot.contactDialogs[8] = {
         message = [[<img src="npc:1144" align="left"><br>Thank you for accepting this test task.<br>
-                    Please deliver the bit to my counter part in Atlas Park.<br><br>
+                    Please deliver the bit to my counter part in Outbreak.<br><br>
                     <color #2189b9>You can use the mapmanu slash command or the mapmenu option in the list.</color>]],
         buttons = {
             button01 = {"Cancel Mission","CONTACTLINK_HELLO"},
@@ -525,7 +511,20 @@ end
         }
     }
 
-
+    LuaBot.contactDialogs[9] = {
+        message = [[<img src="npc:1144" align="left"><br>Ah, I see you have the test bit.<br>
+                    Please hand the bit to me now.<br>]],
+        buttons = {
+            button01 = {"Deliver Bit","CONTACTLINK_MISSIONS"},
+            --button02 = {"Mapmenu","CONTACTLINK_MAIN"},
+            --button03 = {"Update Task Name","CONTACTLINK_MISSIONS"}, 
+            --button04 = {"Set Task to another zone","CONTACTLINK_LONGMISSION"} 
+            --button05 = {"Complete Task","CONTACTLINK_SHORTMISSION"} ,
+            --button06 = {"Remove Task","CONTACTLINK_ACCEPTLONG"} ,
+            button07 = {"",""},
+            button08 = {"Leave","CONTACTLINK_BYE"}
+        }
+    }
 
     LuaBot.contactDialogs[10] = {
         message = [[<img src="npc:1144" align="left"><br>Thank you for delivering this bit.<br>

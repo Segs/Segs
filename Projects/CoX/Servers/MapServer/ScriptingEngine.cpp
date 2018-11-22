@@ -299,7 +299,7 @@ void ScriptingEngine::registerTypes()
         "faceLocation",  sendFaceLocation,
         "addUpdateContactList", updateContactStatusList,
         "updateTaskDetail", updateTaskDetail,
-        "addListOfTasks", [](MapClientSession *cl, sol::as_table_t<std::vector<Task>> task_list)
+        /*"addListOfTasks", [](MapClientSession *cl, sol::as_table_t<std::vector<Task>> task_list)
         {
             const auto& listMap = task_list.source;
             vTaskList listToSend;
@@ -308,16 +308,16 @@ void ScriptingEngine::registerTypes()
                 listToSend.push_back(kvp);
             }
             addListOfTasks(cl, listToSend);
-        },
+        },*/
         "addTask", sendUpdateTaskStatusList,
         "removeTask", removeTask,
         "selectTask", selectTask,
         "setWaypoint", sendWaypoint,
-        "setHp", setHP,
-        "setEnd", setEnd,
-        "setXp", setXP,
-        "setDebt", setDebt,
-        "setInf", setInf,
+        "setHp", setHp,
+        "setEnd", setEndurance,
+        "setXp", setXp,
+        "setDebt", setXpDebt,
+        "setInf", setInfluence,
         "levelUp", playerTrain,
         "setTitle", [](MapClientSession *cl, const char* title)
         {
@@ -327,6 +327,7 @@ void ScriptingEngine::registerTypes()
         "giveTempPower", giveTempPower,
         "addClue", addClue,
         "addSouvenir", addSouvenir,
+        "removeContact", removeContact,
         "setActiveDialogCallback", [](MapClientSession *cl, std::function<void(int)> callback)
         {
            cl->m_ent->setActiveDialogCallback(callback);
@@ -335,7 +336,7 @@ void ScriptingEngine::registerTypes()
         "respawn", respawn
 
     );
-/*
+
     m_private->m_lua.new_usertype<Entity>( "Entity",
         "new",    sol::no_constructor, // not constructible from the script side.
         sol::meta_function::garbage_collect, sol::destructor( destruction_is_an_error<Entity> ),
@@ -344,7 +345,7 @@ void ScriptingEngine::registerTypes()
     );
     m_private->m_lua.new_usertype<MapSceneGraph>( "MapSceneGraph",
         "new", sol::no_constructor // The client links are not constructible from the script side.
-    );*/
+    );
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
     m_private->m_lua["printDebug"] = [](const char* msg)
     {
@@ -541,6 +542,18 @@ bool ScriptingEngine::setIncludeDir(const QString &path)
     }
     m_private->m_restricted_include_dir = fi.absoluteFilePath();
     return true;
+}
+
+void ScriptingEngine::updateClientContext(MapClientSession * client)
+{
+    m_private->m_lua["client"] = client;
+    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
+    m_private->m_lua["heroName"] = qPrintable(client->m_name);
+    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    {
+        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+    }
 }
 
 //! @}

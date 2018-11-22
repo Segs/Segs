@@ -21,7 +21,7 @@ local tempPowers = {
 
 Player = {}
 function Player.SetHp(hp)
-    Character.setHp(client.m_ent.m_char, hp)
+    Character.setHp(client, hp)
 end
 
 function Player.GiveHp (hp)
@@ -29,7 +29,7 @@ function Player.GiveHp (hp)
 end
 
 function Player.SetEnd(endurance) -- end is keyword in Lua
-    Character.setEnd(client.m_ent.m_char, endurance)
+    Character.setEnd(client, endurance)
 end
 
 function Player.GiveEnd(endurance)
@@ -37,7 +37,7 @@ function Player.GiveEnd(endurance)
 end
 
 function Player.SetXp(xp)
-    Character.setXp(client.m_ent.m_char, xp)
+    Character.setXp(client, xp)
 end
 
 function Player.GiveXp(xp)
@@ -45,7 +45,7 @@ function Player.GiveXp(xp)
 end
 
 function Player.SetDebt(debt)
-    Character.setDebt(client.m_ent.m_char, debt)
+    Character.setDebt(client, debt)
 end
 
 function Player.GiveDebt(debt)
@@ -53,7 +53,7 @@ function Player.GiveDebt(debt)
 end
 
 function Player.SetInf(inf)
-    Character.setInf(client.m_ent.m_char, inf)
+    Character.setInf(client, inf)
 end
 
 function Player.GiveInf(inf)
@@ -62,6 +62,10 @@ end
 
 function Player.AddUpdateContact(contact)
     Character.addUpdateContactList(client, contact)
+end
+
+function Player.RemoveContact(contact)
+    Character.removeContact(client, contact)
 end
 
 function Player.AddUpdateTask(task)
@@ -141,34 +145,7 @@ function round (num, numDecimalPlaces)
     return tonumber(string.format("%." .. (numDecimalPlaces or 0) .. "f", num))
   end
 
-function FindContactByName(item)
-    local contact = false
-    printDebug("Item to find: " .. item)
-   for key, value in pairs(vContacts) do
-        printDebug(value.name)
-        if value.name == item then
-            contact = value
-            break
-        end
-    end
-    return contact
-end
 
-function FindContactByNpcId (npcId)
-    local contact = false
-    printDebug("NpcId to find: " .. npcId)
-    if vContacts ~= nil then
-        for key, value in pairs(vContacts) do
-            printDebug(tostring(value.npcId))
-            if value.npcId == npcId then
-                printDebug("NpcId found")
-                contact = value
-             break
-             end
-        end
-    end
-    return contact
-end
 
 function FindTaskByTaskIdx (taskIdx)
     local task = false
@@ -203,6 +180,7 @@ function UpdateTasksForZone(zone)
         end
     end
 end
+
 
 
 printDebug('Finished Loading global.lua')

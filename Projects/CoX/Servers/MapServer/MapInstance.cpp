@@ -181,10 +181,12 @@ void MapInstance::load_map_lua()
     QStringList script_paths = {
         "scripts/global.lua", // global helper script
         // per zone scripts
+        m_data_path+'/'+"contacts.lua",
         m_data_path+'/'+"locations.lua",
         m_data_path+'/'+"plaques.lua",
         m_data_path+'/'+"entities.lua",
         m_data_path+'/'+"missions.lua"
+
     };
 
     for(const QString &path : script_paths)
@@ -2576,10 +2578,14 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
 
     if(session.m_ent->m_active_dialog != NULL)
+    {
+        m_scripting_interface->updateClientContext(&session);
         session.m_ent->m_active_dialog(ev->button_id);
+    }
     else
+    {
         auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
-
+    }
 }
 
 void MapInstance::on_move_enhancement(MoveEnhancement *ev)
