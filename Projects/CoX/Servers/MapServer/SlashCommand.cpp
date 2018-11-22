@@ -2157,15 +2157,23 @@ void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
+    QString message;
+    int first_space = cmd.indexOf(' ');
+    int second_space = cmd.indexOf(' ',first_space+1);
 
-    if(parts.size() < 2)
+    if(second_space == -1)
     {
-        qCDebug(logSlashCommand) << "Bad invocation: " << cmd;
-        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + cmd, sess);
+        message = "ForceLogout reqires a logout message. /forceLogout 'HeroName' Bad Hero!";
+        qCDebug(logSlashCommand) << message;
+        sendInfoMessage(MessageChannel::USER_ERROR, message, sess);
         return;
     }
+    else
+    {
+        message = cmd.mid(second_space + 1);
+    }
 
-    sendForceLogout(sess, parts[1].toUtf8(), parts[2].toUtf8());
+    sendForceLogout(sess, parts[1].toUtf8(), message.toUtf8());
 }
 
 } // end of anonymous namespace
