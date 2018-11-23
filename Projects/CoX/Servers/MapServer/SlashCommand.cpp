@@ -137,6 +137,7 @@ void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetSpecialTitle(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MOTD(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Invite(const QString &cmd, MapClientSession &sess);
@@ -223,7 +224,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
-    {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
+    {{"mapmove", "movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
@@ -253,6 +254,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setCustomTitles"},"Set your titles manually", cmdHandler_SetCustomTitles, 1},
     {{"setSpecialTitle"},"Set your Special title", cmdHandler_SetSpecialTitle, 1},
     {{"stuck"},"Free yourself if your character gets stuck", cmdHandler_Stuck, 1},
+    {{"gotospawn","setspawn"},"Teleport to a SpawnLocation", cmdHandler_SetSpawnLocation, 1},
     {{"lfg"},"Toggle looking for group status ", cmdHandler_LFG, 1},
     {{"motd"},"View the server MOTD", cmdHandler_MOTD, 1},
     {{"i","invite"}, "Invite player to team", cmdHandler_Invite, 1},
@@ -1490,6 +1492,17 @@ void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
+}
+
+void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess)
+{
+    const QString spawnLocation = getCommandParameter(cmd);
+    if(spawnLocation.isEmpty())
+    {
+		// No SpawnLocation given, bail.
+        return;
+    }
+	sess.m_current_map->setSpawnLocation(*sess.m_ent, spawnLocation);
 }
 
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess)

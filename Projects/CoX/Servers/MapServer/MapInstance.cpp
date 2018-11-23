@@ -2405,6 +2405,27 @@ void MapInstance::setPlayerSpawn(Entity &e)
     forceOrientation(e, spawn_pyr);
 }
 
+// Teleport to a specific SpawnLocation; do nothing if the SpawnLocation is not found.
+void MapInstance::setSpawnLocation(Entity &e, const QString &spawnLocation)
+{
+    if(!m_all_spawners.empty())
+    {
+        if(m_all_spawners.contains(spawnLocation))
+		{
+            glm::mat4 v = m_all_spawners.values(spawnLocation)[rand() % m_all_spawners.values(spawnLocation).size()];
+			
+			// Position
+			glm::vec3 spawn_pos = glm::vec3(v[3]);
+
+			// Orientation
+			auto valquat = glm::quat_cast(v);
+			glm::vec3 spawn_pyr = toCoH_YPR(valquat);
+			forcePosition(e, spawn_pos);
+			forceOrientation(e, spawn_pyr);
+        }
+    }
+}
+
 glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
 {
     // In the future this should get the closet NAV or NAVCMBT
