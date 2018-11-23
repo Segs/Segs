@@ -1304,6 +1304,7 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     int variation = 0;
+    QString align = "none";
 
     if(cmd.contains('"')) // assume /addNpc "A guy in a hat" 1
     {
@@ -1325,14 +1326,19 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     if(parts.size()<2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
-        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+        sendInfoMessage(MessageChannel::USER_ERROR, "Addnpc requires a valid npc name, optionally followed by a varaition number, optionally followed by an alignment (hero, villian, both, none)"+cmd, sess);
         return;
     }
 
     QString name = parts[1].toString();
     glm::vec3 offset = glm::vec3 {2,0,1};
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos + offset;
-    addNpc(sess, name, gm_loc, variation, name);
+
+    if(parts.size()>3) // assume /addNpc Monsterifier 1 hero
+        align = parts[3].toString();
+
+    addNpc(sess, name, gm_loc, variation, name, align);
+
 }
 
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)

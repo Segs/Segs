@@ -505,7 +505,7 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temppower->pAttribMod.push_back(temp);
     temp.Aspect = AttribMod_Aspect::Absolute;
 
-    temp.name = "speed_boost";
+    temp.name = "run_speed";
     temppower = editable_power_tpl(26,0,6);    // sprint
     temppower->pAttribMod.push_back(temp);
     temppower = editable_power_tpl(26,0,1);    // powerslide
@@ -518,11 +518,17 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temp.Scale = 0.5;
     temppower = editable_power_tpl(28,1,0);    // hover
     temppower->pAttribMod.push_back(temp);
+    temppower = editable_power_tpl(28,9,2);    // teleport
+    temppower->pAttribMod.push_back(temp);
     temp.Scale = 5.0;
     temppower = editable_power_tpl(28,1,2);    // flight
     temppower->pAttribMod.push_back(temp);
     temp.Duration = 4.0;
     temppower = editable_power_tpl(28,1,3);    // group flight
+    temppower->pAttribMod.push_back(temp);
+    temp.Duration = 1.0;
+    temp.name = "flight_speed";
+    temppower = editable_power_tpl(28,1,2);    // flight
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "teleport";
@@ -536,7 +542,6 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temppower->pAttribMod.push_back(temp);
 
     temp.name = "defense";
-    temp.Duration = 1.0;
     temppower = editable_power_tpl(28,1,0);     //hover
     temppower->pAttribMod.push_back(temp);
 

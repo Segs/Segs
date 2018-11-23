@@ -2305,7 +2305,7 @@ void MapInstance::on_activate_power(ActivatePower *ev)
         return;
     }
 
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
+    checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
 }
 
 void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
@@ -2327,7 +2327,7 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     if ((powtpl.EntsAffected[0] == StoredEntEnum::Caster ))//powtpl.Target == StoredEntEnum::Teleport &&
         tgt_idx = session.m_ent->m_idx;
     session.m_ent->m_target_loc = ev->location;
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
+    checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
     sendFaceLocation(session, ev->location);
 }
 

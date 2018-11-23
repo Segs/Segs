@@ -159,6 +159,7 @@ public:
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_supergroup        = true;
         bool                m_has_team              = false;
+        bool                m_is_activating         = false;
         Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         TradePtr            m_trade;
         EntityData          m_entity_data;

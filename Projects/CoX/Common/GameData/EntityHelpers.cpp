@@ -239,7 +239,7 @@ void modifyAttrib(Entity &e, QString name, float value)
         setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
                  e.m_char->m_char_data.m_current_attribs.m_SpeedFlying);
     }
-    else if (name == "speed_boost")
+    else if (name == "run_speed")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedRunning += value;
         setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
@@ -247,11 +247,15 @@ void modifyAttrib(Entity &e, QString name, float value)
     }
     else if (name == "flight")
     {
-        e.m_char->m_char_data.m_current_attribs.m_SpeedFlying += value;
-        if (e.m_char->m_char_data.m_current_attribs.m_SpeedFlying > 1)
+        e.m_char->m_char_data.m_current_attribs.m_is_flying += value;
+        if (e.m_char->m_char_data.m_current_attribs.m_is_flying > 0)
             e.m_motion_state.m_is_flying = true;
         else
             e.m_motion_state.m_is_flying = false;
+    }
+    else if (name == "flight_speed")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_SpeedFlying += value;
         setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
                  e.m_char->m_char_data.m_current_attribs.m_SpeedFlying);
     }

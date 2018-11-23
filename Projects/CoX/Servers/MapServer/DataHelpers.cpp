@@ -582,19 +582,17 @@ void sendDoorAnimExit(MapClientSession &sess, bool force_move)
  * usePower and increaseLevel here to provide access to
  * both Entity and sendInfoMessage
  */
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)//  ,int32_t tgt_id
+void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)//this is called when you first click a power, sends error messages
 {
     QString from_msg, to_msg;
     CharacterPower * ppower = nullptr;
 
     ppower = getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
     const Power_Data powtpl = ppower->getPowerTemplate();
-
-    if(ent.m_char->getHealth() == 0.0f && powtpl.CastableAfterDeath == 0)   //Allows self rez
-        return;                                                             // no error message
     if(ppower == nullptr || powtpl.m_Name.isEmpty())
         return;
-
+    if(ent.m_char->getHealth() == 0.0f && powtpl.CastableAfterDeath == 0)   //Allows self rez
+        return;
     if (powtpl.Type == PowerType::Toggle && (ent.m_auto_powers.size() > 0))             //checks if there are active toggles
     {
         for(auto rpow_idx = ent.m_auto_powers.begin(); rpow_idx != ent.m_auto_powers.end();rpow_idx++)
@@ -606,76 +604,6 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
                 return;
             }
         }
-    }
-
-    // Target IDX of -1 is actually SELF
-    if(tgt_idx == -1)
-        tgt_idx = getIdx(ent);
-
-    // Get target and check that it's a valid entity
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
-        return;
-    }
-
-    // Consider if target is valid target or not
-    if(validTarget(ent, ent, powtpl.Target))                //check self targetting first
-    {
-        target_ent = &ent;
-        tgt_idx = ent.m_idx;
-    }
-    else if(!validTarget(*target_ent, ent, powtpl.Target))      //if not self, and iof not select target...
-    {
-        if (ent.m_assist_target_idx != -1)              //try assist target
-            tgt_idx = ent.m_assist_target_idx;
-        else if (target_ent->m_target_idx != -1)        //try target of target
-            tgt_idx = target_ent->m_target_idx;
-
-        Entity *target_ent = getEntity(ent.m_client, tgt_idx);  //try getting a new entity
-
-        if (target_ent == nullptr || !validTarget(*target_ent, ent, powtpl.Target))
-        {
-            from_msg = "Invalid target";
-            sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
-            return;
-        }
-    }                                               // at this point the target is valid
-
-    // Check Range -- TODO: refactor as checkRange() and checkTarget()
-    // Check if the power uses range first
-    if(powtpl.Range != float(0.0))
-    {
-        glm::vec3 senderpos = ent.m_entity_data.m_pos;
-        glm::vec3 recpos = target_ent->m_entity_data.m_pos;
-
-        if(glm::distance(senderpos,recpos) > powtpl.Range)
-        {
-            from_msg = FloatingInfoMsg.find(FloatingMsg_OutOfRange).value();
-            sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
-            return;
-        }
-
-        // Face towards your target
-        sendFaceEntity(*ent.m_client, tgt_idx);
-    }
-
-    // Send PowerStance to client
-    PowerStance pstance;
-    pstance.has_stance = true;
-    pstance.pset_idx = pset_idx;
-    pstance.pow_idx = pow_idx;
-    ent.m_stance = pstance;
-    sendStance(*ent.m_client, pstance);
-
-    // Clear old moves and add TriggeredMove to queue
-    ent.m_triggered_moves.clear();
-    for(auto bits : powtpl.AttackBits)
-    {
-        // TODO: pull from stored FX name and lookup idx
-        // for now, send bits again
-        addTriggeredMove(ent, uint32_t(bits), powtpl.m_AttackFrames, uint32_t(bits));
     }
 
     // Check and set endurance based upon end cost
@@ -690,19 +618,124 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
         sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
         return;
     }
-    if(!ent.m_recharging_powers.empty())    //check if this is already recharging
+    // Target IDX of -1 is actually SELF
+    if(tgt_idx == -1)
+        tgt_idx = getIdx(ent);
+
+    // Get target and check that it's a valid entity
+    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
+    if (!checkPowerTarget(ent, target_ent, tgt_idx, powtpl))
+    {
+            from_msg = "Invalid target";
+            sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
+            return;
+    }                                               // at this point the target is valid
+
+    if (!checkPowerRange(ent, *target_ent, powtpl.Range))
+    {
+        from_msg = FloatingInfoMsg.find(FloatingMsg_OutOfRange).value();
+        sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
+        return;
+    }
+
+    ent.m_is_activating = true;                     // set this after the last check that returns
+    if (!checkPowerRecharge(ent, pset_idx, pow_idx))   //check if this is already recharging
+    {
+        from_msg = FloatingInfoMsg.find(FloatingMsg_Recharging).value();
+        sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
+        ent.m_is_activating = false;        //does not return here, because the queue will wait until the recharge is up
+    }
+    queuePower(ent, pset_idx, pow_idx, tgt_idx, powtpl.TimeToActivate);
+}
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)//  ,int32_t tgt_id     this is called from queues, does not send error messages
+{
+    QString from_msg, to_msg;
+    CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
+    const Power_Data powtpl = ppower->getPowerTemplate();
+    if(tgt_idx == -1)
+        tgt_idx = getIdx(ent);
+    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+    if(ent.m_char->getHealth() == 0.0f && powtpl.CastableAfterDeath == 0)   //Allows self rez
+        return;
+    if (!checkPowerTarget(ent, target_ent, tgt_idx, powtpl))
+        return;
+    if (!checkPowerRange(ent, *target_ent, powtpl.Range))
+        return;
+    if (getEnd(*ent.m_char) < powtpl.EnduranceCost)
+        return;
+    ent.m_is_activating = true;
+    if (!checkPowerRecharge(ent, pset_idx, pow_idx))   //check if this is already recharging
+    {
+        ent.m_is_activating = false;        //does not return here, because the queue will wait until the recharge is up
+    }
+    queuePower(ent, pset_idx, pow_idx, tgt_idx, powtpl.TimeToActivate);     // every check has passed, so queue the power, and wait for it to call the next part
+
+}
+bool checkPowerTarget(Entity &ent, Entity *target_ent, int32_t tgt_idx, Power_Data powtpl)
+{
+
+// Consider if target is valid target or not
+if(validTarget(ent, ent, powtpl.Target))                //check self targetting first
+{
+    target_ent = &ent;
+    tgt_idx = ent.m_idx;
+}
+else if(!validTarget(*target_ent, ent, powtpl.Target))      //if not self, and iof not select target...
+{
+    if (ent.m_assist_target_idx != -1)              //try assist target
+        tgt_idx = ent.m_assist_target_idx;
+    else if (target_ent->m_target_idx != -1)        //try target of target
+        tgt_idx = target_ent->m_target_idx;
+
+    Entity *target_ent = getEntity(ent.m_client, tgt_idx);  //try getting a new entity
+
+    if (target_ent == nullptr || !validTarget(*target_ent, ent, powtpl.Target))
+        return false;
+    }
+return true;
+}
+bool checkPowerRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx)
+{
+    if(!ent.m_recharging_powers.empty())
     {
         for(const QueuedPowers & pow : ent.m_recharging_powers)
         {
             if (pow.m_pow_idxs.m_pow_vec_idx == pow_idx  && pow.m_pow_idxs.m_pset_vec_idx == pset_idx)
             {
-                from_msg = FloatingInfoMsg.find(FloatingMsg_Recharging).value();
-                sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
-                return;
+                return false;
             }
         }
     }
-    queuePower(ent, pset_idx, pow_idx, tgt_idx, powtpl.TimeToActivate);
+    return true;
+}
+bool checkPowerRange(Entity &ent, Entity &target_ent, uint32_t range)
+{
+    if(range != float(0.0))
+        if(glm::distance(ent.m_entity_data.m_pos,target_ent.m_entity_data.m_pos) > range)
+            return false;
+    return true;
+}
+void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int tgt_idx, float time)
+{
+    CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
+    const Power_Data powtpl = ppower->getPowerTemplate();
+
+    QueuedPowers qpowers;
+    qpowers.m_pow_idxs = {pset_idx, pow_idx};
+    qpowers.m_active_state_change   = true;
+    qpowers.m_timer_updated         = true;
+    qpowers.m_activation_state      = true;
+    qpowers.m_tgt_idx               = tgt_idx;
+    qpowers.m_recharge_time         = time;
+    qpowers.m_activate_period       = time;
+    qpowers.m_time_to_activate      = time + 0.2f;
+    ent.m_queued_powers.push_back(qpowers);             // Activation Queue
+    ent.m_char->m_char_data.m_has_updated_powers = true;
 
     if (powtpl.Type == PowerType::Toggle && !powtpl.GroupMembership.empty())    //scan for toggles with the same group
     {
@@ -721,20 +754,6 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
                 ++rpow_idx;
         }
     }
-}
-void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int tgt_idx, float time)
-{
-    QueuedPowers qpowers;           // every check has passed, so queue the power, and wait for it to call the next part
-    qpowers.m_pow_idxs = {pset_idx, pow_idx};
-    qpowers.m_active_state_change   = true;
-    qpowers.m_timer_updated         = true;
-    qpowers.m_activation_state      = true;
-    qpowers.m_tgt_idx               = tgt_idx;
-    qpowers.m_recharge_time         = time;
-    qpowers.m_activate_period       = time;
-    qpowers.m_time_to_activate      = time + 0.2f;
-    ent.m_queued_powers.push_back(qpowers);             // Activation Queue
-    ent.m_char->m_char_data.m_has_updated_powers = true;
 }
 void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time)
 {
@@ -768,7 +787,25 @@ void doPower(Entity &ent, QueuedPowers powerinput)
     ppower = getOwnedPowerByVecIdx(ent, powerinput.m_pow_idxs.m_pset_vec_idx, powerinput.m_pow_idxs.m_pow_vec_idx);
     const Power_Data powtpl = ppower->getPowerTemplate();
 
-    setEnd(*ent.m_char, getEnd(*ent.m_char)-powtpl.EnduranceCost);
+    // Face towards your target
+    sendFaceEntity(*ent.m_client, tgt_idx);
+
+    // Send PowerStance to client
+    PowerStance pstance;
+    pstance.has_stance = true;
+    pstance.pset_idx = powerinput.m_pow_idxs.m_pset_vec_idx;
+    pstance.pow_idx = powerinput.m_pow_idxs.m_pow_vec_idx;
+    ent.m_stance = pstance;
+    sendStance(*ent.m_client, pstance);
+
+    // Clear old moves and add TriggeredMove to queue
+    ent.m_triggered_moves.clear();
+    for(auto bits : powtpl.AttackBits)
+    {
+        // TODO: pull from stored FX name and lookup idx
+        // for now, send bits again
+        addTriggeredMove(ent, uint32_t(bits), powtpl.m_AttackFrames, uint32_t(bits));
+    }
 
     // Queue power
     if (powtpl.Type == PowerType::Click)
@@ -788,6 +825,8 @@ void doPower(Entity &ent, QueuedPowers powerinput)
         ent.m_char->m_char_data.m_reset_powersets = true; // powerset array has changed
     }
     // Update Powers to Client to show Recharging/Timers/Etc in UI
+
+    setEnd(*ent.m_char, getEnd(*ent.m_char)-powtpl.EnduranceCost);
 
     if (powtpl.Radius != 0.0f)           // Only AoE have a radius
     {
@@ -1006,8 +1045,7 @@ bool useInspiration(Entity &ent, uint32_t col, uint32_t row)
         return true;
 
     QStringList revive_names = {"Awaken","Bounce_Back","Restoration",};
-    if (ent.m_char->getHealth() == 0.0f)                    // isdead()?
-        if(!revive_names.contains(insp->m_name, Qt::CaseInsensitive))
+    if ((ent.m_char->getHealth() == 0.0f)xor revive_names.contains(insp->m_name, Qt::CaseInsensitive))
             return false;                                   //only wakies can be used when dead, and can't be used any other time
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
@@ -1051,7 +1089,7 @@ void increaseLevel(Entity &ent)
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 */
-void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name)
+void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name, QString &align)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_name);
@@ -1066,6 +1104,9 @@ void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int varia
     e->m_char->setName(name);
 
     forcePosition(*e, loc);
+
+    setAlignment(*e, align);
+
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
     auto val = sess.m_current_map->m_scripting_interface->callFuncWithClientContext(&sess, "npc_added", e->m_idx);

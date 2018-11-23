@@ -100,6 +100,7 @@ void sendSouvenirList(MapClientSession &sess);
  * usePower and increaseLevel here to provide access to
  * both Entity and sendInfoMessage
  */
+void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx);
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx);
 void doPower(Entity &ent, QueuedPowers powerinput);
 void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int tgt_idx, float time);
@@ -113,11 +114,13 @@ void addBuff(Entity &ent, Buffs &buff);
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void increaseLevel(Entity &ent);
-
+bool checkPowerTarget(Entity &ent, Entity *target_ent, int32_t tgt_idx, Power_Data powtpl);
+bool checkPowerRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx);
+bool checkPowerRange(Entity &ent, Entity &target_ent, uint32_t range);
 /*
  * Lua Functions
  */
-void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name);
+void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name, QString &align);
 void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori);
 void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);

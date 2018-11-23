@@ -263,7 +263,8 @@ void ScriptingEngine::registerTypes()
         {
             QString npc_def_name = QString::fromUtf8(npc_def);
             QString name = QString::fromUtf8(npc_name);
-            addNpc(*cl, npc_def_name, loc, variation, name);
+            QString align = "none";
+            addNpc(*cl, npc_def_name, loc, variation, name, align);
         },
         "addNpcWithOrientation", [](MapClientSession *cl, const char* name, glm::vec3 &loc, int variation, glm::vec3 &ori)
         {
