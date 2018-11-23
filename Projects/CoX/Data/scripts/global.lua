@@ -235,4 +235,14 @@ For contact dialogs, 11 buttons is the max you can have displayed at once.
   spn_hosp_fl3
   ]]
 
+  
+--[[ Revive Levels
+0 = FULL:
+1 = AWAKEN:
+2 = BOUNCE_BACK:
+3 = RESTORATION:
+4 = IMMORTAL_RECOVERY:
+5 = REGEN_REVIVE:
+    ]]
+
   --nocoll 1    No Clip

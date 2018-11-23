@@ -1358,16 +1358,9 @@ void revive(MapClientSession *cl, int revive_lvl)
     revivePlayer(*cl->m_ent, static_cast<ReviveLevel>(revive_lvl));
 }
 
-void respawn(MapClientSession &cl, const char* spawn_type)
+void logSpawnLocations(MapClientSession &cl, const char* spawn_type)
 {
-    qCDebug(logScripts) << "respawn Called";
-
     QString spawn_name = QString::fromUtf8(spawn_type);
-
-    // Spawn player position and PYR
-    //glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
-    //glm::vec3 spawn_pyr = glm::vec3(0.0f, 0.0f, 0.0f);
-
     auto spawners = cl.m_current_map->getSpawners();
 
     if(!spawners.empty())
@@ -1389,10 +1382,48 @@ void respawn(MapClientSession &cl, const char* spawn_type)
     {
         qCDebug(logScripts) << "spawners empty";
     }
+}
 
-    //forcePosition(*e, spawn_pos);
-    //forceOrientation(*e, spawn_pyr);
+void respawn(MapClientSession &cl, const char* spawn_type)
+{
+    qCDebug(logScripts) << "respawn Called";
 
+    QString spawn_name = QString::fromUtf8(spawn_type);
+    Entity *e = cl.m_ent;
+
+    // Spawn player position and PYR
+    glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
+    glm::vec3 spawn_pyr = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    auto spawners = cl.m_current_map->getSpawners();
+
+    if(!spawners.empty())
+    {
+        glm::mat4 v = glm::mat4(1.0f);
+        auto spawn_list = spawners.values(spawn_name);
+        if(!spawn_list.empty())
+        {
+            v = spawn_list[rand() % spawn_list.size()];
+
+            // Position
+            spawn_pos = glm::vec3(v[3]);
+
+            // Orientation
+            auto valquat = glm::quat_cast(v);
+            spawn_pyr = toCoH_YPR(valquat);
+
+            forcePosition(*e, spawn_pos);
+            forceOrientation(*e, spawn_pyr);
+        }
+        else
+        {
+            qCDebug(logScripts) << "spawn_list for " << spawn_name << " is empty.";
+        }
+    }
+    else
+    {
+        qCDebug(logScripts) << "spawners empty";
+    }
 }
 
 //! @}

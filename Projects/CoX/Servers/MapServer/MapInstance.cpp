@@ -1031,7 +1031,8 @@ void MapInstance::on_input_state(RecvInputState *st)
     {
         ent->m_has_input_on_timeframe = true;
         setTarget(*ent, st->m_next_state.m_target_idx);
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
+        //Not needed currently
+        //auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
     }
 
     // Set Orientation

@@ -1,5 +1,10 @@
 printDebug('Loading contacts.lua...')
 
+-- Begin Contact Scripts
+include_lua('luaBot.lua')
+
+-- End Contact scripts
+
 contacts = {}
 
 function SpawnContacts(zone)

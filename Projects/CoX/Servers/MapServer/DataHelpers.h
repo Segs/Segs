@@ -132,4 +132,5 @@ void addClue(MapClientSession &cl, Clue clue);
 void addSouvenir(MapClientSession &cl, Souvenir souvenir);
 void removeContact(MapClientSession &sess, Contact contact);
 void revive(MapClientSession *cl, int revive_lvl);
+void logSpawnLocations(MapClientSession &cl, const char* spawn_type);
 void respawn(MapClientSession &cl, const char* spawn_type);
