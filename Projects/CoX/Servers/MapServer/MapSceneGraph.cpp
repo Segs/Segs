@@ -343,7 +343,7 @@ struct DoorLocator
 QString MapSceneGraph::getNearestDoor(glm::vec3 location) const
 {
     DoorProperties res;
-    res.distance = 10;  // Maximum distance to look for door properties.
+    res.distance = 15;  // Maximum distance to look for door properties.
     res.location = location;
     DoorLocator locator(&res);
 
