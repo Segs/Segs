@@ -2079,57 +2079,34 @@ void MapInstance::on_enter_door(EnterDoor *ev)
 
     QString output_msg = "Door entry request to: " + ev->name;
     if(ev->no_location)
+    {
         qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
-    else
-        qCDebug(logMapXfers).noquote() << output_msg << " loc:" << ev->location.x << ev->location.y << ev->location.z;
-
-    // For now, let's test by making some of the door options random
-    int randNum = std::rand() % 100;
-    if(randNum < 35 || session.m_ent->m_is_using_mapmenu)
-    {
-        // TODO: use location and name to determine where the door goes.
-        // for now, we're using no_location to determine whether or not
-        // ev->name is the map_idx when using /mapmenu currently.
-        if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
-        {
-            uint8_t map_idx = ev->name.toInt();
-            if(!ev->no_location)
-                 map_idx = std::rand() % 23;
-
-             // TODO: change this to not be hacky.
-             // change the map idx if you're trying to load the map you're currently on
-             // this should only ever happen with /movezone commands after doors work correctly.
-             if(map_idx == m_index)
-                 map_idx = (map_idx + 1) % 23;
-             map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
-             session.link()->putq(new MapXferWait(getMapPath(map_idx)));
-        }
-        session.m_ent->m_is_using_mapmenu = false;
-    }
-    else if(randNum < 70)
-    {
-        // Start Door Animation
-        QString anim_name = "RUNIN";
-        glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
-        sendDoorAnimStart(session, ev->location, offset, true, anim_name);
-    }
-    else
-    {
-        QString door_msg = "Knock! Knock!";
+        QString door_msg = "You cannot enter. Door coordinates are unavailable.";
         sendDoorMessage(session, 2, door_msg);
     }
+	else
+    {
+        qCDebug(logMapXfers).noquote() << output_msg << " loc:" << ev->location.x << ev->location.y << ev->location.z;
 
-    /* pseudocode:
-     *  auto door = get_door(ev->name,ev->location);
-     *  if(door and player_can_enter(door)
-     *      doorAnimStart(entry, target);
-     *      process_map_transfer(player, door->targetMap);
-     *      doorAnimsExit();
-     *  else if(door)
-     *      doorMessage(msg);
-     *  else
-     *      error: "not door?"
-     */
+        // Check if any doors in range have the GotoSpawn property.
+        // TODO: if the node also has a GotoMap property, start a map transfer
+        //       and put them in the given SpawnLocation in the target map.
+        QString gotoSpawn = m_map_scenegraph->getNearestDoor(ev->location);
+
+        if (gotoSpawn.isEmpty())
+        {
+            QString door_msg = "You cannot enter.";
+            sendDoorMessage(session, 2, door_msg);
+        }
+        else
+        {
+            // Attempt to send the player to that SpawnLocation in the current map.
+            QString anim_name = "RUNIN";
+            glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
+            sendDoorAnimStart(session, ev->location, offset, true, anim_name);
+            session.m_current_map->setSpawnLocation(*session.m_ent, gotoSpawn);
+        }
+    }
 }
 
 void MapInstance::on_change_stance(ChangeStance * ev)
