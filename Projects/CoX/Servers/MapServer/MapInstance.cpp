@@ -2081,8 +2081,32 @@ void MapInstance::on_enter_door(EnterDoor *ev)
     if(ev->no_location)
     {
         qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
-        QString door_msg = "You cannot enter. Door coordinates are unavailable.";
-        sendDoorMessage(session, 2, door_msg);
+
+        // Doors with no location may be a /mapmenu call.
+        if(session.m_ent->m_is_using_mapmenu)
+        {
+            // ev->name is the map_idx when using /mapmenu
+            if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
+            {
+                uint8_t map_idx = ev->name.toInt();
+                if (map_idx == m_index)
+                {
+                    QString door_msg = "You're already here!";
+                    sendDoorMessage(session, 2, door_msg);
+                }
+                else
+                {
+                    map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
+                    session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+                }
+            }
+            session.m_ent->m_is_using_mapmenu = false;
+        }
+        else
+        {
+            QString door_msg = "Door coordinates unavailable.";
+            sendDoorMessage(session, 2, door_msg);
+        }
     }
 	else
     {
