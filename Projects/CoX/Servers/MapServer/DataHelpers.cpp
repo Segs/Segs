@@ -1127,7 +1127,7 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
             {
                 found = true;
                 qCDebug(logScripts) << "SendUpdateTaskStatusList Updating old task";
-                //contact already in list, update task;
+                //Tast already in list, update task;
                 task_entry_list[i].m_task_list.at(t) = task;
                 break;
             }
@@ -1163,7 +1163,7 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
     src.m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
     qCDebug(logScripts) << "SendUpdateTaskStatusList DB Task list updated";
 
-    //Send contactList to client
+    //Send Task list to client
     src.addCommand<TaskStatusList>(task_entry_list);
     qCDebug(logScripts) << "SendUpdateTaskStatusList List updated";
 }
@@ -1285,6 +1285,33 @@ void addClue(MapClientSession &cl, Clue clue)
     cl.addCommand<ClueList>(clue_list);
 }
 
+void removeClue(MapClientSession &cl, Clue clue)
+{
+    vClueList clue_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list;
+    int count = 0;
+    bool found = false;
+    for (const Clue &c: clue_list)
+    {
+        if(c.m_name == clue.m_name)
+        {
+            found = true;
+            break;
+        }
+        ++count;
+    }
+
+    if(found)
+    {
+        clue_list.erase(clue_list.begin() + count);
+        cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list = clue_list;
+        cl.addCommand<ClueList>(clue_list);
+    }
+    else
+    {
+        qCDebug(logScripts) << "Clue: " << clue.m_name << " not found.";
+    }
+}
+
 void addSouvenir(MapClientSession &cl, Souvenir souvenir)
 {
     vSouvenirList souvenir_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
@@ -1297,29 +1324,32 @@ void addSouvenir(MapClientSession &cl, Souvenir souvenir)
     cl.addCommand<SouvenirListHeaders>(souvenir_list);
 }
 
-void setEndurance(MapClientSession &sess, float end)
+void removeSouvenir(MapClientSession &cl, Souvenir souvenir)
 {
-    setEnd(*sess.m_ent->m_char, end);
-}
+    vSouvenirList souvenir_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
+    int count = 0;
+    bool found = false;
+    for (const Souvenir &s: souvenir_list)
+    {
+        if(s.m_name == souvenir.m_name)
+        {
+            found = true;
+            break;
+        }
+        ++count;
+    }
 
-void setHp(MapClientSession &sess, float hp)
-{
-    setHP(*sess.m_ent->m_char, hp);
-}
+    if(found)
+    {
+        souvenir_list.erase(souvenir_list.begin() + count);
+        cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list = souvenir_list;
+        cl.addCommand<SouvenirListHeaders>(souvenir_list);
+    }
+    else
+    {
+        qCDebug(logScripts) << "Souvenir: " << souvenir.m_name << " not found.";
+    }
 
-void setXp(MapClientSession &sess, int xp)
-{
-    setXP(*sess.m_ent->m_char, xp);
-}
-
-void setXpDebt(MapClientSession &sess, int debt)
-{
-    setDebt(*sess.m_ent->m_char, debt);
-}
-
-void setInfluence(MapClientSession &sess, int inf)
-{
-    setInf(*sess.m_ent->m_char, inf);
 }
 
 void removeContact(MapClientSession &sess, Contact contact)

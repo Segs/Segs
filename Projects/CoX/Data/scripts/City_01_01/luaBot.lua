@@ -14,8 +14,21 @@ LuaBot.contactDialogs = {}
 LuaBot.contacts = {}
 LuaBot.tasks = {}
 
+LuaBot.clue = Clue.new()
+LuaBot.clue.name = "LuaBot Test Clue"
+LuaBot.clue.displayName = "LuaBot Clue"
+LuaBot.clue.detail = "Test clue from LuaBot"
+LuaBot.clue.iconFile = "icon" -- Client file name?
+
+LuaBot.souvenir = Souvenir.new()
+LuaBot.souvenir.name = "LuaBot souvenir"
+LuaBot.souvenir.description = "A Souvenir from LuaBot"
+LuaBot.souvenir.icon = "icon" -- unknown?
+
+
+
 LuaBot.createContactDialogsWithHeroName = function(heroName)
-    contacts.LuaBot.contactDialogs[1] = { 
+    contactsForZone.LuaBot.contactDialogs[1] = { 
         message = string.format([[<img src="npc:1144" align="left">Hello, {HeroName}.....bzzt.....I mean %s. I am LuaBot. Here to assist you in testing the
                 Lua scripting interface.<br><br>Please select an option below to test.]], heroName),
         buttons =  {
@@ -33,9 +46,9 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
 end
 
 LuaBot.startDialogs = function()
-    Player.SetActiveDialogCallback(contacts.LuaBot.callback)
+    Player.SetActiveDialogCallback(contactsForZone.LuaBot.callback)
     
-    local contactStatus = FindContactByName("LuaBot")
+    local contactStatus = Contacts.FindContactByName("LuaBot")
     if(contactStatus ~= false and contactStatus.currentStanding < 6) then
         contactStatus.currentStanding = 0;
         contactStatus.locationDescription = "Atlas Park"
@@ -45,47 +58,47 @@ LuaBot.startDialogs = function()
         contactStatus.location.mapName =  "Atlas Park"
         Player.AddUpdateContact(contactStatus)
     elseif(contactStatus == false) then
-        contactStatus = contacts.LuaBot.CreateContact()
+        contactStatus = contactsForZone.LuaBot.CreateContact()
         Player.AddUpdateContact(contactStatus)
     end
 
-    local testTask = FindTaskByTaskIdx(0);
+    local testTask = Tasks.FindTaskByTaskIdx(0);
     if(contactStatus.currentStanding == 6 and testTask ~= false) then -- Test bit
         if(testTask.location.mapName == "Atlas Park") then
-            MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[9].message, contacts.LuaBot.contactDialogs[9].buttons)
+            MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[9].message, contactsForZone.LuaBot.contactDialogs[9].buttons)
         end
     elseif (contactStatus.currentStanding == 7 and testTask ~= false) then -- return after test bit
         if(testTask.location.mapName == "Atlas Park" and testTask.isComplete) then
-            MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[11].message, contacts.LuaBot.contactDialogs[11].buttons)
+            MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[11].message, contactsForZone.LuaBot.contactDialogs[11].buttons)
         else
-            MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[10].message, contacts.LuaBot.contactDialogs[10].buttons)
+            MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[10].message, contactsForZone.LuaBot.contactDialogs[10].buttons)
+            
         end
     else
-        MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[1].message, contacts.LuaBot.contactDialogs[1].buttons)
+        MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[1].message, contactsForZone.LuaBot.contactDialogs[1].buttons)
     end
 end
 
 LuaBot.callback = function(id)
     printDebug('LuaBotCallback id:' .. tostring(id));
-    local contactStatus = FindContactByName("LuaBot");
-    local testContactStatus = FindContactByName("LuaBot Test");
-    local testTask = FindTaskByTaskIdx(0);
+    local contactStatus = Contacts.FindContactByName("LuaBot");
+    local testContactStatus = Contacts.FindContactByName("LuaBot Test");
+    local testTask = Tasks.FindTaskByTaskIdx(0);
 
     if (contactStatus ~= false) then
-        if(contacts.LuaBot.settingTitle) then -- Title selection buttons trigger dialog_button
+        if(contactsForZone.LuaBot.settingTitle) then -- Title selection buttons trigger dialog_button
             LuaBot.settingTitle = false
             contactStatus.currentStanding = 0
-            if(id == 1) then
-                contactStatus.currentStanding = 2 -- "Choose later" on set title will show previous screen.
-                -- Selecting the title will close the contact window.
+            if(id ~= 0) then
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[1].message, contactsForZone.LuaBot.contactDialogs[1].buttons)
             end
         elseif(contactStatus.currentStanding == 0) then -- using mode to reuse button Ids
             if (id == 1) then
                 printDebug("LuaBot moving to stat mode: " .. tostring(id))
                 contactStatus.currentStanding = 1 -- Player stats
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[2].message, contacts.LuaBot.contactDialogs[2].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[2].message, contactsForZone.LuaBot.contactDialogs[2].buttons)
                 
-                local LuaBotMission = FindTaskByTaskIdx(0)
+                local LuaBotMission = Tasks.FindTaskByTaskIdx(0)
                 if(LuaBotMission ~= false) then
                     local task = Task.new() -- empty task
                     Player.AddUpdateTask(task)
@@ -93,20 +106,20 @@ LuaBot.callback = function(id)
             elseif (id == 2) then
                 printDebug("LuaBot moving to contact mode: " .. tostring(id))
                 contactStatus.currentStanding = 3 -- Contacts
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[4].message, contacts.LuaBot.contactDialogs[4].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[4].message, contactsForZone.LuaBot.contactDialogs[4].buttons)
             elseif (id == 3) then
                 contactStatus.currentStanding = 0
             elseif (id == 4) then
                 printDebug("LuaBot moving to task mode: " .. tostring(id))
                 contactStatus.currentStanding = 4 -- Tasks
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[6].message, contacts.LuaBot.contactDialogs[6].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[6].message, contactsForZone.LuaBot.contactDialogs[6].buttons)
                 Player.AddUpdateContact(contactStatus)
             elseif (id == 5) then
-                MapClientSession.mapMenu(client)
+                MapClientSession.MapMenu()
             elseif (id == 6) then -- Clue/Souvenir
                 printDebug("LuaBot moving to clue/souvenir mode: " .. tostring(id))
                 contactStatus.currentStanding = 5
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[7].message, contacts.LuaBot.contactDialogs[7].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[7].message, contactsForZone.LuaBot.contactDialogs[7].buttons)
             end
            
         elseif (contactStatus.currentStanding == 1) then -- Stats Page 1
@@ -128,8 +141,6 @@ LuaBot.callback = function(id)
             elseif (id == 7) then
                 Player.GiveInf(1000)
             elseif (id == 15) then
-                --Since LevelUp closes all dialogs, we need to reset this
-                contactStatus.currentStanding = 0
                 --Train/Level
                 Player.LevelUp()
             elseif (id == 9) then
@@ -142,11 +153,11 @@ LuaBot.callback = function(id)
             elseif (id == 16 or id == 3) then
                 -- Back
                 contactStatus.currentStanding = 0
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[1].message, contacts.LuaBot.contactDialogs[1].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[1].message, contactsForZone.LuaBot.contactDialogs[1].buttons)
             elseif (id == 18) then
                 --More 
                 contactStatus.currentStanding = 2
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[3].message, contacts.LuaBot.contactDialogs[3].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[3].message, contactsForZone.LuaBot.contactDialogs[3].buttons)
             end
         elseif (contactStatus.currentStanding == 2) then -- Stats Page 2
             if (id == 1) then
@@ -158,20 +169,20 @@ LuaBot.callback = function(id)
             elseif (id == 25) then
                 --Since LevelUp closes all dialogs, we need to reset current status
                 contactStatus.currentStanding = 0
-                Player.SetTitle("You're a hero!")
+                Player.OpenTitleMenu()
                 LuaBot.settingTitle = true
             elseif (id == 5) then
                 Player.GiveRandomTempPower()
             elseif (id == 16 or id == 3) then
                 -- Back
                 contactStatus.currentStanding = 1
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[2].message, contacts.LuaBot.contactDialogs[2].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[2].message, contactsForZone.LuaBot.contactDialogs[2].buttons)
             end
 
         elseif (contactStatus.currentStanding == 3) then -- Contacts
             printDebug("LuaBot in contact mode: " .. tostring(id))
             if (id == 1) then
-                testContactStatus = contacts.LuaBot.CreateTestContact()
+                testContactStatus = contactsForZone.LuaBot.CreateTestContact()
                 Player.AddUpdateContact(testContactStatus)
             elseif (id == 2) then
                 if(testContactStatus ~= false and testContactStatus.currentStanding < 7) then
@@ -202,12 +213,12 @@ LuaBot.callback = function(id)
                 end 
             elseif (id == 9) then
                 contactStatus.currentStanding = 0
-                MapClientSession.contact_dialog(client, LuaBot.contactDialogs[1].message, LuaBot.contactDialogs[1].buttons)
+                MapClientSession.Contact_dialog(LuaBot.contactDialogs[1].message, LuaBot.contactDialogs[1].buttons)
             end
         elseif (contactStatus.currentStanding == 4) then -- Tasks
             printDebug("LuaBot in task mode: " .. tostring(id))
             if (id == 1) then
-                local task = contacts.LuaBot.CreateTask()
+                local task = contactsForZone.LuaBot.CreateTask()
                 Player.AddUpdateTask(task)
             elseif (id == 2) then
                 if(testTask ~= false) then
@@ -238,44 +249,41 @@ LuaBot.callback = function(id)
                 Player.AddUpdateTask(task)
             elseif (id == 8) then
                 -- Task to LuaBot in Outbreak
-                testTask = contacts.LuaBot.CreateOutbreakTask()
+                testTask = contactsForZone.LuaBot.CreateOutbreakTask()
                 contactStatus.currentStanding = 6
                 Player.AddUpdateTask(testTask)
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[8].message, contacts.LuaBot.contactDialogs[8].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[8].message, contactsForZone.LuaBot.contactDialogs[8].buttons)
             elseif (id == 9) then
                 --Back
                 --contacts.LuaBot.CreateTask()
                 contactStatus.currentStanding = 0
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[1].message, contacts.LuaBot.contactDialogs[1].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[1].message, contactsForZone.LuaBot.contactDialogs[1].buttons)
             end
         elseif (contactStatus.currentStanding == 5) then -- Clue/Souvenirs
             if (id == 1) then
                 --add clue
-                local clue = Clue.new()
-                clue.name = "LuaBot Test Clue"
-                clue.displayName = "LuaBot Clue"
-                clue.detail = "Test clue from LuaBot"
-                clue.iconFile = "icon" -- Client file name?
-                Player.AddClue(clue)
+                Player.AddClue(contactsForZone.LuaBot.clue);
+                MapClientSession.SendFloatingInfo(5);
             elseif (id == 2) then
                 --add souvenir
-                local souvenir = Souvenir.new()
-                souvenir.name = "LuaBot souvenir"
-                souvenir.description = "A Souvenir from LuaBot"
-                souvenir.icon = "icon" -- unknown?
-                Player.AddSouvenir(souvenir)
+                Player.AddSouvenir(contactsForZone.LuaBot.souvenir);
+                MapClientSession.SendFloatingInfo(7); -- Inspiration sound.
+            elseif (id == 4) then -- remove Clue
+                Player.RemoveClue(contactsForZone.LuaBot.clue)
+            elseif (id == 5) then -- remove Souvenir
+                Player.RemoveSouvenir(contactsForZone.LuaBot.souvenir);
             elseif (id == 9) then
                 contactStatus.currentStanding = 0
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[1].message, contacts.LuaBot.contactDialogs[1].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[1].message, contactsForZone.LuaBot.contactDialogs[1].buttons)
             end
         elseif (contactStatus.currentStanding == 6) then -- test bit mission
             if(id == 1) then -- cancel misison
                 local task = Task.new() -- empty task
                 Player.AddUpdateTask(task);
                 contactStatus.currentStanding = 4;
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[6].message, contacts.LuaBot.contactDialogs[6].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[6].message, contactsForZone.LuaBot.contactDialogs[6].buttons)
             elseif (id == 2) then -- show mapmenu
-                MapClientSession.mapMenu(client);
+                MapClientSession.MapMenu(client);
             elseif (id == 3) then -- leave
                 --Server handles
             elseif (id == 4) then -- deliver bit
@@ -283,17 +291,18 @@ LuaBot.callback = function(id)
                 testTask.isComplete = true;
                 testTask.location.mapName = "Outbreak"; -- set return
                 testTask.state = "Return to LuaBot";
+                MapClientSession.SendFloatingInfo(8)
                 Player.AddUpdateTask(testTask);
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[10].message, contacts.LuaBot.contactDialogs[10].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[10].message, contactsForZone.LuaBot.contactDialogs[10].buttons)
             end
         elseif (contactStatus.currentStanding == 7) then -- test bit mission complete
             if(id == 1) then -- cancel misison
                 local task = Task.new() -- empty task
                 Player.AddUpdateTask(task);
                 contactStatus.currentStanding = 0;
-                MapClientSession.contact_dialog(client, contacts.LuaBot.contactDialogs[1].message, contacts.LuaBot.contactDialogs[1].buttons)
+                MapClientSession.Contact_dialog(contactsForZone.LuaBot.contactDialogs[1].message, contactsForZone.LuaBot.contactDialogs[1].buttons)
             elseif (id == 2) then -- Mapmenu
-                MapClientSession.mapMenu(client);
+                MapClientSession.MapMenu();
             elseif (id == 3) then -- leave
                 --Server handles
             end
@@ -486,8 +495,8 @@ end
         buttons = {
             button01 = {"Add Clue","CONTACTLINK_HELLO"},
             button02 = {"Add Souvenir","CONTACTLINK_MAIN"},
-            --button03 = {"Update Task Name","CONTACTLINK_MISSIONS"}, 
-            --button04 = {"Set Task to another zone","CONTACTLINK_LONGMISSION"} 
+            button03 = {"Remove Clue","CONTACTLINK_MISSIONS"}, 
+            button04 = {"Remove Souvenir","CONTACTLINK_LONGMISSION"},
             --button05 = {"Complete Task","CONTACTLINK_SHORTMISSION"} ,
             --button06 = {"Remove Task","CONTACTLINK_ACCEPTLONG"} ,
             button07 = {"",""},
@@ -560,7 +569,7 @@ end
 
 
     -- Must be at end
-if(contacts ~= nil) then
-    contacts.LuaBot = LuaBot
+if(contactsForZone ~= nil) then
+    contactsForZone.LuaBot = LuaBot;
 end
 printDebug('luaBot script loaded')

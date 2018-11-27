@@ -13,7 +13,6 @@
 
 #include "DataHelpers.h"
 #include "MessageHelpers.h"
-#include "MapClientSession.h"
 #include "MapInstance.h"
 #include "MapSceneGraph.h"
 
@@ -150,7 +149,9 @@ void ScriptingEngine::registerTypes()
         "friendThreshold", &Contact::m_friend_threshold,
         "completeThreshold", &Contact::m_complete_threshold,
         "canUseCell", &Contact::m_can_use_cell,
-        "contactId", &Contact::m_contact_idx
+        "contactId", &Contact::m_contact_idx,
+        "dialogScreenIdx", &Contact::m_dlg_screen
+
     );
 
     m_private->m_lua.new_usertype<Clue>("Clue",
@@ -205,137 +206,95 @@ void ScriptingEngine::registerTypes()
           "boardTrain", &Task::m_board_train
       );
 
+    //MapClientSession
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
 
         "new", sol::no_constructor, // The client links are not constructible from the script side.
         "m_ent",  sol::readonly( &MapClientSession::m_ent ),
-        "admin_chat_message", sendChatMessage,
-        "simple_dialog", [](MapClientSession *cl,const char *dlgtext)
-        {
-            auto n = new StandardDialogCmd(dlgtext);
-            cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
-        },
-        "browser", [](MapClientSession *cl, const char *content)
-        {
-            cl->addCommand<Browser>(content);
-        },
+        "admin_chat_message", sendChatMessage
 
-        "contact_dialog",[](MapClientSession *cl, const char *message, sol::as_table_t<std::map<std::string, sol::as_table_t<std::vector<std::string>>>> buttons)
-        {
-            std::vector<ContactEntry> active_contacts;
-            const auto& listMap = buttons.source;
-
-            for (const auto& kvp : listMap)
-            {
-                const std::vector<std::string>& strings = kvp.second.source;
-                int count = 0;
-                ContactEntry con;
-                for (const auto& s: strings)
-                {
-                    if(count == 0)
-                        con.m_response_text = QString::fromStdString(s);
-                    else
-                        con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
-
-                    count++;
-                }
-                active_contacts.push_back(con);
-            }
-            sendContactDialog(*cl, message, active_contacts);
-        },
-        "sendFloatingInfo",[](MapClientSession *cl, int message_type)
-        {
-            FloatingInfoMsgKey f_info_message = static_cast<FloatingInfoMsgKey>(message_type);
-            QString message = FloatingInfoMsg.find(f_info_message).value();
-            cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, message, FloatingInfo_Attention , 4.0);
-        },
-        "sendInfoMessage", [](MapClientSession *cl, int channel, const char* message)
-        {
-            sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
-        },
-        "addNpc", [](MapClientSession *cl, const char* npc_def, glm::vec3 &loc, int variation, const char* npc_name)
-        {
-            QString npc_def_name = QString::fromUtf8(npc_def);
-            QString name = QString::fromUtf8(npc_name);
-            addNpc(*cl, npc_def_name, loc, variation, name);
-        },
-        "addNpcWithOrientation", [](MapClientSession *cl, const char* name, glm::vec3 &loc, int variation, glm::vec3 &ori)
-        {
-            QString npc_name = QString::fromUtf8(name);
-            addNpcWithOrientation(*cl, npc_name, loc, variation, ori);
-        },
-        "forceOrientation", [](MapClientSession *cl, int entity_idx, glm::vec3 ori)
-        {
-            Entity *e = getEntity(cl, entity_idx);
-            if(e != nullptr)
-            {
-                forceOrientation(*e, ori);
-                QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entity_idx).arg(ori.x).arg(ori.y).arg(ori.z);
-                qCDebug(logScripts) << msg;
-
-            }
-        },
-        "mapMenu", showMapMenu
         );
 
-    m_private->m_lua.new_usertype<Character>("Character",
-        "giveDebt", giveDebt,
-        "giveEnhancement", [](MapClientSession *cl, const char* name, int level)
-        {
-            QString e_name = QString::fromUtf8(name);
-            giveEnhancement(*cl, e_name, level);
-        },
-        "giveEnd", giveEnd,
-        "giveHp", giveHp,
-        "giveInf",giveInf,
-        "giveInsp",[](MapClientSession *cl, const char* name)
-        {
-            QString e_name = QString::fromUtf8(name);
-            giveInsp(*cl, e_name);
-        },
-        "giveXp", giveXp,
-        //"sendFloatingDamage",sendFloatingNumbers,
-        "faceEntity",sendFaceEntity,
-        "faceLocation",  sendFaceLocation,
-        "addUpdateContactList", updateContactStatusList,
-        "updateTaskDetail", updateTaskDetail,
-        /*"addListOfTasks", [](MapClientSession *cl, sol::as_table_t<std::vector<Task>> task_list)
-        {
-            const auto& listMap = task_list.source;
-            vTaskList listToSend;
-            for (const auto& kvp : listMap)
-            {
-                listToSend.push_back(kvp);
-            }
-            addListOfTasks(cl, listToSend);
-        },*/
-        "addTask", sendUpdateTaskStatusList,
-        "removeTask", removeTask,
-        "selectTask", selectTask,
-        "setWaypoint", sendWaypoint,
-        "setHp", setHp,
-        "setEnd", setEndurance,
-        "setXp", setXp,
-        "setDebt", setXpDebt,
-        "setInf", setInfluence,
-        "levelUp", playerTrain,
-        "setTitle", [](MapClientSession *cl, const char* title)
-        {
-            QString title_name = QString::fromUtf8(title);
-            setTitle(*cl, title_name);
-        },
-        "giveTempPower", giveTempPower,
-        "addClue", addClue,
-        "addSouvenir", addSouvenir,
-        "removeContact", removeContact,
-        "setActiveDialogCallback", [](MapClientSession *cl, std::function<void(int)> callback)
-        {
-           cl->m_ent->setActiveDialogCallback(callback);
-        },
-        "revive", revive,
-        "respawn", respawn
+    m_private->m_lua["MapClientSession"]["MapMenu"] = [this]()
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        showMapMenu(*cl);
+    };
+    m_private->m_lua["MapClientSession"]["Simple_dialog"] = [this](const char *dlgtext)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        auto n = new StandardDialogCmd(dlgtext);
+        cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
+    };
+    m_private->m_lua["MapClientSession"]["Browser"] = [this](const char *content)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        cl->addCommand<Browser>(content);
+    };
+    m_private->m_lua["MapClientSession"]["Contact_dialog"] = [this](const char *message, sol::as_table_t<std::map<std::string, sol::as_table_t<std::vector<std::string>>>> buttons)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        std::vector<ContactEntry> active_contacts;
+        const auto& listMap = buttons.source;
 
-    );
+        for (const auto& kvp : listMap)
+        {
+            const std::vector<std::string>& strings = kvp.second.source;
+            int count = 0;
+            ContactEntry con;
+            for (const auto& s: strings)
+            {
+                if(count == 0)
+                    con.m_response_text = QString::fromStdString(s);
+                else
+                    con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
+
+                count++;
+            }
+            active_contacts.push_back(con);
+        }
+        sendContactDialog(*cl, message, active_contacts);
+    };
+    m_private->m_lua["MapClientSession"]["SendFloatingInfo"] = [this](int message_type)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        FloatingInfoMsgKey f_info_message = static_cast<FloatingInfoMsgKey>(message_type);
+        QString message = FloatingInfoMsg.find(f_info_message).value();
+        cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, message, FloatingInfo_Attention , 4.0);
+    };
+    m_private->m_lua["MapClientSession"]["ForceOrientation"] = [this](int entity_idx, glm::vec3 ori)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        Entity *e = getEntity(cl, entity_idx);
+        if(e != nullptr)
+        {
+            forceOrientation(*e, ori);
+            QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entity_idx).arg(ori.x).arg(ori.y).arg(ori.z);
+            qCDebug(logScripts) << msg;
+        }
+        else
+        {
+             qCDebug(logScripts) << "Entity "<< entity_idx << " not found";
+        }
+    };
+    m_private->m_lua["MapClientSession"]["AddNpc"] = [this](const char* npc_def, glm::vec3 &loc, int variation, const char* npc_name)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        QString npc_def_name = QString::fromUtf8(npc_def);
+        QString name = QString::fromUtf8(npc_name);
+        addNpc(*cl, npc_def_name, loc, variation, name);
+    };
+    m_private->m_lua["MapClientSession"]["AddNpcWithOrientation"] = [this](const char* name, glm::vec3 &loc, int variation, glm::vec3 &ori)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        QString npc_name = QString::fromUtf8(name);
+        addNpcWithOrientation(*cl, npc_name, loc, variation, ori);
+    };
+    m_private->m_lua["MapClientSession"]["SendInfoMessage"] = [this](int channel, const char* message)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
+    };
 
     m_private->m_lua.new_usertype<Entity>( "Entity",
         "new",    sol::no_constructor, // not constructible from the script side.
@@ -351,6 +310,185 @@ void ScriptingEngine::registerTypes()
     {
         qCDebug(logScripts) << msg;
     };
+    //End MapClientSession
+
+    // Player Object
+    m_private->m_lua["Player"] = m_private->m_lua.create_table(); // Empty Table aka Object
+    m_private->m_lua["Player"]["SetDebt"] = [this](const int debt)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        setDebt(*cl->m_ent->m_char, debt);
+    };
+    m_private->m_lua["Player"]["GiveDebt"] = [this](const int debt)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        giveDebt(*cl, debt);
+    };
+    m_private->m_lua["Player"]["GiveEnhancement"] = [this](const char* name, int level)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        QString e_name = QString::fromUtf8(name);
+        giveEnhancement(*cl, e_name, level);
+    };
+    m_private->m_lua["Player"]["GiveEnd"] = [this](const float end)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        giveEnd(*cl, end);
+    };
+    m_private->m_lua["Player"]["SetEnd"] = [this](const float end)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        setEnd(*cl->m_ent->m_char, end);
+    };
+    m_private->m_lua["Player"]["SetHp"] = [this](const float hp)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        setHP(*cl->m_ent->m_char, hp);
+    };
+    m_private->m_lua["Player"]["GiveHp"] = [this](const float hp)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        giveHp(*cl, hp);
+    };
+    m_private->m_lua["Player"]["SetInf"] = [this](const int inf)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        setInf(*cl->m_ent->m_char, inf);
+    };
+    m_private->m_lua["Player"]["GiveInf"] = [this](const int inf)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        giveInf(*cl, inf);
+    };
+    m_private->m_lua["Player"]["GiveInsp"] = [this](const char* name)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        QString e_name = QString::fromUtf8(name);
+        giveInsp(*cl, e_name);
+    };
+    m_private->m_lua["Player"]["SetXp"] = [this](const int xp)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        setXP(*cl->m_ent->m_char, xp);
+    };
+    m_private->m_lua["Player"]["GiveXp"] = [this](const int xp)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        giveXp(*cl, xp);
+    };
+    m_private->m_lua["Player"]["SendFloatingDamage"] = [this](const int tgt_idx, const int amount)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        sendFloatingNumbers(*cl, tgt_idx, amount);
+    };
+    m_private->m_lua["Player"]["FaceEntity"] = [this](const int tgt_idx)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        sendFaceEntity(*cl, tgt_idx);
+    };
+    m_private->m_lua["Player"]["FaceLocation"] = [this](glm::vec3 &loc)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        sendFaceLocation(*cl, loc);
+    };
+    m_private->m_lua["Player"]["AddUpdateContact"] = [this](const Contact &contact)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        updateContactStatusList(*cl, contact);
+    };
+    m_private->m_lua["Player"]["SetActiveDialogCallback"] = [this](std::function<void(int)> callback)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        cl->m_ent->setActiveDialogCallback(callback);
+    };
+    m_private->m_lua["Player"]["RemoveContact"] = [this](const Contact &contact)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        removeContact(*cl, contact);
+    };
+    m_private->m_lua["Player"]["UpdateTaskDetail"] = [this](const Task &task)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        updateTaskDetail(*cl, task);
+    };
+    m_private->m_lua["Player"]["AddListOfTasks"] = [this](const sol::as_table_t<std::vector<Task>> task_list)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        const auto& listMap = task_list.source;
+        vTaskList listToSend;
+        for (const auto& kvp : listMap)
+        {
+            listToSend.push_back(kvp);
+        }
+        addListOfTasks(cl, listToSend);
+    };
+    m_private->m_lua["Player"]["AddUpdateTask"] = [this](const Task &task)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        sendUpdateTaskStatusList(*cl, task);
+    };
+    m_private->m_lua["Player"]["RemoveTask"] = [this](const Task &task)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        removeTask(*cl, task);
+    };
+    m_private->m_lua["Player"]["SelectTask"] = [this](const Task &task)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        selectTask(*cl, task);
+    };
+    m_private->m_lua["Player"]["SetWaypoint"] = [this](const int point_idx, glm::vec3 loc)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        sendWaypoint(*cl, point_idx, loc);
+    };
+    m_private->m_lua["Player"]["LevelUp"] = [this]()
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        playerTrain(*cl);
+    };
+    m_private->m_lua["Player"]["OpenTitleMenu"] = [this]()
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        QString origin = getOriginTitle(*cl->m_ent->m_char);
+        setTitle(*cl, origin);
+    };
+    m_private->m_lua["Player"]["GiveTempPower"] = [this](const char* power)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        giveTempPower(cl, power);
+    };
+    m_private->m_lua["Player"]["AddClue"] = [this](const Clue clue)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        addClue(*cl, clue);
+    };
+    m_private->m_lua["Player"]["RemoveClue"] = [this](const Clue clue)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        removeClue(*cl, clue);
+    };
+    m_private->m_lua["Player"]["AddSouvenir"] = [this](const Souvenir souvenir)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        addSouvenir(*cl, souvenir);
+    };
+    m_private->m_lua["Player"]["RemoveSouvenir"] = [this](const Souvenir souvenir)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        removeSouvenir(*cl, souvenir);
+    };
+    m_private->m_lua["Player"]["Revive"] = [this](const int revive_lvl)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        revive(cl, revive_lvl);
+    };
+    m_private->m_lua["Player"]["Respawn"] = [this](const char* loc_name)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        respawn(*cl, loc_name);
+    };
+
 }
 
 int ScriptingEngine::loadAndRunFile(const QString &filename)

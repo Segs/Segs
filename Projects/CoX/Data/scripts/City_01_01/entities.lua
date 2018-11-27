@@ -6,23 +6,23 @@ function player_connected(id)
     --Id is player entity Id
     printDebug('player_connected Id: ' .. tostring(id))
 
-    UpdateTasksForZone('Atlas Park')
-    SpawnContacts('Atlas Park')
+    Tasks.UpdateTasksForZone('Atlas Park')
+    Contacts.SpawnContacts('Atlas Park')
    
     return  ''
 end
 
 function npc_added(id)
     printDebug('npc_added Id: ' .. tostring(id))
-    SpawnedContact(id)
+    Contacts.SpawnedContact(id)
     -- Spawn next contact
-    SpawnContacts('Atlas Park')
+    Contacts.SpawnContacts('Atlas Park')
 
     return ''
 end
 
 entity_interact = function(id, location)
-    SetContactDialogsWithHeroName(heroName)
+    Contacts.SetContactDialogsWithHeroName(heroName)
 
     if location ~= nil then
         printDebug("entity id " .. tostring(id) .. " location info:  x: " .. tostring(location.x) .. " y: " .. tostring(location.y) .. " z: " .. tostring(location.z))
@@ -30,7 +30,7 @@ entity_interact = function(id, location)
         printDebug("entity id " .. tostring(id))
     end
 
-    if(OpenContactDialog(id) ~= true) then
+    if(Contacts.OpenContactDialog(id) ~= true) then
         -- Generic NPC
         -- Create generic NPC message script for zone?
         
