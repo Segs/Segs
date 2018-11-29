@@ -150,6 +150,7 @@ public:
         void                    setPlayerSpawn(Entity &e);
         void                    setSpawnLocation(Entity &e, const QString &spawnLocation);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
+        QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
 
 protected:
         // EventProcessor interface

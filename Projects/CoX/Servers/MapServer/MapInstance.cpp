@@ -181,10 +181,12 @@ void MapInstance::load_map_lua()
     QStringList script_paths = {
         "scripts/global.lua", // global helper script
         // per zone scripts
+        m_data_path+'/'+"contacts.lua",
         m_data_path+'/'+"locations.lua",
         m_data_path+'/'+"plaques.lua",
         m_data_path+'/'+"entities.lua",
         m_data_path+'/'+"missions.lua"
+
     };
 
     for(const QString &path : script_paths)
@@ -1029,7 +1031,8 @@ void MapInstance::on_input_state(RecvInputState *st)
     {
         ent->m_has_input_on_timeframe = true;
         setTarget(*ent, st->m_next_state.m_target_idx);
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
+        //Not needed currently
+        //auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
     }
 
     // Set Orientation
@@ -2595,10 +2598,14 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
 
     if(session.m_ent->m_active_dialog != NULL)
+    {
+        m_scripting_interface->updateClientContext(&session);
         session.m_ent->m_active_dialog(ev->button_id);
+    }
     else
+    {
         auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
-
+    }
 }
 
 void MapInstance::on_move_enhancement(MoveEnhancement *ev)
@@ -2655,10 +2662,17 @@ void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
     sendDeadNoGurney(session);
     */
     // otherwise
-    // Set statemode to Resurrect
-    setStateMode(*session.m_ent, ClientStates::RESURRECT);
-    // TODO: spawn in hospital, resurrect animations, "summoning sickness"
-    revivePlayer(*session.m_ent, ReviveLevel::FULL);
+
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"revive_ok", session.m_ent->m_idx);
+
+    if (val.empty())
+    {
+        // Set statemode to Resurrect
+        setStateMode(*session.m_ent, ClientStates::RESURRECT);
+        // TODO: spawn in hospital, resurrect animations, "summoning sickness"
+        revivePlayer(*session.m_ent, ReviveLevel::FULL);
+    }
+
 }
 
 void MapInstance::on_dead_no_gurney_ok(DeadNoGurneyOK *ev)
