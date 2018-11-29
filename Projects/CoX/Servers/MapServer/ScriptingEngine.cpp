@@ -150,8 +150,8 @@ void ScriptingEngine::registerTypes()
         "completeThreshold", &Contact::m_complete_threshold,
         "canUseCell", &Contact::m_can_use_cell,
         "contactId", &Contact::m_contact_idx,
-        "dialogScreenIdx", &Contact::m_dlg_screen
-
+        "dialogScreenIdx", &Contact::m_dlg_screen,
+        "settingTitle", &Contact::m_setting_title
     );
 
     m_private->m_lua.new_usertype<Clue>("Clue",
@@ -205,6 +205,19 @@ void ScriptingEngine::registerTypes()
           "unknownInt2", &Task::m_unknown_2,
           "boardTrain", &Task::m_board_train
       );
+
+      m_private->m_lua["ParseContactButton"] = [this](uint32_t button_id)
+        {
+            QString result;
+            result = contactLinkHash.key(button_id);
+            if(result.isEmpty())
+            {
+                result = "Not found";
+            }
+
+            qCDebug(logScripts) << "ParseContactButton Result: " << result;
+            return sol::make_object(m_private->m_lua, qPrintable(result));
+        };
 
     //MapClientSession
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
@@ -515,6 +528,7 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
     m_private->m_lua["client"] = client;
+    m_private->m_lua["contactDialogButtons"] = contactLinkHash;
     m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;

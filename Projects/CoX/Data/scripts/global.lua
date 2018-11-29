@@ -92,6 +92,16 @@ function Contacts.SpawnContacts(zone)
     end
 end
 
+function Contacts.ParseContactButton(id)
+    local button = false;
+    button = ParseContactButton(id);
+    printDebug("ParseContactButton: " .. tostring(button));
+    if (button == 'Not Found') then
+        button = false;
+    end
+    return button;
+end
+
 function Contacts.SpawnedContact(id)
     printDebug("SpawnedContact id: " .. tostring(id))
     if contactsForZone ~= nil then
@@ -209,7 +219,7 @@ function Player.GiveRandomTempPower()
 end
 
 
-
+vec3.new(107, 16, -215)
 
 printDebug('Finished Loading global.lua')
 
@@ -221,31 +231,30 @@ For contact dialogs, 11 buttons is the max you can have displayed at once.
  Anymore and the client will crash
 
         Contact Dialog buttons    
-    {"CONTACTLINK_HELLO"                ,1},
-    {"CONTACTLINK_MAIN"                 ,2},
-    {"CONTACTLINK_BYE"                  ,3},
-    {"CONTACTLINK_MISSIONS"             ,4},
-    {"CONTACTLINK_LONGMISSION"          ,5},
-    {"CONTACTLINK_SHORTMISSION"         ,6},
-    {"CONTACTLINK_ACCEPTLONG"           ,7},
-    {"CONTACTLINK_ACCEPTSHORT"          ,8},
-    {"CONTACTLINK_INTRODUCE"            ,9},
-    {"CONTACTLINK_INTRODUCE_CONTACT1"   ,0x0A},
-    {"CONTACTLINK_INTRODUCE_CONTACT2"   ,0x0B},
-    {"CONTACTLINK_ACCEPT_CONTACT2"      ,0x0D},
-    {"CONTACTLINK_ACCEPT_CONTACT2"      ,0x0D},
-    {"CONTACTLINK_GOTOSTORE"            ,0x0E},
-    {"CONTACTLINK_TRAIN"                ,0x0F},
-    {"CONTACTLINK_WRONGMODE"            ,0x10},
-    {"CONTACTLINK_DONTKNOW"             ,0x11},
-    {"CONTACTLINK_NOTLEADER"            ,0x12},
-    {"CONTACTLINK_BADCELLCALL"          ,0x13},
-    {"CONTACTLINK_ABOUT"                ,0x14},
-    {"CONTACTLINK_IDENTIFYCLUE"         ,0x15},
-    {"CONTACTLINK_NEWPLAYERTELEPORT_AP" ,0x16},
-    {"CONTACTLINK_NEWPLAYERTELEPORT_GC" ,0x17},
-    {"CONTACTLINK_FORMTASKFORCE"        ,0x18},
-    {"CONTACTLINK_GOTOTAILOR"           ,0x1A},
+    {"CONTACTLINK_HELLO"                ,1}, 1
+    {"CONTACTLINK_MAIN"                 ,2}, 2
+    {"CONTACTLINK_BYE"                  ,3}, 3 
+    {"CONTACTLINK_MISSIONS"             ,4}, 4
+    {"CONTACTLINK_LONGMISSION"          ,5}, 5
+    {"CONTACTLINK_SHORTMISSION"         ,6}, 6
+    {"CONTACTLINK_ACCEPTLONG"           ,7}, 7
+    {"CONTACTLINK_ACCEPTSHORT"          ,8}, 8
+    {"CONTACTLINK_INTRODUCE"            ,9}, 9
+    {"CONTACTLINK_INTRODUCE_CONTACT1"   ,0x0A}, 10
+    {"CONTACTLINK_INTRODUCE_CONTACT2"   ,0x0B}, 11
+    {"CONTACTLINK_ACCEPT_CONTACT2"      ,0x0D}, 13
+    {"CONTACTLINK_GOTOSTORE"            ,0x0E}, 14
+    {"CONTACTLINK_TRAIN"                ,0x0F}, 15
+    {"CONTACTLINK_WRONGMODE"            ,0x10}, 16
+    {"CONTACTLINK_DONTKNOW"             ,0x11}, 17
+    {"CONTACTLINK_NOTLEADER"            ,0x12}, 18
+    {"CONTACTLINK_BADCELLCALL"          ,0x13}, 19
+    {"CONTACTLINK_ABOUT"                ,0x14}, 20
+    {"CONTACTLINK_IDENTIFYCLUE"         ,0x15}, 21
+    {"CONTACTLINK_NEWPLAYERTELEPORT_AP" ,0x16}, 22
+    {"CONTACTLINK_NEWPLAYERTELEPORT_GC" ,0x17}, 23
+    {"CONTACTLINK_FORMTASKFORCE"        ,0x18}, 24
+    {"CONTACTLINK_GOTOTAILOR"           ,0x1A}, 26
   ]]
 
   --[[ Respawn Locations

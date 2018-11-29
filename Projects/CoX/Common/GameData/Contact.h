@@ -26,7 +26,7 @@ static QHash<QString,int> contactLinkHash = {
     {"CONTACTLINK_INTRODUCE"            ,9},
     {"CONTACTLINK_INTRODUCE_CONTACT1"   ,0x0A},
     {"CONTACTLINK_INTRODUCE_CONTACT2"   ,0x0B},
-    {"CONTACTLINK_ACCEPT_CONTACT2"      ,0x0D},
+    {"CONTACTLINK_ACCEPT_CONTACT1"      ,0x0C},
     {"CONTACTLINK_ACCEPT_CONTACT2"      ,0x0D},
     {"CONTACTLINK_GOTOSTORE"            ,0x0E},
     {"CONTACTLINK_TRAIN"                ,0x0F},
@@ -70,7 +70,7 @@ struct Destination // aka waypoint
 class Contact
 {
 public:
-    enum : uint32_t {class_version       = 2}; // Added m_dlg_screen
+    enum : uint32_t {class_version       = 1};
 
     // for scripting language access.
     std::string getName() const { return m_name.toStdString();}
@@ -92,7 +92,10 @@ public:
        bool            m_can_use_cell          = false;
        bool            m_has_location          = false;
        Destination     m_location;
+
+       // Not saved to DB
        uint32_t        m_dlg_screen            = 0;
+       bool            m_setting_title         = false;
 
 
 

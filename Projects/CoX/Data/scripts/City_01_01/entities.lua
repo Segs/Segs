@@ -1,5 +1,4 @@
 --- ATLAS PARK
-include_lua('luaBot.lua')
 
 -- Called after MOTD for now.
 function player_connected(id)

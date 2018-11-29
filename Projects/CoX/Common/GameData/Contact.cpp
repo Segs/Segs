@@ -39,7 +39,6 @@ void Contact::serialize(Archive &archive, uint32_t const version)
     archive(cereal::make_nvp("CanUseCell",m_can_use_cell));
     archive(cereal::make_nvp("HasLocation",m_has_location));
     archive(cereal::make_nvp("Location",m_location));
-    archive(cereal::make_nvp("CurrentDialogScreen",m_dlg_screen));
 }
 
 CEREAL_CLASS_VERSION(Contact, Contact::class_version)   // register Contact class version
