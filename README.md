@@ -167,6 +167,8 @@ Note: if you choose not to `source activate.env`, you can run the commands via `
 INSTALL SEGS ON A HEADLESS UBUNTU SERVER 18.04
 ------
 This has been tested several times and works fine on a fresh Ubuntu 18.04 LXD container.  
+Please be aware that segs may pose security risks, and that permissions and firewall may  
+need to be adjusted for use on the internet.  
 
 **1. Install dependencies**  
 
@@ -181,7 +183,6 @@ apt install build-essential cmake git qt5-default libqt5websockets5-dev qtdeclar
 useradd -s /bin/bash -r segs
 chmod o+w /usr/src /opt
 ```
-NOTE: Please be aware that segs may pose security risks, and that permissions and firewall may need to be adjusted for use on the internet.
 
 **3. Build SEGS-Server binarys**  
 
@@ -247,10 +248,11 @@ Restart=on-failure
 WantedBy=multi-user.target 
 ```  
 
-Remove login to segs user  
+Remove login to segs user and set permissions back
 
 ```
 usermod -s /usr/sbin/nologin segs
+chmod o-w /usr/src /opt
 ```
 Start SEGS  
 
