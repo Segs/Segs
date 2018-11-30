@@ -29,6 +29,7 @@
 #include "Common/Messages/Map/ContactList.h"
 #include "Common/Messages/Map/EmailHeaders.h"
 #include "Common/Messages/Map/EmailRead.h"
+#include "Common/Messages/Map/ForceLogout.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
 #include "Common/Messages/Map/MapEvents.h"
 #include "Common/Messages/Map/Tasks.h"
@@ -1453,6 +1454,25 @@ void respawn(MapClientSession &cl, const char* spawn_type)
     else
     {
         qCDebug(logScripts) << "spawners empty";
+    }
+}
+
+void sendForceLogout(MapClientSession &cl, const char* name, const char* message)
+{
+    QString player_name = QString::fromUtf8(name);
+    QString logout_message = QString::fromUtf8(message);
+
+    Entity* e = getEntity(&cl, player_name);
+
+    if(e == nullptr)
+    {
+        qCDebug(logSlashCommand) << "Entity: " << player_name << " not found";
+    }
+    else
+    {
+        MapClientSession *tgt = e->m_client;
+        qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
+        tgt->link()->putq(new ForceLogout(logout_message));
     }
 }
 

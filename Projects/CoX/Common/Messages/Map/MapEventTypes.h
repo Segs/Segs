@@ -32,7 +32,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evFirstServerToClient        ,100)
     EVENT_DECL(MapEventTypes, evMapXferWait                ,110)
     EVENT_DECL(MapEventTypes, evMapXferRequest             ,111)
-//    EVENT_DECL(MapEventTypes, evForceClientLogout        ,112)
+    EVENT_DECL(MapEventTypes, evForceLogout                ,112)
 //    EVENT_DECL(MapEventTypes, evServerGameCommand        ,113) // 1013?
     EVENT_DECL(MapEventTypes, evStandardDialogCmd          ,114)
     EVENT_DECL(MapEventTypes, evInfoMessageCmd             ,115)

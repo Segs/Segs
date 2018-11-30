@@ -100,6 +100,7 @@ void sendSouvenirList(MapClientSession &sess);
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
 void increaseLevel(Entity &ent);
+void sendForceLogout(MapClientSession &cl, const char* name, const char* message);
 
 /*
  * Lua Functions
