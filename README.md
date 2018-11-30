@@ -32,7 +32,7 @@ CONTENTS OF THIS FILE
 - [Requirements and Notes](#requirements-and-notes)
 - [Install C++ Tool Chain](#install-c-tool-chain)
 - [Compile SEGS](#build-segs)
-- [Install SEGS on a Headless Ubuntu Server 18.04](#install-headless-server)
+- [Install SEGS on a Headless Ubuntu Server 18.04](#install-segs-on-a-headless-ubuntu-server-1804)
 - [Contribute to Development](#contribute-to-development)
 - [Setting up SEGS Server and Playing](#setting-up-segs-server-and-playing)
 - [More Information](#help-and-more-information)
@@ -168,20 +168,23 @@ INSTALL SEGS ON A HEADLESS UBUNTU SERVER 18.04
 ------
 This has been tested several times and works fine on a fresh Ubuntu 18.04 LXD container.  
 
-**Install dependencies**
+**1. Install dependencies**  
+
 ```
 apt update && apt upgrade -y
 apt install build-essential cmake git qt5-default libqt5websockets5-dev qtdeclarative5-dev
 ```
 
-**Create SEGS user and set permissions**
+**2. Create SEGS user and set permissions**  
+
 ```
 useradd -s /bin/bash -r segs
 chmod o+w /usr/src /opt
 ```
 NOTE: Please be aware that segs may pose security risks, and that permissions may need to be adjusted for use on the internet.
 
-**Build SEGS-Server binarys**
+**3. Build SEGS-Server binarys**  
+
 ```
 su segs
 cd /usr/src
@@ -191,29 +194,38 @@ cd Segs/build
 cmake ..
 make
 ```
+  
+**4. Move SEGS binarys and edit the settings to fit your needs**  
 
-**Move SEGS binarys and edit the settings to fit your needs**
 ```
 mv out /opt/segs
 cd /opt/segs/
 cp settings_template.cfg settings.cfg
 vi settings.cfg
 ```
-**Copy COX content to the SEGS-Server data directory**  
+  
+**5. Copy COX content to the SEGS-Server data directory**  
+
 Upload or copy the *.pigg files out of your COH-Clients piggs directory ```"C:\Program Files (x86)\CoX\piggs"```
-to the segs data directory ```"/opt/segs/data"``` and use the line below to extract them.
+to the segs data directory ```"/opt/segs/data"``` and use the line below to extract them.  
+
 ```
 find /opt/segs/data/ -name '*.pigg' -exec ./piggtool -x {} /opt/segs/data/ \;
 ```
-**Create gamedb and users**  
-Inside the SEGS-Server directory ```"/opt/segs"``` use dbtool to create the gamedb and admin user.
+
+**6. Create gamedb and users**  
+
+Inside the SEGS-Server directory ```"/opt/segs"``` use dbtool to create the gamedb and admin user.  
+
 ```
 ./dbtool -f create
 ./dbtool adduser -l <username> -p <password> -a 9
 ```
+  
+**7. Configure SEGS as SystemD service and start**  
 
-**Configure SEGS as SystemD service and start**  
-Switch to root (or sudo user) for the last steps and create system service.
+Switch to root (or sudo user) for the last steps and create system service.  
+
 ```
 vi /etc/systemd/system/segs.service
 ```
@@ -233,15 +245,19 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target 
-```
-remove login to segs user
+```  
+
+Remove login to segs user  
+
 ```
 usermod -s /usr/sbin/nologin segs
 ```
-Start SEGS
+Start SEGS  
+
 ```
 systemctl start segs
 ```
+
 Watch logs
 ```
 journalctl -u segs
