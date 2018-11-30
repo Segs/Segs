@@ -32,6 +32,7 @@ CONTENTS OF THIS FILE
 - [Requirements and Notes](#requirements-and-notes)
 - [Install C++ Tool Chain](#install-c-tool-chain)
 - [Compile SEGS](#build-segs)
+- [Install SEGS on a Headless Ubuntu Server 18.04](#install-headless-server)
 - [Contribute to Development](#contribute-to-development)
 - [Setting up SEGS Server and Playing](#setting-up-segs-server-and-playing)
 - [More Information](#help-and-more-information)
@@ -76,10 +77,6 @@ Download dependencies and tools by clicking on the links listed in the Requireme
 
 Install all dependencies and tools by opening a terminal and typing:
 
-**Ubuntu**
-```
-sudo apt-get install build-essential git qt5 qt5-devel 
-```
 **Fedora 26+**
 ```
 sudo dnf install cmake gcc gcc-c++ git-core kernel-devel qt5 qt5-devel  
@@ -148,17 +145,6 @@ Now, select `Build > Build All` from the menu at the top of QTCreator. The botto
 00:00:00: The process 'cmake' exited normally.
 ```
 
-**ADVANCED: Doing it the CLI Way**
-
-If you're on a headless Linux or FreeBSD server, run the following commands:
-```
-git clone https://github.com/Segs/Segs.git
-mkdir Segs/bld
-cd Segs/bld
-cmake ..
-make
-```
-
 **ADVANCED: Using Build Scripts**
 
 If you're using docker, run the following commands
@@ -175,20 +161,91 @@ docker-forward segs build # build all components
 docker-forward segs build gameserver_lib # build a single component
 ```
 
-This will also run on Ubuntu 18.04 with the following:
-
-```
-cp activate.env.template activate.env
-source activate.env # set ENV variables and add ./scripts to PATH
-
-sudo segs install_deps_ubuntu # install development tools (only needed once)
-
-segs bootstrap # set up cmake / clean build
-segs build # build all components
-segs build gameserver_lib # build a single component
-```
-
 Note: if you choose not to `source activate.env`, you can run the commands via `scripts/segs` instead
+
+
+INSTALL SEGS ON A HEADLESS UBUNTU SERVER 18.04
+------
+This is tested on a fresh Ubuntu 18.04 LXD Container.
+
+**Install dependencies**
+```
+apt update && apt upgrade -y
+apt install build-essential cmake git qt5-default libqt5websockets5-dev qtdeclarative5-dev
+```
+
+**Create SEGS user and set permissions**
+```
+useradd -s /bin/bash -r segs
+chmod o+w /usr/src /opt
+```
+NOTE: Please be aware that segs may pose security risks, and that permissions may need to be adjusted for use on the internet.
+
+**Build SEGS-Server binarys**
+```
+su segs
+cd /usr/src
+git clone https://github.com/Segs/Segs.git
+mkdir Segs/build
+cd Segs/build
+cmake ..
+make
+```
+
+**Move SEGS binarys and edit the settings to fit your needs**
+```
+mv out /opt/segs
+cd /opt/segs/
+cp settings_template.cfg settings.cfg
+vi settings.cfg
+```
+**Copy COX content to the SEGS-Server data directory**
+Upload or copy the *.pigg files out of your COH-Clients piggs directory ```"C:\Program Files (x86)\CoX\piggs"```
+to the segs data directory ```"/opt/segs/data"``` and use the line below to extract them.
+```
+find /opt/segs/data/ -name '*.pigg' -exec ./piggtool -x {} /opt/segs/data/ \;
+```
+**Create gamedb and users**
+Inside the SEGS-Server directory ```"/opt/segs"``` use dbtool to create the gamedb and admin user.
+```
+./dbtool -f create
+./dbtool adduser -l <username> -p <password> -a 9
+```
+
+**Configure SEGS as SystemD service and start**
+Switch to root (or sudo user) for the last steps and create system service.
+```
+vi /etc/systemd/system/segs.service
+```
+```
+[Unit]
+Description=SEGS Server
+After=network.target
+
+[Service]
+Type=simple
+User=segs
+Group=segs
+WorkingDirectory=/opt/segs
+ExecStart=/opt/segs/segs_server --config /opt/segs/settings.cfg
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target 
+```
+remove login to segs user
+```
+usermod -s /usr/sbin/nologin segs
+```
+Start SEGS
+```
+systemctl start segs
+```
+Watch logs
+```
+journalctl -u segs
+```
 
 
 CONTRIBUTE TO DEVELOPMENT
