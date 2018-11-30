@@ -93,6 +93,7 @@ void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &
 void sendDoorAnimExit(MapClientSession &sess, bool force_move);
 void sendClueList(MapClientSession &sess);
 void sendSouvenirList(MapClientSession &sess);
+void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message);
 
 /*
  * usePower and increaseLevel here to provide access to
@@ -100,7 +101,7 @@ void sendSouvenirList(MapClientSession &sess);
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
 void increaseLevel(Entity &ent);
-void sendForceLogout(MapClientSession &cl, const char* name, const char* message);
+
 
 /*
  * Lua Functions

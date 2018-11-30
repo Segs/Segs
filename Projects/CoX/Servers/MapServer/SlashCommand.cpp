@@ -2171,12 +2171,13 @@ void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
     QString message;
+    QString name = parts[1].toString();
     int first_space = cmd.indexOf(' ');
     int second_space = cmd.indexOf(' ',first_space+1);
 
     if(second_space == -1)
     {
-        message = "ForceLogout reqires a logout message. /forceLogout 'HeroName' Bad Hero!";
+        message = "ForceLogout requires a logout message. /forceLogout <HeroName> <Message!>";
         qCDebug(logSlashCommand) << message;
         sendInfoMessage(MessageChannel::USER_ERROR, message, sess);
         return;
@@ -2186,7 +2187,7 @@ void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
         message = cmd.mid(second_space + 1);
     }
 
-    sendForceLogout(sess, parts[1].toUtf8(), message.toUtf8());
+    sendForceLogout(sess, name, message);
 }
 
 

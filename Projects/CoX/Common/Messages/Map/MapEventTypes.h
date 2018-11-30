@@ -24,7 +24,6 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evEntitiesResponse           ,7)
     EVENT_DECL(MapEventTypes, evRecvInputState             ,8)
     EVENT_DECL(MapEventTypes, evClientQuit                 ,9)
-    EVENT_DECL(MapEventTypes, evForcedLogout               ,10)
     EVENT_DECL(MapEventTypes, evInitiateMapXfer            ,11)
     EVENT_DECL(MapEventTypes, evMapXferComplete            ,12)
     EVENT_DECL(MapEventTypes, evChatDividerMoved           ,36)

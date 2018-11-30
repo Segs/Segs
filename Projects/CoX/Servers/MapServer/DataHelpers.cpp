@@ -1457,23 +1457,20 @@ void respawn(MapClientSession &cl, const char* spawn_type)
     }
 }
 
-void sendForceLogout(MapClientSession &cl, const char* name, const char* message)
+void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message)
 {
-    QString player_name = QString::fromUtf8(name);
-    QString logout_message = QString::fromUtf8(message);
-
     Entity* e = getEntity(&cl, player_name);
 
     if(e == nullptr)
     {
         qCDebug(logSlashCommand) << "Entity: " << player_name << " not found";
+        return;
     }
-    else
-    {
-        MapClientSession *tgt = e->m_client;
-        qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
-        tgt->link()->putq(new ForceLogout(logout_message));
-    }
+
+    MapClientSession *tgt = e->m_client;
+    qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
+    tgt->link()->putq(new ForceLogout(logout_message));
+
 }
 
 //! @}
