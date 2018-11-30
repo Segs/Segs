@@ -34,6 +34,7 @@ public:
     ~MapSceneGraph();
     bool loadFromFile(const QString &mapname);
     QMultiHash<QString, glm::mat4> getSpawnPoints() const;
+    QString getNearestDoor(glm::vec3 location) const;
     void spawn_npcs(class MapInstance *instance);
     void build_combat_navigation_graph();
     void build_pedestrian_navigation_graph();

@@ -9,6 +9,9 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `table_versions`;
 DROP TABLE IF EXISTS `supergroups`;
 DROP TABLE IF EXISTS `progress`;
+-- The costume table is no more but for compatibility with older releases
+-- we want to make sure to still remove it.
+DROP TABLE IF EXISTS `costume`;
 DROP TABLE IF EXISTS `emails`;
 DROP TABLE IF EXISTS `characters`;
 DROP TABLE IF EXISTS `accounts`;

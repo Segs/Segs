@@ -13,11 +13,6 @@ enter_door = function(name, location)
     local z = round(location.z, 0)
 
     printDebug("Rounded Location:  X: " .. tostring(x) .. " Y: " .. tostring(y) .. " Z: " .. tostring(z))
-
-    if(x == 36) then
-        Player.ExitDoor(vec3.new(44.4, -174, 575))    
-
-    end
     
     return ""
 end

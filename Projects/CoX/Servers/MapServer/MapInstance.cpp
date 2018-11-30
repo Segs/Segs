@@ -181,10 +181,12 @@ void MapInstance::load_map_lua()
     QStringList script_paths = {
         "scripts/global.lua", // global helper script
         // per zone scripts
+        m_data_path+'/'+"contacts.lua",
         m_data_path+'/'+"locations.lua",
         m_data_path+'/'+"plaques.lua",
         m_data_path+'/'+"entities.lua",
         m_data_path+'/'+"missions.lua"
+
     };
 
     for(const QString &path : script_paths)
@@ -1029,7 +1031,8 @@ void MapInstance::on_input_state(RecvInputState *st)
     {
         ent->m_has_input_on_timeframe = true;
         setTarget(*ent, st->m_next_state.m_target_idx);
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
+        //Not needed currently
+        //auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
     }
 
     // Set Orientation
@@ -2079,57 +2082,58 @@ void MapInstance::on_enter_door(EnterDoor *ev)
 
     QString output_msg = "Door entry request to: " + ev->name;
     if(ev->no_location)
+    {
         qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
-    else
+
+        // Doors with no location may be a /mapmenu call.
+        if(session.m_ent->m_is_using_mapmenu)
+        {
+            // ev->name is the map_idx when using /mapmenu
+            if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
+            {
+                uint8_t map_idx = ev->name.toInt();
+                if (map_idx == m_index)
+                {
+                    QString door_msg = "You're already here!";
+                    sendDoorMessage(session, 2, door_msg);
+                }
+                else
+                {
+                    map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
+                    session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+                }
+            }
+            session.m_ent->m_is_using_mapmenu = false;
+        }
+        else
+        {
+            QString door_msg = "Door coordinates unavailable.";
+            sendDoorMessage(session, 2, door_msg);
+        }
+    }
+	else
+    {
         qCDebug(logMapXfers).noquote() << output_msg << " loc:" << ev->location.x << ev->location.y << ev->location.z;
 
-    // For now, let's test by making some of the door options random
-    int randNum = std::rand() % 100;
-    if(randNum < 35 || session.m_ent->m_is_using_mapmenu)
-    {
-        // TODO: use location and name to determine where the door goes.
-        // for now, we're using no_location to determine whether or not
-        // ev->name is the map_idx when using /mapmenu currently.
-        if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
+        // Check if any doors in range have the GotoSpawn property.
+        // TODO: if the node also has a GotoMap property, start a map transfer
+        //       and put them in the given SpawnLocation in the target map.
+        QString gotoSpawn = m_map_scenegraph->getNearestDoor(ev->location);
+
+        if (gotoSpawn.isEmpty())
         {
-            uint8_t map_idx = ev->name.toInt();
-            if(!ev->no_location)
-                 map_idx = std::rand() % 23;
-
-             // TODO: change this to not be hacky.
-             // change the map idx if you're trying to load the map you're currently on
-             // this should only ever happen with /movezone commands after doors work correctly.
-             if(map_idx == m_index)
-                 map_idx = (map_idx + 1) % 23;
-             map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
-             session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+            QString door_msg = "You cannot enter.";
+            sendDoorMessage(session, 2, door_msg);
         }
-        session.m_ent->m_is_using_mapmenu = false;
+        else
+        {
+            // Attempt to send the player to that SpawnLocation in the current map.
+            QString anim_name = "RUNIN";
+            glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
+            sendDoorAnimStart(session, ev->location, offset, true, anim_name);
+            session.m_current_map->setSpawnLocation(*session.m_ent, gotoSpawn);
+        }
     }
-    else if(randNum < 70)
-    {
-        // Start Door Animation
-        QString anim_name = "RUNIN";
-        glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
-        sendDoorAnimStart(session, ev->location, offset, true, anim_name);
-    }
-    else
-    {
-        QString door_msg = "Knock! Knock!";
-        sendDoorMessage(session, 2, door_msg);
-    }
-
-    /* pseudocode:
-     *  auto door = get_door(ev->name,ev->location);
-     *  if(door and player_can_enter(door)
-     *      doorAnimStart(entry, target);
-     *      process_map_transfer(player, door->targetMap);
-     *      doorAnimsExit();
-     *  else if(door)
-     *      doorMessage(msg);
-     *  else
-     *      error: "not door?"
-     */
 }
 
 void MapInstance::on_change_stance(ChangeStance * ev)
@@ -2405,6 +2409,24 @@ void MapInstance::setPlayerSpawn(Entity &e)
     forceOrientation(e, spawn_pyr);
 }
 
+// Teleport to a specific SpawnLocation; do nothing if the SpawnLocation is not found.
+void MapInstance::setSpawnLocation(Entity &e, const QString &spawnLocation)
+{
+    if(m_all_spawners.empty() || !m_all_spawners.contains(spawnLocation))
+        return;
+
+    glm::mat4 v = m_all_spawners.values(spawnLocation)[rand() % m_all_spawners.values(spawnLocation).size()];
+
+    // Position
+    glm::vec3 spawn_pos = glm::vec3(v[3]);
+
+    // Orientation
+    auto valquat = glm::quat_cast(v);
+    glm::vec3 spawn_pyr = toCoH_YPR(valquat);
+    forcePosition(e, spawn_pos);
+    forceOrientation(e, spawn_pyr);
+}
+
 glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
 {
     // In the future this should get the closet NAV or NAVCMBT
@@ -2576,10 +2598,14 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
 
     if(session.m_ent->m_active_dialog != NULL)
+    {
+        m_scripting_interface->updateClientContext(&session);
         session.m_ent->m_active_dialog(ev->button_id);
+    }
     else
+    {
         auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
-
+    }
 }
 
 void MapInstance::on_move_enhancement(MoveEnhancement *ev)

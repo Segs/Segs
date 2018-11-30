@@ -1127,7 +1127,7 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
             {
                 found = true;
                 qCDebug(logScripts) << "SendUpdateTaskStatusList Updating old task";
-                //contact already in list, update task;
+                //Tast already in list, update task;
                 task_entry_list[i].m_task_list.at(t) = task;
                 break;
             }
@@ -1163,7 +1163,7 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
     src.m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
     qCDebug(logScripts) << "SendUpdateTaskStatusList DB Task list updated";
 
-    //Send contactList to client
+    //Send Task list to client
     src.addCommand<TaskStatusList>(task_entry_list);
     qCDebug(logScripts) << "SendUpdateTaskStatusList List updated";
 }
@@ -1285,6 +1285,33 @@ void addClue(MapClientSession &cl, Clue clue)
     cl.addCommand<ClueList>(clue_list);
 }
 
+void removeClue(MapClientSession &cl, Clue clue)
+{
+    vClueList clue_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list;
+    int count = 0;
+    bool found = false;
+    for (const Clue &c: clue_list)
+    {
+        if(c.m_name == clue.m_name)
+        {
+            found = true;
+            break;
+        }
+        ++count;
+    }
+
+    if(found)
+    {
+        clue_list.erase(clue_list.begin() + count);
+        cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list = clue_list;
+        cl.addCommand<ClueList>(clue_list);
+    }
+    else
+    {
+        qCDebug(logScripts) << "Clue: " << clue.m_name << " not found.";
+    }
+}
+
 void addSouvenir(MapClientSession &cl, Souvenir souvenir)
 {
     vSouvenirList souvenir_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
@@ -1297,22 +1324,73 @@ void addSouvenir(MapClientSession &cl, Souvenir souvenir)
     cl.addCommand<SouvenirListHeaders>(souvenir_list);
 }
 
+void removeSouvenir(MapClientSession &cl, Souvenir souvenir)
+{
+    vSouvenirList souvenir_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
+    int count = 0;
+    bool found = false;
+    for (const Souvenir &s: souvenir_list)
+    {
+        if(s.m_name == souvenir.m_name)
+        {
+            found = true;
+            break;
+        }
+        ++count;
+    }
+
+    if(found)
+    {
+        souvenir_list.erase(souvenir_list.begin() + count);
+        cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list = souvenir_list;
+        cl.addCommand<SouvenirListHeaders>(souvenir_list);
+    }
+    else
+    {
+        qCDebug(logScripts) << "Souvenir: " << souvenir.m_name << " not found.";
+    }
+
+}
+
+void removeContact(MapClientSession &sess, Contact contact)
+{
+    vContactList contacts = sess.m_ent->m_char->m_char_data.m_contacts;
+
+    bool found = false;
+    int count = 0;
+    for (Contact & c : contacts)
+    {
+        if(c.m_npc_id == contact.m_npc_id)
+        {
+            found = true;
+            break;
+        }
+        ++count;
+    }
+
+    if(!found)
+    {
+        qCDebug(logScripts) << "Contact " << contact.m_name << " not found";
+    }
+    else
+    {
+        contacts.erase(contacts.begin() + count);
+        sess.m_ent->m_char->m_char_data.m_contacts = contacts;
+        markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
+        sess.addCommand<ContactStatusList>(contacts);
+    }
+
+}
+
 void revive(MapClientSession *cl, int revive_lvl)
 {
     setStateMode(*cl->m_ent, ClientStates::RESURRECT);
     revivePlayer(*cl->m_ent, static_cast<ReviveLevel>(revive_lvl));
 }
 
-void respawn(MapClientSession &cl, const char* spawn_type)
+void logSpawnLocations(MapClientSession &cl, const char* spawn_type)
 {
-    qCDebug(logScripts) << "respawn Called";
-
     QString spawn_name = QString::fromUtf8(spawn_type);
-
-    // Spawn player position and PYR
-    //glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
-    //glm::vec3 spawn_pyr = glm::vec3(0.0f, 0.0f, 0.0f);
-
     auto spawners = cl.m_current_map->getSpawners();
 
     if(!spawners.empty())
@@ -1334,10 +1412,48 @@ void respawn(MapClientSession &cl, const char* spawn_type)
     {
         qCDebug(logScripts) << "spawners empty";
     }
+}
 
-    //forcePosition(*e, spawn_pos);
-    //forceOrientation(*e, spawn_pyr);
+void respawn(MapClientSession &cl, const char* spawn_type)
+{
+    qCDebug(logScripts) << "respawn Called";
 
+    QString spawn_name = QString::fromUtf8(spawn_type);
+    Entity *e = cl.m_ent;
+
+    // Spawn player position and PYR
+    glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
+    glm::vec3 spawn_pyr = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    auto spawners = cl.m_current_map->getSpawners();
+
+    if(!spawners.empty())
+    {
+        glm::mat4 v = glm::mat4(1.0f);
+        auto spawn_list = spawners.values(spawn_name);
+        if(!spawn_list.empty())
+        {
+            v = spawn_list[rand() % spawn_list.size()];
+
+            // Position
+            spawn_pos = glm::vec3(v[3]);
+
+            // Orientation
+            auto valquat = glm::quat_cast(v);
+            spawn_pyr = toCoH_YPR(valquat);
+
+            forcePosition(*e, spawn_pos);
+            forceOrientation(*e, spawn_pyr);
+        }
+        else
+        {
+            qCDebug(logScripts) << "spawn_list for " << spawn_name << " is empty.";
+        }
+    }
+    else
+    {
+        qCDebug(logScripts) << "spawners empty";
+    }
 }
 
 //! @}
