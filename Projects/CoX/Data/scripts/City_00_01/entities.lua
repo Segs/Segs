@@ -29,8 +29,10 @@ entity_interact = function(id, location)
     else
         printDebug("entity id " .. tostring(id))
     end
+    if(id == 21) then
+        --Test Store in city hall  x: -44.5 y: -784.0 z: -717.0
 
-    if(Contacts.OpenContactDialog(id) ~= true) then
+    elseif(Contacts.OpenContactDialog(id) ~= true) then
         -- Generic NPC
         -- Create generic NPC message script for zone?
         

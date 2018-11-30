@@ -31,6 +31,7 @@
 #include "Common/Messages/Map/EmailRead.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
 #include "Common/Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/Stores.h"
 #include "Common/Messages/Map/Tasks.h"
 #include "Logging.h"
 
@@ -1454,6 +1455,21 @@ void respawn(MapClientSession &cl, const char* spawn_type)
     {
         qCDebug(logScripts) << "spawners empty";
     }
+}
+
+void OpenStore(MapClientSession &sess)
+{
+    Store store;
+    store.m_npc_idx = 21; // Freedom_Corp_Female_01
+    //store.m_count = 2;
+    store.m_item_count = std::vector<int>(100,200);
+    std::vector<QString> items;
+    items.push_back("Test1");
+    items.push_back("Test2");
+    store.m_store_items = items;
+    qCDebug(logSlashCommand) << "Sending OpenStore...";
+    sess.addCommand<StoreOpen>(store);
+
 }
 
 //! @}

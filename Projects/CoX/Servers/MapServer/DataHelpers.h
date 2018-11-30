@@ -93,6 +93,7 @@ void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &
 void sendDoorAnimExit(MapClientSession &sess, bool force_move);
 void sendClueList(MapClientSession &sess);
 void sendSouvenirList(MapClientSession &sess);
+void OpenStore(MapClientSession &sess);
 
 /*
  * usePower and increaseLevel here to provide access to
