@@ -166,7 +166,7 @@ Note: if you choose not to `source activate.env`, you can run the commands via `
 
 INSTALL SEGS ON A HEADLESS UBUNTU SERVER 18.04
 ------
-This is tested on a fresh Ubuntu 18.04 LXD Container.
+This has been tested several times and works fine on a fresh Ubuntu 18.04 LXD container.  
 
 **Install dependencies**
 ```
@@ -199,20 +199,20 @@ cd /opt/segs/
 cp settings_template.cfg settings.cfg
 vi settings.cfg
 ```
-**Copy COX content to the SEGS-Server data directory**
+**Copy COX content to the SEGS-Server data directory**  
 Upload or copy the *.pigg files out of your COH-Clients piggs directory ```"C:\Program Files (x86)\CoX\piggs"```
 to the segs data directory ```"/opt/segs/data"``` and use the line below to extract them.
 ```
 find /opt/segs/data/ -name '*.pigg' -exec ./piggtool -x {} /opt/segs/data/ \;
 ```
-**Create gamedb and users**
+**Create gamedb and users**  
 Inside the SEGS-Server directory ```"/opt/segs"``` use dbtool to create the gamedb and admin user.
 ```
 ./dbtool -f create
 ./dbtool adduser -l <username> -p <password> -a 9
 ```
 
-**Configure SEGS as SystemD service and start**
+**Configure SEGS as SystemD service and start**  
 Switch to root (or sudo user) for the last steps and create system service.
 ```
 vi /etc/systemd/system/segs.service
@@ -246,8 +246,7 @@ Watch logs
 ```
 journalctl -u segs
 ```
-
-
+  
 CONTRIBUTE TO DEVELOPMENT
 ------
 
