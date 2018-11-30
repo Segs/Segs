@@ -14,18 +14,18 @@
 namespace SEGSEvents
 {
 // [[ev_def:type]]
-class ForceLogout final : public GameCommandEvent
+class ForceLogout final : public MapLinkEvent
 {
 public:
     // [[ev_def:field]]
     QString reason;
-    ForceLogout() :GameCommandEvent(evForceLogout) {}
-    ForceLogout(const QString &_reason) :GameCommandEvent(evForceLogout),reason(_reason)
+    ForceLogout() :MapLinkEvent(evForceLogout) {}
+    ForceLogout(const QString &_reason) :MapLinkEvent(evForceLogout),reason(_reason)
     {}
     void serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1, type()-evFirstServerToClient); //packet 12
-        bs.StoreString(reason); // opcode
+        bs.StorePackedBits(1, 12); //packet 12
+        bs.StoreString(reason);
     }
     void serializefrom(BitStream &bs) override
     {

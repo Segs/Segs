@@ -1287,10 +1287,9 @@ void sendForceLogout(MapClientSession &cl, const char* name, const char* message
     }
     else
     {
-        MapClientSession *session = new MapClientSession();
-        session->m_ent = e;
+        MapClientSession *tgt = e->m_client;
         qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
-        session->addCommand<ForceLogout>(logout_message);
+        tgt->link()->putq(new ForceLogout(logout_message));
     }
 }
 
