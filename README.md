@@ -181,7 +181,7 @@ apt install build-essential cmake git qt5-default libqt5websockets5-dev qtdeclar
 useradd -s /bin/bash -r segs
 chmod o+w /usr/src /opt
 ```
-NOTE: Please be aware that segs may pose security risks, and that permissions may need to be adjusted for use on the internet.
+NOTE: Please be aware that segs may pose security risks, and that permissions and firewall may need to be adjusted for use on the internet.
 
 **3. Build SEGS-Server binarys**  
 
@@ -210,7 +210,7 @@ Upload or copy the *.pigg files out of your COH-Clients piggs directory ```"C:\P
 to the segs data directory ```"/opt/segs/data"``` and use the line below to extract them.  
 
 ```
-find /opt/segs/data/ -name '*.pigg' -exec ./piggtool -x {} /opt/segs/data/ \;
+find /opt/segs/data/ -name '*.pigg' -exec /opt/segs/piggtool -x {} /opt/segs/data/ \;
 ```
 
 **6. Create gamedb and users**  
@@ -258,9 +258,9 @@ Start SEGS
 systemctl start segs
 ```
 
-Watch logs
+Watch the log
 ```
-journalctl -u segs
+journalctl -u segs -f
 ```
   
 CONTRIBUTE TO DEVELOPMENT
