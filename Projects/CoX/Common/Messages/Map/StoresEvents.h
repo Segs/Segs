@@ -93,7 +93,7 @@ namespace SEGSEvents
             }
             else
             {
-                //Can't sell inspirations?
+                qCWarning(logMapEvents) << "Trying to sell inspiration!";
                 m_enhancement_idx = bs.GetPackedBits(4);
             }
             qCDebug(logMapEvents) << "StoreSellItem Event";

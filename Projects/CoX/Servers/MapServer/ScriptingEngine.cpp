@@ -20,7 +20,7 @@
 #include "Messages/Map/ChatMessage.h"
 #include "Messages/Map/FloatingDamage.h"
 #include "Messages/Map/StandardDialogCmd.h"
-#include "Messages/Map/Stores.h"
+#include "Messages/Map/StoresEvents.h"
 #include "Messages/Map/InfoMessageCmd.h"
 #include "Common/GameData/Character.h"
 #include "Common/GameData/CharacterHelpers.h"
@@ -310,7 +310,7 @@ void ScriptingEngine::registerTypes()
             QStringList parts = stores.split(",");
             for (const QString &s: parts)
             {
-                e->m_store_items.push_back(StoreItem(s, item_count));
+                e->m_store_items.push_back(StoreItem(s.trimmed(), item_count));
             }
         }
         else
@@ -403,7 +403,7 @@ void ScriptingEngine::registerTypes()
     m_private->m_lua["Player"]["GiveInf"] = [this](const int inf)
     {
         MapClientSession *cl = m_private->m_lua["client"];
-        giveInf(*cl, inf);
+        modifyInf(*cl, inf);
     };
     m_private->m_lua["Player"]["GiveInsp"] = [this](const char* name)
     {

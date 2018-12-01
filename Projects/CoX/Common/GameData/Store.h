@@ -6,10 +6,22 @@
  */
 
 #pragma once
-
 #include "CommonNetStructures.h"
 #include "cereal/cereal.hpp"
 #include "Logging.h"
+class Entity;
+
+class StoreTransactionResult
+{
+public:
+    bool                m_is_success = false;
+    bool                m_is_sell = false;
+    bool                m_is_insp = false;
+    QString             m_item_name;
+    int                 m_inf_amount;
+    uint32_t            m_enhancement_lvl;
+    QString             m_message;
+};
 
 
 class StoreItem
@@ -40,10 +52,15 @@ public:
     uint32_t           m_npc_idx;
     vStoreItems        m_store_Items;
 
+
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version);
 
+    static StoreTransactionResult buyItem(Entity *e, QString item_name);
+    static StoreTransactionResult sellItem(Entity *e, QString item_name);
+    static int getPrice(Entity *e, QString item_name, bool is_sells);
 };
+
 
 
 

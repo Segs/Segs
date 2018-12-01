@@ -49,6 +49,7 @@ SEGS_LOGGING_CATEGORY(logTrades,       "log.trades")
 SEGS_LOGGING_CATEGORY(logTailor,       "log.tailor")
 SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logSceneGraph,   "log.scenegraph")
+SEGS_LOGGING_CATEGORY(logStores,       "log.stores")
 SEGS_LOGGING_CATEGORY(logTasks,        "log.tasks")
 
 void setLoggingFilter()
@@ -86,6 +87,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.tailor="         + config.value("log_tailor","false").toString();
     filter_rules += "\nlog.scripts="        + config.value("log_scripts","false").toString();
     filter_rules += "\nlog.scenegraph="     + config.value("log_scenegraph","false").toString();
+    filter_rules += "\nlog.stores="         + config.value("log_stores","false").toString();
     filter_rules += "\nlog.tasks="          + config.value("log_tasks","false").toString();
     config.endGroup(); // Logging
 
@@ -159,6 +161,8 @@ void toggleLogging(QString &category)
         cat = &logScripts();
     else if(category.contains("scenegraph",Qt::CaseInsensitive))
         cat = &logSceneGraph();
+    else if(category.contains("stores", Qt::CaseInsensitive))
+        cat = &logStores();
     else if(category.contains("tasks",Qt::CaseInsensitive))
         cat = &logTasks();
     else

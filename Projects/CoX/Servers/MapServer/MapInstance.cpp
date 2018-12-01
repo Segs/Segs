@@ -45,6 +45,7 @@
 #include "GameData/map_definitions.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/playerdata_serializers.h"
+#include "GameData/Store.h"
 #include "Messages/EmailService/EmailEvents.h"
 #include "Messages/Game/GameEvents.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
@@ -53,7 +54,7 @@
 #include "Messages/Map/MapEvents.h"
 #include "Messages/Map/MapXferRequest.h"
 #include "Messages/Map/MapXferWait.h"
-#include "Messages/Map/Stores.h"
+#include "Messages/Map/StoresEvents.h"
 #include "Messages/Map/Tasks.h"
 
 #include <ace/Reactor.h>
@@ -3031,9 +3032,8 @@ void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
 
 void MapInstance::on_store_sell_item(StoreSellItem* ev)
 {
-    qCDebug(logMapEvents) << "on_store_sell_item. NpcId: " << ev->m_npc_idx << " isEnhancement: " << ev->m_is_enhancement << " TrayNumber: " << ev->m_tray_number << " enhancement_idx: " << ev->m_enhancement_idx;
+    qCDebug(logStores) << "on_store_sell_item. NpcId: " << ev->m_npc_idx << " isEnhancement: " << ev->m_is_enhancement << " TrayNumber: " << ev->m_tray_number << " enhancement_idx: " << ev->m_enhancement_idx;
     MapClientSession& session = m_session_store.session_from_event(ev);
-    const GameDataStore &data(getGameData());
     Entity *e = getEntity(&session, ev->m_npc_idx);
 
     QString enhancement_name;
@@ -3042,98 +3042,47 @@ void MapInstance::on_store_sell_item(StoreSellItem* ev)
 
     if(enhancement_name.isEmpty())
     {
-        qCDebug(logMapEvents) << "on_store_sell_item. EnhancementId " << ev->m_enhancement_idx << " not found";
+        qCDebug(logStores) << "on_store_sell_item. EnhancementId " << ev->m_enhancement_idx << " not found";
         return;
     }
 
-    qCDebug(logMapEvents) << "on_store_sell_item. Enhancement to find." << enhancement_name;
-
-    Shop_Data shop_data;
     if(e->m_is_store && !e->m_store_items.empty())
     {
         //Find store in entity store list
-        for(const StoreItem &si: e->m_store_items)
-        {
-            bool found = false;
-            for(const Shop_Data &shop: data.m_shops_data)
-            {
-                if(si.m_store_name == shop.m_Name)
-                {
-                    shop_data = shop;
-                    break;
-                }
-            }
-            if(found)
-                break;
-        }
+        StoreTransactionResult result = Store::sellItem(e, enhancement_name);
 
-        //Find enhancement to sell item info
-        ShopItemInfo_Data itemInfo;
-        for(const ShopItemInfo_Data &item_info: data.m_shop_items_data)
+        if(result.m_is_success)
         {
-            if(item_info.m_Name == enhancement_name)
-            {
-                itemInfo = item_info;
-                qCDebug(logMapEvents) << "on_store_sell_item. Enhancement found";
-            }
+            modifyInf(session, result.m_inf_amount);
+            trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_enhancement_idx);
+            sendChatMessage(MessageChannel::SERVER,result.m_message,&session,session);
         }
-
-        for (const int &dept: itemInfo.m_Departments)
-        {
-            //Find the dept to get markup for selling item.
-            for (const ShopBuySell_Data &sd: shop_data.m_Sells)
-            {
-                if(sd.m_Department == dept)
-                {
-                    uint32_t price = itemInfo.m_Buy * sd.m_Markup; // Sell and Buy reversed
-                    giveInf(session, price);
-                    trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_enhancement_idx);
-                    QString message = QString("Sold %1 for %2 Influence").arg(enhancement_name).arg(price);
-                    sendChatMessage(MessageChannel::SERVER,message,&session,session);
-                    return;
-                }
-            }
-        }
+        else
+            qCDebug(logStores) << "Error processing sellItem";
     }
     else
-        qCDebug(logMapEvents) << "Entity is not a store or has no items";
+        qCDebug(logStores) << "Entity is not a store or has no items";
 }
 
 void MapInstance::on_store_buy_item(StoreBuyItem* ev)
 {
     qCDebug(logMapEvents) << "on_store_buy_item. NpcId: " <<ev->m_npc_idx << " ItemName: " << ev->m_item_name;
     MapClientSession& session = m_session_store.session_from_event(ev);
-    const GameDataStore &data(getGameData());
-    for(const ShopItemInfo_Data &item_info: data.m_shop_items_data)
-    {
-        if(item_info.m_Name == ev->m_item_name)
-        {
-            qCDebug(logMapEvents) << "on_store_buy_item. Enhancement found";
-            lowerInf(session, item_info.m_Sell); // Sell and Buy reversed
-            if(item_info.m_Power.m_PowerCategory == "Inspirations")
-            {
-                QString insp_name = item_info.m_Name;
-                qCDebug(logMapEvents) << "on_store_buy_item. Inspiration: " << insp_name;
-                giveInsp(session, insp_name);
-                QString message = QString("Bought %1 for %2 Influence").arg(insp_name).arg(item_info.m_Sell);
-                sendChatMessage(MessageChannel::SERVER,message,&session,session);
-            }
-            else
-            {
-                QVector<QStringRef> parts;
-                int ending_index = ev->m_item_name.lastIndexOf("_")+1;
-                parts.push_back(ev->m_item_name.midRef(0,ending_index - 1));
-                parts.push_back(ev->m_item_name.midRef(ending_index, ev->m_item_name.length() - ending_index));
-                QString name = parts[0].toString();
-                qCDebug(logMapEvents) << "on_store_buy_item. Enhancement: " << name << " lvl: " << parts[1].toString();
+    Entity *e = getEntity(&session, ev->m_npc_idx);
 
-                giveEnhancement(session, name, parts[1].toInt());
-                QString message = QString("Bought %1 for %2 Influence").arg(name).arg(item_info.m_Sell);
-                sendChatMessage(MessageChannel::SERVER,message,&session,session);
-            }
-            break;
-        }
+    StoreTransactionResult result = Store::buyItem(e, ev->m_item_name);
+    if(result.m_is_success)
+    {
+        modifyInf(session, result.m_inf_amount);
+        if(result.m_is_insp)
+            giveInsp(session, result.m_item_name);
+        else
+            giveEnhancement(session, result.m_item_name, result.m_enhancement_lvl);
+
+        sendChatMessage(MessageChannel::SERVER,result.m_message,&session,session);
     }
+    else
+        qCDebug(logStores) << "Error processing buyItem";
 }
 
 

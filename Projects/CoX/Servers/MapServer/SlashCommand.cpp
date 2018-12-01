@@ -2167,7 +2167,8 @@ void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess)
 {
-    OpenStore(sess);
+    qCDebug(logSlashCommand) << "OpenStore...";
+    openStore(sess, 0); // Default entity_idx as it doesn't change anything currently
 }
 
 

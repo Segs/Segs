@@ -14,7 +14,7 @@
 #include "Messages/Map/MapEvents.h"
 #include "Common/Messages/Map/ClueList.h"
 #include "Common/Messages/Map/ContactList.h"
-#include "Common/Messages/Map/Stores.h"
+#include "Common/Messages/Map/StoresEvents.h"
 #include "Common/Messages/Map/Tasks.h"
 
 using namespace SEGSEvents;

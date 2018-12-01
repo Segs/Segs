@@ -10,9 +10,14 @@ LuaBot.variation = 1;
 LuaBot.expected = false;
 LuaBot.entityId = nil;
 LuaBot.minLevel = 0; -- Level requirement?
+
 LuaBot.isStore = true;
 LuaBot.storeNames = "All_SL9_CL2,FBSA";
 LuaBot.storeInventoryCount = 100;
+LuaBot.SetupStore = function()
+    MapClientSession.SetNpcStore(contactsForZone.LuaBot.entityId, contactsForZone.LuaBot.storeNames, contactsForZone.LuaBot.storeInventoryCount);
+end
+
 LuaBot.contactDialogs = {};
 LuaBot.contacts = {};
 LuaBot.tasks = {};
@@ -27,10 +32,6 @@ LuaBot.souvenir = Souvenir.new();
 LuaBot.souvenir.name = "LuaBot souvenir";
 LuaBot.souvenir.description = "A Souvenir from LuaBot";
 LuaBot.souvenir.icon = "icon"; -- unknown?
-
-LuaBot.SetupStore = function()
-    MapClientSession.SetNpcStore(contactsForZone.LuaBot.entityId, contactsForZone.LuaBot.storeNames, contactsForZone.LuaBot.storeInventoryCount);
-end
 
 LuaBot.dialogPages = {};
 

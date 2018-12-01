@@ -550,16 +550,19 @@ bool GameDataStore::read_sequencer_definitions(const QString &directory_path)
 
 bool GameDataStore::read_store_data(const QString &directory_path)
 {
+    qDebug() << "Loading shop data:";
     return read_data_to<AllShops_Data, shoplist_i0_requiredCrc>(directory_path, "bin/stores.bin", m_shops_data);
 }
 
 bool GameDataStore::read_store_items_data(const QString &directory_path)
 {
+    qDebug() << "Loading shop items:";
     return read_data_to<AllShopItems_Data, shopitems_i0_requiredCrc>(directory_path, "bin/items.bin", m_shop_items_data);
 }
 
 bool GameDataStore::read_store_depts_data(const QString &directory_path)
 {
+    qDebug() << "Loading shop depts:";
     return read_data_to<AllShopDepts_Data, shopdepts_i0_requiredCrc>(directory_path, "bin/depts.bin", m_shop_depts_data);
 }
 
