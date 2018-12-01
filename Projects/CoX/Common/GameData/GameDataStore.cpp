@@ -25,6 +25,7 @@
 #include "Common/GameData/trick_serializers.h"
 #include "Common/GameData/seq_serializers.h"
 #include "Common/GameData/shop_serializers.h"
+#include "Common/GameData/shop_definitions.h"
 #include "Common/GameData/CommonNetStructures.h"
 #include "Logging.h"
 #include "Settings.h"
@@ -307,8 +308,8 @@ bool GameDataStore::read_game_data(const QString &directory_path)
         return false;
     if(!read_store_items_data(directory_path))
         return false;
-    //if(!read_store_depts_data(directory_path)) Not needed?
-        //return false;
+    if(!read_store_depts_data(directory_path)) //Not needed?
+        return false;
     qInfo().noquote() << "Finished reading game data:  done in"<<float(load_timer.elapsed())/1000.0f<<"s";
     {
         TIMED_LOG({
@@ -559,8 +560,7 @@ bool GameDataStore::read_store_items_data(const QString &directory_path)
 
 bool GameDataStore::read_store_depts_data(const QString &directory_path)
 {
-    //return read_data_to<AllShopDepts_Data, shopdepts_i0_requiredCrc>(directory_path, "bin/depts.bin", m_shop_depts_data);
-    return true;
+    return read_data_to<AllShopDepts_Data, shopdepts_i0_requiredCrc>(directory_path, "bin/depts.bin", m_shop_depts_data);
 }
 
 const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)

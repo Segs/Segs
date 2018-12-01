@@ -1477,4 +1477,12 @@ void OpenStore(MapClientSession &sess)
     sess.addCommand<StoreOpen>(store);
 }
 
+void lowerInf(MapClientSession &sess, uint32_t amount)
+{
+    uint32_t inf = getInf(*sess.m_ent->m_char);
+    inf = inf - amount;
+    setInf(*sess.m_ent->m_char, inf);
+
+}
+
 //! @}

@@ -36,7 +36,7 @@ void StoreItem::serialize(Archive &archive, uint32_t const version)
         qCritical() << "Failed to serialize StoreItem, incompatible serialization format version " << version;
         return;
     }
-    archive(cereal::make_nvp("itemName",m_item_name));
+    archive(cereal::make_nvp("itemName",m_store_name));
     archive(cereal::make_nvp("itemCount",m_item_count));
 }
 

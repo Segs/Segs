@@ -20,6 +20,7 @@
 #include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/CoHMath.h"
 #include "Common/GameData/Contact.h"
+#include "Common/GameData/Store.h"
 
 #include <glm/gtc/constants.hpp>
 
@@ -235,6 +236,8 @@ public:
         bool                player_type                 = false;
         bool                m_destroyed                 = false;
         bool                m_is_fading                 = true;
+        bool                m_is_store                  = false;
+        vStoreItems         m_store_items;
 
         std::function<void(int)>  m_active_dialog      = NULL;
 

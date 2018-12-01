@@ -5,6 +5,8 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
+#pragma once
+
 #include "CommonNetStructures.h"
 #include "cereal/cereal.hpp"
 #include "Logging.h"
@@ -14,13 +16,13 @@ class StoreItem
 {
 public:
     enum : uint32_t {class_version       = 1};
-    QString     m_item_name;
+    QString     m_store_name;
     int         m_item_count;
 
     StoreItem(){}
     StoreItem(QString item_name, int item_count)
     {
-        m_item_name = item_name;
+        m_store_name = item_name;
         m_item_count = item_count;
     }
 

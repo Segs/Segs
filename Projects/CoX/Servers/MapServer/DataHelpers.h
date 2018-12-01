@@ -132,3 +132,4 @@ void removeContact(MapClientSession &sess, Contact contact);
 void revive(MapClientSession *cl, int revive_lvl);
 void logSpawnLocations(MapClientSession &cl, const char* spawn_type);
 void respawn(MapClientSession &cl, const char* spawn_type);
+void lowerInf(MapClientSession &sess, uint32_t amount);

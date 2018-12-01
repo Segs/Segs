@@ -20,6 +20,7 @@
 #include "Messages/Map/ChatMessage.h"
 #include "Messages/Map/FloatingDamage.h"
 #include "Messages/Map/StandardDialogCmd.h"
+#include "Messages/Map/Stores.h"
 #include "Messages/Map/InfoMessageCmd.h"
 #include "Common/GameData/Character.h"
 #include "Common/GameData/CharacterHelpers.h"
@@ -296,6 +297,37 @@ void ScriptingEngine::registerTypes()
         QString npc_def_name = QString::fromUtf8(npc_def);
         QString name = QString::fromUtf8(npc_name);
         addNpc(*cl, npc_def_name, loc, variation, name);
+    };
+    m_private->m_lua["MapClientSession"]["SetNpcStore"] = [this](int entity_idx, const char* store_name, int item_count)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        Entity *e = getEntity(cl, entity_idx);
+        e->m_is_store = true;
+        QString stores = store_name;
+
+        if(stores.contains(','))
+        {
+            QStringList parts = stores.split(",");
+            for (const QString &s: parts)
+            {
+                e->m_store_items.push_back(StoreItem(s, item_count));
+            }
+        }
+        else
+        {
+            e->m_store_items.push_back(StoreItem(store_name, item_count));
+        }
+
+    };
+    m_private->m_lua["MapClientSession"]["OpenStore"] = [this](int entity_idx)
+    {
+         MapClientSession *cl = m_private->m_lua["client"];
+         Entity *e = getEntity(cl, entity_idx);
+         Store store;
+         store.m_npc_idx = entity_idx;
+         store.m_store_Items = e->m_store_items;
+         cl->addCommand<StoreOpen>(store);
+
     };
     m_private->m_lua["MapClientSession"]["AddNpcWithOrientation"] = [this](const char* name, glm::vec3 &loc, int variation, glm::vec3 &ori)
     {

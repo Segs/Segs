@@ -34,7 +34,7 @@ namespace SEGSEvents
 
             for(const StoreItem &store_item: m_store.m_store_Items)
             {
-                bs.StoreString(store_item.m_item_name);
+                bs.StoreString(store_item.m_store_name);
                 bs.StorePackedBits(8, store_item.m_item_count);
             }
         }
