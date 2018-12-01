@@ -26,7 +26,7 @@ static QHash<QString,int> contactLinkHash = {
     {"CONTACTLINK_INTRODUCE"            ,9},
     {"CONTACTLINK_INTRODUCE_CONTACT1"   ,0x0A},
     {"CONTACTLINK_INTRODUCE_CONTACT2"   ,0x0B},
-    {"CONTACTLINK_ACCEPT_CONTACT2"      ,0x0D},
+    {"CONTACTLINK_ACCEPT_CONTACT1"      ,0x0C},
     {"CONTACTLINK_ACCEPT_CONTACT2"      ,0x0D},
     {"CONTACTLINK_GOTOSTORE"            ,0x0E},
     {"CONTACTLINK_TRAIN"                ,0x0F},

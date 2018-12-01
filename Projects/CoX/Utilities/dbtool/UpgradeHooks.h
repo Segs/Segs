@@ -9,4 +9,4 @@
 
 #include "UpgradeDB.h"
 
-void runUpgrade(const VersionSchema &cfgs, const VersionSchema &tpls);
+void runUpgrade(const DatabaseConfig &cfg, const TableSchema &current);

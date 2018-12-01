@@ -19,7 +19,7 @@
 
 namespace
 {
-    bool loadFrom(BinStore *s,ShopBuySell_Data &target)
+    bool loadFrom(BinStore *s, ShopBuySell_Data &target)
     {
         bool ok = true;
         s->prepare();
@@ -30,7 +30,7 @@ namespace
         return s->end_encountered();
     }
 
-    bool loadFrom(BinStore *s,ShopItem_Data &target)
+    bool loadFrom(BinStore *s, ShopItem_Data &target)
     {
         bool ok = true;
         s->prepare();
@@ -40,7 +40,7 @@ namespace
         return s->end_encountered();
     }
 
-    bool loadFrom(BinStore *s,ShopDeptName_Data *target)
+    bool loadFrom(BinStore *s, ShopDeptName_Data *target)
     {
         bool ok = true;
         s->prepare();
@@ -50,7 +50,7 @@ namespace
         return s->end_encountered();
     }
 
-    bool loadFrom(BinStore *s,Shop_Data &target)
+    bool loadFrom(BinStore *s, Shop_Data &target)
     {
         bool ok = true;
         s->prepare();
@@ -64,19 +64,25 @@ namespace
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if("Sell"==_name) {
+            if("Sell"==_name)
+            {
                 ShopBuySell_Data nt;
                 ok &= loadFrom(s,nt);
                 target.m_Sells.push_back(nt);
-            } else if("Buy"==_name) {
+            }
+            else if("Buy"==_name)
+            {
                 ShopBuySell_Data nt;
                 ok &= loadFrom(s,nt);
                 target.m_Buys.push_back(nt);
-            } else if("Item"==_name) {
+            }
+            else if("Item"==_name)
+            {
                 ShopItem_Data nt;
                 ok &= loadFrom(s,nt);
                 target.m_Items.push_back(nt);
-            } else
+            }
+            else
                 assert(!"unknown field referenced.");
             s->nest_out();
         }
@@ -97,7 +103,7 @@ namespace
         return s->end_encountered();
     }
 
-    bool loadFrom(BinStore *s,ShopItemInfo_Data *target)
+    bool loadFrom(BinStore *s, ShopItemInfo_Data *target)
     {
         bool ok = true;
         s->prepare();
@@ -141,7 +147,8 @@ bool loadFrom(BinStore *s, AllShops_Data &target)
             Shop_Data nt;
             ok &= loadFrom(s,nt);
             target.push_back(nt);
-        } else
+        }
+        else
             assert(!"unknown field referenced.");
         s->nest_out();
     }
@@ -156,6 +163,7 @@ bool loadFrom(BinStore * s, AllShopItems_Data *target)
     assert(ok);
     if(s->end_encountered())
         return ok;
+
     QByteArray _name;
     while(s->nesting_name(_name))
     {
@@ -164,10 +172,12 @@ bool loadFrom(BinStore * s, AllShopItems_Data *target)
             ShopItemInfo_Data nt;
             ok &= loadFrom(s,&nt);
             target->emplace_back(nt);
-        } else
+        }
+        else
             assert(!"unknown field referenced.");
         s->nest_out();
     }
+
     return ok;
 }
 
@@ -187,7 +197,8 @@ bool loadFrom(BinStore * s, AllShopDepts_Data *target)
             ShopDeptName_Data nt;
             ok &= loadFrom(s,&nt);
             target->push_back(nt);
-        } else
+        }
+        else
             assert(!"unknown field referenced.");
         s->nest_out();
     }

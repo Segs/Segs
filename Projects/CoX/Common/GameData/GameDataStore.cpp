@@ -11,7 +11,7 @@
  */
 
 #include "GameDataStore.h"
-#include "trick_definitions.h"
+#include "Common/GameData/trick_definitions.h"
 
 #include "Common/GameData/DataStorage.h"
 #include "Common/GameData/costume_serializers.h"
@@ -535,10 +535,13 @@ bool GameDataStore::read_fx(const QString &directory_path)
     return read_data_to<std::vector<struct FxInfo>, fxinfos_i0_requiredCrc>(directory_path, "bin/fxinfo.bin",
                                                                             m_fx_infos);
 }
+
 bool GameDataStore::read_sequencer_definitions(const QString &directory_path)
 {
+    qDebug() << "Loading Sequencer Information:";
     return read_data_to<SequencerList, seqencerlist_i0_requiredCrc>(directory_path, "bin/sequencers.bin",m_seq_definitions);
 }
+
 const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
 {
     return m_all_powers.m_categories.at(pcat_idx).m_PowerSets.at(pset_idx);

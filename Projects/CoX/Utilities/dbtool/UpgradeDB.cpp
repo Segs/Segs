@@ -45,7 +45,7 @@ void doUpgrade(const std::vector<DatabaseConfig> &configs)
         {
             qWarning() << "Database" << cfg.m_dbname
             << "does not exist! Please create using `create` command.";
-            continue;
+            return;
         }
 
         // check database version against schema in default folder
@@ -56,6 +56,7 @@ void doUpgrade(const std::vector<DatabaseConfig> &configs)
         if(current_db == tpl_db || tables_to_update.isEmpty())
         {
             qInfo() << "Database" << cfg.m_dbname << "is the latest version! No upgrade necessary.";
+            ++i; // increment here or tpl will be the same as last iteration
             continue;
         }
 
@@ -64,8 +65,10 @@ void doUpgrade(const std::vector<DatabaseConfig> &configs)
         for(const QString &table : tables_to_update)
         {
             qInfo() << "Updating" << table;
-
         }
+
+        // when all done, delete temp databases
+        // removeDatabase(cfg);
 
         /* PSUEDOCODE:
             // check database versions against template files

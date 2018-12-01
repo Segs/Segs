@@ -50,15 +50,15 @@ void upgradeHandler_001(const DatabaseConfig &cfg)
 /*
  * runUpgrade for executing upgrade handlers
  */
-void runUpgrade(const VersionSchema &cfgs, const VersionSchema &tpls)
+void runUpgrade(const DatabaseConfig &cfg, const TableSchema &current)
 {
-    for (const auto &hook : g_defined_upgrade_hooks)
+    for (const UpgradeHook &hook : g_defined_upgrade_hooks)
     {
-        if(hook.m_version_schema == cfgs)
+        if(hook.m_table_schema == current)
         {
-            hook.m_handler(str, e);
+            hook.m_handler(cfg);
             return; // return here to avoid unknown hook msg
         }
     }
-    qWarning() << "Unknown db upgrade hook:" << str;
+    qWarning() << "Unknown db upgrade hook:" << current.m_db_name << current.m_table_name << current.m_version;
 }

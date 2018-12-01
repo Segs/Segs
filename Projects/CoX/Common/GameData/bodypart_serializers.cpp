@@ -58,18 +58,22 @@ bool loadFrom(BinStore * s, AllBodyParts_Data * target)
     bool ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
+
     QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if("BodyPart"==_name) {
+        if("BodyPart"==_name)
+        {
             BodyPart_Data nt;
             ok &= loadFrom(s,&nt);
             target->emplace_back(nt);
-        } else
+        }
+        else
             assert(!"unknown field referenced.");
         s->nest_out();
     }
+
     assert(ok);
     return ok;
 }
