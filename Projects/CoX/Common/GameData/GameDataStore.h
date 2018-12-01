@@ -16,6 +16,7 @@
 #include "Common/GameData/npc_definitions.h"
 #include "Common/GameData/power_definitions.h"
 #include "Common/GameData/seq_definitions.h"
+#include "Common/GameData/shop_definitions.h"
 
 #include "NpcStore.h"
 
@@ -43,6 +44,9 @@ class GameDataStore
         bool            read_pi_schedule(const QString &directory_path);
         bool            read_fx(const QString &directory_path);
         bool            read_sequencer_definitions(const QString &directory_path);
+        bool            read_store_data(const QString &directory_path);
+        bool            read_store_items_data(const QString &directory_path);
+        bool            read_store_depts_data(const QString &directory_path);
 public:
                         GameDataStore();
                         ~GameDataStore();
@@ -72,6 +76,9 @@ public:
         Parse_Effectiveness         m_effectiveness_below;
         Parse_PI_Schedule           m_pi_schedule;
         std::vector<struct FxInfo>  m_fx_infos;
+        AllShops_Data               m_shops_data;
+        AllShopItems_Data           m_shop_items_data;
+        AllShopDepts_Data           m_shop_depts_data;
         float                       m_player_fade_in;
         float                       m_motd_timer = 60 * 60; // default 1 hr
         QStringList                 m_costume_slot_unlocks; // used in finalizeLevel() to award costume slots

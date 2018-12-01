@@ -18,7 +18,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Stores.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Store.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.cpp

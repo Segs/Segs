@@ -1460,16 +1460,21 @@ void respawn(MapClientSession &cl, const char* spawn_type)
 void OpenStore(MapClientSession &sess)
 {
     Store store;
-    store.m_npc_idx = 21; // Freedom_Corp_Female_01
-    //store.m_count = 2;
-    store.m_item_count = std::vector<int>(100,200);
-    std::vector<QString> items;
-    items.push_back("Test1");
-    items.push_back("Test2");
-    store.m_store_items = items;
+    store.m_npc_idx = 5; // Freedom_Corp_Female_01 = 985
+    vStoreItems store_items;
+
+    store_items.push_back(StoreItem("All_SL9_CL2", 100));
+    store_items.push_back(StoreItem("FBSA", 100));
+    //store_items.push_back(StoreItem("Mutant_SL1_CL2", 100));
+    //store_items.push_back(StoreItem("Mutant_SL1_CL3", 100));
+    //store_items.push_back(StoreItem("Generic_Stun", 100));
+    //store_items.push_back(StoreItem("Generic_Immobilize", 100));
+    //store_items.push_back(StoreItem("Generic_Knockback", 100));
+
+    store.m_store_Items = store_items;
+
     qCDebug(logSlashCommand) << "Sending OpenStore...";
     sess.addCommand<StoreOpen>(store);
-
 }
 
 //! @}

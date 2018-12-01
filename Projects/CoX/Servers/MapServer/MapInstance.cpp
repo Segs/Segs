@@ -53,6 +53,7 @@
 #include "Messages/Map/MapEvents.h"
 #include "Messages/Map/MapXferRequest.h"
 #include "Messages/Map/MapXferWait.h"
+#include "Messages/Map/Stores.h"
 #include "Messages/Map/Tasks.h"
 
 #include <ace/Reactor.h>
@@ -526,6 +527,12 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evSouvenirDetailRequest:
             on_souvenir_detail_request(static_cast<SouvenirDetailRequest *>(ev));
+            break;
+        case evStoreSellItem:
+            on_store_sell_item(static_cast<StoreSellItem *>(ev));
+            break;
+    case evStoreBuyItem:
+            on_store_buy_item(static_cast<StoreBuyItem *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
@@ -3020,6 +3027,19 @@ void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
 
     }
     session.addCommand<SouvenirDetail>(souvenir_detail);
+}
+
+void MapInstance::on_store_sell_item(StoreSellItem* ev)
+{
+    qCDebug(logMapEvents) << "on_store_sell_item. NpcId: " << ev->m_npc_idx << " isEnhancement: " << ev->m_is_enhancement << " TrayNumber: " << ev->m_tray_number << " enhancement_idx: " << ev->m_enhancement_idx;
+    MapClientSession& session = m_session_store.session_from_event(ev);
+    //Remote sold enhancement
+    trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_enhancement_idx);
+}
+
+void MapInstance::on_store_buy_item(StoreBuyItem* ev)
+{
+    qCDebug(logMapEvents) << "on_store_buy_item. NpcId: " <<ev->m_npc_idx << " ItemName: " << ev->m_item_name;
 }
 
 

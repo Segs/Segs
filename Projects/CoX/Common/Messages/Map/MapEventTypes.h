@@ -150,6 +150,8 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evRecvSelectedTitles         ,266)
     EVENT_DECL(MapEventTypes, evDescriptionAndBattleCry    ,267)
     EVENT_DECL(MapEventTypes, evSouvenirDetailRequest      ,268)
+    EVENT_DECL(MapEventTypes, evStoreBuyItem               ,269)
+    EVENT_DECL(MapEventTypes, evStoreSellItem              ,270)
     EVENT_DECL(MapEventTypes, evBrowserClose               ,277)
 
 
