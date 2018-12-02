@@ -1475,6 +1475,7 @@ void modifyInf(MapClientSession &sess, int amount)
         inf = 0;
 
     setInf(*sess.m_ent->m_char, inf);
+}
 
 void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message)
 {
