@@ -10,6 +10,14 @@ LuaBot.variation = 1;
 LuaBot.expected = false;
 LuaBot.entityId = nil;
 LuaBot.minLevel = 0; -- Level requirement?
+
+LuaBot.isStore = true;
+LuaBot.storeNames = "All_SL9_CL2,FBSA";
+LuaBot.storeInventoryCount = 100;
+LuaBot.SetupStore = function()
+    MapClientSession.SetNpcStore(contactsForZone.LuaBot.entityId, contactsForZone.LuaBot.storeNames, contactsForZone.LuaBot.storeInventoryCount);
+end
+
 LuaBot.contactDialogs = {};
 LuaBot.contacts = {};
 LuaBot.tasks = {};
@@ -25,6 +33,7 @@ LuaBot.souvenir.name = "LuaBot souvenir";
 LuaBot.souvenir.description = "A Souvenir from LuaBot";
 LuaBot.souvenir.icon = "icon"; -- unknown?
 
+
 LuaBot.dialogPages = {};
 
 LuaBot.createContactDialogsWithHeroName = function(heroName)
@@ -38,8 +47,9 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
             button3 = {"Tasks","CONTACTLINK_MISSIONS"}, 
             button4 = {"MapMenu","CONTACTLINK_LONGMISSION"}, 
             button5 = {"Clues","CONTACTLINK_SHORTMISSION"}, 
-            button6 = {"",""},
-            button7 = {"Leave","CONTACTLINK_BYE"}
+            button6 = {"Store","CONTACTLINK_ACCEPTLONG"},
+            button7 = {"",""},
+            button8 = {"Leave","CONTACTLINK_BYE"}
         }
     }
     
@@ -93,6 +103,11 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
             Player.AddUpdateContact(contactStatus);
         end
     end
+
+    contactsForZone.LuaBot.dialogPages[1].actions["CONTACTLINK_ACCEPTLONG"] = function()
+        MapClientSession.OpenStore(contactsForZone.LuaBot.entityId);
+    end
+
 
     contactsForZone.LuaBot.dialogPages[10] = {};
     contactsForZone.LuaBot.dialogPages[10].contactDialog = {

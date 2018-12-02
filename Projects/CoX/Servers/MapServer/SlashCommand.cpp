@@ -122,6 +122,7 @@ void cmdHandler_AddCostumeSlot(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
@@ -240,6 +241,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
     {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
     {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
+    {{"openStore"}, "Open store Window", cmdHandler_OpenStore, 9},
     {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
 
     // For live value-testing
@@ -2166,6 +2168,13 @@ void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess)
     sess.m_current_map->load_map_lua();
 }
 
+
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess)
+{
+    qCDebug(logSlashCommand) << "OpenStore...";
+    openStore(sess, 0); // Default entity_idx as it doesn't change anything currently
+}
+  
 void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;

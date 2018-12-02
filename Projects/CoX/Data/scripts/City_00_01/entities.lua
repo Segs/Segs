@@ -29,7 +29,7 @@ entity_interact = function(id, location)
     else
         printDebug("entity id " .. tostring(id))
     end
-
+    
     if(Contacts.OpenContactDialog(id) ~= true) then
         -- Generic NPC
         -- Create generic NPC message script for zone?

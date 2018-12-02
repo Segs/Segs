@@ -92,6 +92,8 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evSouvenirDetail             ,172)
     EVENT_DECL(MapEventTypes, evTaskDetail                 ,175)
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
+    EVENT_DECL(MapEventTypes, evStoreOpen                  ,178)
+    EVENT_DECL(MapEventTypes, evStoreClose                 ,179)
     EVENT_DECL(MapEventTypes, evTrayAdd                    ,182)
     EVENT_DECL(MapEventTypes, evCombineEnhanceResponse     ,183)
     EVENT_DECL(MapEventTypes, evTailorOpen                 ,188)
@@ -147,6 +149,8 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evRecvSelectedTitles         ,266)
     EVENT_DECL(MapEventTypes, evDescriptionAndBattleCry    ,267)
     EVENT_DECL(MapEventTypes, evSouvenirDetailRequest      ,268)
+    EVENT_DECL(MapEventTypes, evStoreBuyItem               ,269)
+    EVENT_DECL(MapEventTypes, evStoreSellItem              ,270)
     EVENT_DECL(MapEventTypes, evBrowserClose               ,277)
 
 

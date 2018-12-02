@@ -206,8 +206,8 @@ int main(int argc,char **argv)
           case eBoostEffectiveness: doConvert(doLoadRef<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
           case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
           case eShops:        doConvert(doLoadRef<AllShops_Data>(&binfile),target_basename,json_output); break;
-          case eShopItems:    doConvert(doLoad<AllShopItems_Data>(&binfile),target_basename,json_output); break;
-          case eShopDepts:    doConvert(doLoad<AllShopDepts_Data>(&binfile),target_basename,json_output); break;
+          case eShopItems:    doConvert(doLoadRef<AllShopItems_Data>(&binfile),target_basename,json_output); break;
+          case eShopDepts:    doConvert(doLoadRef<AllShopDepts_Data>(&binfile),target_basename,json_output); break;
 //        case eSequencers:   doConvert(doLoad<SequencerList>(&binfile),target_basename,json_output); break;
           case eTailorCosts:  doConvert(doLoad<AllTailorCosts_Data>(&binfile),target_basename,json_output); break;
           case eCostumeSets:  doConvert(doLoad<CostumeSet_Data>(&binfile),target_basename,json_output); break;
