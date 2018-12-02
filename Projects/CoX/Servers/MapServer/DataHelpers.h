@@ -95,6 +95,8 @@ void sendClueList(MapClientSession &sess);
 void sendSouvenirList(MapClientSession &sess);
 void openStore(MapClientSession &sess, int entity_idx);
 void modifyInf(MapClientSession &sess, int amount);
+void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message);
+
 
 /*
  * usePower and increaseLevel here to provide access to
@@ -102,6 +104,7 @@ void modifyInf(MapClientSession &sess, int amount);
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
 void increaseLevel(Entity &ent);
+
 
 /*
  * Lua Functions

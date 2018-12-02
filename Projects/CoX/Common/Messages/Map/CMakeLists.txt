@@ -22,6 +22,7 @@ set(SOURCES
     FloatingDamage.h
     FloatingInfo.h
     FloatingInfoStyles.h
+    ForceLogout.h
     FriendsListUpdate.h
     GameCommand.h
     GameCommandList.h
