@@ -49,12 +49,10 @@ StoreTransactionResult Store::buyItem(Entity *e, QString item_name)
                 parts.push_back(item_name.midRef(ending_index, item_name.length() - ending_index));
 
                 QString name = parts[0].toString();
-                QString message = QString("Bought %1 for %2 Influence").arg(name).arg(abs(price));
-
                 result.m_item_name = name;
                 result.m_enhancement_lvl = parts[1].toInt();
-                result.m_message = message;
                 result.m_is_success = true;
+                result.m_message = QString("Bought %1 for %2 Influence").arg(name).arg(abs(price));
 
                 qCDebug(logStores) << "buyItem. Enhancement: " << name << " lvl: " << parts[1].toString();
             }
@@ -71,16 +69,15 @@ StoreTransactionResult Store::sellItem(Entity *e, QString item_name)
     qCDebug(logStores) << "sellItem. Item to find." << item_name;
 
     int price = getPrice(e, item_name, true);
-    QString message = QString("Sold %1 for %2 influence.").arg(item_name).arg(price);
+    result.m_message = QString("Sold %1 for %2 influence.").arg(item_name).arg(price);
     result.m_inf_amount = price;
     result.m_is_success = true;
     result.m_item_name = item_name;
-    result.m_message = message;
 
     return result;
 }
 
-int Store::getPrice(Entity *e, QString item_name, bool is_sell)
+int Store::getPrice(Entity *e, QString item_name, bool is_selling)
 {
     const GameDataStore &data(getGameData());
     std::vector<Shop_Data> shop_data; // NPC could have multiple shop_names set
@@ -116,7 +113,7 @@ int Store::getPrice(Entity *e, QString item_name, bool is_sell)
             for (const Shop_Data &shop: shop_data)
             {
                 //Find the dept to get markup for item.
-                if(is_sell)
+                if(is_selling)
                 {
                     // Buy and Sell variable names are reversed in bin
                     for (const ShopBuySell_Data &sd: shop.m_Buys)
@@ -147,8 +144,6 @@ int Store::getPrice(Entity *e, QString item_name, bool is_sell)
             }
         }
     }
-    else
-        return 0;
 
     qCDebug(logStores) << "Item not found.";
     return 0; // Not found

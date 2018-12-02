@@ -58,7 +58,7 @@ public:
 
     static StoreTransactionResult buyItem(Entity *e, QString item_name);
     static StoreTransactionResult sellItem(Entity *e, QString item_name);
-    static int getPrice(Entity *e, QString item_name, bool is_sells);
+    static int getPrice(Entity *e, QString item_name, bool is_selling);
 };
 
 
