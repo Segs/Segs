@@ -30,7 +30,7 @@
 #include "Common/Messages/Map/EmailHeaders.h"
 #include "Common/Messages/Map/EmailRead.h"
 #include "Common/Messages/Map/ForceLogout.h"
-#include "Common/Messages/Map/SendLocation.h"
+#include "Common/Messages/Map/SendVisitLocation.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
 #include "Common/Messages/Map/MapEvents.h"
 #include "Common/Messages/Map/StoresEvents.h"
@@ -1493,12 +1493,18 @@ void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout
     tgt->link()->putq(new ForceLogout(logout_message));
 }
 
-void sendLocation(MapClientSession &cl, Location location)
+void sendLocation(MapClientSession &cl, VisitLocation location)
 {
     qWarning("SendLocation, unknown affect on client");
     qCDebug(logSlashCommand) << "sendLocation: " << location.m_location_name;
     vLocationList location_list;
     location_list.push_back(location);
+
+    VisitLocation l2;
+    l2.m_location_name = "Test2";
+    l2.m_pos = glm::vec3(-60, 0, 261);
+    location_list.push_back(l2);
+
     cl.addCommand<SendLocations>(location_list);
 }
 

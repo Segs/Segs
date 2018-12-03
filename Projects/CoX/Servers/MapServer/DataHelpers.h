@@ -9,7 +9,7 @@
 #include "Messages/Map/MessageChannels.h"
 #include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
-#include "Common/GameData/Location.h"
+#include "Common/GameData/VisitLocation.h"
 #include "Common/GameData/Task.h"
 #include "glm/vec3.hpp"
 #include <vector>
@@ -97,7 +97,7 @@ void sendSouvenirList(MapClientSession &sess);
 void openStore(MapClientSession &sess, int entity_idx);
 void modifyInf(MapClientSession &sess, int amount);
 void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message);
-void sendLocation(MapClientSession &cl, Location location);
+void sendLocation(MapClientSession &cl, VisitLocation location);
 
 /*
  * usePower and increaseLevel here to provide access to

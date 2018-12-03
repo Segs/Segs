@@ -9,7 +9,7 @@
 
 #include "GameCommand.h"
 #include "MapEventTypes.h"
-#include "Common/GameData/Location.h"
+#include "Common/GameData/VisitLocation.h"
 
 namespace SEGSEvents
 {
@@ -32,9 +32,9 @@ namespace SEGSEvents
             //Could be tied to glowies or plagues/location/early badges
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 63
             qCDebug(logMapEvents) << "SendLocations Event serializeTo. m_locations.size(): " << m_locations.size();
-            bs.StorePackedBits(1, m_locations.size() - 1);
+            bs.StorePackedBits(1, m_locations.size());
 
-            for(const Location &location : m_locations)
+            for(const VisitLocation &location : m_locations)
             {
                bs.StoreString(location.m_location_name);
                qCDebug(logMapEvents) << "SendLocations Event serializeTo. m_location_name: " << location.m_location_name;
@@ -43,33 +43,6 @@ namespace SEGSEvents
 
         EVENT_IMPL(SendLocations)
     };
-
-
-// [[ev_def:type]]
- /*   class ReceivedLocationVisited final : public MapLinkEvent
-    {
-
-    public:
-        // [[ev_def:field]]
-        Location m_location;
-        explicit ReceivedLocationVisited() : MapLinkEvent(MapEventTypes::evReceiveContactStatus){}
-
-        void serializeto(BitStream &/*bs*/ /*) const override
-        {
-            assert(!"ReceivedLocationVisited serializeto");
-        }
-        void serializefrom(BitStream &bs) // packet 62
-        {
-            bs.GetString(m_location.m_location_name);
-            m_location.m_location_coordinates.x = bs.GetFloat();
-            m_location.m_location_coordinates.y = bs.GetFloat();
-            m_location.m_location_coordinates.z = bs.GetFloat();
-
-            qCDebug(logMapEvents) << "ReceivedLocationVisited Event";
-        }
-
-        EVENT_IMPL(ReceivedLocationVisited)
-    };*/
 }
 
 

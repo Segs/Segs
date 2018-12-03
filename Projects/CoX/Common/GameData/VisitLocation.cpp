@@ -6,17 +6,17 @@
  */
 
 #pragma once
-#include "Location.h"
+#include "VisitLocation.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
 #include "Logging.h"
 
 template<class Archive>
-void Location::serialize(Archive &archive, uint32_t const version)
+void VisitLocation ::serialize(Archive &archive, uint32_t const version)
 {
-    if(version != Location::class_version)
+    if(version != VisitLocation ::class_version)
     {
-        qCritical() << "Failed to serialize Location, incompatible serialization format version " << version;
+        qCritical() << "Failed to serialize VisitLocation, incompatible serialization format version " << version;
         return;
     }
 
@@ -24,5 +24,5 @@ void Location::serialize(Archive &archive, uint32_t const version)
     archive(cereal::make_nvp("position",m_pos));
 }
 
-CEREAL_CLASS_VERSION(Location, Location::class_version)   // register Location class version
-SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(Location)
+CEREAL_CLASS_VERSION(VisitLocation , VisitLocation ::class_version)   // register VisitLocation class version
+SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(VisitLocation)

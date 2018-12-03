@@ -14,7 +14,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/EntityHelpers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Friend.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Location.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
@@ -76,7 +76,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/Friend.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Contact.h
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Location.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.h

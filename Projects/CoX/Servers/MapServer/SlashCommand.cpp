@@ -28,6 +28,7 @@
 #include "GameData/CharacterHelpers.h"
 #include "GameData/Entity.h"
 #include "GameData/EntityHelpers.h"
+#include "GameData/VisitLocation.h"
 #include "GameData/LFG.h"
 #include "GameData/Trade.h"
 #include "Settings.h"
@@ -1293,10 +1294,11 @@ void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess)
 {
-    Location location;
-    location.m_location_name = "TestLocation";
-    location.m_pos = glm::vec3(-44, 0, 261);
-    sendLocation(sess, location);
+    VisitLocation visitlocation;
+    visitlocation.m_location_name = "Test1";
+    visitlocation.m_pos = glm::vec3(-44, 0, 261);
+
+    sendLocation(sess, visitlocation);
 }
 
 

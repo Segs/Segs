@@ -12,7 +12,7 @@
 #include "cereal/cereal.hpp"
 #include "Logging.h"
 
-class Location
+class VisitLocation
 {
 public:
     enum : uint32_t {class_version       = 1};
@@ -25,4 +25,4 @@ public:
 
 };
 
-using vLocationList = std::vector<Location>;
+using vLocationList = std::vector<VisitLocation >;
