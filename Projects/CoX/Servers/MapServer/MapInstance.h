@@ -94,9 +94,13 @@ class BrowserClose;
 class LevelUpResponse;
 class TradeWasCancelledMessage;
 class TradeWasUpdatedMessage;
+class RecvCostumeChange;
 class DeadNoGurneyOK;
 class ReceiveContactStatus;
 class ReceiveTaskDetailRequest;
+class SouvenirDetailRequest;
+class StoreSellItem;
+class StoreBuyItem;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -113,7 +117,7 @@ class MapInstance final : public EventProcessor
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
-        std::vector<glm::mat4>  m_new_player_spawns;
+        QMultiHash<QString, glm::mat4>  m_all_spawners;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
@@ -142,9 +146,13 @@ public:
         void                    dispatch(SEGSEvents::Event *ev) override;
 
         const QString &         name() const { return m_data_path; }
+        void                    load_map_lua();
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         void                    start(const QString &scenegraph_path);
+        void                    setPlayerSpawn(Entity &e);
+        void                    setSpawnLocation(Entity &e, const QString &spawnLocation);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
+        QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
 
 protected:
         // EventProcessor interface
@@ -241,9 +249,13 @@ protected:
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
         void on_dead_no_gurney_ok(SEGSEvents::DeadNoGurneyOK *ev);
         void on_browser_close(SEGSEvents::BrowserClose *ev);
+        void on_recv_costume_change(SEGSEvents::RecvCostumeChange *ev);
         void on_levelup_response(SEGSEvents::LevelUpResponse *ev);
         void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
         void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);
         void on_receive_contact_status(SEGSEvents::ReceiveContactStatus *ev);
         void on_receive_task_detail_request(SEGSEvents::ReceiveTaskDetailRequest *ev);
+        void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
+        void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
+        void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
 };

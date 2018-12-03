@@ -106,7 +106,7 @@ static void shutDownServers(const char *reason)
 {
     qDebug() << "Reason for shutdown: " << reason;
 
-    if (GlobalTimerQueue::instance()->thr_count())
+    if(GlobalTimerQueue::instance()->thr_count())
     {
         GlobalTimerQueue::instance()->deactivate();
     }
@@ -127,7 +127,7 @@ static void shutDownServers(const char *reason)
 
 void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
 {
-    if (msg->m_data.status_value != 0)
+    if(msg->m_data.status_value != 0)
     {
         qCritical().noquote() << msg->m_data.status_message;
         shutDownServers("Configuration failure");
@@ -207,7 +207,7 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
         snprintf(category_text,sizeof(category_text),"[%s]",context.category);
     QFile segs_log_target;
     segs_log_target.setFileName("output.log");
-    if (!segs_log_target.open(QFile::WriteOnly | QFile::Append))
+    if(!segs_log_target.open(QFile::WriteOnly | QFile::Append))
     {
         fprintf(stderr,"Failed to open log file in write mode, will procede with console only logging");
     }
@@ -233,11 +233,11 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     }
     fprintf(stdout, "%s", log_buffer);
     fflush(stdout);
-    if (segs_log_target.isOpen())
+    if(segs_log_target.isOpen())
     {
         segs_log_target.write(log_buffer);
     }
-    if (type == QtFatalMsg)
+    if(type == QtFatalMsg)
     {
         segs_log_target.close();
         abort();

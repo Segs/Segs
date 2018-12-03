@@ -40,7 +40,7 @@ explicit    TeamOffer() : GameCommandEvent(MapEventTypes::evTeamOffer) {}
             }
     void    serializeto(BitStream &bs) const override
             {
-                bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 24
+                bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 24
                 bs.StoreBits(32, m_db_id);   // team offeree db_id
                 bs.StoreString(m_name);     // team offerer name
                 bs.StoreBits(2, uint8_t(m_offer_type));     // team with mission?

@@ -178,9 +178,9 @@ bool LoadModifiersData(const QString &fname, SceneModifiers &m)
 {
     BinStore binfile;
 
-    if (fname.contains(".crl"))
+    if(fname.contains(".crl"))
     {
-        if (!loadFrom(fname, m))
+        if(!loadFrom(fname, m))
         {
             qCritical() << "Failed to serialize data from crl:" << fname;
             return false;
@@ -190,12 +190,12 @@ bool LoadModifiersData(const QString &fname, SceneModifiers &m)
     bool opened = binfile.open(fname, tricks_i0_requiredCrc);
     if(!opened)
         opened = binfile.open(fname, tricks_i2_requiredCrc);
-    if (!opened)
+    if(!opened)
     {
         qCritical() << "Failed to open original bin:" << fname;
         return false;
     }
-    if (!loadFrom(&binfile, m))
+    if(!loadFrom(&binfile, m))
     {
         qCritical() << "Failed to load data from original bin:" << fname;
         return false;

@@ -262,7 +262,7 @@ namespace
     }
 } // namespace
 
-bool loadFrom(BinStore *s, SequencerList *target)
+bool loadFrom(BinStore *s, SequencerList &target)
 {
     s->prepare();
     bool ok = s->prepare_nested(); // will update the file size left
@@ -279,8 +279,8 @@ bool loadFrom(BinStore *s, SequencerList *target)
             SequencerData nt;
             ok &= loadFrom(s,&nt);
             seqCleanSeqFileName(nt.name);       // this was done after reading, no reason to not do this now.
-            target->sq_list.push_back(nt);
-            target->m_Sequencers[QString(nt.name).toLower()] = target->sq_list.size()-1;
+            target.sq_list.push_back(nt);
+            target.m_Sequencers[nt.name.toLower()] = target.sq_list.size()-1;
             s->nest_out();
         }
         else

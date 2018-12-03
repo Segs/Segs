@@ -24,7 +24,6 @@ public:
         bool                    ReadConfigAndRestart();
         const ACE_INET_Addr &   getAddress();
 
-        QString                 getName();
         uint8_t                 getId();
         uint16_t                getCurrentPlayers();
         uint16_t                getMaxPlayers();

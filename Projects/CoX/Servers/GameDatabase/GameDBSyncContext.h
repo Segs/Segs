@@ -46,7 +46,7 @@ struct FillEmailRecipientIdResponseData;
 ///
 class GameDbSyncContext
 {
-    static constexpr int REQUIRED_DB_VERSION = 8;
+    static constexpr int REQUIRED_DB_VERSION = 9;
 
     std::unique_ptr<QSqlDatabase> m_db;
     std::unique_ptr<QSqlQuery> m_prepared_char_update;
@@ -62,8 +62,6 @@ class GameDbSyncContext
     std::unique_ptr<QSqlQuery> m_prepared_char_delete;
     std::unique_ptr<QSqlQuery> m_prepared_char_select;
     std::unique_ptr<QSqlQuery> m_prepared_options_update;
-    std::unique_ptr<QSqlQuery> m_prepared_fill;
-    std::unique_ptr<QSqlQuery> m_prepared_costume_insert;
 
     // email stuff
     std::unique_ptr<QSqlQuery> m_prepared_email_insert;

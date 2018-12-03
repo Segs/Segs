@@ -89,7 +89,7 @@ void GameDBSyncHandler::on_character_remove(RemoveCharacterRequest *msg)
 {
     GameDbSyncContext &db_ctx(m_db_context.localData());
 
-    if (!db_ctx.removeCharacter(msg->m_data))
+    if(!db_ctx.removeCharacter(msg->m_data))
         msg->src()->putq(new GameDbErrorMessage({"on_character_remove : Game db error"}, msg->session_token()));
     else
         msg->src()->putq(new RemoveCharacterResponse({msg->m_data.slot_idx}, msg->session_token()));
@@ -169,7 +169,7 @@ void GameDBSyncHandler::on_get_entity_by_name(GetEntityByNameRequest *ev)
     GameDbSyncContext &db_ctx(m_db_context.localData());
     GetEntityByNameResponseData resp;
 
-    if (db_ctx.getEntityByName(ev->m_data, resp))
+    if(db_ctx.getEntityByName(ev->m_data, resp))
         ev->src()->putq(new GetEntityByNameResponse(std::move(resp), ev->session_token()));
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
@@ -180,7 +180,7 @@ void GameDBSyncHandler::on_email_create(EmailCreateRequest* ev)
     GameDbSyncContext &db_ctx(m_db_context.localData());
     EmailCreateResponseData resp;
 
-    if (db_ctx.createEmail(ev->m_data, resp))
+    if(db_ctx.createEmail(ev->m_data, resp))
         HandlerLocator::getEmail_Handler()->putq(new EmailCreateResponse(std::move(resp), ev->session_token()));
     else
         HandlerLocator::getEmail_Handler()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
@@ -209,7 +209,7 @@ void GameDBSyncHandler::on_get_email(GetEmailRequest* ev)
     GameDbSyncContext &db_ctx(m_db_context.localData());
     GetEmailResponseData resp;
 
-    if (db_ctx.getEmail(ev->m_data, resp))
+    if(db_ctx.getEmail(ev->m_data, resp))
         HandlerLocator::getEmail_Handler()->putq(new GetEmailResponse(std::move(resp),ev->session_token()));
     else
         HandlerLocator::getEmail_Handler()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
@@ -221,7 +221,7 @@ void GameDBSyncHandler::on_get_emails(GetEmailsRequest* ev)
     GetEmailsResponseData resp;
 
     // TODO: Investigate why I can't use ev->src()
-    if (db_ctx.getEmails(ev->m_data, resp))
+    if(db_ctx.getEmails(ev->m_data, resp))
         HandlerLocator::getEmail_Handler()->putq(new GetEmailsResponse(std::move(resp), ev->session_token()));
     else
         ev->src()->putq(new GameDbErrorMessage({"Game db error"},ev->session_token()));
@@ -232,7 +232,7 @@ void GameDBSyncHandler::on_fill_email_recipient_id(FillEmailRecipientIdRequest *
     GameDbSyncContext &db_ctx(m_db_context.localData());
     FillEmailRecipientIdResponseData resp;
 
-    if (db_ctx.fillEmailRecipientId(ev->m_data, resp))
+    if(db_ctx.fillEmailRecipientId(ev->m_data, resp))
         HandlerLocator::getEmail_Handler()->putq(new FillEmailRecipientIdResponse(std::move(resp), ev->session_token()));
     else
         HandlerLocator::getEmail_Handler()->putq(new FillEmailRecipientIdErrorMessage(

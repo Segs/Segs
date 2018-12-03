@@ -27,7 +27,6 @@ namespace SEGSEvents
 
         void serializeto(BitStream &bs) const override
         {
-            qCDebug(logMapEvents) << "Sending packet 45";
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 45
             bs.StorePackedBits(1, m_task_entry_list.size());
 
@@ -71,8 +70,6 @@ namespace SEGSEvents
                     ++loop_count_2;
                 }
             }
-
-            qCDebug(logMapEvents) << "Sent packet 45";
         }
         EVENT_IMPL(TaskStatusList)
     };

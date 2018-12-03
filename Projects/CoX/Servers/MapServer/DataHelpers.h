@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Messages/Map/MessageChannels.h"
+#include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
 #include "Common/GameData/Task.h"
 #include "glm/vec3.hpp"
@@ -23,6 +24,8 @@ struct CharacterPower;
 struct PowerStance;
 class GameDataStore;
 class TradeMember;
+class Costume;
+class BitStream;
 struct ContactEntry;
 enum FloatingInfoStyle : int;
 enum class ClientStates : uint8_t;
@@ -74,6 +77,7 @@ void sendFaceEntity(MapClientSession &src, int32_t tgt_idx);
 void sendFaceLocation(MapClientSession &sess, glm::vec3 &loc);
 void sendDoorMessage(MapClientSession &sess, uint32_t delay_status, QString &msg);
 void sendBrowser(MapClientSession &sess, QString &content);
+void sendTailorOpen(MapClientSession &sess);
 void sendTradeOffer(MapClientSession &tgt, const QString &name);
 void sendTradeInit(MapClientSession &src, MapClientSession &tgt);
 void sendTradeCancel(MapClientSession &sess, const QString &msg);
@@ -89,6 +93,12 @@ void sendStance(MapClientSession &sess, PowerStance &stance);
 void sendDeadNoGurney(MapClientSession &sess);
 void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &target_pos, bool has_anims, QString &seq_state);
 void sendDoorAnimExit(MapClientSession &sess, bool force_move);
+void sendClueList(MapClientSession &sess);
+void sendSouvenirList(MapClientSession &sess);
+void openStore(MapClientSession &sess, int entity_idx);
+void modifyInf(MapClientSession &sess, int amount);
+void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message);
+
 
 /*
  * usePower and increaseLevel here to provide access to
@@ -96,6 +106,7 @@ void sendDoorAnimExit(MapClientSession &sess, bool force_move);
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
 void increaseLevel(Entity &ent);
+
 
 /*
  * Lua Functions
@@ -106,15 +117,23 @@ void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);
 void giveEnd(MapClientSession &sess, float end);
 void giveHp(MapClientSession &sess, float hp);
-void giveInf(MapClientSession &sess, int inf);
 void giveInsp(MapClientSession &sess, QString &name);
 void giveXp(MapClientSession &sess, int xp);
+void giveTempPower(MapClientSession *cl, const char* power);
 void addListOfTasks(MapClientSession *cl, vTaskList task_list);
 void sendUpdateTaskStatusList(MapClientSession &src, Task task);
 void selectTask(MapClientSession &src, Task task);
 void sendTaskStatusList(MapClientSession &src);
 void updateTaskDetail(MapClientSession &src, Task task);
 void removeTask(MapClientSession &src, Task task);
-void train (MapClientSession &sess);
-void setTitle (MapClientSession &sess, QString title);
+void playerTrain (MapClientSession &sess);
+void setTitle (MapClientSession &sess, QString &title);
 void showMapMenu(MapClientSession &sess);
+void addClue(MapClientSession &cl, Clue clue);
+void removeClue(MapClientSession &cl, Clue clue);
+void addSouvenir(MapClientSession &cl, Souvenir souvenir);
+void removeSouvenir(MapClientSession &cl, Souvenir souvenir);
+void removeContact(MapClientSession &sess, Contact contact);
+void revive(MapClientSession *cl, int revive_lvl);
+void logSpawnLocations(MapClientSession &cl, const char* spawn_type);
+void respawn(MapClientSession &cl, const char* spawn_type);

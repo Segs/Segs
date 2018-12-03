@@ -12,7 +12,9 @@
 
 #include "MapEventFactory.h"
 #include "Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/ClueList.h"
 #include "Common/Messages/Map/ContactList.h"
+#include "Common/Messages/Map/StoresEvents.h"
 #include "Common/Messages/Map/Tasks.h"
 
 using namespace SEGSEvents;
@@ -100,12 +102,16 @@ MapLinkEvent *MapEventFactory::CommandEventFromStream(BitStream & bs)
         case 54: return new TradeWasCancelledMessage;
         case 55: return new TradeWasUpdatedMessage;
         case 56: return new EntityInfoRequest;
+        case 60: return new RecvCostumeChange;
         case 62: return new LocationVisited;
         case 63: return new ReceiveTaskDetailRequest;
         case 64: return new SwitchViewPoint;
         case 65: return new SaveClientOptions;
         case 66: return new RecvSelectedTitles;
         case 67: return new DescriptionAndBattleCry;
+        case 68: return new SouvenirDetailRequest;
+        case 69: return new StoreBuyItem;
+        case 70: return new StoreSellItem;
         case 77: return new BrowserClose;
     }
     qCWarning(logMapEvents, "Unhandled command event type %d", opcode);

@@ -21,7 +21,7 @@ static std::vector<CharacterEnhancement> getTradedEnhancements(const Entity& ent
     for (const uint32_t idx : info.m_enhancements)
     {
        const CharacterEnhancement* enh = getEnhancement(ent, idx);
-       if (enh != nullptr)
+       if(enh != nullptr)
        {
            result.push_back(*enh);
        }
@@ -37,7 +37,7 @@ static std::vector<CharacterInspiration> getTradedInspirations(const Entity& ent
     for (const TradeInspiration& trade_insp : info.m_inspirations)
     {
         const CharacterInspiration* insp = getInspiration(ent, trade_insp.m_col, trade_insp.m_row);
-        if (insp != nullptr)
+        if(insp != nullptr)
         {
             result.push_back(*insp);
         }

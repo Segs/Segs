@@ -387,7 +387,7 @@ void copyStaticModel(Urho3D::StaticModel *src, Urho3D::StaticModel *tgt)
 
 Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, SEGS::SceneNode *node, int opt)
 {
-    SEGS::Model *mdl = node->model;
+    SEGS::Model *mdl = node->m_model;
     Urho3D::StaticModel * converted=nullptr;
     auto loc = s_coh_model_to_static_model.find(mdl);
     if (loc != s_coh_model_to_static_model.end())

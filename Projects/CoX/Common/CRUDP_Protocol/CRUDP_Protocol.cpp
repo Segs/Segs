@@ -55,7 +55,7 @@ int getPacketResendDelay(signed int attempts, int ping, int before_first)
 {
     int delay;
 
-    if ( before_first )
+    if( before_first )
         delay = 3 * ping / 2;
     else
         delay = 4 * ping;
@@ -326,14 +326,14 @@ void CrudP_Protocol::PacketAck(uint32_t id)
 {
     for (CrudP_Packet *&v6 : reliable_packets )
     {
-        if ( !v6 || v6->GetSequenceNumber() != id)
+        if( !v6 || v6->GetSequenceNumber() != id)
             continue;
         //todo: update ping times here ( basically calculate time before packet's xmit and now
-        if ( !retransmit_queue.empty() )
+        if( !retransmit_queue.empty() )
         {
             // check if our packet is already in retransmit_queue, if so, remove it from there.
             auto iter = std::find(retransmit_queue.begin(),retransmit_queue.end(),v6);
-            if ( iter!=retransmit_queue.end() )
+            if( iter!=retransmit_queue.end() )
                 retransmit_queue.erase(iter);
         }
         delete v6;
@@ -376,7 +376,7 @@ vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
 CrudP_Packet *CrudP_Protocol::wrapPacket(CrudP_Packet *_p)
 {
     int cmd=-1;
-    if ( 0==_p->getSibId())
+    if( 0==_p->getSibId())
     {
         _p->GetStream()->ResetReading();
         cmd = _p->GetPackedBits(1);
@@ -427,7 +427,7 @@ void CrudP_Protocol::sendRaw(CrudP_Packet *pak,lCrudP_Packet &tgt )
 
 bool CrudP_Protocol::addToSendQueue(CrudP_Packet *pak)
 {
-    if (send_queue.isFull())
+    if(send_queue.isFull())
         return false;
 
     pak->setSeqNo(++send_seq);
@@ -444,15 +444,15 @@ bool CrudP_Protocol::addToSendQueue(CrudP_Packet *pak)
 /// \param packet
 bool CrudP_Protocol::SendPacket(CrudP_Packet *packet)
 {
-    if (m_compression_allowed && packet->compressRequested())
+    if(m_compression_allowed && packet->compressRequested())
     {
         assert(false);
         // compress the bitstream here.
     }
-    if (packet->GetStream()->GetReadableDataSize() < max_packet_data_size)
+    if(packet->GetStream()->GetReadableDataSize() < max_packet_data_size)
     {
         bool res = addToSendQueue(packet);
-        if (!res)
+        if(!res)
             delete packet;
         return res;
     }
@@ -464,7 +464,7 @@ bool CrudP_Protocol::SendPacket(CrudP_Packet *packet)
     {
         packet_part->setNumSibs(sib_count);
         packet_part->setSibId(sib_id);
-        if (!addToSendQueue(packet_part))
+        if(!addToSendQueue(packet_part))
             delete packet_part;
     }
     delete packet; // at this point the packet is of no use anymore, since it was split.
@@ -495,7 +495,7 @@ bool CrudP_Protocol::isUnresponsiveLink()
 
 bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)
 {
-    if (isUnresponsiveLink())
+    if(isUnresponsiveLink())
     {
         qDebug() << "Unresponsive link";
         return false;
@@ -504,7 +504,7 @@ bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)
     processRetransmits();
     // first handle retransmit queue
     CrudP_Packet *pak;
-    if (!retransmit_queue.empty())
+    if(!retransmit_queue.empty())
     {
         while ((pak = retransmit_queue.front()) != nullptr)
         {
@@ -513,16 +513,16 @@ bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)
             retransmit_queue.pop_front();
         }
     }
-    if (send_queue.empty())
+    if(send_queue.empty())
         return true;
     // than handle the main queue
     while ((pak = send_queue.front()) != nullptr)
     {
         sendRaw(pak, tgt);
         send_queue.pop_front();
-        if (pak->isReliable())
+        if(pak->isReliable())
         {
-            if (!reliable_packets.empty())
+            if(!reliable_packets.empty())
                 assert(pak->GetSequenceNumber() > reliable_packets.back()->GetSequenceNumber());
             reliable_packets.push_back(pak);
         } else
@@ -536,7 +536,7 @@ bool CrudP_Protocol::batchSend(lCrudP_Packet &tgt)
 ///
 void CrudP_Protocol::processRetransmits()
 {
-    if (reliable_packets.empty())
+    if(reliable_packets.empty())
         return;
     auto now       = steady_clock::now();
     int  ping_time = 50;
@@ -544,12 +544,12 @@ void CrudP_Protocol::processRetransmits()
     uint32_t first_packet_id = reliable_packets.front()->GetSequenceNumber();
     for (CrudP_Packet *pkt : reliable_packets)
     {
-        if (retransmit_queue.isFull())
+        if(retransmit_queue.isFull())
             break;
         int resend_period =
                 getPacketResendDelay(pkt->retransmitCount(), ping_time, pkt->GetSequenceNumber() < first_packet_id);
         long milliseconds_since_xfer = duration_cast<milliseconds>(now - pkt->lastSend()).count();
-        if (milliseconds_since_xfer <= resend_period)
+        if(milliseconds_since_xfer <= resend_period)
             continue;
         retransmit_queue.push_back(pkt);
         pkt->setLastSend(steady_clock::now());

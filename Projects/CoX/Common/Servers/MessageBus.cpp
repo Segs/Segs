@@ -54,7 +54,8 @@ bool MessageBus::ReadConfigAndRestart()
     //for now message bus has no configuration variables
     // later on it will be more flexible and need them.
     assert(!is_running);
-    if(!is_running) {
+    if(!is_running)
+    {
         activate();
         is_running = true;
     }

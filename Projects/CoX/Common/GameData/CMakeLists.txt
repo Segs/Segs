@@ -1,6 +1,7 @@
 find_package(Qt5 COMPONENTS Core REQUIRED)
 
 SET(target_CPP
+    ${CMAKE_CURRENT_SOURCE_DIR}/Clue.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Character.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterAttributes.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterClass.cpp
@@ -17,6 +18,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Store.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.cpp
@@ -60,6 +62,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/CoHMath.h
 )
 SET(target_INCLUDE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Clue.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Character.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterAttributes.h
@@ -77,6 +80,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Store.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Task.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Trade.h

@@ -41,7 +41,7 @@ void NetworkManager::get_latest_releases()
 
 void NetworkManager::check_reply()
 {
-    if (m_network_reply->error() == QNetworkReply::NoError)
+    if(m_network_reply->error() == QNetworkReply::NoError)
     {
         qDebug()<<"No Network Error";
         store_latest_releases();

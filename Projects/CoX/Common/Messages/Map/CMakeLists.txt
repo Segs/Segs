@@ -1,6 +1,7 @@
 set(SOURCES
     AddTimeStateLog.h
     Browser.h
+    ClueList.h
     ChangeTitle.h
     ChatDividerMoved.cpp
     ChatDividerMoved.h
@@ -21,6 +22,7 @@ set(SOURCES
     FloatingDamage.h
     FloatingInfo.h
     FloatingInfoStyles.h
+    ForceLogout.h
     FriendsListUpdate.h
     GameCommand.h
     GameCommandList.h
@@ -53,6 +55,8 @@ set(SOURCES
     Shortcuts.h
     SidekickOffer.h
     StandardDialogCmd.h
+    StoresEvents.h
+    TailorOpen.h
     Tasks.h
     TeamLooking.h
     TeamOffer.h
