@@ -1294,8 +1294,8 @@ void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
 void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess)
 {
     Location location;
-    location.m_location_name = "LuaBot";
-    location.m_location_coordinates = glm::vec3(-90, 0, 170);
+    location.m_location_name = "TestLocation";
+    location.m_pos = glm::vec3(-44, 0, 261);
     sendLocation(sess, location);
 }
 

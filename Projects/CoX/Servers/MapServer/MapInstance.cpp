@@ -2017,10 +2017,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         //Should these be combined?
         sendSouvenirList(session);
         sendClueList(session);
-        Location location;
-        location.m_location_name = "LuaBot";
-        location.m_location_coordinates = glm::vec3(-90, 0, 170);
-        sendLocation(session, location);
+
         // Force position and orientation to fix #617 spawn at 0,0,0 bug
         forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
         forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);

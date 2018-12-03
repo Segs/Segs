@@ -21,7 +21,7 @@ void Location::serialize(Archive &archive, uint32_t const version)
     }
 
     archive(cereal::make_nvp("name",m_location_name));
-    archive(cereal::make_nvp("coordinates",m_location_coordinates));
+    archive(cereal::make_nvp("position",m_pos));
 }
 
 CEREAL_CLASS_VERSION(Location, Location::class_version)   // register Location class version

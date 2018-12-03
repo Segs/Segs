@@ -28,6 +28,8 @@ namespace SEGSEvents
 
         void serializeto(BitStream &bs) const override
         {
+            //Not sure what the purpose of this packet is.
+            //Could be tied to glowies or plagues/location/early badges
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 63
             qCDebug(logMapEvents) << "SendLocations Event serializeTo. m_locations.size(): " << m_locations.size();
             bs.StorePackedBits(1, m_locations.size() - 1);

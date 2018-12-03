@@ -18,7 +18,7 @@ public:
     enum : uint32_t {class_version       = 1};
 
     QString         m_location_name;
-    glm::vec3       m_location_coordinates;
+    glm::vec3       m_pos;
 
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version);

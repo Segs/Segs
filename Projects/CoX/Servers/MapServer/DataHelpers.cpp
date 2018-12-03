@@ -1495,7 +1495,8 @@ void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout
 
 void sendLocation(MapClientSession &cl, Location location)
 {
-    qCDebug(logScripts()) << "sendLocation: " << location.m_location_name;
+    qWarning("SendLocation, unknown affect on client");
+    qCDebug(logSlashCommand) << "sendLocation: " << location.m_location_name;
     vLocationList location_list;
     location_list.push_back(location);
     cl.addCommand<SendLocations>(location_list);
