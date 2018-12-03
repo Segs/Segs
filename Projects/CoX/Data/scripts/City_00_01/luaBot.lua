@@ -166,7 +166,7 @@ LuaBot.startDialogs = function()
             contactStatus.locationDescription = "Outbreak";
             contactStatus.location = Destination.new();
             contactStatus.location.location = vec3.new(-90, 0, 170);
-            contactStatus.location.name = "LuaBot";
+            contactStatus.location.name = "Outbreak";
             contactStatus.location.mapName = "Outbreak";
             contactStatus.dialogScreenIdx = 1;
             Player.AddUpdateContact(contactStatus);
@@ -235,7 +235,7 @@ LuaBot.CreateTestContact = function()
     contact.locationDescription = "Outbreak";
     contact.location = Destination.new();
     contact.location.location = vec3.new(-90, 0, 170);
-    contact.location.name = "LuaBot";
+    contact.location.name = "Outbreak";
     contact.location.mapName =  "Outbreak";
     contact.confidantThreshold = 3;
     contact.friendThreshold = 5;
