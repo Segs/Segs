@@ -50,6 +50,7 @@ set(SOURCES
     SaveClientOptions.h
     SceneEvent.cpp
     SceneEvent.h
+    SendLocation.h
     SendStance.h
     SetClientState.h
     Shortcuts.h

@@ -319,6 +319,14 @@ void ScriptingEngine::registerTypes()
         }
 
     };
+    m_private->m_lua["MapClientSession"]["SendLocation"] = [this](const char* name, glm::vec3 loc){
+        MapClientSession *cl = m_private->m_lua["client"];
+        Location location;
+        location.m_location_name = QString::fromUtf8(name);
+        location.m_location_coordinates = loc;
+        sendLocation(*cl, location);
+
+    };
     m_private->m_lua["MapClientSession"]["OpenStore"] = [this](int entity_idx)
     {
          MapClientSession *cl = m_private->m_lua["client"];

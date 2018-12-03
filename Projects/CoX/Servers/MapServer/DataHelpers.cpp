@@ -30,6 +30,7 @@
 #include "Common/Messages/Map/EmailHeaders.h"
 #include "Common/Messages/Map/EmailRead.h"
 #include "Common/Messages/Map/ForceLogout.h"
+#include "Common/Messages/Map/SendLocation.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
 #include "Common/Messages/Map/MapEvents.h"
 #include "Common/Messages/Map/StoresEvents.h"
@@ -1490,7 +1491,14 @@ void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout
     MapClientSession *tgt = e->m_client;
     qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
     tgt->link()->putq(new ForceLogout(logout_message));
+}
 
+void sendLocation(MapClientSession &cl, Location location)
+{
+    qCDebug(logScripts()) << "sendLocation: " << location.m_location_name;
+    vLocationList location_list;
+    location_list.push_back(location);
+    cl.addCommand<SendLocations>(location_list);
 }
 
 //! @}

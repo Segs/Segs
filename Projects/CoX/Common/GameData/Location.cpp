@@ -1,0 +1,28 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+ */
+
+#pragma once
+#include "Location.h"
+#include "serialization_common.h"
+#include "serialization_types.h"
+#include "Logging.h"
+
+template<class Archive>
+void Location::serialize(Archive &archive, uint32_t const version)
+{
+    if(version != Location::class_version)
+    {
+        qCritical() << "Failed to serialize Location, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("name",m_location_name));
+    archive(cereal::make_nvp("coordinates",m_location_coordinates));
+}
+
+CEREAL_CLASS_VERSION(Location, Location::class_version)   // register Location class version
+SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(Location)

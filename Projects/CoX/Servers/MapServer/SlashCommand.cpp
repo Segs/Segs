@@ -124,6 +124,7 @@ void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -243,6 +244,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
     {{"openStore"}, "Open store Window", cmdHandler_OpenStore, 9},
     {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
+    {{"sendLocation"}, "Send Location Test", cmdHandler_SendLocations, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -1287,6 +1289,14 @@ void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
     updateContactStatusList(sess, startingContact);
     QString msg = "Sending OfficerFlint to contactList";
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess)
+{
+    Location location;
+    location.m_location_name = "LuaBot";
+    location.m_location_coordinates = glm::vec3(-90, 0, 170);
+    sendLocation(sess, location);
 }
 
 
