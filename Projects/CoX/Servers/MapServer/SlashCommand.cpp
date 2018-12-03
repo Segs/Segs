@@ -14,6 +14,7 @@
 
 #include "DataHelpers.h"
 #include "MessageHelpers.h"
+#include "Messages/Map/ForceLogout.h"
 #include "Messages/Map/GameCommandList.h"
 #include "Messages/Map/MapXferWait.h"
 #include "GameData/ClientStates.h"
@@ -121,6 +122,8 @@ void cmdHandler_AddCostumeSlot(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -238,6 +241,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
     {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
     {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
+    {{"openStore"}, "Open store Window", cmdHandler_OpenStore, 9},
+    {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -2162,6 +2167,38 @@ void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess)
     // TODO: this will regenerate any NPCs (luabot) that exist
     sess.m_current_map->load_map_lua();
 }
+
+
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess)
+{
+    qCDebug(logSlashCommand) << "OpenStore...";
+    openStore(sess, 0); // Default entity_idx as it doesn't change anything currently
+}
+  
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+    QString message;
+    QString name = parts[1].toString();
+    int first_space = cmd.indexOf(' ');
+    int second_space = cmd.indexOf(' ',first_space+1);
+
+    if(second_space == -1)
+    {
+        message = "ForceLogout requires a logout message. /forceLogout <HeroName> <Message!>";
+        qCDebug(logSlashCommand) << message;
+        sendInfoMessage(MessageChannel::USER_ERROR, message, sess);
+        return;
+    }
+    else
+    {
+        message = cmd.mid(second_space + 1);
+    }
+
+    sendForceLogout(sess, name, message);
+}
+
 
 } // end of anonymous namespace
 

@@ -113,6 +113,9 @@ function Contacts.SpawnedContact(id)
                 value.entityId = id
                 value.spawned = true
                 value.expected = false
+                if(value.isStore) then
+                    value.SetupStore(); --Custom store
+                end
                 found = true
             end
 
@@ -136,21 +139,23 @@ function Contacts.SetContactDialogsWithHeroName(name)
 end
 
 function Contacts.OpenContactDialog(id)
-    printDebug("OpenContactDialog id: " .. tostring(id))
-    local isContact = false
+    printDebug("OpenContactDialog id: " .. tostring(id));
+    local isContact = false;
     if contactsForZone ~= nil then
         for key, value in pairs(contactsForZone) do
-            printDebug(value.name)
+            printDebug(value.name);
             if(value.entityId == id) then
                 if(Contacts.ContactAvailable(value)) then
                     -- any custom contact setup stuff
-                    value.startDialogs()
-                    isContact = true
+                   
+
+                    value.startDialogs();
+                    isContact = true;
                 end
             end
         end
     end
-    return isContact
+    return isContact;
 end
 
 function Contacts.ContactAvailable(contact)

@@ -29,8 +29,10 @@
 #include "Common/Messages/Map/ContactList.h"
 #include "Common/Messages/Map/EmailHeaders.h"
 #include "Common/Messages/Map/EmailRead.h"
+#include "Common/Messages/Map/ForceLogout.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
 #include "Common/Messages/Map/MapEvents.h"
+#include "Common/Messages/Map/StoresEvents.h"
 #include "Common/Messages/Map/Tasks.h"
 #include "Logging.h"
 
@@ -1000,14 +1002,6 @@ void giveHp(MapClientSession &sess, float hp)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void giveInf(MapClientSession &sess, int inf)
-{
-    uint32_t current_inf = getInf(*sess.m_ent->m_char);
-    uint32_t inf_to_set = current_inf + inf;
-    setInf(*sess.m_ent->m_char, inf_to_set);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Setting inf to %1").arg(inf_to_set), sess);
-}
-
 void giveInsp(MapClientSession &sess, QString &name)
 {
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
@@ -1454,6 +1448,49 @@ void respawn(MapClientSession &cl, const char* spawn_type)
     {
         qCDebug(logScripts) << "spawners empty";
     }
+}
+
+
+void openStore(MapClientSession &sess, int entity_idx)
+{
+    // Future: Look up stores owned by NPC in NPC Bin files
+    Store store;
+    store.m_npc_idx = entity_idx; // Set for testing
+    vStoreItems store_items;
+
+    store_items.emplace_back(QStringLiteral("All_SL9_CL2"), 100);
+    store_items.emplace_back(QStringLiteral("FBSA"), 100);
+    store.m_store_Items = store_items;
+
+    qCDebug(logStores) << "Sending OpenStore...";
+    sess.addCommand<StoreOpen>(store);
+}
+
+void modifyInf(MapClientSession &sess, int amount)
+{
+    uint32_t inf = getInf(*sess.m_ent->m_char);
+    // amount can be negitive to lower influence
+    inf = inf + amount;
+    if(inf < 0)
+        inf = 0;
+
+    setInf(*sess.m_ent->m_char, inf);
+}
+
+void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message)
+{
+    Entity* e = getEntity(&cl, player_name);
+
+    if(e == nullptr)
+    {
+        qCDebug(logSlashCommand) << "Entity: " << player_name << " not found";
+        return;
+    }
+
+    MapClientSession *tgt = e->m_client;
+    qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
+    tgt->link()->putq(new ForceLogout(logout_message));
+
 }
 
 //! @}

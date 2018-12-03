@@ -45,6 +45,7 @@
 #include "GameData/map_definitions.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/playerdata_serializers.h"
+#include "GameData/Store.h"
 #include "Messages/EmailService/EmailEvents.h"
 #include "Messages/Game/GameEvents.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
@@ -53,6 +54,7 @@
 #include "Messages/Map/MapEvents.h"
 #include "Messages/Map/MapXferRequest.h"
 #include "Messages/Map/MapXferWait.h"
+#include "Messages/Map/StoresEvents.h"
 #include "Messages/Map/Tasks.h"
 
 #include <ace/Reactor.h>
@@ -526,6 +528,12 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evSouvenirDetailRequest:
             on_souvenir_detail_request(static_cast<SouvenirDetailRequest *>(ev));
+            break;
+        case evStoreSellItem:
+            on_store_sell_item(static_cast<StoreSellItem *>(ev));
+            break;
+    case evStoreBuyItem:
+            on_store_buy_item(static_cast<StoreBuyItem *>(ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
@@ -3020,6 +3028,61 @@ void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
 
     }
     session.addCommand<SouvenirDetail>(souvenir_detail);
+}
+
+void MapInstance::on_store_sell_item(StoreSellItem* ev)
+{
+    qCDebug(logStores) << "on_store_sell_item. NpcId: " << ev->m_npc_idx << " isEnhancement: " << ev->m_is_enhancement << " TrayNumber: " << ev->m_tray_number << " enhancement_idx: " << ev->m_enhancement_idx;
+    MapClientSession& session = m_session_store.session_from_event(ev);
+    Entity *e = getEntity(&session, ev->m_npc_idx);
+
+    QString enhancement_name;
+    CharacterEnhancement enhancement = session.m_ent->m_char->m_char_data.m_enhancements[ev->m_enhancement_idx];
+    enhancement_name = enhancement.m_name + "_" + QString::number(enhancement.m_level);
+
+    if(enhancement_name.isEmpty())
+    {
+        qCDebug(logStores) << "on_store_sell_item. EnhancementId " << ev->m_enhancement_idx << " not found";
+        return;
+    }
+
+    if(e->m_is_store && !e->m_store_items.empty())
+    {
+        //Find store in entity store list
+        StoreTransactionResult result = Store::sellItem(e, enhancement_name);
+
+        if(result.m_is_success)
+        {
+            modifyInf(session, result.m_inf_amount);
+            trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_enhancement_idx);
+            sendChatMessage(MessageChannel::SERVER,result.m_message,&session,session);
+        }
+        else
+            qCDebug(logStores) << "Error processing sellItem";
+    }
+    else
+        qCDebug(logStores) << "Entity is not a store or has no items";
+}
+
+void MapInstance::on_store_buy_item(StoreBuyItem* ev)
+{
+    qCDebug(logMapEvents) << "on_store_buy_item. NpcId: " <<ev->m_npc_idx << " ItemName: " << ev->m_item_name;
+    MapClientSession& session = m_session_store.session_from_event(ev);
+    Entity *e = getEntity(&session, ev->m_npc_idx);
+
+    StoreTransactionResult result = Store::buyItem(e, ev->m_item_name);
+    if(result.m_is_success)
+    {
+        modifyInf(session, result.m_inf_amount);
+        if(result.m_is_insp)
+            giveInsp(session, result.m_item_name);
+        else
+            giveEnhancement(session, result.m_item_name, result.m_enhancement_lvl);
+
+        sendChatMessage(MessageChannel::SERVER,result.m_message,&session,session);
+    }
+    else
+        qCDebug(logStores) << "Error processing buyItem";
 }
 
 

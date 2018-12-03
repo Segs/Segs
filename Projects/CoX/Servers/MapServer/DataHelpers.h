@@ -93,6 +93,10 @@ void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &
 void sendDoorAnimExit(MapClientSession &sess, bool force_move);
 void sendClueList(MapClientSession &sess);
 void sendSouvenirList(MapClientSession &sess);
+void openStore(MapClientSession &sess, int entity_idx);
+void modifyInf(MapClientSession &sess, int amount);
+void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message);
+
 
 /*
  * usePower and increaseLevel here to provide access to
@@ -100,6 +104,7 @@ void sendSouvenirList(MapClientSession &sess);
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
 void increaseLevel(Entity &ent);
+
 
 /*
  * Lua Functions
@@ -110,7 +115,6 @@ void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);
 void giveEnd(MapClientSession &sess, float end);
 void giveHp(MapClientSession &sess, float hp);
-void giveInf(MapClientSession &sess, int inf);
 void giveInsp(MapClientSession &sess, QString &name);
 void giveXp(MapClientSession &sess, int xp);
 void giveTempPower(MapClientSession *cl, const char* power);
