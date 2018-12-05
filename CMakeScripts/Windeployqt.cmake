@@ -34,6 +34,13 @@ if((MSVC_VERSION VERSION_EQUAL 1900 OR MSVC_VERSION VERSION_GREATER 1900)
     message(WARNING "Deploying with MSVC 2015+ requires CMake 3.6+")
 endif()
 
+# Set windeployqt dll type
+IF (CMAKE_BUILD_TYPE MATCHES [Dd]ebug)
+  set(WINDEPLOYQT_TYPE --debug)
+ELSE()
+  set(WINDEPLOYQT_TYPE --release)
+ENDIF()
+
 # Add commands that copy the Qt runtime to the target's output directory after
 # build and install the Qt runtime to the specified directory
 function(windeployqt target directory)
@@ -42,6 +49,7 @@ function(windeployqt target directory)
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E
             env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+                ${WINDEPLOYQT_TYPE}
                 --verbose 0
                 --no-compiler-runtime
                 --no-angle
