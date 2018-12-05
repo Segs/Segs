@@ -22,6 +22,13 @@ public:
 
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version);
+    VisitLocation(){}
+    VisitLocation(QString name, glm::vec3 pos)
+    {
+        m_location_name = name;
+        m_pos = pos;
+    }
+
 
 };
 

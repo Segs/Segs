@@ -1498,12 +1498,11 @@ void sendLocation(MapClientSession &cl, VisitLocation location)
     qWarning("SendLocation, unknown affect on client");
     qCDebug(logSlashCommand) << "sendLocation: " << location.m_location_name;
     vLocationList location_list;
-    location_list.push_back(location);
 
-    VisitLocation l2;
-    l2.m_location_name = "Test2";
-    l2.m_pos = glm::vec3(-60, 0, 261);
-    location_list.push_back(l2);
+    //Test locations in Atlas Park
+    location_list.push_back(VisitLocation("Statue1", glm::vec3(126.5,27.4315,-300)));
+    location_list.push_back(VisitLocation("Patrol_Easy_1_City_01_01", glm::vec3(461.0,0,778)));
+    location_list.push_back(VisitLocation("Patrol_Easy_5_City_01_01", glm::vec3(1099.5,0,124.5)));
 
     cl.addCommand<SendLocations>(location_list);
 }
