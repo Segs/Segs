@@ -2017,6 +2017,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         //Should these be combined?
         sendSouvenirList(session);
         sendClueList(session);
+
         // Force position and orientation to fix #617 spawn at 0,0,0 bug
         forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
         forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
