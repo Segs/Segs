@@ -22,6 +22,7 @@
 #include "Messages/Map/StandardDialogCmd.h"
 #include "Messages/Map/StoresEvents.h"
 #include "Messages/Map/InfoMessageCmd.h"
+#include "Messages/Map/SendVisitLocation.h"
 #include "Common/GameData/Character.h"
 #include "Common/GameData/CharacterHelpers.h"
 #include "Common/GameData/Contact.h"
@@ -317,6 +318,14 @@ void ScriptingEngine::registerTypes()
         {
             e->m_store_items.push_back(StoreItem(store_name, item_count));
         }
+
+    };
+    m_private->m_lua["MapClientSession"]["SendLocation"] = [this](const char* name, glm::vec3 loc){
+        MapClientSession *cl = m_private->m_lua["client"];
+        VisitLocation location;
+        location.m_location_name = QString::fromUtf8(name);
+        location.m_pos = loc;
+        sendLocation(*cl, location);
 
     };
     m_private->m_lua["MapClientSession"]["OpenStore"] = [this](int entity_idx)

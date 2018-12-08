@@ -82,6 +82,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evAddTimeStateLog            ,160)
     EVENT_DECL(MapEventTypes, evLevelUp                    ,161)
     EVENT_DECL(MapEventTypes, evChangeTitle                ,162)
+    EVENT_DECL(MapEventTypes, evSendLocations              ,163)
 //    EVENT_DECL(MapEventTypes, evCSRBugReport             ,164)
     EVENT_DECL(MapEventTypes, evEmailHeaders               ,165)
     EVENT_DECL(MapEventTypes, evEmailRead                  ,166)
