@@ -7,6 +7,7 @@ set(SOURCES
     ChatDividerMoved.h
     ChatMessage.cpp
     ChatMessage.h
+    ConsoleMessages.h
     ContactDialogs.h
     ContactList.h
     DeadNoGurney.h
