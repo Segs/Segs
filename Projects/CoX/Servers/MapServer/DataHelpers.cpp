@@ -1508,12 +1508,12 @@ void sendLocation(MapClientSession &cl, VisitLocation location)
     cl.addCommand<SendLocations>(location_list);
 }
 
-void sendConsoleOutput(MapClientSession &cl, QString &message)
+void sendDeveloperConsoleOutput(MapClientSession &cl, QString &message)
 {
     cl.addCommand<ConsoleOutput>(message);
 }
 
-void sendConsolePrint(MapClientSession &cl, QString &message)
+void sendClientConsoleOutput(MapClientSession &cl, QString &message)
 {
     cl.addCommand<ConsolePrint>(message);
 }

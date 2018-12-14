@@ -248,8 +248,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"openStore"}, "Open store Window", cmdHandler_OpenStore, 9},
     {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
     {{"sendLocation"}, "Send Location Test", cmdHandler_SendLocations, 9},
-    {{"consoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
-    {{"consolePrint"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
+    {{"developerConsoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
+    {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -1319,7 +1319,7 @@ void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess)
     }
 
     msg = parts[1].toString();
-    sendConsoleOutput(sess, msg);
+    sendDeveloperConsoleOutput(sess, msg);
 }
 
 void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess)
@@ -1336,7 +1336,7 @@ void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess)
     }
 
     msg = parts[1].toString();
-    sendConsolePrint(sess, msg);
+    sendClientConsoleOutput(sess, msg);
 }
 
 

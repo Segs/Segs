@@ -726,11 +726,11 @@ LuaBot.dialogPages[11].contactDialog = {
 
 LuaBot.dialogPages[11].actions = {};
 LuaBot.dialogPages[11].actions["CONTACTLINK_HELLO"] = function()
-  MapClientSession.ConsoleOutput("Console Output test message from LuaBot");
+  MapClientSession.DeveloperConsoleOutput("Console Output test message from LuaBot");
 end
 
 LuaBot.dialogPages[11].actions["CONTACTLINK_MAIN"] = function()
-    MapClientSession.ConsolePrint("Console Print test message from LuaBot");
+    MapClientSession.ClientConsoleOutput("Console Print test message from LuaBot");
 end
 
 LuaBot.dialogPages[11].actions["CONTACTLINK_MISSIONS"] = function()

@@ -98,8 +98,8 @@ void openStore(MapClientSession &sess, int entity_idx);
 void modifyInf(MapClientSession &sess, int amount);
 void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message);
 void sendLocation(MapClientSession &cl, VisitLocation location);
-void sendConsoleOutput(MapClientSession &cl, QString &message);
-void sendConsolePrint(MapClientSession &cl, QString &message);
+void sendDeveloperConsoleOutput(MapClientSession &cl, QString &message);
+void sendClientConsoleOutput(MapClientSession &cl, QString &message);
 
 /*
  * usePower and increaseLevel here to provide access to
