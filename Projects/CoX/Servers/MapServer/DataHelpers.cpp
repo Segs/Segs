@@ -27,6 +27,7 @@
 #include "Common/GameData/LFG.h"
 #include "Common/Messages/Map/ClueList.h"
 #include "Common/Messages/Map/ContactList.h"
+#include "Common/Messages/Map/ConsoleMessages.h"
 #include "Common/Messages/Map/EmailHeaders.h"
 #include "Common/Messages/Map/EmailRead.h"
 #include "Common/Messages/Map/ForceLogout.h"
@@ -1505,6 +1506,16 @@ void sendLocation(MapClientSession &cl, VisitLocation location)
     location_list.push_back(VisitLocation("Patrol_Easy_5_City_01_01", glm::vec3(1099.5,0,124.5)));
 
     cl.addCommand<SendLocations>(location_list);
+}
+
+void sendDeveloperConsoleOutput(MapClientSession &cl, QString &message)
+{
+    cl.addCommand<ConsoleOutput>(message);
+}
+
+void sendClientConsoleOutput(MapClientSession &cl, QString &message)
+{
+    cl.addCommand<ConsolePrint>(message);
 }
 
 //! @}

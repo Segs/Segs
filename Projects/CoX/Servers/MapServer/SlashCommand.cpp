@@ -126,6 +126,8 @@ void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -246,6 +248,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"openStore"}, "Open store Window", cmdHandler_OpenStore, 9},
     {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
     {{"sendLocation"}, "Send Location Test", cmdHandler_SendLocations, 9},
+    {{"developerConsoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
+    {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -1300,6 +1304,41 @@ void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess)
 
     sendLocation(sess, visitlocation);
 }
+
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2 )
+    {
+        qCDebug(logSlashCommand) << "SendConsoleOutput. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsoleOutput format is '/consoleOutput <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendDeveloperConsoleOutput(sess, msg);
+}
+
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2)
+    {
+        qCDebug(logSlashCommand) << "SendConsolePrintF. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsolePrintF format is '/consolePrintF <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendClientConsoleOutput(sess, msg);
+}
+
 
 
 // Slash commands for setting bit values
