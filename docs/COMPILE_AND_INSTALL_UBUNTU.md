@@ -1,8 +1,14 @@
 INSTALL SEGS ON A HEADLESS UBUNTU SERVER 18.04
 ------
-This has been tested several times and works fine on a fresh Ubuntu 18.04 LXD container.
-Please be aware that segs may pose security risks, and that permissions and firewall may
-need to be adjusted for use on the internet.
+This has been tested several times and works fine on a fresh Ubuntu 18.04 LXD container.  
+Please be aware that segs may pose security risks, and that permissions and firewall may  
+need to be adjusted for use on the internet.  
+
+**Requirements**
+- Ubuntu 18.04 Server installed with default settings.  
+- CoX Client for the PIGG files (```magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f```)
+
+*If you choose ubuntu desktop, you might have to activate "multiverse" repository to get all qt depends.*  
 
 **1. Install dependencies**
 
@@ -41,8 +47,8 @@ vi settings.cfg
 
 **5. Copy COX content to the SEGS-Server data directory**
 
-Upload or copy the *.pigg files out of your COH-Clients piggs directory ```"C:\Program Files (x86)\CoX\piggs"```
-to the segs data directory ```"/opt/segs/data"``` and use the line below to extract them.
+Upload or copy the *.pigg files from your COH-Clients piggs directory (ex. ```"C:\Program Files (x86)\CoX\piggs"```)  
+over to the segs data directory (ex. ```"/opt/segs/data"```) and use the line below to extract them.
 
 ```
 find /opt/segs/data/ -name '*.pigg' -exec /opt/segs/piggtool -x {} /opt/segs/data/ \;
@@ -54,7 +60,7 @@ Inside the SEGS-Server directory ```"/opt/segs"``` use dbtool to create the game
 
 ```
 ./dbtool -f create
-./dbtool adduser -l <username> -p <password> -a 9
+./dbtool adduser -l USERNAME -p PASSWORD -a 9 adduser
 ```
 
 **7. Configure SEGS as SystemD service and start**
