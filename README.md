@@ -33,7 +33,7 @@ DOCUMENTATION
           - [Windows](./docs/COMPILE_AND_INSTALL_WINDOWS.md)  
 - [Docker](./docs/DOCKER.md)  
 - *Install from Package:*    
-          - [Windows](./docs/README.md)  
+          - [Windows](./Projects/CoX/docs/README.md)  
 - [FAQs](.docs/FAQ.md)  
 
 CONTRIBUTE TO DEVELOPMENT
