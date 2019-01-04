@@ -1,0 +1,36 @@
+{
+  "IsModified": false,
+  "IsNew": false,
+  "Description": "Your mastery over the shield protects you from all forms of attacks in the form of defense as well as some moderate damage resistance to most types of damage.  Your training with the shield enables you to protect your nearby allies boosting their defenses.",
+  "SetName": "Shield_Defense",
+  "FullName": "Brute_Defense.Shield_Defense",
+  "ImageName": "ShieldDef.png",
+  "Power": null,
+  "SetType": "Secondary",
+  "DisplayName": "Shield Defense",
+  "nArchetype": 7,
+  "nID": 2471,
+  "SubName": "Shield Defense",
+  "ATClass": "Class_Brute",
+  "UIDTrunkSet": "",
+  "nIDTrunkSet": 0,
+  "UIDLinkSecondary": "",
+  "nIDLinkSecondary": 0,
+  "UIDMutexSets": [
+    "Brute_Melee.Claws",
+    "Brute_Melee.Dual_Blades",
+    "Brute_Melee.Katana",
+    "Brute_Melee.Staff_Fighting",
+    "Brute_Melee.Titan_Weapons"
+  ],
+  "nIDMutexSets": [
+    2477,
+    2479,
+    2483,
+    2485,
+    2489
+  ],
+  "Group": null,
+  "GroupName": "Brute_Defense",
+  "Powers": []
+}

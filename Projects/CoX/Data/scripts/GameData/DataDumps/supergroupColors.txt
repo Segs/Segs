@@ -1,0 +1,651 @@
+Using record type: AttribName
+With 100 fuzz.
+Dumping 1 records...
+======== Entry 0 ========
+Damage = 
+    -------- Damage 0 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 1 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 2 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 3 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 4 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 5 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 6 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 7 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 8 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 9 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 10 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 11 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 12 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 13 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 14 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 15 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 16 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 17 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 18 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 19 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 20 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 21 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 22 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 23 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 24 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 25 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 26 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 27 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 28 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 29 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 30 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 31 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 32 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 33 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 34 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 35 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 36 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 37 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 38 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 39 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 40 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 41 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 42 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 43 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 44 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 45 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 46 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 47 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 48 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 49 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 50 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 51 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 52 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 53 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 54 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 55 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 56 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 57 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 58 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 59 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 60 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 61 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 62 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 63 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 64 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 65 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 66 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 67 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 68 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 69 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 70 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 71 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 72 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 73 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 74 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 75 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 76 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 77 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 78 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 79 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 80 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 81 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 82 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 83 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 84 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 85 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 86 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 87 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 88 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 89 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 90 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 91 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 92 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 93 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 94 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 95 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 96 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 97 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 98 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 99 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 100 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 101 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 102 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 103 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 104 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 105 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 106 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 107 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 108 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 109 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 110 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 111 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 112 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 113 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 114 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 115 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 116 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 117 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 118 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 119 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 120 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 121 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 122 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 123 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 124 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 125 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 126 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 127 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 128 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 129 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 130 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 131 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 132 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 133 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 134 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 135 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 136 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 137 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 138 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 139 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 140 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 141 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 142 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 143 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 144 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 145 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 146 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 147 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 148 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 149 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 150 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 151 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 152 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 153 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 154 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 155 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 156 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 157 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 158 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+    -------- Damage 159 --------
+    Name = 
+    DisplayName = 
+    IconName = 
+Defense = []
+Boost = []
+Group = []
+Mode = []
+Elusivity = []
+StackKey = []

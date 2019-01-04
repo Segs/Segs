@@ -1,0 +1,1233 @@
+Using record type: KeyProfile
+Dumping 4 records...
+======== Entry 0 ========
+Name = Default (OptionDefault)
+DisplayName = Default
+KeyBind = 
+    -------- KeyBind 0 --------
+    Key = w
+    Command = +forward
+    -------- KeyBind 1 --------
+    Key = uparrow
+    Command = +forward
+    -------- KeyBind 2 --------
+    Key = mousechord
+    Command = ++autorun
+    -------- KeyBind 3 --------
+    Key = v
+    Command = +ctm_invert
+    -------- KeyBind 4 --------
+    Key = a
+    Command = +left
+    -------- KeyBind 5 --------
+    Key = s
+    Command = +backward
+    -------- KeyBind 6 --------
+    Key = downarrow
+    Command = +backward
+    -------- KeyBind 7 --------
+    Key = d
+    Command = +right
+    -------- KeyBind 8 --------
+    Key = q
+    Command = +turnleft
+    -------- KeyBind 9 --------
+    Key = e
+    Command = +turnright
+    -------- KeyBind 10 --------
+    Key = leftarrow
+    Command = +turnleft
+    -------- KeyBind 11 --------
+    Key = rightarrow
+    Command = +turnright
+    -------- KeyBind 12 --------
+    Key = r
+    Command = ++autorun
+    -------- KeyBind 13 --------
+    Key = f
+    Command = follow
+    -------- KeyBind 14 --------
+    Key = space
+    Command = +up
+    -------- KeyBind 15 --------
+    Key = x
+    Command = +down
+    -------- KeyBind 16 --------
+    Key = rbutton
+    Command = +mouse_look
+    -------- KeyBind 17 --------
+    Key = PAGEUP
+    Command = +camrotate
+    -------- KeyBind 18 --------
+    Key = mbutton
+    Command = +camrotate
+    -------- KeyBind 19 --------
+    Key = PAGEDOWN
+    Command = camreset
+    -------- KeyBind 20 --------
+    Key = b
+    Command = ++first
+    -------- KeyBind 21 --------
+    Key = mousewheel
+    Command = +camdistadjust
+    -------- KeyBind 22 --------
+    Key = home
+    Command = +zoomin
+    -------- KeyBind 23 --------
+    Key = end
+    Command = +zoomout
+    -------- KeyBind 24 --------
+    Key = insert
+    Command = +lookup
+    -------- KeyBind 25 --------
+    Key = delete
+    Command = +lookdown
+    -------- KeyBind 26 --------
+    Key = enter
+    Command = show chat$$startchat
+    -------- KeyBind 27 --------
+    Key = /
+    Command = show chat$$slashchat
+    -------- KeyBind 28 --------
+    Key = ;
+    Command = show chat$$slashchat
+    -------- KeyBind 29 --------
+    Key = Backspace
+    Command = autoreply
+    -------- KeyBind 30 --------
+    Key = comma
+    Command = show chat$$beginchat /tell $target, 
+    -------- KeyBind 31 --------
+    Key = '
+    Command = quickchat
+    -------- KeyBind 32 --------
+    Key = z
+    Command = powexec_abort
+    -------- KeyBind 33 --------
+    Key = 1
+    Command = powexec_slot 1
+    -------- KeyBind 34 --------
+    Key = 2
+    Command = powexec_slot 2
+    -------- KeyBind 35 --------
+    Key = 3
+    Command = powexec_slot 3
+    -------- KeyBind 36 --------
+    Key = 4
+    Command = powexec_slot 4
+    -------- KeyBind 37 --------
+    Key = 5
+    Command = powexec_slot 5
+    -------- KeyBind 38 --------
+    Key = 6
+    Command = powexec_slot 6
+    -------- KeyBind 39 --------
+    Key = 7
+    Command = powexec_slot 7
+    -------- KeyBind 40 --------
+    Key = 8
+    Command = powexec_slot 8
+    -------- KeyBind 41 --------
+    Key = 9
+    Command = powexec_slot 9
+    -------- KeyBind 42 --------
+    Key = 0
+    Command = powexec_slot 10
+    -------- KeyBind 43 --------
+    Key = lalt+1
+    Command = powexec_altslot 1
+    -------- KeyBind 44 --------
+    Key = lalt+2
+    Command = powexec_altslot 2
+    -------- KeyBind 45 --------
+    Key = lalt+3
+    Command = powexec_altslot 3
+    -------- KeyBind 46 --------
+    Key = lalt+4
+    Command = powexec_altslot 4
+    -------- KeyBind 47 --------
+    Key = lalt+5
+    Command = powexec_altslot 5
+    -------- KeyBind 48 --------
+    Key = lalt+6
+    Command = powexec_altslot 6
+    -------- KeyBind 49 --------
+    Key = lalt+7
+    Command = powexec_altslot 7
+    -------- KeyBind 50 --------
+    Key = lalt+8
+    Command = powexec_altslot 8
+    -------- KeyBind 51 --------
+    Key = lalt+9
+    Command = powexec_altslot 9
+    -------- KeyBind 52 --------
+    Key = lalt+0
+    Command = powexec_altslot 10
+    -------- KeyBind 53 --------
+    Key = lcontrol+1
+    Command = powexec_alt2slot 1
+    -------- KeyBind 54 --------
+    Key = lcontrol+2
+    Command = powexec_alt2slot 2
+    -------- KeyBind 55 --------
+    Key = lcontrol+3
+    Command = powexec_alt2slot 3
+    -------- KeyBind 56 --------
+    Key = lcontrol+4
+    Command = powexec_alt2slot 4
+    -------- KeyBind 57 --------
+    Key = lcontrol+5
+    Command = powexec_alt2slot 5
+    -------- KeyBind 58 --------
+    Key = lcontrol+6
+    Command = powexec_alt2slot 6
+    -------- KeyBind 59 --------
+    Key = lcontrol+7
+    Command = powexec_alt2slot 7
+    -------- KeyBind 60 --------
+    Key = lcontrol+8
+    Command = powexec_alt2slot 8
+    -------- KeyBind 61 --------
+    Key = lcontrol+9
+    Command = powexec_alt2slot 9
+    -------- KeyBind 62 --------
+    Key = lcontrol+0
+    Command = powexec_alt2slot 10
+    -------- KeyBind 63 --------
+    Key = f1
+    Command = inspexec_slot 1
+    -------- KeyBind 64 --------
+    Key = f2
+    Command = inspexec_slot 2
+    -------- KeyBind 65 --------
+    Key = f3
+    Command = inspexec_slot 3
+    -------- KeyBind 66 --------
+    Key = f4
+    Command = inspexec_slot 4
+    -------- KeyBind 67 --------
+    Key = f5
+    Command = inspexec_slot 5
+    -------- KeyBind 68 --------
+    Key = lalt
+    Command = +alttray
+    -------- KeyBind 69 --------
+    Key = ralt
+    Command = alttraysticky
+    -------- KeyBind 70 --------
+    Key = lcontrol
+    Command = +alt2tray
+    -------- KeyBind 71 --------
+    Key = equals
+    Command = next_tray
+    -------- KeyBind 72 --------
+    Key = -
+    Command = prev_tray
+    -------- KeyBind 73 --------
+    Key = lalt+equals
+    Command = next_tray_alt
+    -------- KeyBind 74 --------
+    Key = lalt+-
+    Command = prev_tray_alt
+    -------- KeyBind 75 --------
+    Key = lshift+1
+    Command = team_select 1
+    -------- KeyBind 76 --------
+    Key = lshift+2
+    Command = team_select 2
+    -------- KeyBind 77 --------
+    Key = lshift+3
+    Command = team_select 3
+    -------- KeyBind 78 --------
+    Key = lshift+4
+    Command = team_select 4
+    -------- KeyBind 79 --------
+    Key = lshift+5
+    Command = team_select 5
+    -------- KeyBind 80 --------
+    Key = lshift+6
+    Command = team_select 6
+    -------- KeyBind 81 --------
+    Key = lshift+7
+    Command = team_select 7
+    -------- KeyBind 82 --------
+    Key = lshift+8
+    Command = team_select 8
+    -------- KeyBind 83 --------
+    Key = m
+    Command = map
+    -------- KeyBind 84 --------
+    Key = p
+    Command = powers
+    -------- KeyBind 85 --------
+    Key = \
+    Command = menu
+    -------- KeyBind 86 --------
+    Key = tab
+    Command = target_enemy_next
+    -------- KeyBind 87 --------
+    Key = lctrl+tab
+    Command = target_enemy_near
+    -------- KeyBind 88 --------
+    Key = rctrl+tab
+    Command = target_enemy_near
+    -------- KeyBind 89 --------
+    Key = lshift+tab
+    Command = target_enemy_prev
+    -------- KeyBind 90 --------
+    Key = rshift+tab
+    Command = target_enemy_prev
+    -------- KeyBind 91 --------
+    Key = esc
+    Command = unselect
+    -------- KeyBind 92 --------
+    Key = sysrq
+    Command = screenshot
+    -------- KeyBind 93 --------
+    Key = f6
+    Command = local <color white><bgcolor red>RUN!
+    -------- KeyBind 94 --------
+    Key = f7
+    Command = say <color black><bgcolor #22aa22>Ready! $$ emote thumbsup
+    -------- KeyBind 95 --------
+    Key = f8
+    Command = local <color black><bgcolor #aaaa22>HELP! $$ emote whistle
+    -------- KeyBind 96 --------
+    Key = f9
+    Command = local <color white><bgcolor #2222aa><scale .75>level $level $archetype$$local <color white><bgcolor #2222aa>Looking for team
+    -------- KeyBind 97 --------
+    Key = f10
+    Command = say $battlecry $$ emote attack
+    -------- KeyBind 98 --------
+    Key = `
+    Command = gamereturn
+======== Entry 1 ========
+Name = Joystick (Joystick)
+DisplayName = Joystick (Joystick)
+KeyBind = 
+    -------- KeyBind 0 --------
+    Key = w
+    Command = +forward
+    -------- KeyBind 1 --------
+    Key = joystick1_up
+    Command = +forward
+    -------- KeyBind 2 --------
+    Key = a
+    Command = +left
+    -------- KeyBind 3 --------
+    Key = joystick1_left
+    Command = +left
+    -------- KeyBind 4 --------
+    Key = s
+    Command = +backward
+    -------- KeyBind 5 --------
+    Key = joystick1_down
+    Command = +backward
+    -------- KeyBind 6 --------
+    Key = d
+    Command = +right
+    -------- KeyBind 7 --------
+    Key = joystick1_right
+    Command = +right
+    -------- KeyBind 8 --------
+    Key = q
+    Command = +turnleft
+    -------- KeyBind 9 --------
+    Key = e
+    Command = +turnright
+    -------- KeyBind 10 --------
+    Key = joystick3_left
+    Command = +turnleft
+    -------- KeyBind 11 --------
+    Key = joystick3_right
+    Command = +turnright
+    -------- KeyBind 12 --------
+    Key = r
+    Command = ++autorun
+    -------- KeyBind 13 --------
+    Key = f
+    Command = follow
+    -------- KeyBind 14 --------
+    Key = space
+    Command = +up
+    -------- KeyBind 15 --------
+    Key = joy2
+    Command = +up
+    -------- KeyBind 16 --------
+    Key = x
+    Command = +down
+    -------- KeyBind 17 --------
+    Key = rbutton
+    Command = +mouse_look
+    -------- KeyBind 18 --------
+    Key = PAGEUP
+    Command = +camrotate
+    -------- KeyBind 19 --------
+    Key = mbutton
+    Command = +camrotate
+    -------- KeyBind 20 --------
+    Key = PAGEDOWN
+    Command = camreset
+    -------- KeyBind 21 --------
+    Key = b
+    Command = ++first
+    -------- KeyBind 22 --------
+    Key = mousewheel
+    Command = +camdistadjust
+    -------- KeyBind 23 --------
+    Key = home
+    Command = +zoomin
+    -------- KeyBind 24 --------
+    Key = end
+    Command = +zoomout
+    -------- KeyBind 25 --------
+    Key = insert
+    Command = +lookup
+    -------- KeyBind 26 --------
+    Key = delete
+    Command = +lookdown
+    -------- KeyBind 27 --------
+    Key = joy5
+    Command = +zoomin
+    -------- KeyBind 28 --------
+    Key = joy6
+    Command = +zoomout
+    -------- KeyBind 29 --------
+    Key = joystick3_up
+    Command = +lookup
+    -------- KeyBind 30 --------
+    Key = joystick3_down
+    Command = +lookdown
+    -------- KeyBind 31 --------
+    Key = enter
+    Command = show chat$$startchat
+    -------- KeyBind 32 --------
+    Key = /
+    Command = show chat$$slashchat
+    -------- KeyBind 33 --------
+    Key = ;
+    Command = show chat$$slashchat
+    -------- KeyBind 34 --------
+    Key = Backspace
+    Command = autoreply
+    -------- KeyBind 35 --------
+    Key = comma
+    Command = show chat$$beginchat /tell $target, 
+    -------- KeyBind 36 --------
+    Key = '
+    Command = quickchat
+    -------- KeyBind 37 --------
+    Key = z
+    Command = powexec_abort
+    -------- KeyBind 38 --------
+    Key = 1
+    Command = powexec_slot 1
+    -------- KeyBind 39 --------
+    Key = joy1
+    Command = powexec_slot 2
+    -------- KeyBind 40 --------
+    Key = joy3
+    Command = powexec_slot 3
+    -------- KeyBind 41 --------
+    Key = joy4
+    Command = powexec_slot 4
+    -------- KeyBind 42 --------
+    Key = joy7
+    Command = powexec_slot 5
+    -------- KeyBind 43 --------
+    Key = joy8
+    Command = powexec_slot 1
+    -------- KeyBind 44 --------
+    Key = 2
+    Command = powexec_slot 2
+    -------- KeyBind 45 --------
+    Key = 3
+    Command = powexec_slot 3
+    -------- KeyBind 46 --------
+    Key = 4
+    Command = powexec_slot 4
+    -------- KeyBind 47 --------
+    Key = 5
+    Command = powexec_slot 5
+    -------- KeyBind 48 --------
+    Key = 6
+    Command = powexec_slot 6
+    -------- KeyBind 49 --------
+    Key = 7
+    Command = powexec_slot 7
+    -------- KeyBind 50 --------
+    Key = 8
+    Command = powexec_slot 8
+    -------- KeyBind 51 --------
+    Key = 9
+    Command = powexec_slot 9
+    -------- KeyBind 52 --------
+    Key = 0
+    Command = powexec_slot 10
+    -------- KeyBind 53 --------
+    Key = lalt+1
+    Command = powexec_altslot 1
+    -------- KeyBind 54 --------
+    Key = lalt+2
+    Command = powexec_altslot 2
+    -------- KeyBind 55 --------
+    Key = lalt+3
+    Command = powexec_altslot 3
+    -------- KeyBind 56 --------
+    Key = lalt+4
+    Command = powexec_altslot 4
+    -------- KeyBind 57 --------
+    Key = lalt+5
+    Command = powexec_altslot 5
+    -------- KeyBind 58 --------
+    Key = lalt+6
+    Command = powexec_altslot 6
+    -------- KeyBind 59 --------
+    Key = lalt+7
+    Command = powexec_altslot 7
+    -------- KeyBind 60 --------
+    Key = lalt+8
+    Command = powexec_altslot 8
+    -------- KeyBind 61 --------
+    Key = lalt+9
+    Command = powexec_altslot 9
+    -------- KeyBind 62 --------
+    Key = lalt+0
+    Command = powexec_altslot 10
+    -------- KeyBind 63 --------
+    Key = f1
+    Command = inspexec_slot 1
+    -------- KeyBind 64 --------
+    Key = f2
+    Command = inspexec_slot 2
+    -------- KeyBind 65 --------
+    Key = f3
+    Command = inspexec_slot 3
+    -------- KeyBind 66 --------
+    Key = f4
+    Command = inspexec_slot 4
+    -------- KeyBind 67 --------
+    Key = f5
+    Command = inspexec_slot 5
+    -------- KeyBind 68 --------
+    Key = lalt
+    Command = +alttray
+    -------- KeyBind 69 --------
+    Key = ralt
+    Command = alttraysticky
+    -------- KeyBind 70 --------
+    Key = equals
+    Command = next_tray
+    -------- KeyBind 71 --------
+    Key = joy10
+    Command = next_tray
+    -------- KeyBind 72 --------
+    Key = -
+    Command = prev_tray
+    -------- KeyBind 73 --------
+    Key = lalt+equals
+    Command = next_tray_alt
+    -------- KeyBind 74 --------
+    Key = lalt+-
+    Command = prev_tray_alt
+    -------- KeyBind 75 --------
+    Key = lshift+1
+    Command = team_select 1
+    -------- KeyBind 76 --------
+    Key = lshift+2
+    Command = team_select 2
+    -------- KeyBind 77 --------
+    Key = lshift+3
+    Command = team_select 3
+    -------- KeyBind 78 --------
+    Key = lshift+4
+    Command = team_select 4
+    -------- KeyBind 79 --------
+    Key = lshift+5
+    Command = team_select 5
+    -------- KeyBind 80 --------
+    Key = lshift+6
+    Command = team_select 6
+    -------- KeyBind 81 --------
+    Key = lshift+7
+    Command = team_select 7
+    -------- KeyBind 82 --------
+    Key = lshift+8
+    Command = team_select 8
+    -------- KeyBind 83 --------
+    Key = m
+    Command = map
+    -------- KeyBind 84 --------
+    Key = joy9
+    Command = map
+    -------- KeyBind 85 --------
+    Key = n
+    Command = nav
+    -------- KeyBind 86 --------
+    Key = p
+    Command = powers
+    -------- KeyBind 87 --------
+    Key = \
+    Command = menu
+    -------- KeyBind 88 --------
+    Key = t
+    Command = target
+    -------- KeyBind 89 --------
+    Key = c
+    Command = chat
+    -------- KeyBind 90 --------
+    Key = tab
+    Command = target_enemy_next
+    -------- KeyBind 91 --------
+    Key = joypad_right
+    Command = target_enemy_next
+    -------- KeyBind 92 --------
+    Key = lctrl+tab
+    Command = target_enemy_near
+    -------- KeyBind 93 --------
+    Key = joypad_up
+    Command = target_enemy_near
+    -------- KeyBind 94 --------
+    Key = lshift+tab
+    Command = target_enemy_prev
+    -------- KeyBind 95 --------
+    Key = joypad_left
+    Command = target_enemy_prev
+    -------- KeyBind 96 --------
+    Key = joypad_down
+    Command = target_friend_next
+    -------- KeyBind 97 --------
+    Key = esc
+    Command = unselect
+    -------- KeyBind 98 --------
+    Key = sysrq
+    Command = screenshot
+    -------- KeyBind 99 --------
+    Key = f6
+    Command = local <color white><bgcolor red>RUN!
+    -------- KeyBind 100 --------
+    Key = f7
+    Command = say <color black><bgcolor #22aa22>Ready! $$ emote thumbsup
+    -------- KeyBind 101 --------
+    Key = f8
+    Command = local <color black><bgcolor #aaaa22>HELP! $$ emote whistle
+    -------- KeyBind 102 --------
+    Key = f9
+    Command = local <color white><bgcolor #2222aa><scale .75>level $level $archetype$$local <color white><bgcolor #2222aa>Looking for team
+    -------- KeyBind 103 --------
+    Key = f10
+    Command = say $battlecry $$ emote attack
+======== Entry 2 ========
+Name = Development
+DisplayName = Dev
+KeyBind = 
+    -------- KeyBind 0 --------
+    Key = v
+    Command = +ctm_invert
+    -------- KeyBind 1 --------
+    Key = w
+    Command = +forward
+    -------- KeyBind 2 --------
+    Key = a
+    Command = +left
+    -------- KeyBind 3 --------
+    Key = s
+    Command = +backward
+    -------- KeyBind 4 --------
+    Key = d
+    Command = +right
+    -------- KeyBind 5 --------
+    Key = q
+    Command = +turnleft
+    -------- KeyBind 6 --------
+    Key = r
+    Command = ++autorun
+    -------- KeyBind 7 --------
+    Key = e
+    Command = edit 1
+    -------- KeyBind 8 --------
+    Key = t
+    Command = interact_menu
+    -------- KeyBind 9 --------
+    Key = tab
+    Command = target_enemy_next
+    -------- KeyBind 10 --------
+    Key = lctrl+tab
+    Command = target_enemy_near
+    -------- KeyBind 11 --------
+    Key = rctrl+tab
+    Command = target_enemy_near
+    -------- KeyBind 12 --------
+    Key = lshift+tab
+    Command = target_enemy_prev
+    -------- KeyBind 13 --------
+    Key = rshift+tab
+    Command = target_enemy_prev
+    -------- KeyBind 14 --------
+    Key = rbutton
+    Command = +mouse_look
+    -------- KeyBind 15 --------
+    Key = mousechord
+    Command = +forward_mouse
+    -------- KeyBind 16 --------
+    Key = f2
+    Command = ++nocoll
+    -------- KeyBind 17 --------
+    Key = f3
+    Command = ++debug_info
+    -------- KeyBind 18 --------
+    Key = f4
+    Command = ++wireframe
+    -------- KeyBind 19 --------
+    Key = f5
+    Command = ++mc
+    -------- KeyBind 20 --------
+    Key = f9
+    Command = ++oldvid
+    -------- KeyBind 21 --------
+    Key = PAUSE
+    Command = ++pause
+    -------- KeyBind 22 --------
+    Key = numpad0
+    Command = ++atest0
+    -------- KeyBind 23 --------
+    Key = numpad1
+    Command = +atest1
+    -------- KeyBind 24 --------
+    Key = numpad2
+    Command = +atest2
+    -------- KeyBind 25 --------
+    Key = numpad3
+    Command = +atest3
+    -------- KeyBind 26 --------
+    Key = numpad4
+    Command = +atest4
+    -------- KeyBind 27 --------
+    Key = numpad5
+    Command = +atest5
+    -------- KeyBind 28 --------
+    Key = numpad6
+    Command = +atest6
+    -------- KeyBind 29 --------
+    Key = numpad7
+    Command = +atest7
+    -------- KeyBind 30 --------
+    Key = numpad8
+    Command = +atest8
+    -------- KeyBind 31 --------
+    Key = numpad9
+    Command = +atest9
+    -------- KeyBind 32 --------
+    Key = o
+    Command = spawnnpc
+    -------- KeyBind 33 --------
+    Key = PAGEUP
+    Command = +camrotate
+    -------- KeyBind 34 --------
+    Key = mbutton
+    Command = +camrotate
+    -------- KeyBind 35 --------
+    Key = PAGEDOWN
+    Command = camreset
+    -------- KeyBind 36 --------
+    Key = f
+    Command = follow
+    -------- KeyBind 37 --------
+    Key = -
+    Command = fire1
+    -------- KeyBind 38 --------
+    Key = \
+    Command = ++resetfx
+    -------- KeyBind 39 --------
+    Key = ?
+    Command = fxinfooff
+    -------- KeyBind 40 --------
+    Key = .
+    Command = rph
+    -------- KeyBind 41 --------
+    Key = b
+    Command = ++first
+    -------- KeyBind 42 --------
+    Key = space
+    Command = +up
+    -------- KeyBind 43 --------
+    Key = x
+    Command = +down
+    -------- KeyBind 44 --------
+    Key = g
+    Command = loot
+    -------- KeyBind 45 --------
+    Key = enter
+    Command = show chat$$startchat
+    -------- KeyBind 46 --------
+    Key = /
+    Command = show chat$$slashchat
+    -------- KeyBind 47 --------
+    Key = ;
+    Command = show chat$$slashchat
+    -------- KeyBind 48 --------
+    Key = esc
+    Command = unselect
+    -------- KeyBind 49 --------
+    Key = mousewheel
+    Command = +camdistadjust
+    -------- KeyBind 50 --------
+    Key = f7
+    Command = say <color black><bgcolor #22aa22>Ready! $$ emote thumbsup
+    -------- KeyBind 51 --------
+    Key = f8
+    Command = local <color black><bgcolor #aaaa22>HELP! $$ emote whistle
+    -------- KeyBind 52 --------
+    Key = f10
+    Command = say $battlecry $$ emote attack
+    -------- KeyBind 53 --------
+    Key = Backspace
+    Command = autoreply
+    -------- KeyBind 54 --------
+    Key = comma
+    Command = show chat$$beginchat /tell $target, 
+    -------- KeyBind 55 --------
+    Key = '
+    Command = quickchat
+    -------- KeyBind 56 --------
+    Key = sysrq
+    Command = screenshot
+    -------- KeyBind 57 --------
+    Key = z
+    Command = powexec_abort
+    -------- KeyBind 58 --------
+    Key = 1
+    Command = powexec_slot 1
+    -------- KeyBind 59 --------
+    Key = 2
+    Command = powexec_slot 2
+    -------- KeyBind 60 --------
+    Key = 3
+    Command = powexec_slot 3
+    -------- KeyBind 61 --------
+    Key = 4
+    Command = powexec_slot 4
+    -------- KeyBind 62 --------
+    Key = 5
+    Command = powexec_slot 5
+    -------- KeyBind 63 --------
+    Key = 6
+    Command = powexec_slot 6
+    -------- KeyBind 64 --------
+    Key = 7
+    Command = powexec_slot 7
+    -------- KeyBind 65 --------
+    Key = 8
+    Command = powexec_slot 8
+    -------- KeyBind 66 --------
+    Key = 9
+    Command = powexec_slot 9
+    -------- KeyBind 67 --------
+    Key = 0
+    Command = powexec_slot 10
+    -------- KeyBind 68 --------
+    Key = lalt+1
+    Command = powexec_altslot 1
+    -------- KeyBind 69 --------
+    Key = lalt+2
+    Command = powexec_altslot 2
+    -------- KeyBind 70 --------
+    Key = lalt+3
+    Command = powexec_altslot 3
+    -------- KeyBind 71 --------
+    Key = lalt+4
+    Command = powexec_altslot 4
+    -------- KeyBind 72 --------
+    Key = lalt+5
+    Command = powexec_altslot 5
+    -------- KeyBind 73 --------
+    Key = lalt+6
+    Command = powexec_altslot 6
+    -------- KeyBind 74 --------
+    Key = lalt+7
+    Command = powexec_altslot 7
+    -------- KeyBind 75 --------
+    Key = lalt+8
+    Command = powexec_altslot 8
+    -------- KeyBind 76 --------
+    Key = lalt+9
+    Command = powexec_altslot 9
+    -------- KeyBind 77 --------
+    Key = lalt+0
+    Command = powexec_altslot 10
+    -------- KeyBind 78 --------
+    Key = lcontrol+1
+    Command = powexec_alt2slot 1
+    -------- KeyBind 79 --------
+    Key = lcontrol+2
+    Command = powexec_alt2slot 2
+    -------- KeyBind 80 --------
+    Key = lcontrol+3
+    Command = powexec_alt2slot 3
+    -------- KeyBind 81 --------
+    Key = lcontrol+4
+    Command = powexec_alt2slot 4
+    -------- KeyBind 82 --------
+    Key = lcontrol+5
+    Command = powexec_alt2slot 5
+    -------- KeyBind 83 --------
+    Key = lcontrol+6
+    Command = powexec_alt2slot 6
+    -------- KeyBind 84 --------
+    Key = lcontrol+7
+    Command = powexec_alt2slot 7
+    -------- KeyBind 85 --------
+    Key = lcontrol+8
+    Command = powexec_alt2slot 8
+    -------- KeyBind 86 --------
+    Key = lcontrol+9
+    Command = powexec_alt2slot 9
+    -------- KeyBind 87 --------
+    Key = lcontrol+0
+    Command = powexec_alt2slot 10
+    -------- KeyBind 88 --------
+    Key = lalt+f1
+    Command = inspexec_slot 1
+    -------- KeyBind 89 --------
+    Key = lalt+f2
+    Command = inspexec_slot 2
+    -------- KeyBind 90 --------
+    Key = lalt+f3
+    Command = inspexec_slot 3
+    -------- KeyBind 91 --------
+    Key = lalt+f4
+    Command = inspexec_slot 4
+    -------- KeyBind 92 --------
+    Key = lalt+f5
+    Command = inspexec_slot 5
+    -------- KeyBind 93 --------
+    Key = lalt
+    Command = +alttray
+    -------- KeyBind 94 --------
+    Key = ralt
+    Command = alttraysticky
+    -------- KeyBind 95 --------
+    Key = lcontrol
+    Command = +alt2tray
+    -------- KeyBind 96 --------
+    Key = m
+    Command = map
+    -------- KeyBind 97 --------
+    Key = n
+    Command = nav
+    -------- KeyBind 98 --------
+    Key = t
+    Command = target
+    -------- KeyBind 99 --------
+    Key = c
+    Command = chat
+    -------- KeyBind 100 --------
+    Key = f12
+    Command = emote sit
+======== Entry 3 ========
+Name = Original (OptionOriginal)
+DisplayName = Original
+KeyBind = 
+    -------- KeyBind 0 --------
+    Key = mousechord
+    Command = +forward_mouse
+    -------- KeyBind 1 --------
+    Key = w
+    Command = +forward
+    -------- KeyBind 2 --------
+    Key = uparrow
+    Command = +forward
+    -------- KeyBind 3 --------
+    Key = v
+    Command = +ctm_invert
+    -------- KeyBind 4 --------
+    Key = a
+    Command = +left
+    -------- KeyBind 5 --------
+    Key = s
+    Command = +backward
+    -------- KeyBind 6 --------
+    Key = downarrow
+    Command = +backward
+    -------- KeyBind 7 --------
+    Key = d
+    Command = +right
+    -------- KeyBind 8 --------
+    Key = q
+    Command = +turnleft
+    -------- KeyBind 9 --------
+    Key = e
+    Command = +turnright
+    -------- KeyBind 10 --------
+    Key = leftarrow
+    Command = +turnleft
+    -------- KeyBind 11 --------
+    Key = rightarrow
+    Command = +turnright
+    -------- KeyBind 12 --------
+    Key = r
+    Command = ++autorun
+    -------- KeyBind 13 --------
+    Key = f
+    Command = follow
+    -------- KeyBind 14 --------
+    Key = space
+    Command = +up
+    -------- KeyBind 15 --------
+    Key = x
+    Command = +down
+    -------- KeyBind 16 --------
+    Key = rbutton
+    Command = +mouse_look
+    -------- KeyBind 17 --------
+    Key = PAGEUP
+    Command = +camrotate
+    -------- KeyBind 18 --------
+    Key = mbutton
+    Command = +camrotate
+    -------- KeyBind 19 --------
+    Key = PAGEDOWN
+    Command = camreset
+    -------- KeyBind 20 --------
+    Key = b
+    Command = ++first
+    -------- KeyBind 21 --------
+    Key = mousewheel
+    Command = +camdistadjust
+    -------- KeyBind 22 --------
+    Key = home
+    Command = +zoomin
+    -------- KeyBind 23 --------
+    Key = end
+    Command = +zoomout
+    -------- KeyBind 24 --------
+    Key = insert
+    Command = +lookup
+    -------- KeyBind 25 --------
+    Key = delete
+    Command = +lookdown
+    -------- KeyBind 26 --------
+    Key = enter
+    Command = show chat$$startchat
+    -------- KeyBind 27 --------
+    Key = /
+    Command = show chat$$slashchat
+    -------- KeyBind 28 --------
+    Key = ;
+    Command = show chat$$slashchat
+    -------- KeyBind 29 --------
+    Key = Backspace
+    Command = autoreply
+    -------- KeyBind 30 --------
+    Key = comma
+    Command = show chat$$beginchat /tell $target, 
+    -------- KeyBind 31 --------
+    Key = '
+    Command = quickchat
+    -------- KeyBind 32 --------
+    Key = z
+    Command = powexec_abort
+    -------- KeyBind 33 --------
+    Key = 1
+    Command = powexec_slot 1
+    -------- KeyBind 34 --------
+    Key = 2
+    Command = powexec_slot 2
+    -------- KeyBind 35 --------
+    Key = 3
+    Command = powexec_slot 3
+    -------- KeyBind 36 --------
+    Key = 4
+    Command = powexec_slot 4
+    -------- KeyBind 37 --------
+    Key = 5
+    Command = powexec_slot 5
+    -------- KeyBind 38 --------
+    Key = 6
+    Command = powexec_slot 6
+    -------- KeyBind 39 --------
+    Key = 7
+    Command = powexec_slot 7
+    -------- KeyBind 40 --------
+    Key = 8
+    Command = powexec_slot 8
+    -------- KeyBind 41 --------
+    Key = 9
+    Command = powexec_slot 9
+    -------- KeyBind 42 --------
+    Key = 0
+    Command = powexec_slot 10
+    -------- KeyBind 43 --------
+    Key = lalt+1
+    Command = powexec_altslot 1
+    -------- KeyBind 44 --------
+    Key = lalt+2
+    Command = powexec_altslot 2
+    -------- KeyBind 45 --------
+    Key = lalt+3
+    Command = powexec_altslot 3
+    -------- KeyBind 46 --------
+    Key = lalt+4
+    Command = powexec_altslot 4
+    -------- KeyBind 47 --------
+    Key = lalt+5
+    Command = powexec_altslot 5
+    -------- KeyBind 48 --------
+    Key = lalt+6
+    Command = powexec_altslot 6
+    -------- KeyBind 49 --------
+    Key = lalt+7
+    Command = powexec_altslot 7
+    -------- KeyBind 50 --------
+    Key = lalt+8
+    Command = powexec_altslot 8
+    -------- KeyBind 51 --------
+    Key = lalt+9
+    Command = powexec_altslot 9
+    -------- KeyBind 52 --------
+    Key = lalt+0
+    Command = powexec_altslot 10
+    -------- KeyBind 53 --------
+    Key = lcontrol+1
+    Command = powexec_alt2slot 1
+    -------- KeyBind 54 --------
+    Key = lcontrol+2
+    Command = powexec_alt2slot 2
+    -------- KeyBind 55 --------
+    Key = lcontrol+3
+    Command = powexec_alt2slot 3
+    -------- KeyBind 56 --------
+    Key = lcontrol+4
+    Command = powexec_alt2slot 4
+    -------- KeyBind 57 --------
+    Key = lcontrol+5
+    Command = powexec_alt2slot 5
+    -------- KeyBind 58 --------
+    Key = lcontrol+6
+    Command = powexec_alt2slot 6
+    -------- KeyBind 59 --------
+    Key = lcontrol+7
+    Command = powexec_alt2slot 7
+    -------- KeyBind 60 --------
+    Key = lcontrol+8
+    Command = powexec_alt2slot 8
+    -------- KeyBind 61 --------
+    Key = lcontrol+9
+    Command = powexec_alt2slot 9
+    -------- KeyBind 62 --------
+    Key = lcontrol+0
+    Command = powexec_alt2slot 10
+    -------- KeyBind 63 --------
+    Key = f1
+    Command = inspexec_slot 1
+    -------- KeyBind 64 --------
+    Key = f2
+    Command = inspexec_slot 2
+    -------- KeyBind 65 --------
+    Key = f3
+    Command = inspexec_slot 3
+    -------- KeyBind 66 --------
+    Key = f4
+    Command = inspexec_slot 4
+    -------- KeyBind 67 --------
+    Key = f5
+    Command = inspexec_slot 5
+    -------- KeyBind 68 --------
+    Key = lalt
+    Command = +alttray
+    -------- KeyBind 69 --------
+    Key = ralt
+    Command = alttraysticky
+    -------- KeyBind 70 --------
+    Key = lcontrol
+    Command = +alt2tray
+    -------- KeyBind 71 --------
+    Key = equals
+    Command = next_tray
+    -------- KeyBind 72 --------
+    Key = -
+    Command = prev_tray
+    -------- KeyBind 73 --------
+    Key = lalt+equals
+    Command = next_tray_alt
+    -------- KeyBind 74 --------
+    Key = lalt+-
+    Command = prev_tray_alt
+    -------- KeyBind 75 --------
+    Key = lshift+1
+    Command = team_select 1
+    -------- KeyBind 76 --------
+    Key = lshift+2
+    Command = team_select 2
+    -------- KeyBind 77 --------
+    Key = lshift+3
+    Command = team_select 3
+    -------- KeyBind 78 --------
+    Key = lshift+4
+    Command = team_select 4
+    -------- KeyBind 79 --------
+    Key = lshift+5
+    Command = team_select 5
+    -------- KeyBind 80 --------
+    Key = lshift+6
+    Command = team_select 6
+    -------- KeyBind 81 --------
+    Key = lshift+7
+    Command = team_select 7
+    -------- KeyBind 82 --------
+    Key = lshift+8
+    Command = team_select 8
+    -------- KeyBind 83 --------
+    Key = m
+    Command = map
+    -------- KeyBind 84 --------
+    Key = n
+    Command = nav
+    -------- KeyBind 85 --------
+    Key = p
+    Command = powers
+    -------- KeyBind 86 --------
+    Key = \
+    Command = menu
+    -------- KeyBind 87 --------
+    Key = t
+    Command = target
+    -------- KeyBind 88 --------
+    Key = c
+    Command = chat
+    -------- KeyBind 89 --------
+    Key = tab
+    Command = target_enemy_next
+    -------- KeyBind 90 --------
+    Key = lctrl+tab
+    Command = target_enemy_near
+    -------- KeyBind 91 --------
+    Key = rctrl+tab
+    Command = target_enemy_near
+    -------- KeyBind 92 --------
+    Key = lshift+tab
+    Command = target_enemy_prev
+    -------- KeyBind 93 --------
+    Key = rshift+tab
+    Command = target_enemy_prev
+    -------- KeyBind 94 --------
+    Key = esc
+    Command = unselect
+    -------- KeyBind 95 --------
+    Key = sysrq
+    Command = screenshot
+    -------- KeyBind 96 --------
+    Key = f6
+    Command = local <color white><bgcolor red>RUN!
+    -------- KeyBind 97 --------
+    Key = f7
+    Command = say <color black><bgcolor #22aa22>Ready! $$ emote thumbsup
+    -------- KeyBind 98 --------
+    Key = f8
+    Command = local <color black><bgcolor #aaaa22>HELP! $$ emote whistle
+    -------- KeyBind 99 --------
+    Key = f9
+    Command = local <color white><bgcolor #2222aa><scale .75>level $level $archetype$$local <color white><bgcolor #2222aa>Looking for team
+    -------- KeyBind 100 --------
+    Key = f10
+    Command = say $battlecry $$ emote attack

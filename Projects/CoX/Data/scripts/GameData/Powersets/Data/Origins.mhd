@@ -1,0 +1,17 @@
+Origin Graphics Matching						
+Version:	1.000					
+Date:	07/04/07					
+						
+Notes:						
+Export from Excel as Tab-Delimited Text as 'Origins.mhd'						
+Used for graphics only						
+						
+						
+						
+Origin	DO	SO
+Magic	MagDO	MagSO
+Mutation	MutDO	MutSO
+Natural	NatDO	NatSO
+Science	SciDO	SciSO
+Technology	TechDO	TechSO
+End

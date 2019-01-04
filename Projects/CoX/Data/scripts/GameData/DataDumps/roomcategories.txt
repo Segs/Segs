@@ -1,0 +1,62 @@
+Using record type: AnimationMenu
+Dumping 12 records...
+======== Entry 0 ========
+Name = Entrance
+BitName = Entrance (P2125202399)
+BitName2 = This is the entrance to your base. It contains the main portal which cannot be removed. Only decorative items can be placed here. (P307113409)
+FileName = Base Entrance (P2820925398)
+======== Entry 1 ========
+Name = Doorway (Doorway)
+BitName = Doorway (P174020283)
+BitName2 = This is a passage to  connect rooms. No items can be placed here. (P1910735101)
+FileName = Standard Dooryway (P1586973758)
+======== Entry 2 ========
+Name = Decorative
+BitName = Decorative (P1156312807)
+BitName2 = This is a general purpose room. Only decorative items can be placed here. (P3160075632)
+FileName = General purpose room (P4141815979)
+======== Entry 3 ========
+Name = Energy
+BitName = Energy (P2428337319)
+BitName2 = Every base needs an Energy source for functional base items. Batteries can be placed in some other rooms in case the Energy source is destroyed. (P1638209866)
+FileName = Equipment Allowed: Energy, , EnergyAux, Defense, DefenseAux (P1853847329)
+======== Entry 4 ========
+Name = Control
+BitName = Control (P577115607)
+BitName2 = Every base needs an Control center for functional base items. (P4051457568)
+FileName = Equipment Allowed: Control, ControlAux, Defense, DefenseAux (P3033563655)
+======== Entry 5 ========
+Name = Defense
+BitName = Defense (P337169641)
+BitName2 = These rooms an only contain Defense items, making your base harder to attack. (P1532130171)
+FileName = Equipment Allowed: Defense, DefenseAux (P1300296993)
+======== Entry 6 ========
+Name = Transport
+BitName = Transportation (P3302296309)
+BitName2 = Transport rooms contain things that let your supergroup members travel faster. (P1371136555)
+FileName = Equipment Allowed: Transport, TransportAux, Defense, DefenseAux (P522865751)
+======== Entry 7 ========
+Name = Workshop
+BitName = Workshop (P1645830290)
+BitName2 = This room type houses equipment useful for researching and building inventions. (P3554905511)
+FileName = Equipement Allowed: Workshop (P25532392)
+======== Entry 8 ========
+Name = Resource
+BitName = Resource (P1172805184)
+BitName2 = Inventions and the salvage required to build them can both be stored in these rooms. (P3199530672)
+FileName = Equipment Allowed: Resource (P1184571296)
+======== Entry 9 ========
+Name = Medical
+BitName = Medical (P3093708486)
+BitName2 = This room type allows you to place reclaimation pads and other medical equipment. (P1545322510)
+FileName = Equipment Allowed: Medical, MedicalAux (P3200021923)
+======== Entry 10 ========
+Name = Vault
+BitName = Vault (P1056007717)
+BitName2 = The rare and valuable artifacts your Supergroup collects need a strong vault to protect them. (P3725410755)
+FileName = Equipment Allowed: Vault, Defense, DefenseAux (P3692338291)
+======== Entry 11 ========
+Name = Empowerment
+BitName = Empowerment (P3360419001)
+BitName2 = This room type houses equipment useful for researching and building temporary buffs. (P837607376)
+FileName = Equipment Allowed: Empowerment Station (P1170361720)

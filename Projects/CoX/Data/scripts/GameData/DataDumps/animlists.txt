@@ -1,0 +1,4100 @@
+Using record type: AnimList
+Dumping 540 records...
+======== Entry 0 ========
+Name = Crap
+Anim = 
+  ENCOUNTER
+  THREAT
+  VARIATION
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS.AL
+======== Entry 1 ========
+Name = M_Idle
+Anim = 
+  IDLE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 2 ========
+Name = M_Fear
+Anim = 
+  FEAR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 3 ========
+Name = M_Fly
+Anim = 
+  FLY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 4 ========
+Name = M_Hover
+Anim = 
+  FLY
+  HOVER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 5 ========
+Name = M_Sneaky
+Anim = 
+  LOITER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 6 ========
+Name = Floating
+Anim = 
+  FLY
+  HOVER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 7 ========
+Name = M_Combat
+Anim = 
+  COMBAT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 8 ========
+Name = M_CombatFly
+Anim = 
+  FLY
+  COMBAT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 9 ========
+Name = M_CombatHover
+Anim = 
+  FLY
+  HOVER
+  COMBAT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 10 ========
+Name = M_Loiter
+Anim = 
+  LOITER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 11 ========
+Name = M_Magic
+Anim = 
+  LOITER
+  MAGIC
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 12 ========
+Name = Crate_Hold
+Anim = 
+  CARRY
+  BOX
+  LOITER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 13 ========
+Name = M_CrateLoot
+Anim = 
+  CARRY
+  BOX
+  LOITER
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 14 ========
+Name = M_CrateDynamite
+Anim = 
+  CARRY
+  BOX
+  LOITER
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 15 ========
+Name = M_Torch
+Anim = 
+  LOOKOUT
+  WORK
+  WAIT
+  POSE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 16 ========
+Name = M_Pickaxe
+Anim = 
+  LOOKOUT
+  WORK
+  WAIT
+  POSE
+  GROUNDSUMMON
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 17 ========
+Name = M_Shotgun
+Anim = 
+  COMBAT
+  WEAPON
+  SHOTGUN
+  LOOKOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 18 ========
+Name = M_Trunchoen
+Anim = 
+  COMBAT
+  WEAPON
+  BLUNT
+  LOOKOUT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 19 ========
+Name = M_Pipe
+Anim = 
+  COMBAT
+  WEAPON
+  BLUNT
+  LOOKOUT
+  HIGH
+  2HAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 20 ========
+Name = M_Prone
+Anim = 
+  YELL
+  SAD
+  HEAD
+  ZOMBIE
+  HIGH
+  LAUGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 21 ========
+Name = M_Handcart
+Anim = 
+  LOITER
+  PROP
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 22 ========
+Name = M_RollBarrel
+Anim = 
+  LOITER
+  PROP
+  WORK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 23 ========
+Name = M_WheelBarrow
+Anim = 
+  LOITER
+  PROP
+  WORK
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 24 ========
+Name = M_WheelBarrowPumkin
+Anim = 
+  LOITER
+  PROP
+  WORK
+  HIGH
+  QUICK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 25 ========
+Name = M_Book
+Anim = 
+  BOX
+  PLAN
+  POSE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 26 ========
+Name = M_Picket
+Anim = 
+  LOOKOUT
+  WORK
+  WAIT
+  POSE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 27 ========
+Name = M_PPD_Patrol
+Anim = 
+  IDLE
+  PPD
+  PATROL
+  TALK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 28 ========
+Name = M_PPD_Patrol_Flashlight
+Anim = 
+  IDLE
+  PPD
+  PATROL
+  FLASHLIGHT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 29 ========
+Name = M_PPD_Patrol_Megaphone
+Anim = 
+  IDLE
+  PPD
+  PATROL
+  YELL
+  MEGAPHONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 30 ========
+Name = M_Sneak
+Anim = 
+  IDLE
+  WALK
+  SCARED
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 31 ========
+Name = M_Clockwork_CleanGround
+Anim = 
+  LOITER
+  HAND
+  BLOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 32 ========
+Name = M_Clockwork_Patrol_Malfunction
+Anim = 
+  LOITER
+  MALFUNCTION
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 33 ========
+Name = M_Clockwork_Patrol_Carry
+Anim = 
+  LOITER
+  CARRY
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 34 ========
+Name = Looting
+Anim = 
+  CARRY
+  HIGH
+  BOX
+  LOOT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 35 ========
+Name = Cement_Shoes
+Anim = 
+  CEMENTSHOES
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 36 ========
+Name = BodyBag
+Anim = 
+  BODYBAG
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 37 ========
+Name = Follow_Route_Run_Woonded
+Anim = 
+  LIMP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 38 ========
+Name = HoldTorch
+Anim = 
+  LOOKOUT
+  WORK
+  WAIT
+  POSE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 39 ========
+Name = SneekNTurn
+Anim = 
+  FEAR
+  SNEAK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 40 ========
+Name = M_CustomRifle_Alert_Patrol
+Anim = 
+  LOITER
+  CUSTOMWEAPON
+  ALERT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 41 ========
+Name = M_Rifle_Alert_Patrol
+Anim = 
+  LOITER
+  ALERT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 42 ========
+Name = M_Shalice_Cast_Patrol
+Anim = 
+  LOITER
+  ENDGAME
+  PATROL
+  CAST
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 43 ========
+Name = Walk_Cry
+Anim = 
+  IDLE
+  WALK
+  CRY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 44 ========
+Name = M_Walk
+Anim = 
+  WALK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 45 ========
+Name = M_Walk_Forward
+Anim = 
+  WALK
+  FORWARD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 46 ========
+Name = M_Walk_Cellphone
+Anim = 
+  WALK
+  CELLPHONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 47 ========
+Name = M_Walk_Briefcase
+Anim = 
+  WALK
+  BRIEFCASE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 48 ========
+Name = M_Walk_Groceries
+Anim = 
+  WALK
+  GROCERIES
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 49 ========
+Name = M_Walk_Oppressed
+Anim = 
+  WALK
+  SAD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 50 ========
+Name = M_Walk_Oppressed_Briefcase
+Anim = 
+  WALK
+  SAD
+  BRIEFCASE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 51 ========
+Name = M_Walk_Nervous
+Anim = 
+  WALK
+  LOOKOUT
+  THREAT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 52 ========
+Name = M_Walk_Nervous_Briefcase
+Anim = 
+  WALK
+  LOOKOUT
+  THREAT
+  BRIEFCASE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 53 ========
+Name = M_Walk_Bum
+Anim = 
+  WALK
+  BUM
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_MOTION.AL
+======== Entry 54 ========
+Name = None
+Anim = 
+  ENCOUNTER
+  CLEAR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 55 ========
+Name = NotSelectable
+Anim = 
+  NOTSELECTABLE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 56 ========
+Name = AnimalThreaten
+Anim = 
+  ENCOUNTER
+  THREAT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 57 ========
+Name = AnimalRampage
+Anim = 
+  ENCOUNTER
+  VANDALIZE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 58 ========
+Name = Eat_Junk
+Anim = 
+  ENCOUNTER
+  EAT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 59 ========
+Name = WolfEat
+Anim = 
+  ENCOUNTER
+  EAT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 60 ========
+Name = Toss_Crate
+Anim = 
+  ENCOUNTER
+  HIGH
+  RAMPAGE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 61 ========
+Name = RockRampage
+Anim = 
+  ENCOUNTER
+  RAMPAGE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 62 ========
+Name = CrazyMenace
+Anim = 
+  ENCOUNTER
+  MENACE
+  STRONG
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 63 ========
+Name = Vandalize
+Anim = 
+  ENCOUNTER
+  VANDALIZE
+  VARIATION
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 64 ========
+Name = Lookout
+Anim = 
+  ENCOUNTER
+  LOOKOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 65 ========
+Name = Scan
+Anim = 
+  ENCOUNTER
+  MEDOTHER
+  STRONG
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 66 ========
+Name = Briefcase
+Anim = 
+  ENCOUNTER
+  BRIEFCASE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 67 ========
+Name = LockPick
+Anim = 
+  ENCOUNTER
+  VANDALIZE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 68 ========
+Name = HunchedObserving
+Anim = 
+  ENCOUNTER
+  OBSERVE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 69 ========
+Name = Observing
+Anim = 
+  ENCOUNTER
+  OBSERVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 70 ========
+Name = Observer
+Anim = 
+  ENCOUNTER
+  OBSERVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 71 ========
+Name = FloatingStruggle_Hero
+Anim = 
+  ENCOUNTER
+  HEROSPELLCAST
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 72 ========
+Name = Captured_RiktiEnergy
+Anim = 
+  ENCOUNTER
+  CAPTURED
+  LEVITATE
+  RIKTI
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 73 ========
+Name = CastingFire
+Anim = 
+  ENCOUNTER
+  SPELLCAST
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 74 ========
+Name = CastingLawRune
+Anim = 
+  ENCOUNTER
+  SPELLCAST
+  SAD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 75 ========
+Name = CastingHoldSpell
+Anim = 
+  ENCOUNTER
+  SPELLCAST
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 76 ========
+Name = FloatingStruggle
+Anim = 
+  ENCOUNTER
+  SPELLCAST
+  FEAR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 77 ========
+Name = CastingPantheon
+Anim = 
+  ENCOUNTER
+  SPELLCAST
+  ZOMBIE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 78 ========
+Name = Chanting
+Anim = 
+  ENCOUNTER
+  CHANTING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 79 ========
+Name = CrateSit
+Anim = 
+  ENCOUNTER
+  SIT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 80 ========
+Name = Peddling
+Anim = 
+  ENCOUNTER
+  DEALING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 81 ========
+Name = Repair
+Anim = 
+  ENCOUNTER
+  REPAIR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 82 ========
+Name = BeingRepaired
+Anim = 
+  ENCOUNTER
+  REPAIR
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 83 ========
+Name = KneelingLoot
+Anim = 
+  ENCOUNTER
+  LOOT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 84 ========
+Name = PurseTug
+Anim = 
+  ENCOUNTER
+  PURSETUG
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 85 ========
+Name = ChickenTug
+Anim = 
+  ENCOUNTER
+  PURSETUG
+  QUICK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 86 ========
+Name = RelicTug
+Anim = 
+  ENCOUNTER
+  RELICTUG
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 87 ========
+Name = Rumble_FighterA
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 88 ========
+Name = Rumble_FighterB
+Anim = 
+  ENCOUNTER
+  RUMBLEB
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 89 ========
+Name = RumbleLow_FighterA
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 90 ========
+Name = RumbleLow_FighterB
+Anim = 
+  ENCOUNTER
+  RUMBLEB
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 91 ========
+Name = RumbleKnife_FighterA
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+  KNIFE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 92 ========
+Name = RumbleKnife_FighterB
+Anim = 
+  ENCOUNTER
+  RUMBLEB
+  KNIFE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 93 ========
+Name = RumbleBlunt_FighterA
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+  BLUNT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 94 ========
+Name = RumbleBlunt_FighterB
+Anim = 
+  ENCOUNTER
+  RUMBLEB
+  BLUNT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 95 ========
+Name = RumbleZombie_Zombie
+Anim = 
+  ENCOUNTER
+  RUMBLEB
+  MAGIC
+  CAST
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 96 ========
+Name = Rumble_Knocked_Back
+Anim = 
+  ENCOUNTER
+  RUMBLEB
+  MAGIC
+  CAST
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 97 ========
+Name = RumbleZombie_CotBlast
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+  MAGIC
+  CAST
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 98 ========
+Name = RumbleZombie_Kick
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+  KICK
+  ATTACK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 99 ========
+Name = Rumble_Plantman_Sword
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 100 ========
+Name = Melee_Fists
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+  PUNCH
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 101 ========
+Name = Melee_Fists_React
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+  PUNCH
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 102 ========
+Name = Snake_Strike
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 103 ========
+Name = Snake_Strike_Sword
+Anim = 
+  ENCOUNTER
+  RUMBLEA
+  SWORD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 104 ========
+Name = GroundPunch
+Anim = 
+  ENCOUNTER
+  GROUNDPUNCH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 105 ========
+Name = GroundPunch_Receive
+Anim = 
+  ENCOUNTER
+  GROUNDPUNCH
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 106 ========
+Name = GroundPunch_Receive_B
+Anim = 
+  ENCOUNTER
+  DIENOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 107 ========
+Name = GroundPunch_Receive_B_post
+Anim = 
+  ENCOUNTER
+  SLEEP
+  STOP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 108 ========
+Name = Shake
+Anim = 
+  ENCOUNTER
+  SHAKE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 109 ========
+Name = Shake_Receive
+Anim = 
+  ENCOUNTER
+  SHAKE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 110 ========
+Name = Setup_Bomb
+Anim = 
+  ENCOUNTER
+  LOOT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 111 ========
+Name = Plantman_RampageA
+Anim = 
+  ENCOUNTER
+  RAMPAGE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 112 ========
+Name = Plantman_RampageB
+Anim = 
+  ENCOUNTER
+  RAMPAGE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 113 ========
+Name = WarmHands
+Anim = 
+  ENCOUNTER
+  HAND
+  LOITER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 114 ========
+Name = WarmHands_NoBarrel
+Anim = 
+  ENCOUNTER
+  HAND
+  LOITER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 115 ========
+Name = Hostage
+Anim = 
+  ENCOUNTER
+  FEAR
+  POSE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 116 ========
+Name = WallSneak
+Anim = 
+  ENCOUNTER
+  SNEAK
+  POSE
+  LOOKOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 117 ========
+Name = WallPeek_Right
+Anim = 
+  ENCOUNTER
+  SNEAK
+  POSE
+  LOOKOUT
+  RIGHT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 118 ========
+Name = WallPeek_Left
+Anim = 
+  ENCOUNTER
+  SNEAK
+  POSE
+  LOOKOUT
+  LEFT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 119 ========
+Name = Wall_Lean
+Anim = 
+  ENCOUNTER
+  POSE
+  LEANWALL
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 120 ========
+Name = Wall_Lean_Casual
+Anim = 
+  ENCOUNTER
+  POSE
+  LEANWALL
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 121 ========
+Name = Sword_Vandalize
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  BLADE
+  VANDALIZE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 122 ========
+Name = DigHole
+Anim = 
+  ENCOUNTER
+  WORK
+  GROUNDSUMMON
+  LOW
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 123 ========
+Name = DigShovel
+Anim = 
+  ENCOUNTER
+  WORK
+  GROUNDSUMMON
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 124 ========
+Name = DigPickAxe
+Anim = 
+  ENCOUNTER
+  WORK
+  GROUNDSUMMON
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 125 ========
+Name = DigHands
+Anim = 
+  ENCOUNTER
+  WORK
+  HAND
+  STRONG
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 126 ========
+Name = ReadInscription
+Anim = 
+  ENCOUNTER
+  LOOKOUT
+  WORK
+  TRAIN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 127 ========
+Name = Greedy
+Anim = 
+  ENCOUNTER
+  OBSERVE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 128 ========
+Name = Shield_Block
+Anim = 
+  ENCOUNTER
+  SHIELD
+  POSE
+  WORK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 129 ========
+Name = Burte_WallSmash
+Anim = 
+  ENCOUNTER
+  VANDALIZE
+  WALL
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 130 ========
+Name = Burte_Barrage
+Anim = 
+  ENCOUNTER
+  VANDALIZE
+  EYE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 131 ========
+Name = Burte_Eyeshoot
+Anim = 
+  ENCOUNTER
+  VANDALIZE
+  EYE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 132 ========
+Name = Natterling_Roof_BreakIn
+Anim = 
+  ENCOUNTER
+  VANDALIZE
+  MID
+  THROWKNIFE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 133 ========
+Name = Lavaman_Popup_Static
+Anim = 
+  ENCOUNTER
+  SLEEP
+  SNEAK
+  LAUNCH
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 134 ========
+Name = Lavaman_Popup_Short
+Anim = 
+  ENCOUNTER
+  SLEEP
+  SNEAK
+  LAUNCH
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 135 ========
+Name = Lavaman_Popup_Long
+Anim = 
+  ENCOUNTER
+  SLEEP
+  SNEAK
+  LAUNCH
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 136 ========
+Name = Rularuu_Angry
+Anim = 
+  ENCOUNTER
+  DEALING
+  ANGRY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 137 ========
+Name = DeadSlab
+Anim = 
+  ENCOUNTER
+  DEATH
+  LOOT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 138 ========
+Name = Protest
+Anim = 
+  ENCOUNTER
+  ANGRY
+  YELL
+  SPEECH
+  NO
+  SCREAM
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 139 ========
+Name = Protest_Loyalist
+Anim = 
+  ENCOUNTER
+  PROTEST
+  LOYALIST
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 140 ========
+Name = Protest_Resistance
+Anim = 
+  ENCOUNTER
+  PROTEST
+  RESISTANCE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 141 ========
+Name = Pipe_Angry
+Anim = 
+  ENCOUNTER
+  ANGRY
+  YELL
+  SPEECH
+  NO
+  SCREAM
+  BLUNT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 142 ========
+Name = WalkieTalkie
+Anim = 
+  ENCOUNTER
+  CHAT
+  POSE
+  FAR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 143 ========
+Name = Drill_March
+Anim = 
+  ENCOUNTER
+  BUSY
+  TRAIN
+  STOMP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 144 ========
+Name = Drill_Yell
+Anim = 
+  ENCOUNTER
+  BUSY
+  TRAIN
+  YELL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 145 ========
+Name = Ape_Crouch
+Anim = 
+  ENCOUNTER
+  POSE
+  CROUCH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 146 ========
+Name = Counter
+Anim = 
+  ENCOUNTER
+  OBSERVE
+  LOW
+  PROP
+  WORK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 147 ========
+Name = Welding_Mid
+Anim = 
+  ENCOUNTER
+  WORK
+  POSE
+  WELDING
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 148 ========
+Name = Welding_Low
+Anim = 
+  ENCOUNTER
+  WORK
+  POSE
+  WELDING
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 149 ========
+Name = Clean_Gun
+Anim = 
+  ENCOUNTER
+  WORK
+  POSE
+  WEAPON
+  REPAIR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 150 ========
+Name = RatchetFix_Mid
+Anim = 
+  ENCOUNTER
+  WORK
+  POSE
+  CLUB
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 151 ========
+Name = Octopus_Submerge
+Anim = 
+  ENCOUNTER
+  POSE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 152 ========
+Name = Bookie
+Anim = 
+  ENCOUNTER
+  CLIPBOARD
+  OBSERVE
+  PROP
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 153 ========
+Name = CastSpell
+Anim = 
+  ENCOUNTER
+  TRAIN
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 154 ========
+Name = Breakout
+Anim = 
+  ENCOUNTER
+  TRAIN
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 155 ========
+Name = Flirt
+Anim = 
+  ENCOUNTER
+  TRAIN
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 156 ========
+Name = OilBlaze
+Anim = 
+  ENCOUNTER
+  PROP
+  VANDALIZE
+  LOOKOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 157 ========
+Name = Fire_Menace
+Anim = 
+  ENCOUNTER
+  PROP
+  VANDALIZE
+  LOOKOUT
+  MENACE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 158 ========
+Name = Vendor
+Anim = 
+  ENCOUNTER
+  OBSERVE
+  LOITER
+  BUSY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 159 ========
+Name = Vendor_No_Cart
+Anim = 
+  ENCOUNTER
+  NOCARTVENDOR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 160 ========
+Name = HandsOnHead
+Anim = 
+  ENCOUNTER
+  2HAND
+  STOP
+  THREAT
+  HYPNOTIZE
+  HEAD
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 161 ========
+Name = HandsOnHead_Kneel
+Anim = 
+  ENCOUNTER
+  2HAND
+  STOP
+  THREAT
+  HYPNOTIZE
+  HEAD
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 162 ========
+Name = Prone
+Anim = 
+  ENCOUNTER
+  POSE
+  SAD
+  HEAD
+  ZOMBIE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 163 ========
+Name = Soul_Give
+Anim = 
+  ENCOUNTER
+  POSE
+  SAD
+  HEAD
+  ZOMBIE
+  QUICK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 164 ========
+Name = Soul_Take
+Anim = 
+  ENCOUNTER
+  TRAIN
+  LOW
+  IDLE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 165 ========
+Name = Plant_Trap
+Anim = 
+  ENCOUNTER
+  PLANTTRAP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 166 ========
+Name = Lift_Totem
+Anim = 
+  ENCOUNTER
+  WORK
+  2HAND
+  LOW
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 167 ========
+Name = Statesman_Shackled
+Anim = 
+  ENCOUNTER
+  CAGE
+  FORCE
+  EVIL
+  LOW
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 168 ========
+Name = Surrounded
+Anim = 
+  ENCOUNTER
+  STRONG
+  MENACE
+  LOOKOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 169 ========
+Name = Casting_Shield
+Anim = 
+  ENCOUNTER
+  SHIELD
+  POSE
+  MAGIC
+  CAST
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 170 ========
+Name = Awakened_Indoctrinate
+Anim = 
+  ENCOUNTER
+  SHIELD
+  POSE
+  MAGIC
+  CAST
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 171 ========
+Name = FireMarshall_Backpack
+Anim = 
+  ENCOUNTER
+  WORK
+  FIRE
+  BACKPACK
+  HELP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 172 ========
+Name = Cage_Croatoa
+Anim = 
+  ENCOUNTER
+  FEAR
+  CAGE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 173 ========
+Name = SprayPaint
+Anim = 
+  ENCOUNTER
+  SPRAYCAN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 174 ========
+Name = PushAround_A
+Anim = 
+  ENCOUNTER
+  PUSH
+  2HAND
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 175 ========
+Name = PushAround_B
+Anim = 
+  ENCOUNTER
+  PUSH
+  2HAND
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 176 ========
+Name = PushAround_Victim
+Anim = 
+  ENCOUNTER
+  PUSH
+  2HAND
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 177 ========
+Name = Menacles
+Anim = 
+  ENCOUNTER
+  PROP
+  SLEEP
+  WAIT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 178 ========
+Name = Cross_Sword
+Anim = 
+  ENCOUNTER
+  BLOCK
+  LOW
+  HIGH
+  SWORD
+  TELEKINESIS
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 179 ========
+Name = JackHammer_Vertical
+Anim = 
+  ENCOUNTER
+  PROP
+  BUSY
+  WORK
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 180 ========
+Name = JackHammer_Horizontal
+Anim = 
+  ENCOUNTER
+  PROP
+  BUSY
+  WORK
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 181 ========
+Name = Cross_Katana
+Anim = 
+  ENCOUNTER
+  BLOCK
+  LOW
+  HIGH
+  KATANA
+  TELEKINESIS
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 182 ========
+Name = Bum_Slump
+Anim = 
+  ENCOUNTER
+  SIT
+  LOVE
+  SAD
+  HIGH
+  POSE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 183 ========
+Name = Bum_Slump_Cutscene
+Anim = 
+  ENCOUNTER
+  SIT
+  LOVE
+  SAD
+  HIGH
+  POSE
+  JUSTFUCKINDOIT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 184 ========
+Name = Barf
+Anim = 
+  ENCOUNTER
+  POISON
+  BLOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 185 ========
+Name = Newsie
+Anim = 
+  ENCOUNTER
+  NEWSIE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 186 ========
+Name = Clockwork_Siphon
+Anim = 
+  ENCOUNTER
+  DRAIN
+  SPELLCAST
+  BUSY
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 187 ========
+Name = Clockwork_Siphon_Down
+Anim = 
+  ENCOUNTER
+  DRAIN
+  SPELLCAST
+  BUSY
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 188 ========
+Name = Clockwork_Siphon_Up
+Anim = 
+  ENCOUNTER
+  DRAIN
+  SPELLCAST
+  BUSY
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 189 ========
+Name = Pamphlet
+Anim = 
+  ENCOUNTER
+  PROP
+  LOITER
+  BECKON
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 190 ========
+Name = PryBarBig
+Anim = 
+  ENCOUNTER
+  PROP
+  WORK
+  VANDAL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 191 ========
+Name = ThreeCardMonty
+Anim = 
+  ENCOUNTER
+  THREECARDMONTY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 192 ========
+Name = Farwell_Fadeout
+Anim = 
+  ENCOUNTER
+  FAREWELLNFADEOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 193 ========
+Name = Molotov_Throw
+Anim = 
+  ENCOUNTER
+  MOLOTOV
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 194 ========
+Name = Snake_Sunning
+Anim = 
+  ENCOUNTER
+  SLEEP
+  HAPPY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 195 ========
+Name = Corpse_KIA
+Anim = 
+  ENCOUNTER
+  POSE
+  COWER
+  SAD
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 196 ========
+Name = Bodybag_Toss
+Anim = 
+  ENCOUNTER
+  BODYBAGTOSS
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 197 ========
+Name = Rocket_Launch
+Anim = 
+  ENCOUNTER
+  LAUNCH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 198 ========
+Name = Rocket_Reload
+Anim = 
+  ENCOUNTER
+  RELOAD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 199 ========
+Name = Unconscious
+Anim = 
+  ENCOUNTER
+  OUTCOLD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 200 ========
+Name = Unconscious_Cutscene
+Anim = 
+  ENCOUNTER
+  OUTCOLD
+  JUSTFUCKINDOIT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 201 ========
+Name = Purse_Mug
+Anim = 
+  ENCOUNTER
+  PURSESEARCH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 202 ========
+Name = Bane_Bombhole
+Anim = 
+  ENCOUNTER
+  BOMBHOLE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 203 ========
+Name = Bane_MaceScan
+Anim = 
+  ENCOUNTER
+  MACESCAN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 204 ========
+Name = Bane_MaceScanDown
+Anim = 
+  ENCOUNTER
+  MACESCANDOWN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 205 ========
+Name = SpinCocoon
+Anim = 
+  ENCOUNTER
+  SPINCOCOON
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 206 ========
+Name = Arachnoid_Sleep
+Anim = 
+  ENCOUNTER
+  ARACHSLEEP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 207 ========
+Name = PurseTugPickup
+Anim = 
+  ENCOUNTER
+  PURSEPICKUP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 208 ========
+Name = Signature_Exit
+Anim = 
+  ENCOUNTER
+  SIGNATUREEXIT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 209 ========
+Name = DiceObserver
+Anim = 
+  ENCOUNTER
+  LOW
+  OBSERVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 210 ========
+Name = Cocoon_Sleep
+Anim = 
+  ENCOUNTER
+  COCOONSLEEP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 211 ========
+Name = Manacles
+Anim = 
+  ENCOUNTER
+  PROP
+  SLEEP
+  WAIT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 212 ========
+Name = WeaponCheering
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  CHEER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 213 ========
+Name = Fishing_Low
+Anim = 
+  ENCOUNTER
+  FISHING
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 214 ========
+Name = GuardNodOff
+Anim = 
+  ENCOUNTER
+  PROP
+  SLEEP
+  SIT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 215 ========
+Name = Amused
+Anim = 
+  ENCOUNTER
+  AMUSED
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 216 ========
+Name = Clipboard_Cross
+Anim = 
+  ENCOUNTER
+  CLIPBOARD
+  TALK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 217 ========
+Name = Lotus_Float
+Anim = 
+  ENCOUNTER
+  FLOATLOTUS
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 218 ========
+Name = Jeering
+Anim = 
+  ENCOUNTER
+  ANGRY
+  TAUNTA
+  TAUNTB
+  TAUNTC
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 219 ========
+Name = HandsUp
+Anim = 
+  ENCOUNTER
+  2HAND
+  STOP
+  THREAT
+  HYPNOTIZE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 220 ========
+Name = HandsUp_Kneel
+Anim = 
+  ENCOUNTER
+  2HAND
+  STOP
+  THREAT
+  HYPNOTIZE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 221 ========
+Name = Vampire_Crouch
+Anim = 
+  ENCOUNTER
+  POSE
+  CROUCH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 222 ========
+Name = Vampire_Stand
+Anim = 
+  ENCOUNTER
+  BUSY
+  POSE
+  MAGIC
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 223 ========
+Name = Book_Research
+Anim = 
+  ENCOUNTER
+  LOOKOUT
+  WORK
+  TRAIN
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 224 ========
+Name = Book_Research_Low
+Anim = 
+  ENCOUNTER
+  LOOKOUT
+  WORK
+  TRAIN
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 225 ========
+Name = ReadScroll
+Anim = 
+  ENCOUNTER
+  LOOKOUT
+  WORK
+  TRAIN
+  WAIT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 226 ========
+Name = FloatBooks
+Anim = 
+  ENCOUNTER
+  LOOKOUT
+  WORK
+  BOX
+  BODY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 227 ========
+Name = DrillInstructor
+Anim = 
+  ENCOUNTER
+  CHEER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 228 ========
+Name = Meditate
+Anim = 
+  ENCOUNTER
+  MEDITATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 229 ========
+Name = Meditate_Sitting
+Anim = 
+  ENCOUNTER
+  MEDITATE
+  SIT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 230 ========
+Name = Preach
+Anim = 
+  ENCOUNTER
+  SPEECH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 231 ========
+Name = Preach_Low
+Anim = 
+  ENCOUNTER
+  SPEECH
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 232 ========
+Name = Listen
+Anim = 
+  ENCOUNTER
+  SPEECH
+  LISTEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 233 ========
+Name = ListenHigh
+Anim = 
+  ENCOUNTER
+  SPEECH
+  LISTEN
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 234 ========
+Name = ListenLow
+Anim = 
+  ENCOUNTER
+  SPEECH
+  LISTEN
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 235 ========
+Name = ListenCasual
+Anim = 
+  ENCOUNTER
+  LISTEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 236 ========
+Name = BoomBox
+Anim = 
+  ENCOUNTER
+  BOX
+  STRONG
+  SHURIKEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 237 ========
+Name = ThreatenVariation
+Anim = 
+  ENCOUNTER
+  THREAT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 238 ========
+Name = MenaceVariation
+Anim = 
+  ENCOUNTER
+  MENACE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 239 ========
+Name = ArmsCrossed
+Anim = 
+  ENCOUNTER
+  COMMAND
+  OBSERVE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 240 ========
+Name = ReadingBook
+Anim = 
+  ENCOUNTER
+  READBOOK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 241 ========
+Name = AssumeThePosition
+Anim = 
+  ENCOUNTER
+  WAIT
+  BUSY
+  ROOTED
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 242 ========
+Name = Eat_Donut
+Anim = 
+  ENCOUNTER
+  EATDONUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 243 ========
+Name = Eat_Food
+Anim = 
+  ENCOUNTER
+  EATFOOD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 244 ========
+Name = Sitting
+Anim = 
+  ENCOUNTER
+  SIT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 245 ========
+Name = LedgeSit
+Anim = 
+  ENCOUNTER
+  SIT
+  THREAT
+  MENACE
+  HIGH
+  POSE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 246 ========
+Name = LedgeSit_Skirt
+Anim = 
+  ENCOUNTER
+  POSE
+  LEDGESIT
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 247 ========
+Name = Chair_Sit
+Anim = 
+  ENCOUNTER
+  SIT
+  THREAT
+  MENACE
+  HIGH
+  POSE
+  ARMCHAIR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 248 ========
+Name = Sit_Chair_Teabag
+Anim = 
+  ENCOUNTER
+  POSE
+  SIT
+  TEABAG
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 249 ========
+Name = Sit_Sofa_Teabag
+Anim = 
+  ENCOUNTER
+  POSE
+  SIT
+  TEABAG
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 250 ========
+Name = SitTalk
+Anim = 
+  ENCOUNTER
+  SIT
+  TALK
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 251 ========
+Name = SitTalkLeft
+Anim = 
+  ENCOUNTER
+  SIT
+  TALK
+  LEFT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 252 ========
+Name = SitTalkRight
+Anim = 
+  ENCOUNTER
+  SIT
+  TALK
+  RIGHT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 253 ========
+Name = SitListen
+Anim = 
+  ENCOUNTER
+  SIT
+  LISTEN
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 254 ========
+Name = SitListenLeft
+Anim = 
+  ENCOUNTER
+  SIT
+  LISTEN
+  LEFT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 255 ========
+Name = SitListenRight
+Anim = 
+  ENCOUNTER
+  SIT
+  LISTEN
+  RIGHT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 256 ========
+Name = Sit_BarStool
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 257 ========
+Name = Sit_HighExecChair
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 258 ========
+Name = Sit_MetalFrameChair
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  THREE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 259 ========
+Name = Sit_StoneBench
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  FOUR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 260 ========
+Name = Sit_ConcreteBench
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  FIVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 261 ========
+Name = Sit_WoodSlatBench
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  SIX
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 262 ========
+Name = Sit_MetalBench
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  SEVEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 263 ========
+Name = Sit_BustStopBench
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  EIGHT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 264 ========
+Name = Sit_PicnicTable
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  NINE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 265 ========
+Name = Sit_CurvedLeatherSofa
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  TEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 266 ========
+Name = Sit_LeatherBooth
+Anim = 
+  ENCOUNTER
+  SIT
+  POSE
+  TEN
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 267 ========
+Name = Kneeling_Low
+Anim = 
+  ENCOUNTER
+  KNEEL
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 268 ========
+Name = Kneeling_Kungfu
+Anim = 
+  ENCOUNTER
+  KNEEL
+  KUNGFU
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 269 ========
+Name = Kneeling_Kungfu_Meditate
+Anim = 
+  ENCOUNTER
+  KNEEL
+  KUNGFU
+  MEDITATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 270 ========
+Name = Kneeling_Kungfu_Low
+Anim = 
+  ENCOUNTER
+  KNEEL
+  KUNGFU
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 271 ========
+Name = Camera
+Anim = 
+  ENCOUNTER
+  SHOOT
+  POINT
+  CONE
+  QUICK
+  HAPPY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 272 ========
+Name = Portable_Laptop
+Anim = 
+  ENCOUNTER
+  PROP
+  BUSY
+  ROOTED
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 273 ========
+Name = Typing
+Anim = 
+  ENCOUNTER
+  TYPING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 274 ========
+Name = PeerIn
+Anim = 
+  ENCOUNTER
+  OBSERVE
+  WALL
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 275 ========
+Name = M_TribalDance
+Anim = 
+  ENCOUNTER
+  DANCE
+  STRONG
+  CHANTING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 276 ========
+Name = ClipBoard
+Anim = 
+  ENCOUNTER
+  CLIPBOARD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 277 ========
+Name = Cower
+Anim = 
+  ENCOUNTER
+  FEAR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 278 ========
+Name = Cellphone
+Anim = 
+  ENCOUNTER
+  CELLPHONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 279 ========
+Name = Bowing
+Anim = 
+  ENCOUNTER
+  BOWING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 280 ========
+Name = Saluting
+Anim = 
+  ENCOUNTER
+  SALUTE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 281 ========
+Name = At_Ease
+Anim = 
+  ENCOUNTER
+  SALUTE
+  HIGH
+  LOW
+  POSE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 282 ========
+Name = Fishing
+Anim = 
+  ENCOUNTER
+  FISHING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 283 ========
+Name = Drinker
+Anim = 
+  ENCOUNTER
+  DRINK
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 284 ========
+Name = Drinker_ClayMug
+Anim = 
+  ENCOUNTER
+  DRINK
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 285 ========
+Name = Talk
+Anim = 
+  ENCOUNTER
+  GESTICULATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 286 ========
+Name = TouchScreen
+Anim = 
+  ENCOUNTER
+  TOUCHSCREEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 287 ========
+Name = PicketAngry
+Anim = 
+  ENCOUNTER
+  PICKETANGRY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 288 ========
+Name = Panhandle
+Anim = 
+  ENCOUNTER
+  COWER
+  AXE
+  SAD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 289 ========
+Name = FlashlightObserving
+Anim = 
+  ENCOUNTER
+  FLASHLIGHT
+  OBSERVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 290 ========
+Name = FlashlightUp
+Anim = 
+  ENCOUNTER
+  FLASHLIGHT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 291 ========
+Name = FlashlightDown
+Anim = 
+  ENCOUNTER
+  FLASHLIGHT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 292 ========
+Name = Binocular_Scan
+Anim = 
+  ENCOUNTER
+  LOOKOUT
+  POSE
+  FAR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 293 ========
+Name = Cheering
+Anim = 
+  ENCOUNTER
+  CHEER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 294 ========
+Name = BigWave (BigWave)
+Anim = 
+  ENCOUNTER
+  BIGWAVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 295 ========
+Name = DanceRave
+Anim = 
+  ENCOUNTER
+  DANCE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 296 ========
+Name = Dealing_Deal
+Anim = 
+  ENCOUNTER
+  DEALING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 297 ========
+Name = Dealing_Receive
+Anim = 
+  ENCOUNTER
+  RECEIVING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 298 ========
+Name = ZombieDrum_Standing
+Anim = 
+  ENCOUNTER
+  CHANTING
+  HIGH
+  WOOD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 299 ========
+Name = ZombieDrum_Sitting
+Anim = 
+  ENCOUNTER
+  CHANTING
+  LOW
+  WOOD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 300 ========
+Name = Wounded
+Anim = 
+  ENCOUNTER
+  WOUNDED
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 301 ========
+Name = FlippingCoin
+Anim = 
+  ENCOUNTER
+  FLIPPINGCOIN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 302 ========
+Name = Howl (Howl)
+Anim = 
+  ENCOUNTER
+  HOWL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 303 ========
+Name = Newspaper (Newspaper)
+Anim = 
+  ENCOUNTER
+  NEWSPAPER
+  GOOD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 304 ========
+Name = Rogue_Newspaper
+Anim = 
+  ENCOUNTER
+  NEWSPAPER
+  EVIL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 305 ========
+Name = Praetorian_Newspaper
+Anim = 
+  ENCOUNTER
+  NEWSPAPER
+  NEUTRAL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 306 ========
+Name = Training
+Anim = 
+  ENCOUNTER
+  TRAIN
+  KUNGFU
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 307 ========
+Name = Training_JumpingJacks
+Anim = 
+  ENCOUNTER
+  TRAIN
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 308 ========
+Name = Waiting
+Anim = 
+  ENCOUNTER
+  WAITING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 309 ========
+Name = Teabag
+Anim = 
+  ENCOUNTER
+  TEABAG
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 310 ========
+Name = Sit_VanguardBriefingRoom
+Anim = 
+  ENCOUNTER
+  OBSERVE
+  SIT
+  POSE
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 311 ========
+Name = Score1 (Score1)
+Anim = 
+  ENCOUNTER
+  SCORE
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 312 ========
+Name = Score2 (Score2)
+Anim = 
+  ENCOUNTER
+  SCORE
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 313 ========
+Name = Score3 (Score3)
+Anim = 
+  ENCOUNTER
+  SCORE
+  THREE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 314 ========
+Name = Score4 (Score4)
+Anim = 
+  ENCOUNTER
+  SCORE
+  FOUR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 315 ========
+Name = Score5 (Score5)
+Anim = 
+  ENCOUNTER
+  SCORE
+  FIVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 316 ========
+Name = Score6 (Score6)
+Anim = 
+  ENCOUNTER
+  SCORE
+  SIX
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 317 ========
+Name = Score7 (Score7)
+Anim = 
+  ENCOUNTER
+  SCORE
+  SEVEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 318 ========
+Name = Score8 (Score8)
+Anim = 
+  ENCOUNTER
+  SCORE
+  EIGHT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 319 ========
+Name = Score9 (Score9)
+Anim = 
+  ENCOUNTER
+  SCORE
+  NINE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 320 ========
+Name = Score10 (Score10)
+Anim = 
+  ENCOUNTER
+  SCORE
+  TEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 321 ========
+Name = Read_Blueprints
+Anim = 
+  ENCOUNTER
+  READBLUEPRINTS
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 322 ========
+Name = Clockwork_WashWindows
+Anim = 
+  ENCOUNTER
+  STAND
+  HAND
+  SWIPE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 323 ========
+Name = Clockwork_CleanGround
+Anim = 
+  ENCOUNTER
+  HAND
+  BLOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 324 ========
+Name = Clockwork_CleanWall
+Anim = 
+  ENCOUNTER
+  STAND
+  HAND
+  SWIPE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 325 ========
+Name = Clockwork_PowerDown
+Anim = 
+  ENCOUNTER
+  POSE
+  SLEEP
+  DOWN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 326 ========
+Name = Clockwork_PowerUp
+Anim = 
+  ENCOUNTER
+  POSE
+  SLEEP
+  UP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 327 ========
+Name = Clockwork_Diagnostic
+Anim = 
+  ENCOUNTER
+  POSE
+  STAND
+  CALCULATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 328 ========
+Name = Clockwork_Welding
+Anim = 
+  ENCOUNTER
+  POSE
+  REPAIR
+  STAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 329 ========
+Name = Clockwork_Welding_Low
+Anim = 
+  ENCOUNTER
+  POSE
+  REPAIR
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 330 ========
+Name = Clockwork_Malfunction
+Anim = 
+  ENCOUNTER
+  MALFUNCTION
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 331 ========
+Name = PPD_Gauntlet_Type
+Anim = 
+  ENCOUNTER
+  PPD
+  PATROL
+  TOUCHSCREEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 332 ========
+Name = PPD_Gauntlet_Cover
+Anim = 
+  ENCOUNTER
+  PPD
+  CAPTURED
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 333 ========
+Name = PraetorianContemplate
+Anim = 
+  ENCOUNTER
+  POSE
+  THINK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 334 ========
+Name = PraetorianSalute
+Anim = 
+  ENCOUNTER
+  SALUTE
+  THREE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 335 ========
+Name = PraetorianRecruit
+Anim = 
+  ENCOUNTER
+  POSE
+  RECRUIT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 336 ========
+Name = PraetorianThreaten
+Anim = 
+  ENCOUNTER
+  POSE
+  THREAT
+  FEAR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 337 ========
+Name = Praetorian_Pace
+Anim = 
+  ENCOUNTER
+  POSE
+  PACE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 338 ========
+Name = PraetorianRigid_Attention
+Anim = 
+  ENCOUNTER
+  POSE
+  STAND
+  BUSY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 339 ========
+Name = Praetorian_Kneel_Spraypaint
+Anim = 
+  ENCOUNTER
+  SPRAYCAN
+  KNEEL
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 340 ========
+Name = Praetorian_Peace_Stand
+Anim = 
+  ENCOUNTER
+  POSE
+  STAND
+  BOWING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 341 ========
+Name = Praetorian_Clipboard
+Anim = 
+  ENCOUNTER
+  CLIPBOARD
+  ALTERNATE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 342 ========
+Name = Praetorian_Walkie_Talkie
+Anim = 
+  ENCOUNTER
+  CHAT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 343 ========
+Name = Praetorian_Binoculars
+Anim = 
+  ENCOUNTER
+  BINOCULARS
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 344 ========
+Name = Praetorian_Secret_Offer
+Anim = 
+  ENCOUNTER
+  SECRET
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 345 ========
+Name = Praetorian_TeleportIn
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  DOWN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 346 ========
+Name = Praetorian_TeleportOut
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  UP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 347 ========
+Name = CarnivalofLight_TeleportIn
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  ALTERNATE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 348 ========
+Name = CarnivalofLight_TeleportOut
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  ALTERNATE
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 349 ========
+Name = Praetorian_Pamphlet_Sift
+Anim = 
+  ENCOUNTER
+  PAPERS
+  STAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 350 ========
+Name = Praetorian_Pack_Boxes
+Anim = 
+  ENCOUNTER
+  PACK
+  STAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 351 ========
+Name = Praetorian_Ground_Kick
+Anim = 
+  ENCOUNTER
+  KICK
+  ATTACK
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 352 ========
+Name = Praetorian_Ground_Kick_Receive
+Anim = 
+  ENCOUNTER
+  KICK
+  ATTACK
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 353 ========
+Name = Praetorian_Enriche_Drinker
+Anim = 
+  ENCOUNTER
+  DRINK
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 354 ========
+Name = Praetorian_Newsie
+Anim = 
+  ENCOUNTER
+  NEWSIE
+  NEUTRAL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 355 ========
+Name = Praetorian_Pamphlet
+Anim = 
+  ENCOUNTER
+  PROP
+  LOITER
+  NEUTRAL
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 356 ========
+Name = Studio55_Pamphlet
+Anim = 
+  ENCOUNTER
+  PROP
+  LOITER
+  NEUTRAL
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 357 ========
+Name = CDEC_Pamphlet
+Anim = 
+  ENCOUNTER
+  PROP
+  LOITER
+  NEUTRAL
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 358 ========
+Name = Seer_Levitate
+Anim = 
+  ENCOUNTER
+  SEER
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 359 ========
+Name = Seer_Levitate_Bound
+Anim = 
+  ENCOUNTER
+  SEER
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 360 ========
+Name = Seer_Teleport_In
+Anim = 
+  ENCOUNTER
+  SEER
+  TELEPORT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 361 ========
+Name = Seer_Teleport_Out
+Anim = 
+  ENCOUNTER
+  SEER
+  TELEPORT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 362 ========
+Name = Tentacle_Forest
+Anim = 
+  ENCOUNTER
+  TENTACLE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 363 ========
+Name = 5cw_PoweredDown
+Anim = 
+  ENCOUNTER
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 364 ========
+Name = Ghouls_Ambush_JumpUp
+Anim = 
+  ENCOUNTER
+  RUN
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 365 ========
+Name = Jump_Down_Ambush
+Anim = 
+  ENCOUNTER
+  ALTERNATE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 366 ========
+Name = RobotDance
+Anim = 
+  ENCOUNTER
+  DANCE
+  ROBOT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 367 ========
+Name = Bobcat_OnCouch
+Anim = 
+  ENCOUNTER
+  BOBCAT
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 368 ========
+Name = Ghouls_Float
+Anim = 
+  ENCOUNTER
+  FLOATSTUN
+  ALTERNATE
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 369 ========
+Name = Ghouls_Beam_Out
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 370 ========
+Name = Ghouls_Beam_In
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  ALTERNATE
+  DOWN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 371 ========
+Name = YataYata
+Anim = 
+  ENCOUNTER
+  KISSMYBUTT
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 372 ========
+Name = Frustrated (Frustrated)
+Anim = 
+  ENCOUNTER
+  ANGRY
+  RUDE
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 373 ========
+Name = Shivan_Giant_HitReact
+Anim = 
+  ENCOUNTER
+  ENDGAME
+  GIANT
+  HIT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 374 ========
+Name = Spectrum_Cover
+Anim = 
+  ENCOUNTER
+  ENDGAME
+  CAPTURED
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 375 ========
+Name = Spectrum_Collapse
+Anim = 
+  ENCOUNTER
+  COLLAPSE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 376 ========
+Name = Apparition_Possessor
+Anim = 
+  ENCOUNTER
+  POSSESSOR
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 377 ========
+Name = Seer_Judgement
+Anim = 
+  ENCOUNTER
+  POSSESSOR
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 378 ========
+Name = Awakened_Feral_Insanity
+Anim = 
+  ENCOUNTER
+  SIT
+  LOW
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 379 ========
+Name = Apparition_Floating_Struggle
+Anim = 
+  ENCOUNTER
+  SPELLCAST
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 380 ========
+Name = Apparition_Monarch_Reabsorb
+Anim = 
+  ENCOUNTER
+  PSIONIC
+  ENDGAME
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 381 ========
+Name = Body_Collapse
+Anim = 
+  ENCOUNTER
+  DROP
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 382 ========
+Name = Body_Collapse_Short
+Anim = 
+  ENCOUNTER
+  DROP
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 383 ========
+Name = Murder_Of_Crows_TeleportIn
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  ALERT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 384 ========
+Name = Murder_Of_Crows_TeleportOut
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  ALERT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 385 ========
+Name = Carnival_Casting_Heal_Kneel
+Anim = 
+  ENCOUNTER
+  SIT
+  HEAL
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 386 ========
+Name = Psychic_TeleportIn
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  ENDGAME
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 387 ========
+Name = Malaise_Collapse
+Anim = 
+  ENCOUNTER
+  DROP
+  LOW
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 388 ========
+Name = Plotting
+Anim = 
+  ENCOUNTER
+  PLOTTING
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 389 ========
+Name = Luring
+Anim = 
+  ENCOUNTER
+  LURE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 390 ========
+Name = ShotgunLookout
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  SHOTGUN
+  LOOKOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 391 ========
+Name = PistolLookout
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  HANDGUN
+  LOOKOUT
+  VARIATION
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 392 ========
+Name = BatLookout
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  BLUNT
+  LOOKOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 393 ========
+Name = ShotgunObserve
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  SHOTGUN
+  OBSERVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 394 ========
+Name = PistolObserve
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  HANDGUN
+  OBSERVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 395 ========
+Name = BatObserve
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  BLUNT
+  OBSERVE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 396 ========
+Name = Archer_Lookout
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  DUAL
+  REV
+  LOOKOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 397 ========
+Name = Sword_Point
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  SWORD
+  POINT
+  STRONG
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 398 ========
+Name = Sword_Alert
+Anim = 
+  ENCOUNTER
+  SWORD
+  POSE
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 399 ========
+Name = Sword_Guard
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  SWORD
+  LOOKOUT
+  HIGH
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 400 ========
+Name = Sword_Lookout
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  SWORD
+  LOOKOUT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 401 ========
+Name = Sword_Observe
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  SWORD
+  OBSERVE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 402 ========
+Name = Katana_Observe
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  KATANA
+  OBSERVE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 403 ========
+Name = Katana_Lookout
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  KATANA
+  LOOKOUT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 404 ========
+Name = Katana_Guard
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  KATANA
+  LOOKOUT
+  HIGH
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 405 ========
+Name = Katana_Point
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  KATANA
+  POINT
+  STRONG
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 406 ========
+Name = Katana_Alert
+Anim = 
+  ENCOUNTER
+  KATANA
+  POSE
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 407 ========
+Name = Trunchoen_Alert
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  BLUNT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 408 ========
+Name = Trunchoen_Guard
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  BLUNT
+  LOOKOUT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 409 ========
+Name = Trunchoen_Lookout
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  BLUNT
+  MENACE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 410 ========
+Name = Thruncoen_Threaten
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  BLUNT
+  THREAT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 411 ========
+Name = Rumble_Sword_A
+Anim = 
+  ENCOUNTER
+  SWORD
+  RUMBLEA
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 412 ========
+Name = Rumble_Sword_B
+Anim = 
+  ENCOUNTER
+  SWORD
+  RUMBLEB
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 413 ========
+Name = Rumble_Katana_A
+Anim = 
+  ENCOUNTER
+  KATANA
+  RUMBLEA
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 414 ========
+Name = Rumble_Katana_B
+Anim = 
+  ENCOUNTER
+  KATANA
+  RUMBLEB
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 415 ========
+Name = Shooting_Rifle_Normal
+Anim = 
+  ENCOUNTER
+  ATTACK
+  RIFLE
+  DEALING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 416 ========
+Name = Shooting_Rifle_High
+Anim = 
+  ENCOUNTER
+  ATTACK
+  RIFLE
+  DEALING
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 417 ========
+Name = Shooting_Rifle_Low
+Anim = 
+  ENCOUNTER
+  ATTACK
+  RIFLE
+  DEALING
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 418 ========
+Name = Shooting_Rifle_Randomized
+Anim = 
+  ENCOUNTER
+  ATTACK
+  RIFLE
+  DEALING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 419 ========
+Name = Bow_Shoot
+Anim = 
+  ENCOUNTER
+  TRAIN
+  ARCHERY
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 420 ========
+Name = PipeRampage
+Anim = 
+  ENCOUNTER
+  RAMPAGE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 421 ========
+Name = HammerRampage
+Anim = 
+  ENCOUNTER
+  RAMPAGE
+  WEAPON
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 422 ========
+Name = BatMenace
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  BLUNT
+  MENACE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 423 ========
+Name = KnifeMenace
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  BLADE
+  MENACE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 424 ========
+Name = Shotgun_Alert
+Anim = 
+  ENCOUNTER
+  SHOTGUN
+  POSE
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 425 ========
+Name = Shotgun_Point
+Anim = 
+  ENCOUNTER
+  SHOTGUN
+  POSE
+  POINT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 426 ========
+Name = Crossbow_Threaten
+Anim = 
+  ENCOUNTER
+  CROSSBOW
+  POSE
+  POINT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 427 ========
+Name = Shotgun_Rollout_Left
+Anim = 
+  ENCOUNTER
+  SHOTGUN
+  POSE
+  LOOKOUT
+  LEFT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 428 ========
+Name = Shotgun_Rollout_Right
+Anim = 
+  ENCOUNTER
+  SHOTGUN
+  POSE
+  LOOKOUT
+  RIGHT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 429 ========
+Name = Shotgun_Duck_Shoot
+Anim = 
+  ENCOUNTER
+  SHOTGUN
+  LOW
+  HIDE
+  SHOOT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 430 ========
+Name = Pistol_Duck_Shoot
+Anim = 
+  ENCOUNTER
+  GUN
+  LOW
+  HIDE
+  SHOOT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 431 ========
+Name = Soccer_Idle
+Anim = 
+  ENCOUNTER
+  KICK
+  SOCCER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 432 ========
+Name = Soccer_Talk_Cycle
+Anim = 
+  ENCOUNTER
+  TALK
+  KICK
+  SOCCER
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 433 ========
+Name = Basketball_Talk_Cycle
+Anim = 
+  ENCOUNTER
+  TALK
+  HAND
+  BASKETBALL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 434 ========
+Name = PoolCue_Idle
+Anim = 
+  ENCOUNTER
+  STAND
+  POOL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 435 ========
+Name = PoolCue_Talk
+Anim = 
+  ENCOUNTER
+  STAND
+  POOL
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 436 ========
+Name = Rifle_Alert_Kneeling
+Anim = 
+  ENCOUNTER
+  KNEEL
+  LOW
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 437 ========
+Name = Baton_Twirling
+Anim = 
+  ENCOUNTER
+  COMBAT
+  WEAPON
+  CLUB
+  SPIN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 438 ========
+Name = RightWeapon_Observe
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  OBSERVE
+  LOW
+  RIGHTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 439 ========
+Name = RightWeaponShield_Observe
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  OBSERVE
+  LOW
+  RIGHTHAND
+  SHIELD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 440 ========
+Name = CustomRightWeapon_Observe
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  OBSERVE
+  LOW
+  RIGHTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 441 ========
+Name = CustomRightWeapon_Alert
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  OBSERVE
+  HIGH
+  RIGHTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 442 ========
+Name = CustomRightWeapon_Guard
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  LOOKOUT
+  LOW
+  RIGHTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 443 ========
+Name = CustomRightWeapon_Menace
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  MENACE
+  LOW
+  RIGHTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 444 ========
+Name = CustomRightWeaponShield_Observe
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  OBSERVE
+  LOW
+  RIGHTHAND
+  SHIELD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 445 ========
+Name = CustomShield_Observe
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  OBSERVE
+  LOW
+  SHIELD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 446 ========
+Name = CustomShield_Block
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  BLOCK
+  SHIELD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 447 ========
+Name = CustomRifle_Observe
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  RIFLE
+  POSE
+  OBSERVE
+  LOW
+  TWOHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 448 ========
+Name = CustomRifle_Alert
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  RIFLE
+  POSE
+  OBSERVE
+  HIGH
+  TWOHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 449 ========
+Name = CustomRifle_Point
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  RIFLE
+  POSE
+  POINT
+  TWOHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 450 ========
+Name = CustomRifle_Point_Low
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  RIFLE
+  LOW
+  TWOHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 451 ========
+Name = CustomRifle_Shooting
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  RIFLE
+  POSE
+  ATTACK
+  MID
+  TWOHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 452 ========
+Name = CustomRifle_Shooting_High
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  RIFLE
+  POSE
+  ATTACK
+  HIGH
+  TWOHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 453 ========
+Name = CustomLeftWeapon_Observe
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  KATANA
+  POSE
+  OBSERVE
+  LOW
+  LEFTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 454 ========
+Name = CustomLeftWeapon_Lookout
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  KATANA
+  POSE
+  LOOKOUT
+  HIGH
+  LEFTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 455 ========
+Name = CustomLeftWeapon_Guard
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  KATANA
+  POSE
+  LOOKOUT
+  LOW
+  LEFTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 456 ========
+Name = CustomLeftWeapon_Alert
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  KATANA
+  POSE
+  MID
+  LEFTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 457 ========
+Name = CustomLeftWeapon_Point
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  KATANA
+  POSE
+  POINT
+  LEFTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 458 ========
+Name = CustomLeftWeapon_Cross
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  CROSS
+  LEFTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 459 ========
+Name = CustomBow_Shoot
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  ARCHERY
+  POSE
+  ATTACK
+  LEFTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 460 ========
+Name = CustomDualWeapon_Observe
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  OBSERVE
+  LOW
+  DUALHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 461 ========
+Name = CustomRifle_Alert_Kneeling
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  KNEEL
+  LOW
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 462 ========
+Name = Kneeling
+Anim = 
+  KNEEL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 463 ========
+Name = ShotgunKneel
+Anim = 
+  KNEEL
+  COMBAT
+  WEAPON
+  SHOTGUN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 464 ========
+Name = SpawnAsPet
+Anim = 
+  SPAWNEDASPET
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 465 ========
+Name = Dismiss
+Anim = 
+  DISMISS
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 466 ========
+Name = Rise_From_Ground
+Anim = 
+  SPAWN
+  GROUNDSUMMON
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 467 ========
+Name = Rise_From_Water
+Anim = 
+  SPAWN
+  GROUNDSUMMON
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 468 ========
+Name = Rockman_Ambush
+Anim = 
+  SPAWN
+  LOW
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 469 ========
+Name = Teleport_Delay_30
+Anim = 
+  SPAWN
+  TELEPORT
+  WAIT
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 470 ========
+Name = Teleport_Delay_90
+Anim = 
+  SPAWN
+  TELEPORT
+  WAIT
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 471 ========
+Name = Teleport_Delay_120
+Anim = 
+  SPAWN
+  TELEPORT
+  WAIT
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 472 ========
+Name = FishAmbush
+Anim = 
+  SPAWN
+  WAIT
+  LOW
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 473 ========
+Name = Plantman_Pumpkin_Ambush
+Anim = 
+  SPAWN
+  MAGIC
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 474 ========
+Name = Spider_Webdrop
+Anim = 
+  SPAWN
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 475 ========
+Name = Spider_WallAmbush
+Anim = 
+  SPAWN
+  WALL
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 476 ========
+Name = Zombie_Resurrect
+Anim = 
+  SPAWN
+  RAISEDEAD
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 477 ========
+Name = Plantman_Ambush
+Anim = 
+  SPAWN
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 478 ========
+Name = Plantman_Scarecrow
+Anim = 
+  SPAWN
+  MAGIC
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 479 ========
+Name = Hide_N_Seek
+Anim = 
+  SPAWN
+  HIDE
+  LOOKOUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 480 ========
+Name = Ambush_Shiva
+Anim = 
+  SPAWN
+  LOW
+  WAIT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 481 ========
+Name = Golem_Ambush
+Anim = 
+  SPAWN
+  GOLEMSPAWN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 482 ========
+Name = Snakeman_Ambush
+Anim = 
+  SPAWN
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 483 ========
+Name = Bazul_Spawn
+Anim = 
+  SPAWN
+  BAZULSLEEP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 484 ========
+Name = Ninja_Ambush
+Anim = 
+  SPAWN
+  NINJAAMBUSH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 485 ========
+Name = Parachute_Ambush
+Anim = 
+  SPAWN
+  PARACHUTEAMBUSH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 486 ========
+Name = Repel_Ambush
+Anim = 
+  SPAWN
+  REPELAMBUSH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 487 ========
+Name = Spawn_Rikti
+Anim = 
+  SPAWN
+  RIKTI
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 488 ========
+Name = Ghouls_Ambush
+Anim = 
+  SPAWN
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 489 ========
+Name = Clockwork_Ambush
+Anim = 
+  SPAWN
+  PPD
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 490 ========
+Name = WarWalker_AirDrop
+Anim = 
+  SPAWN
+  ENDGAME
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 491 ========
+Name = Shivan_Giant_Climb
+Anim = 
+  SPAWN
+  ENDGAME
+  GIANT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 492 ========
+Name = Shivan_GroundBurst
+Anim = 
+  SPAWN
+  ENDGAME
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 493 ========
+Name = M_Air2Ground
+Anim = 
+  ENCOUNTER
+  LOITER
+  ATTACK
+  HIGH
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 494 ========
+Name = M_Air2Air
+Anim = 
+  ENCOUNTER
+  LOITER
+  ATTACK
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 495 ========
+Name = Ground2Air
+Anim = 
+  ENCOUNTER
+  LOITER
+  ATTACK
+  HIGH
+  LOW
+  MID
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 496 ========
+Name = CameraAlerted
+Anim = 
+  CAMERAALERTED
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 497 ========
+Name = Disable_PCM_Device
+Anim = 
+  ENCOUNTER
+  DISABLEPCM
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 498 ========
+Name = ArachnosPTTWaiting
+Anim = 
+  ENCOUNTER
+  WAITING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 499 ========
+Name = LordReclusePTTBuff
+Anim = 
+  ENCOUNTER
+  RECLUSEBUFF
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 500 ========
+Name = Captured_Penelope_Yin
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  CAPTURED
+  PENELOPE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 501 ========
+Name = Captured_Awakened
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  CAPTURED
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 502 ========
+Name = Captured_CarnivalofLight
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  CAPTURED
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 503 ========
+Name = Captured_Apparitions
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  CAPTURED
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 504 ========
+Name = Captured_TalonsofVengeance
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  ALTERNATE
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 505 ========
+Name = Seer_Judgement_Receive
+Anim = 
+  ENCOUNTER
+  PSIONIC
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 506 ========
+Name = Encounter_Death1
+Anim = 
+  ENCOUNTER
+  HIT
+  DEATH
+  PSIONIC
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 507 ========
+Name = Encounter_HideNow
+Anim = 
+  ENCOUNTER
+  HIDE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 508 ========
+Name = Encounter_OracleFloat
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 509 ========
+Name = Encounter_OracleFloatTransOut
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 510 ========
+Name = PossessedConduit_Float
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  ONE
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 511 ========
+Name = PossessedConduit_FloatTransOut
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  TWO
+  ALTERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 512 ========
+Name = Talons_Ritual_Receive_Float
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  ONE
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 513 ========
+Name = Talons_Ritual_Receive_TransOut
+Anim = 
+  ENCOUNTER
+  LEVITATE
+  TWO
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 514 ========
+Name = Encounter_ReichsmanCaptured
+Anim = 
+  ENCOUNTER
+  CAPTURED
+  REICHSMAN
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 515 ========
+Name = Encounter_ReichsmanReleased
+Anim = 
+  ENCOUNTER
+  CAPTURED
+  REICHSMAN
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 516 ========
+Name = Encounter_ReichsmanEmpowerment
+Anim = 
+  ENCOUNTER
+  REICHSMAN
+  COMBAT
+  MAGICWINDUP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 517 ========
+Name = Encounter_5thColumnForceField
+Anim = 
+  ENCOUNTER
+  FIFTHCOLUMN
+  HIBERNATE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 518 ========
+Name = Encounter_Desdemona_Pickup
+Anim = 
+  ENCOUNTER
+  DESDEMONA
+  PURSEPICKUP
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 519 ========
+Name = EmpowermentMachine_Stage1
+Anim = 
+  ENCOUNTER
+  REICHSMAN
+  WINDUP
+  ONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 520 ========
+Name = EmpowermentMachine_Stage2
+Anim = 
+  ENCOUNTER
+  REICHSMAN
+  WINDUP
+  TWO
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 521 ========
+Name = EmpowermentMachine_Stage3
+Anim = 
+  ENCOUNTER
+  REICHSMAN
+  WINDUP
+  THREE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 522 ========
+Name = EmpowermentMachine_Stage4
+Anim = 
+  ENCOUNTER
+  REICHSMAN
+  WINDUP
+  FOUR
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 523 ========
+Name = RomulusTransformation
+Anim = 
+  ENCOUNTER
+  ROMULUSTRANSFORMATION
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 524 ========
+Name = RecluseCollapse
+Anim = 
+  ENCOUNTER
+  COLLAPSE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 525 ========
+Name = Flip_Coin
+Anim = 
+  ENCOUNTER
+  ROLLDICE
+  CAST
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 526 ========
+Name = ArmorPose_Sword01
+Anim = 
+  ENCOUNTER
+  CUSTOMWEAPON
+  POSE
+  ASLEEP
+  ONE
+  RIGHTHAND
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 527 ========
+Name = Abomination_Inactive
+Anim = 
+  ENCOUNTER
+  ABOMINATION
+  POSE
+  LOW
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 528 ========
+Name = Abomination_Activate
+Anim = 
+  ENCOUNTER
+  ABOMINATION
+  POSE
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 529 ========
+Name = Maelstrom_TeleportIn
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  DOWN
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 530 ========
+Name = Maelstrom_TeleportOut
+Anim = 
+  ENCOUNTER
+  TELEPORT
+  HIGH
+  ENDGAME
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 531 ========
+Name = Captured_Ghoul_Cycle
+Anim = 
+  ENCOUNTER
+  CAPTURED
+  LOW
+  BIGFALL
+  LANDING
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 532 ========
+Name = Male_Transform_Illusion
+Anim = 
+  ENCOUNTER
+  TRANSFORM
+  HIGH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 533 ========
+Name = Be_Dead
+Anim = 
+  PLAYER
+  DEATH
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 534 ========
+Name = Door_Open
+Anim = 
+  OPEN
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 535 ========
+Name = Door_Shut
+Anim = 
+  SHUT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 536 ========
+Name = Smartphone_Text
+Anim = 
+  EMOTE
+  SMARTPHONE
+  TEXT
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 537 ========
+Name = Smartphone_Camera
+Anim = 
+  EMOTE
+  SMARTPHONE
+  PICTURE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 538 ========
+Name = Smartphone_Call
+Anim = 
+  EMOTE
+  SMARTPHONE
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL
+======== Entry 539 ========
+Name = SLR_Camera
+Anim = 
+  EMOTE
+  SLRCAMERA
+FileName = SEQUENCERS/ANIMLISTS/ANIMLISTS_STATIONARY.AL

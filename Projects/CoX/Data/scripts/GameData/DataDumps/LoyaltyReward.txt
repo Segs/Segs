@@ -1,0 +1,983 @@
+Using record type: LoyaltyReward
+Dumping 1 records...
+======== Entry 0 ========
+Tier = 
+    -------- Tier 0 --------
+    Name = Tier1
+    DisplayName = Tier 1 (P757621225)
+    DisplayHelp = TIER 1 PERMISSIONS Unlocked by: Spending your first free Loyalty Point (or just granted by already having an account). (P2076258431)
+    NextTier = Tier2
+    NodesRequiredForNext = 1
+    Node = 
+        -------- Node 0 --------
+        Name = Rookie
+        DisplayName = Rookie (P1170632302)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Rookie</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Random Dual Inspirations<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Mission Teleporter Charges<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x XP Booster Power</td></tr></table> (P1987359665)
+        GrantIncentive = 
+          LTLBIRAN
+          2
+          coboxpbo
+          1
+          ltlbmitp
+          1
+          cobodrbo
+          1
+          cotprevi
+          1
+          ltlbsisu
+          1
+          cotrjepa
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+    -------- Tier 1 --------
+    Name = Tier2
+    DisplayName = Tier 2 (P3022073939)
+    DisplayHelp = TIER 2 PERMISSIONS Unlocked By: Purchasing the single box in Tier 2.  All Players Receive the Following: Huge Avatars, Join Supergroups, Supergroup Chat, Additional Chat Channels, Trade with Players, Increased Maximum Influence, Increase Inventory Size, Email Access, Play Mission Architect (no rewards) (P3434773505)
+    NextTier = Tier3
+    NodesRequiredForNext = 1
+    Node = 
+        -------- Node 0 --------
+        Name = TrenchCoats
+        DisplayName = Trench Coats (P390365551)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Trench Coats</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Trench Coats (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token (Account Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Experienced Power (5 bars of Patrol XP)</td></tr></table> (P3501051649)
+        GrantIncentive = 
+          ltlbtren
+          1
+          ltlbct01
+          1
+          ltlbxppw
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+    -------- Tier 2 --------
+    Name = Tier3
+    DisplayName = Tier 3 (P3274047685)
+    DisplayHelp = TIER 3 PERMISSIONS Unlocked By: Purchasing all three Tier 3 Reward Nodes.  All Players Receive the Following: Access to all Chat Channels Increased Maximum Influence, Increased Inventory Size (P2141934360)
+    NextTier = Tier4
+    NodesRequiredForNext = 3
+    Node = 
+        -------- Node 0 --------
+        Name = GreekSymbols
+        DisplayName = Greek Symbols (P3148147996)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Greek Symbols</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Greek Alphabet Chest Emblems (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token (Account Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Random Dual Inspirations<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Random Team Inspirations</td></tr></table> (P3022487296)
+        GrantIncentive = 
+          ltlbgrek
+          1
+          ltlbct02
+          1
+          ltlbtran
+          2
+          ltlbiran
+          2
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 1 --------
+        Name = ShirtsandKilts
+        DisplayName = Shirts and Kilts (P735887335)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Shirts and Kilts</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Belly Shirt for Females (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Scottish Kilts for Males (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Character Respec (Account Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token (Account Item)</td></tr></table> (P2765771245)
+        GrantIncentive = 
+          ltlbct03
+          1
+          ltlbkilt
+          1
+          ltlbrsc1
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 2 --------
+        Name = WeaponsandSprints
+        DisplayName = Weapons and Sprints (P305120470)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Weapons and Sprints</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Power Choice: Ghost Slaying Axe or Sands of Mu<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Pre-Order Sprints: Rush, Dash, Quick and Surge<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Base Items: Wall Mounted Weapon Displays</td></tr></table> (P4018606444)
+        GrantIncentive = 
+          ltlbwmwd
+          1
+          ltlbbwan
+          1
+          ltlbspri
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+    -------- Tier 3 --------
+    Name = Tier4
+    DisplayName = Tier 4 (P1564644710)
+    DisplayHelp = TIER 4 PERMISSIONS Unlocked By: Purchasing all three Tier 4 Reward Nodes.  Sell on Auction House, Earn Reward Merits, Earn Vanguard Merits, Increased Inventory Size, Increased Maximum Influence Cap, Play Mission Architect with Rewards, Medium Inspirations Drop. (P144716939)
+    NextTier = Tier5
+    NodesRequiredForNext = 3
+    Node = 
+        -------- Node 0 --------
+        Name = Wings
+        DisplayName = Wings (P2881906563)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Wings</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Angelic Wings and Demon Wings (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Experienced Power<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token (Account Item)</td></tr></table> (P1428554570)
+        GrantIncentive = 
+          ltlbwing
+          1
+          ltlbxppw
+          1
+          ltlbct04
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 1 --------
+        Name = SamuraiArmor
+        DisplayName = Samurai Armor (P3769747754)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Samurai Armor</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Samurai Armor (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token (Account Item)</td></tr></table> (P1457732511)
+        GrantIncentive = 
+          ltlbsrai
+          1
+          ltlbct05
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 2 --------
+        Name = ShoulderCapes
+        DisplayName = Shoulder Capes (P1009297420)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Shoulder Capes</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Shoulder Capes (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Character Respec (Account Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token (Account Item)</td></tr></table> (P1833886292)
+        GrantIncentive = 
+          ltlbcape
+          1
+          ltlbct06
+          1
+          ltlbrsc2
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+    -------- Tier 4 --------
+    Name = Tier5
+    DisplayName = Tier 5 (P709207536)
+    DisplayHelp = TIER 5 PERMISSIONS Unlocked By: Purchasing five Tier 5 Reward Nodes.  All Players Receive the Following: Access to Mastermind Archetype, Access to Controller Archetype (P703731643)
+    NextTier = Tier6
+    NodesRequiredForNext = 5
+    Node = 
+        -------- Node 0 --------
+        Name = SleekArmor
+        DisplayName = Tech Sleek Armor (P2947957444)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Tech Sleek Armor</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Sleek Armor (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token (Account Item)</td></tr></table> (P1171789949)
+        GrantIncentive = 
+          ltlbct07
+          1
+          ltlbtesl
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 1 --------
+        Name = SignatureChestEmblems
+        DisplayName = Signature Chest Emblems (P4213133123)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Signature Chest Emblems</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Signature Group Chest Emblems (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Signature Character Items (Base Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token (Account Item)</td></tr></table> (P889896610)
+        GrantIncentive = 
+          ltlbsgce
+          1
+          ltlbscib
+          1
+          ltlbct08
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 2 --------
+        Name = VanityPets
+        DisplayName = Vanity Pets (P1814639947)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Vanity Pets</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Pet Choice: Demon Pet, Clockwork Pet, Red Cap Pet, Rikti Monkey Pet, Robot Pet (Power)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Arachnos Flyer and Longbow Chaser (Base Item)</td></tr></table> (P653184858)
+        GrantIncentive = 
+          ltlbdpet
+          1
+          ltlbaflc
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 3 --------
+        Name = BaseTeleporter
+        DisplayName = Base Teleporter (P1239539082)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Base Teleporter</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Permanent Emergency Base Teleporter (Power)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Veteran Titles for Level 15 characters<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Windfall Temporary Power<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Posters of the CoH Comic Covers (Base Item)</td></tr></table> (P3857247862)
+        GrantIncentive = 
+          ltlbebas
+          1
+          ltlbvtit
+          1
+          cobodrbo
+          1
+          ltlbpost
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 4 --------
+        Name = RangedPowers
+        DisplayName = Ranged Powers (P305747881)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Ranged Powers</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Power Choice: Nemesis Staff or Blackwand<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Character Respec (Account Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x XP Booster Power</td></tr></table> (P2555539290)
+        GrantIncentive = 
+          ltlbrsc3
+          1
+          coboxpbo
+          1
+          ltlbgsax
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+    -------- Tier 5 --------
+    Name = Tier6
+    DisplayName = Tier 6 (P3008164938)
+    DisplayHelp = TIER 6 PERMISSIONS Unlocked By: Purchasing seven Tier 6 Reward Nodes  All Players Receive the Following: Lifetime Mission Architect License (P2813011309)
+    NextTier = Tier7
+    NodesRequiredForNext = 7
+    Node = 
+        -------- Node 0 --------
+        Name = Boxing
+        DisplayName = Boxing (P689250390)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Boxing</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Boxing Set (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token Account Item<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Enhancement Unslotter</td></tr></table> (P2532071623)
+        GrantIncentive = 
+          ltlbboxi
+          1
+          ltlbct09
+          1
+          coemunsl
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 1 --------
+        Name = Helmets
+        DisplayName = Helmets (P3950795428)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Helmets</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>City of Villains Pre-Order Helmets (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x XP Booster Power</td></tr></table> (P2977210986)
+        GrantIncentive = 
+          ltlbcovh
+          1
+          coboxpbo
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 2 --------
+        Name = BlazingPathAura
+        DisplayName = Blazing Path Aura (P1721772766)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Blazing Path Aura</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Blazing Path Aura (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Character Respec (Account Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x XP Booster Power</td></tr></table> (P72933829)
+        GrantIncentive = 
+          ltlbrsc4
+          1
+          ltlbblau
+          1
+          coboxpbo
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 3 --------
+        Name = TailorDiscount
+        DisplayName = Tailor Discount (P2819596575)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Tailor Discount</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>50%% discount on all tailor sessions<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Prestige Booster Temporary Power<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Enhancement Unslotters</td></tr></table> (P3038678297)
+        GrantIncentive = 
+          ltlbtdis
+          1
+          coboprbo
+          1
+          coemunsl
+          2
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 4 --------
+        Name = CombatPets
+        DisplayName = Combat Pets (P1088351573)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Combat Pets</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Pet Choice: Light Fairy, Dark Fairy, Blue Wisp, Red Wisp, Shield Oscillator, Power Oscillator, Shield Drone or Power Drone<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Random Team Inspirations</td></tr></table> (P3535919433)
+        GrantIncentive = 
+          ltlbcobp
+          1
+          ltlbtran
+          2
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 5 --------
+        Name = AttackPowers
+        DisplayName = Attack Powers (P1681031295)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Attack Powers</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Power Choice: Ghost Slaying Axe, Sands of Mu, Nemesis Staff or Black Wand (Power)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Enhancement Boosters<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Windfall Temporary Power</td></tr></table> (P568565719)
+        GrantIncentive = 
+          ltlbsamu
+          1
+          cobodrbo
+          1
+          coembost
+          2
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 6 --------
+        Name = AssembletheTeam
+        DisplayName = Assemble the Team (P3566531223)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Assemble the Team</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Assemble the Team (Power)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Enhancement Unslotters<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Random Team Inspirations</td></tr></table> (P2960302679)
+        GrantIncentive = 
+          ltlbasst
+          1
+          coemunsl
+          2
+          ltlbtran
+          2
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+    -------- Tier 6 --------
+    Name = Tier7
+    DisplayName = Tier 7 (P3293299932)
+    DisplayHelp = TIER 7 PERMISSIONS Unlocked By: Purchasing seven Tier 7 Reward Nodes  All Players Receive the Following: Lifetime access to Mission Architect (P2976203679)
+    NextTier = Tier8
+    NodesRequiredForNext = 7
+    Node = 
+        -------- Node 0 --------
+        Name = PowerfulPathAura
+        DisplayName = Seismic Path Aura (P1309390178)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Seismic Path Aura</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Seismic Path Aura (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Character Respec x1 (Account Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x XP Booster Power</td></tr></table> (P162070926)
+        GrantIncentive = 
+          ltlbpoau
+          1
+          ltlbrsc5
+          1
+          coboxpbo
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 1 --------
+        Name = PrestigeBonus
+        DisplayName = Prestige Bonus (P1748774615)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Prestige Bonus</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>10%% Prestige Bonus from defeating enemies<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x XP Booster Power</td></tr></table> (P2655806539)
+        GrantIncentive = 
+          ltlbprbo
+          1
+          coboxpbo
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 2 --------
+        Name = InventoryBonus
+        DisplayName = Inventory Bonus (P4034165492)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Inventory Bonus</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Salvage Slots<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Recipe Slots<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Auction House Slot<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Prestige Booster Temporary Power</td></tr></table> (P37116240)
+        GrantIncentive = 
+          coboprbo
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 3 --------
+        Name = InspirationBonus
+        DisplayName = Inspiration Bonus (P2200493034)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Inspiration Bonus</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Inspirations are 5%% more effective (Disabled in PvP zones)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Windfall Temporary Power<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Reward Merits</td></tr></table> (P1633985729)
+        GrantIncentive = 
+          cobodrbo
+          1
+          ltlbmrx5
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 4 --------
+        Name = Experienced
+        DisplayName = Experienced (P2269971552)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Experienced</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Experienced Power (5 bars of Patrol XP)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Prestige Booster Temporary Power<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Enhancement Unslotter</td></tr></table> (P3797983327)
+        GrantIncentive = 
+          ltlbxppw
+          1
+          coboprbo
+          1
+          coemunsl
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 5 --------
+        Name = Reveal
+        DisplayName = Reveal (P2583458172)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Reveal</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Reveal (Power)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>6x Reward Merits</td></tr></table> (P2804608719)
+        GrantIncentive = 
+          ltlbrepo
+          1
+          ltlbmrx6
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 6 --------
+        Name = GoingRogueEnhancements
+        DisplayName = Going Rogue Pre-Order Enhancements (P4280780772)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Going Rogue Pre-Order Enhancements</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Going Rogue Pre-Order Enhancements (Available to level 1 characters only)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Enhancement Boosters</td></tr></table> (P567157072)
+        GrantIncentive = 
+          ltlbpoen
+          1
+          coembost
+          2
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+    -------- Tier 7 --------
+    Name = Tier8
+    DisplayName = Tier 8 (P1425332557)
+    DisplayHelp = TIER 8 PERMISSIONS Unlocked By: Purchasing seven Tier 8 Reward Nodes  All Players Receive the Following: Large Inspiration Drops (P2988869821)
+    NextTier = Tier9
+    NodesRequiredForNext = 7
+    Node = 
+        -------- Node 0 --------
+        Name = RadiantAura
+        DisplayName = Radiant Path Aura (P1022895969)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Radiant Path Aura</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Radiant Path Aura (Costume)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Tailor Token (Account Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Windfall Temporary Power</td></tr></table></td></tr></table> (P2002586571)
+        GrantIncentive = 
+          ltlbct10
+          1
+          ltlbraau
+          1
+          cobodrbo
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 1 --------
+        Name = StreakPathAura
+        DisplayName = Streak Path Aura (P334810211)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Streak Path Aura</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Streak Path Aura<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Character Respec (Account Item)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x XP Booster Power</td></tr></table> (P2702851192)
+        GrantIncentive = 
+          ltlbstau
+          1
+          ltlbrsc6
+          1
+          coboxpbo
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 2 --------
+        Name = ColoredTitles
+        DisplayName = Colored Titles (P602604628)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Colored Titles</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Colored Personal Titles<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>3x Random Team Inspirations<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Enhancement Unslotters</td></tr></table> (P1971661360)
+        GrantIncentive = 
+          ltlbcoti
+          1
+          ltlbtran
+          3
+          coemunsl
+          2
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 3 --------
+        Name = RemoteAuction
+        DisplayName = Remote Auction (P3989209228)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Remote Auction</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>/auctionhouse command to remotely access the Auction House<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>7x Reward Merits</td></tr></table> (P4196818892)
+        GrantIncentive = 
+          ltlbrauc
+          1
+          ltlbmrx7
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 4 --------
+        Name = RemoteVault
+        DisplayName = Remote Vault (P591302933)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Remote Vault</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>/Vault command to remotely access the Vault<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Experienced Power (5 bars of Patrol XP)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Enhancement Boosters<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Enhancement Unslotter</td></tr></table> (P899711453)
+        GrantIncentive = 
+          ltlbreva
+          1
+          ltlbxppw
+          1
+          coembost
+          2
+          coemunsl
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 5 --------
+        Name = InnerInspiration
+        DisplayName = Inner Inspiration (P2575417126)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Inner Inspiration</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Inner Inspiration (Power)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>2x Random Dual Inspirations</td></tr></table> (P2378425577)
+        GrantIncentive = 
+          ltlbinin
+          1
+          ltlbiran
+          2
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 6 --------
+        Name = ReturntoBattle
+        DisplayName = Return to Battle (P3450054021)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Return to Battle</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Return to Battle (Power)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Prestige Booster Temporary Power<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>1x Enhancement Unslotter</td></tr></table> (P3156983744)
+        GrantIncentive = 
+          ltlbreba
+          1
+          coboprbo
+          1
+          coemunsl
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 0
+    -------- Tier 8 --------
+    Name = Tier9
+    DisplayName = Tier 9 (P603187675)
+    DisplayHelp = desc (P196455508)
+    NextTier = 
+    NodesRequiredForNext = 99
+    Node = 
+        -------- Node 0 --------
+        Name = SignatureSummon
+        DisplayName = Signature Summon (P988347630)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Signature Summon</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Charges of Signature Summon: This power will summon one of 4 powerful allies to aid you in combat.  When summoned, your signature ally will be an Elite Boss and will last for 4 minutes</td></tr></table><br><color yellow><b>Repeatable: This reward can be purchased multiple times.</b></color> (P348074515)
+        GrantIncentive = 
+          ltlbsisu
+          1
+        Repeatable = 1
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 1 --------
+        Name = Fortune
+        DisplayName = Windfall (P2696385335)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Windfall (x8)</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>8x Windfall Temporary Power: This power provides a +25%% boost to the user's Influence gain rate as well as boosting the drop rate of many useful and valuable items.  This bonus lasts for 1 hour.  Purchasing this reward grants 8 uses of Windfall.</td></tr></table><br><color yellow><b>Repeatable: This reward can be purchased multiple times.</b></color> (P2821654983)
+        GrantIncentive = 
+          cobodrbo
+          8
+        Repeatable = 1
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 2 --------
+        Name = XPBooster
+        DisplayName = XP Booster (P2144007333)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>XP Booster (x8)</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>8x XP Booster Power - This power provides +25%% experience for 1 hour.  Purchasing this reward grants 8 uses of XP Booster.</td></tr></table><br><color yellow><b>Repeatable: This reward can be purchased multiple times.</b></color> (P3779977081)
+        GrantIncentive = 
+          coboxpbo
+          8
+        Repeatable = 1
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 3 --------
+        Name = EnhancementUnslotters
+        DisplayName = Enhancement Unslotters (P3344095172)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Enhancement Unslotters (x8)</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>8x Enhancement Unslotters: By claiming this reward you will receive 8 Character Items for a single Enhancement Unslotter.</td></tr></table><br><color yellow><b>Repeatable: This reward can be purchased multiple times.</b></color> (P1097525064)
+        GrantIncentive = 
+          coemunsl
+          8
+        Repeatable = 1
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 4 --------
+        Name = EnhancementBoosters
+        DisplayName = Enhancement Boosters (P24922228)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Enhancement Boosters (x25)</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>All:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>25x Enhancement Boosters: By claiming this reward you will receive 25 Character Items for a single Enhancement Booster.  Enhancement Boosters can be combined up to 5 times with Invention Origin enhancements to increase their effectiveness.</td></tr></table><br><color yellow><b>Repeatable: This reward can be purchased multiple times.</b></color> (P160892142)
+        GrantIncentive = 
+          coembost
+          25
+        Repeatable = 1
+        Purchasable = 1
+        VIPOnly = 0
+        -------- Node 5 --------
+        Name = MechaArmorI
+        DisplayName = Mecha Armor Set Pack I (P882974427)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Mecha Armor Set Pack I</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>VIP Only:</color></b><br>This costume pack contains the following pieces of the Mecha Armor Costume Set:<table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Helmet<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Chest<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Gloves<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Legs<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Belt<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Boots<br></td></tr></table><br><b>VIP: This pack is exclusively available for VIP Subscribers.</b><br><color gold><b>Limited Time: This reward will only be purchasable for a limited time.</b></color> (P1527524896)
+        GrantIncentive = 
+          ltlbma01
+          1
+          ltlbma18
+          1
+          ltlbma22
+          1
+          ltlbma23
+          1
+          ltlbma24
+          1
+          ltlbma25
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 1
+        -------- Node 6 --------
+        Name = MechaArmorII
+        DisplayName = Mecha Armor Set Pack II (P3426204923)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Mecha Armor Set Pack II</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>VIP Only:</color></b><br>This costume pack contains the following pieces of the Mecha Armor Costume Set:<table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Chest Detail 1<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Chest Detail 2<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Shoulders<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Earguards<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Antennae<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Headguard<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Mouthguards<br></td></tr></table><br><b>VIP: This pack is exclusively available for VIP Subscribers.</b><br><color gold><b>Limited Time: This reward will only be purchasable for a limited time.</b></color> (P4075761194)
+        GrantIncentive = 
+          ltlbma02
+          1
+          ltlbma03
+          1
+          ltlbma04
+          1
+          ltlbma05
+          1
+          ltlbma06
+          1
+          ltlbma07
+          1
+          ltlbma08
+          1
+          ltlbma09
+          1
+          ltlbma10
+          1
+          ltlbma11
+          1
+          ltlbma12
+          1
+          ltlbma13
+          1
+          ltlbma14
+          1
+          ltlbma15
+          1
+          ltlbma16
+          1
+          ltlbma17
+          1
+          ltlbma19
+          1
+          ltlbma20
+          1
+          ltlbma21
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 1
+        -------- Node 7 --------
+        Name = MechaArmorIII
+        DisplayName = Mecha Armor Set Pack III (P4154526353)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Mecha Armor Set Pack III</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>VIP Only:</color></b><br>This costume pack contains the following pieces of the Mecha Armor Costume Set:<table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Wings 1<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Wings 2<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Backpack<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Pistol (Right and Left)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Rifle (Assault Rifle, Beam Rifle and Pulse Rifle)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>PX-17N Supernova Sword (Broad Sword, Dual Blades Right, Dual Blades Left, Katana, Titan Weapons)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>VK-99 Event Horizon (Broard Sword, Dual Blades Right, Dual Blades Left, Katana, Titan Weapons)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Mecha Armor Claws (Right and Left)<br></td></tr></table><br><b>VIP: This pack is exclusively available for VIP Subscribers.</b><br><color gold><b>Limited Time: This reward will only be purchasable for a limited time.</b></color> (P1084340534)
+        GrantIncentive = 
+          ltlbma26
+          1
+          ltlbma27
+          1
+          ltlbma28
+          1
+          ltlbma29
+          1
+          ltlbma30
+          1
+          ltlbma31
+          1
+          ltlbma32
+          1
+          ltlbma33
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 1
+        -------- Node 8 --------
+        Name = TechKnightI
+        DisplayName = Tech Knight Set Pack I (P3820474138)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Tech Knight Set Pack I</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>VIP Only:</color></b><br>This costume pack contains the following pieces of the Tech Knight Costume Set:<table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Full Helmet<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Horns<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Horns with Gems<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Horns with Plugs<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Faceplate<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Jawguard<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Shoulder Variants<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Chest Detail<br></td></tr></table><br><b>VIP: This pack is exclusively available for VIP Subscribers.</b><br><color gold><b>Limited Time: This reward will only be purchasable for a limited time.</b></color> (P3170460872)
+        GrantIncentive = 
+          ltlbtk01
+          1
+          ltlbtk02
+          1
+          ltlbtk03
+          1
+          ltlbtk04
+          1
+          ltlbtk05
+          1
+          ltlbtk06
+          1
+          ltlbtk08
+          1
+          ltlbtk09
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 1
+        -------- Node 9 --------
+        Name = TechKnightII
+        DisplayName = Tech Knight Set Pack II (P545478668)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Tech Knight Set Pack II</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>VIP Only:</color></b><br>This costume pack contains the following pieces of the Tech Knight Costume Set:<table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Chest<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Glove Variants<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Belt<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Legs<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Boot Variants<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Cape<br></td></tr></table><br><b>VIP: This pack is exclusively available for VIP Subscribers.</b><br><color gold><b>Limited Time: This reward will only be purchasable for a limited time.</b></color> (P2433809461)
+        GrantIncentive = 
+          ltlbtk07
+          1
+          ltlbtk10
+          1
+          ltlbtk11
+          1
+          ltlbtk12
+          1
+          ltlbtk13
+          1
+          ltlbtk16
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 1
+        -------- Node 10 --------
+        Name = TechKnightIII
+        DisplayName = Tech Knight Set Pack III (P3566524874)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Tech Knight Set Pack III</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>VIP Only:</color></b><br>This costume pack contains the following pieces of the Tech Knight Costume Set:<table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Backpack 1<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Backpack 2<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Mace<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Staff Variants<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Bow<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Quiver<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tech Knight Shield<br></td></tr></table><br><b>VIP: This pack is exclusively available for VIP Subscribers.</b><br><color gold><b>Limited Time: This reward will only be purchasable for a limited time.</b></color> (P4176225829)
+        GrantIncentive = 
+          ltlbtk14
+          1
+          ltlbtk15
+          1
+          ltlbtk17
+          1
+          ltlbtk18
+          1
+          ltlbtk19
+          1
+          ltlbtk20
+          1
+          ltlbtk21
+          1
+        Repeatable = 0
+        Purchasable = 1
+        VIPOnly = 1
+        -------- Node 11 --------
+        Name = SuperPackHeroesandVillans
+        DisplayName = Super Packs: Heroes and Villains (P3390278518)
+        DisplayHelp = <scale 1.2><span align=center><b><color darkorange>Super Pack: Heroes and Villains (x5)</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>VIP Only:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>5x Super Packs: Heroes and Villains: By claiming this reward you will receive 5 Character Items for a single Super Pack: Heroes and Villains salvage.  Each Super Pack contains 5 random items like: XP Boosters, Reward Merits, Archetype Origin Enhancements and parts of the Elemental Order costume set.</td></tr></table><br><color yellow><b>Repeatable: This reward can be purchased multiple times.</b></color> (P968563222)
+        GrantIncentive = 
+          cosphevi
+          5
+        Repeatable = 1
+        Purchasable = 1
+        VIPOnly = 1
+Level = 
+    -------- Level 0 --------
+    Name = Level1
+    DisplayName = Reward Level 1 (P3953155076)
+    DisplayVIP = <scale 1.2><span align=center><b><color darkorange>Reward Level 1</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 1 Reward Token owned<br><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Rookie (1 token)</td></tr></table> (P2443824290)
+    DisplayFree = <scale 1.2><span align=center><b><color darkorange>Reward Level 1</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 1 Reward Token owned<br><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Rookie (1 token)</td></tr></table> (P2443824290)
+    GrantIncentive = 
+      svcslots
+      2
+    LoyaltyPointsRequired = 1
+    InfluenceCap = 25000000
+    -------- Level 1 --------
+    Name = Level2
+    DisplayName = Reward Level 2 (P1923681726)
+    DisplayVIP = <scale 1.2><span align=center><b><color darkorange>Reward Level 2</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 2 Reward Tokens owned<br><br><b><color deepskyblue>VIP subscribers receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+2 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Recipe Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Trustworthy (2 tokens)</td></tr></table> (P2132654790)
+    DisplayFree = <scale 1.2><span align=center><b><color darkorange>Reward Level 2</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 2 Reward Tokens owned<br><br><b><color deepskyblue>Free players receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Ability to send and receive tells<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Trade with Players<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Maximum Influence increased (500,000,000)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+2 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Email Access<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Play Mission Architect (no rewards)</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Trustworthy (2 tokens)</td></tr></table> (P1515799140)
+    GrantIncentive = []
+    LoyaltyPointsRequired = 2
+    InfluenceCap = 500000000
+    -------- Level 2 --------
+    Name = Level3
+    DisplayName = Reward Level 3 (P95305000)
+    DisplayVIP = <scale 1.2><span align=center><b><color darkorange>Reward Level 3</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 5 Reward Tokens owned<br><br><b><color deepskyblue>VIP subscribers receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Recipe Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Faithful (3 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Dependable (4 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Loyal (5 tokens)</td></tr></table> (P47079371)
+    DisplayFree = <scale 1.2><span align=center><b><color darkorange>Reward Level 3</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 5 Reward Tokens owned<br><br><b><color deepskyblue>Free players receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Access to global, broadcast and request chat channels<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Maximum Influence increased (1,000,000,000)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Recipe Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Faithful (3 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Dependable (4 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Loyal (5 tokens)</td></tr></table> (P1834604203)
+    GrantIncentive = []
+    LoyaltyPointsRequired = 5
+    InfluenceCap = 1000000000
+    -------- Level 3 --------
+    Name = Level4
+    DisplayName = Reward Level 4 (P2613749899)
+    DisplayVIP = <scale 1.2><span align=center><b><color darkorange>Reward Level 4</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 8 Reward Tokens owned<br><br><b><color deepskyblue>VIP subscribers receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Zealous (6 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Staunch (7 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Steadfast (8 tokens)</td></tr></table> (P4128081561)
+    DisplayFree = <scale 1.2><span align=center><b><color darkorange>Reward Level 4</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 8 Reward Tokens owned<br><br><b><color deepskyblue>Free players receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Lifetime Auction House License<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Earn Reward Merits<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Earn Vanguard Merits<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Maximum Influence increased (2,000,000,000)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Play Mission Architect w/ Rewards<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Medium Inspirations Drop</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Zealous (6 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Staunch (7 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Steadfast (8 tokens)</td></tr></table> (P1760556936)
+    GrantIncentive = 
+      coliauch
+      800
+    LoyaltyPointsRequired = 8
+    InfluenceCap = 2000000000
+    -------- Level 4 --------
+    Name = Level5
+    DisplayName = Reward Level 5 (P3972896797)
+    DisplayVIP = <scale 1.2><span align=center><b><color darkorange>Reward Level 5</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 13 Reward Tokens owned<br><br><b><color deepskyblue>VIP subscribers receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+2 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Devoted (9 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Dedicated (10 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Committed (11 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Unswerving (12 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Addicted (13 tokens)</td></tr></table> (P1893700594)
+    DisplayFree = <scale 1.2><span align=center><b><color darkorange>Reward Level 5</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 13 Reward Tokens owned<br><br><b><color deepskyblue>Free players receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Access to the Mastermind Archetype<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Access to Controller Archetype<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+2 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Devoted (9 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Dedicated (10 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Committed (11 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Unswerving (12 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Addicted (13 tokens)</td></tr></table> (P1087288350)
+    GrantIncentive = 
+      ctatmmnd
+      1
+      ctatcont
+      1
+    LoyaltyPointsRequired = 13
+    InfluenceCap = 2000000000
+    -------- Level 5 --------
+    Name = Level6
+    DisplayName = Reward Level 6 (P1975830951)
+    DisplayVIP = <scale 1.2><span align=center><b><color darkorange>Reward Level 6</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 20 Reward Tokens owned<br><br><b><color deepskyblue>VIP subscribers receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Ardent (14 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Fervent (15 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Eternal (16 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Battle Hardened (17 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tried and True (18 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Allegieant (19 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Abiding (20 tokens)</td></tr></table> (P3401076622)
+    DisplayFree = <scale 1.2><span align=center><b><color darkorange>Reward Level 6</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 20 Reward Tokens owned<br><br><b><color deepskyblue>Free players receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Lifetime Mission Architect License<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Ardent (14 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Fervent (15 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Eternal (16 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Battle Hardened (17 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tried and True (18 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Allegieant (19 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Abiding (20 tokens)</td></tr></table> (P2845381202)
+    GrantIncentive = 
+      colimarc
+      800
+    LoyaltyPointsRequired = 20
+    InfluenceCap = 2000000000
+    -------- Level 6 --------
+    Name = Level7
+    DisplayName = Reward Level 7 (P46397745)
+    DisplayVIP = <scale 1.2><span align=center><b><color darkorange>Reward Level 7</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 27 Reward Tokens owned<br><br><b><color deepskyblue>VIP subscribers receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+2 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>City Traveler (21 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Honorable (22 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Enduring (23 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Genuine (24 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Distinguished (25 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Resolute (26 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Purposeful (27 tokens)</td></tr></table> (P970540229)
+    DisplayFree = <scale 1.2><span align=center><b><color darkorange>Reward Level 7</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 27 Reward Tokens owned<br><br><b><color deepskyblue>Free players receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Lifetime access to the Invention System<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+2 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory<br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>City Traveler (21 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Honorable (22 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Enduring (23 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Genuine (24 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Distinguished (25 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Resolute (26 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Purposeful (27 tokens) (P1426432080)
+    GrantIncentive = 
+      coliinvn
+      800
+    LoyaltyPointsRequired = 27
+    InfluenceCap = 2000000000
+    -------- Level 7 --------
+    Name = Level8
+    DisplayName = Reward Level 8 (P2457658528)
+    DisplayVIP = <scale 1.2><span align=center><b><color darkorange>Reward Level 8</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 34 Reward Tokens owned<br><br><b><color deepskyblue>VIP subscribers receive the following</color></b>:<table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+150 Paragon Points to monthly stipend<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+2 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Uncompromising (28 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Loyal Customer (29 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tenacious (30 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Unshakable (31 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Diligent (32 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Persistent (33 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Radiant (34 tokens)</td></tr></table> (P2693299164)
+    DisplayFree = <scale 1.2><span align=center><b><color darkorange>Reward Level 8</b></color></scale></span><img src=PR_HorizontalRule.tga width=380 height=7 align=center><br><b><color deepskyblue>Unlock Requirement:</color></b> 34 Reward Tokens owned<br><br><b><color deepskyblue>Free players receive the following:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Large Inspiration Drops<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Salvage Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+3 Vault Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+2 Recipe Inventory<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>+1 Auction House Inventory</td></tr></table><br><b><color deepskyblue>Badges in this level:</color></b><table border=8><tr><td><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Uncompromising (28 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Loyal Customer (29 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Tenacious (30 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Unshakable (31 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Diligent (32 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Persistent (33 tokens)<br><img src=PR_BulletPoint.tga width=10 height=9 align=bottom>Radiant (34 tokens) (P89191981)
+    GrantIncentive = []
+    LoyaltyPointsRequired = 34
+    InfluenceCap = 2000000000
+NodeNames = 
+    -------- NodeNames 0 --------
+    Name = Rookie
+    Index = 0
+    -------- NodeNames 1 --------
+    Name = TrenchCoats
+    Index = 1
+    -------- NodeNames 2 --------
+    Name = GreekSymbols
+    Index = 2
+    -------- NodeNames 3 --------
+    Name = ShirtsandKilts
+    Index = 3
+    -------- NodeNames 4 --------
+    Name = WeaponsandSprints
+    Index = 4
+    -------- NodeNames 5 --------
+    Name = Wings
+    Index = 5
+    -------- NodeNames 6 --------
+    Name = SamuraiArmor
+    Index = 6
+    -------- NodeNames 7 --------
+    Name = ShoulderCapes
+    Index = 7
+    -------- NodeNames 8 --------
+    Name = BaseTeleporter
+    Index = 8
+    -------- NodeNames 9 --------
+    Name = SleekArmor
+    Index = 9
+    -------- NodeNames 10 --------
+    Name = SignatureChestEmblems
+    Index = 10
+    -------- NodeNames 11 --------
+    Name = RangedPowers
+    Index = 11
+    -------- NodeNames 12 --------
+    Name = VanityPets
+    Index = 12
+    -------- NodeNames 13 --------
+    Name = Boxing
+    Index = 13
+    -------- NodeNames 14 --------
+    Name = AssembletheTeam
+    Index = 14
+    -------- NodeNames 15 --------
+    Name = BlazingPathAura
+    Index = 15
+    -------- NodeNames 16 --------
+    Name = CombatPets
+    Index = 16
+    -------- NodeNames 17 --------
+    Name = Helmets
+    Index = 17
+    -------- NodeNames 18 --------
+    Name = AttackPowers
+    Index = 18
+    -------- NodeNames 19 --------
+    Name = TailorDiscount
+    Index = 19
+    -------- NodeNames 20 --------
+    Name = GoingRogueEnhancements
+    Index = 20
+    -------- NodeNames 21 --------
+    Name = Reveal
+    Index = 21
+    -------- NodeNames 22 --------
+    Name = InventoryBonus
+    Index = 22
+    -------- NodeNames 23 --------
+    Name = PowerfulPathAura
+    Index = 23
+    -------- NodeNames 24 --------
+    Name = InspirationBonus
+    Index = 24
+    -------- NodeNames 25 --------
+    Name = PrestigeBonus
+    Index = 25
+    -------- NodeNames 26 --------
+    Name = Experienced
+    Index = 26
+    -------- NodeNames 27 --------
+    Name = ReturntoBattle
+    Index = 27
+    -------- NodeNames 28 --------
+    Name = RemoteAuction
+    Index = 28
+    -------- NodeNames 29 --------
+    Name = ColoredTitles
+    Index = 29
+    -------- NodeNames 30 --------
+    Name = RemoteVault
+    Index = 30
+    -------- NodeNames 31 --------
+    Name = InnerInspiration
+    Index = 31
+    -------- NodeNames 32 --------
+    Name = RadiantAura
+    Index = 32
+    -------- NodeNames 33 --------
+    Name = StreakPathAura
+    Index = 33
+    -------- NodeNames 34 --------
+    Name = SignatureSummon
+    Index = 34
+    -------- NodeNames 35 --------
+    Name = Fortune
+    Index = 35
+    -------- NodeNames 36 --------
+    Name = XPBooster
+    Index = 36
+    -------- NodeNames 37 --------
+    Name = EnhancementUnslotters
+    Index = 37
+    -------- NodeNames 38 --------
+    Name = EnhancementBoosters
+    Index = 38
+    -------- NodeNames 39 --------
+    Name = CelestialArmorI
+    Index = 39
+    -------- NodeNames 40 --------
+    Name = CelestialArmorII
+    Index = 40
+    -------- NodeNames 41 --------
+    Name = CelestialArmorIII
+    Index = 41
+    -------- NodeNames 42 --------
+    Name = FireandIceI
+    Index = 42
+    -------- NodeNames 43 --------
+    Name = FireandIceII
+    Index = 43
+    -------- NodeNames 44 --------
+    Name = FireandIceIII
+    Index = 44
+    -------- NodeNames 45 --------
+    Name = SuperPackHeroesandVillans
+    Index = 45
+    -------- NodeNames 46 --------
+    Name = MechaArmorI
+    Index = 46
+    -------- NodeNames 47 --------
+    Name = MechaArmorII
+    Index = 47
+    -------- NodeNames 48 --------
+    Name = MechaArmorIII
+    Index = 48
+    -------- NodeNames 49 --------
+    Name = TechKnightI
+    Index = 49
+    -------- NodeNames 50 --------
+    Name = TechKnightII
+    Index = 50
+    -------- NodeNames 51 --------
+    Name = TechKnightIII
+    Index = 51
+DefaultInfluenceCap = 25000000
+VIPInfluenceCap = 2000000000

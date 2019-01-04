@@ -1,0 +1,3569 @@
+Using record type: RoomTemplate
+Dumping 118 records...
+======== Entry 0 ========
+Name = Entrance
+DisplayName = Secret Entrance Room (P476913354)
+DisplayHelp = Every base has a Secret Entrance. From this room you can travel to the last city zone you visited. You can only place decorative objects in this room. This room cannot be deleted. (P3380080324)
+DisplayShortHelp = This is the main entrance to your base. (P3235057975)
+Length = 2
+Width = 2
+AllowTeleport = 0
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Entrance
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 1 ========
+Name = Doorway (Doorway)
+DisplayName = Doorway (P174020283)
+DisplayHelp = Doorways are used to link other rooms. When a rooms are placed, doorways automatically connect them. In addition you can place other doorways to join two rooms. Only Doors can be placed in Doorways. (P1606709973)
+DisplayShortHelp = Short Help (P4239215049)
+Length = 1
+Width = 1
+AllowTeleport = 0
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Doorway (Doorway)
+DetailAllowed = []
+Requires = []
+======== Entry 2 ========
+Name = Studio_3x3_I14
+DisplayName = Studio (P1300693632)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room would make a good den or study. (P2865615178)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 81250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 3 ========
+Name = RecreationRoom_4x4_I14
+DisplayName = Recreation Room (P2191474205)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = A medium room for entertaining friends. (P2133840498)
+Length = 4
+Width = 4
+AllowTeleport = 1
+CostPrestige = 125000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 4 ========
+Name = MeetingRoom_5x5_I14
+DisplayName = Meeting Room (P1575987857)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room is suitable for small team meetings. (P3164195985)
+Length = 5
+Width = 5
+AllowTeleport = 1
+CostPrestige = 181250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 5 ========
+Name = TrophyRoom_6x6_I14
+DisplayName = Trophy Room (P3632973116)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room is good for displaying trophies earned. (P1933048260)
+Length = 6
+Width = 6
+AllowTeleport = 1
+CostPrestige = 250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 6 ========
+Name = AssemblyRoom_7x7_I14
+DisplayName = Assembly Room (P21238654)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = Larger groups need a bigger meeting space. (P3186501467)
+Length = 7
+Width = 7
+AllowTeleport = 1
+CostPrestige = 331250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 7 ========
+Name = GreatRoom_8x8_I14
+DisplayName = Great Room (P1458059032)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = Even the largest groups can gather in the Great Room. (P130863962)
+Length = 8
+Width = 8
+AllowTeleport = 1
+CostPrestige = 425000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 8 ========
+Name = EnergyTerminal_2x2_I14
+DisplayName = Energy Terminal (P1344892330)
+DisplayHelp = This room can house small Energy items. (P3109382555)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 2
+Width = 2
+AllowTeleport = 1
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 9 ========
+Name = EnergyTerminal_2x4_I14
+DisplayName = Energy Terminal (P1344892330)
+DisplayHelp = This room can house small Energy items. (P3109382555)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 2
+Width = 4
+AllowTeleport = 1
+CostPrestige = 190000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 10 ========
+Name = EnergyStation_3x3_I14
+DisplayName = Energy Station (P2913914909)
+DisplayHelp = This room can house medium Energy items. (P787150301)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 162500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 11 ========
+Name = EnergyStation_4x4_I14
+DisplayName = Energy Station (P2913914909)
+DisplayHelp = This room can house the largest Energy items. (P3872768368)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 4
+Width = 4
+AllowTeleport = 1
+CostPrestige = 250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 12 ========
+Name = SecureEnergyStation_3x4_I14
+DisplayName = Secure Energy Station (P1670989868)
+DisplayHelp = This room can house medium Energy items. Some defensive items can be placed here as well. (P2841806305)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 3
+Width = 4
+AllowTeleport = 1
+CostPrestige = 253000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 13 ========
+Name = SecureGeneratorRoom_4x5_I14
+DisplayName = Secure Generator Room (P1346802101)
+DisplayHelp = This room can house the largest Energy items. Moderate defenses can be placed here as well. (P3664628119)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 4
+Width = 5
+AllowTeleport = 1
+CostPrestige = 374000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 14 ========
+Name = SecureGeneratorPlant_5x7_I14
+DisplayName = Secure Generator Plant (P2012731773)
+DisplayHelp = This room can house the largest Energy items. Substantial defenses can be placed here as well. (P3868705900)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 5
+Width = 7
+AllowTeleport = 1
+CostPrestige = 646250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 8
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 15 ========
+Name = SecureGeneratorCore_8x8_I14
+DisplayName = Secure Generator Core (P1230259553)
+DisplayHelp = This room can house the largest Energy items. Massive defenses can be placed here as well. (P1733844466)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 8
+Width = 8
+AllowTeleport = 1
+CostPrestige = 935000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 16
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 16 ========
+Name = Oversight_Center_3x3_I14
+DisplayName = Oversight Center (P128700939)
+DisplayHelp = This room is used for establishing a small base quickly, and can house the most basic needs of a base. (P1365655429)
+DisplayShortHelp = This room is used to get small bases up and running quickly and efficiently. (P4281491462)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 50000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Workshop
+    Limit = 1
+    -------- DetailAllowed 2 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 17 ========
+Name = ControlRoom_2x2_I14
+DisplayName = Control Room (P1139805430)
+DisplayHelp = This room can hold a few pieces of Control equipment. (P3828835436)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 2
+Width = 2
+AllowTeleport = 0
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = ControlAux
+    Limit = 4
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 18 ========
+Name = ControlRoom_1x4_I14
+DisplayName = Control Room (P1139805430)
+DisplayHelp = This room can hold a few pieces of Control equipment. (P3828835436)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 1
+Width = 4
+AllowTeleport = 0
+CostPrestige = 130000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = ControlAux
+    Limit = 6
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 19 ========
+Name = ControlRoom_2x3_I14
+DisplayName = Control Room (P1139805430)
+DisplayHelp = This room can hold a few pieces of Control equipment. (P3828835436)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 2
+Width = 3
+AllowTeleport = 0
+CostPrestige = 145000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = ControlAux
+    Limit = 10
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 20 ========
+Name = ControlRoom_3x3_I14
+DisplayName = Control Room (P1139805430)
+DisplayHelp = This room can hold a moderate amount of Control equipment. (P1772154624)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 3
+Width = 3
+AllowTeleport = 0
+CostPrestige = 162500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = ControlAux
+    Limit = 15
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 21 ========
+Name = SecureControlRoom_2x3_I14
+DisplayName = Secure Control Room (P2358925507)
+DisplayHelp = This room can hold a moderate amount of Control equipment. Some defensive items can be placed as well. (P759038879)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 2
+Width = 3
+AllowTeleport = 0
+CostPrestige = 159500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 10
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 22 ========
+Name = CommunicationCenter_3x4_I14
+DisplayName = Communication Center (P4228569113)
+DisplayHelp = This room can hold a moderate amount of Control equipment. Some defensive items can be placed as well. (P759038879)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 3
+Width = 4
+AllowTeleport = 0
+CostPrestige = 253000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 15
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 23 ========
+Name = CommunicationCenter_4x4_I14
+DisplayName = Communication Center (P4228569113)
+DisplayHelp = This room can hold a large amount of Control equipment. Some defensive items can be placed as well. (P1668330865)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 4
+Width = 4
+AllowTeleport = 0
+CostPrestige = 275000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 18
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 24 ========
+Name = OperationsCenter_5x5_I14
+DisplayName = Operations Center (P2280942717)
+DisplayHelp = This room can hold a huge amount of Control equipment. Some defensive items can be placed as well. (P1796281663)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 5
+Width = 5
+AllowTeleport = 0
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 25
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 25 ========
+Name = SecureCommCenter_3x6_I14
+DisplayName = Secure Comm Center (P199334013)
+DisplayHelp = This room can hold a large amount of Control equipment. Moderate defensive items can be placed as well. (P479715997)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 3
+Width = 6
+AllowTeleport = 0
+CostPrestige = 401500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 18
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 26 ========
+Name = SecureCommCenter_4x5_I14
+DisplayName = Secure Comm Center (P199334013)
+DisplayHelp = This room can hold a large amount of Control equipment. Moderate defensive items and backup energy can be placed as well. (P3960653229)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 4
+Width = 5
+AllowTeleport = 0
+CostPrestige = 374000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 20
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 3
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 27 ========
+Name = SecureOpsCenter_4x7_I14
+DisplayName = Secure Ops Center (P3336492597)
+DisplayHelp = This room can hold a huge amount of Control equipment. Moderate defensive items and backup energy can be placed as well. (P190313551)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 4
+Width = 7
+AllowTeleport = 0
+CostPrestige = 572000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 5
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 28
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 4
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 28 ========
+Name = CommandCenter_5x7_I14
+DisplayName = Command Center (P794558283)
+DisplayHelp = This room can hold an enourmous amount of Control equipment. Substantial defensive items and backup energy can be placed as well. (P1861286618)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 5
+Width = 7
+AllowTeleport = 0
+CostPrestige = 646250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 8
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 35
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 0
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 29 ========
+Name = ChokePoint_1x1_I14
+DisplayName = Choke Point (P2250388823)
+DisplayHelp = This space holds up to 2 defenses. (P2910482319)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 1
+AllowTeleport = 1
+CostPrestige = 68750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 30 ========
+Name = SecurityCorridor_1x2_I14
+DisplayName = Security Corridor (P1299856431)
+DisplayHelp = This space holds up to 4 defenses. (P1171236300)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 2
+AllowTeleport = 1
+CostPrestige = 93500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 31 ========
+Name = SecurityCorridor_1x3_I14
+DisplayName = Security Corridor (P1299856431)
+DisplayHelp = This space holds up to 6 defenses. (P497228813)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 3
+AllowTeleport = 1
+CostPrestige = 118250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 6
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 32 ========
+Name = SecurityCorridor_1x4_I14
+DisplayName = Security Corridor (P1299856431)
+DisplayHelp = This space holds up to 8 defenses. (P1339373323)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 4
+AllowTeleport = 1
+CostPrestige = 143000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 8
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 33 ========
+Name = Gauntlet_1x8_I14
+DisplayName = Gauntlet (P4230228442)
+DisplayHelp = This space holds up to 16 defenses. (P3985974123)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 8
+AllowTeleport = 1
+CostPrestige = 242000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 16
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 34 ========
+Name = DeathTrap_3x3_I14
+DisplayName = Death Trap (P2094461560)
+DisplayHelp = This space holds up to 16 defenses. In additon, in can have a single Control item to act as a lure, or to serve as a very-well defended control center. (P419152692)
+DisplayShortHelp = Combination Control and Defensive room. (P1467726439)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 178750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 16
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 35 ========
+Name = Stronghold_5x5_I14
+DisplayName = Stronghold (P2819586665)
+DisplayHelp = This space holds up to 50 defenses. (P103207511)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 5
+Width = 5
+AllowTeleport = 1
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 50
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 36 ========
+Name = TeleportChamber_1x2_I14
+DisplayName = Teleport Bay (P2768347076)
+DisplayHelp = Teleporters and beacons can be placed in this room. (P821642306)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 1
+Width = 2
+AllowTeleport = 1
+CostPrestige = 50000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Teleport
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = TeleportAux
+    Limit = 1
+    -------- DetailAllowed 2 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 37 ========
+Name = TeleportChamber_2x2_I14
+DisplayName = Teleport Chamber (P1693779707)
+DisplayHelp = Teleporters and beacons can be placed in this room. (P821642306)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 2
+Width = 2
+AllowTeleport = 1
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Teleport
+    Limit = 2
+    -------- DetailAllowed 2 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 38 ========
+Name = TeleportChamber_3x3_I14
+DisplayName = Teleport Chamber (P1693779707)
+DisplayHelp = Teleporters and beacons can be placed in this room. (P821642306)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 162500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Teleport
+    Limit = 3
+    -------- DetailAllowed 2 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 39 ========
+Name = SecureTeleportBay_3x4_I14
+DisplayName = Secure Teleport Bay (P1785449457)
+DisplayHelp = Teleporters and beacons can be placed in this room. Some defenses can also be placed here. (P645705128)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 3
+Width = 4
+AllowTeleport = 1
+CostPrestige = 253000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Teleport
+    Limit = 4
+    -------- DetailAllowed 4 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 40 ========
+Name = SecureTeleportBay_4x4_I14
+DisplayName = Secure Teleport Bay (P1785449457)
+DisplayHelp = Teleporters and beacons can be placed in this room. Some defenses can also be placed here. (P645705128)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 4
+Width = 4
+AllowTeleport = 1
+CostPrestige = 275000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Teleport
+    Limit = 4
+    -------- DetailAllowed 4 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 41 ========
+Name = SecurePortalRoom_5x5_I14
+DisplayName = Secure Portal Room (P1971613175)
+DisplayHelp = Teleporters and beacons can be placed in this room. Moderate defenses can also be placed here. (P4215915195)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 5
+Width = 5
+AllowTeleport = 1
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = Teleport
+    Limit = 8
+    -------- DetailAllowed 4 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 42 ========
+Name = Workshop_1x2_I14
+DisplayName = Workshop (P1645830290)
+DisplayHelp = The Workshop is an important part of a base. It can contain workbenches needed to build base items from Salvage, along with tools that will increase the chance of repairing items destroyed in raids. (P1945672448)
+DisplayShortHelp = This room is usd to build and repair items for your base. (P430458930)
+Length = 1
+Width = 2
+AllowTeleport = 1
+CostPrestige = 50000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Workshop
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Workshop
+    Limit = 1
+    -------- DetailAllowed 2 --------
+    Category = Empowerment
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 43 ========
+Name = Workshop_2x2_I14
+DisplayName = Workshop (P1645830290)
+DisplayHelp = The Workshop is an important part of a base. It can contain workbenches needed to build base items from Salvage, along with tools that will increase the chance of repairing items destroyed in raids. (P1945672448)
+DisplayShortHelp = This room is usd to build and repair items for your base. (P430458930)
+Length = 2
+Width = 2
+AllowTeleport = 1
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Workshop
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 9
+    -------- DetailAllowed 1 --------
+    Category = Workshop
+    Limit = 2
+    -------- DetailAllowed 2 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 44 ========
+Name = Workshop_3x3_I14
+DisplayName = Workshop (P1645830290)
+DisplayHelp = The Workshop is an important part of a base. It can contain workbenches needed to build base items from Salvage, along with tools that will increase the chance of repairing items destroyed in raids. (P1945672448)
+DisplayShortHelp = This room is usd to build and repair items for your base. (P430458930)
+Length = 3
+Width = 4
+AllowTeleport = 1
+CostPrestige = 230000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Workshop
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 9
+    -------- DetailAllowed 1 --------
+    Category = Workshop
+    Limit = 3
+    -------- DetailAllowed 2 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 45 ========
+Name = Infirmary_2x2_Limited_I14
+DisplayName = MedBay (P3249793704)
+DisplayHelp = This room can be fitted with important medical equipment. (P1990792600)
+DisplayShortHelp = Medical rooms allow you to place Reclaimators and other medical equipment. (P3167902362)
+Length = 2
+Width = 2
+AllowTeleport = 0
+CostPrestige = 50000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Medical
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Medical
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 46 ========
+Name = Infirmary_2x2_I14
+DisplayName = Infirmary (P2707413948)
+DisplayHelp = This room can be fitted with important medical equipment. (P1990792600)
+DisplayShortHelp = Medical rooms allow you to place Reclaimators and other medical equipment. (P3167902362)
+Length = 2
+Width = 2
+AllowTeleport = 0
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Medical
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Medical
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 47 ========
+Name = TraumaCenter_4x4_I14
+DisplayName = Trauma Center (P121811921)
+DisplayHelp = This room can be fitted with important medical equipment. (P1990792600)
+DisplayShortHelp = Medical rooms allow you to place Reclaimators and other medical equipment. (P3167902362)
+Length = 4
+Width = 4
+AllowTeleport = 0
+CostPrestige = 250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Medical
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Medical
+    Limit = 12
+    -------- DetailAllowed 1 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 48 ========
+Name = ContainmentAlcove_2x2_I14
+DisplayName = Containment Alcove (P665384849)
+DisplayHelp = A single Item of Power may be contained here. Minor defenses can be placed here as well. (P2563761381)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 2
+Width = 2
+AllowTeleport = 0
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 49 ========
+Name = ContainmentChamber_3x3_I14
+DisplayName = Containment Chamber (P751712192)
+DisplayHelp = A single Item of Power may be contained here. Minor defenses can be placed here as well. (P2563761381)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 3
+Width = 3
+AllowTeleport = 0
+CostPrestige = 178750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 50 ========
+Name = ContainmentHall_4x4_I14
+DisplayName = Containment Hall (P3000350939)
+DisplayHelp = A single Item of Power may be contained here. Minor defenses can be placed here as well. (P2563761381)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 4
+Width = 4
+AllowTeleport = 0
+CostPrestige = 275000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 51 ========
+Name = SecureContainmentChamber_3x3_I14
+DisplayName = Secure Containment Chamber (P3156633192)
+DisplayHelp = A single Item of Power may be contained here. This room can have moderate defenses as well. (P3135338920)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 3
+Width = 3
+AllowTeleport = 0
+CostPrestige = 178750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 52 ========
+Name = SecureContainmentHall_4x4_I14
+DisplayName = Secure Containment Hall (P2321312296)
+DisplayHelp = A single Item of Power may be contained here. This room can have moderate defenses as well. (P3135338920)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 4
+Width = 4
+AllowTeleport = 0
+CostPrestige = 275000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 3
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 53 ========
+Name = SecureContainmentVault_5x5_I14
+DisplayName = Secure Containment Vault (P2087853860)
+DisplayHelp = A single Item of Power may be contained here. This room can have moderate defenses as well. (P3135338920)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 5
+Width = 5
+AllowTeleport = 0
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 54 ========
+Name = SecureDualVault_5x5_I14
+DisplayName = Secure Dual Vault (P3229457001)
+DisplayHelp = Up to two Items of Power may be contained here. This room can have substantial defenses as well. (P1778444509)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 5
+Width = 5
+AllowTeleport = 0
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 8
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ItemsOfPower
+    Limit = 2
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = []
+======== Entry 55 ========
+Name = Apartment_2x2
+DisplayName = Dinky Apartment (P4223591047)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room would make a good den or study. (P2865615178)
+Length = 2
+Width = 2
+AllowTeleport = 1
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  0
+======== Entry 56 ========
+Name = Apartment_2x3
+DisplayName = Small Apartment (P2973280762)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = A medium room for entertaining friends. (P2133840498)
+Length = 2
+Width = 3
+AllowTeleport = 1
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  0
+======== Entry 57 ========
+Name = Apartment_2x4
+DisplayName = Long Apartment (P1294192980)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room would make a good den or study. (P2865615178)
+Length = 2
+Width = 4
+AllowTeleport = 1
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  0
+======== Entry 58 ========
+Name = Apartment_3x3
+DisplayName = Apartment (P3482315511)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = A medium room for entertaining friends. (P2133840498)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  0
+======== Entry 59 ========
+Name = Apartment_3x4
+DisplayName = Moderate Apartment (P3219334974)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room would make a good den or study. (P2865615178)
+Length = 3
+Width = 4
+AllowTeleport = 1
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  0
+======== Entry 60 ========
+Name = Apartment_3x5
+DisplayName = Large Apartment (P2285188250)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = A medium room for entertaining friends. (P2133840498)
+Length = 3
+Width = 5
+AllowTeleport = 1
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  0
+======== Entry 61 ========
+Name = Apartment_4x4
+DisplayName = Huge Apartment (P521280995)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room would make a good den or study. (P2865615178)
+Length = 4
+Width = 4
+AllowTeleport = 1
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  0
+======== Entry 62 ========
+Name = Apartment_4x5
+DisplayName = Massive Apartment (P2505588311)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = A medium room for entertaining friends. (P2133840498)
+Length = 4
+Width = 5
+AllowTeleport = 1
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  0
+======== Entry 63 ========
+Name = Studio_3x3
+DisplayName = Studio (P1300693632)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room would make a good den or study. (P2865615178)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 81250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 64 ========
+Name = RecreationRoom_4x4
+DisplayName = Recreation Room (P2191474205)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = A medium room for entertaining friends. (P2133840498)
+Length = 4
+Width = 4
+AllowTeleport = 1
+CostPrestige = 125000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 65 ========
+Name = MeetingRoom_5x5
+DisplayName = Meeting Room (P1575987857)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room is suitable for small team meetings. (P3164195985)
+Length = 5
+Width = 5
+AllowTeleport = 1
+CostPrestige = 181250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 66 ========
+Name = TrophyRoom_6x6
+DisplayName = Trophy Room (P3632973116)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = This room is good for displaying trophies earned. (P1933048260)
+Length = 6
+Width = 6
+AllowTeleport = 1
+CostPrestige = 250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 67 ========
+Name = AssemblyRoom_7x7
+DisplayName = Assembly Room (P21238654)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = Larger groups need a bigger meeting space. (P3186501467)
+Length = 7
+Width = 7
+AllowTeleport = 1
+CostPrestige = 331250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 68 ========
+Name = GreatRoom_8x8
+DisplayName = Great Room (P1458059032)
+DisplayHelp = Only Decorative items can be placed in this room. (P2474388757)
+DisplayShortHelp = Even the largest groups can gather in the Great Room. (P130863962)
+Length = 8
+Width = 8
+AllowTeleport = 1
+CostPrestige = 425000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Decorative
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 69 ========
+Name = EnergyTerminal_2x2
+DisplayName = Energy Terminal (P1344892330)
+DisplayHelp = This room can house small Energy items. (P3109382555)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 2
+Width = 2
+AllowTeleport = 1
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 70 ========
+Name = EnergyTerminal_2x4
+DisplayName = Energy Terminal (P1344892330)
+DisplayHelp = This room can house small Energy items. (P3109382555)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 2
+Width = 4
+AllowTeleport = 1
+CostPrestige = 190000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 71 ========
+Name = EnergyStation_3x3
+DisplayName = Energy Station (P2913914909)
+DisplayHelp = This room can house medium Energy items. (P787150301)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 162500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 72 ========
+Name = EnergyStation_4x4
+DisplayName = Energy Station (P2913914909)
+DisplayHelp = This room can house the largest Energy items. (P3872768368)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 4
+Width = 4
+AllowTeleport = 1
+CostPrestige = 250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 73 ========
+Name = SecureEnergyStation_3x4
+DisplayName = Secure Energy Station (P1670989868)
+DisplayHelp = This room can house medium Energy items. Some defensive items can be placed here as well. (P2841806305)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 3
+Width = 4
+AllowTeleport = 1
+CostPrestige = 253000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 74 ========
+Name = SecureGeneratorRoom_4x5
+DisplayName = Secure Generator Room (P1346802101)
+DisplayHelp = This room can house the largest Energy items. Moderate defenses can be placed here as well. (P3664628119)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 4
+Width = 5
+AllowTeleport = 1
+CostPrestige = 374000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 75 ========
+Name = SecureGeneratorPlant_5x7
+DisplayName = Secure Generator Plant (P2012731773)
+DisplayHelp = This room can house the largest Energy items. Substantial defenses can be placed here as well. (P3868705900)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 5
+Width = 7
+AllowTeleport = 1
+CostPrestige = 646250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 8
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 76 ========
+Name = SecureGeneratorCore_8x8
+DisplayName = Secure Generator Core (P1230259553)
+DisplayHelp = This room can house the largest Energy items. Massive defenses can be placed here as well. (P1733844466)
+DisplayShortHelp = This room is used for Energy souces such as generators. (P2950737686)
+Length = 8
+Width = 8
+AllowTeleport = 1
+CostPrestige = 935000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Energy
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 16
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 77 ========
+Name = Oversight_Center_3x3
+DisplayName = Oversight Center (P128700939)
+DisplayHelp = This room is used for establishing a small base quickly, and can house the most basic needs of a base. (P1365655429)
+DisplayShortHelp = This room is used to get small bases up and running quickly and efficiently. (P4281491462)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 50000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Workshop
+    Limit = 1
+    -------- DetailAllowed 2 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 78 ========
+Name = ControlRoom_2x2
+DisplayName = Control Room (P1139805430)
+DisplayHelp = This room can hold a few pieces of Control equipment. (P3828835436)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 2
+Width = 2
+AllowTeleport = 0
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = ControlAux
+    Limit = 4
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 79 ========
+Name = ControlRoom_1x4
+DisplayName = Control Room (P1139805430)
+DisplayHelp = This room can hold a few pieces of Control equipment. (P3828835436)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 1
+Width = 4
+AllowTeleport = 0
+CostPrestige = 130000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = ControlAux
+    Limit = 6
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 80 ========
+Name = ControlRoom_2x3
+DisplayName = Control Room (P1139805430)
+DisplayHelp = This room can hold a few pieces of Control equipment. (P3828835436)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 2
+Width = 3
+AllowTeleport = 0
+CostPrestige = 145000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = ControlAux
+    Limit = 10
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 81 ========
+Name = ControlRoom_3x3
+DisplayName = Control Room (P1139805430)
+DisplayHelp = This room can hold a moderate amount of Control equipment. (P1772154624)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 3
+Width = 3
+AllowTeleport = 0
+CostPrestige = 162500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = ControlAux
+    Limit = 15
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 82 ========
+Name = SecureControlRoom_2x3
+DisplayName = Secure Control Room (P2358925507)
+DisplayHelp = This room can hold a moderate amount of Control equipment. Some defensive items can be placed as well. (P759038879)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 2
+Width = 3
+AllowTeleport = 0
+CostPrestige = 159500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 10
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 83 ========
+Name = CommunicationCenter_3x4
+DisplayName = Communication Center (P4228569113)
+DisplayHelp = This room can hold a moderate amount of Control equipment. Some defensive items can be placed as well. (P759038879)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 3
+Width = 4
+AllowTeleport = 0
+CostPrestige = 253000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 15
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 84 ========
+Name = CommunicationCenter_4x4
+DisplayName = Communication Center (P4228569113)
+DisplayHelp = This room can hold a large amount of Control equipment. Some defensive items can be placed as well. (P1668330865)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 4
+Width = 4
+AllowTeleport = 0
+CostPrestige = 275000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 18
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 85 ========
+Name = OperationsCenter_5x5
+DisplayName = Operations Center (P2280942717)
+DisplayHelp = This room can hold a huge amount of Control equipment. Some defensive items can be placed as well. (P1796281663)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 5
+Width = 5
+AllowTeleport = 0
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 25
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 86 ========
+Name = SecureCommCenter_3x6
+DisplayName = Secure Comm Center (P199334013)
+DisplayHelp = This room can hold a large amount of Control equipment. Moderate defensive items can be placed as well. (P479715997)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 3
+Width = 6
+AllowTeleport = 0
+CostPrestige = 401500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 18
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 87 ========
+Name = SecureCommCenter_4x5
+DisplayName = Secure Comm Center (P199334013)
+DisplayHelp = This room can hold a large amount of Control equipment. Moderate defensive items and backup energy can be placed as well. (P3960653229)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 4
+Width = 5
+AllowTeleport = 0
+CostPrestige = 374000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 20
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 3
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 88 ========
+Name = SecureOpsCenter_4x7
+DisplayName = Secure Ops Center (P3336492597)
+DisplayHelp = This room can hold a huge amount of Control equipment. Moderate defensive items and backup energy can be placed as well. (P190313551)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 4
+Width = 7
+AllowTeleport = 0
+CostPrestige = 572000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 5
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 28
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 4
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 89 ========
+Name = CommandCenter_5x7
+DisplayName = Command Center (P794558283)
+DisplayHelp = This room can hold an enourmous amount of Control equipment. Substantial defensive items and backup energy can be placed as well. (P1861286618)
+DisplayShortHelp = This room type is used to house Control equipment. (P676903428)
+Length = 5
+Width = 7
+AllowTeleport = 0
+CostPrestige = 646250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Control
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 8
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 35
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 0
+    -------- DetailAllowed 5 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 90 ========
+Name = ChokePoint_1x1
+DisplayName = Choke Point (P2250388823)
+DisplayHelp = This space holds up to 2 defenses. (P2910482319)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 1
+AllowTeleport = 1
+CostPrestige = 68750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 91 ========
+Name = SecurityCorridor_1x2
+DisplayName = Security Corridor (P1299856431)
+DisplayHelp = This space holds up to 4 defenses. (P1171236300)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 2
+AllowTeleport = 1
+CostPrestige = 93500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 92 ========
+Name = SecurityCorridor_1x3
+DisplayName = Security Corridor (P1299856431)
+DisplayHelp = This space holds up to 6 defenses. (P497228813)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 3
+AllowTeleport = 1
+CostPrestige = 118250
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 6
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 93 ========
+Name = SecurityCorridor_1x4
+DisplayName = Security Corridor (P1299856431)
+DisplayHelp = This space holds up to 8 defenses. (P1339373323)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 4
+AllowTeleport = 1
+CostPrestige = 143000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 8
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 94 ========
+Name = Gauntlet_1x8
+DisplayName = Gauntlet (P4230228442)
+DisplayHelp = This space holds up to 16 defenses. (P3985974123)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 1
+Width = 8
+AllowTeleport = 1
+CostPrestige = 242000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 16
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 95 ========
+Name = DeathTrap_3x3
+DisplayName = Death Trap (P2094461560)
+DisplayHelp = This space holds up to 16 defenses. In additon, in can have a single Control item to act as a lure, or to serve as a very-well defended control center. (P419152692)
+DisplayShortHelp = Combination Control and Defensive room. (P1467726439)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 178750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 16
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 96 ========
+Name = Stronghold_5x5
+DisplayName = Stronghold (P2819586665)
+DisplayHelp = This space holds up to 50 defenses. (P103207511)
+DisplayShortHelp = This room type can contain any type of Defense item. (P1725452964)
+Length = 5
+Width = 5
+AllowTeleport = 1
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Defense
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 50
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 97 ========
+Name = TeleportChamber_1x2
+DisplayName = Teleport Bay (P2768347076)
+DisplayHelp = Teleporters and beacons can be placed in this room. (P821642306)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 1
+Width = 2
+AllowTeleport = 1
+CostPrestige = 50000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Teleport
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = TeleportAux
+    Limit = 1
+    -------- DetailAllowed 2 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 98 ========
+Name = TeleportChamber_2x2
+DisplayName = Teleport Chamber (P1693779707)
+DisplayHelp = Teleporters and beacons can be placed in this room. (P821642306)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 2
+Width = 2
+AllowTeleport = 1
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Teleport
+    Limit = 2
+    -------- DetailAllowed 2 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 99 ========
+Name = TeleportChamber_3x3
+DisplayName = Teleport Chamber (P1693779707)
+DisplayHelp = Teleporters and beacons can be placed in this room. (P821642306)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 3
+Width = 3
+AllowTeleport = 1
+CostPrestige = 162500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Teleport
+    Limit = 3
+    -------- DetailAllowed 2 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 100 ========
+Name = SecureTeleportBay_3x4
+DisplayName = Secure Teleport Bay (P1785449457)
+DisplayHelp = Teleporters and beacons can be placed in this room. Some defenses can also be placed here. (P645705128)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 3
+Width = 4
+AllowTeleport = 1
+CostPrestige = 253000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Teleport
+    Limit = 4
+    -------- DetailAllowed 4 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 101 ========
+Name = SecureTeleportBay_4x4
+DisplayName = Secure Teleport Bay (P1785449457)
+DisplayHelp = Teleporters and beacons can be placed in this room. Some defenses can also be placed here. (P645705128)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 4
+Width = 4
+AllowTeleport = 1
+CostPrestige = 275000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Teleport
+    Limit = 4
+    -------- DetailAllowed 4 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 102 ========
+Name = SecurePortalRoom_5x5
+DisplayName = Secure Portal Room (P1971613175)
+DisplayHelp = Teleporters and beacons can be placed in this room. Moderate defenses can also be placed here. (P4215915195)
+DisplayShortHelp = Transportation rooms are used to house base Teleporters. (P326318172)
+Length = 5
+Width = 5
+AllowTeleport = 1
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Transport
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 2
+    -------- DetailAllowed 3 --------
+    Category = Teleport
+    Limit = 8
+    -------- DetailAllowed 4 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 5 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 6 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 103 ========
+Name = Workshop_1x2
+DisplayName = Workshop (P1645830290)
+DisplayHelp = The Workshop is an important part of a base. It can contain workbenches needed to build base items from Salvage, along with tools that will increase the chance of repairing items destroyed in raids. (P1945672448)
+DisplayShortHelp = This room is usd to build and repair items for your base. (P430458930)
+Length = 1
+Width = 2
+AllowTeleport = 1
+CostPrestige = 50000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Workshop
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Workshop
+    Limit = 1
+    -------- DetailAllowed 2 --------
+    Category = Empowerment
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 104 ========
+Name = Workshop_2x2
+DisplayName = Workshop (P1645830290)
+DisplayHelp = The Workshop is an important part of a base. It can contain workbenches needed to build base items from Salvage, along with tools that will increase the chance of repairing items destroyed in raids. (P1945672448)
+DisplayShortHelp = This room is usd to build and repair items for your base. (P430458930)
+Length = 2
+Width = 2
+AllowTeleport = 1
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Workshop
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 9
+    -------- DetailAllowed 1 --------
+    Category = Workshop
+    Limit = 2
+    -------- DetailAllowed 2 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 105 ========
+Name = Workshop_3x3
+DisplayName = Workshop (P1645830290)
+DisplayHelp = The Workshop is an important part of a base. It can contain workbenches needed to build base items from Salvage, along with tools that will increase the chance of repairing items destroyed in raids. (P1945672448)
+DisplayShortHelp = This room is usd to build and repair items for your base. (P430458930)
+Length = 3
+Width = 4
+AllowTeleport = 1
+CostPrestige = 230000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Workshop
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 9
+    -------- DetailAllowed 1 --------
+    Category = Workshop
+    Limit = 3
+    -------- DetailAllowed 2 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 106 ========
+Name = Storeroom_2x2
+DisplayName = Storeroom (P3167817739)
+DisplayHelp = This room can be fitted with warehouse racks to store Salvage, Inspirations, and Enhancements. (P1362779684)
+DisplayShortHelp = Resource rooms allow you to store Salvage, Inspirations, and Enhancemnts. (P3139675139)
+Length = 2
+Width = 2
+AllowTeleport = 1
+CostPrestige = 150000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Resource
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 10
+    -------- DetailAllowed 1 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 2 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 107 ========
+Name = Warehouse_4x4
+DisplayName = Warehouse (P1849821535)
+DisplayHelp = This room can be fitted with warehouse racks to store Salvage, Inspirations, and Enhancements. (P1362779684)
+DisplayShortHelp = Resource rooms allow you to store Salvage, Inspirations, and Enhancemnts. (P3139675139)
+Length = 4
+Width = 4
+AllowTeleport = 1
+CostPrestige = 600000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Resource
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Storage
+    Limit = 25
+    -------- DetailAllowed 1 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 2 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 108 ========
+Name = Infirmary_2x2_Limited
+DisplayName = MedBay (P3249793704)
+DisplayHelp = This room can be fitted with important medical equipment. (P1990792600)
+DisplayShortHelp = Medical rooms allow you to place Reclaimators and other medical equipment. (P3167902362)
+Length = 2
+Width = 2
+AllowTeleport = 0
+CostPrestige = 50000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Medical
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Medical
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 109 ========
+Name = Infirmary_2x2
+DisplayName = Infirmary (P2707413948)
+DisplayHelp = This room can be fitted with important medical equipment. (P1990792600)
+DisplayShortHelp = Medical rooms allow you to place Reclaimators and other medical equipment. (P3167902362)
+Length = 2
+Width = 2
+AllowTeleport = 0
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Medical
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Medical
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 110 ========
+Name = TraumaCenter_4x4
+DisplayName = Trauma Center (P121811921)
+DisplayHelp = This room can be fitted with important medical equipment. (P1990792600)
+DisplayShortHelp = Medical rooms allow you to place Reclaimators and other medical equipment. (P3167902362)
+Length = 4
+Width = 4
+AllowTeleport = 0
+CostPrestige = 250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Medical
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Medical
+    Limit = 12
+    -------- DetailAllowed 1 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Storage
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Anchor
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 111 ========
+Name = ContainmentAlcove_2x2
+DisplayName = Containment Alcove (P665384849)
+DisplayHelp = A single Item of Power may be contained here. Minor defenses can be placed here as well. (P2563761381)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 2
+Width = 2
+AllowTeleport = 0
+CostPrestige = 100000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 112 ========
+Name = ContainmentChamber_3x3
+DisplayName = Containment Chamber (P751712192)
+DisplayHelp = A single Item of Power may be contained here. Minor defenses can be placed here as well. (P2563761381)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 3
+Width = 3
+AllowTeleport = 0
+CostPrestige = 178750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 1
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 113 ========
+Name = ContainmentHall_4x4
+DisplayName = Containment Hall (P3000350939)
+DisplayHelp = A single Item of Power may be contained here. Minor defenses can be placed here as well. (P2563761381)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 4
+Width = 4
+AllowTeleport = 0
+CostPrestige = 275000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 114 ========
+Name = SecureContainmentChamber_3x3
+DisplayName = Secure Containment Chamber (P3156633192)
+DisplayHelp = A single Item of Power may be contained here. This room can have moderate defenses as well. (P3135338920)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 3
+Width = 3
+AllowTeleport = 0
+CostPrestige = 178750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 2
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 115 ========
+Name = SecureContainmentHall_4x4
+DisplayName = Secure Containment Hall (P2321312296)
+DisplayHelp = A single Item of Power may be contained here. This room can have moderate defenses as well. (P3135338920)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 4
+Width = 4
+AllowTeleport = 0
+CostPrestige = 275000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 3
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 116 ========
+Name = SecureContainmentVault_5x5
+DisplayName = Secure Containment Vault (P2087853860)
+DisplayHelp = A single Item of Power may be contained here. This room can have moderate defenses as well. (P3135338920)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 5
+Width = 5
+AllowTeleport = 0
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 4
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x
+======== Entry 117 ========
+Name = SecureDualVault_5x5
+DisplayName = Secure Dual Vault (P3229457001)
+DisplayHelp = Up to two Items of Power may be contained here. This room can have substantial defenses as well. (P1778444509)
+DisplayShortHelp = Vaults are where you store any Items of Power your group has captured. (P3046609239)
+Length = 5
+Width = 5
+AllowTeleport = 0
+CostPrestige = 398750
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+Room = Vault
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 8
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 3 --------
+    Category = ItemsOfPower
+    Limit = 2
+    -------- DetailAllowed 4 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  x

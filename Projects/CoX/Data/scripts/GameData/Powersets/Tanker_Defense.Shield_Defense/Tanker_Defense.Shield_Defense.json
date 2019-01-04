@@ -1,0 +1,32 @@
+{
+  "IsModified": false,
+  "IsNew": false,
+  "Description": "Your mastery over the shield protects you from all forms of attacks in the form of defense as well as some moderate damage resistance to most types of damage.  Your training with the shield enables you to protect your nearby allies boosting their defenses.",
+  "SetName": "Shield_Defense",
+  "FullName": "Tanker_Defense.Shield_Defense",
+  "ImageName": "ShieldDef.png",
+  "Power": null,
+  "SetType": "Primary",
+  "DisplayName": "Shield Defense",
+  "nArchetype": 4,
+  "nID": 3096,
+  "SubName": "Shield Defense",
+  "ATClass": "Class_Tanker",
+  "UIDTrunkSet": "",
+  "nIDTrunkSet": 0,
+  "UIDLinkSecondary": "",
+  "nIDLinkSecondary": 0,
+  "UIDMutexSets": [
+    "Tanker_Melee.Dual_Blades",
+    "Tanker_Melee.Staff_Fighting",
+    "Tanker_Melee.Titan_Weapons"
+  ],
+  "nIDMutexSets": [
+    3102,
+    3109,
+    3113
+  ],
+  "Group": null,
+  "GroupName": "Tanker_Defense",
+  "Powers": []
+}

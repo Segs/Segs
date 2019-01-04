@@ -1,0 +1,162 @@
+Using record type: DimReturn
+Dumping 8 records...
+======== Entry 0 ========
+Default = 0
+Attrib = [ 22 ]
+Return = 
+    -------- Return 0 --------
+    Default = 0
+    Boost = [ 348 ]
+    AttribReturn = 
+        -------- AttribReturn 0 --------
+        Start = 0.4
+        Handicap = 0.9
+        Basis = 0
+        -------- AttribReturn 1 --------
+        Start = 0.5
+        Handicap = 0.7
+        Basis = 0
+        -------- AttribReturn 2 --------
+        Start = 0.6
+        Handicap = 0.15
+        Basis = 0
+======== Entry 1 ========
+Default = 0
+Attrib = [ 6 ]
+Return = 
+    -------- Return 0 --------
+    Default = 0
+    Boost = [ 184, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140 ]
+    AttribReturn = 
+        -------- AttribReturn 0 --------
+        Start = 0.4
+        Handicap = 0.9
+        Basis = 0
+        -------- AttribReturn 1 --------
+        Start = 0.5
+        Handicap = 0.7
+        Basis = 0
+        -------- AttribReturn 2 --------
+        Start = 0.6
+        Handicap = 0.15
+        Basis = 0
+======== Entry 2 ========
+Default = 0
+Attrib = [ 35 ]
+Return = 
+    -------- Return 0 --------
+    Default = 0
+    Boost = [ 0, 4, 8, 12, 16, 20, 24, 32, 36, 40, 44, 48, 52, 56 ]
+    AttribReturn = 
+        -------- AttribReturn 0 --------
+        Start = 0.4
+        Handicap = 0.9
+        Basis = 0
+        -------- AttribReturn 1 --------
+        Start = 0.5
+        Handicap = 0.7
+        Basis = 0
+        -------- AttribReturn 2 --------
+        Start = 0.6
+        Handicap = 0.15
+        Basis = 0
+======== Entry 3 ========
+Default = 0
+Attrib = [ 7 ]
+Return = 
+    -------- Return 0 --------
+    Default = 0
+    Boost = [ 100 ]
+    AttribReturn = 
+        -------- AttribReturn 0 --------
+        Start = 0.4
+        Handicap = 0.9
+        Basis = 0
+        -------- AttribReturn 1 --------
+        Start = 0.5
+        Handicap = 0.7
+        Basis = 0
+        -------- AttribReturn 2 --------
+        Start = 0.6
+        Handicap = 0.15
+        Basis = 0
+======== Entry 4 ========
+Default = 0
+Attrib = [ 11 ]
+Return = 
+    -------- Return 0 --------
+    Default = 0
+    Boost = [ 100 ]
+    AttribReturn = 
+        -------- AttribReturn 0 --------
+        Start = 0.4
+        Handicap = 0.9
+        Basis = 0
+        -------- AttribReturn 1 --------
+        Start = 0.5
+        Handicap = 0.7
+        Basis = 0
+        -------- AttribReturn 2 --------
+        Start = 0.6
+        Handicap = 0.15
+        Basis = 0
+======== Entry 5 ========
+Default = 0
+Attrib = [ 32 ]
+Return = 
+    -------- Return 0 --------
+    Default = 0
+    Boost = [ 360 ]
+    AttribReturn = 
+        -------- AttribReturn 0 --------
+        Start = 0.8
+        Handicap = 0.9
+        Basis = 0
+        -------- AttribReturn 1 --------
+        Start = 1
+        Handicap = 0.7
+        Basis = 0
+        -------- AttribReturn 2 --------
+        Start = 1.2
+        Handicap = 0.15
+        Basis = 0
+======== Entry 6 ========
+Default = 0
+Attrib = [ 17 ]
+Return = 
+    -------- Return 0 --------
+    Default = 0
+    Boost = [ 324, 328 ]
+    AttribReturn = 
+        -------- AttribReturn 0 --------
+        Start = 1.2
+        Handicap = 0.9
+        Basis = 0
+        -------- AttribReturn 1 --------
+        Start = 1.5
+        Handicap = 0.7
+        Basis = 0
+        -------- AttribReturn 2 --------
+        Start = 1.8
+        Handicap = 0.15
+        Basis = 0
+======== Entry 7 ========
+Default = 1
+Attrib = []
+Return = 
+    -------- Return 0 --------
+    Default = 1
+    Boost = []
+    AttribReturn = 
+        -------- AttribReturn 0 --------
+        Start = 0.7
+        Handicap = 0.9
+        Basis = 0
+        -------- AttribReturn 1 --------
+        Start = 0.9
+        Handicap = 0.7
+        Basis = 0
+        -------- AttribReturn 2 --------
+        Start = 1
+        Handicap = 0.15
+        Basis = 0

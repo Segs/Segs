@@ -1,0 +1,57 @@
+Set Type Names						
+Version:	2.000					
+Date:	01/12/08					
+						
+Notes:						
+Export from Excel as Tab-Delimited Text as 'SetTypes.mhd'						
+						
+						
+						
+						
+SetID	Short	Full				
+0	Untyped	Untyped				
+1	MeleeST	Melee (Single Target)				
+2	RangedST	Ranged (Single Target)				
+3	RangedAoE	Ranged (AoE)				
+4	MeleeAoE	Melee (PBAoE)				
+5	Snipe	Ranged (Snipe)
+6	Pets	Pets
+7	Defense	Defense
+8	Resistance	Resistance
+9	Heal	Healing
+10	Hold	Hold
+11	Stun	Stun
+12	Immob	Immobilize
+13	Slow	Slow
+14	Sleep	Sleep
+15	Fear	Fear
+16	Confuse	Confuse
+17	Flight	Movement (Fly)
+18	Jump	Movement (Jump)
+19	Run	Movement (Run)
+20	Teleport	Movement (Teleport)
+21	DefDeb	Defense Debuff
+22	EndMod	End Modification
+23	 Knockback	Knockback
+24	Taunt	Taunt
+25	ToHit	ToHit Buff
+26	ToHitDeb	ToHit Debuff
+27	PetRech	Pet Recharge
+28	Travel	Universal Travel
+29	AccHeal	Accurate Healing
+30	AccDefDeb	Accurate Defense Debuff
+31	AccToHitDeb	Accurate ToHit Debuff
+32	Arachnos	Arachnos
+33	Blaster	Blaster
+34	Brute	Brute
+35	Controller	Controller
+36	Corruptor	Corruptor
+37	Defender	Defender
+38	Dominator	Dominator
+39	Kheldian	Kheldian
+40	Mastermind	Mastermind
+41	Scrapper	Scrapper
+42	Stalker	Stalker
+43	Tanker	Tanker
+44	UniversalDamage	Universal Damage
+End		

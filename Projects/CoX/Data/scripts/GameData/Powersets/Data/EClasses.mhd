@@ -1,0 +1,38 @@
+Enhancement Classes						
+Version:	1.100					
+Date:	25/02/08					
+						
+Notes:						
+Export from Excel as Tab-Delimited Text as 'EClasses.mhd'						
+The Index value matches the enhancement/class index in the powerset database.						
+"Do NOT change any existing index values, or powers will allow slotting of the wrong enhancements."						
+New classes should be added at the end of the list. 'End' MUST appear below the final class index.						
+						
+Index	Name	Short	Class	Description		
+1	Accuracy	Acc	Accuracy_Boost	Increases the accuracy of a power.		
+2	Activation Decrease	ActRdx	Interrupt_Boost	Decreases interrupt time of powers that can be interrupted.		
+3	Confuse Duration	Conf	Confuse_Boost	Increasees the duration of a Confuse power.		
+4	Damage Increase	Dmg	Damage_Boost	Increases the Damage done by a power.		
+5	Defense Buff	DefBuff	Buff_Defense_Boost	Enhances the effectiveness of defense buffs		
+6	Defense Debuff	DefDeb	Debuff_Defense_Boost	Enhances the effectiveness of defense debuffs.
+7	Endurance Modification	EndMod	Recovery_Boost	Enhances Endurance Drain or Recovery powers.
+8	Endurance Reduction	EndRdx	EnduranceDiscount_Boost	Decreases the endurance cost of a power.
+9	Fear Duration	Fear	Fear_Boost	Increases the duration of a fear power.
+10	Flight Speed	Flight	SpeedFlying_Boost	Increases the speed of a Flight power.
+11	Healing	Heal	Heal_Boost	Enhances the healing ability of a power.
+12	Hold Duration	Hold	Hold_Boost	Increases the duration of a hold power.
+13	Immobilisation Duration	Immob	Immobilized_Boost	Increases the duration of an immobilization power.
+14	Intangibility Duration	Intan	Intangible_Boost	Increases the duration of an intangibiltiy power.
+15	Jumping	Jump	Jump_Boost	Increases the distance of a jump power.
+16	Knockback Distance	KBDist	Knockback_Boost	Increases the knockback and knockup distance.
+17	Range	Range	Range_Boost	Enhances the range of a power.
+18	Recharge Reduction	RechRdx	Recharge_Boost	Reduces the recharge time of a power.
+19	Resist Damage	ResDam	Res_Damage_Boost	Enhances the damage resistance of a power.
+20	Run Speed	Run	SpeedRunning_Boost	Increases the speed of a run power.
+21	Sleep Duration	Sleep	Sleep_Boost	Increases the duration of a sleep power.
+22	Slow	Slow	Slow_Boost	Increases the effectiveness of powers that slow.
+23	Disorient Duration	Dsrnt	Stunned_Boost	Increases the duration of a disorient power.
+24	Taunt Duration	Taunt	Taunt_Boost	Increases the duration a taunted target will stay on you.
+25	To Hit Buff	ToHit	Buff_ToHit_Boost	Enhances the effectiveness of accuracy buffs.
+26	To Hit Debuff	ToHitDeb	Debuff_ToHit_Boost	Enhances the effectiveness of accuracy debuffs.
+End				

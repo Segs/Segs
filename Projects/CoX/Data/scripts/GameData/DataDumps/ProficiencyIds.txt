@@ -1,0 +1,77 @@
+Using record type: InvSalvage
+Dumping 25 records...
+======== Entry 0 ========
+Index = 1
+Name = Tech_Ubiquitous
+======== Entry 1 ========
+Index = 2
+Name = Tech_Common
+======== Entry 2 ========
+Index = 3
+Name = Tech_Uncommon
+======== Entry 3 ========
+Index = 4
+Name = Tech_Rare
+======== Entry 4 ========
+Index = 5
+Name = Tech_Unique
+======== Entry 5 ========
+Index = 6
+Name = Science_Ubiquitous
+======== Entry 6 ========
+Index = 7
+Name = Science_Common
+======== Entry 7 ========
+Index = 8
+Name = Science_Uncommon
+======== Entry 8 ========
+Index = 9
+Name = Science_Rare
+======== Entry 9 ========
+Index = 10
+Name = Science_Unique
+======== Entry 10 ========
+Index = 11
+Name = Mutant_Ubiquitous
+======== Entry 11 ========
+Index = 12
+Name = Mutant_Common
+======== Entry 12 ========
+Index = 13
+Name = Mutant_Uncommon
+======== Entry 13 ========
+Index = 14
+Name = Mutant_Rare
+======== Entry 14 ========
+Index = 15
+Name = Mutant_Unique
+======== Entry 15 ========
+Index = 16
+Name = Magic_Ubiquitous
+======== Entry 16 ========
+Index = 17
+Name = Magic_Common
+======== Entry 17 ========
+Index = 18
+Name = Magic_Uncommon
+======== Entry 18 ========
+Index = 19
+Name = Magic_Rare
+======== Entry 19 ========
+Index = 20
+Name = Magic_Unique
+======== Entry 20 ========
+Index = 21
+Name = Natural_Ubiquitous
+======== Entry 21 ========
+Index = 22
+Name = Natural_Common
+======== Entry 22 ========
+Index = 23
+Name = Natural_Uncommon
+======== Entry 23 ========
+Index = 24
+Name = Natural_Rare
+======== Entry 24 ========
+Index = 25
+Name = Natural_Unique

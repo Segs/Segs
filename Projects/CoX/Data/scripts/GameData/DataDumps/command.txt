@@ -1,0 +1,491 @@
+Using record type: Command
+Dumping 10 records...
+======== Entry 0 ========
+CommandCategory = Movement (CategoryMovement)
+Command = 
+    -------- Command 0 --------
+    CmdString = +forward
+    DisplayName = Forward (ForwardMove)
+    -------- Command 1 --------
+    CmdString = +forward_mouse
+    DisplayName = Forward (Mouse Control) (ForwardMouse)
+    -------- Command 2 --------
+    CmdString = +backward
+    DisplayName = Backward (BackwardMove)
+    -------- Command 3 --------
+    CmdString = +left
+    DisplayName = Strafe Left (StrafeLeft)
+    -------- Command 4 --------
+    CmdString = +right
+    DisplayName = Strafe Right (StrafeRight)
+    -------- Command 5 --------
+    CmdString = +turnleft
+    DisplayName = Turn Left (TurnLeft)
+    -------- Command 6 --------
+    CmdString = +turnright
+    DisplayName = Turn Right (TurnRight)
+    -------- Command 7 --------
+    CmdString = +up
+    DisplayName = Jump (JumpMove)
+    -------- Command 8 --------
+    CmdString = +down
+    DisplayName = Down (Flight-Only) (Down)
+    -------- Command 9 --------
+    CmdString = follow
+    DisplayName = Follow (Follow)
+    -------- Command 10 --------
+    CmdString = ++autorun
+    DisplayName = Auto-Run (Auto-Run)
+    -------- Command 11 --------
+    CmdString = +ctm_invert
+    DisplayName = On Demand Click-To-Move (CTMToggle)
+======== Entry 1 ========
+CommandCategory = View (CategoryView)
+Command = 
+    -------- Command 0 --------
+    CmdString = +mouse_look
+    DisplayName = On Demand Mouse Look (OnDemandMouseLook)
+    -------- Command 1 --------
+    CmdString = ++mouse_look
+    DisplayName = Toggle Mouse Look (ToggleMouseLook)
+    -------- Command 2 --------
+    CmdString = ++first
+    DisplayName = Toggle 3rd Person View (Toggle3rdPersonView)
+    -------- Command 3 --------
+    CmdString = +camrotate
+    DisplayName = Rotate Camera (RotateCamera)
+    -------- Command 4 --------
+    CmdString = camreset
+    DisplayName = Reset Camera (ResetCamera)
+    -------- Command 5 --------
+    CmdString = +zoomin
+    DisplayName = Zoom In (ZoomIn)
+    -------- Command 6 --------
+    CmdString = +zoomout
+    DisplayName = Zoom Out (ZoomOut)
+    -------- Command 7 --------
+    CmdString = +lookup
+    DisplayName = Look Up (LookUp)
+    -------- Command 8 --------
+    CmdString = +lookdown
+    DisplayName = Look Down (LookDown)
+    -------- Command 9 --------
+    CmdString = camturn
+    DisplayName = Match Camera to Player (CameraTurn)
+    -------- Command 10 --------
+    CmdString = playerturn
+    DisplayName = Match Player to Camera (PlayerTurn)
+    -------- Command 11 --------
+    CmdString = face
+    DisplayName = Face Target (FaceTarget)
+======== Entry 2 ========
+CommandCategory = Chat (CategoryChat)
+Command = 
+    -------- Command 0 --------
+    CmdString = show chat$$startchat
+    DisplayName = Start Chat (StartChat)
+    -------- Command 1 --------
+    CmdString = show chat$$slashchat
+    DisplayName = Start Chat (Include Keypress) (PrefixChat)
+    -------- Command 2 --------
+    CmdString = autoreply
+    DisplayName = Reply (Reply)
+    -------- Command 3 --------
+    CmdString = quickchat
+    DisplayName = Quick Chat (QuickChat)
+    -------- Command 4 --------
+    CmdString = show chat$$beginchat /tell $target, 
+    DisplayName = Tell (TellCommand)
+    -------- Command 5 --------
+    CmdString = ignorelist
+    DisplayName = Ignore List (IgnoreList)
+    -------- Command 6 --------
+    CmdString = friendlist
+    DisplayName = Friend List (FriendList)
+    -------- Command 7 --------
+    CmdString = hide
+    DisplayName = Hide (Hide)
+    -------- Command 8 --------
+    CmdString = unhide
+    DisplayName = Unhide (Unhide)
+    -------- Command 9 --------
+    CmdString = tabtoggle
+    DisplayName = Toggle Previous Chat Tab (TogglePrevChatTab)
+    -------- Command 10 --------
+    CmdString = tabglobalnext
+    DisplayName = Cycle Next Chat Tab (SelectNextChatTab)
+    -------- Command 11 --------
+    CmdString = tabglobalprev
+    DisplayName = Cycle Previous Chat Tab (SelectPrevChatTab)
+======== Entry 3 ========
+CommandCategory = Powers (CategoryPowers)
+Command = 
+    -------- Command 0 --------
+    CmdString = powexec_abort
+    DisplayName = Cancel Power (CancelPower)
+    -------- Command 1 --------
+    CmdString = powexec_unqueue
+    DisplayName = Unqueue Power (UnqueuePower)
+    -------- Command 2 --------
+    CmdString = powexec_slot 1
+    DisplayName = Tray Slot 1 (TraySlot1)
+    -------- Command 3 --------
+    CmdString = powexec_slot 2
+    DisplayName = Tray Slot 2 (TraySlot2)
+    -------- Command 4 --------
+    CmdString = powexec_slot 3
+    DisplayName = Tray Slot 3 (TraySlot3)
+    -------- Command 5 --------
+    CmdString = powexec_slot 4
+    DisplayName = Tray Slot 4 (TraySlot4)
+    -------- Command 6 --------
+    CmdString = powexec_slot 5
+    DisplayName = Tray Slot 5 (TraySlot5)
+    -------- Command 7 --------
+    CmdString = powexec_slot 6
+    DisplayName = Tray Slot 6 (TraySlot6)
+    -------- Command 8 --------
+    CmdString = powexec_slot 7
+    DisplayName = Tray Slot 7 (TraySlot7)
+    -------- Command 9 --------
+    CmdString = powexec_slot 8
+    DisplayName = Tray Slot 8 (TraySlot8)
+    -------- Command 10 --------
+    CmdString = powexec_slot 9
+    DisplayName = Tray Slot 9 (TraySlot9)
+    -------- Command 11 --------
+    CmdString = powexec_slot 10
+    DisplayName = Tray Slot 10 (TraySlot10)
+    -------- Command 12 --------
+    CmdString = powexec_altslot 1
+    DisplayName = Alt Tray Slot 1 (AltTraySlot1)
+    -------- Command 13 --------
+    CmdString = powexec_altslot 2
+    DisplayName = Alt Tray Slot 2 (AltTraySlot2)
+    -------- Command 14 --------
+    CmdString = powexec_altslot 3
+    DisplayName = Alt Tray Slot 3 (AltTraySlot3)
+    -------- Command 15 --------
+    CmdString = powexec_altslot 4
+    DisplayName = Alt Tray Slot 4 (AltTraySlot4)
+    -------- Command 16 --------
+    CmdString = powexec_altslot 5
+    DisplayName = Alt Tray Slot 5 (AltTraySlot5)
+    -------- Command 17 --------
+    CmdString = powexec_altslot 6
+    DisplayName = Alt Tray Slot 6 (AltTraySlot6)
+    -------- Command 18 --------
+    CmdString = powexec_altslot 7
+    DisplayName = Alt Tray Slot 7 (AltTraySlot7)
+    -------- Command 19 --------
+    CmdString = powexec_altslot 8
+    DisplayName = Alt Tray Slot 8 (AltTraySlot8)
+    -------- Command 20 --------
+    CmdString = powexec_altslot 9
+    DisplayName = Alt Tray Slot 9 (AltTraySlot9)
+    -------- Command 21 --------
+    CmdString = powexec_altslot 10
+    DisplayName = Alt Tray Slot 10 (AltTraySlot10)
+    -------- Command 22 --------
+    CmdString = powexec_alt2slot 1
+    DisplayName = Alt2 Tray Slot 1 (Alt2TraySlot1)
+    -------- Command 23 --------
+    CmdString = powexec_alt2slot 2
+    DisplayName = Alt2 Tray Slot 2 (Alt2TraySlot2)
+    -------- Command 24 --------
+    CmdString = powexec_alt2slot 3
+    DisplayName = Alt2 Tray Slot 3 (Alt2TraySlot3)
+    -------- Command 25 --------
+    CmdString = powexec_alt2slot 4
+    DisplayName = Alt2 Tray Slot 4 (Alt2TraySlot4)
+    -------- Command 26 --------
+    CmdString = powexec_alt2slot 5
+    DisplayName = Alt2 Tray Slot 5 (Alt2TraySlot5)
+    -------- Command 27 --------
+    CmdString = powexec_alt2slot 6
+    DisplayName = Alt2 Tray Slot 6 (Alt2TraySlot6)
+    -------- Command 28 --------
+    CmdString = powexec_alt2slot 7
+    DisplayName = Alt2 Tray Slot 7 (Alt2TraySlot7)
+    -------- Command 29 --------
+    CmdString = powexec_alt2slot 8
+    DisplayName = Alt2 Tray Slot 8 (Alt2TraySlot8)
+    -------- Command 30 --------
+    CmdString = powexec_alt2slot 9
+    DisplayName = Alt2 Tray Slot 9 (Alt2TraySlot9)
+    -------- Command 31 --------
+    CmdString = powexec_alt2slot 10
+    DisplayName = Alt2 Tray Slot 10 (Alt2TraySlot10)
+    -------- Command 32 --------
+    CmdString = powexec_serverslot 1
+    DisplayName = Server Tray Slot 1 (ServerTraySlot1)
+    -------- Command 33 --------
+    CmdString = powexec_serverslot 2
+    DisplayName = Server Tray Slot 2 (ServerTraySlot2)
+    -------- Command 34 --------
+    CmdString = powexec_serverslot 3
+    DisplayName = Server Tray Slot 3 (ServerTraySlot3)
+    -------- Command 35 --------
+    CmdString = powexec_serverslot 4
+    DisplayName = Server Tray Slot 4 (ServerTraySlot4)
+    -------- Command 36 --------
+    CmdString = powexec_serverslot 5
+    DisplayName = Server Tray Slot 5 (ServerTraySlot5)
+    -------- Command 37 --------
+    CmdString = powexec_serverslot 6
+    DisplayName = Server Tray Slot 6 (ServerTraySlot6)
+    -------- Command 38 --------
+    CmdString = powexec_serverslot 7
+    DisplayName = Server Tray Slot 7 (ServerTraySlot7)
+    -------- Command 39 --------
+    CmdString = powexec_serverslot 8
+    DisplayName = Server Tray Slot 8 (ServerTraySlot8)
+    -------- Command 40 --------
+    CmdString = powexec_serverslot 9
+    DisplayName = Server Tray Slot 9 (ServerTraySlot9)
+    -------- Command 41 --------
+    CmdString = powexec_serverslot 10
+    DisplayName = Server Tray Slot 10 (ServerTraySlot10)
+    -------- Command 42 --------
+    CmdString = inspexec_slot 1
+    DisplayName = Inspiration Slot 1 (InspirationSlot1)
+    -------- Command 43 --------
+    CmdString = inspexec_slot 2
+    DisplayName = Inspiration Slot 2 (InspirationSlot2)
+    -------- Command 44 --------
+    CmdString = inspexec_slot 3
+    DisplayName = Inspiration Slot 3 (InspirationSlot3)
+    -------- Command 45 --------
+    CmdString = inspexec_slot 4
+    DisplayName = Inspiration Slot 4 (InspirationSlot4)
+    -------- Command 46 --------
+    CmdString = inspexec_slot 5
+    DisplayName = Inspiration Slot 5 (InspirationSlot5)
+======== Entry 4 ========
+CommandCategory = Tray (CategoryTray)
+Command = 
+    -------- Command 0 --------
+    CmdString = +alttray
+    DisplayName = Alt Tray Toggle (AltTrayToggle)
+    -------- Command 1 --------
+    CmdString = +alt2tray
+    DisplayName = Alt2 Tray Toggle (Alt2TrayToggle)
+    -------- Command 2 --------
+    CmdString = alttraysticky
+    DisplayName = Alt Tray Swap (AltTraySwap)
+    -------- Command 3 --------
+    CmdString = tray_sticky_alt2
+    DisplayName = Alt2 Tray Swap (Alt2TraySwap)
+    -------- Command 4 --------
+    CmdString = next_tray
+    DisplayName = Next Tray (NextTray)
+    -------- Command 5 --------
+    CmdString = prev_tray
+    DisplayName = Previous Tray (PrevTray)
+    -------- Command 6 --------
+    CmdString = next_tray_alt
+    DisplayName = Next Alt Tray (NextAltTray)
+    -------- Command 7 --------
+    CmdString = prev_tray_alt
+    DisplayName = Previous Alt Tray (PrevAltTray)
+    -------- Command 8 --------
+    CmdString = goto_tray 1
+    DisplayName = Goto Tray 1 (GotoTray1)
+    -------- Command 9 --------
+    CmdString = goto_tray 2
+    DisplayName = Goto Tray 2 (GotoTray2)
+    -------- Command 10 --------
+    CmdString = goto_tray 3
+    DisplayName = Goto Tray 3 (GotoTray3)
+    -------- Command 11 --------
+    CmdString = goto_tray 4
+    DisplayName = Goto Tray 4 (GotoTray4)
+    -------- Command 12 --------
+    CmdString = goto_tray 5
+    DisplayName = Goto Tray 5 (GotoTray5)
+    -------- Command 13 --------
+    CmdString = goto_tray 6
+    DisplayName = Goto Tray 6 (GotoTray6)
+    -------- Command 14 --------
+    CmdString = goto_tray 7
+    DisplayName = Goto Tray 7 (GotoTray7)
+    -------- Command 15 --------
+    CmdString = goto_tray 8
+    DisplayName = Goto Tray 8 (GotoTray8)
+    -------- Command 16 --------
+    CmdString = goto_tray 9
+    DisplayName = Goto Tray 9 (GotoTray9)
+    -------- Command 17 --------
+    CmdString = goto_tray 10
+    DisplayName = Goto Tray 10 (GotoTray10)
+======== Entry 5 ========
+CommandCategory = Team (CategoryTeam)
+Command = 
+    -------- Command 0 --------
+    CmdString = leaveTeam
+    DisplayName = Leave Team (LeaveTeam)
+    -------- Command 1 --------
+    CmdString = search
+    DisplayName = FindMember
+    -------- Command 2 --------
+    CmdString = unsidekick
+    DisplayName = Unsidekick
+    -------- Command 3 --------
+    CmdString = team_select 1
+    DisplayName = Select Teammate 1 (SelectTeammate1)
+    -------- Command 4 --------
+    CmdString = team_select 2
+    DisplayName = Select Teammate 2 (SelectTeammate2)
+    -------- Command 5 --------
+    CmdString = team_select 3
+    DisplayName = Select Teammate 3 (SelectTeammate3)
+    -------- Command 6 --------
+    CmdString = team_select 4
+    DisplayName = Select Teammate 4 (SelectTeammate4)
+    -------- Command 7 --------
+    CmdString = team_select 5
+    DisplayName = Select Teammate 5 (SelectTeammate5)
+    -------- Command 8 --------
+    CmdString = team_select 6
+    DisplayName = Select Teammate 6 (SelectTeammate6)
+    -------- Command 9 --------
+    CmdString = team_select 7
+    DisplayName = Select Teammate 7 (SelectTeammate7)
+    -------- Command 10 --------
+    CmdString = team_select 8
+    DisplayName = Select Teammate 8 (SelectTeammate8)
+======== Entry 6 ========
+CommandCategory = Windows (CategoryWindows)
+Command = 
+    -------- Command 0 --------
+    CmdString = map
+    DisplayName = Map (MapWindow)
+    -------- Command 1 --------
+    CmdString = nav
+    DisplayName = Navigation (NavigationWindow)
+    -------- Command 2 --------
+    CmdString = powers
+    DisplayName = Powers (PowersWindow)
+    -------- Command 3 --------
+    CmdString = menu
+    DisplayName = Menu (MenuWindow)
+    -------- Command 4 --------
+    CmdString = target
+    DisplayName = Target (TargetWindow)
+    -------- Command 5 --------
+    CmdString = chat
+    DisplayName = Chat (ChatWindow)
+    -------- Command 6 --------
+    CmdString = manage
+    DisplayName = Enhancements (EnhancementsWindow)
+    -------- Command 7 --------
+    CmdString = helpwindow
+    DisplayName = Help (HelpWindow)
+======== Entry 7 ========
+CommandCategory = Targeting (CategoryTargeting)
+Command = 
+    -------- Command 0 --------
+    CmdString = unselect
+    DisplayName = Unselect Target (UnselectTarget)
+    -------- Command 1 --------
+    CmdString = target_enemy_next
+    DisplayName = Target Next Enemy (TargetNextEnemy)
+    -------- Command 2 --------
+    CmdString = target_enemy_prev
+    DisplayName = Target Previous Enemy (TargetPreviousEnemy)
+    -------- Command 3 --------
+    CmdString = target_enemy_near
+    DisplayName = Target Nearest Enemy (TargetNearestEnemy)
+    -------- Command 4 --------
+    CmdString = target_enemy_far
+    DisplayName = Target Farthest Enemy (TargetFarthestEnemy)
+    -------- Command 5 --------
+    CmdString = target_friend_next
+    DisplayName = Target Next Friend (TargetNextFriend)
+    -------- Command 6 --------
+    CmdString = target_friend_prev
+    DisplayName = Target Previous Friend (TargetPreviousFriend)
+    -------- Command 7 --------
+    CmdString = target_friend_near
+    DisplayName = Target Nearest Friend (TargetNearestFriend)
+    -------- Command 8 --------
+    CmdString = target_friend_far
+    DisplayName = Target Farthest Friend (TargetFarthestFriend)
+======== Entry 8 ========
+CommandCategory = Emotes (CategoryEmotes)
+Command = 
+    -------- Command 0 --------
+    CmdString = local <color white><bgcolor red>RUN!
+    DisplayName = Run! (RunEmote)
+    -------- Command 1 --------
+    CmdString = say <color black><bgcolor #22aa22>Ready! $$ emote thumbsup
+    DisplayName = Thumbs Up (ThumbsUpEmote)
+    -------- Command 2 --------
+    CmdString = local <color black><bgcolor #aaaa22>HELP! $$ emote whistle
+    DisplayName = Whistle (WhistleEmote)
+    -------- Command 3 --------
+    CmdString = local <color white><bgcolor #2222aa><scale .75>level $level $archetype$$local <color white><bgcolor #2222aa>Looking for team
+    DisplayName = Looking For Teammate (LookingForTeamEmote)
+    -------- Command 4 --------
+    CmdString = say $battlecry $$ emote attack
+    DisplayName = Attack (AttackEmote)
+======== Entry 9 ========
+CommandCategory = Other (CategoryOther)
+Command = 
+    -------- Command 0 --------
+    CmdString = ++disable2D
+    DisplayName = Disable UI (DisableUI)
+    -------- Command 1 --------
+    CmdString = screenshot
+    DisplayName = Screenshot
+    -------- Command 2 --------
+    CmdString = screenshottga
+    DisplayName = ScreenshotTGA
+    -------- Command 3 --------
+    CmdString = ++screenshotui
+    DisplayName = Toggle Screenshot UI (ToggleScreenshotUI)
+    -------- Command 4 --------
+    CmdString = getpos
+    DisplayName = Get Position (GetPosition)
+    -------- Command 5 --------
+    CmdString = bind_load
+    DisplayName = Load Keybinds (BindLoad)
+    -------- Command 6 --------
+    CmdString = bind_save
+    DisplayName = Save Keybinds (BindSave)
+    -------- Command 7 --------
+    CmdString = costume_change 0
+    DisplayName = Change Costume 1 (ChangeCostume1)
+    -------- Command 8 --------
+    CmdString = costume_change 1
+    DisplayName = Change Costume 2 (ChangeCostume2)
+    -------- Command 9 --------
+    CmdString = costume_change 2
+    DisplayName = Change Costume 3 (ChangeCostume3)
+    -------- Command 10 --------
+    CmdString = costume_change 3
+    DisplayName = Change Costume 4 (ChangeCostume4)
+    -------- Command 11 --------
+    CmdString = ++netgraph
+    DisplayName = NetGraph
+    -------- Command 12 --------
+    CmdString = quit
+    DisplayName = Quit Game (QuitGame)
+    -------- Command 13 --------
+    CmdString = release
+    DisplayName = Release
+    -------- Command 14 --------
+    CmdString = ++showfps
+    DisplayName = Show Framerate (ShowFramerate)
+    -------- Command 15 --------
+    CmdString = sgstats
+    DisplayName = Super Group Stats (SupergroupStats)
+    -------- Command 16 --------
+    CmdString = sgmode
+    DisplayName = Super Group Mode (SupergroupMode)
+    -------- Command 17 --------
+    CmdString = whereami
+    DisplayName = Where Am I (WhereAmI)
+    -------- Command 18 --------
+    CmdString = gamereturn
+    DisplayName = Game Return (GameReturnString)

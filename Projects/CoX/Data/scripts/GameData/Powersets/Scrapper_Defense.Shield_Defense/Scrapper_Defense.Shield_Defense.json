@@ -1,0 +1,38 @@
+{
+  "IsModified": false,
+  "IsNew": false,
+  "Description": "Your mastery over the shield protects you from all forms of attacks in the form of defense as well as some moderate damage resistance to most types of damage.  Your training with the shield enables you to protect your nearby allies boosting their defenses.",
+  "SetName": "Shield_Defense",
+  "FullName": "Scrapper_Defense.Shield_Defense",
+  "ImageName": "ShieldDef.png",
+  "Power": null,
+  "SetType": "Secondary",
+  "DisplayName": "Shield Defense",
+  "nArchetype": 3,
+  "nID": 3051,
+  "SubName": "Shield Defense",
+  "ATClass": "Class_Scrapper",
+  "UIDTrunkSet": "",
+  "nIDTrunkSet": 0,
+  "UIDLinkSecondary": "",
+  "nIDLinkSecondary": 0,
+  "UIDMutexSets": [
+    "Scrapper_Melee.Claws",
+    "Scrapper_Melee.Dual_Blades",
+    "Scrapper_Melee.Katana",
+    "Scrapper_Melee.Quills",
+    "Scrapper_Melee.Staff_Fighting",
+    "Scrapper_Melee.Titan_Weapons"
+  ],
+  "nIDMutexSets": [
+    3056,
+    3058,
+    3061,
+    3064,
+    3065,
+    3067
+  ],
+  "Group": null,
+  "GroupName": "Scrapper_Defense",
+  "Powers": []
+}

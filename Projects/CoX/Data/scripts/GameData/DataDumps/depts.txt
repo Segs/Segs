@@ -1,0 +1,2192 @@
+Using record type: Department
+Dumping 1095 records...
+======== Entry 0 ========
+Name = CL1_Large
+======== Entry 1 ========
+Name = CL1_Medium
+======== Entry 2 ========
+Name = CL1_Small
+======== Entry 3 ========
+Name = CL2_Large
+======== Entry 4 ========
+Name = CL2_Medium
+======== Entry 5 ========
+Name = CL2_Small
+======== Entry 6 ========
+Name = Common (Common)
+======== Entry 7 ========
+Name = Controller_Generic_5to15
+======== Entry 8 ========
+Name = Cybernetic
+======== Entry 9 ========
+Name = Cybernetic1
+======== Entry 10 ========
+Name = Cybernetic10
+======== Entry 11 ========
+Name = Cybernetic15
+======== Entry 12 ========
+Name = Cybernetic20
+======== Entry 13 ========
+Name = Cybernetic25
+======== Entry 14 ========
+Name = Cybernetic30
+======== Entry 15 ========
+Name = Cybernetic35
+======== Entry 16 ========
+Name = Cybernetic40
+======== Entry 17 ========
+Name = Cybernetic45
+======== Entry 18 ========
+Name = Cybernetic5
+======== Entry 19 ========
+Name = Cybernetic50
+======== Entry 20 ========
+Name = Cybernetic55
+======== Entry 21 ========
+Name = Entity
+======== Entry 22 ========
+Name = Entity1
+======== Entry 23 ========
+Name = Entity10
+======== Entry 24 ========
+Name = Entity15
+======== Entry 25 ========
+Name = Entity20
+======== Entry 26 ========
+Name = Entity25
+======== Entry 27 ========
+Name = Entity30
+======== Entry 28 ========
+Name = Entity35
+======== Entry 29 ========
+Name = Entity40
+======== Entry 30 ========
+Name = Entity45
+======== Entry 31 ========
+Name = Entity5
+======== Entry 32 ========
+Name = Entity50
+======== Entry 33 ========
+Name = Entity55
+======== Entry 34 ========
+Name = Experiment
+======== Entry 35 ========
+Name = Experiment1
+======== Entry 36 ========
+Name = Experiment10
+======== Entry 37 ========
+Name = Experiment15
+======== Entry 38 ========
+Name = Experiment20
+======== Entry 39 ========
+Name = Experiment25
+======== Entry 40 ========
+Name = Experiment30
+======== Entry 41 ========
+Name = Experiment35
+======== Entry 42 ========
+Name = Experiment40
+======== Entry 43 ========
+Name = Experiment45
+======== Entry 44 ========
+Name = Experiment5
+======== Entry 45 ========
+Name = Experiment50
+======== Entry 46 ========
+Name = Experiment55
+======== Entry 47 ========
+Name = Focus
+======== Entry 48 ========
+Name = Focus1
+======== Entry 49 ========
+Name = Focus10
+======== Entry 50 ========
+Name = Focus15
+======== Entry 51 ========
+Name = Focus20
+======== Entry 52 ========
+Name = Focus25
+======== Entry 53 ========
+Name = Focus30
+======== Entry 54 ========
+Name = Focus35
+======== Entry 55 ========
+Name = Focus40
+======== Entry 56 ========
+Name = Focus45
+======== Entry 57 ========
+Name = Focus5
+======== Entry 58 ========
+Name = Focus50
+======== Entry 59 ========
+Name = Focus55
+======== Entry 60 ========
+Name = Gadget
+======== Entry 61 ========
+Name = Gadget1
+======== Entry 62 ========
+Name = Gadget10
+======== Entry 63 ========
+Name = Gadget15
+======== Entry 64 ========
+Name = Gadget20
+======== Entry 65 ========
+Name = Gadget25
+======== Entry 66 ========
+Name = Gadget30
+======== Entry 67 ========
+Name = Gadget35
+======== Entry 68 ========
+Name = Gadget40
+======== Entry 69 ========
+Name = Gadget45
+======== Entry 70 ========
+Name = Gadget5
+======== Entry 71 ========
+Name = Gadget50
+======== Entry 72 ========
+Name = Gadget55
+======== Entry 73 ========
+Name = GenAlt1
+======== Entry 74 ========
+Name = GenAlt10
+======== Entry 75 ========
+Name = GenAlt15
+======== Entry 76 ========
+Name = GenAlt20
+======== Entry 77 ========
+Name = GenAlt25
+======== Entry 78 ========
+Name = GenAlt30
+======== Entry 79 ========
+Name = GenAlt35
+======== Entry 80 ========
+Name = GenAlt40
+======== Entry 81 ========
+Name = GenAlt45
+======== Entry 82 ========
+Name = GenAlt5
+======== Entry 83 ========
+Name = GenAlt50
+======== Entry 84 ========
+Name = GenAlt55
+======== Entry 85 ========
+Name = Training (Generic)
+======== Entry 86 ========
+Name = Generic_15to20
+======== Entry 87 ========
+Name = Generic_20to25
+======== Entry 88 ========
+Name = Generic_25to30
+======== Entry 89 ========
+Name = Generic_30to35
+======== Entry 90 ========
+Name = Generic_30to40
+======== Entry 91 ========
+Name = Generic_35to40
+======== Entry 92 ========
+Name = Generic_40to45
+======== Entry 93 ========
+Name = Generic_40to50
+======== Entry 94 ========
+Name = Generic_45to50
+======== Entry 95 ========
+Name = Generic_55
+======== Entry 96 ========
+Name = Generic_5to15
+======== Entry 97 ========
+Name = Generic1
+======== Entry 98 ========
+Name = Generic1_Rest
+======== Entry 99 ========
+Name = Generic10
+======== Entry 100 ========
+Name = Generic15
+======== Entry 101 ========
+Name = Generic20
+======== Entry 102 ========
+Name = Generic25
+======== Entry 103 ========
+Name = Generic30
+======== Entry 104 ========
+Name = Generic35
+======== Entry 105 ========
+Name = Generic40
+======== Entry 106 ========
+Name = Generic45
+======== Entry 107 ========
+Name = Generic5
+======== Entry 108 ========
+Name = Generic50
+======== Entry 109 ========
+Name = Generic55
+======== Entry 110 ========
+Name = GeneticAlteration
+======== Entry 111 ========
+Name = Inspirations_Large
+======== Entry 112 ========
+Name = Inspirations_Medium
+======== Entry 113 ========
+Name = Inspirations_Small
+======== Entry 114 ========
+Name = Invention
+======== Entry 115 ========
+Name = Invention1
+======== Entry 116 ========
+Name = Invention10
+======== Entry 117 ========
+Name = Invention15
+======== Entry 118 ========
+Name = Invention20
+======== Entry 119 ========
+Name = Invention25
+======== Entry 120 ========
+Name = Invention30
+======== Entry 121 ========
+Name = Invention35
+======== Entry 122 ========
+Name = Invention40
+======== Entry 123 ========
+Name = Invention45
+======== Entry 124 ========
+Name = Invention5
+======== Entry 125 ========
+Name = Invention50
+======== Entry 126 ========
+Name = Invention55
+======== Entry 127 ========
+Name = Magic_15to20
+======== Entry 128 ========
+Name = Magic_20to25
+======== Entry 129 ========
+Name = Magic_25to30
+======== Entry 130 ========
+Name = Magic_30to35
+======== Entry 131 ========
+Name = Magic_30to40
+======== Entry 132 ========
+Name = Magic_35to40
+======== Entry 133 ========
+Name = Magic_40to45
+======== Entry 134 ========
+Name = Magic_40to50
+======== Entry 135 ========
+Name = Magic_45to50
+======== Entry 136 ========
+Name = Magic_55
+======== Entry 137 ========
+Name = Magic_5to15
+======== Entry 138 ========
+Name = Mutant_15to20
+======== Entry 139 ========
+Name = Mutant_20to25
+======== Entry 140 ========
+Name = Mutant_25to30
+======== Entry 141 ========
+Name = Mutant_30to35
+======== Entry 142 ========
+Name = Mutant_30to40
+======== Entry 143 ========
+Name = Mutant_35to40
+======== Entry 144 ========
+Name = Mutant_40to45
+======== Entry 145 ========
+Name = Mutant_40to50
+======== Entry 146 ========
+Name = Mutant_45to50
+======== Entry 147 ========
+Name = Mutant_55
+======== Entry 148 ========
+Name = Mutant_5to15
+======== Entry 149 ========
+Name = MutantMagic_15to20
+======== Entry 150 ========
+Name = MutantMagic_20to25
+======== Entry 151 ========
+Name = MutantMagic_25to30
+======== Entry 152 ========
+Name = MutantMagic_30to35
+======== Entry 153 ========
+Name = MutantMagic_30to40
+======== Entry 154 ========
+Name = MutantMagic_35to40
+======== Entry 155 ========
+Name = MutantMagic_40to45
+======== Entry 156 ========
+Name = MutantMagic_40to50
+======== Entry 157 ========
+Name = MutantMagic_45to50
+======== Entry 158 ========
+Name = MutantMagic_55
+======== Entry 159 ========
+Name = MutantMagic_5to15
+======== Entry 160 ========
+Name = MutantScience_15to20
+======== Entry 161 ========
+Name = MutantScience_20to25
+======== Entry 162 ========
+Name = MutantScience_25to30
+======== Entry 163 ========
+Name = MutantScience_30to35
+======== Entry 164 ========
+Name = MutantScience_30to40
+======== Entry 165 ========
+Name = MutantScience_35to40
+======== Entry 166 ========
+Name = MutantScience_40to45
+======== Entry 167 ========
+Name = MutantScience_40to50
+======== Entry 168 ========
+Name = MutantScience_45to50
+======== Entry 169 ========
+Name = MutantScience_55
+======== Entry 170 ========
+Name = MutantScience_5to15
+======== Entry 171 ========
+Name = Mutation (Mutation)
+======== Entry 172 ========
+Name = Mutation1
+======== Entry 173 ========
+Name = Mutation10
+======== Entry 174 ========
+Name = Mutation15
+======== Entry 175 ========
+Name = Mutation20
+======== Entry 176 ========
+Name = Mutation25
+======== Entry 177 ========
+Name = Mutation30
+======== Entry 178 ========
+Name = Mutation35
+======== Entry 179 ========
+Name = Mutation40
+======== Entry 180 ========
+Name = Mutation45
+======== Entry 181 ========
+Name = Mutation5
+======== Entry 182 ========
+Name = Mutation50
+======== Entry 183 ========
+Name = Mutation55
+======== Entry 184 ========
+Name = Natural_15to20
+======== Entry 185 ========
+Name = Natural_20to25
+======== Entry 186 ========
+Name = Natural_25to30
+======== Entry 187 ========
+Name = Natural_30to35
+======== Entry 188 ========
+Name = Natural_30to40
+======== Entry 189 ========
+Name = Natural_35to40
+======== Entry 190 ========
+Name = Natural_40to45
+======== Entry 191 ========
+Name = Natural_40to50
+======== Entry 192 ========
+Name = Natural_45to50
+======== Entry 193 ========
+Name = Natural_55
+======== Entry 194 ========
+Name = Natural_5to15
+======== Entry 195 ========
+Name = NaturalMagic_15to20
+======== Entry 196 ========
+Name = NaturalMagic_20to25
+======== Entry 197 ========
+Name = NaturalMagic_25to30
+======== Entry 198 ========
+Name = NaturalMagic_30to35
+======== Entry 199 ========
+Name = NaturalMagic_30to40
+======== Entry 200 ========
+Name = NaturalMagic_35to40
+======== Entry 201 ========
+Name = NaturalMagic_40to45
+======== Entry 202 ========
+Name = NaturalMagic_40to50
+======== Entry 203 ========
+Name = NaturalMagic_45to50
+======== Entry 204 ========
+Name = NaturalMagic_55
+======== Entry 205 ========
+Name = NaturalMagic_5to15
+======== Entry 206 ========
+Name = Power5_Cybernetic1
+======== Entry 207 ========
+Name = Power5_Cybernetic10
+======== Entry 208 ========
+Name = Power5_Cybernetic15
+======== Entry 209 ========
+Name = Power5_Cybernetic20
+======== Entry 210 ========
+Name = Power5_Cybernetic25
+======== Entry 211 ========
+Name = Power5_Cybernetic30
+======== Entry 212 ========
+Name = Power5_Cybernetic35
+======== Entry 213 ========
+Name = Power5_Cybernetic40
+======== Entry 214 ========
+Name = Power5_Cybernetic45
+======== Entry 215 ========
+Name = Power5_Cybernetic5
+======== Entry 216 ========
+Name = Power5_Cybernetic50
+======== Entry 217 ========
+Name = Power5_Cybernetic55
+======== Entry 218 ========
+Name = Power5_Entity1
+======== Entry 219 ========
+Name = Power5_Entity10
+======== Entry 220 ========
+Name = Power5_Entity15
+======== Entry 221 ========
+Name = Power5_Entity20
+======== Entry 222 ========
+Name = Power5_Entity25
+======== Entry 223 ========
+Name = Power5_Entity30
+======== Entry 224 ========
+Name = Power5_Entity35
+======== Entry 225 ========
+Name = Power5_Entity40
+======== Entry 226 ========
+Name = Power5_Entity45
+======== Entry 227 ========
+Name = Power5_Entity5
+======== Entry 228 ========
+Name = Power5_Entity50
+======== Entry 229 ========
+Name = Power5_Entity55
+======== Entry 230 ========
+Name = Power5_Experiment1
+======== Entry 231 ========
+Name = Power5_Experiment10
+======== Entry 232 ========
+Name = Power5_Experiment15
+======== Entry 233 ========
+Name = Power5_Experiment20
+======== Entry 234 ========
+Name = Power5_Experiment25
+======== Entry 235 ========
+Name = Power5_Experiment30
+======== Entry 236 ========
+Name = Power5_Experiment35
+======== Entry 237 ========
+Name = Power5_Experiment40
+======== Entry 238 ========
+Name = Power5_Experiment45
+======== Entry 239 ========
+Name = Power5_Experiment5
+======== Entry 240 ========
+Name = Power5_Experiment50
+======== Entry 241 ========
+Name = Power5_Experiment55
+======== Entry 242 ========
+Name = Power5_Focus1
+======== Entry 243 ========
+Name = Power5_Focus10
+======== Entry 244 ========
+Name = Power5_Focus15
+======== Entry 245 ========
+Name = Power5_Focus20
+======== Entry 246 ========
+Name = Power5_Focus25
+======== Entry 247 ========
+Name = Power5_Focus30
+======== Entry 248 ========
+Name = Power5_Focus35
+======== Entry 249 ========
+Name = Power5_Focus40
+======== Entry 250 ========
+Name = Power5_Focus45
+======== Entry 251 ========
+Name = Power5_Focus5
+======== Entry 252 ========
+Name = Power5_Focus50
+======== Entry 253 ========
+Name = Power5_Focus55
+======== Entry 254 ========
+Name = Power5_Gadget1
+======== Entry 255 ========
+Name = Power5_Gadget10
+======== Entry 256 ========
+Name = Power5_Gadget15
+======== Entry 257 ========
+Name = Power5_Gadget20
+======== Entry 258 ========
+Name = Power5_Gadget25
+======== Entry 259 ========
+Name = Power5_Gadget30
+======== Entry 260 ========
+Name = Power5_Gadget35
+======== Entry 261 ========
+Name = Power5_Gadget40
+======== Entry 262 ========
+Name = Power5_Gadget45
+======== Entry 263 ========
+Name = Power5_Gadget5
+======== Entry 264 ========
+Name = Power5_Gadget50
+======== Entry 265 ========
+Name = Power5_Gadget55
+======== Entry 266 ========
+Name = Power5_GenAlt1
+======== Entry 267 ========
+Name = Power5_GenAlt10
+======== Entry 268 ========
+Name = Power5_GenAlt15
+======== Entry 269 ========
+Name = Power5_GenAlt20
+======== Entry 270 ========
+Name = Power5_GenAlt25
+======== Entry 271 ========
+Name = Power5_GenAlt30
+======== Entry 272 ========
+Name = Power5_GenAlt35
+======== Entry 273 ========
+Name = Power5_GenAlt40
+======== Entry 274 ========
+Name = Power5_GenAlt45
+======== Entry 275 ========
+Name = Power5_GenAlt5
+======== Entry 276 ========
+Name = Power5_GenAlt50
+======== Entry 277 ========
+Name = Power5_GenAlt55
+======== Entry 278 ========
+Name = Power5_Generic_15to20
+======== Entry 279 ========
+Name = Power5_Generic_25to30
+======== Entry 280 ========
+Name = Power5_Generic_30to40
+======== Entry 281 ========
+Name = Power5_Generic_40to50
+======== Entry 282 ========
+Name = Power5_Generic_55
+======== Entry 283 ========
+Name = Power5_Generic_5to15
+======== Entry 284 ========
+Name = Power5_Generic1
+======== Entry 285 ========
+Name = Power5_Generic10
+======== Entry 286 ========
+Name = Power5_Generic15
+======== Entry 287 ========
+Name = Power5_Generic20
+======== Entry 288 ========
+Name = Power5_Generic25
+======== Entry 289 ========
+Name = Power5_Generic30
+======== Entry 290 ========
+Name = Power5_Generic35
+======== Entry 291 ========
+Name = Power5_Generic40
+======== Entry 292 ========
+Name = Power5_Generic45
+======== Entry 293 ========
+Name = Power5_Generic5
+======== Entry 294 ========
+Name = Power5_Generic50
+======== Entry 295 ========
+Name = Power5_Generic55
+======== Entry 296 ========
+Name = Power5_Invention1
+======== Entry 297 ========
+Name = Power5_Invention10
+======== Entry 298 ========
+Name = Power5_Invention15
+======== Entry 299 ========
+Name = Power5_Invention20
+======== Entry 300 ========
+Name = Power5_Invention25
+======== Entry 301 ========
+Name = Power5_Invention30
+======== Entry 302 ========
+Name = Power5_Invention35
+======== Entry 303 ========
+Name = Power5_Invention40
+======== Entry 304 ========
+Name = Power5_Invention45
+======== Entry 305 ========
+Name = Power5_Invention5
+======== Entry 306 ========
+Name = Power5_Invention50
+======== Entry 307 ========
+Name = Power5_Invention55
+======== Entry 308 ========
+Name = Power5_Magic_15to20
+======== Entry 309 ========
+Name = Power5_Magic_25to30
+======== Entry 310 ========
+Name = Power5_Magic_30to40
+======== Entry 311 ========
+Name = Power5_Magic_40to50
+======== Entry 312 ========
+Name = Power5_Magic_55
+======== Entry 313 ========
+Name = Power5_Magic_5to15
+======== Entry 314 ========
+Name = Power5_Mutant_15to20
+======== Entry 315 ========
+Name = Power5_Mutant_25to30
+======== Entry 316 ========
+Name = Power5_Mutant_30to40
+======== Entry 317 ========
+Name = Power5_Mutant_40to50
+======== Entry 318 ========
+Name = Power5_Mutant_55
+======== Entry 319 ========
+Name = Power5_Mutant_5to15
+======== Entry 320 ========
+Name = Power5_MutantMagic_15to20
+======== Entry 321 ========
+Name = Power5_MutantMagic_25to30
+======== Entry 322 ========
+Name = Power5_MutantMagic_30to40
+======== Entry 323 ========
+Name = Power5_MutantMagic_40to50
+======== Entry 324 ========
+Name = Power5_MutantMagic_55
+======== Entry 325 ========
+Name = Power5_MutantMagic_5to15
+======== Entry 326 ========
+Name = Power5_MutantScience_15to20
+======== Entry 327 ========
+Name = Power5_MutantScience_25to30
+======== Entry 328 ========
+Name = Power5_MutantScience_30to40
+======== Entry 329 ========
+Name = Power5_MutantScience_40to50
+======== Entry 330 ========
+Name = Power5_MutantScience_55
+======== Entry 331 ========
+Name = Power5_MutantScience_5to15
+======== Entry 332 ========
+Name = Power5_Mutation1
+======== Entry 333 ========
+Name = Power5_Mutation10
+======== Entry 334 ========
+Name = Power5_Mutation15
+======== Entry 335 ========
+Name = Power5_Mutation20
+======== Entry 336 ========
+Name = Power5_Mutation25
+======== Entry 337 ========
+Name = Power5_Mutation30
+======== Entry 338 ========
+Name = Power5_Mutation35
+======== Entry 339 ========
+Name = Power5_Mutation40
+======== Entry 340 ========
+Name = Power5_Mutation45
+======== Entry 341 ========
+Name = Power5_Mutation5
+======== Entry 342 ========
+Name = Power5_Mutation50
+======== Entry 343 ========
+Name = Power5_Mutation55
+======== Entry 344 ========
+Name = Power5_Natural_15to20
+======== Entry 345 ========
+Name = Power5_Natural_25to30
+======== Entry 346 ========
+Name = Power5_Natural_30to40
+======== Entry 347 ========
+Name = Power5_Natural_40to50
+======== Entry 348 ========
+Name = Power5_Natural_55
+======== Entry 349 ========
+Name = Power5_Natural_5to15
+======== Entry 350 ========
+Name = Power5_NaturalMagic_15to20
+======== Entry 351 ========
+Name = Power5_NaturalMagic_25to30
+======== Entry 352 ========
+Name = Power5_NaturalMagic_30to40
+======== Entry 353 ========
+Name = Power5_NaturalMagic_40to50
+======== Entry 354 ========
+Name = Power5_NaturalMagic_55
+======== Entry 355 ========
+Name = Power5_NaturalMagic_5to15
+======== Entry 356 ========
+Name = Power5_Relic1
+======== Entry 357 ========
+Name = Power5_Relic10
+======== Entry 358 ========
+Name = Power5_Relic15
+======== Entry 359 ========
+Name = Power5_Relic20
+======== Entry 360 ========
+Name = Power5_Relic25
+======== Entry 361 ========
+Name = Power5_Relic30
+======== Entry 362 ========
+Name = Power5_Relic35
+======== Entry 363 ========
+Name = Power5_Relic40
+======== Entry 364 ========
+Name = Power5_Relic45
+======== Entry 365 ========
+Name = Power5_Relic5
+======== Entry 366 ========
+Name = Power5_Relic50
+======== Entry 367 ========
+Name = Power5_Relic55
+======== Entry 368 ========
+Name = Power5_Science_15to20
+======== Entry 369 ========
+Name = Power5_Science_25to30
+======== Entry 370 ========
+Name = Power5_Science_30to40
+======== Entry 371 ========
+Name = Power5_Science_40to50
+======== Entry 372 ========
+Name = Power5_Science_55
+======== Entry 373 ========
+Name = Power5_Science_5to15
+======== Entry 374 ========
+Name = Power5_ScienceTechnology_15to20
+======== Entry 375 ========
+Name = Power5_ScienceTechnology_25to30
+======== Entry 376 ========
+Name = Power5_ScienceTechnology_30to40
+======== Entry 377 ========
+Name = Power5_ScienceTechnology_40to50
+======== Entry 378 ========
+Name = Power5_ScienceTechnology_55
+======== Entry 379 ========
+Name = Power5_ScienceTechnology_5to15
+======== Entry 380 ========
+Name = Power5_Technique1
+======== Entry 381 ========
+Name = Power5_Technique10
+======== Entry 382 ========
+Name = Power5_Technique15
+======== Entry 383 ========
+Name = Power5_Technique20
+======== Entry 384 ========
+Name = Power5_Technique25
+======== Entry 385 ========
+Name = Power5_Technique30
+======== Entry 386 ========
+Name = Power5_Technique35
+======== Entry 387 ========
+Name = Power5_Technique40
+======== Entry 388 ========
+Name = Power5_Technique45
+======== Entry 389 ========
+Name = Power5_Technique5
+======== Entry 390 ========
+Name = Power5_Technique50
+======== Entry 391 ========
+Name = Power5_Technique55
+======== Entry 392 ========
+Name = Power5_Technology_15to20
+======== Entry 393 ========
+Name = Power5_Technology_25to30
+======== Entry 394 ========
+Name = Power5_Technology_30to40
+======== Entry 395 ========
+Name = Power5_Technology_40to50
+======== Entry 396 ========
+Name = Power5_Technology_55
+======== Entry 397 ========
+Name = Power5_Technology_5to15
+======== Entry 398 ========
+Name = Power5_TechnologyNatural_15to20
+======== Entry 399 ========
+Name = Power5_TechnologyNatural_25to30
+======== Entry 400 ========
+Name = Power5_TechnologyNatural_30to40
+======== Entry 401 ========
+Name = Power5_TechnologyNatural_40to50
+======== Entry 402 ========
+Name = Power5_TechnologyNatural_55
+======== Entry 403 ========
+Name = Power5_TechnologyNatural_5to15
+======== Entry 404 ========
+Name = Rare (Rare)
+======== Entry 405 ========
+Name = Relic
+======== Entry 406 ========
+Name = Relic1
+======== Entry 407 ========
+Name = Relic10
+======== Entry 408 ========
+Name = Relic15
+======== Entry 409 ========
+Name = Relic20
+======== Entry 410 ========
+Name = Relic25
+======== Entry 411 ========
+Name = Relic30
+======== Entry 412 ========
+Name = Relic35
+======== Entry 413 ========
+Name = Relic40
+======== Entry 414 ========
+Name = Relic45
+======== Entry 415 ========
+Name = Relic5
+======== Entry 416 ========
+Name = Relic50
+======== Entry 417 ========
+Name = Relic55
+======== Entry 418 ========
+Name = Science_15to20
+======== Entry 419 ========
+Name = Science_20to25
+======== Entry 420 ========
+Name = Science_25to30
+======== Entry 421 ========
+Name = Science_30to35
+======== Entry 422 ========
+Name = Science_30to40
+======== Entry 423 ========
+Name = Science_35to40
+======== Entry 424 ========
+Name = Science_40to45
+======== Entry 425 ========
+Name = Science_40to50
+======== Entry 426 ========
+Name = Science_45to50
+======== Entry 427 ========
+Name = Science_55
+======== Entry 428 ========
+Name = Science_5to15
+======== Entry 429 ========
+Name = ScienceTechnology_15to20
+======== Entry 430 ========
+Name = ScienceTechnology_20to25
+======== Entry 431 ========
+Name = ScienceTechnology_25to30
+======== Entry 432 ========
+Name = ScienceTechnology_30to35
+======== Entry 433 ========
+Name = ScienceTechnology_30to40
+======== Entry 434 ========
+Name = ScienceTechnology_35to40
+======== Entry 435 ========
+Name = ScienceTechnology_40to45
+======== Entry 436 ========
+Name = ScienceTechnology_40to50
+======== Entry 437 ========
+Name = ScienceTechnology_45to50
+======== Entry 438 ========
+Name = ScienceTechnology_55
+======== Entry 439 ========
+Name = ScienceTechnology_5to15
+======== Entry 440 ========
+Name = Technique
+======== Entry 441 ========
+Name = Technique1
+======== Entry 442 ========
+Name = Technique10
+======== Entry 443 ========
+Name = Technique15
+======== Entry 444 ========
+Name = Technique20
+======== Entry 445 ========
+Name = Technique25
+======== Entry 446 ========
+Name = Technique30
+======== Entry 447 ========
+Name = Technique35
+======== Entry 448 ========
+Name = Technique40
+======== Entry 449 ========
+Name = Technique45
+======== Entry 450 ========
+Name = Technique5
+======== Entry 451 ========
+Name = Technique50
+======== Entry 452 ========
+Name = Technique55
+======== Entry 453 ========
+Name = Technology_15to20
+======== Entry 454 ========
+Name = Technology_20to25
+======== Entry 455 ========
+Name = Technology_25to30
+======== Entry 456 ========
+Name = Technology_30to35
+======== Entry 457 ========
+Name = Technology_30to40
+======== Entry 458 ========
+Name = Technology_35to40
+======== Entry 459 ========
+Name = Technology_40to45
+======== Entry 460 ========
+Name = Technology_40to50
+======== Entry 461 ========
+Name = Technology_45to50
+======== Entry 462 ========
+Name = Technology_55
+======== Entry 463 ========
+Name = Technology_5to15
+======== Entry 464 ========
+Name = TechnologyNatural_15to20
+======== Entry 465 ========
+Name = TechnologyNatural_20to25
+======== Entry 466 ========
+Name = TechnologyNatural_25to30
+======== Entry 467 ========
+Name = TechnologyNatural_30to35
+======== Entry 468 ========
+Name = TechnologyNatural_30to40
+======== Entry 469 ========
+Name = TechnologyNatural_35to40
+======== Entry 470 ========
+Name = TechnologyNatural_40to45
+======== Entry 471 ========
+Name = TechnologyNatural_40to50
+======== Entry 472 ========
+Name = TechnologyNatural_45to50
+======== Entry 473 ========
+Name = TechnologyNatural_55
+======== Entry 474 ========
+Name = TechnologyNatural_5to15
+======== Entry 475 ========
+Name = Temporary_Powers
+======== Entry 476 ========
+Name = Uncommon (Uncommon)
+======== Entry 477 ========
+Name = Technology_ToHit_DeBuff_15
+======== Entry 478 ========
+Name = Technology_ToHit_Buff_15
+======== Entry 479 ========
+Name = Technology_Taunt_15
+======== Entry 480 ========
+Name = Technology_Snare_15
+======== Entry 481 ========
+Name = Technology_Sleep_15
+======== Entry 482 ========
+Name = Technology_Run_15
+======== Entry 483 ========
+Name = Technology_Recovery_15
+======== Entry 484 ========
+Name = Technology_Natural_ToHit_DeBuff_15
+======== Entry 485 ========
+Name = Technology_Natural_ToHit_Buff_15
+======== Entry 486 ========
+Name = Technology_Natural_Taunt_15
+======== Entry 487 ========
+Name = Technology_Natural_Snare_15
+======== Entry 488 ========
+Name = Technology_Natural_Sleep_15
+======== Entry 489 ========
+Name = Technology_Natural_Run_15
+======== Entry 490 ========
+Name = Technology_Natural_Recovery_15
+======== Entry 491 ========
+Name = Technology_Natural_Knockback_15
+======== Entry 492 ========
+Name = Technology_Natural_Jump_15
+======== Entry 493 ========
+Name = Technology_Natural_Interrupt_15
+======== Entry 494 ========
+Name = Technology_Natural_Intangible_15
+======== Entry 495 ========
+Name = Technology_Natural_Immobilize_15
+======== Entry 496 ========
+Name = Technology_Natural_Fly_15
+======== Entry 497 ========
+Name = Technology_Natural_Fear_15
+======== Entry 498 ========
+Name = Technology_Natural_Drain_Endurance_15
+======== Entry 499 ========
+Name = Technology_Natural_Defense_DeBuff_15
+======== Entry 500 ========
+Name = Technology_Natural_Confuse_15
+======== Entry 501 ========
+Name = Technology_Natural_Cone_15
+======== Entry 502 ========
+Name = Technology_Knockback_15
+======== Entry 503 ========
+Name = Technology_Jump_15
+======== Entry 504 ========
+Name = Technology_Interrupt_15
+======== Entry 505 ========
+Name = Technology_Intangible_15
+======== Entry 506 ========
+Name = Technology_Immobilize_15
+======== Entry 507 ========
+Name = Technology_Fly_15
+======== Entry 508 ========
+Name = Technology_Fear_15
+======== Entry 509 ========
+Name = Technology_Drain_Endurance_15
+======== Entry 510 ========
+Name = Technology_Defense_DeBuff_15
+======== Entry 511 ========
+Name = Technology_Confuse_15
+======== Entry 512 ========
+Name = Technology_Cone_15
+======== Entry 513 ========
+Name = Science_ToHit_DeBuff_15
+======== Entry 514 ========
+Name = Science_ToHit_Buff_15
+======== Entry 515 ========
+Name = Science_Technology_ToHit_DeBuff_15
+======== Entry 516 ========
+Name = Science_Technology_ToHit_Buff_15
+======== Entry 517 ========
+Name = Science_Technology_Taunt_15
+======== Entry 518 ========
+Name = Science_Technology_Snare_15
+======== Entry 519 ========
+Name = Science_Technology_Sleep_15
+======== Entry 520 ========
+Name = Science_Technology_Run_15
+======== Entry 521 ========
+Name = Science_Technology_Recovery_15
+======== Entry 522 ========
+Name = Science_Technology_Knockback_15
+======== Entry 523 ========
+Name = Science_Technology_Jump_15
+======== Entry 524 ========
+Name = Science_Technology_Interrupt_15
+======== Entry 525 ========
+Name = Science_Technology_Intangible_15
+======== Entry 526 ========
+Name = Science_Technology_Immobilize_15
+======== Entry 527 ========
+Name = Science_Technology_Fly_15
+======== Entry 528 ========
+Name = Science_Technology_Fear_15
+======== Entry 529 ========
+Name = Science_Technology_Drain_Endurance_15
+======== Entry 530 ========
+Name = Science_Technology_Defense_DeBuff_15
+======== Entry 531 ========
+Name = Science_Technology_Confuse_15
+======== Entry 532 ========
+Name = Science_Technology_Cone_15
+======== Entry 533 ========
+Name = Science_Taunt_15
+======== Entry 534 ========
+Name = Science_Snare_15
+======== Entry 535 ========
+Name = Science_Sleep_15
+======== Entry 536 ========
+Name = Science_Run_15
+======== Entry 537 ========
+Name = Science_Recovery_15
+======== Entry 538 ========
+Name = Science_Knockback_15
+======== Entry 539 ========
+Name = Science_Jump_15
+======== Entry 540 ========
+Name = Science_Interrupt_15
+======== Entry 541 ========
+Name = Science_Intangible_15
+======== Entry 542 ========
+Name = Science_Immobilize_15
+======== Entry 543 ========
+Name = Science_Fly_15
+======== Entry 544 ========
+Name = Science_Fear_15
+======== Entry 545 ========
+Name = Science_Drain_Endurance_15
+======== Entry 546 ========
+Name = Science_Defense_DeBuff_15
+======== Entry 547 ========
+Name = Science_Confuse_15
+======== Entry 548 ========
+Name = Science_Cone_15
+======== Entry 549 ========
+Name = Natural_ToHit_DeBuff_15
+======== Entry 550 ========
+Name = Natural_ToHit_Buff_15
+======== Entry 551 ========
+Name = Natural_Taunt_15
+======== Entry 552 ========
+Name = Natural_Snare_15
+======== Entry 553 ========
+Name = Natural_Sleep_15
+======== Entry 554 ========
+Name = Natural_Run_15
+======== Entry 555 ========
+Name = Natural_Recovery_15
+======== Entry 556 ========
+Name = Natural_Magic_ToHit_DeBuff_15
+======== Entry 557 ========
+Name = Natural_Magic_ToHit_Buff_15
+======== Entry 558 ========
+Name = Natural_Magic_Taunt_15
+======== Entry 559 ========
+Name = Natural_Magic_Snare_15
+======== Entry 560 ========
+Name = Natural_Magic_Sleep_15
+======== Entry 561 ========
+Name = Natural_Magic_Run_15
+======== Entry 562 ========
+Name = Natural_Magic_Recovery_15
+======== Entry 563 ========
+Name = Natural_Magic_Knockback_15
+======== Entry 564 ========
+Name = Natural_Magic_Jump_15
+======== Entry 565 ========
+Name = Natural_Magic_Interrupt_15
+======== Entry 566 ========
+Name = Natural_Magic_Intangible_15
+======== Entry 567 ========
+Name = Natural_Magic_Immobilize_15
+======== Entry 568 ========
+Name = Natural_Magic_Fly_15
+======== Entry 569 ========
+Name = Natural_Magic_Fear_15
+======== Entry 570 ========
+Name = Natural_Magic_Drain_Endurance_15
+======== Entry 571 ========
+Name = Natural_Magic_Defense_DeBuff_15
+======== Entry 572 ========
+Name = Natural_Magic_Confuse_15
+======== Entry 573 ========
+Name = Natural_Magic_Cone_15
+======== Entry 574 ========
+Name = Natural_Knockback_15
+======== Entry 575 ========
+Name = Natural_Jump_15
+======== Entry 576 ========
+Name = Natural_Interrupt_15
+======== Entry 577 ========
+Name = Natural_Intangible_15
+======== Entry 578 ========
+Name = Natural_Immobilize_15
+======== Entry 579 ========
+Name = Natural_Fly_15
+======== Entry 580 ========
+Name = Natural_Fear_15
+======== Entry 581 ========
+Name = Natural_Drain_Endurance_15
+======== Entry 582 ========
+Name = Natural_Defense_DeBuff_15
+======== Entry 583 ========
+Name = Natural_Confuse_15
+======== Entry 584 ========
+Name = Natural_Cone_15
+======== Entry 585 ========
+Name = Mutation_ToHit_DeBuff_15
+======== Entry 586 ========
+Name = Mutation_ToHit_Buff_15
+======== Entry 587 ========
+Name = Mutation_Taunt_15
+======== Entry 588 ========
+Name = Mutation_Snare_15
+======== Entry 589 ========
+Name = Mutation_Sleep_15
+======== Entry 590 ========
+Name = Mutation_Science_ToHit_DeBuff_15
+======== Entry 591 ========
+Name = Mutation_Science_ToHit_Buff_15
+======== Entry 592 ========
+Name = Mutation_Science_Taunt_15
+======== Entry 593 ========
+Name = Mutation_Science_Snare_15
+======== Entry 594 ========
+Name = Mutation_Science_Sleep_15
+======== Entry 595 ========
+Name = Mutation_Science_Run_15
+======== Entry 596 ========
+Name = Mutation_Science_Recovery_15
+======== Entry 597 ========
+Name = Mutation_Science_Knockback_15
+======== Entry 598 ========
+Name = Mutation_Science_Jump_15
+======== Entry 599 ========
+Name = Mutation_Science_Interrupt_15
+======== Entry 600 ========
+Name = Mutation_Science_Intangible_15
+======== Entry 601 ========
+Name = Mutation_Science_Immobilize_15
+======== Entry 602 ========
+Name = Mutation_Science_Fly_15
+======== Entry 603 ========
+Name = Mutation_Science_Fear_15
+======== Entry 604 ========
+Name = Mutation_Science_Drain_Endurance_15
+======== Entry 605 ========
+Name = Mutation_Science_Defense_DeBuff_15
+======== Entry 606 ========
+Name = Mutation_Science_Confuse_15
+======== Entry 607 ========
+Name = Mutation_Science_Cone_15
+======== Entry 608 ========
+Name = Mutation_Run_15
+======== Entry 609 ========
+Name = Mutation_Recovery_15
+======== Entry 610 ========
+Name = Mutation_Magic_ToHit_DeBuff_15
+======== Entry 611 ========
+Name = Mutation_Magic_ToHit_Buff_15
+======== Entry 612 ========
+Name = Mutation_Magic_Taunt_15
+======== Entry 613 ========
+Name = Mutation_Magic_Snare_15
+======== Entry 614 ========
+Name = Mutation_Magic_Sleep_15
+======== Entry 615 ========
+Name = Mutation_Magic_Run_15
+======== Entry 616 ========
+Name = Mutation_Magic_Recovery_15
+======== Entry 617 ========
+Name = Mutation_Magic_Knockback_15
+======== Entry 618 ========
+Name = Mutation_Magic_Jump_15
+======== Entry 619 ========
+Name = Mutation_Magic_Interrupt_15
+======== Entry 620 ========
+Name = Mutation_Magic_Intangible_15
+======== Entry 621 ========
+Name = Mutation_Magic_Immobilize_15
+======== Entry 622 ========
+Name = Mutation_Magic_Fly_15
+======== Entry 623 ========
+Name = Mutation_Magic_Fear_15
+======== Entry 624 ========
+Name = Mutation_Magic_Drain_Endurance_15
+======== Entry 625 ========
+Name = Mutation_Magic_Defense_DeBuff_15
+======== Entry 626 ========
+Name = Mutation_Magic_Confuse_15
+======== Entry 627 ========
+Name = Mutation_Magic_Cone_15
+======== Entry 628 ========
+Name = Mutation_Knockback_15
+======== Entry 629 ========
+Name = Mutation_Jump_15
+======== Entry 630 ========
+Name = Mutation_Interrupt_15
+======== Entry 631 ========
+Name = Mutation_Intangible_15
+======== Entry 632 ========
+Name = Mutation_Immobilize_15
+======== Entry 633 ========
+Name = Mutation_Fly_15
+======== Entry 634 ========
+Name = Mutation_Fear_15
+======== Entry 635 ========
+Name = Mutation_Drain_Endurance_15
+======== Entry 636 ========
+Name = Mutation_Defense_DeBuff_15
+======== Entry 637 ========
+Name = Mutation_Confuse_15
+======== Entry 638 ========
+Name = Mutation_Cone_15
+======== Entry 639 ========
+Name = Magic_ToHit_DeBuff_15
+======== Entry 640 ========
+Name = Magic_ToHit_Buff_15
+======== Entry 641 ========
+Name = Magic_Taunt_15
+======== Entry 642 ========
+Name = Magic_Snare_15
+======== Entry 643 ========
+Name = Magic_Sleep_15
+======== Entry 644 ========
+Name = Magic_Run_15
+======== Entry 645 ========
+Name = Magic_Recovery_15
+======== Entry 646 ========
+Name = Magic_Knockback_15
+======== Entry 647 ========
+Name = Magic_Jump_15
+======== Entry 648 ========
+Name = Magic_Interrupt_15
+======== Entry 649 ========
+Name = Magic_Intangible_15
+======== Entry 650 ========
+Name = Magic_Immobilize_15
+======== Entry 651 ========
+Name = Magic_Fly_15
+======== Entry 652 ========
+Name = Magic_Fear_15
+======== Entry 653 ========
+Name = Magic_Drain_Endurance_15
+======== Entry 654 ========
+Name = Magic_Defense_DeBuff_15
+======== Entry 655 ========
+Name = Magic_Confuse_15
+======== Entry 656 ========
+Name = Magic_Cone_15
+======== Entry 657 ========
+Name = Generic_ToHit_DeBuff_15
+======== Entry 658 ========
+Name = Generic_ToHit_Buff_15
+======== Entry 659 ========
+Name = Generic_Taunt_15
+======== Entry 660 ========
+Name = Generic_Snare_15
+======== Entry 661 ========
+Name = Generic_Sleep_15
+======== Entry 662 ========
+Name = Generic_Run_15
+======== Entry 663 ========
+Name = Generic_Recovery_15
+======== Entry 664 ========
+Name = Generic_Knockback_15
+======== Entry 665 ========
+Name = Generic_Jump_15
+======== Entry 666 ========
+Name = Generic_Interrupt_15
+======== Entry 667 ========
+Name = Generic_Intangible_15
+======== Entry 668 ========
+Name = Generic_Immobilize_15
+======== Entry 669 ========
+Name = Generic_Fly_15
+======== Entry 670 ========
+Name = Generic_Fear_15
+======== Entry 671 ========
+Name = Generic_Drain_Endurance_15
+======== Entry 672 ========
+Name = Generic_Defense_DeBuff_15
+======== Entry 673 ========
+Name = Generic_Confuse_15
+======== Entry 674 ========
+Name = Generic_Cone_15
+======== Entry 675 ========
+Name = Technology_ToHit_DeBuff_25
+======== Entry 676 ========
+Name = Technology_ToHit_Buff_25
+======== Entry 677 ========
+Name = Technology_Taunt_25
+======== Entry 678 ========
+Name = Technology_Snare_25
+======== Entry 679 ========
+Name = Technology_Sleep_25
+======== Entry 680 ========
+Name = Technology_Run_25
+======== Entry 681 ========
+Name = Technology_Recovery_25
+======== Entry 682 ========
+Name = Technology_Natural_ToHit_DeBuff_25
+======== Entry 683 ========
+Name = Technology_Natural_ToHit_Buff_25
+======== Entry 684 ========
+Name = Technology_Natural_Taunt_25
+======== Entry 685 ========
+Name = Technology_Natural_Snare_25
+======== Entry 686 ========
+Name = Technology_Natural_Sleep_25
+======== Entry 687 ========
+Name = Technology_Natural_Run_25
+======== Entry 688 ========
+Name = Technology_Natural_Recovery_25
+======== Entry 689 ========
+Name = Technology_Natural_Knockback_25
+======== Entry 690 ========
+Name = Technology_Natural_Jump_25
+======== Entry 691 ========
+Name = Technology_Natural_Interrupt_25
+======== Entry 692 ========
+Name = Technology_Natural_Intangible_25
+======== Entry 693 ========
+Name = Technology_Natural_Immobilize_25
+======== Entry 694 ========
+Name = Technology_Natural_Fly_25
+======== Entry 695 ========
+Name = Technology_Natural_Fear_25
+======== Entry 696 ========
+Name = Technology_Natural_Drain_Endurance_25
+======== Entry 697 ========
+Name = Technology_Natural_Defense_DeBuff_25
+======== Entry 698 ========
+Name = Technology_Natural_Confuse_25
+======== Entry 699 ========
+Name = Technology_Natural_Cone_25
+======== Entry 700 ========
+Name = Technology_Knockback_25
+======== Entry 701 ========
+Name = Technology_Jump_25
+======== Entry 702 ========
+Name = Technology_Interrupt_25
+======== Entry 703 ========
+Name = Technology_Intangible_25
+======== Entry 704 ========
+Name = Technology_Immobilize_25
+======== Entry 705 ========
+Name = Technology_Fly_25
+======== Entry 706 ========
+Name = Technology_Fear_25
+======== Entry 707 ========
+Name = Technology_Drain_Endurance_25
+======== Entry 708 ========
+Name = Technology_Defense_DeBuff_25
+======== Entry 709 ========
+Name = Technology_Confuse_25
+======== Entry 710 ========
+Name = Technology_Cone_25
+======== Entry 711 ========
+Name = Science_ToHit_DeBuff_25
+======== Entry 712 ========
+Name = Science_ToHit_Buff_25
+======== Entry 713 ========
+Name = Science_Technology_ToHit_DeBuff_25
+======== Entry 714 ========
+Name = Science_Technology_ToHit_Buff_25
+======== Entry 715 ========
+Name = Science_Technology_Taunt_25
+======== Entry 716 ========
+Name = Science_Technology_Snare_25
+======== Entry 717 ========
+Name = Science_Technology_Sleep_25
+======== Entry 718 ========
+Name = Science_Technology_Run_25
+======== Entry 719 ========
+Name = Science_Technology_Recovery_25
+======== Entry 720 ========
+Name = Science_Technology_Knockback_25
+======== Entry 721 ========
+Name = Science_Technology_Jump_25
+======== Entry 722 ========
+Name = Science_Technology_Interrupt_25
+======== Entry 723 ========
+Name = Science_Technology_Intangible_25
+======== Entry 724 ========
+Name = Science_Technology_Immobilize_25
+======== Entry 725 ========
+Name = Science_Technology_Fly_25
+======== Entry 726 ========
+Name = Science_Technology_Fear_25
+======== Entry 727 ========
+Name = Science_Technology_Drain_Endurance_25
+======== Entry 728 ========
+Name = Science_Technology_Defense_DeBuff_25
+======== Entry 729 ========
+Name = Science_Technology_Confuse_25
+======== Entry 730 ========
+Name = Science_Technology_Cone_25
+======== Entry 731 ========
+Name = Science_Taunt_25
+======== Entry 732 ========
+Name = Science_Snare_25
+======== Entry 733 ========
+Name = Science_Sleep_25
+======== Entry 734 ========
+Name = Science_Run_25
+======== Entry 735 ========
+Name = Science_Recovery_25
+======== Entry 736 ========
+Name = Science_Knockback_25
+======== Entry 737 ========
+Name = Science_Jump_25
+======== Entry 738 ========
+Name = Science_Interrupt_25
+======== Entry 739 ========
+Name = Science_Intangible_25
+======== Entry 740 ========
+Name = Science_Immobilize_25
+======== Entry 741 ========
+Name = Science_Fly_25
+======== Entry 742 ========
+Name = Science_Fear_25
+======== Entry 743 ========
+Name = Science_Drain_Endurance_25
+======== Entry 744 ========
+Name = Science_Defense_DeBuff_25
+======== Entry 745 ========
+Name = Science_Confuse_25
+======== Entry 746 ========
+Name = Science_Cone_25
+======== Entry 747 ========
+Name = Natural_ToHit_DeBuff_25
+======== Entry 748 ========
+Name = Natural_ToHit_Buff_25
+======== Entry 749 ========
+Name = Natural_Taunt_25
+======== Entry 750 ========
+Name = Natural_Snare_25
+======== Entry 751 ========
+Name = Natural_Sleep_25
+======== Entry 752 ========
+Name = Natural_Run_25
+======== Entry 753 ========
+Name = Natural_Recovery_25
+======== Entry 754 ========
+Name = Natural_Magic_ToHit_DeBuff_25
+======== Entry 755 ========
+Name = Natural_Magic_ToHit_Buff_25
+======== Entry 756 ========
+Name = Natural_Magic_Taunt_25
+======== Entry 757 ========
+Name = Natural_Magic_Snare_25
+======== Entry 758 ========
+Name = Natural_Magic_Sleep_25
+======== Entry 759 ========
+Name = Natural_Magic_Run_25
+======== Entry 760 ========
+Name = Natural_Magic_Recovery_25
+======== Entry 761 ========
+Name = Natural_Magic_Knockback_25
+======== Entry 762 ========
+Name = Natural_Magic_Jump_25
+======== Entry 763 ========
+Name = Natural_Magic_Interrupt_25
+======== Entry 764 ========
+Name = Natural_Magic_Intangible_25
+======== Entry 765 ========
+Name = Natural_Magic_Immobilize_25
+======== Entry 766 ========
+Name = Natural_Magic_Fly_25
+======== Entry 767 ========
+Name = Natural_Magic_Fear_25
+======== Entry 768 ========
+Name = Natural_Magic_Drain_Endurance_25
+======== Entry 769 ========
+Name = Natural_Magic_Defense_DeBuff_25
+======== Entry 770 ========
+Name = Natural_Magic_Confuse_25
+======== Entry 771 ========
+Name = Natural_Magic_Cone_25
+======== Entry 772 ========
+Name = Natural_Knockback_25
+======== Entry 773 ========
+Name = Natural_Jump_25
+======== Entry 774 ========
+Name = Natural_Interrupt_25
+======== Entry 775 ========
+Name = Natural_Intangible_25
+======== Entry 776 ========
+Name = Natural_Immobilize_25
+======== Entry 777 ========
+Name = Natural_Fly_25
+======== Entry 778 ========
+Name = Natural_Fear_25
+======== Entry 779 ========
+Name = Natural_Drain_Endurance_25
+======== Entry 780 ========
+Name = Natural_Defense_DeBuff_25
+======== Entry 781 ========
+Name = Natural_Confuse_25
+======== Entry 782 ========
+Name = Natural_Cone_25
+======== Entry 783 ========
+Name = Mutation_ToHit_DeBuff_25
+======== Entry 784 ========
+Name = Mutation_ToHit_Buff_25
+======== Entry 785 ========
+Name = Mutation_Taunt_25
+======== Entry 786 ========
+Name = Mutation_Snare_25
+======== Entry 787 ========
+Name = Mutation_Sleep_25
+======== Entry 788 ========
+Name = Mutation_Science_ToHit_DeBuff_25
+======== Entry 789 ========
+Name = Mutation_Science_ToHit_Buff_25
+======== Entry 790 ========
+Name = Mutation_Science_Taunt_25
+======== Entry 791 ========
+Name = Mutation_Science_Snare_25
+======== Entry 792 ========
+Name = Mutation_Science_Sleep_25
+======== Entry 793 ========
+Name = Mutation_Science_Run_25
+======== Entry 794 ========
+Name = Mutation_Science_Recovery_25
+======== Entry 795 ========
+Name = Mutation_Science_Knockback_25
+======== Entry 796 ========
+Name = Mutation_Science_Jump_25
+======== Entry 797 ========
+Name = Mutation_Science_Interrupt_25
+======== Entry 798 ========
+Name = Mutation_Science_Intangible_25
+======== Entry 799 ========
+Name = Mutation_Science_Immobilize_25
+======== Entry 800 ========
+Name = Mutation_Science_Fly_25
+======== Entry 801 ========
+Name = Mutation_Science_Fear_25
+======== Entry 802 ========
+Name = Mutation_Science_Drain_Endurance_25
+======== Entry 803 ========
+Name = Mutation_Science_Defense_DeBuff_25
+======== Entry 804 ========
+Name = Mutation_Science_Confuse_25
+======== Entry 805 ========
+Name = Mutation_Science_Cone_25
+======== Entry 806 ========
+Name = Mutation_Run_25
+======== Entry 807 ========
+Name = Mutation_Recovery_25
+======== Entry 808 ========
+Name = Mutation_Magic_ToHit_DeBuff_25
+======== Entry 809 ========
+Name = Mutation_Magic_ToHit_Buff_25
+======== Entry 810 ========
+Name = Mutation_Magic_Taunt_25
+======== Entry 811 ========
+Name = Mutation_Magic_Snare_25
+======== Entry 812 ========
+Name = Mutation_Magic_Sleep_25
+======== Entry 813 ========
+Name = Mutation_Magic_Run_25
+======== Entry 814 ========
+Name = Mutation_Magic_Recovery_25
+======== Entry 815 ========
+Name = Mutation_Magic_Knockback_25
+======== Entry 816 ========
+Name = Mutation_Magic_Jump_25
+======== Entry 817 ========
+Name = Mutation_Magic_Interrupt_25
+======== Entry 818 ========
+Name = Mutation_Magic_Intangible_25
+======== Entry 819 ========
+Name = Mutation_Magic_Immobilize_25
+======== Entry 820 ========
+Name = Mutation_Magic_Fly_25
+======== Entry 821 ========
+Name = Mutation_Magic_Fear_25
+======== Entry 822 ========
+Name = Mutation_Magic_Drain_Endurance_25
+======== Entry 823 ========
+Name = Mutation_Magic_Defense_DeBuff_25
+======== Entry 824 ========
+Name = Mutation_Magic_Confuse_25
+======== Entry 825 ========
+Name = Mutation_Magic_Cone_25
+======== Entry 826 ========
+Name = Mutation_Knockback_25
+======== Entry 827 ========
+Name = Mutation_Jump_25
+======== Entry 828 ========
+Name = Mutation_Interrupt_25
+======== Entry 829 ========
+Name = Mutation_Intangible_25
+======== Entry 830 ========
+Name = Mutation_Immobilize_25
+======== Entry 831 ========
+Name = Mutation_Fly_25
+======== Entry 832 ========
+Name = Mutation_Fear_25
+======== Entry 833 ========
+Name = Mutation_Drain_Endurance_25
+======== Entry 834 ========
+Name = Mutation_Defense_DeBuff_25
+======== Entry 835 ========
+Name = Mutation_Confuse_25
+======== Entry 836 ========
+Name = Mutation_Cone_25
+======== Entry 837 ========
+Name = Magic_ToHit_DeBuff_25
+======== Entry 838 ========
+Name = Magic_ToHit_Buff_25
+======== Entry 839 ========
+Name = Magic_Taunt_25
+======== Entry 840 ========
+Name = Magic_Snare_25
+======== Entry 841 ========
+Name = Magic_Sleep_25
+======== Entry 842 ========
+Name = Magic_Run_25
+======== Entry 843 ========
+Name = Magic_Recovery_25
+======== Entry 844 ========
+Name = Magic_Knockback_25
+======== Entry 845 ========
+Name = Magic_Jump_25
+======== Entry 846 ========
+Name = Magic_Interrupt_25
+======== Entry 847 ========
+Name = Magic_Intangible_25
+======== Entry 848 ========
+Name = Magic_Immobilize_25
+======== Entry 849 ========
+Name = Magic_Fly_25
+======== Entry 850 ========
+Name = Magic_Fear_25
+======== Entry 851 ========
+Name = Magic_Drain_Endurance_25
+======== Entry 852 ========
+Name = Magic_Defense_DeBuff_25
+======== Entry 853 ========
+Name = Magic_Confuse_25
+======== Entry 854 ========
+Name = Magic_Cone_25
+======== Entry 855 ========
+Name = Generic_ToHit_DeBuff_25
+======== Entry 856 ========
+Name = Generic_ToHit_Buff_25
+======== Entry 857 ========
+Name = Generic_Taunt_25
+======== Entry 858 ========
+Name = Generic_Snare_25
+======== Entry 859 ========
+Name = Generic_Sleep_25
+======== Entry 860 ========
+Name = Generic_Run_25
+======== Entry 861 ========
+Name = Generic_Recovery_25
+======== Entry 862 ========
+Name = Generic_Knockback_25
+======== Entry 863 ========
+Name = Generic_Jump_25
+======== Entry 864 ========
+Name = Generic_Interrupt_25
+======== Entry 865 ========
+Name = Generic_Intangible_25
+======== Entry 866 ========
+Name = Generic_Immobilize_25
+======== Entry 867 ========
+Name = Generic_Fly_25
+======== Entry 868 ========
+Name = Generic_Fear_25
+======== Entry 869 ========
+Name = Generic_Drain_Endurance_25
+======== Entry 870 ========
+Name = Generic_Defense_DeBuff_25
+======== Entry 871 ========
+Name = Generic_Confuse_25
+======== Entry 872 ========
+Name = Generic_Cone_25
+======== Entry 873 ========
+Name = Power10
+======== Entry 874 ========
+Name = Generic_Cone_30
+======== Entry 875 ========
+Name = Generic_Confuse_30
+======== Entry 876 ========
+Name = Generic_Defense_DeBuff_30
+======== Entry 877 ========
+Name = Generic_Drain_Endurance_30
+======== Entry 878 ========
+Name = Generic_Fear_30
+======== Entry 879 ========
+Name = Generic_Fly_30
+======== Entry 880 ========
+Name = Generic_Immobilize_30
+======== Entry 881 ========
+Name = Generic_Intangible_30
+======== Entry 882 ========
+Name = Generic_Interrupt_30
+======== Entry 883 ========
+Name = Generic_Jump_30
+======== Entry 884 ========
+Name = Generic_Knockback_30
+======== Entry 885 ========
+Name = Generic_Recovery_30
+======== Entry 886 ========
+Name = Generic_Run_30
+======== Entry 887 ========
+Name = Generic_Sleep_30
+======== Entry 888 ========
+Name = Generic_Snare_30
+======== Entry 889 ========
+Name = Generic_Taunt_30
+======== Entry 890 ========
+Name = Generic_ToHit_Buff_30
+======== Entry 891 ========
+Name = Generic_ToHit_DeBuff_30
+======== Entry 892 ========
+Name = Magic_Cone_30
+======== Entry 893 ========
+Name = Magic_Confuse_30
+======== Entry 894 ========
+Name = Magic_Defense_DeBuff_30
+======== Entry 895 ========
+Name = Magic_Drain_Endurance_30
+======== Entry 896 ========
+Name = Magic_Fear_30
+======== Entry 897 ========
+Name = Magic_Fly_30
+======== Entry 898 ========
+Name = Magic_Immobilize_30
+======== Entry 899 ========
+Name = Magic_Intangible_30
+======== Entry 900 ========
+Name = Magic_Interrupt_30
+======== Entry 901 ========
+Name = Magic_Jump_30
+======== Entry 902 ========
+Name = Magic_Knockback_30
+======== Entry 903 ========
+Name = Magic_Recovery_30
+======== Entry 904 ========
+Name = Magic_Run_30
+======== Entry 905 ========
+Name = Magic_Sleep_30
+======== Entry 906 ========
+Name = Magic_Snare_30
+======== Entry 907 ========
+Name = Magic_Taunt_30
+======== Entry 908 ========
+Name = Magic_ToHit_Buff_30
+======== Entry 909 ========
+Name = Magic_ToHit_DeBuff_30
+======== Entry 910 ========
+Name = Mutation_Cone_30
+======== Entry 911 ========
+Name = Mutation_Confuse_30
+======== Entry 912 ========
+Name = Mutation_Defense_DeBuff_30
+======== Entry 913 ========
+Name = Mutation_Drain_Endurance_30
+======== Entry 914 ========
+Name = Mutation_Fear_30
+======== Entry 915 ========
+Name = Mutation_Fly_30
+======== Entry 916 ========
+Name = Mutation_Immobilize_30
+======== Entry 917 ========
+Name = Mutation_Intangible_30
+======== Entry 918 ========
+Name = Mutation_Interrupt_30
+======== Entry 919 ========
+Name = Mutation_Jump_30
+======== Entry 920 ========
+Name = Mutation_Knockback_30
+======== Entry 921 ========
+Name = Mutation_Magic_Cone_30
+======== Entry 922 ========
+Name = Mutation_Magic_Confuse_30
+======== Entry 923 ========
+Name = Mutation_Magic_Defense_DeBuff_30
+======== Entry 924 ========
+Name = Mutation_Magic_Drain_Endurance_30
+======== Entry 925 ========
+Name = Mutation_Magic_Fear_30
+======== Entry 926 ========
+Name = Mutation_Magic_Fly_30
+======== Entry 927 ========
+Name = Mutation_Magic_Immobilize_30
+======== Entry 928 ========
+Name = Mutation_Magic_Intangible_30
+======== Entry 929 ========
+Name = Mutation_Magic_Interrupt_30
+======== Entry 930 ========
+Name = Mutation_Magic_Jump_30
+======== Entry 931 ========
+Name = Mutation_Magic_Knockback_30
+======== Entry 932 ========
+Name = Mutation_Magic_Recovery_30
+======== Entry 933 ========
+Name = Mutation_Magic_Run_30
+======== Entry 934 ========
+Name = Mutation_Magic_Sleep_30
+======== Entry 935 ========
+Name = Mutation_Magic_Snare_30
+======== Entry 936 ========
+Name = Mutation_Magic_Taunt_30
+======== Entry 937 ========
+Name = Mutation_Magic_ToHit_Buff_30
+======== Entry 938 ========
+Name = Mutation_Magic_ToHit_DeBuff_30
+======== Entry 939 ========
+Name = Mutation_Recovery_30
+======== Entry 940 ========
+Name = Mutation_Run_30
+======== Entry 941 ========
+Name = Mutation_Science_Cone_30
+======== Entry 942 ========
+Name = Mutation_Science_Confuse_30
+======== Entry 943 ========
+Name = Mutation_Science_Defense_DeBuff_30
+======== Entry 944 ========
+Name = Mutation_Science_Drain_Endurance_30
+======== Entry 945 ========
+Name = Mutation_Science_Fear_30
+======== Entry 946 ========
+Name = Mutation_Science_Fly_30
+======== Entry 947 ========
+Name = Mutation_Science_Immobilize_30
+======== Entry 948 ========
+Name = Mutation_Science_Intangible_30
+======== Entry 949 ========
+Name = Mutation_Science_Interrupt_30
+======== Entry 950 ========
+Name = Mutation_Science_Jump_30
+======== Entry 951 ========
+Name = Mutation_Science_Knockback_30
+======== Entry 952 ========
+Name = Mutation_Science_Recovery_30
+======== Entry 953 ========
+Name = Mutation_Science_Run_30
+======== Entry 954 ========
+Name = Mutation_Science_Sleep_30
+======== Entry 955 ========
+Name = Mutation_Science_Snare_30
+======== Entry 956 ========
+Name = Mutation_Science_Taunt_30
+======== Entry 957 ========
+Name = Mutation_Science_ToHit_Buff_30
+======== Entry 958 ========
+Name = Mutation_Science_ToHit_DeBuff_30
+======== Entry 959 ========
+Name = Mutation_Sleep_30
+======== Entry 960 ========
+Name = Mutation_Snare_30
+======== Entry 961 ========
+Name = Mutation_Taunt_30
+======== Entry 962 ========
+Name = Mutation_ToHit_Buff_30
+======== Entry 963 ========
+Name = Mutation_ToHit_DeBuff_30
+======== Entry 964 ========
+Name = Natural_Cone_30
+======== Entry 965 ========
+Name = Natural_Confuse_30
+======== Entry 966 ========
+Name = Natural_Defense_DeBuff_30
+======== Entry 967 ========
+Name = Natural_Drain_Endurance_30
+======== Entry 968 ========
+Name = Natural_Fear_30
+======== Entry 969 ========
+Name = Natural_Fly_30
+======== Entry 970 ========
+Name = Natural_Immobilize_30
+======== Entry 971 ========
+Name = Natural_Intangible_30
+======== Entry 972 ========
+Name = Natural_Interrupt_30
+======== Entry 973 ========
+Name = Natural_Jump_30
+======== Entry 974 ========
+Name = Natural_Knockback_30
+======== Entry 975 ========
+Name = Natural_Magic_Cone_30
+======== Entry 976 ========
+Name = Natural_Magic_Confuse_30
+======== Entry 977 ========
+Name = Natural_Magic_Defense_DeBuff_30
+======== Entry 978 ========
+Name = Natural_Magic_Drain_Endurance_30
+======== Entry 979 ========
+Name = Natural_Magic_Fear_30
+======== Entry 980 ========
+Name = Natural_Magic_Fly_30
+======== Entry 981 ========
+Name = Natural_Magic_Immobilize_30
+======== Entry 982 ========
+Name = Natural_Magic_Intangible_30
+======== Entry 983 ========
+Name = Natural_Magic_Interrupt_30
+======== Entry 984 ========
+Name = Natural_Magic_Jump_30
+======== Entry 985 ========
+Name = Natural_Magic_Knockback_30
+======== Entry 986 ========
+Name = Natural_Magic_Recovery_30
+======== Entry 987 ========
+Name = Natural_Magic_Run_30
+======== Entry 988 ========
+Name = Natural_Magic_Sleep_30
+======== Entry 989 ========
+Name = Natural_Magic_Snare_30
+======== Entry 990 ========
+Name = Natural_Magic_Taunt_30
+======== Entry 991 ========
+Name = Natural_Magic_ToHit_Buff_30
+======== Entry 992 ========
+Name = Natural_Magic_ToHit_DeBuff_30
+======== Entry 993 ========
+Name = Natural_Recovery_30
+======== Entry 994 ========
+Name = Natural_Run_30
+======== Entry 995 ========
+Name = Natural_Sleep_30
+======== Entry 996 ========
+Name = Natural_Snare_30
+======== Entry 997 ========
+Name = Natural_Taunt_30
+======== Entry 998 ========
+Name = Natural_ToHit_Buff_30
+======== Entry 999 ========
+Name = Natural_ToHit_DeBuff_30
+======== Entry 1000 ========
+Name = Science_Cone_30
+======== Entry 1001 ========
+Name = Science_Confuse_30
+======== Entry 1002 ========
+Name = Science_Defense_DeBuff_30
+======== Entry 1003 ========
+Name = Science_Drain_Endurance_30
+======== Entry 1004 ========
+Name = Science_Fear_30
+======== Entry 1005 ========
+Name = Science_Fly_30
+======== Entry 1006 ========
+Name = Science_Immobilize_30
+======== Entry 1007 ========
+Name = Science_Intangible_30
+======== Entry 1008 ========
+Name = Science_Interrupt_30
+======== Entry 1009 ========
+Name = Science_Jump_30
+======== Entry 1010 ========
+Name = Science_Knockback_30
+======== Entry 1011 ========
+Name = Science_Recovery_30
+======== Entry 1012 ========
+Name = Science_Run_30
+======== Entry 1013 ========
+Name = Science_Sleep_30
+======== Entry 1014 ========
+Name = Science_Snare_30
+======== Entry 1015 ========
+Name = Science_Taunt_30
+======== Entry 1016 ========
+Name = Science_Technology_Cone_30
+======== Entry 1017 ========
+Name = Science_Technology_Confuse_30
+======== Entry 1018 ========
+Name = Science_Technology_Defense_DeBuff_30
+======== Entry 1019 ========
+Name = Science_Technology_Drain_Endurance_30
+======== Entry 1020 ========
+Name = Science_Technology_Fear_30
+======== Entry 1021 ========
+Name = Science_Technology_Fly_30
+======== Entry 1022 ========
+Name = Science_Technology_Immobilize_30
+======== Entry 1023 ========
+Name = Science_Technology_Intangible_30
+======== Entry 1024 ========
+Name = Science_Technology_Interrupt_30
+======== Entry 1025 ========
+Name = Science_Technology_Jump_30
+======== Entry 1026 ========
+Name = Science_Technology_Knockback_30
+======== Entry 1027 ========
+Name = Science_Technology_Recovery_30
+======== Entry 1028 ========
+Name = Science_Technology_Run_30
+======== Entry 1029 ========
+Name = Science_Technology_Sleep_30
+======== Entry 1030 ========
+Name = Science_Technology_Snare_30
+======== Entry 1031 ========
+Name = Science_Technology_Taunt_30
+======== Entry 1032 ========
+Name = Science_Technology_ToHit_Buff_30
+======== Entry 1033 ========
+Name = Science_Technology_ToHit_DeBuff_30
+======== Entry 1034 ========
+Name = Science_ToHit_Buff_30
+======== Entry 1035 ========
+Name = Science_ToHit_DeBuff_30
+======== Entry 1036 ========
+Name = Technology_Cone_30
+======== Entry 1037 ========
+Name = Technology_Confuse_30
+======== Entry 1038 ========
+Name = Technology_Defense_DeBuff_30
+======== Entry 1039 ========
+Name = Technology_Drain_Endurance_30
+======== Entry 1040 ========
+Name = Technology_Fear_30
+======== Entry 1041 ========
+Name = Technology_Fly_30
+======== Entry 1042 ========
+Name = Technology_Immobilize_30
+======== Entry 1043 ========
+Name = Technology_Intangible_30
+======== Entry 1044 ========
+Name = Technology_Interrupt_30
+======== Entry 1045 ========
+Name = Technology_Jump_30
+======== Entry 1046 ========
+Name = Technology_Knockback_30
+======== Entry 1047 ========
+Name = Technology_Natural_Cone_30
+======== Entry 1048 ========
+Name = Technology_Natural_Confuse_30
+======== Entry 1049 ========
+Name = Technology_Natural_Defense_DeBuff_30
+======== Entry 1050 ========
+Name = Technology_Natural_Drain_Endurance_30
+======== Entry 1051 ========
+Name = Technology_Natural_Fear_30
+======== Entry 1052 ========
+Name = Technology_Natural_Fly_30
+======== Entry 1053 ========
+Name = Technology_Natural_Immobilize_30
+======== Entry 1054 ========
+Name = Technology_Natural_Intangible_30
+======== Entry 1055 ========
+Name = Technology_Natural_Interrupt_30
+======== Entry 1056 ========
+Name = Technology_Natural_Jump_30
+======== Entry 1057 ========
+Name = Technology_Natural_Knockback_30
+======== Entry 1058 ========
+Name = Technology_Natural_Recovery_30
+======== Entry 1059 ========
+Name = Technology_Natural_Run_30
+======== Entry 1060 ========
+Name = Technology_Natural_Sleep_30
+======== Entry 1061 ========
+Name = Technology_Natural_Snare_30
+======== Entry 1062 ========
+Name = Technology_Natural_Taunt_30
+======== Entry 1063 ========
+Name = Technology_Natural_ToHit_Buff_30
+======== Entry 1064 ========
+Name = Technology_Natural_ToHit_DeBuff_30
+======== Entry 1065 ========
+Name = Technology_Recovery_30
+======== Entry 1066 ========
+Name = Technology_Run_30
+======== Entry 1067 ========
+Name = Technology_Sleep_30
+======== Entry 1068 ========
+Name = Technology_Snare_30
+======== Entry 1069 ========
+Name = Technology_Taunt_30
+======== Entry 1070 ========
+Name = Technology_ToHit_Buff_30
+======== Entry 1071 ========
+Name = Technology_ToHit_DeBuff_30
+======== Entry 1072 ========
+Name = ArenaStuff
+======== Entry 1073 ========
+Name = Inspirations_Arena
+======== Entry 1074 ========
+Name = SirenBoth
+======== Entry 1075 ========
+Name = SirenHero
+======== Entry 1076 ========
+Name = SirenVillain
+======== Entry 1077 ========
+Name = Inspirations_Small_Endurance
+======== Entry 1078 ========
+Name = Inspirations_Small_Health
+======== Entry 1079 ========
+Name = Inspirations_Small_BreakFree
+======== Entry 1080 ========
+Name = HeroValentine
+======== Entry 1081 ========
+Name = VillainValentine
+======== Entry 1082 ========
+Name = Yins
+======== Entry 1083 ========
+Name = Yins_Magic_Accuracy
+======== Entry 1084 ========
+Name = Yins_Natural_Damage
+======== Entry 1085 ========
+Name = Yins_Science_Recharge
+======== Entry 1086 ========
+Name = Yins_Technology_Endurance_Discount
+======== Entry 1087 ========
+Name = Yins_Mutation_Damage
+======== Entry 1088 ========
+Name = Special
+======== Entry 1089 ========
+Name = InventEnh
+======== Entry 1090 ========
+Name = InventRare
+======== Entry 1091 ========
+Name = InventUncommon
+======== Entry 1092 ========
+Name = InventVeryRare
+======== Entry 1093 ========
+Name = Jetpacks
+======== Entry 1094 ========
+Name = SeedHunter

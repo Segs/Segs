@@ -1,0 +1,794 @@
+Using record type: BehaviorAlias
+Dumping 198 records...
+======== Entry 0 ========
+Name = DefaultCritter
+Behavior = Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 1 ========
+Name = StandStill
+Behavior = DoNothing(Turn)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 2 ========
+Name = FleeToNearestDoor
+Behavior = RunIntoDoor
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 3 ========
+Name = VictimFleeNearest
+Behavior = DoNothing(AnimList(M_Fear),Timer(2)),RunAwayFar(DoNotRun,AnimList(SneekNTurn),Radius(150),Timer(5)), RunAwayFar(Radius(150))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 4 ========
+Name = VictimFleeClose
+Behavior = DoNothing(AnimList(M_Fear),Timer(2)),RunAwayFar(DoNotRun,AnimList(SneekNTurn),Radius(150),Timer(5)), RunAwayFar(Radius(150))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 5 ========
+Name = FrozenInPlace
+Behavior = DoNothing(DoNotFaceTarget)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 6 ========
+Name = GoodAndFrozenInPlace
+Behavior = Team(Hero),DoNothing(DoNotFaceTarget)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 7 ========
+Name = FoulAndFrozenInPlace
+Behavior = Team(Villain),DoNothing(DoNotFaceTarget)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 8 ========
+Name = Run
+Behavior = Combat(FeelingFear(20),FeelingConfidence(10))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 9 ========
+Name = FleeAwayFar
+Behavior = Combat(FeelingFear(20),FeelingConfidence(10))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 10 ========
+Name = TrainInStation
+Behavior = Loop("DoNothing(AnimBit(train,yes),Timer(1)),DoNothing(AnimBit(train),Timer(20)),DoNothing(AnimBit(train,close),Timer(1)),DoNothing(AnimBit(train),Timer(10))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 11 ========
+Name = EscapedGhosts
+Behavior = DoNothing(AnimBit(Reclaim,Emerge,RaiseDead),Timer(1)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 12 ========
+Name = DeathFromAbove
+Behavior = DoNothing(Invisible,Timer(100)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 13 ========
+Name = DanceAndFight
+Behavior = DoNothing(AnimList(DanceRave),CombatOverride(Aggressive))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 14 ========
+Name = Snipe
+Behavior = Combat(DoNotMove)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 15 ========
+Name = Willforge
+Behavior = DoNothing(Untargetable,Fly,DoNotMove)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 16 ========
+Name = FightMeleeToDeath
+Behavior = Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 17 ========
+Name = UseAIConfig
+Behavior = Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 18 ========
+Name = BeFoulAndUseAIConfig
+Behavior = Team(Villain),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 19 ========
+Name = GoodTurret
+Behavior = Team(Hero),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 20 ========
+Name = LoiterOld
+Behavior = Loop("DoNothing(AnimList(Lookout),Timer(Rand(2,5))),WanderAround(Radius(40),AnimList(M_Sneak),Timer(Rand(10,20)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 21 ========
+Name = Loiter
+Behavior = Loop("DoNothing(AnimList(Observer),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_Sneak),Timer(Rand(2,5)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 22 ========
+Name = Loiter_Cheap
+Behavior = Loop("DoNothing(AnimList(ArmsCrossed),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_Sneak),Timer(Rand(2,5)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 23 ========
+Name = Wander
+Behavior = Loop("DoNothing(AnimList(Lookout),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_Sneak),Timer(Rand(2,5)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 24 ========
+Name = Loiter_Small
+Behavior = Loop("DoNothing(AnimList(Observer),Timer(Rand(10,20))),WanderAround(Radius(20),AnimList(M_Sneak),Timer(Rand(2,5)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 25 ========
+Name = WanderOff
+Behavior = Wander(SpawnPosIsSelf,CombatOverride(Aggressive))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 26 ========
+Name = LoiterScavenge
+Behavior = Loop("DoNothing(AnimList(KneelingLoot),Timer(Rand(10,20))),DoNothing(AnimList(Lookout),Timer(3)),WanderAround(Radius(40),AnimList(M_Sneak),Timer(Rand(2,5)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 27 ========
+Name = LoiterLookout
+Behavior = Loop("DoNothing(AnimList(Lookout),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_Sneak),Timer(Rand(5,10)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 28 ========
+Name = FoulTurret
+Behavior = Team(Villain),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 29 ========
+Name = EvilTurret
+Behavior = Team(Monster),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 30 ========
+Name = UseAIConfig_SpawnFlying
+Behavior = Combat(Fly)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 31 ========
+Name = FightPreferMelee
+Behavior = Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 32 ========
+Name = FightRangedToDeath
+Behavior = Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 33 ========
+Name = FightPreferRanged
+Behavior = Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 34 ========
+Name = Follow_Route
+Behavior = Patrol(OverridePerceptionRadius(25),SpawnPosIsSelf,CombatOverride(Aggressive),DoNotRun),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 35 ========
+Name = Follow_Route_Run
+Behavior = Patrol(OverridePerceptionRadius(25),SpawnPosIsSelf,CombatOverride(Aggressive),DoNotRun(0)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 36 ========
+Name = Follow_Route_Fly
+Behavior = Patrol(OverridePerceptionRadius(25),SpawnPosIsSelf,CombatOverride(Aggressive),Fly),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 37 ========
+Name = Follow_Route_Wire
+Behavior = Patrol(OverridePerceptionRadius(25),SpawnPosIsSelf,DoNotRun(0),DoNotGoToSleep,MotionWire)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 38 ========
+Name = Follow_Route_No_Combat
+Behavior = Patrol(OverridePerceptionRadius(25),SpawnPosIsSelf,DoNotRun)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 39 ========
+Name = Untargetable_FightPreferRanged
+Behavior = Combat(Untargetable)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 40 ========
+Name = Untargetable_SpawnFlying
+Behavior = Combat(Untargetable,Fly)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 41 ========
+Name = OldTargetInstigator
+Behavior = Combat(TargetInstigator)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 42 ========
+Name = Aggressive
+Behavior = Combat(FeelingBothered(100),NeverForgetTargets)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 43 ========
+Name = AggressiveFlying
+Behavior = Combat(FeelingBothered(100),NeverForgetTargets,Fly)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 44 ========
+Name = SpawnFlying
+Behavior = Combat(Fly)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 45 ========
+Name = OldPatrol
+Behavior = Loop("MoveToRandPoint(DoNotRun, CombatOverride(Aggressive)),DoNothing(AnimList(Lookout),Timer(8),CombatOverride(Aggressive))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 46 ========
+Name = OldPatrolGroup
+Behavior = AlertTeam,Loop("MoveToRandPoint(Group,DoNotRun,CombatOverride(Aggressive)),DoNothing(AnimList(Lookout),Timer(8),CombatOverride(Aggressive))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 47 ========
+Name = RunOutOfDoor_Then_Follow_Route
+Behavior = RunOutOfDoor,Patrol(OverridePerceptionRadius(25),SpawnPosIsSelf,CombatOverride(Aggressive),DoNotRun),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 48 ========
+Name = RunOutOfDoor_Then_Follow_Route_Run
+Behavior = RunOutOfDoor,Patrol(OverridePerceptionRadius(25),SpawnPosIsSelf,CombatOverride(Aggressive),DoNotRun(0)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 49 ========
+Name = BallistaCallForHelp
+Behavior = CallForHelp(Radius(300),TargetName("Longbow Spec-Ops")),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 50 ========
+Name = Longbow_Stealth
+Behavior = OverridePerceptionRadius(10),UsePower(On,Cloaking_Device),DoNothing
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 51 ========
+Name = ThankAndRun
+Behavior = ThankHero,DisappearInStandardDoor
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 52 ========
+Name = Cured
+Behavior = Team(Hero),OverrideSpawnPosCur,ThankHero,DisappearInStandardDoor
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 53 ========
+Name = MitoHang
+Behavior = DoNothing(Invisible,Timer(1)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 54 ========
+Name = FightThenRun
+Behavior = Combat(EndCondition(HealthPercent < 30)),Combat(FeelingFear(20),FeelingConfidence(10),FeelingLoyalty(0))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 55 ========
+Name = InvisibleTarget
+Behavior = Team(Hero),Invisible,Invincible,AlwaysGetHit,FindTarget(0),DoNothing(EndCondition(AttackerCount > 0),Timer(10)),DoNothing(EndCondition(AttackerCount = 0)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 56 ========
+Name = RockWallCallForHelp
+Behavior = Combat(EndCondition(HealthPercent < 70)),CallForHelp(TargetName(Quarry),Radius(2000)),CallForHelp(Radius(500)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 57 ========
+Name = OldCallForHelp
+Behavior = Combat(EndCondition(HealthPercent < 70)),CallForHelp(Radius(500)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 58 ========
+Name = CallForHelpWhenAttacked
+Behavior = Loop("DoNothing(EndCondition(TimeSinceAttacked < 60)),CallForHelp(Radius(500)),DoNothing(Timer(30))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 59 ========
+Name = BeAttackable
+Behavior = DoNothing(FindTarget(0),Invincible,AlwaysGetHit,Invisible,Team(Hero))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 60 ========
+Name = BeGoodAndFight
+Behavior = Combat(Team(Hero))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 61 ========
+Name = BeGoodAndStill
+Behavior = DoNothing(Team(Hero),FindTarget(0))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 62 ========
+Name = BeStill
+Behavior = DoNothing(FindTarget(0))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 63 ========
+Name = BeStillAndUntargetable
+Behavior = DoNothing(FindTarget(0),Untargetable)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 64 ========
+Name = BeEvilAndFight
+Behavior = Combat(Team(Monster))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 65 ========
+Name = BeEvilAndStill
+Behavior = DoNothing(Team(Monster),FindTarget(0))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 66 ========
+Name = BeGoodAndStillAndUntargetable
+Behavior = DoNothing(Team(Hero),FindTarget(0),Untargetable)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 67 ========
+Name = BeAnUnkillableNothing
+Behavior = DoNothing(Untargetable,FindTarget(0),Invincible,Invisible)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 68 ========
+Name = MissionScared
+Behavior = HostageScared
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 69 ========
+Name = TentacleHiding
+Behavior = DoNothing(AnimBit(Spawn))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 70 ========
+Name = TentacleRanged
+Behavior = DoNothing(Timer(5)),Combat(DoNotMove)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 71 ========
+Name = TentacleStillRanged
+Behavior = Combat(DoNotMove)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 72 ========
+Name = TentacleMelee
+Behavior = DoNothing(Timer(5)),Combat(DoNotMove)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 73 ========
+Name = TentacleStillMelee
+Behavior = Combat(DoNotMove)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 74 ========
+Name = TentacleSpawned
+Behavior = DoNothing(AnimBit(Spawn),Timer(1)),DoNothing(Timer(5)),Combat(DoNotMove)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 75 ========
+Name = StealthCamera
+Behavior = DoNothing(Turn,Fly)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 76 ========
+Name = Alarm
+Behavior = DoNothing(Turn,Fly)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 77 ========
+Name = RiktiShip
+Behavior = DoNothing(AnimBit(Spawn),Timer(60)),PlayFX("GENERIC\SpaceShipSpawnFX.fx"),DoNothing(AnimBit(Spawn))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 78 ========
+Name = RiktiAttack
+Behavior = DoNothing(AnimBit(Fly,Mid),Timer(33)),PlayFX("GENERIC\SpaceShipSpawnFX.fx"),DoNothing(AnimBit(Spawn))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 79 ========
+Name = BetaEvent_RiktiFlyby
+Behavior = DoNothing(AnimBit(Fly,Far),Timer(65)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 80 ========
+Name = RiktiShipLeave
+Behavior = DoNothing(AnimBit(Spawn),Timer(5)),DoNothing(Timer(33)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 81 ========
+Name = RiktiShipTroopLeave
+Behavior = DoNothing(Timer(Rand(1,10))),PlayFX("ENEMYFX\rikti\riktiportal.fx"),DoNothing(Timer(3)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 82 ========
+Name = RiktiTroop
+Behavior = DoNothing(Untargetable,DoNotDrawOnClient,Timer(Rand(1,10))),DoNothing(Untargetable,AnimList(Spawn_Rikti),Timer(2)),PickRandomWeapon,Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 83 ========
+Name = RiktiTroopWave
+Behavior = DoNothing(Untargetable,DoNotDrawOnClient,Timer(Rand(1,10))),PlayFX("ENEMYFX\rikti\riktiportal.fx",DoNotDrawOnClient),DoNothing(AnimBit(Spawn),DoNotDrawOnClient,Timer(2)),PickRandomWeapon,DoNothing(AnimBit(Spawn),Timer(2)),DoNothing(Timer(2.5)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 84 ========
+Name = RiktiTroopWander
+Behavior = DoNothing(Invisible,FindTarget(0),Timer(60)),DoNothing(DoNotDrawOnClient,Timer(Rand(1,10))),PlayFX("ENEMYFX\rikti\riktiportal.fx",DoNotDrawOnClient),DoNothing(AnimBit(Spawn),DoNotDrawOnClient,Timer(2)),PickRandomWeapon,DoNothing(AnimBit(Spawn),Timer(2)),DoNothing(Timer(2)),WanderAround(Radius(100),CombatOverride(Aggressive))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 85 ========
+Name = RiktiTroopLeave
+Behavior = DoNothing(Timer(1)),PlayFX("ENEMYFX\rikti\riktiportal.fx"),DoNothing(Timer(3)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 86 ========
+Name = RMKF_Start
+Behavior = DoNothing
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 87 ========
+Name = RMKF_Fight
+Behavior = PlayFX("ENEMYFX\rikti\riktiportalstart.fx",DoNotDrawOnClient),DoNothing(DoNotDrawOnClient,Timer(3)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 88 ========
+Name = RMKF_Complete
+Behavior = WanderAround(Timer(5)),DoNothing(Timer(1)),PlayFX("ENEMYFX\rikti\riktiportal.fx"),DoNothing(Timer(6)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 89 ========
+Name = Chant_Then_Follow_Route
+Behavior = DoNothing(AnimList(CastingFire),Timer(20)),Patrol(DoNotRun(0))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 90 ========
+Name = Rise_From_Ground_Delay
+Behavior = DoNothing(AnimBit(Spawn,Groundsummon),Timer(15)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 91 ========
+Name = Rise_From_Water_Follow_Route
+Behavior = DoNothing(AnimBit(Spawn,Groundsummon,Low),Timer(1)),Patrol(DoNotRun)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 92 ========
+Name = Follow_Route_Wire_Flying
+Behavior = Patrol(OverridePerceptionRadius(10),SpawnPosIsSelf,DoNotRun(0),DoNotGoToSleep,MotionWire,Fly)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 93 ========
+Name = Follow_Route_Wire_Untargetable
+Behavior = Patrol(OverridePerceptionRadius(25),SpawnPosIsSelf,DoNotRun(0),DoNotGoToSleep,MotionWire,Fly,Untargetable)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 94 ========
+Name = Plantman_Pumpkin_Ambush_NPC_CleanUp
+Behavior = DoNothing(AnimBit(Spawn,Magic,Low),Timer(20)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 95 ========
+Name = WalkingTrees
+Behavior = Loop("DoNothing(AnimBit(Spawn,High),Timer(5)),Patrol(DoNotRun,Timer(10))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 96 ========
+Name = Loiter_Untargetable
+Behavior = Loop("Untargetable,DoNothing(AnimList(Lookout),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_Sneak),Timer(Rand(4,8)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 97 ========
+Name = UseAIConfigThenDie
+Behavior = Combat(Timer(60)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 98 ========
+Name = Follow_Route_Wire_Then_Die
+Behavior = Patrol(OverridePerceptionRadius(10),SpawnPosIsSelf,DoNotRun(0),DoNotGoToSleep,MotionWire,Fly,Untargetable,Timer(5)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 99 ========
+Name = Rock_Rampage_Delay
+Behavior = Loop("DoNothing(Untargetable,AnimList(RockRampage),Timer(Rand(1,5))),DoNothing(AnimList(Howl),Timer(Rand(10,20))),DoNothing(AnimList(Surrounded),Timer(Rand(10,20)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 100 ========
+Name = FloatingStruggleEvil
+Behavior = DoNothing(AnimList(FloatingStruggle),Team(Monster))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 101 ========
+Name = UseAIConfigFoul
+Behavior = Combat(Team(Villain),Untargetable(0))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 102 ========
+Name = UseAIConfigEvil
+Behavior = Combat(Team(Monster),Untargetable(0))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 103 ========
+Name = Vampire_Crouch_Foul
+Behavior = DoNothing(AnimList(Vampire_Crouch),Team(Villain))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 104 ========
+Name = UseAIConfig_Invincible
+Behavior = Combat(Invincible)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 105 ========
+Name = Follow_Route_Flying_No_Combat_Untargetable
+Behavior = Patrol(DoNotRun,Fly,Untargetable)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 106 ========
+Name = BallTurret
+Behavior = Fly,DoNothing(EndCondition(HasAttackTarget = 1)),BallTurretSlideOut,Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 107 ========
+Name = BallTurretBase
+Behavior = Fly,Untargetable,DoNothing(Timer(1)),BallTurretBaseCheckDeath,DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 108 ========
+Name = GoodBallTurret
+Behavior = Team(Hero),Fly,DoNothing(DoNotFaceTarget, EndCondition(HasAttackTarget = 1)),BallTurretSlideOut(DoNotFaceTarget),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 109 ========
+Name = GoodBallTurretBase
+Behavior = Team(Hero),Fly,Untargetable,DoNothing(Timer(1)),BallTurretBaseCheckDeath,DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 110 ========
+Name = FoulBallTurret
+Behavior = Team(Villain),Fly,DoNothing(EndCondition(HasAttackTarget = 1)),BallTurretSlideOut,Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 111 ========
+Name = FoulBallTurretBase
+Behavior = Team(Villain),Fly,Untargetable,DoNothing(Timer(1)),BallTurretBaseCheckDeath,DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 112 ========
+Name = Threaten
+Behavior = PickRandomWeapon,DoNothing(AnimList(ThreatenVariation))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 113 ========
+Name = Menace
+Behavior = PickRandomWeapon,DoNothing(AnimList(MenaceVariation))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 114 ========
+Name = BeGoodAndCower
+Behavior = DoNothing(FindTarget(0),Team(Hero),AnimList(M_Fear))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 115 ========
+Name = ClockworkSpawn
+Behavior = DoNothing(AnimBit(Spawn,Low,Observe),Timer(5)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 116 ========
+Name = Dead
+Behavior = DoNothing(Untargetable,AnimList(DeadSlab))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 117 ========
+Name = DeadCleanUp
+Behavior = DoNothing(Untargetable,AnimList(DeadSlab),Timer(20)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 118 ========
+Name = StaticObject
+Behavior = DoNotDrawAggro, DoNothing(Turn,Untargetable,Fly)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 119 ========
+Name = StaticObjectCleanUp
+Behavior = DoNothing(Timer(20)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 120 ========
+Name = Looting_Loiter
+Behavior = Loop("DoNothing(AnimList(M_CrateDynamite),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_CrateDynamite),Timer(Rand(2,5)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 121 ========
+Name = RumbleBlunt_Random
+Behavior = Loop("DoNothing(AnimList(RumbleBlunt_FighterA),Timer(Rand(2,5))),DoNothing(AnimList(BatMenace),Timer(Rand(10,20))),DoNothing(AnimList(CrazyMenace),Timer(Rand(10,20)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 122 ========
+Name = Teleport_Clockwork
+Behavior = DoNothing(AnimBit(Spawn,Teleport),Invisible)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 123 ========
+Name = Handcart_Loiter
+Behavior = Loop("DoNothing(AnimList(M_Handcart),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_Handcart),Timer(Rand(2,5)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 124 ========
+Name = WheelBarrel_Wander
+Behavior = WanderAround(Radius(40),AnimList(M_WheelBarrow)))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 125 ========
+Name = WheelBarrel_Wander_Pumpkins
+Behavior = WanderAround(Radius(40),AnimList(M_WheelBarrowPumkin))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 126 ========
+Name = BarrelRoll_Wander
+Behavior = WanderAround(Radius(40),AnimList(M_RollBarrel))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 127 ========
+Name = DieIn60Sec
+Behavior = DoNothing(Timer(60)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 128 ========
+Name = Crate_Loiter
+Behavior = Loop("DoNothing(AnimList(Crate_Hold),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(Crate_Hold),Timer(Rand(2,5)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 129 ========
+Name = Crate_Wander
+Behavior = WanderAround(Radius(40),AnimList(Crate_Hold))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 130 ========
+Name = OldPatrol_CrateHold
+Behavior = Loop("MoveToRandPoint(AnimList(Crate_Hold),DoNotRun, CombatOverride(Aggressive)),DoNothing(AnimList(Crate_Hold),Timer(8),CombatOverride(Aggressive))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 131 ========
+Name = WanderDynamite
+Behavior = WanderAround(Radius(40),AnimList(M_CrateDynamite))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 132 ========
+Name = LootWander
+Behavior = WanderAround(Radius(40),AnimList(M_CrateLoot))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 133 ========
+Name = Air2Ground_Wander
+Behavior = WanderAround(Radius(40),AnimList(M_Air2Ground))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 134 ========
+Name = Air2Air_Wander
+Behavior = WanderAround(Radius(40),AnimList(M_Air2Air))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 135 ========
+Name = Air2Air_Wander_Skiff
+Behavior = WanderAround(Radius(40),AnimList(M_Air2Air))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 136 ========
+Name = Robot_off
+Behavior = DoNothing(AnimBit(Quick,Spawn,Sleep),Untargetable)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 137 ========
+Name = Robot_awake
+Behavior = DoNothing(AnimBit(Quick,Spawn,Sleep,No),Untargetable,Timer(1)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 138 ========
+Name = Octopus_Rise
+Behavior = DoNothing(Turn)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 139 ========
+Name = Aerial_Search
+Behavior = WanderAround(Radius(40),AnimList(Lookout))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 140 ========
+Name = Patrol_Torch
+Behavior = WanderAround(Radius(40),AnimList(M_Torch))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 141 ========
+Name = Patrol_Pickaxe
+Behavior = WanderAround(Radius(40),AnimList(M_Pickaxe))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 142 ========
+Name = Patrol_Shotgun
+Behavior = WanderAround(Radius(40),AnimList(M_Shotgun))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 143 ========
+Name = Patrol_Pipe
+Behavior = WanderAround(Radius(40),AnimList(M_Pipe))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 144 ========
+Name = Patrol_Trunchoen
+Behavior = WanderAround(Radius(40),AnimList(M_Trunchoen))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 145 ========
+Name = Cement_Shoes_Wander
+Behavior = WanderAround(Radius(40),AnimList(Cement_Shoes))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 146 ========
+Name = Prone_Wander
+Behavior = Loop("DoNothing(AnimList(M_Prone),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_Prone),Timer(Rand(5,8)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 147 ========
+Name = Float_Wander
+Behavior = WanderAround(Radius(40),AnimList(M_Hover))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 148 ========
+Name = TribalDance_Wander
+Behavior = WanderAround(Radius(40),AnimList(M_TribalDance))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 149 ========
+Name = Torch_Wander
+Behavior = WanderAround(Radius(40),AnimList(M_Torch))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 150 ========
+Name = Book_Wander
+Behavior = WanderAround(Radius(40),AnimList(M_Book))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 151 ========
+Name = Magic_Wander
+Behavior = WanderAround(Radius(40),AnimList(M_Magic))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 152 ========
+Name = PicketMarch
+Behavior = WanderAround(Radius(40),AnimList(M_Picket))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 153 ========
+Name = PurseSnatchRun
+Behavior = Combat(FeelingFear(20),FeelingConfidence(10),FeelingLoyalty(0))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 154 ========
+Name = BodyBag_Wander
+Behavior = WanderAround(Radius(40),AnimList(BodyBag))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 155 ========
+Name = Eyeball_Slumber
+Behavior = DoNothing(FindTarget(0),Untargetable,Fly,AnimBit(Spawn,Low))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 156 ========
+Name = Eyeball_Awake
+Behavior = Combat(Fly,FeelingBothered(100))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 157 ========
+Name = Play_Dice
+Behavior = DoNothing(IAmA(DiceRoller),AnimList(DiceRoll))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 158 ========
+Name = Play_Dice_Observe
+Behavior = DoNothing(IReactTo(DiceRoller),AnimList(DiceObserver))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 159 ========
+Name = FleeAwayNearest
+Behavior = RunAwayFar(Timer(90),Radius(300)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 160 ========
+Name = DefaultPatrol
+Behavior = Patrol(OverridePerceptionRadius(25),SpawnPosIsSelf,CombatOverride(Aggressive)),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 161 ========
+Name = OracleFloat
+Behavior = DoNothing(AnimList(Encounter_OracleFloat),Timer(30)),DoNothing(AnimList(None))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 162 ========
+Name = Clockwork_Patrol_CleanGround
+Behavior = Loop("DoNothing(AnimList(Clockwork_CleanGround),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_Clockwork_CleanGround),Timer(Rand(20,30)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 163 ========
+Name = Patrol_PPD
+Behavior = WanderAround(Radius(40),AnimList(M_PPD_Patrol))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 164 ========
+Name = Patrol_PPD_Flashlight
+Behavior = WanderAround(Radius(40),AnimList(M_PPD_Patrol_Flashlight))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 165 ========
+Name = Patrol_PPD_Megaphone
+Behavior = WanderAround(Radius(40),AnimList(M_PPD_Patrol_Megaphone))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 166 ========
+Name = Clockwork_Patrol_Malfunction
+Behavior = Loop("DoNothing(AnimList(Clockwork_Malfunction),Timer(Rand(10,20))),WanderAround(Radius(40),AnimList(M_Clockwork_Patrol_Malfunction),Timer(Rand(20,30)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 167 ========
+Name = Sneak_Around
+Behavior = WanderAround(Radius(40),AnimList(M_Sneak))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 168 ========
+Name = StaticObject_Targetable
+Behavior = DoNotDrawAggro, DoNothing(Turn,Unselectable,Invincible,Fly,Untargetable(0))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 169 ========
+Name = BeEvilAndDoNotMove
+Behavior = Combat(Team(Monster), DoNotMove(1))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 170 ========
+Name = Tentacle_Forest_Behavior
+Behavior = Loop("DoNothing(AnimList(Ready),Timer(Rand(10,20))),WanderAround(Radius(20),AnimList(Tentacle_Forest),Timer(Rand(2,5)))")
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 171 ========
+Name = WarWalker_PoweredDown
+Behavior = DoNothing(Untargetable,Invincible,Unselectable,AnimList(5cw_PoweredDown))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 172 ========
+Name = Ghouls_Ambush_Dropdown
+Behavior = DoNothing(Invisible(1),AnimList(Ghouls_Ambush),EndCondition(HasAttackTarget = 1)),Combat(Invisible(0),Untargetable(0),CombatOverride(Aggressive))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 173 ========
+Name = WarWalker_Ambush_Dropdown
+Behavior = DoNothing(Invisible(1),Untargetable(1),AnimList(WarWalker_AirDrop),EndCondition(HasAttackTarget = 1)),Combat(Invisible(0),Untargetable(0),CombatOverride(Aggressive))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 174 ========
+Name = Clockwork_Ambush_Inactive
+Behavior = DoNothing(AnimList(Clockwork_Ambush),Untargetable(1),Unselectable(1),Invincible(1)))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 175 ========
+Name = Clockwork_Ambush_DropDown
+Behavior = DoNothing(AnimList(Clockwork_Ambush),EndCondition(HasAttackTarget = 1)),Combat(Invisible(0),Untargetable(0),CombatOverride(Aggressive))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 176 ========
+Name = Minelayer
+Behavior = WanderAround(Radius(300),BoostSpeed(1),CombatOverride(Passive),DoNotDrawAggro,Unselectable(1),DoNotGoToSleep,Untargetable(1))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 177 ========
+Name = Targetable_Marker
+Behavior = DoNotDrawAggro,CombatOverride(Passive),Invincible(1),Unselectable(1),DoNotGoToSleep,DoNotMove,Untargetable(0)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 178 ========
+Name = Shivan_Giant_Climb_Up
+Behavior = DoNothing(Invisible(1),Untargetable(1),AnimList(Shivan_Giant_Climb),EndCondition(HasAttackTarget = 1)),Combat(Invisible(0),Untargetable(0),CombatOverride(Aggressive))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 179 ========
+Name = HarbingerSummon
+Behavior = DoNothing(Invisible,Untargetable,Unselectable,AnimList(Ghouls_Ambush),Timer(1)),Combat(CombatOverride(Aggressive),DoNotDrawAggro(0),Unselectable(0),Untargetable(0),Invisible(0),OverridePerceptionRadius(300),TargetInstigator(1))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 180 ========
+Name = Targetable_Dummy
+Behavior = CombatOverride(Passive),Invincible(1),Unselectable(1),DoNotGoToSleep,DoNotMove,Untargetable(0)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 181 ========
+Name = RedFlame
+Behavior = Combat(OverridePerceptionRadius(300),TargetInstigator(1))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 182 ========
+Name = GreenFlame
+Behavior = Pet(CombatOverride(Passive))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 183 ========
+Name = DestroyMyPets
+Behavior = PassToPets(DestroyMe),BeStill(CombatOverride(Passive))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 184 ========
+Name = Neutral_Actor
+Behavior = CombatOverride(Passive),Untargetable(1),Unselectable(1),Invincible(1),DoNotGoToSleep,DoNotMove,DoNotDrawAggro,DoNothing
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 185 ========
+Name = Follow_Seedling
+Behavior = Combat(Fly(1))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 186 ========
+Name = CustomRifle_Alert_Patrol
+Behavior = WanderAround(Radius(40),AnimList(M_CustomRifle_Alert_Patrol))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 187 ========
+Name = Rifle_Alert_Patrol
+Behavior = WanderAround(Radius(40),AnimList(M_Rifle_Alert_Patrol))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 188 ========
+Name = Flying_Seedling
+Behavior = DoNotGoToSleep,OverrideSpawnPosCur,Combat(Fly(1))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 189 ========
+Name = SpawnFlying_Seedling
+Behavior = DoNotGoToSleep,Combat(Fly(1))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 190 ========
+Name = MotAbsorb
+Behavior = PlayFX(World\City\DarkAstoria\Mot_Absorption.fx),DoNothing(Timer(2)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 191 ========
+Name = MotAbsorbTielekku
+Behavior = PlayFX(World\City\DarkAstoria\Mot_Absorb_Tielekku.fx),DoNothing(Timer(2)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 192 ========
+Name = SentinelVanish
+Behavior = PlayFX(World\City\DarkAstoria\Mot_Sentinel_Summon.fx),DoNothing(Timer(4)),DestroyMe
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 193 ========
+Name = ProtectedAlly
+Behavior = Invincible(1),DoNotDrawAggro(1),Combat
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 194 ========
+Name = MotAbsorbPlayer
+Behavior = PlayFX(World\City\DarkAstoria\Mot_Absorption_Fail.fx)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 195 ========
+Name = UmbraBeast
+Behavior = Pet(StanceAggressive)
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 196 ========
+Name = BlackSwanImps
+Behavior = Combat(OverridePerceptionRadius(2000),TargetInstigator(1),FeelingBothered(100),ProtectSpawnRadius(2000))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL
+======== Entry 197 ========
+Name = Untargetable_PerceptiveCombat
+Behavior = Untargetable(1),Combat(OverridePerceptionRadius(2000),TargetInstigator(1),FeelingBothered(100),ProtectSpawnRadius(2000))
+FileName = AISCRIPT/BEHAVIORALIASES.BAL

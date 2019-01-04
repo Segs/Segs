@@ -1,0 +1,2606 @@
+Using record type: Plot
+Dumping 34 records...
+======== Entry 0 ========
+Name = TEST_PLOT
+DisplayName = TESTING PLOT (P3325706387)
+DisplayHelp = Plot for QA and TESTING only. Size of largest plot. Unlimited items except for normal IoP Anchor limit. (P2206248382)
+DisplayShortHelp = 24 x 28 Squares (P4037896308)
+DisplayTabName = Test (P2018365746)
+GroupName = Base_LandPlot4x4_32
+Length = 24
+Width = 28
+MaxRaidParty = 32
+CostPrestige = 1000000000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 0
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 0
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 0
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 0
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 0
+Requires = 
+  accesslevel
+  char>
+  0
+  >
+======== Entry 1 ========
+Name = TinyHiddenSpot_8x8
+DisplayName = Tiny Hidden Spot (P2687200195)
+DisplayHelp = This is the smallest plot available for a base. (P732501349)
+DisplayShortHelp = 8 x 8 Squares (P3406086671)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 8
+Width = 8
+MaxRaidParty = 8
+CostPrestige = 0
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 2 ========
+Name = SmallHiddenSpot_8x12
+DisplayName = Small Hidden Spot (P928915704)
+DisplayHelp = This is the smallest plot that can fit a raid-ready base. (P3773531649)
+DisplayShortHelp = 8 x 12 Squares (P3322454692)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 8
+Width = 12
+MaxRaidParty = 8
+CostPrestige = 84500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 3 ========
+Name = HiddenSpot_12x12
+DisplayName = Hidden Spot (P1831153704)
+DisplayHelp = This is a small base plot. (P1580420700)
+DisplayShortHelp = 12 x 12 Squares (P1728804902)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 12
+Width = 12
+MaxRaidParty = 8
+CostPrestige = 312500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 4 ========
+Name = SmallSecretLocation_12x16
+DisplayName = Small Secret Location (P3625742050)
+DisplayHelp = This is a medium base plot. (P3280326592)
+DisplayShortHelp = 12 x 16 Squares (P988227882)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 12
+Width = 16
+MaxRaidParty = 8
+CostPrestige = 722000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 5 ========
+Name = SecretLocation_16x16
+DisplayName = Secret Location (P2770037980)
+DisplayHelp = This is a medium base plot. (P3280326592)
+DisplayShortHelp = 16 x 16 Squares (P592160305)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 16
+Width = 16
+MaxRaidParty = 16
+CostPrestige = 1250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 6 ========
+Name = LargeSecretLocation_16x20
+DisplayName = Large Secret Location (P548308187)
+DisplayHelp = This is a medium base plot. (P3280326592)
+DisplayShortHelp = 16 x 20 Squares (P3144049848)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 16
+Width = 20
+MaxRaidParty = 16
+CostPrestige = 1984500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 7 ========
+Name = SmallHiddenComplex_20x20
+DisplayName = Small Hidden Complex (P983834371)
+DisplayHelp = This is a medium base plot. (P3280326592)
+DisplayShortHelp = 20 x 20 Squares (P1389970807)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 20
+Width = 20
+MaxRaidParty = 24
+CostPrestige = 2812500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 8 ========
+Name = HiddenComplex_20x24
+DisplayName = Hidden Complex (P976785548)
+DisplayHelp = This is a large base plot. (P330834585)
+DisplayShortHelp = 20 x 24 Squares (P255136891)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 20
+Width = 24
+MaxRaidParty = 24
+CostPrestige = 3872000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 9 ========
+Name = LargeHiddenComplex_24x24
+DisplayName = Large Hidden Complex (P3940569054)
+DisplayHelp = This is a large base plot. (P330834585)
+DisplayShortHelp = 24 x 24 Squares (P379165536)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 24
+Width = 24
+MaxRaidParty = 32
+CostPrestige = 5000000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 10 ========
+Name = MassiveHiddenComplex_24x28
+DisplayName = Massive Hidden Complex (P733722559)
+DisplayHelp = This is the largest plot available for a base. (P458055360)
+DisplayShortHelp = 24 x 28 Squares (P4037896308)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 24
+Width = 28
+MaxRaidParty = 32
+CostPrestige = 6384500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 11 ========
+Name = SmallSecureLocation_12x16
+DisplayName = Small Secure Location (P3810901235)
+DisplayHelp = This is a medium secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P4104070337)
+DisplayShortHelp = 12 x 16 Squares (P988227882)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 12
+Width = 16
+MaxRaidParty = 8
+CostPrestige = 722000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 3
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 12 ========
+Name = SecureLocation_16x16
+DisplayName = Secure Location (P2653077197)
+DisplayHelp = This is a medium secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P4104070337)
+DisplayShortHelp = 16 x 16 Squares (P592160305)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 16
+Width = 16
+MaxRaidParty = 16
+CostPrestige = 1250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 3
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 13 ========
+Name = LargeSecureLocation_16x20
+DisplayName = Large Secure Location (P462902986)
+DisplayHelp = This is a medium secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P4104070337)
+DisplayShortHelp = 16 x 20 Squares (P3144049848)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 16
+Width = 20
+MaxRaidParty = 16
+CostPrestige = 1984500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 4
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 14 ========
+Name = SmallSecureComplex_20x20
+DisplayName = Small Secure Complex (P3579008945)
+DisplayHelp = This is a medium secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P4104070337)
+DisplayShortHelp = 20 x 20 Squares (P1389970807)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 20
+Width = 20
+MaxRaidParty = 24
+CostPrestige = 2812500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 4
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 15 ========
+Name = SecureComplex_20x24
+DisplayName = Secure Complex (P3587168318)
+DisplayHelp = This is a large secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P3626149926)
+DisplayShortHelp = 20 x 24 Squares (P255136891)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 20
+Width = 24
+MaxRaidParty = 24
+CostPrestige = 5000000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 5
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 16 ========
+Name = LargeSecureComplex_24x24
+DisplayName = Large Secure Complex (P85395308)
+DisplayHelp = This is a large secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P3626149926)
+DisplayShortHelp = 24 x 24 Squares (P379165536)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 24
+Width = 24
+MaxRaidParty = 32
+CostPrestige = 7812500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 5
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 17 ========
+Name = MassiveSecureComplex_24x28
+DisplayName = Massive Secure Complex (P3293380365)
+DisplayHelp = This is the largest secure plot available for a base. Secure locations can have backup control and energy sources, as well as more backup batteries. (P2459140217)
+DisplayShortHelp = 24 x 28 Squares (P4037896308)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 24
+Width = 28
+MaxRaidParty = 32
+CostPrestige = 11250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 6
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = 
+  x
+======== Entry 18 ========
+Name = SmallHiddenSpot_8x12_I14
+DisplayName = Small Hidden Spot (P928915704)
+DisplayHelp = This is the smallest plot that can fit a raid-ready base. (P3773531649)
+DisplayShortHelp = 8 x 12 Squares (P3322454692)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 8
+Width = 12
+MaxRaidParty = 8
+CostPrestige = 84500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 19 ========
+Name = HiddenSpot_12x12_I14
+DisplayName = Hidden Spot (P1831153704)
+DisplayHelp = This is a small base plot. (P1580420700)
+DisplayShortHelp = 12 x 12 Squares (P1728804902)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 12
+Width = 12
+MaxRaidParty = 8
+CostPrestige = 312500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 20 ========
+Name = SmallSecretLocation_12x16_I14
+DisplayName = Small Secret Location (P3625742050)
+DisplayHelp = This is a medium base plot. (P3280326592)
+DisplayShortHelp = 12 x 16 Squares (P988227882)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 12
+Width = 16
+MaxRaidParty = 8
+CostPrestige = 722000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 21 ========
+Name = SecretLocation_16x16_I14
+DisplayName = Secret Location (P2770037980)
+DisplayHelp = This is a medium base plot. (P3280326592)
+DisplayShortHelp = 16 x 16 Squares (P592160305)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 16
+Width = 16
+MaxRaidParty = 16
+CostPrestige = 1250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 22 ========
+Name = LargeSecretLocation_16x20_I14
+DisplayName = Large Secret Location (P548308187)
+DisplayHelp = This is a medium base plot. (P3280326592)
+DisplayShortHelp = 16 x 20 Squares (P3144049848)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 16
+Width = 20
+MaxRaidParty = 16
+CostPrestige = 1984500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 23 ========
+Name = SmallHiddenComplex_20x20_I14
+DisplayName = Small Hidden Complex (P983834371)
+DisplayHelp = This is a medium base plot. (P3280326592)
+DisplayShortHelp = 20 x 20 Squares (P1389970807)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 20
+Width = 20
+MaxRaidParty = 24
+CostPrestige = 2812500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 24 ========
+Name = HiddenComplex_20x24_I14
+DisplayName = Hidden Complex (P976785548)
+DisplayHelp = This is a large base plot. (P330834585)
+DisplayShortHelp = 20 x 24 Squares (P255136891)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 20
+Width = 24
+MaxRaidParty = 24
+CostPrestige = 3872000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 25 ========
+Name = LargeHiddenComplex_24x24_I14
+DisplayName = Large Hidden Complex (P3940569054)
+DisplayHelp = This is a large base plot. (P330834585)
+DisplayShortHelp = 24 x 24 Squares (P379165536)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 24
+Width = 24
+MaxRaidParty = 32
+CostPrestige = 5000000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 26 ========
+Name = MassiveHiddenComplex_24x28_I14
+DisplayName = Massive Hidden Complex (P733722559)
+DisplayHelp = This is the largest plot available for a base. (P458055360)
+DisplayShortHelp = 24 x 28 Squares (P4037896308)
+DisplayTabName = Hidden (P2414996619)
+GroupName = Base_LandPlot4x4_32
+Length = 24
+Width = 28
+MaxRaidParty = 32
+CostPrestige = 6384500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 1
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 1
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 1
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 1
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 27 ========
+Name = SmallSecureLocation_12x16_I14
+DisplayName = Small Secure Location (P3810901235)
+DisplayHelp = This is a medium secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P4104070337)
+DisplayShortHelp = 12 x 16 Squares (P988227882)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 12
+Width = 16
+MaxRaidParty = 8
+CostPrestige = 722000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 3
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 28 ========
+Name = SecureLocation_16x16_I14
+DisplayName = Secure Location (P2653077197)
+DisplayHelp = This is a medium secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P4104070337)
+DisplayShortHelp = 16 x 16 Squares (P592160305)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 16
+Width = 16
+MaxRaidParty = 16
+CostPrestige = 1250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 3
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 29 ========
+Name = LargeSecureLocation_16x20_I14
+DisplayName = Large Secure Location (P462902986)
+DisplayHelp = This is a medium secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P4104070337)
+DisplayShortHelp = 16 x 20 Squares (P3144049848)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 16
+Width = 20
+MaxRaidParty = 16
+CostPrestige = 1984500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 4
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 30 ========
+Name = SmallSecureComplex_20x20_I14
+DisplayName = Small Secure Complex (P3579008945)
+DisplayHelp = This is a medium secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P4104070337)
+DisplayShortHelp = 20 x 20 Squares (P1389970807)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 20
+Width = 20
+MaxRaidParty = 24
+CostPrestige = 2812500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 4
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 31 ========
+Name = SecureComplex_20x24_I14
+DisplayName = Secure Complex (P3587168318)
+DisplayHelp = This is a large secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P3626149926)
+DisplayShortHelp = 20 x 24 Squares (P255136891)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 20
+Width = 24
+MaxRaidParty = 24
+CostPrestige = 5000000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 5
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 32 ========
+Name = LargeSecureComplex_24x24_I14
+DisplayName = Large Secure Complex (P85395308)
+DisplayHelp = This is a large secure base plot. Secure locations can have backup control and energy sources, as well as more backup batteries. (P3626149926)
+DisplayShortHelp = 24 x 24 Squares (P379165536)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 24
+Width = 24
+MaxRaidParty = 32
+CostPrestige = 7812500
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 5
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []
+======== Entry 33 ========
+Name = MassiveSecureComplex_24x28_I14
+DisplayName = Massive Secure Complex (P3293380365)
+DisplayHelp = This is the largest secure plot available for a base. Secure locations can have backup control and energy sources, as well as more backup batteries. (P2459140217)
+DisplayShortHelp = 24 x 28 Squares (P4037896308)
+DisplayTabName = Secure (P829579058)
+GroupName = Base_LandPlot4x4_32
+Length = 24
+Width = 28
+MaxRaidParty = 32
+CostPrestige = 11250000
+CostInfluence = 0
+UpkeepPrestige = 0
+UpkeepInfluence = 0
+DetailAllowed = 
+    -------- DetailAllowed 0 --------
+    Category = Defense
+    Limit = 0
+    -------- DetailAllowed 1 --------
+    Category = DefenseAux
+    Limit = 0
+    -------- DetailAllowed 2 --------
+    Category = Medical
+    Limit = 0
+    -------- DetailAllowed 3 --------
+    Category = MedicalAux
+    Limit = 0
+    -------- DetailAllowed 4 --------
+    Category = Control
+    Limit = 2
+    -------- DetailAllowed 5 --------
+    Category = ControlAux
+    Limit = 0
+    -------- DetailAllowed 6 --------
+    Category = Energy
+    Limit = 2
+    -------- DetailAllowed 7 --------
+    Category = EnergyAux
+    Limit = 0
+    -------- DetailAllowed 8 --------
+    Category = Battery
+    Limit = 6
+    -------- DetailAllowed 9 --------
+    Category = Teleport
+    Limit = 0
+    -------- DetailAllowed 10 --------
+    Category = TeleportAux
+    Limit = 0
+    -------- DetailAllowed 11 --------
+    Category = Storage
+    Limit = 18
+    -------- DetailAllowed 12 --------
+    Category = Workshop
+    Limit = 6
+    -------- DetailAllowed 13 --------
+    Category = WorkshopAux
+    Limit = 0
+    -------- DetailAllowed 14 --------
+    Category = ItemsOfPower
+    Limit = 0
+    -------- DetailAllowed 15 --------
+    Category = Empowerment
+    Limit = 6
+    -------- DetailAllowed 16 --------
+    Category = EnergyControl
+    Limit = 1
+    -------- DetailAllowed 17 --------
+    Category = Anchor
+    Limit = 6
+    -------- DetailAllowed 18 --------
+    Category = Entrance
+    Limit = 1
+    -------- DetailAllowed 19 --------
+    Category = Decorative
+    Limit = 20000
+Requires = []

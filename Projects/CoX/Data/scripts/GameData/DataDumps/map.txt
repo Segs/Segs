@@ -1,0 +1,759 @@
+Using record type: ProductCatalog
+With 8 fuzz.
+Dumping 54 records...
+======== Entry 0 ========
+Title = maps/City_Zones/City_01_01/City_01_01.txt
+SKU = 3485638177497219097
+InventoryType = 825253681
+ProductFlags = 1819558239
+InventoryCount = 1348432737
+InventoryMax = 778793569
+ExpirationSecs = 6383476
+GrantLimit = 1134198784
+AuthBit = 1131085824
+ItemKey = 
+StartDate = 1131741184
+EndDate = 0
+00000000:  00000000 00000000                     .... ....
+======== Entry 1 ========
+Title = Galaxy City (maps/City_Zones/City_01_03/City_01_03.txt)
+SKU = 3485638177497219098
+InventoryType = 858808113
+ProductFlags = 1818314591
+InventoryCount = 1601796193
+InventoryMax = 2037672259
+ExpirationSecs = 1634169902
+GrantLimit = 1130496000
+AuthBit = 1130233856
+ItemKey = 
+StartDate = 1130954752
+EndDate = 0
+00000000:  00000000 05000000                     .... ....
+======== Entry 2 ========
+Title = maps/City_Zones/City_01_02/City_01_02.txt
+SKU = 3485638177497219095
+InventoryType = 842030897
+ProductFlags = 1852394335
+InventoryCount = 1867674471
+InventoryMax = 1735667319
+ExpirationSecs = 97
+GrantLimit = 1130758144
+AuthBit = 1132527616
+ItemKey = 
+StartDate = 1133477888
+EndDate = 0
+00000000:  00000000 00000000                     .... ....
+======== Entry 3 ========
+Title = maps/City_Zones/City_02_01/City_02_01.txt
+SKU = 3485638177497219098
+InventoryType = 825253682
+ProductFlags = 1702122335
+InventoryCount = 1631808613
+InventoryMax = 1852799342
+ExpirationSecs = 1634169902
+GrantLimit = 1132920832
+AuthBit = 1127219200
+ItemKey = 
+StartDate = 1128595456
+EndDate = 0
+00000000:  00000000 00000000                     .... ....
+======== Entry 4 ========
+Title = maps/City_Zones/City_02_02/City_02_02.txt
+SKU = 3485638177497219098
+InventoryType = 842030898
+ProductFlags = 2037076831
+InventoryCount = 1601790327
+InventoryMax = 2037672259
+ExpirationSecs = 1634169902
+GrantLimit = 1133707264
+AuthBit = 1133019136
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  9D430000 9A430000 00000000 00000000   .C.. .C.. .... ....
+00000010:  0000                                  ..
+======== Entry 5 ========
+Title = maps/City_Zones/City_03_01/City_03_01.txt
+SKU = 3485638177497219098
+InventoryType = 825253683
+ProductFlags = 1818317919
+InventoryCount = 1934193519
+InventoryMax = 1684955500
+ExpirationSecs = 1634169902
+GrantLimit = 1135968256
+AuthBit = 1131741184
+ItemKey = 
+StartDate = 1134723072
+EndDate = 0
+00000000:  00000000 00000000                     .... ....
+======== Entry 6 ========
+Title = maps/City_Zones/City_03_02/City_03_02.txt
+SKU = 3485638177497219103
+InventoryType = 842030899
+ProductFlags = 1684949343
+InventoryCount = 1852141669
+InventoryMax = 1668179300
+ExpirationSecs = 1919897701
+GrantLimit = 1735667316
+AuthBit = 97
+ItemKey = 
+StartDate = 1125777408
+EndDate = 1127284736
+00000000:  00007443 00000000 00000000 00000000   ..tC .... .... ....
+======== Entry 7 ========
+Title = maps/City_Zones/City_04_01/City_04_01.txt
+SKU = 3485638177497219100
+InventoryType = 825253684
+ProductFlags = 1970226783
+InventoryCount = 1919247470
+InventoryMax = 1818314355
+ExpirationSecs = 1949201260
+GrantLimit = 24935
+AuthBit = 1136525312
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  B7430000 C9430000 C1430000 00000000   .C.. .C.. .C.. ....
+00000010:  00000000 0000                         .... ..
+======== Entry 8 ========
+Title = maps/City_Zones/City_04_02/City_04_02.txt
+SKU = 3485638177497219097
+InventoryType = 842030900
+ProductFlags = 1769095775
+InventoryCount = 1953721187
+InventoryMax = 778991471
+ExpirationSecs = 6383476
+GrantLimit = 1130364928
+AuthBit = 1134755840
+ItemKey = 
+StartDate = 1135640576
+EndDate = 0
+00000000:  00000000 00000000                     .... ....
+======== Entry 9 ========
+Title = maps/City_Zones/Hazard_01_01/Hazard_01_01.txt
+SKU = 7237954729383821338
+InventoryType = 1597059167
+ProductFlags = 1348415792
+InventoryCount = 2053468773
+InventoryMax = 1802658128
+ExpirationSecs = 1634169902
+GrantLimit = 1132756992
+AuthBit = 1130823680
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  8A430000 74430000 00000000 00000000   .C.. tC.. .... ....
+00000010:  0000                                  ..
+======== Entry 10 ========
+Title = maps/City_Zones/Hazard_02_01/Hazard_02_01.txt
+SKU = 7237954729383821336
+InventoryType = 1597124703
+ProductFlags = 1113534768
+InventoryCount = 1953330529
+InventoryMax = 1949199983
+ExpirationSecs = 24935
+GrantLimit = 1132003328
+AuthBit = 1117913088
+ItemKey = 
+StartDate = 1121320960
+EndDate = 0
+00000000:  00000000 00000000                     .... ....
+======== Entry 11 ========
+Title = maps/City_Zones/Hazard_04_01/Hazard_04_01.txt
+SKU = 7237954729383821335
+InventoryType = 1597255775
+ProductFlags = 1449079088
+InventoryCount = 1667853925
+InventoryMax = 1735667301
+ExpirationSecs = 97
+GrantLimit = 1120534528
+AuthBit = 1135443968
+ItemKey = 
+StartDate = 1136394240
+EndDate = 0
+00000000:  00000000 00000000                     .... ....
+======== Entry 12 ========
+Title = maps/City_Zones/City_02_05/City_02_05.txt
+SKU = 6875977836605472793
+InventoryType = 811545136
+ProductFlags = 1984913201
+InventoryCount = 1919054437
+InventoryMax = 778792815
+ExpirationSecs = 6383476
+GrantLimit = 1134002176
+AuthBit = 1135935488
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  9B430080 BE430000 00000000 00000000   .C.. .C.. .... ....
+00000010:  0000                                  ..
+======== Entry 13 ========
+Title = maps/City_Zones/Trial_03_01/Trial_03_01.txt
+SKU = 6875977836605472794
+InventoryType = 811545392
+ProductFlags = 1700028209
+InventoryCount = 1449226866
+InventoryMax = 1635019887
+ExpirationSecs = 1634169902
+GrantLimit = 1126367232
+AuthBit = 1133379584
+ItemKey = 
+StartDate = 1133608960
+EndDate = 0
+00000000:  00000000 00000000                     .... ....
+======== Entry 14 ========
+Title = maps/City_Zones/Trial_04_01/Trial_04_01.txt
+SKU = 6875977836605472792
+InventoryType = 811545648
+ProductFlags = 1867996977
+InventoryCount = 1635148911
+InventoryMax = 1949197676
+ExpirationSecs = 24935
+GrantLimit = 1134854144
+AuthBit = 1137016832
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  AE430080 CB430000 00000000 00000000   .C.. .C.. .... ....
+00000010:  0000                                  ..
+======== Entry 15 ========
+Title = maps/City_Zones/City_05_01/City_05_01.txt
+SKU = 3485638177497219102
+InventoryType = 825253685
+ProductFlags = 1919242335
+InventoryCount = 1769105253
+InventoryMax = 1934189934
+ExpirationSecs = 1684955500
+GrantLimit = 1634169902
+AuthBit = 1136132096
+ItemKey = 
+StartDate = 1136689152
+EndDate = 1128333312
+00000000:  00000000 00000000 00000000            .... .... ....
+======== Entry 16 ========
+Title = maps/City_Zones/Hazard_01_02/Hazard_01_02.txt
+SKU = 7237954729383821339
+InventoryType = 1597059167
+ProductFlags = 1415524912
+InventoryCount = 1867015528
+InventoryMax = 2003790956
+ExpirationSecs = 1735667315
+GrantLimit = 97
+AuthBit = 1135247360
+ItemKey = 
+StartDate = 1135607808
+EndDate = 1132724224
+00000000:  00000000 00000000 00000000            .... .... ....
+======== Entry 17 ========
+Title = maps/City_Zones/Hazard_03_02/Hazard_03_02.txt
+SKU = 7237954729383821339
+InventoryType = 1597190239
+ProductFlags = 1398747696
+InventoryCount = 1734963828
+InventoryMax = 1819494753
+ExpirationSecs = 1735667301
+GrantLimit = 97
+AuthBit = 1138360320
+ItemKey = 
+StartDate = 1139310592
+EndDate = 1118699520
+00000000:  00000000 00000000 00000000            .... .... ....
+======== Entry 18 ========
+Title = maps/City_Zones/City_03_03/City_03_03.txt
+SKU = 3485638177497219094
+InventoryType = 858808115
+ProductFlags = 1869759327
+InventoryCount = 1634694241
+InventoryMax = 1634169902
+ExpirationSecs = 1112801280
+GrantLimit = 1112801280
+AuthBit = 1118437376
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  00000000                              ....
+======== Entry 19 ========
+Title = maps/City_Zones/V_City_01_01/V_City_01_01.txt
+SKU = 8751735713970913308
+InventoryType = 1597059167
+ProductFlags = 1298084144
+InventoryCount = 2036560485
+InventoryMax = 1634497353
+ExpirationSecs = 1949197422
+GrantLimit = 24935
+AuthBit = 1129316352
+ItemKey = 
+StartDate = 1131741184
+EndDate = 1134166016
+00000000:  00000000 01000000 01000000            .... .... ....
+======== Entry 20 ========
+Title = maps/City_Zones/V_City_01_02/V_City_01_02.txt
+SKU = 8751735713970913306
+InventoryType = 1597059167
+ProductFlags = 1348416048
+InventoryCount = 1333031535
+InventoryMax = 1936026465
+ExpirationSecs = 1634169902
+GrantLimit = 1134886912
+AuthBit = 1133084672
+ItemKey = 
+StartDate = 1134297088
+EndDate = 0
+00000000:  01000000 01000000                     .... ....
+======== Entry 21 ========
+Title = maps/City_Zones/V_City_02_01/V_City_02_01.txt
+SKU = 8751735713970913308
+InventoryType = 1597124703
+ProductFlags = 1130311984
+InventoryCount = 1967222881
+InventoryMax = 1650551108
+ExpirationSecs = 1949197676
+GrantLimit = 24935
+AuthBit = 1132724224
+ItemKey = 
+StartDate = 1135149056
+EndDate = 1132953600
+00000000:  00000000 01000000 01000000            .... .... ....
+======== Entry 22 ========
+Title = maps/City_Zones/V_City_03_01/V_City_03_01.txt
+SKU = 8751735713970913310
+InventoryType = 1597190239
+ProductFlags = 1398747440
+InventoryCount = 1802658152
+InventoryMax = 1684104552
+ExpirationSecs = 1701606217
+GrantLimit = 1634169902
+AuthBit = 1124728832
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  82430000 24430080 9A430000 00000100   .C.. $C.. .C.. ....
+00000010:  00000100 0000                         .... ..
+======== Entry 23 ========
+Title = maps/City_Zones/V_City_03_02/V_City_03_02.txt
+SKU = 8751735713970913313
+InventoryType = 1597190239
+ProductFlags = 1314861616
+InventoryCount = 1635152485
+InventoryMax = 1751347777
+ExpirationSecs = 1818587241
+GrantLimit = 779052897
+AuthBit = 6383476
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  BD430000 FE420000 D5430000 3B430000   .C.. .B.. .C.. ;C..
+00000010:  00000100 00000100 0000                .... .... ..
+======== Entry 24 ========
+Title = maps/City_Zones/V_City_04_01/V_City_04_01.txt
+SKU = 8751735713970913306
+InventoryType = 1597255775
+ProductFlags = 1398747440
+InventoryCount = 1918979444
+InventoryMax = 1818323316
+ExpirationSecs = 1634169902
+GrantLimit = 1130233856
+AuthBit = 1122631680
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  8B430000 20430000 00000100 00000100   .C..  C.. .... ....
+00000010:  0000                                  ..
+======== Entry 25 ========
+Title = maps/City_Zones/V_City_05_01/V_City_05_01.txt
+SKU = 8751735713970913307
+InventoryType = 1597321311
+ProductFlags = 1197420848
+InventoryCount = 1684955506
+InventoryMax = 1819044214
+ExpirationSecs = 1735667301
+GrantLimit = 97
+AuthBit = 1128398848
+ItemKey = 
+StartDate = 1130037248
+EndDate = 1130364928
+00000000:  00000000 01000000 01000000            .... .... ....
+======== Entry 26 ========
+Title = maps/City_Zones/V_Trial_04_02/V_Trial_04_02.txt
+SKU = 7019267200935919639
+InventoryType = 875585388
+ProductFlags = 1597124703
+InventoryCount = 1937334849
+InventoryMax = 1735667315
+ExpirationSecs = 97
+GrantLimit = 1134362624
+AuthBit = 1122238464
+ItemKey = 
+StartDate = 1123549184
+EndDate = 0
+00000000:  01000000 01000000                     .... ....
+======== Entry 27 ========
+Title = maps/City_Zones/V_PvP_03_01/V_PvP_03_01.txt
+SKU = 6868119519308939290
+InventoryType = 811545392
+ProductFlags = 1767071537
+InventoryCount = 1936614770
+InventoryMax = 1819042115
+ExpirationSecs = 1634169902
+GrantLimit = 1134329856
+AuthBit = 1128267776
+ItemKey = 
+StartDate = 1128923136
+EndDate = 0
+00000000:  00000000 02000000                     .... ....
+======== Entry 28 ========
+Title = maps/City_Zones/V_PvP_02_01/V_PvP_02_01.txt
+SKU = 6868119519308939289
+InventoryType = 811545136
+ProductFlags = 1816289073
+InventoryCount = 2036625263
+InventoryMax = 779706690
+ExpirationSecs = 6383476
+GrantLimit = 1109131264
+AuthBit = 1134526464
+ItemKey = 
+StartDate = 1135706112
+EndDate = 0
+00000000:  01000000 02000000                     .... ....
+======== Entry 29 ========
+Title = maps/City_Zones/V_PvP_04_01/V_PvP_04_01.txt
+SKU = 6868119519308939287
+InventoryType = 811545648
+ProductFlags = 1633115953
+InventoryCount = 1920295538
+InventoryMax = 1735667303
+ExpirationSecs = 97
+GrantLimit = 1117913088
+AuthBit = 1132691456
+ItemKey = 
+StartDate = 1133314048
+EndDate = 0
+00000000:  01000000 02000000                     .... ....
+======== Entry 30 ========
+Title = maps/City_Zones/V_PvP_05_01/V_PvP_05_01.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 3
+ItemKey =   
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..
+======== Entry 31 ========
+Title = maps/City_Zones/War_05_01/War_05_01.txt
+SKU = 6875977836605472795
+InventoryType = 811545904
+ProductFlags = 1750556465
+InventoryCount = 1348826217
+InventoryMax = 1852399980
+ExpirationSecs = 1735667315
+GrantLimit = 97
+AuthBit = 1098907648
+ItemKey = 
+StartDate = 1111752704
+EndDate = 1135411200
+00000000:  00000000 00000000 02000000            .... .... ....
+======== Entry 32 ========
+Title = maps/City_Zones/Coop_06_01/Coop_06_01.txt
+SKU = 7237954729383821340
+InventoryType = 1597190239
+ProductFlags = 1147089200
+InventoryCount = 1097560673
+InventoryMax = 1919906931
+ExpirationSecs = 1949196649
+GrantLimit = 24935
+AuthBit = 1138819072
+ItemKey = 
+StartDate = 1139605504
+EndDate = 1135443968
+00000000:  00000000 00000000 02000000            .... .... ....
+======== Entry 33 ========
+Title = maps/City_Zones/Hazard_06_01/Hazard_06_01.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 0
+ItemKey = 
+StartDate = 0
+EndDate = 0
+======== Entry 34 ========
+Title = maps/City_Zones/Hazard_06_02/Hazard_06_02.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 0
+ItemKey = 
+StartDate = 0
+EndDate = 0
+======== Entry 35 ========
+Title = maps/City_Zones/Hazard_06_03/Hazard_06_03.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 0
+ItemKey = 
+StartDate = 0
+EndDate = 0
+======== Entry 36 ========
+Title = maps/City_Zones/Trial_06_01/Trial_06_01.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 0
+ItemKey = 
+StartDate = 0
+EndDate = 0
+======== Entry 37 ========
+Title = maps/City_Zones/Trial_01_02/Trial_01_02.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 0
+ItemKey = 
+StartDate = 0
+EndDate = 0
+======== Entry 38 ========
+Title = maps/City_Zones/Trial_01_01/Trial_01_01.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 0
+ItemKey = 
+StartDate = 0
+EndDate = 0
+======== Entry 39 ========
+Title = maps/City_Zones/Hazard_01_03/Hazard_01_03.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 0
+ItemKey = 
+StartDate = 0
+EndDate = 0
+======== Entry 40 ========
+Title = maps/City_Zones/Trial_04_02/Trial_04_02.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 0
+ItemKey = 
+StartDate = 0
+EndDate = 0
+======== Entry 41 ========
+Title = maps/City_Zones/V_Trial_04_03/V_Trial_04_03.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 1
+ItemKey =  
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..
+======== Entry 42 ========
+Title = maps/City_Zones/City_06_01/City_06_01.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 0
+ItemKey = 
+StartDate = 0
+EndDate = 0
+======== Entry 43 ========
+Title = maps/City_Zones/V_City_06_01/V_City_06_01.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 1
+ItemKey =  
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..
+======== Entry 44 ========
+Title = maps/City_Zones/City_03_04/City_03_04.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 3
+ItemKey =   
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..
+======== Entry 45 ========
+Title = maps/City_Zones/City_02_04/City_02_04.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 3
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..
+======== Entry 46 ========
+Title = maps/City_Zones/P_City_00_01/P_City_00_01.txt
+SKU = 8751735713970520095
+InventoryType = 1596993631
+ProductFlags = 1314861360
+InventoryCount = 1600222831
+InventoryMax = 1700885072
+ExpirationSecs = 1769107316
+GrantLimit = 1735667297
+AuthBit = 97
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  AC430000 24430080 C7430000 78430000   .C.. $C.. .C.. xC..
+00000010:  00000200 00000400 0000                .... .... ..
+======== Entry 47 ========
+Title = maps/City_Zones/P_City_00_02/P_City_00_02.txt
+SKU = 8751735713970520094
+InventoryType = 1596993631
+ProductFlags = 1230975536
+InventoryCount = 1919250541
+InventoryMax = 1600938345
+ExpirationSecs = 2037672259
+GrantLimit = 1634169902
+AuthBit = 1130168320
+ItemKey = 
+StartDate = 1133412352
+EndDate = 1132396544
+00000000:  00000000 02000000 04000000            .... .... ....
+======== Entry 48 ========
+Title = maps/City_Zones/P_City_00_03/P_City_00_03.txt
+SKU = 8751735713970520092
+InventoryType = 1596993631
+ProductFlags = 1314861872
+InventoryCount = 1920234853
+InventoryMax = 1819242607
+ExpirationSecs = 1949201257
+GrantLimit = 24935
+AuthBit = 1106771968
+ItemKey = 
+StartDate = 1124204544
+EndDate = 1132822528
+00000000:  00000000 02000000 04000000            .... .... ....
+======== Entry 49 ========
+Title = maps/City_Zones/P_City_00_06/P_City_00_06.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 2
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..
+======== Entry 50 ========
+Title = maps/City_Zones/P_City_00_07/P_City_00_07.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 2
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..
+======== Entry 51 ========
+Title = maps/City_Zones/P_City_00_08/P_City_00_08.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 2
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..
+======== Entry 52 ========
+Title = maps/City_Zones/P_City_00_04/P_City_00_04.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 2
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..
+======== Entry 53 ========
+Title = maps/City_Zones/P_City_00_09/P_City_00_09.txt
+SKU = 3343206294465478665
+InventoryType = 6383476
+ProductFlags = 0
+InventoryCount = 0
+InventoryMax = 0
+ExpirationSecs = 0
+GrantLimit = 1
+AuthBit = 2
+ItemKey = 
+StartDate = 0
+EndDate = 0
+00000000:  0000                                  ..

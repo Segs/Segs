@@ -1,0 +1,141 @@
+#CODE#
+No Codes
+Unformatted plain text
+
+
+
+
+
+
+
+
+
+
+
+#CODE#
+Official Forums (vBulletin)
+Used by the official CoX foums.
+[color=%VAL%]
+[/color]
+[code]
+[/code]
+[b]
+[/b]
+[i]
+[/i]
+[u]
+[/u]
+ 
+#CODE#
+HTML Export
+Exports HTML codes instead of BBCode.
+<font color="%VAL%">
+</font>
+<small><code>
+</code></small>
+<b>
+</b>
+<i>
+</i>
+<u>
+</u>
+ 
+#CODE#
+LiveJournal HTML
+As HTML export, but with no <br /> tags
+<font color="%VAL%">
+</font>
+<small><code>
+</code></small>
+<b>
+</b>
+<i>
+</i>
+<u>
+</u>
+ 
+#CODE#
+Titan Forums (SMF)
+Simple Machines Forum
+[color=%VAL%]
+[/color]
+[code]
+[/code]
+[b]
+[/b]
+[i]
+[/i]
+[u]
+[/u]
+ 
+#CODE#
+phpBB / Zetaboards
+Format of choice for Honourable United and the Elflings
+[color=%VAL%]
+[/color]
+[code]
+[/code]
+[b]
+[/b]
+[i]
+[/i]
+[u]
+[/u]
+ 
+#CODE#
+Universal Codes
+No font size or colour attributes
+
+
+
+
+[b]
+[/b]
+[i]
+[/i]
+[u]
+[/u]
+ 
+#CODE#
+AkBBS/Runboard
+These codes work with Runboard
+[col=%VAL%]
+[/col]
+[small][code]
+[/code][/small]
+[b]
+[/b]
+[i]
+[/i]
+[u]
+[/u]
+ 
+#CODE#
+EZBoard
+
+[font color=%VAL%]
+[/font]
+[font size=1][code]
+[/code][/font]
+[b]
+[/b]
+[i]
+[/i]
+[u]
+[/u]
+ 
+#CODE#
+UNB Forum Export
+Support for UNB forums which use an alternate list style.
+[color=%VAL%]
+[/color]
+[code]
+[/code]
+[b]
+[/b]
+[i]
+[/i]
+[u]
+[/u]
+ 
+#END#
