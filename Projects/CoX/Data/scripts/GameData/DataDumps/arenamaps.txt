@@ -1,0 +1,77 @@
+Using record type: ArenaMap
+Dumping 15 records...
+======== Entry 0 ========
+MapDisplayName = Office (2-20) (P762320424)
+MapName = maps/Arena/Arena_AbOffice_01/Arena_AbOffice_01.txt
+MinPlayers = 2
+MaxPlayers = 20
+======== Entry 1 ========
+MapDisplayName = Atlas (2+) (P2951014357)
+MapName = maps/Arena/Arena_Atlas_01/Arena_Atlas_01.txt
+MinPlayers = 2
+MaxPlayers = 9999
+======== Entry 2 ========
+MapDisplayName = Cargo Ship (2-20) (P1316924913)
+MapName = maps/Arena/Arena_CargoShip_01/Arena_CargoShip_01.txt
+MinPlayers = 2
+MaxPlayers = 20
+======== Entry 3 ========
+MapDisplayName = Eden (2+) (P2058816993)
+MapName = maps/Arena/Arena_Eden_01/Arena_Eden_01.txt
+MinPlayers = 2
+MaxPlayers = 9999
+======== Entry 4 ========
+MapDisplayName = Graveyard (2+) (P2725265169)
+MapName = maps/Arena/Arena_Graveyard_01/Arena_Graveyard_01.txt
+MinPlayers = 2
+MaxPlayers = 9999
+======== Entry 5 ========
+MapDisplayName = Industrial (2+) (P850511613)
+MapName = maps/Arena/Arena_Industrial_01/Arena_Industrial_01.txt
+MinPlayers = 2
+MaxPlayers = 9999
+======== Entry 6 ========
+MapDisplayName = Outbreak (2+) (P206504110)
+MapName = maps/Arena/Arena_OutbreakRuin_01/Arena_OutbreakRuin_01.txt
+MinPlayers = 2
+MaxPlayers = 9999
+======== Entry 7 ========
+MapDisplayName = Perez Park (2-20) (P4235284209)
+MapName = maps/Arena/Arena_Perez_01/Arena_Perez_01.txt
+MinPlayers = 2
+MaxPlayers = 20
+======== Entry 8 ========
+MapDisplayName = Skyway City (2+) (P3225451915)
+MapName = maps/Arena/Arena_Skyway_01/Arena_Skyway_01.txt
+MinPlayers = 2
+MaxPlayers = 9999
+======== Entry 9 ========
+MapDisplayName = Caves (2-20) (P1978593395)
+MapName = maps/Arena/Arena_SmoothCaves_01/Arena_SmoothCaves_01.txt
+MinPlayers = 2
+MaxPlayers = 20
+======== Entry 10 ========
+MapDisplayName = Steel Canyon (2+) (P2161206650)
+MapName = maps/Arena/Arena_steel_01/Arena_steel_01.txt
+MinPlayers = 2
+MaxPlayers = 9999
+======== Entry 11 ========
+MapDisplayName = Striga (2+) (P1583033682)
+MapName = maps/Arena/Arena_Striga_01/Arena_Striga_01.txt
+MinPlayers = 2
+MaxPlayers = 9999
+======== Entry 12 ========
+MapDisplayName = Tech Lab (2-20) (P2315462895)
+MapName = maps/Arena/Arena_Tech_01/Arena_Tech_01.txt
+MinPlayers = 2
+MaxPlayers = 20
+======== Entry 13 ========
+MapDisplayName = Cage Match (2-10) (P2170022914)
+MapName = maps/Arena/Arena_PocketD_01/Arena_PocketD_01.txt
+MinPlayers = 2
+MaxPlayers = 10
+======== Entry 14 ========
+MapDisplayName = Coliseum (2-20) (P1100638613)
+MapName = maps/Arena/Arena_Coliseum/Arena_Coliseum.txt
+MinPlayers = 2
+MaxPlayers = 20

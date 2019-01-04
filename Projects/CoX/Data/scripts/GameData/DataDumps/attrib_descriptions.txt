@@ -1,0 +1,644 @@
+Using record type: AttribDescription
+Dumping 7 records...
+======== Entry 0 ========
+AttribCategory = Base (BaseAttribCategory)
+Attrib = 
+    -------- Attrib 0 --------
+    Name = HitPoints
+    DisplayName = Current Hit Points (HitPointsString)
+    Tooltip = Hitpoints indicate how much life you have.  Don't let them reach zero! (HitPointsToolTip)
+    Type = 0
+    Style = 0
+    Key = 0
+    Offset = 80
+    ShowBase = 0
+    -------- Attrib 1 --------
+    Name = HitPoints
+    DisplayName = Max Hit Points (HitPointsMaxString)
+    Tooltip = This is your maximum hitpoint value.  Powers like Dull Pain can raise this value. (HitPointsMaxToolTip)
+    Type = 3
+    Style = 0
+    Key = 0
+    Offset = 80
+    ShowBase = 0
+    -------- Attrib 2 --------
+    Name = Endurance
+    DisplayName = Current Endurance (EnduranceString)
+    Tooltip = Endurance indicates your remaining ability to fight.  If it gets too low you may not be able to activate some powers. (EnduranceToolTip)
+    Type = 0
+    Style = 0
+    Key = 0
+    Offset = 88
+    ShowBase = 0
+    -------- Attrib 3 --------
+    Name = Endurance
+    DisplayName = Max Endurance (EnduranceMaxString)
+    Tooltip = Not many things will boost you maximum endurance. (EnduranceMaxToolTip)
+    Type = 3
+    Style = 0
+    Key = 0
+    Offset = 88
+    ShowBase = 0
+    -------- Attrib 4 --------
+    Name = Regeneration
+    DisplayName = Regeneration Rate (RegenerationString)
+    Tooltip = Regeneration is how quickly you regain lost hitpoints. (RegenerationToolTip)
+    Type = 0
+    Style = 5
+    Key = 0
+    Offset = 232
+    ShowBase = 1
+    -------- Attrib 5 --------
+    Name = Recovery
+    DisplayName = Recovery Rate (RecoveryString)
+    Tooltip = Recovery measures the speed at which you regain endurance. (RecoveryToolTip)
+    Type = 0
+    Style = 5
+    Key = 0
+    Offset = 236
+    ShowBase = 1
+    -------- Attrib 6 --------
+    Name = EnduranceConsumption
+    DisplayName = Endurance Consumption (EnduranceConsumptionString)
+    Tooltip = This is the average endurance usage of all currently running toggle powers. (EnduranceConsumptionToolTip)
+    Type = 6
+    Style = 5
+    Key = 3
+    Offset = 3
+    ShowBase = 0
+    -------- Attrib 7 --------
+    Name = ToHit
+    DisplayName = To Hit Bonus (ToHitString)
+    Tooltip = To&nbsp;Hit is an important part of your actual chance to hit a target.  Hit Chance = Clamp(Player Accuracy * Power Accuracy * Clamp( To&nbsp;Hit - Target Defense )). The clamp keeps numbers between 5% and 95%. (ToHitToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 100
+    ShowBase = 1
+    -------- Attrib 8 --------
+    Name = Accuracy
+    DisplayName = Accuracy Bonus (AccuracyString)
+    Tooltip = Accuracy is an important part of your actual chance to hit an opponent.  Hit Chance = Clamp(Player Accuracy * Power Accuracy * Clamp( To&nbsp;Hit - Target Defense )). The clamp keeps numbers between 5% and 95%.  Please note that many powers incorrectly display they are boosting ACC when they are really boosting To&nbsp;Hit, we'll hopefully fix that at some point. (AccuracyToolTip)
+    Type = 1
+    Style = 8
+    Key = 0
+    Offset = 336
+    ShowBase = 0
+    -------- Attrib 9 --------
+    Name = LastHitChance
+    DisplayName = Last Hit Chance (LastHitChanceString)
+    Tooltip = This is the last net hit chance rolled for a click-type power. (LastHitChanceToolTip)
+    Type = 6
+    Style = 1
+    Key = 4
+    Offset = 4
+    ShowBase = 0
+    -------- Attrib 10 --------
+    Name = DamageType[0]
+    DisplayName = Damage Bonus (DamageBuffString)
+    Tooltip = This is bonus damage to ALL powers. (DamageBuffToolTip)
+    Type = 1
+    Style = 4
+    Key = 0
+    Offset = 0
+    ShowBase = 0
+    -------- Attrib 11 --------
+    Name = DamageType[7]
+    DisplayName = Healing Bonus (HealingBuffString)
+    Tooltip = This is your bonus to all healing powers. (HealingBuffToolTip)
+    Type = 1
+    Style = 4
+    Key = 0
+    Offset = 28
+    ShowBase = 0
+    -------- Attrib 12 --------
+    Name = DamageType[7]
+    DisplayName = Healing Received Bonus (HealingReceivedString)
+    Tooltip = Most healing received by you is modified by this percentage. (HealingReceivedToolTip)
+    Type = 2
+    Style = 11
+    Key = 0
+    Offset = 28
+    ShowBase = 0
+    -------- Attrib 13 --------
+    Name = RechargeTime
+    DisplayName = Recharge Time Bonus (RechargeTimeString)
+    Tooltip = This is a recharge bonus affecting ALL powers. (RechargeTimeToolTip)
+    Type = 1
+    Style = 4
+    Key = 0
+    Offset = 356
+    ShowBase = 0
+    -------- Attrib 14 --------
+    Name = EnduranceDiscount
+    DisplayName = Endurance Discount (EnduranceDiscountString)
+    Tooltip = This is the endurance discount affecting all powers. (EnduranceDiscountToolTip)
+    Type = 1
+    Style = 10
+    Key = 0
+    Offset = 364
+    ShowBase = 0
+    -------- Attrib 15 --------
+    Name = StealthRadius
+    DisplayName = Stealth Radius (PvE) (StealthRadiusStringPvE)
+    Tooltip = Stealth radius is the distance subtracted from the perception radius of a critter. A typical minion has a perception of 45 ft.  If a player has a stealth radius of 35 ft, then the typical minion will only be able to detect the player if they are closer than 10 ft. (StealthRadiusToolTip)
+    Type = 0
+    Style = 3
+    Key = 0
+    Offset = 220
+    ShowBase = 1
+    -------- Attrib 16 --------
+    Name = StealthRadiusPlayer
+    DisplayName = Stealth Radius (PvP) (StealthRadiusStringPvP)
+    Tooltip = Players have much higher perception than critters so stealth powers have a larger effect against other players (StealthRadiusPlayerToolTip)
+    Type = 0
+    Style = 3
+    Key = 0
+    Offset = 224
+    ShowBase = 1
+    -------- Attrib 17 --------
+    Name = PerceptionRadius
+    DisplayName = Perception Radius (PerceptionRadiusString)
+    Tooltip = Perception radius is the distance at which you can detect hostile enemies. (PerceptionRadiusToolTip)
+    Type = 0
+    Style = 3
+    Key = 0
+    Offset = 228
+    ShowBase = 1
+    -------- Attrib 18 --------
+    Name = Range
+    DisplayName = Range Bonus (RangeString)
+    Tooltip = This is the range bonus affecting all powers. (RangeToolTip)
+    Type = 1
+    Style = 4
+    Key = 0
+    Offset = 348
+    ShowBase = 0
+    -------- Attrib 19 --------
+    Name = ThreatLevel
+    DisplayName = Threat Level (ThreatLevelString)
+    Tooltip = Threat level is a modifier applied to all attacks.  Higher threat levels mean damage you do will be more likely to draw an enemy's attention. (ThreatLevelToolTip)
+    Type = 0
+    Style = 0
+    Key = 0
+    Offset = 244
+    ShowBase = 1
+    -------- Attrib 20 --------
+    Name = CombatModShift
+    DisplayName = Level Shift (CombatModShiftString)
+    Tooltip = This is effective shift in combat levels you will experience relative to your actual combat level. (CombatModShiftToolTip)
+    Type = 6
+    Style = 9
+    Key = 0
+    Offset = 0
+    ShowBase = 0
+    -------- Attrib 21 --------
+    Name = CurrentXP
+    DisplayName = Experience to Next Level (CurrentXPToLevelString)
+    Tooltip = This is how much experience is needed to reach the next level. (CurrentXPToLevelToolTip)
+    Type = 6
+    Style = 9
+    Key = 1
+    Offset = 1
+    ShowBase = 0
+    -------- Attrib 22 --------
+    Name = CurrentDebt
+    DisplayName = Experience Debt (CurrentDebtString)
+    Tooltip = This is how much experience debt you currently have.  While you have experience debt, half of any earned experience goes towards paying off the debt. (CurrentDebtToolTip)
+    Type = 6
+    Style = 9
+    Key = 2
+    Offset = 2
+    ShowBase = 0
+    -------- Attrib 23 --------
+    Name = Influence:  (Influence)
+    DisplayName = Influence (InfluenceString)
+    Tooltip = Influence is the commodity of heroes. The more a hero does in Paragon City, the more "pull" he's got with various people and organizations. Heroes may spend Influence as if it were currency. (InfluenceToolTip)
+    Type = 6
+    Style = 0
+    Key = 5
+    Offset = 5
+    ShowBase = 0
+======== Entry 1 ========
+AttribCategory = Movement (MovementAttribCategory)
+Attrib = 
+    -------- Attrib 0 --------
+    Name = SpeedRunning
+    DisplayName = Running Speed (SpeedRunningString)
+    Tooltip = This is your maximum run speed. (SpeedRunningToolTip)
+    Type = 0
+    Style = 6
+    Key = 0
+    Offset = 188
+    ShowBase = 1
+    -------- Attrib 1 --------
+    Name = SpeedFlying
+    DisplayName = Flying Speed (SpeedFlyingString)
+    Tooltip = This is your maximum flying speed. (SpeedFlyingToolTip)
+    Type = 0
+    Style = 6
+    Key = 0
+    Offset = 192
+    ShowBase = 1
+    -------- Attrib 2 --------
+    Name = SpeedJumping
+    DisplayName = Jumping Speed (SpeedJumpingString)
+    Tooltip = This is your maximum speed while jumping.  After you hit your maximum jump height you begin to fall and this speed no longer applies. (SpeedJumpingToolTip)
+    Type = 0
+    Style = 6
+    Key = 0
+    Offset = 200
+    ShowBase = 1
+    -------- Attrib 3 --------
+    Name = JumpHeight
+    DisplayName = Max Jump Height (JumpHeightString)
+    Tooltip = This is your maximum jump height.  This height is subtracted from the fall distance when calculating falling damage. (JumpHeightToolTip)
+    Type = 0
+    Style = 3
+    Key = 0
+    Offset = 204
+    ShowBase = 1
+======== Entry 2 ========
+AttribCategory = Damage Resistance (DamageResistanceAttribCategory)
+Attrib = 
+    -------- Attrib 0 --------
+    Name = DamageType[0]
+    DisplayName = Smashing Resistance (SmashResistString)
+    Tooltip = This is your resistance to smashing damage. (SmashResistToolTip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 0
+    ShowBase = 0
+    -------- Attrib 1 --------
+    Name = DamageType[1]
+    DisplayName = Lethal Resistance (LethalResitString)
+    Tooltip = This is your resistance to lethal damage. (LethalResitToolTip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 4
+    ShowBase = 0
+    -------- Attrib 2 --------
+    Name = DamageType[2]
+    DisplayName = Fire Resistance (FireResistString)
+    Tooltip = This is your resistance to fire damage. (FireResistToolTip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 8
+    ShowBase = 0
+    -------- Attrib 3 --------
+    Name = DamageType[3]
+    DisplayName = Cold Resistance (ColdResistString)
+    Tooltip = This is your resistance to cold damage. (ColdResistToolTip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 12
+    ShowBase = 0
+    -------- Attrib 4 --------
+    Name = DamageType[4]
+    DisplayName = Energy Resistance (EngResistString)
+    Tooltip = This is your resistance to energy damage. (EngResistToolTip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 16
+    ShowBase = 0
+    -------- Attrib 5 --------
+    Name = DamageType[5]
+    DisplayName = Negative Energy Resistance (NegResistString)
+    Tooltip = This is your resistance to negative energy damage. (NegResistToolTip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 20
+    ShowBase = 0
+    -------- Attrib 6 --------
+    Name = DamageType[6]
+    DisplayName = Psionic Resistance (PsiResistString)
+    Tooltip = This is your resistance to psionic damage. (PsiResistToolTip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 24
+    ShowBase = 0
+    -------- Attrib 7 --------
+    Name = DamageType[9]
+    DisplayName = Toxic Resistance (ToxicResistString)
+    Tooltip = This is your resistance to toxic damage. (ToxicResistToolTip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 36
+    ShowBase = 0
+======== Entry 3 ========
+AttribCategory = Defense (DefenseAttribCategory)
+Attrib = 
+    -------- Attrib 0 --------
+    Name = Defense
+    DisplayName = Base Defense (BaseDefenseString)
+    Tooltip = This is your base defense against any type of attack. Your net defense is the base defense plus the greatest typed defense applicable to the incoming attack. (BaseDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 184
+    ShowBase = 0
+    -------- Attrib 1 --------
+    Name = DefenseType[0]
+    DisplayName = Ranged Defense (RangedDefenseString)
+    Tooltip = This is your defense against powers tagged as a ranged attack. (RangedDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 104
+    ShowBase = 0
+    -------- Attrib 2 --------
+    Name = DefenseType[1]
+    DisplayName = Melee Defense (MeleeDefenseString)
+    Tooltip = This is your defense against powers tagged as a melee attack. (MeleeDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 108
+    ShowBase = 0
+    -------- Attrib 3 --------
+    Name = DefenseType[2]
+    DisplayName = AOE Defense (AOEDefenseString)
+    Tooltip = This is your defense against powers tagged as an AoE attack. (AOEDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 112
+    ShowBase = 0
+    -------- Attrib 4 --------
+    Name = DefenseType[3]
+    DisplayName = Smashing Defense (SmashDefenseString)
+    Tooltip = This is your defense against attacks tagged as dealing smashing damage. (SmashDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 116
+    ShowBase = 0
+    -------- Attrib 5 --------
+    Name = DefenseType[4]
+    DisplayName = Lethal Defense (LethalDefenseString)
+    Tooltip = This is your defense against attacks tagged as dealing lethal damage. (LethalDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 120
+    ShowBase = 0
+    -------- Attrib 6 --------
+    Name = DefenseType[5]
+    DisplayName = Fire Defense (FireDefenseString)
+    Tooltip = This is your defense against attacks tagged as dealing fire damage. (FireDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 124
+    ShowBase = 0
+    -------- Attrib 7 --------
+    Name = DefenseType[6]
+    DisplayName = Cold Defense (ColdDefenseString)
+    Tooltip = This is your defense against attacks tagged as dealing cold damage. (ColdDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 128
+    ShowBase = 0
+    -------- Attrib 8 --------
+    Name = DefenseType[7]
+    DisplayName = Energy Defense (EngDefenseString)
+    Tooltip = This is your defense against attacks tagged as dealing energy damage. (EngDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 132
+    ShowBase = 0
+    -------- Attrib 9 --------
+    Name = DefenseType[8]
+    DisplayName = Negative Energy Defense (NegDefenseString)
+    Tooltip = This is your defense against attacks tagged as dealing negative energy damage. (NegDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 136
+    ShowBase = 0
+    -------- Attrib 10 --------
+    Name = DefenseType[9]
+    DisplayName = Psionic Defense (PsiDefenseString)
+    Tooltip = This is your defense against attacks tagged as dealing psionic damage. (PsiDefenseToolTip)
+    Type = 0
+    Style = 1
+    Key = 0
+    Offset = 140
+    ShowBase = 0
+======== Entry 4 ========
+AttribCategory = Debuff Resistance (DebuffResistAttribCategory)
+Attrib = 
+    -------- Attrib 0 --------
+    Name = Regeneration
+    DisplayName = Regeneration Resistance (RegenerationResistString)
+    Tooltip = This is your resistance to regeneration debuffs. (RegenerationResistTooltip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 232
+    ShowBase = 0
+    -------- Attrib 1 --------
+    Name = Recovery
+    DisplayName = Recovery Resistance (RecoveryResistString)
+    Tooltip = This is your resistance to recovery debuffs. (RecoveryResistTooltip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 236
+    ShowBase = 0
+    -------- Attrib 2 --------
+    Name = ToHit
+    DisplayName = To Hit Resistance (ToHitResistString)
+    Tooltip = This is your resistance to To&nbsp;Hit debuffs. (ToHitResistTooltip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 100
+    ShowBase = 0
+    -------- Attrib 3 --------
+    Name = RechargeTime
+    DisplayName = Recharge Time Resistance (RechargeTimeResistString)
+    Tooltip = This is your resistance to recharge time debuffs. (RechargeTimeResistTooltip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 356
+    ShowBase = 0
+    -------- Attrib 4 --------
+    Name = Defense
+    DisplayName = Defense Resistance (DefenseResistString)
+    Tooltip = This is your resistance to defense debuffs. (DefenseResistTooltip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 184
+    ShowBase = 0
+======== Entry 5 ========
+AttribCategory = Status Effect Protection (StatusAttribCategory)
+Attrib = 
+    -------- Attrib 0 --------
+    Name = Held
+    DisplayName = Hold Protection (HeldString)
+    Tooltip = This is your protection against holds. If this number becomes negative you, will be held and unable to activate most powers or move.  Common hold powers will decrease this number by 3 per application. (HeldToolTip)
+    Type = 4
+    Style = 2
+    Key = 0
+    Offset = 268
+    ShowBase = 0
+    -------- Attrib 1 --------
+    Name = Immobilized
+    DisplayName = Immobilize Protection (ImmobilizedString)
+    Tooltip = This is your protection against immobilization or roots.  If this number becomes negative you will be rooted and unable to move. (ImmobilizedToolTip)
+    Type = 4
+    Style = 2
+    Key = 0
+    Offset = 272
+    ShowBase = 0
+    -------- Attrib 2 --------
+    Name = Stunned
+    DisplayName = Stun Protection (StunnedString)
+    Tooltip = This is your protection against stuns.  If this number becomes negative you will be stunned, your movement speed will be greatly reduced and you will not be able to activate most powers. (StunnedToolTip)
+    Type = 4
+    Style = 2
+    Key = 0
+    Offset = 276
+    ShowBase = 0
+    -------- Attrib 3 --------
+    Name = Sleep
+    DisplayName = Sleep Protection (SleepString)
+    Tooltip = This is your protection against sleep.  If this number becomes negative you will fall asleep. While sleeping you cannot move or activate most powers. Damage and many ally buffs will wake you up. (SleepToolTip)
+    Type = 4
+    Style = 2
+    Key = 0
+    Offset = 280
+    ShowBase = 0
+    -------- Attrib 4 --------
+    Name = Knockback
+    DisplayName = Knockback Protection (KnockbackString)
+    Tooltip = This is your protection against knockback, knockup, and knockdown.  You will only be knocked about by powers with knockback magnitudes greater than this number. (KnockbackToolTip)
+    Type = 4
+    Style = 2
+    Key = 0
+    Offset = 328
+    ShowBase = 0
+    -------- Attrib 5 --------
+    Name = Confused
+    DisplayName = Confuse Protection (ConfusedString)
+    Tooltip = This is your protection against confuse.  If this number becomes negative you will no longer be able to tell friend from foe and your AoE attacks will effect both! (ConfusedToolTip)
+    Type = 4
+    Style = 2
+    Key = 0
+    Offset = 256
+    ShowBase = 0
+    -------- Attrib 6 --------
+    Name = Terrorized
+    DisplayName = Terrorize Protection (TerrorizedString)
+    Tooltip = This is your protection against fear. If this number becomes negative you will be terrorized. While terrorized you will cower and be unable to move or activate most powers. Damaging attacks will briefly snap you out of it, use that time wisely! (TerrorizedToolTip)
+    Type = 4
+    Style = 2
+    Key = 0
+    Offset = 264
+    ShowBase = 0
+    -------- Attrib 7 --------
+    Name = Repel
+    DisplayName = Repel Protection (RepelString)
+    Tooltip = This is your protection against repel effects. (RepelToolTip)
+    Type = 4
+    Style = 2
+    Key = 0
+    Offset = 332
+    ShowBase = 0
+    -------- Attrib 8 --------
+    Name = Teleport
+    DisplayName = Teleport Protection (TeleportString)
+    Tooltip = This is your protection against enemy teleportations. (TeleportToolTip)
+    Type = 2
+    Style = 1
+    Key = 0
+    Offset = 292
+    ShowBase = 0
+======== Entry 6 ========
+AttribCategory = Status Effect Resistance (StatusResistanceAttribCategory)
+Attrib = 
+    -------- Attrib 0 --------
+    Name = Held
+    DisplayName = Hold Resistance (HeldResistString)
+    Tooltip = This resistance lowers the duration of hold effects on your character (which will also make stacking those effects more difficult). (HeldResistToolTip)
+    Type = 2
+    Style = 7
+    Key = 0
+    Offset = 268
+    ShowBase = 0
+    -------- Attrib 1 --------
+    Name = Immobilized
+    DisplayName = Immobilize Resistance (ImmobilizedResistString)
+    Tooltip = This resistance lowers the duration of immobilized effects on you character. (ImmobilizedResistToolTip)
+    Type = 2
+    Style = 7
+    Key = 0
+    Offset = 272
+    ShowBase = 0
+    -------- Attrib 2 --------
+    Name = Stunned
+    DisplayName = Stun Resistance (StunnedResistString)
+    Tooltip = This resistance lowers the duration of stuns. (StunnedResistToolTip)
+    Type = 2
+    Style = 7
+    Key = 0
+    Offset = 276
+    ShowBase = 0
+    -------- Attrib 3 --------
+    Name = Sleep
+    DisplayName = Sleep Resistance (SleepResistString)
+    Tooltip = This resistance lowers the duration of sleeps. (SleepResistToolTip)
+    Type = 2
+    Style = 7
+    Key = 0
+    Offset = 280
+    ShowBase = 0
+    -------- Attrib 4 --------
+    Name = Confused
+    DisplayName = Confuse Resistance (ConfusedResistString)
+    Tooltip = This resistance lowers the duration of confuse effects. (ConfusedResistToolTip)
+    Type = 2
+    Style = 7
+    Key = 0
+    Offset = 256
+    ShowBase = 0
+    -------- Attrib 5 --------
+    Name = Terrorized
+    DisplayName = Terrorize Resistance (TerrorizedResistString)
+    Tooltip = This resistance lowers the duration of fear effects. (TerrorizedResistToolTip)
+    Type = 2
+    Style = 7
+    Key = 0
+    Offset = 264
+    ShowBase = 0
+    -------- Attrib 6 --------
+    Name = Placate
+    DisplayName = Placate Resistance (PlacateResistString)
+    Tooltip = This resistance lowers the duration of placate effects. (PlacateResistToolTip)
+    Type = 2
+    Style = 7
+    Key = 0
+    Offset = 252
+    ShowBase = 0
+    -------- Attrib 7 --------
+    Name = Taunt (Taunt)
+    DisplayName = Taunt Resistance (TauntResistString)
+    Tooltip = This resistance lowers the duration of taunt effects in PvP. (TauntResistToolTip)
+    Type = 2
+    Style = 7
+    Key = 0
+    Offset = 248
+    ShowBase = 0

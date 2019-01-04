@@ -1,0 +1,32 @@
+Using record type: Origin
+Dumping 5 records...
+======== Entry 0 ========
+Name = Science (Science)
+DisplayName = Science (P156406070)
+DisplayHelp = You received your powers either through purposeful scientific inquiry or some accident gone awry. You have since learned to harness your newfound abilities, becoming a powerful force in the world. <BR><BR>This origin will give you access to Tranq Dart. This item has a very short range and deals minor Lethal and Toxic damage. In addition there is a small chance you can put the target to Sleep with this dart, but they will wake up the next time they are damaged or healed. (P3549304122)
+DisplayShortHelp = You earned your powers through the benefits of modern science, either through experimentation or by accident. (P2539989056)
+Icon = originicon_Science.tga
+======== Entry 1 ========
+Name = Mutation (Mutation)
+DisplayName = Mutation (P2670304686)
+DisplayHelp = You were born with abilities which set you apart from the rest of humankind. Your powers manifested at birth, puberty, or possibly adulthood. Mutants are often viewed with awe and fear by those who don't understand them. <BR><BR>This origin will give you access to Mutagen. This item has a very short range and deals minor Energy damage, as well as lowering the damage the affected target deals out. (P1692024059)
+DisplayShortHelp = Your powers are derived from genetic manipulation or evolutionary alteration. (P1486806203)
+Icon = originicon_Mutation.tga
+======== Entry 2 ========
+Name = Magic (Magic)
+DisplayName = Magic (P2828924433)
+DisplayHelp = You receive your powers from a magical source. These abilities might come from a mystical artifact bestowed upon you, the mastery of numerous magical spells, or pacts made with powerful dimensional entities. <BR><BR>This origin will give you access to Apprentice Charm. This item has a very short range and deals minor Energy damage, as well as lowering the target's resistance to further damage. (P3100147361)
+DisplayShortHelp = Your powers are tied to mystical or divine forces that you control. (P580814109)
+Icon = originicon_Magic.tga
+======== Entry 3 ========
+Name = Technology (Technology)
+DisplayName = Technology (P1832865061)
+DisplayHelp = You derive your powers from technological devices, from suits of high-tech body armor to powerful energy weapons. Few have been able to duplicate the amazing technology which lies behind your gadgets. You need not be a brilliant inventor; you may have acquired these items from another source. <BR><BR>This origin will give you access to Taser Dart. This attack has a very short range and does minor Energy damage. In addition it has a small chance to Hold your opponent for a brief moment. (P2036370314)
+DisplayShortHelp = The source of your powers is the technological gadgets and devices you wield. (P1840045194)
+Icon = originicon_Technology.tga
+======== Entry 4 ========
+Name = Natural (Natural)
+DisplayName = Natural (P1850909986)
+DisplayHelp = You aren't 'super' at all; your amazing talents come from intense training and innate abilities. You might have been driven to physical excellence by some all-encompassing desire for perfection or revenge, or perhaps you are not human at all, and possess powers natural to your race. With your natural origin you have to rely on your cunning and skill. <BR><BR>This origin will give you access to Throwing Knives. This attack has a very short range and deals minor Lethal damage, as well as inflicting additional Damage over Time. (P3736344879)
+DisplayShortHelp = Your powers are simply natural talents that you have honed and developed to super-human levels. (P2258019155)
+Icon = originicon_Natural.tga

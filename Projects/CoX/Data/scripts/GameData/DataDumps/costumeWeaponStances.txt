@@ -1,0 +1,56 @@
+Using record type: CostumeWeaponStance
+Dumping 18 records...
+======== Entry 0 ========
+u001 = Bow (Bow)
+u002 = 128
+======== Entry 1 ========
+u001 = Custom_AssaultRifle
+u002 = 2304
+======== Entry 2 ========
+u001 = Custom_Axe
+u002 = 32
+======== Entry 3 ========
+u001 = Custom_BeamRifle
+u002 = 2304
+======== Entry 4 ========
+u001 = Custom_Bow
+u002 = 128
+======== Entry 5 ========
+u001 = Custom_Broadsword
+u002 = 32
+======== Entry 6 ========
+u001 = Custom_Claws
+u002 = 512
+======== Entry 7 ========
+u001 = Custom_DualBlades
+u002 = 512
+======== Entry 8 ========
+u001 = Custom_Katana
+u002 = 128
+======== Entry 9 ========
+u001 = Custom_LongStaff
+u002 = 64
+======== Entry 10 ========
+u001 = Custom_Mace
+u002 = 32
+======== Entry 11 ========
+u001 = Custom_Pistols
+u002 = 512
+======== Entry 12 ========
+u001 = Custom_PulseRifle
+u002 = 2304
+======== Entry 13 ========
+u001 = Custom_Spears
+u002 = 4096
+======== Entry 14 ========
+u001 = Custom_Staff
+u002 = 4096
+======== Entry 15 ========
+u001 = Custom_TitanWeapon
+u002 = 4096
+======== Entry 16 ========
+u001 = Custom_Whips
+u002 = 32
+======== Entry 17 ========
+u001 = CustomShields
+u002 = 16

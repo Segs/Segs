@@ -1,0 +1,162 @@
+Using record type: DetailCat
+Dumping 20 records...
+======== Entry 0 ========
+Name = Anchor
+DisplayName = Anchor (P1627198539)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 21
+ControlPriority = 21
+DetailPointer = 0
+======== Entry 1 ========
+Name = Battery
+DisplayName = Battery (P529780018)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 19
+ControlPriority = 19
+DetailPointer = 0
+======== Entry 2 ========
+Name = Control
+DisplayName = Control (P577115607)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 6
+ControlPriority = 6
+DetailPointer = 0
+======== Entry 3 ========
+Name = ControlAux
+DisplayName = Control Aux (P3138489878)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 7
+ControlPriority = 7
+DetailPointer = 0
+======== Entry 4 ========
+Name = Decorative
+DisplayName = Decorative (P1156312807)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 20
+ControlPriority = 20
+DetailPointer = 0
+======== Entry 5 ========
+Name = Defense
+DisplayName = Defense (P337169641)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 8
+ControlPriority = 8
+DetailPointer = 0
+======== Entry 6 ========
+Name = DefenseAux
+DisplayName = Defense Aux (P1471925978)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 9
+ControlPriority = 9
+DetailPointer = 0
+======== Entry 7 ========
+Name = Empowerment
+DisplayName = Empowerment (P3360419001)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 24
+ControlPriority = 24
+DetailPointer = 0
+======== Entry 8 ========
+Name = Energy
+DisplayName = Energy (P2428337319)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 22
+ControlPriority = 22
+DetailPointer = 0
+======== Entry 9 ========
+Name = EnergyAux
+DisplayName = Energy Aux (P3498774609)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 23
+ControlPriority = 23
+DetailPointer = 0
+======== Entry 10 ========
+Name = EnergyControl
+DisplayName = Start Up (P2916030754)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 5
+ControlPriority = 5
+DetailPointer = 0
+======== Entry 11 ========
+Name = Entrance
+DisplayName = Entrance (P2125202399)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 18
+ControlPriority = 18
+DetailPointer = 0
+======== Entry 12 ========
+Name = ItemsOfPower
+DisplayName = Items of Power (P3125742652)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 17
+ControlPriority = 17
+DetailPointer = 0
+======== Entry 13 ========
+Name = Medical
+DisplayName = Medical (P3093708486)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 3
+ControlPriority = 3
+DetailPointer = 0
+======== Entry 14 ========
+Name = MedicalAux
+DisplayName = Medical Aux (P2004250039)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 4
+ControlPriority = 4
+DetailPointer = 0
+======== Entry 15 ========
+Name = Storage
+DisplayName = Storage (P2613519016)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 16
+ControlPriority = 16
+DetailPointer = 0
+======== Entry 16 ========
+Name = Teleport
+DisplayName = Teleport (P569504987)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 11
+ControlPriority = 11
+DetailPointer = 0
+======== Entry 17 ========
+Name = TeleportAux
+DisplayName = Teleport Beacons (P48763820)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 12
+ControlPriority = 12
+DetailPointer = 0
+======== Entry 18 ========
+Name = Workshop
+DisplayName = Workshop (P1645830290)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 1
+ControlPriority = 1
+DetailPointer = 0
+======== Entry 19 ========
+Name = WorkshopAux
+DisplayName = Workshop Aux (P2610604043)
+DisplayHelp = 
+DisplayShortHelp = 
+EnergyPriority = 2
+ControlPriority = 2
+DetailPointer = 0
