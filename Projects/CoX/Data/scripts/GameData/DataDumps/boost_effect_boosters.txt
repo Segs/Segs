@@ -1,4 +1,0 @@
-Using record type: BoostEffect
-Dumping 1 records...
-======== Entry 0 ========
-Effect = [ 1, 1.05, 1.1, 1.15, 1.2, 1.25 ]

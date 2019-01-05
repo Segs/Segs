@@ -1,8 +1,0 @@
-Using record type: Origin
-Dumping 1 records...
-======== Entry 0 ========
-Name = Villain_Origin
-DisplayName = Villain_Origin
-DisplayHelp = 
-DisplayShortHelp = 
-Icon = 
