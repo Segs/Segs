@@ -106,17 +106,18 @@ void doPower(Entity &ent, QueuedPowers powerinput);
 void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int tgt_idx, float time);
 void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time);
 void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower);
-void doEffect(Entity &ent, Entity *target_ent, CharacterPower * ppower, StoredAttribMod mod);
+void doEffect(Entity &ent, Entity *target_ent, QString lower_name, float scale);
 void sendResult(Entity &src,Entity &tgt, QString name, float value);
 void removeBuff(Entity &ent, Buffs &buff);
 void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod attrib, uint entidx);
-void addBuff(Entity &ent, Buffs &buff);
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
+void autoPowerOn(Entity &ent);
 void increaseLevel(Entity &ent);
 bool checkPowerTarget(Entity &ent, Entity *target_ent, int32_t tgt_idx, Power_Data powtpl);
 bool checkPowerRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx);
 bool checkPowerRange(Entity &ent, Entity &target_ent, uint32_t range);
+bool checkPowerRange(Entity &ent, int32_t tgt_idx, uint32_t pset_idx, uint32_t pow_idx);
 /*
  * Lua Functions
  */

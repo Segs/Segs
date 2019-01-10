@@ -14,4 +14,5 @@ struct AllPowerCategories;
 
 static constexpr uint32_t powers_i0_requiredCrc=0xA53BBC94;
 bool loadFrom(BinStore *s, AllPowerCategories &target);
+bool loadFrom(const QString &filepath, AllPowerCategories &target);
 void saveTo(const AllPowerCategories &target,const QString &baseName,bool text_format=false);

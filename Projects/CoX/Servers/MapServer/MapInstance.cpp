@@ -2037,10 +2037,8 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         map_server->session_xfer_complete(session.link()->session_token());
     }
 
-    Parse_CharAttrib replace;
-    replace.m_HitPoints = session.m_ent->m_char->getHealth();
-    replace.m_Endurance = 100;
-    session.m_ent->m_char->m_char_data.m_current_attribs = replace;
+    initializeCharacter(*session.m_ent->m_char);
+    autoPowerOn(*session.m_ent);
 
     // Call Lua Connected function.
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
@@ -2304,7 +2302,6 @@ void MapInstance::on_activate_power(ActivatePower *ev)
         qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
         return;
     }
-
     checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
 }
 
@@ -2324,7 +2321,7 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
         qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
         return;
     }
-    if ((powtpl.EntsAffected[0] == StoredEntEnum::Caster ))//powtpl.Target == StoredEntEnum::Teleport &&
+    if ((powtpl.EntsAffected[0] == StoredEntEnum::Caster ))
         tgt_idx = session.m_ent->m_idx;
     session.m_ent->m_target_loc = ev->location;
     checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
@@ -2640,6 +2637,7 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     addPower(session.m_ent->m_char->m_char_data, ev->ppool);
+    autoPowerOn(*session.m_ent);
 }
 
 void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)

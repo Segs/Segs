@@ -533,7 +533,7 @@ void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location)
 
 void sendStance(MapClientSession &sess, PowerStance &stance)
 {
-    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    //qCDebug(logSlashCommand) << "Sending new PowerStance";
     sess.addCommand<SendStance>(stance);
 }
 
@@ -579,10 +579,9 @@ void sendDoorAnimExit(MapClientSession &sess, bool force_move)
 
 
 /*
- * usePower and increaseLevel here to provide access to
- * both Entity and sendInfoMessage
+ * checkPower is called when a player first click a power, sends error messages
  */
-void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)//this is called when you first click a power, sends error messages
+void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
 {
     QString from_msg, to_msg;
     CharacterPower * ppower = nullptr;
@@ -591,7 +590,7 @@ void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_id
     const Power_Data powtpl = ppower->getPowerTemplate();
     if(ppower == nullptr || powtpl.m_Name.isEmpty())
         return;
-    if(ent.m_char->getHealth() == 0.0f && powtpl.CastableAfterDeath == 0)   //Allows self rez
+    if(/*ent.m_char->getHealth() == 0.0f*/ ent.m_state_mode == ClientStates::DEAD && powtpl.CastableAfterDeath == 0)   //Allows self rez
         return;
     if (powtpl.Type == PowerType::Toggle && (ent.m_auto_powers.size() > 0))             //checks if there are active toggles
     {
@@ -601,6 +600,9 @@ void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_id
             {
                 queueRecharge(ent, pset_idx, pow_idx, powtpl.RechargeTime);
                 ent.m_auto_powers.erase(rpow_idx);
+                ent.m_char->m_char_data.m_reset_powersets = true;
+                ent.m_char->m_char_data.m_has_updated_powers = true;
+
                 return;
             }
         }
@@ -636,14 +638,14 @@ void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_id
             return;
     }                                               // at this point the target is valid
 
+    ent.m_is_activating = true;                     // set this after the last check that returns
     if (!checkPowerRange(ent, *target_ent, powtpl.Range))
     {
         from_msg = FloatingInfoMsg.find(FloatingMsg_OutOfRange).value();
         sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
-        return;
+        ent.m_is_activating = false;        //does not return here, because the queue will wait until the recharge is up
     }
 
-    ent.m_is_activating = true;                     // set this after the last check that returns
     if (!checkPowerRecharge(ent, pset_idx, pow_idx))   //check if this is already recharging
     {
         from_msg = FloatingInfoMsg.find(FloatingMsg_Recharging).value();
@@ -652,7 +654,10 @@ void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_id
     }
     queuePower(ent, pset_idx, pow_idx, tgt_idx, powtpl.TimeToActivate);
 }
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)//  ,int32_t tgt_id     this is called from queues, does not send error messages
+/*
+ * usePower is called when a power is activated from queues, does not send error messages
+ */
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)//  ,int32_t tgt_id
 {
     QString from_msg, to_msg;
     CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
@@ -660,45 +665,47 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx)
     if(tgt_idx == -1)
         tgt_idx = getIdx(ent);
     Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-    if(ent.m_char->getHealth() == 0.0f && powtpl.CastableAfterDeath == 0)   //Allows self rez
+    if(/*ent.m_char->getHealth() == 0.0f*/  ent.m_state_mode == ClientStates::DEAD && powtpl.CastableAfterDeath == 0)   //Allows self rez
         return;
     if (!checkPowerTarget(ent, target_ent, tgt_idx, powtpl))
-        return;
-    if (!checkPowerRange(ent, *target_ent, powtpl.Range))
         return;
     if (getEnd(*ent.m_char) < powtpl.EnduranceCost)
         return;
     ent.m_is_activating = true;
-    if (!checkPowerRecharge(ent, pset_idx, pow_idx))   //check if this is already recharging
+    if (!checkPowerRange(ent, *target_ent, powtpl.Range) || !checkPowerRecharge(ent, pset_idx, pow_idx))   //check if this is already recharging
     {
         ent.m_is_activating = false;        //does not return here, because the queue will wait until the recharge is up
     }
     queuePower(ent, pset_idx, pow_idx, tgt_idx, powtpl.TimeToActivate);     // every check has passed, so queue the power, and wait for it to call the next part
 
 }
+/*
+ * checkPowerTarget checks yourself, the current target, the target of target, and assist target and returns as soon as one is valid.
+ */
 bool checkPowerTarget(Entity &ent, Entity *target_ent, int32_t tgt_idx, Power_Data powtpl)
 {
-
-// Consider if target is valid target or not
-if(validTarget(ent, ent, powtpl.Target))                //check self targetting first
-{
-    target_ent = &ent;
-    tgt_idx = ent.m_idx;
-}
-else if(!validTarget(*target_ent, ent, powtpl.Target))      //if not self, and iof not select target...
-{
-    if (ent.m_assist_target_idx != -1)              //try assist target
-        tgt_idx = ent.m_assist_target_idx;
-    else if (target_ent->m_target_idx != -1)        //try target of target
-        tgt_idx = target_ent->m_target_idx;
-
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);  //try getting a new entity
-
-    if (target_ent == nullptr || !validTarget(*target_ent, ent, powtpl.Target))
-        return false;
+    if(validTarget(ent, ent, powtpl.Target))                    //check self targetting first
+    {
+        target_ent = &ent;
+        tgt_idx = ent.m_idx;
     }
-return true;
+    else if(!validTarget(*target_ent, ent, powtpl.Target))      //if not self, and iof not select target...
+    {
+        if (ent.m_assist_target_idx != -1)                      //try assist target
+            tgt_idx = ent.m_assist_target_idx;
+        else if (target_ent->m_target_idx != -1)                //try target of target
+            tgt_idx = target_ent->m_target_idx;
+
+        Entity *target_ent = getEntity(ent.m_client, tgt_idx);  //check the entity is valid
+
+        if (target_ent == nullptr || !validTarget(*target_ent, ent, powtpl.Target))
+            return false;
+    }
+    return true;
 }
+/*
+ * checkPowerRecharge returns false if the power is found in the recharging power vector
+ */
 bool checkPowerRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx)
 {
     if(!ent.m_recharging_powers.empty())
@@ -713,11 +720,24 @@ bool checkPowerRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx)
     }
     return true;
 }
+
 bool checkPowerRange(Entity &ent, Entity &target_ent, uint32_t range)
 {
     if(range != float(0.0))
         if(glm::distance(ent.m_entity_data.m_pos,target_ent.m_entity_data.m_pos) > range)
             return false;
+    return true;
+}
+bool checkPowerRange(Entity &ent, int32_t tgt_idx, uint32_t pset_idx, uint32_t pow_idx)
+{
+    CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
+    const Power_Data powtpl = ppower->getPowerTemplate();
+    if(powtpl.Range != float(0.0))
+    {
+        Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+        if(glm::distance(ent.m_entity_data.m_pos,target_ent->m_entity_data.m_pos) > powtpl.Range)
+            return false;
+    }
     return true;
 }
 void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int tgt_idx, float time)
@@ -749,14 +769,18 @@ void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int tgt_idx, f
             {
                 queueRecharge(ent, temppow.powerset_idx, temppow.power_index, temppow.RechargeTime);
                 ent.m_auto_powers.erase(rpow_idx);                              //bug: doesn't turn off active state
+                ent.m_char->m_char_data.m_reset_powersets = true;
+                ent.m_char->m_char_data.m_has_updated_powers = true;
             }
             else
                 ++rpow_idx;
         }
     }
 }
+
 void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time)
 {
+
     QueuedPowers qpowers;
     qpowers.m_pow_idxs = {pset_idx, pow_idx};
     qpowers.m_active_state_change   = true;
@@ -770,6 +794,9 @@ void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time)
     ent.m_char->m_char_data.m_has_updated_powers = true;
 
 }
+/*
+ * doPower is called after the power has passed the activation queue
+ */
 void doPower(Entity &ent, QueuedPowers powerinput)
 {
     QString from_msg, to_msg;
@@ -780,6 +807,7 @@ void doPower(Entity &ent, QueuedPowers powerinput)
     Entity *target_ent = getEntity(ent.m_client, tgt_idx);
     if(target_ent == nullptr)
     {
+
         qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
         return;
     }
@@ -831,9 +859,9 @@ void doPower(Entity &ent, QueuedPowers powerinput)
     if (powtpl.Radius != 0.0f)           // Only AoE have a radius
     {
         glm::vec3 center;
-        if (powtpl.EffectArea == StoredAffectArea::Location)
+        if (powtpl.EffectArea == StoredAffectArea::Location)    //target loc is saved when the player click on a location
             center = ent.m_target_loc;
-        if (powtpl.EffectArea == StoredAffectArea::Cone)
+        if (powtpl.EffectArea == StoredAffectArea::Cone)        //todo: arc calculations so it's not a full circle
             center = ent.m_entity_data.m_pos;
         if (powtpl.EffectArea == StoredAffectArea::Sphere)
             center = target_ent->m_entity_data.m_pos;
@@ -852,18 +880,26 @@ void doPower(Entity &ent, QueuedPowers powerinput)
     else
          findAttrib(ent, target_ent, ppower);
 }
-
+/*
+ * findAttrib checks to see if the power hits, reads the "pAttribMod" of a power, checking to see if the power doesn't always fire,
+ * starts to apply some of the properties before firing off doEffect on valid targets.
+ */
 void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
 {
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target.";
+        return;
+    }
     QString from_msg;
     const Power_Data powtpl = ppower->getPowerTemplate();
     if (!validTargets(*target_ent, ent, powtpl.EntsAutoHit))//
        {
         //roll to hit
         int roll = rand()%100;
-                                    //find defense values for attack types, find highest
-        int chance = int(std::min(95.0f,(std::max(5.0f, (powtpl.Accuracy /* * enhancment accuracy */    //min 5%, max 95%
-                         * (75 + ent.m_char->m_char_data.m_current_attribs.m_ToHit
+                                    //todo: find defense values for attack types, find highest if there is more than one
+        int chance = int(std::min(95.0f,(std::max(5.0f, (powtpl.Accuracy /* * enhancement accuracy */    //min 5%, max 95%
+                         * 100 *(ent.m_char->m_char_data.m_current_attribs.m_ToHit               //players default to 75%, 50% for others
                             - target_ent->m_char->m_char_data.m_current_attribs.m_Defense) /* and target.def(this type of dmg) */
                          * ent.m_char->m_char_data.m_current_attribs.m_Accuracy)))));
 
@@ -881,101 +917,109 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
         for(uint32_t i = 0; i<powtpl.pAttribMod.size(); i++)
         {
             if (rand()%100 > powtpl.pAttribMod[i].Chance )
-
             {
-             qCDebug(logPowers) <<  "roll failed to surpass: " << powtpl.pAttribMod[i].Chance;
-
+                qCDebug(logPowers) <<  "roll failed to surpass: " << powtpl.pAttribMod[i].Chance;
             }
-             else
-             {
+            else
+            {
                 if (powtpl.pAttribMod[i].Target == AttribModTarget::Self)
                 {
                     target_ent = &ent;
                 }
-                //   if (powtpl.pAttribMod[i].Delay != 0 || powtpl.pAttribMod[i].Period != 0) ;// queue on target to do effect after delay
-                doEffect(ent, target_ent, ppower, powtpl.pAttribMod[i]);
+                float scale = powtpl.pAttribMod[i].Scale;
+                float duration = powtpl.pAttribMod[i].Duration;
+
+                /*  Psuedocode placeholders for when more power data is available, most of this should be split off into functions
+                 *  lookup the table for the effect, and multiple the scale
+                GameDataStore &data(getGameData());
+                scale *= data.m_player_classes[ent.class name].m_ModTable[powtpl.pAttribMod[i].Table];  //not quite right, and not in the power data yet
+                //     next look up enhancement boost as well as strength buffs
+                if (mod.type == AttribModType::Magnitude && powtpl.pAttribMod[i].AllowStrength)
+                    scale *= ent.m_char->m_char_data.m_enhancements[this power]                         // once we have enhancment data
+                    + ent.m_char->m_char_data.m_current_attribs.m_Defense[strength for this effect]     // need a way to look up the right strength
+                if (mod.type == AttribModType::Duration)
+                    duration *= ent.m_char->m_char_data.m_enhancements[this power]
+                */
+                if (duration != 0.0f)
+                {
+                    addBuff(*target_ent, ppower, powtpl.pAttribMod[i], ent.m_idx);
+                }
+                else
+                {
+                    QString lower_name = powtpl.pAttribMod[i].name.toLower();
+
+                    if (lower_name == "damage")
+                    {
+                        setHP(*target_ent->m_char, getHP(*target_ent->m_char)-scale);
+                        if (ent.m_type == EntType::PLAYER)
+                        {
+                            sendFloatingNumbers(*ent.m_client, target_ent->m_idx, int(scale));   // this sends damage without needing the FloatingInfo_Damage
+                            sendInfoMessage(MessageChannel::DAMAGE, QString("Your power hits %1 for %2 damage!") .arg(QString(target_ent->name())) .arg(scale) , *ent.m_client);
+                        }
+                        if (target_ent->m_type == EntType::PLAYER)
+                        {
+                               sendFloatingNumbers(*target_ent->m_client, target_ent->m_idx, int(scale));   // this sends damage without needing the FloatingInfo_Damage
+                               sendInfoMessage(MessageChannel::DAMAGE, QString("%1 power hits you for %2 damage!") .arg(ent.name()) .arg(scale) , *target_ent->m_client);
+                        }
+                        //else critterdamage() which adds aggro and records damage for xp splitting
+                        return;
+                    }
+                    else if (lower_name == "healing" || lower_name == "healing_percent")
+                    {
+                        if (lower_name == "healing_percent")
+                            scale = target_ent->m_char->m_max_attribs.m_HitPoints * scale;
+
+                        setHP(*target_ent->m_char, getHP(*target_ent->m_char)+scale);
+                        if (ent.m_type == EntType::PLAYER && ent.m_entity != target_ent->m_entity)
+                        {
+                            sendFloatingNumbers(*ent.m_client, target_ent->m_idx, -int(scale));   // this sends damage without needing the FloatingInfo_Damage
+                            sendInfoMessage(MessageChannel::DAMAGE, QString("Your power heals %1 for %2!") .arg(QString(target_ent->name())) .arg(scale) , *ent.m_client);
+                        }
+                        if (target_ent->m_type == EntType::PLAYER)
+                        {
+                               sendFloatingNumbers(*target_ent->m_client, target_ent->m_idx, -int(scale));   // this sends damage without needing the FloatingInfo_Damage
+                               sendInfoMessage(MessageChannel::DAMAGE, QString("%1 power heals you for %2!") .arg(ent.name()) .arg(scale) , *target_ent->m_client);
+                        }
+                    }
+                    else if (lower_name == "endurancemod")  // Change endurance, can be positive or negative
+                    {
+                        setEnd(*target_ent->m_char, getEnd(*target_ent->m_char)+(target_ent->m_char->m_max_attribs.m_Endurance*scale));
+                    }
+                    else if (lower_name == "knockback") //   KB isn't a debuff like other crowd control effects
+                        ;
+                    else if (lower_name == "revive")
+                    {
+                        setStateMode(*target_ent, ClientStates::RESURRECT);
+                        revivePlayer(*target_ent, ReviveLevel::AWAKEN);
+                    }
+                    else if (lower_name == "teleport")
+                    {
+                       forcePosition(*target_ent, ent.m_target_loc);
+                    }
+                    else if (lower_name == "summon")
+                       ; //lots of work needed for this one
+                    else
+                    {
+                        qWarning() << "Power effect name has not been found!";
+                        return;
+                    }
+
+                    if (ent.m_type == EntType::PLAYER)
+                    {
+                        sendFloatingInfo(*ent.m_client, lower_name , FloatingInfoStyle::FloatingInfo_Info, 0.0);
+                        sendInfoMessage(MessageChannel::COMBAT, QString("You cause %1 (%2 mag) to %3") .arg(lower_name) .arg(scale) .arg(QString(target_ent->name())) , *ent.m_client);
+                    }
+
+                    if (target_ent->m_type == EntType::PLAYER && ent.m_entity != target_ent->m_entity)
+                    {
+                        sendFloatingInfo(*target_ent->m_client, lower_name , FloatingInfoStyle::FloatingInfo_Info, 0.0);
+                        sendInfoMessage(MessageChannel::COMBAT, QString("%1 causes you to receive (%2 mag) %3") .arg(ent.name() .arg(scale) .arg(lower_name) ) , *target_ent->m_client);
+                    }
+                }
             }
         }
-        return;
     }
-    else
-        sendFloatingNumbers(*ent.m_client, target_ent->m_idx, 1);       //temp to show what hits
 }
-void doEffect(Entity &ent, Entity *target_ent, CharacterPower * ppower, StoredAttribMod mod)
-{
-    QString lower_name = mod.name.toLower();
-    float scale = mod.Scale;
-    if (lower_name == "damage")
-    {
-        //scale = scale * target_ent->m_char->m_max_attribs.m_DamageTypes[0];
-        setHP(*target_ent->m_char, getHP(*target_ent->m_char)-scale);
-    }
-    else if (lower_name == "healing")
-    {
-        if (mod.Aspect == AttribMod_Aspect::Current)
-            scale = target_ent->m_char->m_max_attribs.m_HitPoints * scale;
-        setHP(*target_ent->m_char, getHP(*target_ent->m_char)+scale);
-    }
-    else if (lower_name == "endurancemod")  // Change endurance, can be positive or negative
-    {
-        if (mod.Aspect == AttribMod_Aspect::Current)
-            scale = target_ent->m_char->m_max_attribs.m_Endurance * scale;
-        setEnd(*target_ent->m_char, getEnd(*target_ent->m_char)+scale);
-    }
-    else if (lower_name == "knockback") //   KB isn't a buff like other CC
-        ;
-    else if (lower_name == "revive")
-        revivePlayer(*target_ent, ReviveLevel::AWAKEN);
-    else if (lower_name == "teleport")
-    {
-       forcePosition(*target_ent, ent.m_target_loc);
-    }
-    else if (lower_name == "spawn")
-       ; //lots of work needed for this one
-    else
-    {
-        if (mod.Duration > 0)
-        {
-            addBuff(*target_ent, ppower, mod, ent.m_idx);
-        }
-    }
-    sendResult(ent, *target_ent, lower_name, scale);
-}
-
-// sends floating numbers and chat text to players, and later this can add aggro to NPCs
-void sendResult(Entity &src,Entity &tgt, QString name, float value)
-{
-    if (src.m_entity == tgt.m_entity)
-        return;
-    if (src.m_type == EntType::PLAYER)
-    {
-        if (name == "damage")
-        {
-            sendFloatingNumbers(*src.m_client, tgt.m_idx, int(value));   // this sends damage without needing the FloatingInfo_Damage
-            sendInfoMessage(MessageChannel::DAMAGE, QString("You do %1 damage to %2") .arg(value) .arg(QString(tgt.name())) , *src.m_client);
-        }
-        else    // show floating info for now so we know when something was successfull
-        {
-            sendFloatingInfo(*src.m_client, name , FloatingInfoStyle::FloatingInfo_Info, 0.0);
-            sendInfoMessage(MessageChannel::COMBAT, QString("You cause %1 (%2 mag) to %3") .arg(name) .arg(value) .arg(QString(tgt.name())) , *src.m_client);
-        }
-    }//else add aggro to tgt, from src, by value * src.threatmodifier
-
-    if (tgt.m_type == EntType::PLAYER)
-    {
-        if (name == "damage")
-        {
-           sendFloatingNumbers(*tgt.m_client, tgt.m_idx, int(value));   // this sends damage without needing the FloatingInfo_Damage
-           sendInfoMessage(MessageChannel::DAMAGE, QString("You receive %1 damage from %2") .arg(value) .arg(tgt.name()) , *tgt.m_client);
-        }
-        else
-        {
-            sendFloatingInfo(*tgt.m_client, name , FloatingInfoStyle::FloatingInfo_Info, 0.0);
-            sendInfoMessage(MessageChannel::COMBAT, QString("%1 causes you to receive (%2 mag) %3") .arg(src.name() .arg(value) .arg(name) ) , *tgt.m_client);
-        }
-    }// no aggro in this case
-}
-
 void removeBuff(Entity &ent, Buffs &buff)
 {
     for(auto buff_idx = ent.m_buffs.begin(); buff_idx != ent.m_buffs.end();)
@@ -991,16 +1035,17 @@ void removeBuff(Entity &ent, Buffs &buff)
         else buff_idx++;
     }
 }
+
 void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod attrib, uint entidx)
 {
     const Power_Data powtpl = ppower->getPowerTemplate();
 
-    if (attrib.StackType == AttribStackType::Replace)       // most are replace
+    if (attrib.StackType == AttribStackType::Replace)           // most are replace
     {
         for (Buffs & temp : ent.m_buffs)
-       {
-           if ((temp.m_name == powtpl.m_Name) && (temp.source_ent_idx == entidx))
-           {
+        {
+            if ((temp.m_name == powtpl.m_Name) && (temp.source_ent_idx == entidx))
+            {
                 for (int i =0; i<temp.m_value_name.size();i++)
                     if (temp.m_value_name[i] == attrib.name)
                     {
@@ -1012,9 +1057,10 @@ void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod attrib, uint 
             temp.m_value_name.push_back(attrib.name);
             modifyAttrib(ent, attrib.name, attrib.Scale);       //if the same power has buffed, but not this stat, add this stat
             return;
-           }
-       }
+            }
+        }
     }
+
     Buffs buff;                                                 //otherewise, make a new buff
     buff.m_name = powtpl.m_Name;
     buff.m_buff_info = ppower->m_power_info;
@@ -1045,13 +1091,32 @@ bool useInspiration(Entity &ent, uint32_t col, uint32_t row)
         return true;
 
     QStringList revive_names = {"Awaken","Bounce_Back","Restoration",};
-    if ((ent.m_char->getHealth() == 0.0f)xor revive_names.contains(insp->m_name, Qt::CaseInsensitive))
+    if (/*ent.m_char->getHealth() == 0.0f*/ ( ent.m_state_mode == ClientStates::DEAD) xor revive_names.contains(insp->m_name, Qt::CaseInsensitive))
             return false;                                   //only wakies can be used when dead, and can't be used any other time
 
     qCDebug(logPowers) << "Using inspiration from" << col << "x" << row;
     applyInspirationEffect(ent, col, row);
     removeInspiration(cd, col, row);
     return true;
+}
+
+// quick and dirty way to set auto powers on players. Ideally this will be part of addpower(), if it can access an entities queuedpowers
+void autoPowerOn(Entity &ent){
+    CharacterData cd = ent.m_char->m_char_data;
+    for(uint setidx = 0; setidx < cd.m_powersets.size(); setidx++)
+    {
+        for(uint powidx = 0; powidx < cd.m_powersets[setidx].m_powers.size(); powidx++)
+        {
+            if (cd.m_powersets[setidx].m_powers[powidx].getPowerTemplate().Type == PowerType::Auto)
+            {
+                QueuedPowers temp;
+                temp.m_pow_idxs = {setidx, powidx};
+                temp.m_activate_period = cd.m_powersets[setidx].m_powers[powidx].getPowerTemplate().ActivatePeriod;
+                temp.m_time_to_activate = cd.m_powersets[setidx].m_powers[powidx].getPowerTemplate().TimeToActivate;
+                ent.m_auto_powers.push_back(temp);
+            }
+        }
+    }
 }
 
 void increaseLevel(Entity &ent)

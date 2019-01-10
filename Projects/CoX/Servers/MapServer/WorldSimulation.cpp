@@ -82,6 +82,7 @@ void World::effectsStep(Entity *e,uint32_t msec)
 
 void World::checkPowerTimers(Entity *e, uint32_t msec)
 {
+
     // for now we only run this on players
     if(e->m_type != EntType::PLAYER)
         return;
@@ -92,10 +93,15 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         QueuedPowers &qpow = e->m_queued_powers.front();
         if (e->m_is_activating == false)            // currently only set if the power is still recharging
         {
-            if (checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx))
+            if (checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx)
+                    && checkPowerRange(*e, qpow.m_tgt_idx, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx))
                    e->m_is_activating = true;       //only pass this check once the power is recharged
+            else if(e->m_queued_powers.size() > 1)
+            {
+                e->m_queued_powers.append(qpow);
+                e->m_queued_powers.replace(e->m_queued_powers.size()-1, qpow);     //push recharging power to the back
+            }
         }
-
         else
         {
             if(qpow.m_time_to_activate <= -0.3f)        // wait a little longer to make sure the activation state has been sent
@@ -151,8 +157,19 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
             CharacterPower * ppower = getOwnedPowerByVecIdx(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx);
             const Power_Data powtpl = ppower->getPowerTemplate();
 
-            doPower(*e, *rpow_idx);
-            rpow_idx->m_time_to_activate += 0.2F + powtpl.ActivatePeriod;
+            if ((powtpl.Type == PowerType::Toggle && ((getEnd(*e->m_char) < powtpl.EnduranceCost)
+                || !checkPowerRange(*e, rpow_idx->m_tgt_idx, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx)))
+                || (isPlayerDead(e)/*getHP(*e->m_char) == 0.0f*/))
+            {
+                queueRecharge(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx, powtpl.RechargeTime);
+                rpow_idx = e->m_auto_powers.erase(rpow_idx);
+                --rpow_idx;
+            }
+            else
+            {
+                doPower(*e, *rpow_idx);
+                rpow_idx->m_time_to_activate += 0.2F + powtpl.ActivatePeriod;
+            }
         }
         ++rpow_idx;
     }

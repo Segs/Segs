@@ -155,19 +155,19 @@ struct StoredAttribMod
 public:
     QByteArray         name             = "unknown";
     int                index_in_power;
-    QByteArray         DisplayAttackerHit;
-    QByteArray         DisplayVictimHit;
+    QByteArray         DisplayAttackerHit = "";
+    QByteArray         DisplayVictimHit = "";
     struct Power_Data *parent_StoredPower;
     AttribModTarget    Target           = AttribModTarget::Target;
-    QByteArray         Table;
+    QByteArray         Table            = "";
     float              Scale            = 1.0;
     int                Attrib; //
     AttribMod_Aspect   Aspect;
     AttribModType      Type             = AttribModType::Magnitude;
     float              Duration; // Special values in DurationEnum
     float              Magnitude        = 1.0;
-    int                Delay            = 0;
-    int                Period           = 0;
+    int                Delay            = 0;    //should be float, for now I'm just dividing by 1000
+    int                Period           = 0;    //same
     int                Chance           = 100;  // are we sure this isn't a float?
     int                CancelOnMiss;            // bool?
     int                NearGround;              // bool?

@@ -471,11 +471,19 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
 bool GameDataStore::read_powers(const QString &directory_path)
 {
     qDebug() << "Loading powers:";
-    if(!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "bin/powers.bin",
-                                                                   m_all_powers))
+    if(loadFrom(directory_path+"bin/powers.json", m_all_powers))
+    {
+        qDebug() << "Loaded power data from powers.json!";
+    }
+    else if(read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path,
+                                                                    "bin/powers.bin",m_all_powers))
+    {
+        qDebug() << "Loaded power data from powers.bin!";
+    }
+    else
         return false;
 
-    // Hardcoding of stats to test powers
+    // Hardcoding of stats to test powers, these will move into the json soon
     StoredAttribMod temp;
     Power_Data *temppower = nullptr;
 
@@ -490,26 +498,31 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temp.name = "recovery";
     temppower->pAttribMod.push_back(temp);      //rest
 
+    temp.Duration = 11.0;
+    temppower = editable_power_tpl(28,3,3);    // stamina
+    temppower->pAttribMod.push_back(temp);
+    temp.name = "regeneration";
+    temppower = editable_power_tpl(28,3,2);    // health
+    temppower->pAttribMod.push_back(temp);
+    temp.name = "run_speed";
+    temppower = editable_power_tpl(28,3,0);    // quick
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "jump_height";
+    temppower = editable_power_tpl(28,3,1);    // hurtle
+    temppower->pAttribMod.push_back(temp);
+    temp.Duration = 0.0;
     temp.name = "damage";
     temppower = editable_power_tpl(26,0,0);    // brawl
     temppower->pAttribMod.push_back(temp);
-
-    temp.name = "healing";
-    temppower = editable_power_tpl(27,0,24);   // medkit
-    temppower->pAttribMod.push_back(temp);
-    temppower = editable_power_tpl(25,0,3);    // respite
-    temp.Scale = 0.5;
-    temp.Aspect = AttribMod_Aspect::Current;
-    temppower->pAttribMod.push_back(temp);
-    temppower = editable_power_tpl(25,2,3);    // Resurgence
-    temppower->pAttribMod.push_back(temp);
-    temp.Aspect = AttribMod_Aspect::Absolute;
+    temp.Duration = 1.0;
 
     temp.name = "run_speed";
     temppower = editable_power_tpl(26,0,6);    // sprint
     temppower->pAttribMod.push_back(temp);
     temppower = editable_power_tpl(26,0,1);    // powerslide
     temppower->pAttribMod.push_back(temp);
+
     temp.Scale = 5.0;
     temppower = editable_power_tpl(28,8,2);    // superspeed
     temppower->pAttribMod.push_back(temp);
@@ -531,6 +544,23 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temppower = editable_power_tpl(28,1,2);    // flight
     temppower->pAttribMod.push_back(temp);
 
+    temp.Duration = 0.0;
+    temp.name = "healing";
+    temppower = editable_power_tpl(27,0,24);   // medkit
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "healing_percent";
+    temp.Scale = 0.25;
+    temppower = editable_power_tpl(25,0,3);    // respite
+    temppower->pAttribMod.push_back(temp);
+    temp.Scale = 0.5;
+    temppower = editable_power_tpl(25,2,3);    // Resurgence
+    temppower->pAttribMod.push_back(temp);
+
+    temp.name = "revive";
+    temppower = editable_power_tpl(25,0,6);    // awaken
+    temppower->pAttribMod.push_back(temp);
+
     temp.name = "teleport";
     temppower = editable_power_tpl(28,9,2);    // teleport
     temppower->pAttribMod.push_back(temp);
@@ -541,6 +571,11 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temppower = editable_power_tpl(28,9,3);    // teleport team
     temppower->pAttribMod.push_back(temp);
 
+    temp.name = "endurancemod";
+    temppower = editable_power_tpl(25,0,2);    // catch a breath
+    temppower->pAttribMod.push_back(temp);
+
+    temp.Duration = 1.0;
     temp.name = "defense";
     temppower = editable_power_tpl(28,1,0);     //hover
     temppower->pAttribMod.push_back(temp);
@@ -554,12 +589,7 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temppower->pAttribMod.push_back(temp);
     temppower = editable_power_tpl(25,2,0);     //Phenomenal_Luck
     temppower->pAttribMod.push_back(temp);
-
-    temp.name = "endurancemod";
-    temppower = editable_power_tpl(25,0,2);    // catch a breath
-    temppower->pAttribMod.push_back(temp);
-
-    temp.Scale = 0.2;
+    temp.Scale = 0.2f;
     temp.name = "accuracy";
     temppower = editable_power_tpl(25,0,1);    // insight
     temppower->pAttribMod.push_back(temp);
@@ -568,9 +598,6 @@ bool GameDataStore::read_powers(const QString &directory_path)
     temppower = editable_power_tpl(25,0,4);    // enrage
     temppower->pAttribMod.push_back(temp);
 
-    temp.name = "revive";
-    temppower = editable_power_tpl(25,0,6);    // awaken
-    temppower->pAttribMod.push_back(temp);
     return true;
 }
 
