@@ -99,6 +99,8 @@ class DeadNoGurneyOK;
 class ReceiveContactStatus;
 class ReceiveTaskDetailRequest;
 class SouvenirDetailRequest;
+class StoreSellItem;
+class StoreBuyItem;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -148,7 +150,9 @@ public:
         bool                    spin_up_for(uint8_t game_server_id, uint32_t owner_id, uint32_t instance_id);
         void                    start(const QString &scenegraph_path);
         void                    setPlayerSpawn(Entity &e);
+        void                    setSpawnLocation(Entity &e, const QString &spawnLocation);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
+        QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
 
 protected:
         // EventProcessor interface
@@ -252,4 +256,6 @@ protected:
         void on_receive_contact_status(SEGSEvents::ReceiveContactStatus *ev);
         void on_receive_task_detail_request(SEGSEvents::ReceiveTaskDetailRequest *ev);
         void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
+        void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
+        void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
 };

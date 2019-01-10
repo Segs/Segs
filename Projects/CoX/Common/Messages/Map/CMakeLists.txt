@@ -7,6 +7,7 @@ set(SOURCES
     ChatDividerMoved.h
     ChatMessage.cpp
     ChatMessage.h
+    ConsoleMessages.h
     ContactDialogs.h
     ContactList.h
     DeadNoGurney.h
@@ -22,6 +23,7 @@ set(SOURCES
     FloatingDamage.h
     FloatingInfo.h
     FloatingInfoStyles.h
+    ForceLogout.h
     FriendsListUpdate.h
     GameCommand.h
     GameCommandList.h
@@ -49,11 +51,13 @@ set(SOURCES
     SaveClientOptions.h
     SceneEvent.cpp
     SceneEvent.h
+    SendVisitLocation.h
     SendStance.h
     SetClientState.h
     Shortcuts.h
     SidekickOffer.h
     StandardDialogCmd.h
+    StoresEvents.h
     TailorOpen.h
     Tasks.h
     TeamLooking.h

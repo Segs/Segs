@@ -1,11 +1,11 @@
--- OUTBREAK
+-- ATLAS PARK
 printDebug('luaBot script loading...');
 
 local LuaBot = {};
 LuaBot.spawned = false;
 LuaBot.name = 'LuaBot';
 LuaBot.model = 'Jumpbot_02';
-LuaBot.location = vec3.new(-90, 0, 170);
+LuaBot.location = vec3.new(107, 16, -215);
 LuaBot.variation = 1;
 LuaBot.expected = false;
 LuaBot.entityId = nil;
@@ -33,6 +33,7 @@ LuaBot.souvenir.name = "LuaBot souvenir";
 LuaBot.souvenir.description = "A Souvenir from LuaBot";
 LuaBot.souvenir.icon = "icon"; -- unknown?
 
+
 LuaBot.dialogPages = {};
 
 LuaBot.createContactDialogsWithHeroName = function(heroName)
@@ -47,9 +48,8 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
             button4 = {"MapMenu","CONTACTLINK_LONGMISSION"}, 
             button5 = {"Clues","CONTACTLINK_SHORTMISSION"}, 
             button6 = {"Store","CONTACTLINK_ACCEPTLONG"},
-            button7 = {"Logging","CONTACTLINK_ACCEPTSHORT"},
-            button8 = {"",""},
-            button9 = {"Leave","CONTACTLINK_BYE"}
+            button7 = {"",""},
+            button8 = {"Leave","CONTACTLINK_BYE"}
         }
     }
     
@@ -108,14 +108,6 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
         MapClientSession.OpenStore(contactsForZone.LuaBot.entityId);
     end
 
-    contactsForZone.LuaBot.dialogPages[1].actions["CONTACTLINK_ACCEPTSHORT"] = function()
-        local contactStatus = Contacts.FindContactByName("LuaBot");
-        if(contactStatus ~= false) then
-            contactStatus.dialogScreenIdx = 11; -- Logging
-            MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[11].contactDialog.message, contactsForZone.LuaBot.dialogPages[11].contactDialog.buttons);
-            Player.AddUpdateContact(contactStatus);
-        end
-    end
 
     contactsForZone.LuaBot.dialogPages[10] = {};
     contactsForZone.LuaBot.dialogPages[10].contactDialog = {
@@ -134,7 +126,7 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
         local contactStatus = Contacts.FindContactByName("LuaBot");
         if(testTask ~= false and contactStatus ~= false) then
             testTask.isComplete = true;
-            testTask.location.mapName = "Atlas Park"; -- set return location
+            testTask.location.mapName = "Outbreak"; -- set return location
             testTask.state = "Return to LuaBot";
             Player.AddUpdateTask(testTask);
 
@@ -146,38 +138,38 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
             MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[8].contactDialog.message, contactsForZone.LuaBot.dialogPages[8].contactDialog.buttons);
         end
     end
-
 end
 
 LuaBot.startDialogs = function()
     Player.SetActiveDialogCallback(contactsForZone.LuaBot.callback);
     local contactStatus = Contacts.FindContactByName("LuaBot");
     if(contactStatus ~= false) then
+        printDebug("LuaBot.StartDialogs: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
         local testTask = Tasks.FindTaskByTaskIdx(0);
 
         if (contactStatus.currentStanding == 1 and testTask ~= false and contactStatus.dialogScreenIdx == 0) then -- Give Bit
             contactStatus.dialogScreenIdx = 10;
             Player.AddUpdateContact(contactStatus);
             MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[10].contactDialog.message, contactsForZone.LuaBot.dialogPages[10].contactDialog.buttons);
-        elseif(contactStatus.currentStanding == 2 and contactStatus.dialogScreenIdx == 8) then -- Return to LuaBot in atlas
+        elseif(contactStatus.currentStanding == 2 and contactStatus.dialogScreenIdx == 8) then -- Return to LuaBot in Outbreak
             MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[8].contactDialog.message, contactsForZone.LuaBot.dialogPages[8].contactDialog.buttons);
-        elseif(contactStatus.currentStanding == 2 and testTask.location.mapName == "Outbreak") then -- Finished mission
+        elseif(contactStatus.currentStanding == 2 and testTask.location.mapName == "Atlas Park") then -- Finished mission
             contactStatus.dialogScreenIdx = 9;
             Player.AddUpdateContact(contactStatus);
-            
+
             testTask = Task.new();
             Player.AddUpdateTask(testTask);
             MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[9].contactDialog.message, contactsForZone.LuaBot.dialogPages[9].contactDialog.buttons);
-        elseif(contactStatus.currentStanding == 1 and testTask.location.mapName == "Atlas Park") then -- On mission to Atlas
+        elseif(contactStatus.currentStanding == 1 and testTask.location.mapName == "Outbreak") then -- On mission to Atlas
             contactStatus.dialogScreenIdx = 7;
             Player.AddUpdateContact(contactStatus);
             MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[7].contactDialog.message, contactsForZone.LuaBot.dialogPages[7].contactDialog.buttons);
         else
-            contactStatus.locationDescription = "Outbreak";
+            contactStatus.locationDescription = "Atlas Park";
             contactStatus.location = Destination.new();
-            contactStatus.location.location = vec3.new(-90, 0, 170);
-            contactStatus.location.name = "Outbreak";
-            contactStatus.location.mapName = "Outbreak";
+            contactStatus.location.location = vec3.new(107, 16, -215);
+            contactStatus.location.name = "Atlas Park";
+            contactStatus.location.mapName = "Atlas Park";
             contactStatus.dialogScreenIdx = 1;
             Player.AddUpdateContact(contactStatus);
             MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[1].contactDialog.message, contactsForZone.LuaBot.dialogPages[1].contactDialog.buttons);
@@ -220,11 +212,11 @@ LuaBot.CreateContact = function()
     contact.npcId = 1144;
     contact.hasLocation = true;
     contact.taskIndex = 0;
-    contact.locationDescription = "Outbreak";
+    contact.locationDescription = "Atlas Park";
     contact.location = Destination.new();
     contact.location.location = vec3.new(-90, 0, 170);
-    contact.location.name = "Outbreak";
-    contact.location.mapName =  "Outbreak";
+    contact.location.name = "Atlas Park";
+    contact.location.mapName =  "Atlas Park";
     contact.confidantThreshold = 2;
     contact.friendThreshold = 4;
     contact.completeThreshold = 6;
@@ -242,11 +234,11 @@ LuaBot.CreateTestContact = function()
     contact.npcId = 1143;
     contact.hasLocation = true;
     contact.taskIndex = 1;
-    contact.locationDescription = "Outbreak";
+    contact.locationDescription = "Atlas Park";
     contact.location = Destination.new();
     contact.location.location = vec3.new(-90, 0, 170);
-    contact.location.name = "Outbreak";
-    contact.location.mapName =  "Outbreak";
+    contact.location.name = "Atlas Park";
+    contact.location.mapName =  "Atlas Park";
     contact.confidantThreshold = 3;
     contact.friendThreshold = 5;
     contact.completeThreshold = 7;
@@ -280,13 +272,13 @@ LuaBot.CreateTask = function()
     
 end
  
-LuaBot.CreateAtlasTask = function()
+LuaBot.CreateOutbreakTask = function()
     local task = Task.new()
     task.dbId = 1;
     task.taskIdx = 0;
-    task.description = "Deliver Bit to LuaBot in Atlas Park";
+    task.description = "Deliver Bit to LuaBot in Outbreak";
     task.owner = "LuaBot";
-    task.detail = "LuaBot in Outbreak requests you to deliver a test bit to LuaBot in Atlas Park. Use the /mapmenu or the mapmenu in LuaBot's contact dialog to travel.";
+    task.detail = "LuaBot in Atlas Park requests you to deliver a test bit to LuaBot in Outbreak. Use the /mapmenu or the mapmenu in LuaBot's contact dialog to travel.";
     task.state = "";
     task.inProgressMaybe = true;
     task.isComplete = false;
@@ -297,9 +289,9 @@ LuaBot.CreateAtlasTask = function()
     task.hasLocation = true;
     task.boardTrain = true;
     task.location = Destination.new();
-    task.location.location = vec3.new(112, 16, -216);
-    task.location.name  = "City_01_01";
-    task.location.mapName = "Atlas Park";
+    task.location.location = vec3.new(-90, 0, 170);
+    task.location.name  = "City_00_01";
+    task.location.mapName = "Outbreak";
 
     return task;
 end
@@ -517,12 +509,13 @@ LuaBot.dialogPages[5].contactDialog = {
         button04 = {"Set Task to another zone","CONTACTLINK_LONGMISSION"} , -- Test mission complete sounds?
         button05 = {"Complete Task","CONTACTLINK_SHORTMISSION"} ,
         button06 = {"Remove Task","CONTACTLINK_ACCEPTLONG"} ,
-        button07 = {"Task to Atlas Park","CONTACTLINK_ACCEPTSHORT"},
+        button07 = {"Task to Outbreak","CONTACTLINK_ACCEPTSHORT"},
         button08 = {"Back","CONTACTLINK_INTRODUCE"}
     }
 } 
 
 LuaBot.dialogPages[5].actions = {};
+
 LuaBot.dialogPages[5].actions["CONTACTLINK_HELLO"] = function()
     local task = contactsForZone.LuaBot.CreateTask();
     Player.AddUpdateTask(task);
@@ -566,16 +559,12 @@ LuaBot.dialogPages[5].actions["CONTACTLINK_ACCEPTLONG"] = function()
     local task = Task.new(); -- empty task
     Player.AddUpdateTask(task);
 
-    local contactStatus = Contacts.FindContactByName("LuaBot");
-    if(contactStatus ~= false) then
-        contactStatus.currentStanding = 0;
-        Player.AddUpdateContact(contactStatus);
-    end
+   
 end
 
 LuaBot.dialogPages[5].actions["CONTACTLINK_ACCEPTSHORT"] = function()
-      -- Task to LuaBot in Atlas
-      local testTask = contactsForZone.LuaBot.CreateAtlasTask()
+      -- Task to LuaBot in Outbreak
+      local testTask = contactsForZone.LuaBot.CreateOutbreakTask()
       Player.AddUpdateTask(testTask);
       
       local contactStatus = Contacts.FindContactByName("LuaBot");
@@ -702,38 +691,6 @@ LuaBot.dialogPages[9].contactDialog = {
 
 LuaBot.dialogPages[9].actions = {};
 LuaBot.dialogPages[9].actions["CONTACTLINK_HELLO"] = function()
-    local contactStatus = Contacts.FindContactByName("LuaBot");
-    if(contactStatus ~= false) then
-        contactStatus.dialogScreenIdx = 1;
-        Player.AddUpdateContact(contactStatus);
-        MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[1].contactDialog.message, contactsForZone.LuaBot.dialogPages[1].contactDialog.buttons);
-     end
-end
-
-
-LuaBot.dialogPages[11] = {};
-LuaBot.dialogPages[11].contactDialog = {
-    message = [[<img src="npc:1144" align="left">Logging functions<br><br>
-                Console Output is shown when the game is launch with -console<br>
-                Console Print is shown in the ingame console (`)]],
-    buttons = {
-        button01 = {"Console Output","CONTACTLINK_HELLO"},
-        button02 = {"Console Print","CONTACTLINK_MAIN"},
-        button03 = {"",""},
-        button04 = {"Back","CONTACTLINK_MISSIONS"}
-    }
-}
-
-LuaBot.dialogPages[11].actions = {};
-LuaBot.dialogPages[11].actions["CONTACTLINK_HELLO"] = function()
-  MapClientSession.DeveloperConsoleOutput("Console Output test message from LuaBot");
-end
-
-LuaBot.dialogPages[11].actions["CONTACTLINK_MAIN"] = function()
-    MapClientSession.ClientConsoleOutput("Console Print test message from LuaBot");
-end
-
-LuaBot.dialogPages[11].actions["CONTACTLINK_MISSIONS"] = function()
     local contactStatus = Contacts.FindContactByName("LuaBot");
     if(contactStatus ~= false) then
         contactStatus.dialogScreenIdx = 1;

@@ -14,6 +14,7 @@
 
 #include "DataHelpers.h"
 #include "MessageHelpers.h"
+#include "Messages/Map/ForceLogout.h"
 #include "Messages/Map/GameCommandList.h"
 #include "Messages/Map/MapXferWait.h"
 #include "GameData/ClientStates.h"
@@ -27,6 +28,7 @@
 #include "GameData/CharacterHelpers.h"
 #include "GameData/Entity.h"
 #include "GameData/EntityHelpers.h"
+#include "GameData/VisitLocation.h"
 #include "GameData/LFG.h"
 #include "GameData/Trade.h"
 #include "Settings.h"
@@ -121,6 +123,11 @@ void cmdHandler_AddCostumeSlot(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -138,6 +145,7 @@ void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetSpecialTitle(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MOTD(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Invite(const QString &cmd, MapClientSession &sess);
@@ -224,7 +232,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
-    {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
+    {{"mapmove", "movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
@@ -238,6 +246,11 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
     {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
     {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
+    {{"openStore"}, "Open store Window", cmdHandler_OpenStore, 9},
+    {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
+    {{"sendLocation"}, "Send Location Test", cmdHandler_SendLocations, 9},
+    {{"developerConsoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
+    {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -255,6 +268,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setCustomTitles"},"Set your titles manually", cmdHandler_SetCustomTitles, 1},
     {{"setSpecialTitle"},"Set your Special title", cmdHandler_SetSpecialTitle, 1},
     {{"stuck"},"Free yourself if your character gets stuck", cmdHandler_Stuck, 1},
+    {{"gotospawn"},"Teleport to a SpawnLocation", cmdHandler_SetSpawnLocation, 1},
     {{"lfg"},"Toggle looking for group status ", cmdHandler_LFG, 1},
     {{"motd"},"View the server MOTD", cmdHandler_MOTD, 1},
     {{"i","invite"}, "Invite player to team", cmdHandler_Invite, 1},
@@ -1284,6 +1298,50 @@ void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
+void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess)
+{
+    VisitLocation visitlocation;
+    visitlocation.m_location_name = "Test1";
+    visitlocation.m_pos = glm::vec3(-44, 0, 261);
+
+    sendLocation(sess, visitlocation);
+}
+
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2 )
+    {
+        qCDebug(logSlashCommand) << "SendConsoleOutput. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsoleOutput format is '/consoleOutput <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendDeveloperConsoleOutput(sess, msg);
+}
+
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2)
+    {
+        qCDebug(logSlashCommand) << "SendConsolePrintF. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsolePrintF format is '/consolePrintF <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendClientConsoleOutput(sess, msg);
+}
+
+
 
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
@@ -1511,6 +1569,17 @@ void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
+}
+
+void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess)
+{
+    const QString spawnLocation = getCommandParameter(cmd);
+    if(spawnLocation.isEmpty())
+    {
+        // No SpawnLocation given, bail.
+        return;
+    }
+    sess.m_current_map->setSpawnLocation(*sess.m_ent, spawnLocation);
 }
 
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess)
@@ -2170,6 +2239,38 @@ void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess)
     // TODO: this will regenerate any NPCs (luabot) that exist
     sess.m_current_map->load_map_lua();
 }
+
+
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess)
+{
+    qCDebug(logSlashCommand) << "OpenStore...";
+    openStore(sess, 0); // Default entity_idx as it doesn't change anything currently
+}
+  
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+    QString message;
+    QString name = parts[1].toString();
+    int first_space = cmd.indexOf(' ');
+    int second_space = cmd.indexOf(' ',first_space+1);
+
+    if(second_space == -1)
+    {
+        message = "ForceLogout requires a logout message. /forceLogout <HeroName> <Message!>";
+        qCDebug(logSlashCommand) << message;
+        sendInfoMessage(MessageChannel::USER_ERROR, message, sess);
+        return;
+    }
+    else
+    {
+        message = cmd.mid(second_space + 1);
+    }
+
+    sendForceLogout(sess, name, message);
+}
+
 
 } // end of anonymous namespace
 
