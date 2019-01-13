@@ -37,6 +37,7 @@ DOCUMENTATION
 - *Configure SEGS using SEGSADMIN:*  
           - [Linux](./docs/SEGS-CONFIGURE_WITH_SEGSADMIN.md)  
           - [Windows](./docs/SEGS-COMPILE_AND_INSTALL-WINDOWS.md#configure-segs-using-segsadmin)
+- [SEGS ingame commands](./docs/SEGS-SLASH_COMMANDS.md)
 - *CoH Client installation:*  
           - [Windows](./docs/COH-CLIENT_INSTALL-WINDOWS.md)  
           - [Linux](#)  
