@@ -25,16 +25,22 @@ DOCUMENTATION
 ------
 - [Contribute](#e)  
 - *Compile an install SEGS on:*  
-          - [MacOS](#)  
-          - [CentOS/RHEL](./docs/COMPILE_AND_INSTALL_CENTOS.md)  
-          - [Fedora](./docs/COMPILE_AND_INSTALL_FEDORA.md)  
-          - [FreeBSD](./docs/COMPILE_AND_INSTALL_FREEBSD.md)  
-          - [Ubuntu](./docs/COMPILE_AND_INSTALL_UBUNTU.md)  
-          - [Windows](./docs/COMPILE_AND_INSTALL_WINDOWS.md)  
-- [Docker](./docs/DOCKER.md)  
-- *Install from Package:*    
+          - [MacOS](#)   
+          - [CentOS/RHEL](./docs/SEGS-COMPILE_AND_INSTALL-CENTOS.md)  
+          - [Fedora](./docs/SEGS-COMPILE_AND_INSTALL-FEDORA.md)  
+          - [FreeBSD](./docs/SEGS-COMPILE_AND_INSTALL-FREEBSD.md)  
+          - [Ubuntu](./docs/SEGS-COMPILE_AND_INSTALL-UBUNTU.md)  
+          - [Windows](./docs/SEGS-COMPILE_AND_INSTALL-WINDOWS.md)  
+- [Docker](./docs/SEGS-COMPILE_AND_INSTALL-DOCKER.md)  
+- *Install SEGS from Package:*   
           - [Windows](./Projects/CoX/docs/README.md)  
-- [FAQs](.docs/FAQ.md)  
+- *Configure SEGS using SEGSADMIN:*  
+          - [Linux](./docs/SEGS-CONFIGURE_WITH_SEGSADMIN.md)  
+          - [Windows](./docs/SEGS-COMPILE_AND_INSTALL-WINDOWS.md#configure-segs-using-segsadmin)
+- *CoH Client installation:*  
+          - [Windows](./docs/COH-CLIENT_INSTALL-WINDOWS.md)  
+          - [Linux](#)  
+- [FAQs](./docs/FAQ.md)  
 
 CONTRIBUTE TO DEVELOPMENT
 ------
