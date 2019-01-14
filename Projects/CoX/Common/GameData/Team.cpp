@@ -66,6 +66,19 @@ bool Team::containsEntityName(const QString &name)
     return false;
 }
 
+TeamingError Team::acceptTeamInvite(const QString &name)
+{
+    for (TeamMember &_t : m_team_members)
+        if (_t.tm_name == name)
+        {
+            _t.tm_pending = false;
+            return TeamingError::OK;
+        }
+
+    return TeamingError::NOT_ON_TEAM;
+
+}
+
 TeamingError Team::addTeamMember(uint32_t entity_id) 
 {
     if(m_team_members.size() >= m_max_team_size)
@@ -95,6 +108,48 @@ TeamingError Team::addTeamMember(const QString &name)
 
     m_team_members.emplace_back(new_member);
     
+    return TeamingError::OK;
+}
+
+TeamingError Team::addTeamMember(uint32_t entity_id, const QString &name)
+{
+    if(m_team_members.size() >= m_max_team_size)
+        return TeamingError::TEAM_FULL;
+    
+    // create new team member
+    TeamMember new_member;
+    new_member.tm_idx = entity_id;
+    new_member.tm_name = name;
+
+    if(m_team_members.size() <= 1)
+        m_team_leader_idx = entity_id;
+
+    m_team_members.emplace_back(new_member);
+    
+    return TeamingError::OK;
+}
+
+TeamingError Team::removeTeamMember(uint32_t entity_id)
+{
+    return TeamingError::OK;
+}
+
+TeamingError Team::removeTeamMember(const QString &name)
+{
+    auto iter = std::find_if(m_team_members.begin(), m_team_members.end(),
+                              [name](const Team::TeamMember& t) -> bool {return name == t.tm_name;});
+
+    if(iter == m_team_members.end())
+		return TeamingError::NOT_ON_TEAM;
+
+	// TODO: sidekick stuff
+	iter = m_team_members.erase(iter);
+
+    if(m_team_members.size() < 2)
+        return TeamingError::TEAM_DISBANDED;
+
+	m_team_leader_idx = m_team_members.front().tm_idx;
+
     return TeamingError::OK;
 }
 
@@ -141,6 +196,20 @@ void Team::dumpAllTeamMembers()
         output += "\n\t" + member.tm_name + " db_id: " + QString::number(member.tm_idx);
 
     qDebug().noquote() << output;
+}
+
+bool Team::isTeamLeader(uint32_t entity_id)
+{
+	return m_team_leader_idx == entity_id;
+}
+
+bool Team::isTeamLeader(const QString &name)
+{
+	for (TeamMember &tm : m_team_members)
+		if (tm.tm_name == name)
+			return m_team_leader_idx == tm.tm_idx;
+
+	return false;
 }
 
 bool Team::isTeamLeader(Entity *e)

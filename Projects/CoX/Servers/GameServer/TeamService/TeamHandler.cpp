@@ -18,6 +18,34 @@
 
 using namespace SEGSEvents;
 
+bool TeamHandler::delete_team(Team *t)
+{
+
+    int index_to_remove = -1;
+    for (unsigned int i = 0; i < m_state.m_team_list.size(); i++)
+    {
+        Team *team = m_state.m_team_list[i];
+        if (team->m_team_idx == t->m_team_idx)
+        {
+            index_to_remove = i;
+            qCDebug(logTeams) << "Removing team:" << t->m_team_idx;
+            delete team;
+            break;
+        }
+    }
+
+    if (index_to_remove == -1)
+    {
+        qCDebug(logTeams) << "Team not found:" << t->m_team_idx;
+        return false;
+    }
+
+
+    m_state.m_team_list.erase(m_state.m_team_list.begin() + index_to_remove);
+
+    return true;
+}
+
 bool TeamHandler::name_is_lfg(const QString &name)
 {
     for (LFGMember &m : m_state.m_lfg_list)
@@ -57,7 +85,7 @@ void TeamHandler::remove_lfg(const uint32_t db_id)
 	}
 }
 
-Team* TeamHandler::team_for_db_id(const uint32_t db_id)
+Team *TeamHandler::team_for_db_id(const uint32_t db_id)
 {
     for (Team *t : m_state.m_team_list) 
 	{
@@ -203,7 +231,7 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
     // if the leader has a team, make sure it's not full
     if (leader_team != nullptr) 
     {
-        if (leader_team->m_team_leader_idx != leader_id) {
+        if (!leader_team->isTeamLeader(leader_id)) {
             QString m = "You must be the team leader to invite a player.";
 			m_state.m_map_handler->putq(new UserRouterInfoMessage({m, MessageChannel::USER_ERROR, leader_id, leader_id}, 0));
             return;
@@ -222,7 +250,7 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
         QString m;
 
         if (invitee_team->isNamePending(invitee_name))
-            m = QString("%1 is deciding about another team invitation.").arg(invitee_name);
+            m = QString("%1 is already deciding about a team invitation.").arg(invitee_name);
         else
             m = QString("%1 is already on a team.").arg(invitee_name);
 
@@ -234,14 +262,13 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
     if (leader_team == nullptr)
     {
         // create Team with transient=true
-        leader_team = new Team(true);
+		leader_team = new Team(true);
 
-        TeamingError e = leader_team->addTeamMember(leader_id);
+        TeamingError e = leader_team->addTeamMember(leader_id, leader_name);
 
         if (e != TeamingError::OK)
         {
             qCritical() << "Error adding entity ID to new team" << int(e);
-            delete leader_team;
             return;
         }
 
@@ -272,14 +299,72 @@ void TeamHandler::on_team_member_kicked(TeamMemberKickedMessage *msg) {
     qCDebug(logTeams) << "kicked_by: | " << msg->m_data.m_leader_id << "sent_to: " << msg->m_data.m_kickee_id;
 }
 
-void TeamHandler::on_team_member_invite_accepted(TeamMemberInviteAcceptedMessage *msg) {
+void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &invitee_name, QString &leader_name, bool accepted) {
 
-    qCDebug(logTeams) << "invite accepted_by: " << msg->m_data.m_invitee_id << msg->m_data.m_invitee_name << msg->m_data.m_leader_name;
-}
+    qCDebug(logTeams) << "invite handled_by: " << accepted << invitee_id << invitee_name << leader_name;
 
-void TeamHandler::on_team_member_invite_declined(TeamMemberInviteDeclinedMessage *msg) {
+    Team *invitee_team = nullptr;
 
-    qCDebug(logTeams) << "invite declined_by: " << msg->m_data.m_invitee_id << msg->m_data.m_invitee_name << msg->m_data.m_leader_name;
+    for (Team *t : m_state.m_team_list) 
+    {
+        if (t->containsEntityName(invitee_name))
+            invitee_team = t;
+    }
+
+	if (invitee_team == nullptr)
+	{
+		QString m = "The team invitation has expired or is invalid.";
+		qCritical() << m << invitee_id << invitee_name << leader_name;
+
+        m_state.m_map_handler->putq(new UserRouterInfoMessage(
+			{m, MessageChannel::USER_ERROR, invitee_id, invitee_id}, 0));
+
+		return;
+	} 
+    else if (!invitee_team->isTeamLeader(leader_name))
+	{
+		QString m = "The team leader has changed since this invite was sent.";
+		qCritical() << m << invitee_id << invitee_name << leader_name;
+
+        m_state.m_map_handler->putq(new UserRouterInfoMessage(
+			{m, MessageChannel::USER_ERROR, invitee_id, invitee_id}, 0));
+
+		return;
+	}
+	else if (!invitee_team->isNamePending(invitee_name))
+	{
+		QString m = "The team invitation has has already been handled.";
+		qCritical() << m << invitee_id << invitee_name << leader_name;
+
+        m_state.m_map_handler->putq(new UserRouterInfoMessage(
+			{m, MessageChannel::USER_ERROR, invitee_id, invitee_id}, 0));
+
+		return;
+	}
+
+    if (accepted)
+    {
+        TeamingError e = invitee_team->acceptTeamInvite(invitee_name);
+    }
+    else
+    {
+        TeamingError e = invitee_team->removeTeamMember(invitee_name);
+
+        if (e == TeamingError::TEAM_DISBANDED)
+        {
+            qCDebug(logTeams) << "Team disbanded:" << invitee_team->m_team_idx;
+            delete_team(invitee_team);
+            qCDebug(logTeams) <<"Num teams:" << m_state.m_team_list.size();
+        }
+
+        if (e == TeamingError::TEAM_DISBANDED || \
+            e == TeamingError::OK)
+        {
+            QString m = "The team invitation has been declined.";
+            m_state.m_map_handler->putq(new UserRouterInfoMessage(
+                {m, MessageChannel::USER_ERROR, invitee_id, invitee_id}, 0));
+        }
+    }
 }
 
 void TeamHandler::on_team_refresh_lfg(TeamRefreshLFGMessage *msg)
@@ -367,12 +452,16 @@ void TeamHandler::dispatch(SEGSEvents::Event *ev)
         case evTeamMemberKickedMessage:
             on_team_member_kicked(static_cast<TeamMemberKickedMessage *>(ev));
             break;
-        case evTeamMemberInviteAcceptedMessage:
-            on_team_member_invite_accepted(static_cast<TeamMemberInviteAcceptedMessage *>(ev));
+        case evTeamMemberInviteAcceptedMessage: {
+            TeamMemberInviteAcceptedMessage *msg = static_cast<TeamMemberInviteAcceptedMessage *>(ev);
+            on_team_member_invite_handled(msg->m_data.m_invitee_id, msg->m_data.m_invitee_name, msg->m_data.m_leader_name, true);
             break;
-        case evTeamMemberInviteDeclinedMessage:
-            on_team_member_invite_declined(static_cast<TeamMemberInviteDeclinedMessage *>(ev));
+        }
+        case evTeamMemberInviteDeclinedMessage: {
+            TeamMemberInviteDeclinedMessage *msg = static_cast<TeamMemberInviteDeclinedMessage *>(ev);
+            on_team_member_invite_handled(msg->m_data.m_invitee_id, msg->m_data.m_invitee_name, msg->m_data.m_leader_name, false);
             break;
+        }
 		case evTeamToggleLFGMessage:
             on_team_toggle_lfg(static_cast<TeamToggleLFGMessage *>(ev));
             break;

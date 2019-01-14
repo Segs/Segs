@@ -1900,7 +1900,7 @@ void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
     if(tgt_db_id != tgt_db_id_2)
         qWarning() << "TeamAccept db_ids do not match!";
 
-    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteAcceptedMessage({tgt_db_id, from_name, tgt_name}, sess.link()->session_token()));
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteAcceptedMessage({tgt_db_id, tgt_name, from_name}, sess.link()->session_token()));
 
 
 
@@ -1935,7 +1935,7 @@ void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
     uint32_t tgt_db_id  = args.value(2).toUInt();
     QString tgt_name    = args.value(3);
 
-    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteDeclinedMessage({tgt_db_id, from_name, tgt_name}, sess.link()->session_token()));
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteDeclinedMessage({tgt_db_id, tgt_name, from_name}, sess.link()->session_token()));
     // Entity *from_ent = getEntity(&sess,from_name);
     // if(from_ent == nullptr)
     //     return;

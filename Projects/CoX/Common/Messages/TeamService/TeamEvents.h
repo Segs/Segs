@@ -83,7 +83,7 @@ struct TeamMemberInviteDeclinedData
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_invitee_id);
+        ar(m_invitee_id, m_invitee_name, m_leader_name);
     }
 };
 

@@ -14,6 +14,8 @@ enum class TeamingError
     OK,
     TEAM_FULL,
     INVITEE_HAS_TEAM,
+	NOT_ON_TEAM,
+	TEAM_DISBANDED,
 };
 
 class Entity;
@@ -55,8 +57,18 @@ const   uint32_t    m_team_idx          = 0;
         TeamingError        addTeamMember(Entity *e, uint32_t teammate_map_idx);
         bool                isTeamLeader(Entity *e);
 
+		bool				isTeamLeader(uint32_t entity_id);
+		bool				isTeamLeader(const QString &name);
+
+        TeamingError        acceptTeamInvite(const QString &name);
+
         TeamingError        addTeamMember(uint32_t entity_id);
         TeamingError        addTeamMember(const QString &name);
+        TeamingError        addTeamMember(uint32_t entity_id, const QString &name);
+
+        TeamingError        removeTeamMember(uint32_t entity_id);
+        TeamingError        removeTeamMember(const QString &name);
+
         bool                containsEntityID(uint32_t entity_id);
         bool                containsEntityName(const QString &name);
         bool                isFull();
