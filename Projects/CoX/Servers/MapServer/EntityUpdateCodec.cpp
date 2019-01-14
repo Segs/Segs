@@ -293,7 +293,8 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
     if(src.m_char->m_char_data.m_sidekick.m_has_sidekick)
     {
         Sidekick sidekick = src.m_char->m_char_data.m_sidekick;
-        bool is_mentor = isSidekickMentor(src);
+        // TODO: handle in TeamService
+        bool is_mentor = false; //isSidekickMentor(src);
         bool has_dbid  = (sidekick.m_db_id != 0);
 
         bs.StoreBits(1,is_mentor);

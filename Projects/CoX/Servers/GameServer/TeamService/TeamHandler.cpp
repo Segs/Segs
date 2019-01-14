@@ -345,6 +345,16 @@ void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &in
     if (accepted)
     {
         TeamingError e = invitee_team->acceptTeamInvite(invitee_name);
+
+        if (e == TeamingError::OK) 
+        {
+            invitee_team->m_transient = false;
+            // update clients
+        }
+        else
+        {
+            qCCritical(logTeams) << "Team invitation responded to, but invalid:" << invitee_team->m_team_idx << invitee_name;
+        }
     }
     else
     {

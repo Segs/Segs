@@ -82,7 +82,7 @@ enum class AppearanceType : uint8_t
 
 struct SuperGroup
 {
-    int             m_SG_id         = {0};
+    int             m_SG_id         = 0;
     QString         m_SG_name       = "Supergroup"; // 64 chars max
     QString         m_SG_motto;
     QString         m_SG_motd;
@@ -160,14 +160,14 @@ public:
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_supergroup        = true;
         bool                m_has_team              = false;
-        Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
+        Team::TeamData      m_team_data;                        // we might want to move this to Character class, but maybe Baddies use teams?
         TradePtr            m_trade;
         EntityData          m_entity_data;
         FactionData         m_faction_data;
 
-        uint32_t            m_idx                   = {0};
-        uint32_t            m_db_id                 = {0};
-        EntType             m_type                  = {EntType::Invalid};
+        uint32_t            m_idx                   = 0;
+        uint32_t            m_db_id                 = 0;
+        EntType             m_type                  = EntType::Invalid;
         glm::quat           m_direction;
         int32_t             m_target_idx            = -1;
         int32_t             m_assist_target_idx     = -1;
@@ -224,8 +224,8 @@ public:
         bool                m_has_owner                 = false;
         bool                m_create_player             = false;
         bool                m_rare_update               = false;
-        int                 m_input_pkt_id              = {0};
-        uint32_t            m_input_ack                 = {0};
+        int                 m_input_pkt_id              = 0;
+        uint32_t            m_input_ack                 = 0;
         uint32_t            ownerEntityId               = 0;
         uint32_t            creatorEntityId             = 0;
         MapClientSession *  m_client                    = nullptr;

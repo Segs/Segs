@@ -179,17 +179,18 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
     effectsStep(e, dT.msec());
     checkPowerTimers(e, dT.msec());
 
+    // TODO: TeamService
     // TODO: Issue #555 needs to handle team cleanup properly
     // and we need to remove the following
-    if(e->m_team != nullptr)
-    {
-        if(e->m_team->m_team_members.size() <= 1)
-        {
-            qWarning() << "Team cleanup being handled in updateEntity, but we need to move this to TeamHandler";
-            e->m_has_team = false;
-            e->m_team = nullptr;
-        }
-    }
+//    if(e->m_team != nullptr)
+//    {
+//        if(e->m_team->m_team_members.size() <= 1)
+//        {
+//            qWarning() << "Team cleanup being handled in updateEntity, but we need to move this to TeamHandler";
+//            e->m_has_team = false;
+//            e->m_team = nullptr;
+//        }
+//    }
 
     // check death, set clienstate if dead, and
     // if alive, recover endurance and health

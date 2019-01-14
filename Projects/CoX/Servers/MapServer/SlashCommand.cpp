@@ -690,11 +690,11 @@ void cmdHandler_SettingsDump(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_TeamDebug(const QString &/*cmd*/, MapClientSession &sess)
 {
-    QString msg = "Sending team debug to console output.";
-    qCDebug(logSlashCommand) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
-
-    sess.m_ent->m_team->dump(); // Send team debug info
+//    QString msg = "Sending team debug to console output.";
+//    qCDebug(logSlashCommand) << msg;
+//    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+//
+//    sess.m_ent->m_team->dump(); // Send team debug info
 }
 
 
@@ -1596,10 +1596,10 @@ void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_LeaveTeam(const QString &/*cmd*/, MapClientSession &sess)
 {
-    leaveTeam(*sess.m_ent);
-    QString msg = "Leaving Team";
-    qCDebug(logSlashCommand).noquote() << msg;
-    sendInfoMessage(MessageChannel::TEAM, msg, sess);
+//    leaveTeam(*sess.m_ent);
+//    QString msg = "Leaving Team";
+//    qCDebug(logSlashCommand).noquote() << msg;
+//    sendInfoMessage(MessageChannel::TEAM, msg, sess);
 }
 
 void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
@@ -1951,23 +1951,23 @@ void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)
 {
-    uint32_t db_id  = sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id;
-    //TODO: Check that entity is in the same map ?
-    Entity *tgt     = getEntityByDBID(sess.m_current_map,db_id);
-    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
-        return;
-
-    addSidekick(*sess.m_ent,*tgt);
-    // Send message to each player
-    QString msg = QString("You are now Mentoring %1.").arg(tgt->name()); // Customize for src.
-    sendInfoMessage(MessageChannel::TEAM, msg, sess);
-    msg = QString("%1 is now Mentoring you.").arg(sess.m_ent->name()); // Customize for src.
-    sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
+//    uint32_t db_id  = sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id;
+//    //TODO: Check that entity is in the same map ?
+//    Entity *tgt     = getEntityByDBID(sess.m_current_map,db_id);
+//    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
+//        return;
+//
+//    addSidekick(*sess.m_ent,*tgt);
+//    // Send message to each player
+//    QString msg = QString("You are now Mentoring %1.").arg(tgt->name()); // Customize for src.
+//    sendInfoMessage(MessageChannel::TEAM, msg, sess);
+//    msg = QString("%1 is now Mentoring you.").arg(sess.m_ent->name()); // Customize for src.
+//    sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
 }
 
 void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 {
-    sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id = 0;
+//    sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id = 0;
 }
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)

@@ -197,12 +197,12 @@ void storeTeamList(BitStream &bs, Entity *self)
     uint32_t    tm_leader_id = 0;
     uint32_t    tm_size = 0;
 
-    if(self->m_has_team && self->m_team != nullptr)
+    if(self->m_has_team)
     {
-        team_idx        = self->m_team->m_team_idx;
-        has_taskforce   = self->m_team->m_has_taskforce;
-        tm_leader_id    = self->m_team->m_team_leader_idx;
-        tm_size         = self->m_team->m_team_members.size();
+        team_idx        = self->m_team_data.m_team_idx;
+        has_taskforce   = self->m_team_data.m_has_taskforce;
+        tm_leader_id    = self->m_team_data.m_team_leader_idx;
+        tm_size         = self->m_team_data.m_team_members.size();
     }
 
     storePackedBitsConditional(bs,20,team_idx);
@@ -215,7 +215,7 @@ void storeTeamList(BitStream &bs, Entity *self)
     bs.StoreBits(32,tm_leader_id); // must be db_id
     bs.StorePackedBits(1,tm_size);
 
-    for(const auto &member : self->m_team->m_team_members)
+    for(const auto &member : self->m_team_data.m_team_members)
     {
         Entity *tm_ent = getEntityByDBID(self->m_client->m_current_map, member.tm_idx);
 
@@ -422,7 +422,8 @@ void serialize_char_full_update(const Entity &src, BitStream &bs )
     bs.StoreBits(1,player_char.m_char_data.m_sidekick.m_has_sidekick);
     if(player_char.m_char_data.m_sidekick.m_has_sidekick)
     {
-        bool is_mentor = isSidekickMentor(src);
+        // TODO: TeamService
+        bool is_mentor = false;//isSidekickMentor(src);
         bs.StoreBits(1,is_mentor);
         bs.StorePackedBits(20,player_char.m_char_data.m_sidekick.m_db_id); // sidekick partner db_id -> 10240
     }

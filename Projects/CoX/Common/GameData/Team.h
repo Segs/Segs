@@ -18,8 +18,6 @@ enum class TeamingError
 	TEAM_DISBANDED,
 };
 
-class Entity;
-
 class Team
 {
 public:
@@ -39,23 +37,28 @@ public:
 			bool        	tm_pending = false; // if true, user has not responded to invite yet
         };
 
+        struct TeamData {
+            uint32_t    m_team_idx          = 0;
+            bool        m_has_taskforce  = false;    // it's possible that this belongs to entity or char instead
+            uint32_t    m_team_leader_idx   = 0;
+
+            std::vector<TeamMember> m_team_members;
+        };
+
+        TeamData m_data;
+
         // Member Vars
-        std::vector<TeamMember> m_team_members;
 
         // indicates that the team is still being formed
         // i.e. an invite has been sent by a player NOT YET on a team
         bool        m_transient;
 
-const   uint32_t    m_team_idx          = 0;
+        uint32_t    m_team_idx          = 0;
         uint32_t    m_max_team_size     = 8;        // max is always 8
-        uint32_t    m_team_leader_idx   = 0;
-        bool        m_has_taskforce  = false;    // it's possible that this belongs to entity or char instead
 
         // Methods
         void                dump();
         void                dumpAllTeamMembers();
-        TeamingError        addTeamMember(Entity *e, uint32_t teammate_map_idx);
-        bool                isTeamLeader(Entity *e);
 
 		bool				isTeamLeader(uint32_t entity_id);
 		bool				isTeamLeader(const QString &name);
@@ -80,34 +83,33 @@ static  uint32_t    m_team_idx_counter;
 };
 
 
-/*
- * Team Methods
- */
-bool sameTeam(Entity &src, Entity &tgt);
-bool makeTeamLeader(Entity &src, Entity &tgt);
-bool inviteTeam(Entity &src, Entity &tgt);
-bool kickTeam(Entity &tgt);
-void leaveTeam(Entity &e);
-void removeTeamMember(Team &self,Entity *e);
-enum class SidekickChangeStatus
-{
-    SUCCESS,
-    GENERIC_FAILURE=1,
-    LEVEL_DIFFERENCE_TOO_HIGH,
-    MENTOR_LEVEL_TOO_LOW, // player level is not high enough
-    CANNOT_MENTOR_YET, // player level must be higher to have a sidekick
-    HAVE_SIDEKICK_ALREADY,
-    TARGET_IS_SIDEKICKING_ALREADY,
-    NO_TEAM_OR_SAME_TEAM_REQUIRED,
-    NOT_SIDEKICKED_CURRENTLY,
-};
-
-/*
- * Sidekick Methods -- Sidekick system requires teaming.
- */
-
-uint32_t getSidekickId(const class Character &src);
-bool isSidekickMentor(const Entity &e);
-SidekickChangeStatus inviteSidekick(Entity &src, Entity &tgt);
-void addSidekick(Entity &tgt, Entity &src);
-SidekickChangeStatus removeSidekick(Entity &src, uint32_t sidekick_id);
+///*
+// * Team Methods
+// */
+//bool sameTeam(Entity &src, Entity &tgt);
+//bool makeTeamLeader(Entity &src, Entity &tgt);
+//bool inviteTeam(Entity &src, Entity &tgt);
+//bool kickTeam(Entity &tgt);
+//void leaveTeam(Entity &e);
+//enum class SidekickChangeStatus
+//{
+//    SUCCESS,
+//    GENERIC_FAILURE=1,
+//    LEVEL_DIFFERENCE_TOO_HIGH,
+//    MENTOR_LEVEL_TOO_LOW, // player level is not high enough
+//    CANNOT_MENTOR_YET, // player level must be higher to have a sidekick
+//    HAVE_SIDEKICK_ALREADY,
+//    TARGET_IS_SIDEKICKING_ALREADY,
+//    NO_TEAM_OR_SAME_TEAM_REQUIRED,
+//    NOT_SIDEKICKED_CURRENTLY,
+//};
+//
+///*
+// * Sidekick Methods -- Sidekick system requires teaming.
+// */
+//
+//uint32_t getSidekickId(const class Character &src);
+//bool isSidekickMentor(const Entity &e);
+//SidekickChangeStatus inviteSidekick(Entity &src, Entity &tgt);
+//void addSidekick(Entity &tgt, Entity &src);
+//SidekickChangeStatus removeSidekick(Entity &src, uint32_t sidekick_id);

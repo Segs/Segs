@@ -90,9 +90,6 @@ void Entity::dump()
 
     qDebug().noquote() << msg;
 
-    if(m_team != nullptr)
-        m_team->dump();
-
     if(m_type == EntType::PLAYER || m_type == EntType::NPC)
         m_char->dump();
     if(m_type == EntType::PLAYER)

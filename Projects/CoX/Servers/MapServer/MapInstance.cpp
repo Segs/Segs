@@ -533,6 +533,9 @@ void MapInstance::dispatch( Event *ev )
         case evTeamRefreshLFGMessage:
             on_team_refresh_lfg(static_cast<TeamRefreshLFGMessage *>(ev));
             break;
+        case evTeamUpdatedMessage:
+            on_team_updated(static_cast<TeamUpdatedMessage *>(ev));
+            break;
         case evReceiveTaskDetailRequest:
             on_receive_task_detail_request(static_cast<ReceiveTaskDetailRequest *>(ev));
             break;
@@ -1315,26 +1318,26 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
         }
         case MessageChannel::TEAM:
         {
-            if(!sender->m_ent->m_has_team)
-            {
-                prepared_chat_message = "You are not a member of a Team.";
-                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender);
-                break;
-            }
-
-            qWarning() << "Team chat: this only work for members on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
-
-            // Only send the message to characters on sender's team
-            for(MapClientSession *cl : m_session_store)
-            {
-                if(sender->m_ent->m_team->m_team_idx == cl->m_ent->m_team->m_team_idx)
-                    recipients.push_back(cl);
-            }
-            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClientSession * cl : recipients)
-            {
-                sendChatMessage(MessageChannel::TEAM, prepared_chat_message, sender, *cl);
-            }
+//            if(!sender->m_ent->m_has_team)
+//            {
+//                prepared_chat_message = "You are not a member of a Team.";
+//                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender);
+//                break;
+//            }
+//
+//            qWarning() << "Team chat: this only work for members on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
+//
+//            // Only send the message to characters on sender's team
+//            for(MapClientSession *cl : m_session_store)
+//            {
+//                if(sender->m_ent->m_team->m_team_idx == cl->m_ent->m_team->m_team_idx)
+//                    recipients.push_back(cl);
+//            }
+//            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
+//            for(MapClientSession * cl : recipients)
+//            {
+//                sendChatMessage(MessageChannel::TEAM, prepared_chat_message, sender, *cl);
+//            }
             break;
         }
         case MessageChannel::SUPERGROUP:
@@ -3116,6 +3119,11 @@ void MapInstance::on_team_toggle_lfg(TeamToggleLFGMessage *msg)
 {
     MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
 	map_session.m_ent->m_char->m_char_data.m_lfg = msg->m_data.m_char_data.m_lfg;
+}
+
+void MapInstance::on_team_updated(TeamUpdatedMessage *msg)
+{
+
 }
 
 void MapInstance::on_team_refresh_lfg(TeamRefreshLFGMessage *msg)
