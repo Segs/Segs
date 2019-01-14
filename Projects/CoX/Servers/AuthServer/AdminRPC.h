@@ -19,7 +19,7 @@ class AdminRPC : public QObject
 {
     Q_OBJECT
     class AuthHandler *m_auth_handler;
-    friend void startWebSocketServer();
+    friend void startRPCServer();
 private:
     AdminRPC(); // restrict construction to startWebSocketServer
 public:
@@ -36,4 +36,4 @@ protected:
     QString                             m_start_time;
 };
 
-void startWebSocketServer();
+void startRPCServer();
