@@ -337,45 +337,12 @@ void sendFriendsListUpdate(MapClientSession &sess, const FriendsList &friends_li
     sess.addCommand<FriendsListUpdate>(friends_list);
 }
 
-<<<<<<< HEAD
-void sendSidekickOffer(MapClientSession &sess, uint32_t src_db_id)
-{
-    qCDebug(logTeams) << "Sending Sidekick Offer" << sess.m_ent->name() << "from" << src_db_id;
-    sess.addCommand<SidekickOffer>(src_db_id);
-}
-
-void sendTeamLooking(MapClientSession &sess)
-{
-    std::vector<LFGMember> list = g_lfg_list;
-
-    qCDebug(logLFG) << "Sending Team Looking to" << sess.m_ent->name();
-    sess.addCommand<TeamLooking>(list);
-}
-
-void sendTeamOffer(MapClientSession &src, MapClientSession &tgt)
-{
-    QString name        = src.m_ent->name();
-    uint32_t db_id      = tgt.m_ent->m_db_id;
-    TeamOfferType type  = TeamOfferType::NoMission;
-
-    // Check for mission, send appropriate TeamOfferType
-    if(src.m_ent->m_has_team && src.m_ent->m_team != nullptr)
-    {
-        if(src.m_ent->m_team->m_has_taskforce)
-            type = TeamOfferType::WithMission; // TODO: Check for invalid missions to send `LeaveMission` instead
-    }
-
-    qCDebug(logTeams) << "Sending Teamup Offer" << db_id << name << static_cast<uint8_t>(type);
-    tgt.addCommand<TeamOffer>(db_id, name, type);
-}
-=======
 // TODO: move to TeamService
 //void sendSidekickOffer(MapClientSession &sess, uint32_t src_db_id)
 //{
 //    qCDebug(logTeams) << "Sending Sidekick Offer" << sess.m_ent->name() << "from" << src_db_id;
 //    sess.addCommand<SidekickOffer>(src_db_id);
 //}
->>>>>>> a55501a5... remove or comment old team/lfg stuff
 
 void sendFaceEntity(MapClientSession &sess, int32_t tgt_idx)
 {
