@@ -348,7 +348,7 @@ QString MapSceneGraph::getNearestDoor(glm::vec3 location) const
     DoorLocator locator(&res);
 
     for (auto v : m_scene_graph->refs)
-	{
+    {
         walkSceneNode(v->node, v->mat, locator);
     }
 

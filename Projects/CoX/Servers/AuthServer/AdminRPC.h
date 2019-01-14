@@ -32,7 +32,7 @@ protected:
     ACE_INET_Addr                       m_location;     //!< address websockets will bind at.
     ACE_Thread_Mutex                    m_mutex;        //!< used to prevent multiple threads accessing config reload function
     bool                                ReadConfig();
-    void 								SetStartTime();
+    void                                SetStartTime();
     QString                             m_start_time;
 };
 
