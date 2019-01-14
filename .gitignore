@@ -58,3 +58,8 @@ tags
 [._]*.un~
 
 # End of https://www.gitignore.io/api/vim
+
+segs
+segs_game
+json_server_log.txt
+output.log
