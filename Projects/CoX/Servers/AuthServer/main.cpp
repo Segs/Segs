@@ -286,8 +286,8 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 
     qInfo().noquote() << "main";
 
-    // Create websocket jsonrpc admin interface
-    startWebSocketServer();
+    // Create jsonrpc admin interface
+    startRPCServer();
 
     bool no_err = CreateServers();
     if(!no_err)

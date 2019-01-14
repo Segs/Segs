@@ -5,7 +5,7 @@
 #include "Settings.h"
 
 #include "jcon/json_rpc_server.h"
-#include "jcon/json_rpc_websocket_server.h"
+#include "jcon/json_rpc_tcp_server.h"
 
 #include <QVariant>
 #include <QJsonDocument>
@@ -81,12 +81,12 @@ QString AdminRPC::getStartTime()
     return m_start_time;
 }
 
-void startWebSocketServer()
+void startRPCServer()
 {
-    static jcon::JsonRpcWebSocketServer *m_server;
+    static jcon::JsonRpcTcpServer *m_server;
     if(!m_server)
     {
-        m_server = new JsonRpcWebSocketServer();
+        m_server = new JsonRpcTcpServer();
     }
     AdminRPC* m_adminrpc = new AdminRPC();
     m_server->registerServices({ m_adminrpc });
