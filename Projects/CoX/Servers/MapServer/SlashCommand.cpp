@@ -1597,10 +1597,7 @@ void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_LeaveTeam(const QString &/*cmd*/, MapClientSession &sess)
 {
-//    leaveTeam(*sess.m_ent);
-//    QString msg = "Leaving Team";
-//    qCDebug(logSlashCommand).noquote() << msg;
-//    sendInfoMessage(MessageChannel::TEAM, msg, sess);
+    HandlerLocator::getTeam_Handler()->putq(new TeamLeaveTeamMessage({sess.m_ent->m_db_id}, sess.link()->session_token()));
 }
 
 void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
@@ -1620,7 +1617,7 @@ void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    HandlerLocator::getTeam_Handler()->putq(new TeamMemberMakeLeaderMessage({sess.m_ent->m_db_id, name}, sess.link()->session_token()));
+    HandlerLocator::getTeam_Handler()->putq(new TeamMakeLeaderMessage({sess.m_ent->m_db_id, name}, sess.link()->session_token()));
 }
 
 void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)

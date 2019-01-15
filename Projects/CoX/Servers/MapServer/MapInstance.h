@@ -265,4 +265,5 @@ protected:
         void on_team_refresh_lfg(SEGSEvents::TeamRefreshLFGMessage *msg);
         void on_team_updated(SEGSEvents::TeamUpdatedMessage *msg);
         void on_team_member_kicked(SEGSEvents::TeamMemberKickedMessage *msg);
+        void on_team_leave_team(SEGSEvents::TeamLeaveTeamMessage *msg);
 };

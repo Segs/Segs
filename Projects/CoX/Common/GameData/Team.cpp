@@ -132,6 +132,20 @@ TeamingError Team::addTeamMember(uint32_t entity_id, const QString &name)
 
 TeamingError Team::removeTeamMember(uint32_t entity_id)
 {
+    auto iter = std::find_if(m_data.m_team_members.begin(), m_data.m_team_members.end(),
+                              [entity_id](const Team::TeamMember& t) -> bool {return entity_id == t.tm_idx;});
+
+    if(iter == m_data.m_team_members.end())
+		return TeamingError::NOT_ON_TEAM;
+
+	iter = m_data.m_team_members.erase(iter);
+	// TODO: sidekick stuff
+
+    if(m_data.m_team_members.size() < 2)
+        return TeamingError::TEAM_DISBANDED;
+
+    m_data.m_team_leader_idx = m_data.m_team_members.front().tm_idx;
+
     return TeamingError::OK;
 }
 

@@ -236,8 +236,18 @@ void TeamHandler::on_user_router_opaque_response(UserRouterOpaqueResponse *msg)
 
             return;
         }
+        case evTeamLeaveTeamMessage:
+        {
+			if (e == UserRouterError::USER_OFFLINE)
+			{
+				qCritical() << "got user offline error while trying to leave team";
+				m = "Weird error on leaving team.";
+			}
+
+            return;
+        }
 		default:
-			assert(false);
+			qCritical() << "MUST HANDLE OPAQUE RESPONSE FOR EVENT:" << src_event->type();
 			break;
 	}
 
@@ -414,7 +424,7 @@ void TeamHandler::on_team_member_kicked(TeamMemberKickedMessage *msg) {
     
 }
 
-void TeamHandler::on_team_member_make_leader(SEGSEvents::TeamMemberMakeLeaderMessage *msg)
+void TeamHandler::on_team_member_make_leader(SEGSEvents::TeamMakeLeaderMessage *msg)
 {
     uint32_t leader_id = msg->m_data.m_leader_id;
     QString new_leader_name = msg->m_data.m_new_leader_name;
@@ -458,6 +468,59 @@ void TeamHandler::on_team_member_make_leader(SEGSEvents::TeamMemberMakeLeaderMes
 
     team->m_data.m_team_leader_idx = id_for_name(new_leader_name);
     notify_team_of_changes(team);
+}
+
+void TeamHandler::on_team_leave_team(SEGSEvents::TeamLeaveTeamMessage *msg)
+{
+    uint32_t id = msg->m_data.m_id;
+
+    Team *team = nullptr;
+
+    for (Team *t : m_state.m_team_list) 
+    {
+        if (t->containsEntityID(id))
+        {
+            team = t;
+            break;
+        }
+    }
+
+    if (team == nullptr)
+    {
+		QString m = "You are not on a team.";
+		qCritical() << m << id;
+
+        m_state.m_map_handler->putq(new UserRouterInfoMessage(
+			{m, MessageChannel::USER_ERROR, id, id}, 0));
+
+        return;
+    }
+
+    TeamingError e = team->removeTeamMember(id);
+
+    if (e == TeamingError::OK || \
+            e == TeamingError::TEAM_DISBANDED)
+    {
+        // forward leave team message to the mapinstance
+        m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
+            {__route(msg), id, "", {id}, {}}, 
+                msg->session_token(), this));
+
+        notify_team_of_changes(team);
+
+        if (e == TeamingError::TEAM_DISBANDED)
+        {
+            delete_team(team);
+        }
+    }
+    else
+    {
+		QString m = "There was an error leaving the team.";
+		qCritical() << m << id;
+
+        m_state.m_map_handler->putq(new UserRouterInfoMessage(
+			{m, MessageChannel::USER_ERROR, id, id}, 0));
+    }
 }
 
 void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &invitee_name, QString &leader_name, bool accepted) {
@@ -627,8 +690,11 @@ void TeamHandler::dispatch(SEGSEvents::Event *ev)
         case evTeamMemberKickedMessage:
             on_team_member_kicked(static_cast<TeamMemberKickedMessage *>(ev));
             break;
-        case evTeamMemberMakeLeaderMessage:
-            on_team_member_make_leader(static_cast<TeamMemberMakeLeaderMessage *>(ev));
+        case evTeamMakeLeaderMessage:
+            on_team_member_make_leader(static_cast<TeamMakeLeaderMessage *>(ev));
+            break;
+        case evTeamLeaveTeamMessage:
+            on_team_leave_team(static_cast<TeamLeaveTeamMessage *>(ev));
             break;
         case evTeamMemberInviteAcceptedMessage: {
             TeamMemberInviteAcceptedMessage *msg = static_cast<TeamMemberInviteAcceptedMessage *>(ev);

@@ -23,10 +23,11 @@ namespace SEGSEvents
     struct TeamMemberKickedMessage;
     struct TeamMemberInviteAcceptedMessage;
     struct TeamMemberInviteDeclinedMessage;
-    struct TeamMemberMakeLeaderMessage;
 
 	struct TeamToggleLFGMessage;
 	struct TeamRefreshLFGMessage;
+    struct TeamMakeLeaderMessage;
+    struct TeamLeaveTeamMessage;
 
     struct UserRouterQueryRequest;
     struct UserRouterQueryResponse;
@@ -70,10 +71,11 @@ private:
 
     void on_team_member_invited(SEGSEvents::TeamMemberInvitedMessage *msg);
     void on_team_member_kicked(SEGSEvents::TeamMemberKickedMessage *msg);
-    void on_team_member_make_leader(SEGSEvents::TeamMemberMakeLeaderMessage *msg);
+    void on_team_member_make_leader(SEGSEvents::TeamMakeLeaderMessage *msg);
 
     void on_team_member_invite_handled(uint32_t invitee_id, QString &invitee_name, QString &leader_name, bool accepted);
 
+    void on_team_leave_team(SEGSEvents::TeamLeaveTeamMessage *msg);
     void on_team_toggle_lfg(SEGSEvents::TeamToggleLFGMessage *msg);
     void on_team_refresh_lfg(SEGSEvents::TeamRefreshLFGMessage *msg);
 
