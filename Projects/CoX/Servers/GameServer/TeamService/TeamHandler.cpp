@@ -18,9 +18,24 @@
 
 using namespace SEGSEvents;
 
+void TeamHandler::notify_team_of_changes(Team *t)
+{
+    std::vector<uint32_t> ids;
+    std::vector<QString> names;
+
+    for (const auto &member : t->m_data.m_team_members)
+    {
+        ids.push_back(member.tm_idx);
+        names.push_back(member.tm_name);
+    }
+
+    m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
+        {__route(new TeamUpdatedMessage({t->m_data, t->m_data.m_team_members.size() < 2}, 0)), t->m_data.m_team_leader_idx, "", ids, names}, 
+        0, this));
+}
+
 bool TeamHandler::delete_team(Team *t)
 {
-
     int index_to_remove = -1;
     for (unsigned int i = 0; i < m_state.m_team_list.size(); i++)
     {
@@ -125,6 +140,28 @@ bool TeamHandler::name_known(const QString &name)
     return false;
 }
 
+void TeamHandler::on_client_connected(ClientConnectedMessage *msg)
+{
+//    uint32_t id = msg->m_data.m_char_db_id;
+//
+//    bool player_on_team = false;
+//
+//    for (Team *t : m_state.m_team_list) 
+//	{
+//        if (t->containsEntityID(id))
+//        {
+//            player_on_team = true;
+//            break;
+//        }
+//	}
+}
+
+void TeamHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
+{
+//    if (m_id_to_map_instance.count(msg->m_data.m_char_db_id))
+//        m_id_to_map_instance.erase(msg->m_data.m_char_db_id);
+}
+
 void TeamHandler::on_user_router_opaque_response(UserRouterOpaqueResponse *msg)
 {
 	const uint32_t sender_id = msg->m_data.m_req.m_sender_id;
@@ -189,6 +226,16 @@ void TeamHandler::on_user_router_opaque_response(UserRouterOpaqueResponse *msg)
 
             return;
         }
+        case evTeamMemberKickedMessage:
+        {
+			if (e == UserRouterError::USER_OFFLINE)
+			{
+				qCritical() << "got user offline error while trying to kick team member";
+				m = "Weird error on kicking member from team.";
+			}
+
+            return;
+        }
 		default:
 			assert(false);
 			break;
@@ -207,8 +254,13 @@ void TeamHandler::on_user_router_query_response(UserRouterQueryResponse *msg)
 	m_state.m_id_to_name[msg->m_data.m_response_id] = msg->m_data.m_response_name;
 
 	for (const auto &elem : m_state.m_pending_events)
+    {
 		if (elem.first == msg->m_data.m_response_name)
+        {
 			dispatch(elem.second);
+            elem.second->release();
+        }
+    }
 
 	m_state.m_pending_events.erase(msg->m_data.m_response_name);
 }
@@ -305,7 +357,107 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
 
 void TeamHandler::on_team_member_kicked(TeamMemberKickedMessage *msg) {
 
-    qCDebug(logTeams) << "kicked_by: | " << msg->m_data.m_leader_id << "sent_to: " << msg->m_data.m_kickee_id;
+    uint32_t leader_id = msg->m_data.m_leader_id;
+    QString kickee_name = msg->m_data.m_kickee_name;
+
+    qCDebug(logTeams) << "kicked_by: | " << leader_id << "sent_to: " << kickee_name;
+
+    // first make sure kicker is the leader of a team
+    Team *team = nullptr;
+
+    for (Team *t : m_state.m_team_list) 
+    {
+        if (t->isTeamLeader(leader_id))
+        {
+            team = t;
+            break;
+        }
+    }
+
+    if (team == nullptr)
+    {
+		QString m = "You are not the leader of a team.";
+		qCritical() << m << leader_id;
+
+        m_state.m_map_handler->putq(new UserRouterInfoMessage(
+			{m, MessageChannel::USER_ERROR, leader_id, leader_id}, 0));
+
+        return;
+    }
+
+    TeamingError e = team->removeTeamMember(kickee_name);
+
+    if (e == TeamingError::OK || \
+            e == TeamingError::TEAM_DISBANDED)
+    {
+        // forward kick message to the kickee
+        m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
+            {__route(msg), leader_id, "", {}, {kickee_name}}, 
+                msg->session_token(), this));
+
+        notify_team_of_changes(team);
+
+        if (e == TeamingError::TEAM_DISBANDED)
+        {
+            delete_team(team);
+        }
+    }
+    else 
+    {
+		QString m = "There was an error kicking that player.";
+		qCritical() << m << leader_id << kickee_name;
+
+        m_state.m_map_handler->putq(new UserRouterInfoMessage(
+			{m, MessageChannel::USER_ERROR, leader_id, leader_id}, 0));
+    }
+
+    
+}
+
+void TeamHandler::on_team_member_make_leader(SEGSEvents::TeamMemberMakeLeaderMessage *msg)
+{
+    uint32_t leader_id = msg->m_data.m_leader_id;
+    QString new_leader_name = msg->m_data.m_new_leader_name;
+
+    qCDebug(logTeams) << "passing leadership from:" << leader_id << "to:" << new_leader_name;
+
+    Team *team = nullptr;
+
+    for (Team *t : m_state.m_team_list) 
+    {
+        if (t->isTeamLeader(leader_id))
+        {
+            team = t;
+            break;
+        }
+    }
+
+    if (team == nullptr)
+    {
+		QString m = "You are not the leader of a team.";
+		qCritical() << m << leader_id;
+
+        m_state.m_map_handler->putq(new UserRouterInfoMessage(
+			{m, MessageChannel::USER_ERROR, leader_id, leader_id}, 0));
+
+        return;
+    }
+
+    if (!name_known(new_leader_name))
+    {
+        // queue event and query for new name
+        
+        m_state.m_pending_events.insert({new_leader_name, msg->shallow_copy()});
+
+        m_state.m_map_handler->putq(new UserRouterQueryRequest(
+            {0, new_leader_name}, 
+            msg->session_token(), this));
+        
+        return;
+    }
+
+    team->m_data.m_team_leader_idx = id_for_name(new_leader_name);
+    notify_team_of_changes(team);
 }
 
 void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &invitee_name, QString &leader_name, bool accepted) {
@@ -360,18 +512,7 @@ void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &in
             invitee_team->m_transient = false;
             // update clients
             
-            std::vector<uint32_t> ids;
-            std::vector<QString> names;
-
-            for (const auto &member : invitee_team->m_data.m_team_members)
-            {
-                ids.push_back(member.tm_idx);
-                names.push_back(member.tm_name);
-            }
-
-            m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
-                {__route(new TeamUpdatedMessage({invitee_team->m_data}, 0)), 0, leader_name, ids, names}, 
-                /*msg->session_token()*/0, this));
+            notify_team_of_changes(invitee_team);
         }
         else
         {
@@ -476,6 +617,8 @@ void TeamHandler::dispatch(SEGSEvents::Event *ev)
         m_state.m_map_handler = HandlerLocator::getMap_Handler(m_state.m_game_server_id);
     }
 
+    qCDebug(logTeams) << ev->type();
+
     switch(ev->type())
     {
         case evTeamMemberInvitedMessage:
@@ -483,6 +626,9 @@ void TeamHandler::dispatch(SEGSEvents::Event *ev)
             break;
         case evTeamMemberKickedMessage:
             on_team_member_kicked(static_cast<TeamMemberKickedMessage *>(ev));
+            break;
+        case evTeamMemberMakeLeaderMessage:
+            on_team_member_make_leader(static_cast<TeamMemberMakeLeaderMessage *>(ev));
             break;
         case evTeamMemberInviteAcceptedMessage: {
             TeamMemberInviteAcceptedMessage *msg = static_cast<TeamMemberInviteAcceptedMessage *>(ev);
@@ -506,6 +652,12 @@ void TeamHandler::dispatch(SEGSEvents::Event *ev)
         case evUserRouterOpaqueResponse:
             on_user_router_opaque_response(static_cast<UserRouterOpaqueResponse *>(ev));
             break;
+        case Internal_EventTypes::evClientConnectedMessage:
+			on_client_connected(static_cast<ClientConnectedMessage *>(ev));
+			break;
+        case Internal_EventTypes::evClientDisconnectedMessage:
+			on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
+			break;
         default:
             assert(false);
             break;
@@ -529,6 +681,9 @@ TeamHandler::TeamHandler(int for_game_server_id) : m_message_bus_endpoint(*this)
 
     assert(HandlerLocator::getTeam_Handler() == nullptr);
     HandlerLocator::setTeam_Handler(this);
+
+    m_message_bus_endpoint.subscribe(evClientConnectedMessage);
+    m_message_bus_endpoint.subscribe(evClientDisconnectedMessage);
 }
 
 TeamHandler::~TeamHandler()

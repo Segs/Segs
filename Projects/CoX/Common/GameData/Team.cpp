@@ -143,8 +143,8 @@ TeamingError Team::removeTeamMember(const QString &name)
     if(iter == m_data.m_team_members.end())
 		return TeamingError::NOT_ON_TEAM;
 
-	// TODO: sidekick stuff
 	iter = m_data.m_team_members.erase(iter);
+	// TODO: sidekick stuff
 
     if(m_data.m_team_members.size() < 2)
         return TeamingError::TEAM_DISBANDED;

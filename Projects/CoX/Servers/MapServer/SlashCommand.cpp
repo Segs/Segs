@@ -1582,15 +1582,16 @@ void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if(tgt == nullptr)
+    const QString name = getCommandParameter(cmd);
+
+    if(name.isEmpty())
     {
         const QString msg = "Team kick target name unable to be parsed from command: " + cmd;
         qCWarning(logTeams) << msg;
         return;
     }
 
-    HandlerLocator::getTeam_Handler()->putq(new TeamMemberKickedMessage({sess.m_ent->m_db_id, tgt->m_db_id}, 0));
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberKickedMessage({sess.m_ent->m_db_id, name}, sess.link()->session_token()));
 }
 
 
@@ -1610,21 +1611,16 @@ void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
 {
-    //Entity* const tgt = getEntityFromCommand(cmd, sess);
-    //if (tgt == nullptr)
-    //{
-    //    return;
-    //}
+    const QString name = getCommandParameter(cmd);
 
-    //const QString name = tgt->name();
-    //QString msg;
-    //if (makeTeamLeader(*sess.m_ent,*tgt))
-    //    msg = "Making " + name + " team leader.";
-    //else
-    //    msg = "Failed to make " + name + " team leader.";
+    if(name.isEmpty())
+    {
+        const QString msg = "New leader's name unable to be parsed from command: " + cmd;
+        qCWarning(logTeams) << msg;
+        return;
+    }
 
-    //qCDebug(logSlashCommand).noquote() << msg;
-    //sendInfoMessage(MessageChannel::TEAM, msg, sess);
+    HandlerLocator::getTeam_Handler()->putq(new TeamMemberMakeLeaderMessage({sess.m_ent->m_db_id, name}, sess.link()->session_token()));
 }
 
 void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)

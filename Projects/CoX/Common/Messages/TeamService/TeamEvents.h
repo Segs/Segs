@@ -22,6 +22,7 @@ enum TeamEventTypes : uint32_t
     evTeamMemberKickedMessage,
     evTeamMemberInviteAcceptedMessage,
     evTeamMemberInviteDeclinedMessage,
+    evTeamMemberMakeLeaderMessage,
 	evTeamToggleLFGMessage,
 	evTeamRefreshLFGMessage,
     evTeamUpdatedMessage,
@@ -48,11 +49,12 @@ ONE_WAY_MESSAGE(TeamEventTypes,TeamMemberInvited)
 struct TeamMemberKickedData
 {
     uint32_t m_leader_id;
-    uint32_t m_kickee_id;
+    QString m_kickee_name;
+
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_leader_id, m_kickee_id);
+        ar(m_leader_id, m_kickee_name);
     }
 };
 
@@ -126,15 +128,31 @@ ONE_WAY_MESSAGE(TeamEventTypes,TeamRefreshLFG)
 struct TeamUpdatedData
 {
     Team::TeamData m_team_data;
+    bool m_disbanded;
 
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_team_data);
+        ar(m_team_data, m_disbanded);
     }
 };
 
 //[[ev_def:macro]]
 ONE_WAY_MESSAGE(TeamEventTypes,TeamUpdated)
+
+struct TeamMemberMakeLeaderData
+{
+    uint32_t m_leader_id;
+    QString m_new_leader_name;
+    
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_leader_id, m_new_leader_name);
+    }
+};
+
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(TeamEventTypes,TeamMemberMakeLeader)
 
 } // end of namespace SEGSEvents

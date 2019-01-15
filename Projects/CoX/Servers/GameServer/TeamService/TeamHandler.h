@@ -23,6 +23,7 @@ namespace SEGSEvents
     struct TeamMemberKickedMessage;
     struct TeamMemberInviteAcceptedMessage;
     struct TeamMemberInviteDeclinedMessage;
+    struct TeamMemberMakeLeaderMessage;
 
 	struct TeamToggleLFGMessage;
 	struct TeamRefreshLFGMessage;
@@ -31,6 +32,9 @@ namespace SEGSEvents
     struct UserRouterQueryResponse;
     struct UserRouterOpaqueRequest;
     struct UserRouterOpaqueResponse;
+
+    struct ClientConnectedMessage;
+    struct ClientDisconnectedMessage;
 } // end of namespace SEGSEvents
 
 struct TeamHandlerState
@@ -66,12 +70,14 @@ private:
 
     void on_team_member_invited(SEGSEvents::TeamMemberInvitedMessage *msg);
     void on_team_member_kicked(SEGSEvents::TeamMemberKickedMessage *msg);
+    void on_team_member_make_leader(SEGSEvents::TeamMemberMakeLeaderMessage *msg);
 
     void on_team_member_invite_handled(uint32_t invitee_id, QString &invitee_name, QString &leader_name, bool accepted);
 
     void on_team_toggle_lfg(SEGSEvents::TeamToggleLFGMessage *msg);
     void on_team_refresh_lfg(SEGSEvents::TeamRefreshLFGMessage *msg);
 
+    void notify_team_of_changes(Team *t);
 	bool delete_team(Team *t);
 
 	bool name_is_lfg(const QString &name);
@@ -80,6 +86,9 @@ private:
 	void remove_lfg(const uint32_t db_id);
 	Team* team_for_db_id(const uint32_t db_id);
 	Team* team_for_name(const QString &name);
+
+    void on_client_connected(SEGSEvents::ClientConnectedMessage *msg);
+    void on_client_disconnected(SEGSEvents::ClientDisconnectedMessage *msg);
 
 
     // EventProcessor interface

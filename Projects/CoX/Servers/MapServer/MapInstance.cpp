@@ -536,6 +536,9 @@ void MapInstance::dispatch( Event *ev )
         case evTeamUpdatedMessage:
             on_team_updated(static_cast<TeamUpdatedMessage *>(ev));
             break;
+        case evTeamMemberKickedMessage:
+            on_team_member_kicked(static_cast<TeamMemberKickedMessage *>(ev));
+            break;
         case evReceiveTaskDetailRequest:
             on_receive_task_detail_request(static_cast<ReceiveTaskDetailRequest *>(ev));
             break;
@@ -3138,11 +3141,23 @@ void MapInstance::on_team_updated(TeamUpdatedMessage *msg)
                 continue;
 
             qCDebug(logTeams) << "updating team" << msg->m_data.m_team_data.m_team_idx;
-            cl->m_ent->m_has_team = true;
+            cl->m_ent->m_has_team = !msg->m_data.m_disbanded;
             cl->m_ent->m_team_data = msg->m_data.m_team_data;
         }
     }
 }
 
+void MapInstance::on_team_member_kicked(TeamMemberKickedMessage *msg)
+{
+    for (MapClientSession *cl : m_session_store)
+    {
+        if (cl->m_ent->name() != msg->m_data.m_kickee_name)
+            continue;
+
+        qCDebug(logTeams) << "kicking from team:" << msg->m_data.m_kickee_name;
+        cl->m_ent->m_has_team = false;
+        cl->m_ent->m_team_data = {};
+    }
+}
 
 //! @}
