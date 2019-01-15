@@ -25,10 +25,10 @@ bool TeamHandler::delete_team(Team *t)
     for (unsigned int i = 0; i < m_state.m_team_list.size(); i++)
     {
         Team *team = m_state.m_team_list[i];
-        if (team->m_team_idx == t->m_team_idx)
+        if (team->m_data.m_team_idx == t->m_data.m_team_idx)
         {
             index_to_remove = i;
-            qCDebug(logTeams) << "Removing team:" << t->m_team_idx;
+            qCDebug(logTeams) << "Removing team:" << t->m_data.m_team_idx;
             delete team;
             break;
         }
@@ -36,7 +36,7 @@ bool TeamHandler::delete_team(Team *t)
 
     if (index_to_remove == -1)
     {
-        qCDebug(logTeams) << "Team not found:" << t->m_team_idx;
+        qCDebug(logTeams) << "Team not found:" << t->m_data.m_team_idx;
         return false;
     }
 
@@ -155,7 +155,7 @@ void TeamHandler::on_user_router_opaque_response(UserRouterOpaqueResponse *msg)
 			{
 		
 				qCritical() << "got user offline error for toggling lfg";
-				m = "The user you invited is offline.";
+				m = "Weird error on toggling LFG.";
 			}
 			else 
 			{
@@ -170,7 +170,7 @@ void TeamHandler::on_user_router_opaque_response(UserRouterOpaqueResponse *msg)
 			{
 		
 				qCritical() << "got user offline error for refreshing lfg list";
-				m = "The user you invited is offline.";
+				m = "Weird error on refreshing LFG.";
 			}
 			else 
 			{
@@ -179,11 +179,20 @@ void TeamHandler::on_user_router_opaque_response(UserRouterOpaqueResponse *msg)
 			}
 			break;
 		}
+        case evTeamUpdatedMessage:
+        {
+			if (e == UserRouterError::USER_OFFLINE)
+			{
+				qCritical() << "got user offline error while trying to update teams";
+				m = "Weird error on updating team.";
+			}
+
+            return;
+        }
 		default:
 			assert(false);
 			break;
 	}
-
 
 	m_state.m_map_handler->putq(new UserRouterInfoMessage({m, c, sender_id, sender_id}, 0));
 }
@@ -291,7 +300,7 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
 
     // forward Opaque Invite message to UserRouter
     // This will cause MapInstance to send a TeamOffer to the Invitee
-    m_state.m_map_handler->putq(new UserRouterOpaqueRequest({__route(msg), leader_id, 0, msg->m_data.m_leader_name, invitee_name}, msg->session_token(), this));
+    m_state.m_map_handler->putq(new UserRouterOpaqueRequest({__route(msg), leader_id, msg->m_data.m_leader_name, {}, {invitee_name}}, msg->session_token(), this));
 }
 
 void TeamHandler::on_team_member_kicked(TeamMemberKickedMessage *msg) {
@@ -344,16 +353,29 @@ void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &in
 
     if (accepted)
     {
-        TeamingError e = invitee_team->acceptTeamInvite(invitee_name);
+        TeamingError e = invitee_team->acceptTeamInvite(invitee_name, invitee_id);
 
         if (e == TeamingError::OK) 
         {
             invitee_team->m_transient = false;
             // update clients
+            
+            std::vector<uint32_t> ids;
+            std::vector<QString> names;
+
+            for (const auto &member : invitee_team->m_data.m_team_members)
+            {
+                ids.push_back(member.tm_idx);
+                names.push_back(member.tm_name);
+            }
+
+            m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
+                {__route(new TeamUpdatedMessage({invitee_team->m_data}, 0)), 0, leader_name, ids, names}, 
+                /*msg->session_token()*/0, this));
         }
         else
         {
-            qCCritical(logTeams) << "Team invitation responded to, but invalid:" << invitee_team->m_team_idx << invitee_name;
+            qCCritical(logTeams) << "Team invitation responded to, but invalid:" << invitee_team->m_data.m_team_idx << invitee_name;
         }
     }
     else
@@ -362,7 +384,7 @@ void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &in
 
         if (e == TeamingError::TEAM_DISBANDED)
         {
-            qCDebug(logTeams) << "Team disbanded:" << invitee_team->m_team_idx;
+            qCDebug(logTeams) << "Team disbanded:" << invitee_team->m_data.m_team_idx;
             delete_team(invitee_team);
             qCDebug(logTeams) <<"Num teams:" << m_state.m_team_list.size();
         }
@@ -385,7 +407,7 @@ void TeamHandler::on_team_refresh_lfg(TeamRefreshLFGMessage *msg)
 	msg->m_data.m_lfg_list = m_state.m_lfg_list;
 
 	m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
-		{__route(msg), db_id, db_id, name, name}, 
+		{__route(msg), db_id, name, {db_id}, {name}}, 
 		msg->session_token(), this));
 }
 
@@ -402,7 +424,7 @@ void TeamHandler::on_team_toggle_lfg(TeamToggleLFGMessage *msg)
 		// forward Opaque ToggleLFG message to UserRouter
 		// This will cause MapInstance to update the entity's value with m_lfg
 		m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
-			{__route(msg), db_id, db_id, name, name}, 
+			{__route(msg), db_id, name, {db_id}, {name}}, 
 			msg->session_token(), this));
 
 		return;
@@ -435,13 +457,13 @@ void TeamHandler::on_team_toggle_lfg(TeamToggleLFGMessage *msg)
 	// forward Opaque ToggleLFG message to UserRouter
 	// This will cause MapInstance to update the entity's value with m_lfg
 	m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
-		{__route(msg), db_id, db_id, name, name}, 
+		{__route(msg), db_id, name, {db_id}, {name}}, 
 		msg->session_token(), this));
 
 	// since the LFG flag is true
 	// send message to pop up window also
 	m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
-		{__route(new TeamRefreshLFGMessage({db_id, name, m_state.m_lfg_list}, 0)), db_id, db_id, name, name}, 
+		{__route(new TeamRefreshLFGMessage({db_id, name, m_state.m_lfg_list}, 0)), db_id, name, {db_id}, {name}}, 
 		msg->session_token(), this));
 }
 

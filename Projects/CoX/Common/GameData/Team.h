@@ -21,9 +21,10 @@ enum class TeamingError
 class Team
 {
 public:
-        Team(bool transient=false)
-            : m_transient(transient), m_team_idx( ++m_team_idx_counter )
-        { }
+        Team(bool transient=false) : m_transient(transient)
+        { 
+            m_data.m_team_idx = ++m_team_idx_counter;
+        }
         ~Team();
 
         struct TeamMember {
@@ -34,7 +35,15 @@ public:
             // these values are transient, and should be updated by TeamingService
             uint32_t        tm_map_idx = 0;
             CharacterData   tm_data;
+
+            // doesn't need to be archived
 			bool        	tm_pending = false; // if true, user has not responded to invite yet
+
+            template<class Archive>
+            void serialize(Archive &ar)
+            {
+                ar(tm_idx, tm_name, tm_map, tm_map_idx, tm_data);
+            }
         };
 
         struct TeamData {
@@ -43,6 +52,12 @@ public:
             uint32_t    m_team_leader_idx   = 0;
 
             std::vector<TeamMember> m_team_members;
+
+            template<class Archive>
+            void serialize(Archive &ar)
+            {
+                ar(m_team_idx, m_has_taskforce, m_team_leader_idx, m_team_members);
+            }
         };
 
         TeamData m_data;
@@ -53,7 +68,6 @@ public:
         // i.e. an invite has been sent by a player NOT YET on a team
         bool        m_transient;
 
-        uint32_t    m_team_idx          = 0;
         uint32_t    m_max_team_size     = 8;        // max is always 8
 
         // Methods
@@ -63,7 +77,7 @@ public:
 		bool				isTeamLeader(uint32_t entity_id);
 		bool				isTeamLeader(const QString &name);
 
-        TeamingError        acceptTeamInvite(const QString &name);
+        TeamingError        acceptTeamInvite(const QString &name, uint32_t entity_id);
 
         TeamingError        addTeamMember(uint32_t entity_id);
         TeamingError        addTeamMember(const QString &name);

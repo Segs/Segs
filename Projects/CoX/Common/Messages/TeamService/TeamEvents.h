@@ -125,14 +125,12 @@ ONE_WAY_MESSAGE(TeamEventTypes,TeamRefreshLFG)
 
 struct TeamUpdatedData
 {
-    QString m_leader_name;
-    uint32_t m_leader_id;
-    QString m_invitee_name;
+    Team::TeamData m_team_data;
 
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_leader_name, m_leader_id, m_invitee_name);
+        ar(m_team_data);
     }
 };
 

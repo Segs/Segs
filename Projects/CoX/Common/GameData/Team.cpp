@@ -66,12 +66,13 @@ bool Team::containsEntityName(const QString &name)
     return false;
 }
 
-TeamingError Team::acceptTeamInvite(const QString &name)
+TeamingError Team::acceptTeamInvite(const QString &name, uint32_t entity_id)
 {
     for (TeamMember &_t : m_data.m_team_members)
         if (_t.tm_name == name)
         {
             _t.tm_pending = false;
+            _t.tm_idx = entity_id;
             return TeamingError::OK;
         }
 
@@ -148,7 +149,7 @@ TeamingError Team::removeTeamMember(const QString &name)
     if(m_data.m_team_members.size() < 2)
         return TeamingError::TEAM_DISBANDED;
 
-	m_data.m_team_leader_idx = m_data.m_team_members.front().tm_idx;
+    m_data.m_team_leader_idx = m_data.m_team_members.front().tm_idx;
 
     return TeamingError::OK;
 }
@@ -178,7 +179,7 @@ Team::~Team() = default;
 
 void Team::dump()
 {
-    QString output = "Debugging Team: " + QString::number(m_team_idx)
+    QString output = "Debugging Team: " + QString::number(m_data.m_team_idx)
              + "\n\t size: " + QString::number(m_data.m_team_members.size())
              + "\n\t leader db_id: " + QString::number(m_data.m_team_leader_idx)
              + "\n\t has mission? " + QString::number(m_data.m_has_taskforce)

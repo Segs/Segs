@@ -51,16 +51,17 @@ ONE_WAY_MESSAGE(UserRouterEventTypes,UserRouterInfo)
 struct UserRouterOpaqueRequestData
 {
     QByteArray m_payload;
-    uint32_t m_sender_id;
-    uint32_t m_target_id;
 
+    uint32_t m_sender_id;
 	QString m_sender_name;
-	QString m_target_name;
+
+    std::vector<uint32_t>   m_target_id_list;
+    std::vector<QString>    m_target_name_list;
 
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_payload, m_sender_id, m_target_id, m_sender_name, m_target_name);
+        ar(m_payload, m_sender_id, m_target_id_list, m_sender_name, m_target_name_list);
     }
 };
 

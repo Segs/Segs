@@ -283,43 +283,82 @@ void MapServer::on_user_router_query_request(UserRouterQueryRequest *msg)
 
 void MapServer::fill_opaque_message(UserRouterOpaqueRequest *msg)
 {
-	if (msg->m_data.m_target_id == 0 && (!msg->m_data.m_target_name.isEmpty()))
+	if (msg->m_data.m_target_id_list.empty() && \
+            !msg->m_data.m_target_name_list.empty())
 	{
-		// get id from name
-		for (EventProcessor *_mi : HandlerLocator::m_map_instances[m_id])
-		{
-			if (_mi == nullptr) 
-				continue;
+        for (QString &name : msg->m_data.m_target_name_list)
+        {
+            // get id from name
+            for (EventProcessor *_mi : HandlerLocator::m_map_instances[m_id])
+            {
+                if (_mi == nullptr) 
+                    continue;
 
-			MapInstance *mi = static_cast<MapInstance *>(_mi);
-			for (MapClientSession *cl : mi->m_session_store)
-			{
-				if (cl->m_ent->name() == msg->m_data.m_target_name) 
-				{
-					msg->m_data.m_target_id = cl->m_ent->m_db_id;
-					return;
-				}
-			}
-		}
-	}
+                MapInstance *mi = static_cast<MapInstance *>(_mi);
+                for (MapClientSession *cl : mi->m_session_store)
+                {
+                    if (cl->m_ent->name() == name) 
+                    {
+                        msg->m_data.m_target_id_list.push_back(cl->m_ent->m_db_id);
+                        return;
+                    }
+                }
+            }
+        }
+	} 
+    else if (msg->m_data.m_target_id_list.size() == \
+        msg->m_data.m_target_name_list.size())
+    {
+        for (uint32_t i = 0; i < msg->m_data.m_target_name_list.size(); i++)
+        {
+            if (msg->m_data.m_target_id_list[i] == 0)
+            {
+                bool found = false;
+
+                for (EventProcessor *_mi : HandlerLocator::m_map_instances[m_id])
+                {
+                    if (_mi == nullptr) 
+                        continue;
+
+                    MapInstance *mi = static_cast<MapInstance *>(_mi);
+                    for (MapClientSession *cl : mi->m_session_store)
+                    {
+                        QString name = msg->m_data.m_target_name_list[i];
+                        if (cl->m_ent->name() == name) 
+                        {
+                            msg->m_data.m_target_id_list[i] = cl->m_ent->m_db_id;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) break;
+                }
+            }
+        }
+    }
 }
 
 void MapServer::route_opaque_message(UserRouterOpaqueRequest *msg) 
 {
-    MapInstance *ins = m_id_to_map_instance[msg->m_data.m_target_id];
+    for (uint32_t target_id : msg->m_data.m_target_id_list)
+    {
+        qCDebug(logLogging) << "trying to route to: " << target_id;
+        MapInstance *ins = m_id_to_map_instance[target_id];
 
-    if (ins == nullptr) {
-		qCDebug(logLogging) << "error routing message to map instance:" << msg->m_data.m_target_id;
+        if (ins == nullptr) {
+            qCDebug(logLogging) << "error routing message to map instance:" << target_id;
 
-		msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data, UserRouterError::USER_OFFLINE}, 0));
-        return;
+            msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data, UserRouterError::USER_OFFLINE}, 0));
+            return;
+        }
+
+        InternalEvent *e = static_cast<InternalEvent *>(__route_unpack(msg->m_data.m_payload));
+        e->session_token(msg->session_token());
+
+        ins->putq(e, 0);
+        msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data, UserRouterError::OK}, msg->session_token()));
     }
-
-    InternalEvent *e = static_cast<InternalEvent *>(__route_unpack(msg->m_data.m_payload));
-	e->session_token(msg->session_token());
-
-    ins->putq(e, 0);
-	msg->src()->putq(new UserRouterOpaqueResponse({msg->m_data, UserRouterError::OK}, msg->session_token()));
 }
 
 void MapServer::route_info_message(UserRouterInfoMessage *msg) 
