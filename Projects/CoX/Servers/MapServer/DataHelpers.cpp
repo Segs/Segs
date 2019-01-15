@@ -1389,24 +1389,20 @@ void logSpawnLocations(MapClientSession &cl, const char* spawn_type)
     QString spawn_name = QString::fromUtf8(spawn_type);
     auto spawners = cl.m_current_map->getSpawners();
 
-    if(!spawners.empty())
-    {
-        int count = 0;
-        auto spawn_list = spawners.values(spawn_name);
-
-        for(auto const &s: spawn_list)
-        {
-            glm::mat4 mat4 = glm::mat4(1.0f);
-            mat4 = spawn_list[count];
-            glm::vec3 loc = glm::vec3(128.0f,16.0f,-198.0f);
-            loc = glm::vec3(mat4[3]);
-            qCDebug(logScripts) << "Spawn: " << spawn_name << " loc x: " << loc.x << " y: " << loc.y << " z: " << loc.z ;
-            ++count;
-        }
-    }
-    else
+    if(spawners.empty())
     {
         qCDebug(logScripts) << "spawners empty";
+        return;
+    }
+    int count = 0;
+    auto spawn_list = spawners.values(spawn_name);
+
+    for(auto const &s: spawn_list)
+    {
+        glm::mat4 mat4 = s;
+        glm::vec3 loc = glm::vec3(mat4[3]);
+        qCDebug(logScripts) << "Spawn: " << spawn_name << " loc x: " << loc.x << " y: " << loc.y << " z: " << loc.z ;
+        ++count;
     }
 }
 
@@ -1470,7 +1466,7 @@ void openStore(MapClientSession &sess, int entity_idx)
 
 void modifyInf(MapClientSession &sess, int amount)
 {
-    uint32_t inf = getInf(*sess.m_ent->m_char);
+    int32_t inf = getInf(*sess.m_ent->m_char);
     // amount can be negitive to lower influence
     inf = inf + amount;
     if(inf < 0)

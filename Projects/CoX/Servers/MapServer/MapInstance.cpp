@@ -2120,7 +2120,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
             sendDoorMessage(session, 2, door_msg);
         }
     }
-	else
+    else
     {
         qCDebug(logMapXfers).noquote() << output_msg << " loc:" << ev->location.x << ev->location.y << ev->location.z;
 
