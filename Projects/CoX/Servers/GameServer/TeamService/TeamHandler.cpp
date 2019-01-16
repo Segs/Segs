@@ -18,7 +18,7 @@
 
 using namespace SEGSEvents;
 
-void TeamHandler::notify_team_of_changes(Team *t)
+void TeamHandler::notify_team_of_changes(Team *t, uint64_t session_token)
 {
     std::vector<uint32_t> ids;
     std::vector<QString> names;
@@ -35,6 +35,20 @@ void TeamHandler::notify_team_of_changes(Team *t)
 
         ids.push_back(member.tm_idx);
         names.push_back(member.tm_name);
+
+        if (db_id_is_lfg(member.tm_idx))
+        {
+            remove_lfg(member.tm_idx);
+
+            TeamToggleLFGMessage *msg = new TeamToggleLFGMessage({member.tm_idx, member.tm_name, {}}, session_token);
+            msg->m_data.m_char_data.m_lfg = false;
+
+            // forward Opaque ToggleLFG message to UserRouter
+            // This will cause MapInstance to update the entity's value with m_lfg
+            m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
+                {__route(msg), member.tm_idx, member.tm_name, {member.tm_idx}, {member.tm_name}}, 
+                msg->session_token(), this));
+        }
     }
 
     Team::TeamData d = t->m_data;
@@ -570,7 +584,7 @@ void TeamHandler::on_team_leave_team(SEGSEvents::TeamLeaveTeamMessage *msg)
     }
 }
 
-void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &invitee_name, QString &leader_name, bool accepted) {
+void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &invitee_name, QString &leader_name, bool accepted, uint64_t session_token) {
 
     qCDebug(logTeams) << "invite handled_by: " << accepted << invitee_id << invitee_name << leader_name;
 
@@ -622,7 +636,7 @@ void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &in
             invitee_team->m_transient = false;
             // update clients
             
-            notify_team_of_changes(invitee_team);
+            notify_team_of_changes(invitee_team, session_token);
         }
         else
         {
@@ -745,12 +759,12 @@ void TeamHandler::dispatch(SEGSEvents::Event *ev)
             break;
         case evTeamMemberInviteAcceptedMessage: {
             TeamMemberInviteAcceptedMessage *msg = static_cast<TeamMemberInviteAcceptedMessage *>(ev);
-            on_team_member_invite_handled(msg->m_data.m_invitee_id, msg->m_data.m_invitee_name, msg->m_data.m_leader_name, true);
+            on_team_member_invite_handled(msg->m_data.m_invitee_id, msg->m_data.m_invitee_name, msg->m_data.m_leader_name, true, msg->session_token());
             break;
         }
         case evTeamMemberInviteDeclinedMessage: {
             TeamMemberInviteDeclinedMessage *msg = static_cast<TeamMemberInviteDeclinedMessage *>(ev);
-            on_team_member_invite_handled(msg->m_data.m_invitee_id, msg->m_data.m_invitee_name, msg->m_data.m_leader_name, false);
+            on_team_member_invite_handled(msg->m_data.m_invitee_id, msg->m_data.m_invitee_name, msg->m_data.m_leader_name, false, msg->session_token());
             break;
         }
 		case evTeamToggleLFGMessage:

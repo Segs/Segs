@@ -1894,27 +1894,6 @@ void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
         qWarning() << "TeamAccept db_ids do not match!";
 
     HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteAcceptedMessage({tgt_db_id, tgt_name, from_name}, sess.link()->session_token()));
-
-
-
-    // Entity *from_ent = getEntity(&sess,from_name);
-    // if(from_ent == nullptr)
-    //     return;
-
-    // if(inviteTeam(*from_ent,*sess.m_ent))
-    // {
-    //     msgfrom = "Inviting " + tgt_name + " to team.";
-    //     msgtgt = "Joining " + from_name + "'s team.";
-
-    // }
-    // else
-    // {
-    //     msgfrom = "Failed to invite " + tgt_name + ". They are already on a team.";
-    // }
-
-    // qCDebug(logSlashCommand).noquote() << msgfrom;
-    // sendInfoMessage(MessageChannel::TEAM, msgfrom, *from_ent->m_client);
-    // sendInfoMessage(MessageChannel::TEAM, msgtgt, sess);
 }
 
 void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
@@ -1929,17 +1908,6 @@ void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
     QString tgt_name    = args.value(3);
 
     HandlerLocator::getTeam_Handler()->putq(new TeamMemberInviteDeclinedMessage({tgt_db_id, tgt_name, from_name}, sess.link()->session_token()));
-    // Entity *from_ent = getEntity(&sess,from_name);
-    // if(from_ent == nullptr)
-    //     return;
-
-    // msg = tgt_name + " declined a team invite from " + from_name + QString::number(tgt_db_id);
-    // qCDebug(logSlashCommand).noquote() << msg;
-
-    // msg = tgt_name + " declined your team invite."; // to sender
-    // sendInfoMessage(MessageChannel::TEAM, msg, *from_ent->m_client);
-    // msg = "You declined the team invite from " + from_name; // to target
-    // sendInfoMessage(MessageChannel::TEAM, msg, sess);
 }
 
 void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)

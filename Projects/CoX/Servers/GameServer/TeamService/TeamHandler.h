@@ -73,13 +73,13 @@ private:
     void on_team_member_kicked(SEGSEvents::TeamMemberKickedMessage *msg);
     void on_team_member_make_leader(SEGSEvents::TeamMakeLeaderMessage *msg);
 
-    void on_team_member_invite_handled(uint32_t invitee_id, QString &invitee_name, QString &leader_name, bool accepted);
+    void on_team_member_invite_handled(uint32_t invitee_id, QString &invitee_name, QString &leader_name, bool accepted, uint64_t session_token);
 
     void on_team_leave_team(SEGSEvents::TeamLeaveTeamMessage *msg);
     void on_team_toggle_lfg(SEGSEvents::TeamToggleLFGMessage *msg);
     void on_team_refresh_lfg(SEGSEvents::TeamRefreshLFGMessage *msg);
 
-    void notify_team_of_changes(Team *t);
+    void notify_team_of_changes(Team *t, uint64_t session_token=0);
 	bool delete_team(Team *t);
 
 	bool name_is_lfg(const QString &name);
