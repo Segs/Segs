@@ -80,39 +80,7 @@ TeamingError Team::acceptTeamInvite(const QString &name, uint32_t entity_id)
 
 }
 
-TeamingError Team::addTeamMember(uint32_t entity_id) 
-{
-    if(m_data.m_team_members.size() >= m_max_team_size)
-        return TeamingError::TEAM_FULL;
-    
-    // create new team member
-    TeamMember new_member;
-    new_member.tm_idx = entity_id;
-
-    if(m_data.m_team_members.size() <= 1)
-        m_data.m_team_leader_idx = entity_id;
-
-    m_data.m_team_members.emplace_back(new_member);
-
-    return TeamingError::OK;
-}
-
-TeamingError Team::addTeamMember(const QString &name) 
-{
-    if(m_data.m_team_members.size() >= m_max_team_size)
-        return TeamingError::TEAM_FULL;
-    
-    // create new team member
-    TeamMember new_member;
-    new_member.tm_name = name;
-	new_member.tm_pending = true; // since added via name
-
-    m_data.m_team_members.emplace_back(new_member);
-    
-    return TeamingError::OK;
-}
-
-TeamingError Team::addTeamMember(uint32_t entity_id, const QString &name)
+TeamingError Team::addTeamMember(uint32_t entity_id, const QString &name, bool pending)
 {
     if(m_data.m_team_members.size() >= m_max_team_size)
         return TeamingError::TEAM_FULL;
@@ -121,11 +89,12 @@ TeamingError Team::addTeamMember(uint32_t entity_id, const QString &name)
     TeamMember new_member;
     new_member.tm_idx = entity_id;
     new_member.tm_name = name;
+    new_member.tm_pending = pending;
+
+    m_data.m_team_members.emplace_back(new_member);
 
     if(m_data.m_team_members.size() <= 1)
         m_data.m_team_leader_idx = entity_id;
-
-    m_data.m_team_members.emplace_back(new_member);
     
     return TeamingError::OK;
 }
@@ -144,26 +113,8 @@ TeamingError Team::removeTeamMember(uint32_t entity_id)
     if(m_data.m_team_members.size() < 2)
         return TeamingError::TEAM_DISBANDED;
 
-    m_data.m_team_leader_idx = m_data.m_team_members.front().tm_idx;
-
-    return TeamingError::OK;
-}
-
-TeamingError Team::removeTeamMember(const QString &name)
-{
-    auto iter = std::find_if(m_data.m_team_members.begin(), m_data.m_team_members.end(),
-                              [name](const Team::TeamMember& t) -> bool {return name == t.tm_name;});
-
-    if(iter == m_data.m_team_members.end())
-		return TeamingError::NOT_ON_TEAM;
-
-	iter = m_data.m_team_members.erase(iter);
-	// TODO: sidekick stuff
-
-    if(m_data.m_team_members.size() < 2)
-        return TeamingError::TEAM_DISBANDED;
-
-    m_data.m_team_leader_idx = m_data.m_team_members.front().tm_idx;
+    if (entity_id == m_data.m_team_leader_idx)
+        m_data.m_team_leader_idx = m_data.m_team_members.front().tm_idx;
 
     return TeamingError::OK;
 }
@@ -216,15 +167,6 @@ void Team::dumpAllTeamMembers()
 bool Team::isTeamLeader(uint32_t entity_id)
 {
 	return m_data.m_team_leader_idx == entity_id;
-}
-
-bool Team::isTeamLeader(const QString &name)
-{
-	for (TeamMember &tm : m_data.m_team_members)
-		if (tm.tm_name == name)
-			return m_data.m_team_leader_idx == tm.tm_idx;
-
-	return false;
 }
 
 //bool Team::isTeamLeader(Entity *e)

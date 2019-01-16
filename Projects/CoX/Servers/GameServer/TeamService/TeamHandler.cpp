@@ -25,12 +25,27 @@ void TeamHandler::notify_team_of_changes(Team *t)
 
     for (const auto &member : t->m_data.m_team_members)
     {
+        qCDebug(logTeams) << "notifying team members:" << \
+            member.tm_idx << \
+            member.tm_name << \
+            member.tm_pending;
+
+        if (member.tm_pending)
+            continue;
+
         ids.push_back(member.tm_idx);
         names.push_back(member.tm_name);
     }
 
+    Team::TeamData d = t->m_data;
+
+    d.m_team_members.erase(
+                std::remove_if(d.m_team_members.begin(), d.m_team_members.end(),
+                            [](const Team::TeamMember & mem) { return mem.tm_pending; }),
+                    d.m_team_members.end());
+
     m_state.m_map_handler->putq(new UserRouterOpaqueRequest(
-        {__route(new TeamUpdatedMessage({t->m_data, t->m_data.m_team_members.size() < 2}, 0)), t->m_data.m_team_leader_idx, "", ids, names}, 
+        {__route(new TeamUpdatedMessage({d, d.m_team_members.size() < 2}, 0)), d.m_team_leader_idx, "", ids, names}, 
         0, this));
 }
 
@@ -127,6 +142,8 @@ uint32_t TeamHandler::id_for_name(const QString &name)
     for (const auto &e : m_state.m_id_to_name)
         if (e.second == name)
             return e.first;
+
+    qCCritical(logTeams) << "Couldn't find id for name:" << name;
 
     return 0;
 }
@@ -275,11 +292,29 @@ void TeamHandler::on_user_router_query_response(UserRouterQueryResponse *msg)
 	m_state.m_pending_events.erase(msg->m_data.m_response_name);
 }
 
-void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
+void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg)
+{
 
     const uint32_t leader_id = msg->m_data.m_leader_id;
-    QString invitee_name = msg->m_data.m_invitee_name;
     QString leader_name = msg->m_data.m_leader_name;
+    QString invitee_name = msg->m_data.m_invitee_name;
+
+    // TODO: look this up for verification
+    m_state.m_id_to_name[leader_id] = leader_name;
+
+    if (!name_known(invitee_name))
+    {
+        qCDebug(logTeams) << "looking up name:" << invitee_name;
+        m_state.m_pending_events.insert({invitee_name, msg->shallow_copy()});
+
+        m_state.m_map_handler->putq(new UserRouterQueryRequest(
+            {0, invitee_name}, 
+            msg->session_token(), this));
+
+        return;
+    }
+
+    const uint32_t invitee_id = id_for_name(invitee_name);
 
 	if (invitee_name == leader_name)
 	{
@@ -295,7 +330,8 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
     {
         if (t->containsEntityID(leader_id)) 
             leader_team = t;
-        if (t->containsEntityName(invitee_name))
+
+        if (t->containsEntityID(invitee_id))
             invitee_team = t;
     }
 
@@ -335,7 +371,7 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
         // create Team with transient=true
 		leader_team = new Team(true);
 
-        TeamingError e = leader_team->addTeamMember(leader_id, leader_name);
+        TeamingError e = leader_team->addTeamMember(leader_id, leader_name, false);
 
         if (e != TeamingError::OK)
         {
@@ -346,7 +382,7 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg) {
         m_state.m_team_list.emplace_back(leader_team);
     }
 
-    TeamingError e = leader_team->addTeamMember(invitee_name);
+    TeamingError e = leader_team->addTeamMember(invitee_id, invitee_name, true);
 
     if (e != TeamingError::OK)
     {
@@ -395,7 +431,7 @@ void TeamHandler::on_team_member_kicked(TeamMemberKickedMessage *msg) {
         return;
     }
 
-    TeamingError e = team->removeTeamMember(kickee_name);
+    TeamingError e = team->removeTeamMember(id_for_name(kickee_name));
 
     if (e == TeamingError::OK || \
             e == TeamingError::TEAM_DISBANDED)
@@ -545,7 +581,7 @@ void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &in
 
 		return;
 	} 
-    else if (!invitee_team->isTeamLeader(leader_name))
+    else if (!invitee_team->isTeamLeader(id_for_name(leader_name)))
 	{
 		QString m = "The team leader has changed since this invite was sent.";
 		qCritical() << m << invitee_id << invitee_name << leader_name;
@@ -584,7 +620,7 @@ void TeamHandler::on_team_member_invite_handled(uint32_t invitee_id, QString &in
     }
     else
     {
-        TeamingError e = invitee_team->removeTeamMember(invitee_name);
+        TeamingError e = invitee_team->removeTeamMember(id_for_name(invitee_name));
 
         if (e == TeamingError::TEAM_DISBANDED)
         {

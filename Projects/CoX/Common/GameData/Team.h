@@ -36,13 +36,12 @@ public:
             uint32_t        tm_map_idx = 0;
             CharacterData   tm_data;
 
-            // doesn't need to be archived
 			bool        	tm_pending = false; // if true, user has not responded to invite yet
 
             template<class Archive>
             void serialize(Archive &ar)
             {
-                ar(tm_idx, tm_name, tm_map, tm_map_idx, tm_data);
+                ar(tm_idx, tm_name, tm_map, tm_map_idx, tm_data, tm_pending);
             }
         };
 
@@ -79,12 +78,9 @@ public:
 
         TeamingError        acceptTeamInvite(const QString &name, uint32_t entity_id);
 
-        TeamingError        addTeamMember(uint32_t entity_id);
-        TeamingError        addTeamMember(const QString &name);
-        TeamingError        addTeamMember(uint32_t entity_id, const QString &name);
+        TeamingError        addTeamMember(uint32_t entity_id, const QString &name, bool pending);
 
         TeamingError        removeTeamMember(uint32_t entity_id);
-        TeamingError        removeTeamMember(const QString &name);
 
         bool                containsEntityID(uint32_t entity_id);
         bool                containsEntityName(const QString &name);

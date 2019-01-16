@@ -3136,14 +3136,15 @@ void MapInstance::on_team_updated(TeamUpdatedMessage *msg)
 {
     qCDebug(logTeams) << "team updated: " << msg->m_data.m_team_data.m_team_idx;
 
-    for (MapClientSession *cl : m_session_store)
+    for (const auto &mem : msg->m_data.m_team_data.m_team_members)
     {
-        for (const auto &mem : msg->m_data.m_team_data.m_team_members)
+        for (MapClientSession *cl : m_session_store)
         {
             if (cl->m_ent->m_db_id != mem.tm_idx)
                 continue;
 
-            qCDebug(logTeams) << "updating team" << msg->m_data.m_team_data.m_team_idx;
+            qCDebug(logTeams) << "updating team" << msg->m_data.m_team_data.m_team_idx << mem.tm_pending << mem.tm_idx << mem.tm_name;
+
             cl->m_ent->m_has_team = !msg->m_data.m_disbanded;
             cl->m_ent->m_team_data = msg->m_data.m_team_data;
         }
