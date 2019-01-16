@@ -489,6 +489,17 @@ void TeamHandler::on_team_member_make_leader(SEGSEvents::TeamMakeLeaderMessage *
         return;
     }
 
+    if (!team->containsEntityName(new_leader_name) || team->isNamePending(new_leader_name))
+    {
+		QString m = "You must pass leadership to a player on your team.";
+		qCritical() << m << leader_id;
+
+        m_state.m_map_handler->putq(new UserRouterInfoMessage(
+			{m, MessageChannel::USER_ERROR, leader_id, leader_id}, 0));
+
+        return;
+    }
+
     if (!name_known(new_leader_name))
     {
         // queue event and query for new name
