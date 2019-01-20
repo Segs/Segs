@@ -43,7 +43,7 @@ We have an official message board and a FAQ where the community chimes in with h
 
 ### Chat with us on Discord
 
-Come and join us in `#pocket-d` channel for general chat or `#troubleshoothing` for support. 
+Come and join us in `#pocket-d` channel for general chat or `#troubleshooting` for support. 
 Developers are welcome to join `#development`.  
  
  [**Click here to join SEGS Discord**](https://discord.segs.io/)

@@ -54,7 +54,7 @@ Intel or Radeon card. If you're experienced in debugging on Windows we would be 
 
 **Chat with us on Discord!**
 
-Come and join us in `#pocket-d` channel for general chat or `#troubleshoothing` for support.  
+Come and join us in `#pocket-d` channel for general chat or `#troubleshooting` for support.  
 
  [**Click here to join SEGS Discord**](https://discord.segs.io/)  
 
