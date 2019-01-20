@@ -1,10 +1,10 @@
 CoH Client Installation on Ubuntu 18.04 using PlayOnLinux  
 ------  
   
-1.**Install CoH Client version 0.22**  
+**1. Install CoH Client version 0.22**  
   
 SEGS will only communicate with the CoH client from Issue 0 (version 0.22).  
-This can be found through various sources online, or via the following Torrent-magnet link provided the City of Heroes community:  
+This can be found through various sources online, or via the following Torrent-magnet link provided by the City of Heroes community:  
 Use a torrent-client like uTorrent or Transmission to download the client via the magnet link.  
   
 ```
@@ -30,7 +30,7 @@ Follow the prompts to install the Issue 0 CoX client.
 In the last step of the PlayOnLinux prompt you can create Desktop shortcuts for CoX and/or CoX-Auth.  
 When done select `I don't want to make another shortcut` and hit Next button.  
   
-1.1**Configuring Wine for CoX and CoX-Auth**  
+**1.1 Configuring Wine for CoX and CoX-Auth**  
   
 Set the correct Windows Version in the Wine configuration:  
 Run PlayOnLinux select CoX and go to Configure, select the Wine tab and go to Configure Wine.  
@@ -48,7 +48,7 @@ Run PlayOnLinux, select CoX and go to Configure, select the Wine tab, go to Cont
 Click the Install button and browse to the earlier downloaded `wine-mono-x.x.x.msi` and click OK in the Add/Remove Programs window.  
 Repeat the procedure for the Installation of `wine_gecko-x.xx-x86.msi`.  
   
-2.**Point the CoX client towards your server IP**  
+**2. Point the CoX client towards your server IP**  
   
 Run `CoX-Auth` either from previously created shortcut or in the PlayOnLinux-GUI to set the IP address to that of your server.  
 If running your server locally this CANNOT be `127.0.0.1` (localhost) and must point to your actual IP address  
@@ -56,7 +56,7 @@ on the network (`192.168.xxx.xxx` or `10.0.xx.xx`).
   
 > ADVANCED: Open a Terminal run `ip a`. Your IP will probably start with `192.168.xxx.xxx` or `10.0.xx.xx`  
   
-3.**How to correctly run the CoX Client?**  
+**3. How to correctly run the CoX Client?**  
   
 The CoX Client must be run with a special command line argument telling the client that it's not connecting to the official game servers.  
 Run PlayOnLinux, select CoX go to Configuration.  
@@ -77,7 +77,8 @@ A patch is in the works but we need a skilled debugger that's capable of testing
 Intel or Radeon card. If you're experienced in debugging on Windows we would be pleased if you contact us.  
   
 **Chat with us on Discord!**  
-We're currently hosting a `#segs` channel on Splat Chat. You can join by clicking this link:  
+  
+Come and join us in `#pocket-d` channel for general chat or `#troubleshoothing` for support.  
   
  [**Click here to join SEGS Discord**](https://discord.segs.io/)  
   
