@@ -63,4 +63,27 @@ Run PlayOnLinux, select CoX go to Configuration.
 Open the General tab and in the Arguments: field add `-project SEGS`.  
 If you would like to run the client in windowed mode, you may also add `-fullscreen 0 -screen 1024 768` to the arguments.  
   
-Launch Cox either from previously created shortcut or in the PlayOnLinux-GUI.  
+Launch Cox either from previously created shortcut or in the PlayOnLinux-GUI.
+  
+**4. Common Issues and Troubleshooting**
+  
+There is a known issue with Intel/AMD/Radeon graphics cards.  
+The client version we use is not capable of handling those graphics cards.  
+  
+https://github.com/Segs/Segs/issues/736  
+  
+For Help with installation and configuration of your local SEGS, please see visit us on discord.  
+A patch is in the works but we need a skilled debugger that's capable of testing/debugging on an  
+Intel or Radeon card. If you're experienced in debugging on Windows we would be pleased if you contact us.  
+  
+**Chat with us on Discord!**  
+We're currently hosting a `#segs` channel on Splat Chat. You can join by clicking this link:  
+  
+ [**Click here to join SEGS Discord**](https://discord.segs.io/)  
+  
+Or if **IRC** chat is more your speed, you can join us on IRC:  
+  
+  **Server:** irc.segs.io  
+  **Port:** 6667  
+  **SSL port:** 6697  
+  **Channel:** #segs  
