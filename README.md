@@ -39,7 +39,7 @@ DOCUMENTATION
           - [Windows](./docs/SEGS-COMPILE_AND_INSTALL-WINDOWS.md#configure-segs-using-segsadmin)
 - *CoH Client installation:*  
           - [Windows](./docs/COH-CLIENT_INSTALL-WINDOWS.md)  
-          - [Linux](./docs/COH-CLIENT_INSTALL-UBUNTU.md)  
+          - [Ubuntu](./docs/COH-CLIENT_INSTALL-UBUNTU.md)  
 - [FAQs](./docs/FAQ.md)  
 
 CONTRIBUTE TO DEVELOPMENT
