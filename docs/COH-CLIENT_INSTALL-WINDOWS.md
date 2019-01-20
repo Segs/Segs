@@ -4,7 +4,7 @@ CoH Client Installation
 **1. Install CoH Client version 0.22**
 
 SEGS will only communicate with the CoH client from Issue 0 (version 0.22).  
-This can be found through various sources online, or via the following magnet link provided the City of Heroes community:  
+This can be found through various sources online, or via the following magnet link provided by the City of Heroes community:  
 
 ```
 magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f
