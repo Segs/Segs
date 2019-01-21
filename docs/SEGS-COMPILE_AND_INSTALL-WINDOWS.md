@@ -3,8 +3,8 @@ BUILD AND INSTALL SEGS ON WINDOWS
 - [Requirements and Notes](#requirements-and-notes)
 - [Install C++ Tool Chain](#install-c-tool-chain)
 - [Compile SEGS](#build-segs)
-- [Setting up SEGS Server and Playing](#setting-up-segs-server-and-playing)
-
+- [Prepare SEGS Server](#prepare-segs-server)
+- [Configure SEGS Server with SEGSADMIN](#configure-segs-using-segsadmin)
 
 REQUIREMENTS AND NOTES
 ------
@@ -76,7 +76,7 @@ Now, select `Build > Build All` from the menu at the top of QTCreator. The botto
 00:00:00: The process 'cmake' exited normally.
 ```
 
-SETTING UP SEGS SERVER AND PLAYING
+PREPARE SEGS SERVER
 ------
 
 After compiling, you'll need to setup your SEGS Server and Databases. You'll also need to download a specific version of the client compatible with SEGS.
@@ -87,4 +87,22 @@ In order to run SEGSAdmin, certain OpenSSL DLLs are required: `libeay32.dll` and
 
 - Don't forget! You'll need a copy of the required CoH client from Issue 0 (release) version 0.22, which can be found through various sources online, or via magnet link:
   `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
+
+Configure SEGS using SEGSADMIN
+------
+
+-[Configure SEGS using SEGSADMIN](./docs/SEGS-CONFIGURE_WITH_SEGSADMIN.md) 
+
+
+HELP AND MORE INFORMATION
+------
+
+Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200  
+For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.io/
+
+
+FAQs
+------
+
+Visit our FAQ at https://github.com/Segs/Segs/blob/master/docs/FAQ.md
 
