@@ -19,6 +19,8 @@ enum EmailEventTypes : uint32_t
 {
     evEmailHeadersToClientMessage = Internal_EventTypes::ID_LAST_Internal_EventTypes,
     evEmailHeaderToClientMessage,
+    evEmailHeaderRequest,
+    evEmailHeaderResponse,
     evEmailReadRequest,
     evEmailReadResponse,
     evEmailSendMessage,
@@ -30,6 +32,29 @@ enum EmailEventTypes : uint32_t
 
 // when tokens are brought up, use sess.link()->session_token()
 // 'id' below is the email id
+struct EmailHeaderRequestData
+{
+    uint32_t m_user_id;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_user_id);
+    }
+};
+
+struct EmailHeaderResponseData
+{
+    std::vector<EmailHeaderData> m_email_headers;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_headers);
+    }
+};
+//[[ev_def:macro]]
+TWO_WAY_MESSAGE(EmailEventTypes,EmailHeader)
 
 struct EmailHeadersToClientData
 {

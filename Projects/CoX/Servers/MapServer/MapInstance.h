@@ -81,6 +81,7 @@ class TrashEnhancement;
 class TrashEnhancementInPower;
 class BuyEnhancementSlot;
 class RecvNewPower;
+class EmailHeaderResponse;
 class EmailReadResponse;
 class EmailWasReadByRecipientMessage;
 class EmailHeadersToClientMessage;
@@ -231,6 +232,7 @@ protected:
         void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
+        void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
         void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
         void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
         void on_email_read_response(SEGSEvents::EmailReadResponse *ev);

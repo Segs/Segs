@@ -47,13 +47,14 @@ QString createMapMenu();
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
+void getEmailHeaders(MapClientSession& sess);
 void readEmailMessage(MapClientSession& sess, const uint32_t email_id);
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message);
 void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
 // to get the current time since whatever they set as their beginning
-uint32_t getCurrentTime();
-
+QDateTime getPostgreEpoch();
+int64_t getSecsSince2000Epoch();
 
 /*
  * SendUpdate Wrappers

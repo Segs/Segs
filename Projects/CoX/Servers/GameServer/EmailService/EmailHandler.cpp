@@ -105,6 +105,15 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
                                       }, recipient_data.m_session_token));
 }
 
+void EmailHandler::on_email_header(EmailHeaderRequest *msg)
+{
+    std::vector<EmailHeaderData> email_headers;
+    int unread_emails_count = 0;
+    fill_email_headers(email_headers, msg->m_data.m_user_id, unread_emails_count);
+
+    msg->src()->putq(new EmailHeaderResponse({email_headers}, msg->session_token()));
+}
+
 void EmailHandler::on_get_emails_response(GetEmailsResponse *msg)
 {
     for(const auto &data : msg->m_data.m_email_response_datas)

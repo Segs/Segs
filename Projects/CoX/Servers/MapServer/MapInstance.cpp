@@ -448,6 +448,9 @@ void MapInstance::dispatch( Event *ev )
         case evResetKeybinds:
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
+        case evEmailHeaderResponse:
+            on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
+            break;
         case evEmailHeaderToClientMessage:
             on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev));
             break;
@@ -2864,6 +2867,21 @@ void MapInstance::send_player_update(Entity *e)
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
+void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
+
+    for (const auto &data : ev->m_data.m_email_headers)
+    {
+        EmailHeaders *header = new EmailHeaders(
+                    data.m_email_id,
+                    data.m_sender_name,
+                    data.m_subject,
+                    data.m_timestamp);
+        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    }
+}
+
 // EmailHandler will send this event here
 void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
 {
@@ -2919,19 +2937,16 @@ void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg
 void MapInstance::on_email_create_status(EmailCreateStatusMessage *msg)
 {
     MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(
+                new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name)));
 
-    // for some reason EmailMessageStatus with the boolean set to true will crash the client
-    // so this will be sent only for false cases
-    if (!msg->m_data.m_status)
-    {
-        EmailMessageStatus* msg_status = new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name);
-        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(msg_status));
-    }
+
+    /*
     else
     {
         QString successMsg = QString("Successfully sent email to %1!").arg(msg->m_data.m_recipient_name);
         sendInfoMessage(MessageChannel::DEBUG_INFO, successMsg, map_session);
-    }
+    }*/
 }
 
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)

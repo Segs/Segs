@@ -19,7 +19,7 @@ class EmailMessageStatus final : public GameCommandEvent
 {
 public:
     explicit EmailMessageStatus() : GameCommandEvent(evEmailMessageStatus) {}
-    EmailMessageStatus(const int status, const QString &recipient) : GameCommandEvent(evEmailMessageStatus),
+    EmailMessageStatus(const int status, const QString recipient) : GameCommandEvent(evEmailMessageStatus),
         m_status(status),
         m_recipient(recipient)
     {
@@ -29,7 +29,8 @@ public:
     {
         bs.StorePackedBits(1, type()-evFirstServerToClient);
         bs.StorePackedBits(1, m_status);
-        bs.StoreString(m_recipient);
+        if (!m_status)
+            bs.StoreString(m_recipient);
     }
 
     // [[ev_def:field]]
