@@ -263,7 +263,6 @@ bool loadFrom(BinStore *s, SequencerList &target)
     assert(ok);
     return ok;
 }
-
 template<class Archive>
 void serialize(Archive & archive, SeqPlayFxData & m)
 {
@@ -271,8 +270,6 @@ void serialize(Archive & archive, SeqPlayFxData & m)
     archive(cereal::make_nvp("delay",m.delay));
     archive(cereal::make_nvp("flags",m.flags));
 }
-
-
 template<class Archive>
 void serialize(Archive & archive, SeqMoveDataTypeAnim & m)
 {

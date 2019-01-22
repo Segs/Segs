@@ -127,6 +127,7 @@ public:
                  << "\n\t" << "Show Assist Reticles:" << m_show_assist_reticles
                  << "\n\t" << "Chat Font Size:" << m_chat_font_size;
     }
+
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version)
     {

@@ -497,8 +497,8 @@ int main(int argc,char **argv)
           case eBoostEffectiveness: doConvert(doLoadRef<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
           case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
           case eShops:        doConvert(doLoadRef<AllShops_Data>(&binfile),target_basename,json_output); break;
-          case eShopItems:    doConvert(doLoad<AllShopItems_Data>(&binfile),target_basename,json_output); break;
-          case eShopDepts:    doConvert(doLoad<AllShopDepts_Data>(&binfile),target_basename,json_output); break;
+          case eShopItems:    doConvert(doLoadRef<AllShopItems_Data>(&binfile),target_basename,json_output); break;
+          case eShopDepts:    doConvert(doLoadRef<AllShopDepts_Data>(&binfile),target_basename,json_output); break;
 //        case eSequencers:   doConvert(doLoad<SequencerList>(&binfile),target_basename,json_output); break;
           case eTailorCosts:  doConvert(doLoad<AllTailorCosts_Data>(&binfile),target_basename,json_output); break;
           case eCostumeSets:  doConvert(doLoad<CostumeSet_Data>(&binfile),target_basename,json_output); break;
@@ -515,14 +515,14 @@ int main(int argc,char **argv)
           case eNpcDefinitions:
          {
             auto data = doLoadRef<AllNpcs_Data>(&binfile);
-            if (qApp->arguments().size() > 2)
+            if(qApp->arguments().size() > 2)
             {
                 QString name_to_find = app.arguments()[2];
                 std::sort(data->begin(), data->end(), [](const Parse_NPC &a, const Parse_NPC &b) -> bool {
                     return QString(a.m_Name).compare(QString(b.m_Name), Qt::CaseInsensitive) < 0;
                 });
                 auto iter = std::find_if(data->begin(), data->end(), [name_to_find](const Parse_NPC &n) -> bool {
-                    if (n.m_Name == name_to_find)
+                    if(n.m_Name == name_to_find)
                         return true;
                     return false;
                 });

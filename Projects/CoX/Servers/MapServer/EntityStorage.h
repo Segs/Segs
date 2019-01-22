@@ -8,7 +8,7 @@
 #pragma once
 
 #include "GameData/Entity.h"
-#include "Servers/MapServer/DataHelpers.h"
+#include "GameData/EntityHelpers.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
@@ -33,8 +33,10 @@ public:
 
 class EntityManager
 {
-    struct EntityIdxCompare {
-        bool operator()(const Entity *a,const Entity *b) const {
+    struct EntityIdxCompare
+    {
+        bool operator()(const Entity *a,const Entity *b) const
+        {
             return getIdx(*a) < getIdx(*b);
         }
     };

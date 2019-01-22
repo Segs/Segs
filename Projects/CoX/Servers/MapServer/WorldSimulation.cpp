@@ -13,6 +13,7 @@
 #include "WorldSimulation.h"
 
 #include "Common/Servers/Database.h"
+#include "DataHelpers.h"
 #include "Messages/Map/GameCommandList.h"
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
@@ -164,8 +165,11 @@ void World::regenHealthEnd(Entity *e, uint32_t msec)
 
         float regeneration = hp * (1.0f/20.0f) * float(msec)/1000/12;
         float recovery = end * (1.0f/15.0f) * float(msec)/1000/12;
-        setHP(*e->m_char, hp + regeneration);
-        setEnd(*e->m_char, end + recovery);
+
+        if(hp < getMaxHP(*e->m_char))
+            setHP(*e->m_char, hp + regeneration);
+        if(end < getMaxEnd(*e->m_char))
+            setEnd(*e->m_char, end + recovery);
     }
 }
 

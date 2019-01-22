@@ -1,6 +1,7 @@
 find_package(Qt5 COMPONENTS Core REQUIRED)
 
 SET(target_CPP
+    ${CMAKE_CURRENT_SOURCE_DIR}/Clue.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Character.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterAttributes.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterClass.cpp
@@ -10,13 +11,17 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/Contact.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Costume.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Entity.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/EntityHelpers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Friend.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Store.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Trade.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/chardata_serializers.cpp
@@ -59,6 +64,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/CoHMath.h
 )
 SET(target_INCLUDE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Clue.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Character.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterAttributes.h
@@ -67,14 +73,18 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterHelpers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Costume.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Entity.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/EntityHelpers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Friend.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Contact.h
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Store.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Task.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Trade.h
     ${CMAKE_CURRENT_SOURCE_DIR}/chardata_serializers.h

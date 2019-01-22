@@ -361,7 +361,7 @@ int64_t BitStream::Get64Bits()
     int64_t result=0;
     uint32_t *res_ptr=reinterpret_cast<uint32_t *>(&result);
     int byte_count=GetBits(3);
-    if ( byte_count > 4 )
+    if( byte_count > 4 )
     {
         result=GetBits(BITS_PER_UINT32);
         byte_count-=4;

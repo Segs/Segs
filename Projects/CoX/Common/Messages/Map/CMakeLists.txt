@@ -1,11 +1,13 @@
 set(SOURCES
     AddTimeStateLog.h
     Browser.h
+    ClueList.h
     ChangeTitle.h
     ChatDividerMoved.cpp
     ChatDividerMoved.h
     ChatMessage.cpp
     ChatMessage.h
+    ConsoleMessages.h
     ContactDialogs.h
     ContactList.h
     DeadNoGurney.h
@@ -21,10 +23,10 @@ set(SOURCES
     FloatingDamage.h
     FloatingInfo.h
     FloatingInfoStyles.h
+    ForceLogout.h
     FriendsListUpdate.h
     GameCommand.h
     GameCommandList.h
-    InfoMessageCmd.cpp
     InfoMessageCmd.h
     InputState.cpp
     InputState.h
@@ -49,11 +51,15 @@ set(SOURCES
     SaveClientOptions.h
     SceneEvent.cpp
     SceneEvent.h
+    SendVisitLocation.h
     SendStance.h
     SetClientState.h
     Shortcuts.h
     SidekickOffer.h
     StandardDialogCmd.h
+    StoresEvents.h
+    TailorOpen.h
+    Tasks.h
     TeamLooking.h
     TeamOffer.h
     TimeUpdate.h

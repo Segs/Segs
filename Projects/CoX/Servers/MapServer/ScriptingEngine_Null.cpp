@@ -18,6 +18,11 @@ ScriptingEngine::ScriptingEngine() {}
 ScriptingEngine::~ScriptingEngine() {}
 void ScriptingEngine::registerTypes() {}
 
+void updateClientContext(MapClientSession * client)
+{
+    Q_UNUSED(client);
+}
+
 int ScriptingEngine::runScript(const QString &script_contents, const char *script_name)
 {
     Q_UNUSED(script_contents);

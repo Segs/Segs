@@ -21,7 +21,6 @@ GenerateConfigFileDialog::GenerateConfigFileDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     // Field Validators
-    ui->config_server_name_edit->setMaxLength(32);
     connect(ui->buttonBox,&QDialogButtonBox::accepted,this,&GenerateConfigFileDialog::capture_input);
     // GetIP Signals/Slots
     m_get_ip = new GetIPDialog(this);
@@ -37,15 +36,13 @@ GenerateConfigFileDialog::~GenerateConfigFileDialog()
 void GenerateConfigFileDialog::on_generate_config_file()
 {
     ui->config_ip_edit->clear();
-    ui->config_server_name_edit->clear();
     show();
 }
 
 void GenerateConfigFileDialog::capture_input()
 {
-    QString server_name = ui->config_server_name_edit->text();
     QString ip = ui->config_ip_edit->text();
-    emit sendInputConfigFile(server_name,ip);
+    emit sendInputConfigFile(ip);
 }
 
 void GenerateConfigFileDialog::auto_populate_ip_gen_config(QString local_ip)
