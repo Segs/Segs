@@ -47,8 +47,9 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
             button4 = {"MapMenu","CONTACTLINK_LONGMISSION"}, 
             button5 = {"Clues","CONTACTLINK_SHORTMISSION"}, 
             button6 = {"Store","CONTACTLINK_ACCEPTLONG"},
-            button7 = {"",""},
-            button8 = {"Leave","CONTACTLINK_BYE"}
+            button7 = {"Logging","CONTACTLINK_ACCEPTSHORT"},
+            button8 = {"",""},
+            button9 = {"Leave","CONTACTLINK_BYE"}
         }
     }
     
@@ -105,6 +106,15 @@ LuaBot.createContactDialogsWithHeroName = function(heroName)
 
     contactsForZone.LuaBot.dialogPages[1].actions["CONTACTLINK_ACCEPTLONG"] = function()
         MapClientSession.OpenStore(contactsForZone.LuaBot.entityId);
+    end
+
+    contactsForZone.LuaBot.dialogPages[1].actions["CONTACTLINK_ACCEPTSHORT"] = function()
+        local contactStatus = Contacts.FindContactByName("LuaBot");
+        if(contactStatus ~= false) then
+            contactStatus.dialogScreenIdx = 11; -- Logging
+            MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[11].contactDialog.message, contactsForZone.LuaBot.dialogPages[11].contactDialog.buttons);
+            Player.AddUpdateContact(contactStatus);
+        end
     end
 
     contactsForZone.LuaBot.dialogPages[10] = {};
@@ -692,6 +702,38 @@ LuaBot.dialogPages[9].contactDialog = {
 
 LuaBot.dialogPages[9].actions = {};
 LuaBot.dialogPages[9].actions["CONTACTLINK_HELLO"] = function()
+    local contactStatus = Contacts.FindContactByName("LuaBot");
+    if(contactStatus ~= false) then
+        contactStatus.dialogScreenIdx = 1;
+        Player.AddUpdateContact(contactStatus);
+        MapClientSession.Contact_dialog(contactsForZone.LuaBot.dialogPages[1].contactDialog.message, contactsForZone.LuaBot.dialogPages[1].contactDialog.buttons);
+     end
+end
+
+
+LuaBot.dialogPages[11] = {};
+LuaBot.dialogPages[11].contactDialog = {
+    message = [[<img src="npc:1144" align="left">Logging functions<br><br>
+                Console Output is shown when the game is launch with -console<br>
+                Console Print is shown in the ingame console (`)]],
+    buttons = {
+        button01 = {"Console Output","CONTACTLINK_HELLO"},
+        button02 = {"Console Print","CONTACTLINK_MAIN"},
+        button03 = {"",""},
+        button04 = {"Back","CONTACTLINK_MISSIONS"}
+    }
+}
+
+LuaBot.dialogPages[11].actions = {};
+LuaBot.dialogPages[11].actions["CONTACTLINK_HELLO"] = function()
+  MapClientSession.DeveloperConsoleOutput("Console Output test message from LuaBot");
+end
+
+LuaBot.dialogPages[11].actions["CONTACTLINK_MAIN"] = function()
+    MapClientSession.ClientConsoleOutput("Console Print test message from LuaBot");
+end
+
+LuaBot.dialogPages[11].actions["CONTACTLINK_MISSIONS"] = function()
     local contactStatus = Contacts.FindContactByName("LuaBot");
     if(contactStatus ~= false) then
         contactStatus.dialogScreenIdx = 1;

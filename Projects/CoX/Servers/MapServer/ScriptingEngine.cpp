@@ -22,6 +22,7 @@
 #include "Messages/Map/StandardDialogCmd.h"
 #include "Messages/Map/StoresEvents.h"
 #include "Messages/Map/InfoMessageCmd.h"
+#include "Messages/Map/SendVisitLocation.h"
 #include "Common/GameData/Character.h"
 #include "Common/GameData/CharacterHelpers.h"
 #include "Common/GameData/Contact.h"
@@ -319,6 +320,14 @@ void ScriptingEngine::registerTypes()
         }
 
     };
+    m_private->m_lua["MapClientSession"]["SendLocation"] = [this](const char* name, glm::vec3 loc){
+        MapClientSession *cl = m_private->m_lua["client"];
+        VisitLocation location;
+        location.m_location_name = QString::fromUtf8(name);
+        location.m_pos = loc;
+        sendLocation(*cl, location);
+
+    };
     m_private->m_lua["MapClientSession"]["OpenStore"] = [this](int entity_idx)
     {
          MapClientSession *cl = m_private->m_lua["client"];
@@ -339,6 +348,18 @@ void ScriptingEngine::registerTypes()
     {
         MapClientSession *cl = m_private->m_lua["client"];
         sendInfoMessage(static_cast<MessageChannel>(channel), QString::fromUtf8(message), *cl);
+    };
+    m_private->m_lua["MapClientSession"]["DeveloperConsoleOutput"] = [this](const char* message)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        QString msg = QString::fromUtf8(message);
+        sendDeveloperConsoleOutput(*cl, msg);
+    };
+    m_private->m_lua["MapClientSession"]["ClientConsoleOutput"] = [this](const char* message)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        QString msg = QString::fromUtf8(message);
+        sendClientConsoleOutput(*cl, msg);
     };
 
     m_private->m_lua.new_usertype<Entity>( "Entity",

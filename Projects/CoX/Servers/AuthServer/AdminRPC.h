@@ -19,7 +19,7 @@ class AdminRPC : public QObject
 {
     Q_OBJECT
     class AuthHandler *m_auth_handler;
-    friend void startWebSocketServer();
+    friend void startRPCServer();
 private:
     AdminRPC(); // restrict construction to startWebSocketServer
 public:
@@ -32,8 +32,8 @@ protected:
     ACE_INET_Addr                       m_location;     //!< address websockets will bind at.
     ACE_Thread_Mutex                    m_mutex;        //!< used to prevent multiple threads accessing config reload function
     bool                                ReadConfig();
-    void 								SetStartTime();
+    void                                SetStartTime();
     QString                             m_start_time;
 };
 
-void startWebSocketServer();
+void startRPCServer();

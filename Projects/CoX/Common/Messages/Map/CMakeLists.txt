@@ -7,6 +7,7 @@ set(SOURCES
     ChatDividerMoved.h
     ChatMessage.cpp
     ChatMessage.h
+    ConsoleMessages.h
     ContactDialogs.h
     ContactList.h
     DeadNoGurney.h
@@ -50,6 +51,7 @@ set(SOURCES
     SaveClientOptions.h
     SceneEvent.cpp
     SceneEvent.h
+    SendVisitLocation.h
     SendStance.h
     SetClientState.h
     Shortcuts.h

@@ -27,9 +27,11 @@
 #include "Common/GameData/LFG.h"
 #include "Common/Messages/Map/ClueList.h"
 #include "Common/Messages/Map/ContactList.h"
+#include "Common/Messages/Map/ConsoleMessages.h"
 #include "Common/Messages/Map/EmailHeaders.h"
 #include "Common/Messages/Map/EmailRead.h"
 #include "Common/Messages/Map/ForceLogout.h"
+#include "Common/Messages/Map/SendVisitLocation.h"
 #include "Common/Messages/EmailService/EmailEvents.h"
 #include "Common/Messages/Map/MapEvents.h"
 #include "Common/Messages/Map/StoresEvents.h"
@@ -1394,24 +1396,20 @@ void logSpawnLocations(MapClientSession &cl, const char* spawn_type)
     QString spawn_name = QString::fromUtf8(spawn_type);
     auto spawners = cl.m_current_map->getSpawners();
 
-    if(!spawners.empty())
-    {
-        int count = 0;
-        auto spawn_list = spawners.values(spawn_name);
-
-        for(auto const &s: spawn_list)
-        {
-            glm::mat4 mat4 = glm::mat4(1.0f);
-            mat4 = spawn_list[count];
-            glm::vec3 loc = glm::vec3(128.0f,16.0f,-198.0f);
-            loc = glm::vec3(mat4[3]);
-            qCDebug(logScripts) << "Spawn: " << spawn_name << " loc x: " << loc.x << " y: " << loc.y << " z: " << loc.z ;
-            ++count;
-        }
-    }
-    else
+    if(spawners.empty())
     {
         qCDebug(logScripts) << "spawners empty";
+        return;
+    }
+    int count = 0;
+    auto spawn_list = spawners.values(spawn_name);
+
+    for(auto const &s: spawn_list)
+    {
+        glm::mat4 mat4 = s;
+        glm::vec3 loc = glm::vec3(mat4[3]);
+        qCDebug(logScripts) << "Spawn: " << spawn_name << " loc x: " << loc.x << " y: " << loc.y << " z: " << loc.z ;
+        ++count;
     }
 }
 
@@ -1475,7 +1473,7 @@ void openStore(MapClientSession &sess, int entity_idx)
 
 void modifyInf(MapClientSession &sess, int amount)
 {
-    uint32_t inf = getInf(*sess.m_ent->m_char);
+    int32_t inf = getInf(*sess.m_ent->m_char);
     // amount can be negitive to lower influence
     inf = inf + amount;
     if(inf < 0)
@@ -1497,6 +1495,30 @@ void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout
     MapClientSession *tgt = e->m_client;
     qCDebug(logScripts) << "SendForceLogout. Mesage: " << logout_message;
     tgt->link()->putq(new ForceLogout(logout_message));
+}
+
+void sendLocation(MapClientSession &cl, VisitLocation location)
+{
+    qWarning("SendLocation, unknown affect on client");
+    qCDebug(logSlashCommand) << "sendLocation: " << location.m_location_name;
+    vLocationList location_list;
+
+    //Test locations in Atlas Park
+    location_list.push_back(VisitLocation("Statue1", glm::vec3(126.5,27.4315,-300)));
+    location_list.push_back(VisitLocation("Patrol_Easy_1_City_01_01", glm::vec3(461.0,0,778)));
+    location_list.push_back(VisitLocation("Patrol_Easy_5_City_01_01", glm::vec3(1099.5,0,124.5)));
+
+    cl.addCommand<SendLocations>(location_list);
+}
+
+void sendDeveloperConsoleOutput(MapClientSession &cl, QString &message)
+{
+    cl.addCommand<ConsoleOutput>(message);
+}
+
+void sendClientConsoleOutput(MapClientSession &cl, QString &message)
+{
+    cl.addCommand<ConsolePrint>(message);
 }
 
 //! @}

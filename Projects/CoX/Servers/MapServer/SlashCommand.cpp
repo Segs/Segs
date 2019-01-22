@@ -28,6 +28,7 @@
 #include "GameData/CharacterHelpers.h"
 #include "GameData/Entity.h"
 #include "GameData/EntityHelpers.h"
+#include "GameData/VisitLocation.h"
 #include "GameData/LFG.h"
 #include "GameData/Trade.h"
 #include "Settings.h"
@@ -124,6 +125,9 @@ void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -243,6 +247,9 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
     {{"openStore"}, "Open store Window", cmdHandler_OpenStore, 9},
     {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
+    {{"sendLocation"}, "Send Location Test", cmdHandler_SendLocations, 9},
+    {{"developerConsoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
+    {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -1288,6 +1295,50 @@ void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
     QString msg = "Sending OfficerFlint to contactList";
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
+
+void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess)
+{
+    VisitLocation visitlocation;
+    visitlocation.m_location_name = "Test1";
+    visitlocation.m_pos = glm::vec3(-44, 0, 261);
+
+    sendLocation(sess, visitlocation);
+}
+
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2 )
+    {
+        qCDebug(logSlashCommand) << "SendConsoleOutput. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsoleOutput format is '/consoleOutput <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendDeveloperConsoleOutput(sess, msg);
+}
+
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2)
+    {
+        qCDebug(logSlashCommand) << "SendConsolePrintF. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsolePrintF format is '/consolePrintF <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendClientConsoleOutput(sess, msg);
+}
+
 
 
 // Slash commands for setting bit values
