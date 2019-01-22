@@ -47,6 +47,7 @@ SET(target_CPP
     #def_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/map_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/seq_serializers.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/seq_definitions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/shop_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/trick_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/trick_definitions.cpp

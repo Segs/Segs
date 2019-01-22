@@ -101,7 +101,7 @@ namespace SEGSEvents
         {
             assert(!"ReceiveContactStatus serializeto");
         }
-        void    serializefrom(BitStream &bs)
+        void serializefrom(BitStream &bs) override
         {
             m_srv_idx = bs.GetPackedBits(1);
             qCDebug(logMapEvents) << "ReceiveContactStatus Event";
