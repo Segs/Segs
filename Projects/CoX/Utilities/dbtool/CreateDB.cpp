@@ -38,16 +38,16 @@ dbToolResult createDatabases(std::vector<DatabaseConfig> const& configs)
             break;
         }
         QFile source_file(cfg.m_template_path);
-        QSqlDatabase segs_db(QSqlDatabase::addDatabase(cfg.m_driver, cfg.m_dbname));
+        QSqlDatabase segs_db(QSqlDatabase::addDatabase(cfg.m_driver, cfg.m_db_path));
         QSqlQuery query(segs_db);
-        segs_db.setDatabaseName(cfg.m_dbname);
+        segs_db.setDatabaseName(cfg.m_db_path);
         if(cfg.isSqlite())
         {
             // We have to remove the file if it already exists;
             // otherwise, many errors are thrown.
-            if(!deleteDb(cfg.m_dbname))
+            if(!deleteDb(cfg.m_db_path))
             {
-                qWarning(qPrintable(QString("FAILED to remove existing file: %1").arg(cfg.m_dbname)));
+                qWarning(qPrintable(QString("FAILED to remove existing file: %1").arg(cfg.m_db_path)));
                 qCritical("Ensure no processes are using it and you have permission to modify it.");
                 ret = dbToolResult::DB_RM_FAILED;
                 break;
@@ -81,11 +81,11 @@ dbToolResult createDatabases(std::vector<DatabaseConfig> const& configs)
         }
         source_file.close();
         segs_db.close();
-        qInfo() << "COMPLETED creating:" << cfg.m_dbname;
+        qInfo() << "COMPLETED creating:" << cfg.m_db_path;
     }
 
     for(auto opened: configs)
-        QSqlDatabase::removeDatabase(opened.m_dbname);
+        QSqlDatabase::removeDatabase(opened.m_db_path);
 
     return ret;
 }
@@ -148,14 +148,14 @@ bool dbExists(const DatabaseConfig &dbcfg)
     if(dbcfg.isSqlite())
     {
         // For SQLite we can just check that the file exists
-        ret = fileExists(dbcfg.m_dbname);
+        ret = fileExists(dbcfg.m_db_path);
     }
     else if(dbcfg.isMysql() || dbcfg.isPostgresql())
     {
         QSqlDatabase segs_db(QSqlDatabase::addDatabase(dbcfg.m_driver,
-                                                       dbcfg.m_dbname));
+                                                       dbcfg.m_db_path));
         QSqlQuery query(segs_db);
-        segs_db.setDatabaseName(dbcfg.m_dbname);
+        segs_db.setDatabaseName(dbcfg.m_db_path);
         segs_db.setHostName(dbcfg.m_host);
         segs_db.setPort(dbcfg.m_port.toInt());
         segs_db.setUserName(dbcfg.m_user);
@@ -168,7 +168,7 @@ bool dbExists(const DatabaseConfig &dbcfg)
         {
             querytext = "SELECT table_schema || '.' || table_name FROM";
             querytext.append("information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema ='");
-            querytext.append(dbcfg.m_dbname);
+            querytext.append(dbcfg.m_db_path);
             querytext.append("';");
         }
 
@@ -179,6 +179,6 @@ bool dbExists(const DatabaseConfig &dbcfg)
         segs_db.close();
     }
 
-    QSqlDatabase::removeDatabase(dbcfg.m_dbname);
+    QSqlDatabase::removeDatabase(dbcfg.m_db_path);
     return ret;
 }

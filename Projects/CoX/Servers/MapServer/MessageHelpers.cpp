@@ -25,7 +25,7 @@ void sendChatMessage(MessageChannel t, const QString &msg, MapClientSession *src
 {
     ChatMessage * res = new ChatMessage(t,msg);
     res->m_source_player_id = getIdx(*src->m_ent);
-    res->m_target_player_id = getIdx(*src->m_ent);
+    res->m_target_player_id = getIdx(*tgt.m_ent);
 
     tgt.addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
 

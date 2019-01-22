@@ -180,7 +180,7 @@ int main(int argc, char **argv)
                 for(const auto &cfg : configs)
                 {
                     if(dbExists(cfg))
-                        qWarning() << "Database" << cfg.m_dbname << "already exists.";
+                        qWarning() << "Database" << cfg.m_db_path << "already exists.";
                 }
                 
                 qInfo() << "Run dbtool with -f option to overwrite existing databases. "
@@ -209,7 +209,7 @@ int main(int argc, char **argv)
                 qCritical()<< "adduser operation requires login and password";
                 return int(dbToolResult::NOT_ENOUGH_PARAMS);
             }
-            if(configs[0].isSqlite() && !fileExists(configs[0].m_dbname))
+            if(configs[0].isSqlite() && !fileExists(configs[0].m_db_path))
             {
                 qCritical() << "Cannot add account, the database does not exist";
                 return int(dbToolResult::SQLITE_DB_MISSING);
@@ -221,7 +221,7 @@ int main(int argc, char **argv)
         }
         case dbToolCommands::UPGRADE:
         {
-            doUpgrade(configs);
+            runUpgrades(configs);
             break;
         }
     }

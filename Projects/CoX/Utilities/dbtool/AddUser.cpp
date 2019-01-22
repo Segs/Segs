@@ -20,11 +20,11 @@
 dbToolResult addAccount(const DatabaseConfig &char_database, const QString & username,
                 const QString & password, uint16_t access_level)
 {
-    qCDebug(logSettings) << "AddAccount to database at" << char_database.m_dbname;
+    qCDebug(logSettings) << "AddAccount to database at" << char_database.m_db_path;
     QString target_file_string("");
     if(char_database.isSqlite())
     {
-        target_file_string = char_database.m_dbname;
+        target_file_string = char_database.m_db_path;
         QFile target_file(target_file_string);
         if(!target_file.exists())
         {
@@ -33,10 +33,10 @@ dbToolResult addAccount(const DatabaseConfig &char_database, const QString & use
         }
     }
     else
-        target_file_string = char_database.m_dbname;
+        target_file_string = char_database.m_db_path;
 
     QSqlDatabase segs_db(QSqlDatabase::addDatabase(char_database.m_driver,
-                                                   char_database.m_dbname));
+                                                   char_database.m_db_path));
     segs_db.setDatabaseName(target_file_string);
     if(char_database.isMysql() || char_database.isPostgresql())
     {

@@ -18,63 +18,35 @@
 #include <QtSql/QSqlQuery>
 
 // doUpgrade
-void doUpgrade(const std::vector<DatabaseConfig> &configs)
+void runUpgrades(const std::vector<DatabaseConfig> &configs)
 {
     qInfo() << "Upgrading database files...";
 
-    // load newest database from templates to compare against
-    std::vector<DatabaseConfig> tpls = configs;
-    for(auto &tpl : tpls)
-        tpl.m_dbname.append("_temp");
-
-    // create temp databases
-    dbToolResult tpl_result = createDatabases(tpls);
-    if(tpl_result != dbToolResult::SUCCESS)
-    {
-        qWarning() << int(tpl_result)
-                   << "Failed to read new database templates."
-                   << "Please ensure that the template directory is properly configured.";
-        return;
-    }
-
-    // Iterate over each database and compare to templates
-    int i = 0;
+    // Iterate over each database and compare to upgradeHooks
     for(const DatabaseConfig &cfg : configs)
     {
         if(!dbExists(cfg))
         {
-            qWarning() << "Database" << cfg.m_dbname
+            // this should never happen, if it does we screwed up
+            qWarning() << "Database" << cfg.m_db_path
             << "does not exist! Please create using `create` command.";
             return;
         }
 
         // check database version against schema in default folder
-        VersionSchema current_db = getDBTableVersions(cfg);
-        VersionSchema tpl_db     = getDBTableVersions(tpls.at(i));
-        QStringList tables_to_update = getTablesToUpdate(current_db, tpl_db);
-
-        if(current_db == tpl_db || tables_to_update.isEmpty())
+        TableSchema current_version = getDBVersion(cfg);
+        if(!checkVersionAndUpgrade(cfg, current_version))
         {
-            qInfo() << "Database" << cfg.m_dbname << "is the latest version! No upgrade necessary.";
-            ++i; // increment here or tpl will be the same as last iteration
+            qInfo() << "Database" << cfg.m_name << "is the latest version! No upgrade necessary.";
             continue;
         }
 
-        // Otherwise we update database tables
-        qInfo() << "Database is out of date! Attempting to upgrade now.";
-        for(const QString &table : tables_to_update)
-        {
-            qInfo() << "Updating" << table;
-        }
-
-        // when all done, delete temp databases
-        // removeDatabase(cfg);
+        qInfo() << "Database" << cfg.m_name << "upgraded successfully!";
 
         /* PSUEDOCODE:
             // check database versions against template files
             auto current_db = getDatabaseVersion();
-            auto tpl_db = checkTemplateVersion();
-            getTablesToUpdate(current_db, tpl_db);
+            checkVersionForUpgrade(current_db);
 
             // update database schema
             for(auto table : tables_to_update)
@@ -92,50 +64,45 @@ void doUpgrade(const std::vector<DatabaseConfig> &configs)
             if(verifySchemas())
                 return dbToolResult::SUCCESS;
         */
-        ++i; // increment iterator for use in tpl vector
     }
 }
 
-QStringList getTablesToUpdate(const VersionSchema &cfg, const VersionSchema &tpl)
-{
-    QStringList tables_to_update;
-    for(const QString &k : cfg.keys())
-    {
-        if(!tpl.contains(k))
-        {
-            qWarning() << "Template database does not contain key" << k;
-            continue;
-        }
 
-        if(cfg.value(k) != tpl.value(k))
-            tables_to_update.push_back(k);
-    }
-    return tables_to_update;
-}
-
-VersionSchema getDBTableVersions(const DatabaseConfig &cfg)
+/*!
+ * @brief Retrieve database version
+ * @param[in] Config for database file
+ * @returns integer representing database version number
+ */
+TableSchema getDBVersion(const DatabaseConfig &cfg)
 {
-    VersionSchema result;
+    TableSchema result;
+    result.m_db_name = cfg.m_name;
+
     // segs_db scope: wrap this section in brackets to prevent unwanted
     // removeDatabase() errors
     {
-        QSqlDatabase segs_db(QSqlDatabase::addDatabase(cfg.m_driver, cfg.m_dbname));
+        QSqlDatabase segs_db(QSqlDatabase::addDatabase(cfg.m_driver, cfg.m_db_path));
 
         QSqlQuery query(segs_db);
-        segs_db.setDatabaseName(cfg.m_dbname);
+        segs_db.setDatabaseName(cfg.m_db_path); // must be path
         segs_db.setHostName(cfg.m_host);
         segs_db.setPort(cfg.m_port.toInt());
         segs_db.setUserName(cfg.m_user);
         segs_db.setPassword(cfg.m_pass);
 
         if(!segs_db.open())
-            qWarning() << "Failed to open database" << cfg.m_dbname;
+        {
+            qWarning() << "Failed to open database" << cfg.m_db_path;
+            return result;
+        }
 
         if(!segs_db.driver()->hasFeature(QSqlDriver::Transactions))
+        {
             qWarning() << segs_db.driverName() << "does not support Transactions";
+            return result;
+        }
 
-        qCDebug(logDB) << "Table Versions for" << cfg.m_dbname.split(QDir::separator()).back();
-        QString querytext = "SELECT table_name, version FROM table_versions";
+        QString querytext = "SELECT version FROM table_versions WHERE table_name='db_version'";
         if(!query.exec(querytext))
         {
             qWarning() << "SQL_ERROR:" << query.lastError();
@@ -145,16 +112,77 @@ VersionSchema getDBTableVersions(const DatabaseConfig &cfg)
 
         while (query.next())
         {
-            QString name = query.value(0).toString();
-            int version = query.value(1).toInt();
-            result.insert(name, version);
-            qCDebug(logDB) << name << version;
+            result.m_version = query.value(0).toInt();
+            qCDebug(logDB) << "Database Version:" << result.m_db_name << result.m_version;
         }
         query.finish();
         segs_db.close();
 
     } // end segs_db scope to prevent removeDatabase errors
 
-    QSqlDatabase::removeDatabase(cfg.m_dbname);
-    return result;
+    // unload the database (this doesn't delete it)
+    QSqlDatabase::removeDatabase(cfg.m_db_path);
+    return result; // return complete TableSchema object
+}
+
+
+/*
+ * upgradeAccountsDB for checking database version vs g_accounts_upgrade_hooks
+ */
+bool checkVersionAndUpgrade(const DatabaseConfig &cfg, const TableSchema &cur_version)
+{
+    bool updates_completed = false; // will flag true if successful
+    int target_version = cur_version.m_version + 1; // set target version for this iteration
+
+    // run through g_segs_upgrade_hooks and check for upgrades
+    // that are higher than our current DB version. Run them in order.
+    for(const UpgradeHook &hook : g_segs_upgrade_hooks)
+    {
+        // g_defined_upgrade_hooks contains both databases, skip
+        // databases that don't match the one we're currently checking
+        if(hook.m_table_schema.m_db_name != cur_version.m_db_name)
+        {
+            qCDebug(logDB) << "We're currently looking for the other database, skipping to the next one."
+                           << hook.m_table_schema.m_db_name << cur_version.m_db_name;
+            continue;
+        }
+
+        // skip upgrades beneath the current db version
+        if(hook.m_table_schema.m_version < target_version)
+        {
+            qCDebug(logDB) << "Upgrade hook is beneath current database version. Skip to the next one.";
+            continue;
+        }
+
+        if(hook.m_table_schema.m_version == target_version)
+        {
+            qInfo() << "Upgrading database" << cfg.m_name << "to version" << target_version;
+            if(hook.m_handler(cfg))
+            {
+                updates_completed = true;
+                ++target_version; // iterate new version, because we've updated the database
+            }
+        }
+    }
+
+    if(updates_completed)
+        return true;
+
+    // Otherwise, no updates done.
+    return false;
+}
+
+/*!
+ * @brief Run query_text on database from cfg
+ * @param[in] Config for database file
+ * @param[in] QString of query text (SQL Query format)
+ * @returns boolean indicating success
+ */
+bool runQuery(const DatabaseConfig &cfg, const QString query_text)
+{
+    // open database
+    // somehow run hook here
+    // close database
+
+    return true; // if successful
 }

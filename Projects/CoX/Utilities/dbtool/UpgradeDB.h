@@ -13,25 +13,20 @@
 
 class DatabaseConfig;
 
-// define VersionSchema QMap<table, version>
-using VersionSchema = QMap<QString, int>;
-
 struct TableSchema
 {
     QString m_db_name;
-    QString m_table_name;
     int     m_version;
-    QString m_last_updated;
 
     inline bool operator==(const TableSchema& other) const
     {
         return  this->m_db_name == other.m_db_name &&
-                this->m_table_name == other.m_table_name &&
-                this->m_version == other.m_version &&
-                this->m_last_updated == other.m_last_updated;
+                this->m_version == other.m_version;
     }
 };
+using DBSchemas = std::vector<TableSchema>;
 
-void doUpgrade(std::vector<DatabaseConfig> const& configs);
-QStringList getTablesToUpdate(const VersionSchema &cfg, const VersionSchema &tpl);
-VersionSchema getDBTableVersions(const DatabaseConfig &cfg);
+void runUpgrades(std::vector<DatabaseConfig> const& configs);
+TableSchema getDBVersion(const DatabaseConfig &cfg);
+bool checkVersionAndUpgrade(const DatabaseConfig &cfg, const TableSchema &cur_version);
+bool runQuery(const DatabaseConfig &cfg, const QString query_text);

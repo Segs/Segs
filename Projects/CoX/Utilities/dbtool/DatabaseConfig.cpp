@@ -32,7 +32,8 @@ bool DatabaseConfig::initialize_from_settings(const QString &settings_file_name,
     config.beginGroup(QStringLiteral("AdminServer"));
         config.beginGroup(group_name);
             m_driver = config.value(QStringLiteral("db_driver"),"QSQLITE").toString();
-            m_dbname = Settings::getSEGSDir() + QDir::separator() + config.value(QStringLiteral("db_name"),"segs").toString();
+            m_name = config.value(QStringLiteral("db_name"),"segs").toString();
+            m_db_path = Settings::getSEGSDir() + QDir::separator() + m_name;
             m_host = config.value(QStringLiteral("db_host"),"127.0.0.1").toString();
             m_port = config.value(QStringLiteral("db_port"),"5432").toString();
             m_user = config.value(QStringLiteral("db_user"),"segs").toString();
@@ -41,7 +42,7 @@ bool DatabaseConfig::initialize_from_settings(const QString &settings_file_name,
         config.endGroup(); // group_name
     config.endGroup(); // AdminServer
 
-    qCDebug(logSettings) << m_dbname << "database settings loaded from" << settings_full_path;
+    qCDebug(logSettings) << m_db_path << "database settings loaded from" << settings_full_path;
 
     return putFilePath();
 }

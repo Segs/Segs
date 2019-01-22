@@ -9,4 +9,10 @@
 
 #include "UpgradeDB.h"
 
-void runUpgrade(const DatabaseConfig &cfg, const TableSchema &current);
+struct UpgradeHook
+{
+    TableSchema m_table_schema;
+    std::function<bool(const DatabaseConfig &)> m_handler;
+};
+
+extern const std::vector<UpgradeHook> g_segs_upgrade_hooks;
