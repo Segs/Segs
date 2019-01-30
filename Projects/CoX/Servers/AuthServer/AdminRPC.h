@@ -15,6 +15,11 @@
 #include <QVariant>
 #include <QtCore/QDateTime>
 
+enum class SocketType {
+    tcp,
+    websocket
+};
+
 class AdminRPC : public QObject
 {
     Q_OBJECT
@@ -22,6 +27,7 @@ class AdminRPC : public QObject
     friend void startRPCServer();
 private:
     AdminRPC(); // restrict construction to startWebSocketServer
+    ~AdminRPC();
 public:
     Q_INVOKABLE bool heyServer();
     Q_INVOKABLE QString helloServer();
@@ -34,6 +40,7 @@ protected:
     bool                                ReadConfig();
     void                                SetStartTime();
     QString                             m_start_time;
+    SocketType                          m_socket_type;
 };
 
 void startRPCServer();
