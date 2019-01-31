@@ -23,17 +23,17 @@ using namespace SEGSEvents;
 
 void sendChatMessage(MessageChannel t, const QString &msg, MapClientSession *src, MapClientSession &tgt)
 {
-    ChatMessage * res = new ChatMessage(t,msg);
+    std::unique_ptr<ChatMessage> res = std::make_unique<ChatMessage>(t,msg);
     res->m_source_player_id = getIdx(*src->m_ent);
     res->m_target_player_id = getIdx(*src->m_ent);
-
-    tgt.addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
 
     qCDebug(logChat).noquote() << "ChatMessage:"
                                << "\n  Channel:" << int(res->m_channel_type)
                                << "\n  Source:" << res->m_source_player_id
                                << "\n  Target:" << res->m_target_player_id
                                << "\n  Message:" << res->m_msg;
+
+    tgt.addCommandToSendNextUpdate(std::move(res));
 }
 void sendInfoMessage(MessageChannel t, const QString &msg, MapClientSession &tgt)
 {
