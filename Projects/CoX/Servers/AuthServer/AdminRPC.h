@@ -15,7 +15,8 @@
 #include <QVariant>
 #include <QtCore/QDateTime>
 
-enum class SocketType {
+enum class SocketType
+{
     tcp,
     websocket
 };
