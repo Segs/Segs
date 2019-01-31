@@ -2220,7 +2220,7 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 
     QString description = getDescription(*tgt->m_char);
 
-    session.addCommandToSendNextUpdate(std::unique_ptr<EntityInfoResponse>(new EntityInfoResponse(description)));
+    session.addCommandToSendNextUpdate(std::make_unique<EntityInfoResponse>(description));
     qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
 }
 
@@ -2550,7 +2550,7 @@ void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
        test_task.m_task_detail = "Not found";
     }
 
-    session.addCommandToSendNextUpdate(std::unique_ptr<TaskDetail>(new TaskDetail(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail)));
+    session.addCommandToSendNextUpdate(std::make_unique<TaskDetail>(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail));
 }
 
 
@@ -2868,14 +2868,11 @@ void MapInstance::send_player_update(Entity *e)
 // EmailHandler will send this event here
 void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
 {
-    EmailHeaders *header = new EmailHeaders(
-                    ev->m_data.m_email_id,
-                    ev->m_data.m_sender_name,
-                    ev->m_data.m_subject,
-                    ev->m_data.m_timestamp);
-
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
+                                                                          ev->m_data.m_sender_name,
+                                                                          ev->m_data.m_subject,
+                                                                          ev->m_data.m_timestamp));
 }
 
 void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
@@ -2884,12 +2881,10 @@ void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 
     for (const auto &data : ev->m_data.m_email_headers)
     {
-        EmailHeaders *header = new EmailHeaders(
-                    data.m_email_id,
-                    data.m_sender_name,
-                    data.m_subject,
-                    data.m_timestamp);
-        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+        map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(data.m_email_id,
+                                                                              data.m_sender_name,
+                                                                              data.m_subject,
+                                                                              data.m_timestamp));
     }
 
     QString message = QString("You have %1 unread emails.").arg(ev->m_data.m_unread_emails_count);
@@ -2898,14 +2893,10 @@ void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 
 void MapInstance::on_email_read_response(EmailReadResponse *ev)
 {
-    EmailRead *email_read = new EmailRead(
-                ev->m_data.m_email_id,
-                ev->m_data.m_message,
-                ev->m_data.m_sender_name
-                );
-
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(email_read));
+    map_session.addCommandToSendNextUpdate(std::make_unique<EmailRead>(ev->m_data.m_email_id,
+                                                                       ev->m_data.m_message,
+                                                                       ev->m_data.m_sender_name));
 }
 
 void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg)
