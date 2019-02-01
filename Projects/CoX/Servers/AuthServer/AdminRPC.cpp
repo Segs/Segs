@@ -37,7 +37,7 @@ bool AdminRPC::ReadConfig()
 {
     ACE_Guard<ACE_Thread_Mutex> guard(m_mutex);
 
-    qCInfo(logRPC) << "Loading AdminRPC settings...";
+    qInfo() << "Loading AdminRPC settings...";
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
     config.beginGroup(QStringLiteral("AdminRPC"));
@@ -45,6 +45,10 @@ bool AdminRPC::ReadConfig()
         qCDebug(logRPC) << "Config file is missing 'location_addr' entry in AdminRPC group, will try to use default";
 
     QString location_addr = config.value(QStringLiteral("location_addr"),"127.0.0.1:6001").toString();
+
+    if(!config.contains(QStringLiteral("server_type")))
+        qCDebug(logRPC) << "Config file is missing 'server_type' entry in AdminRPC group, will try to use default";
+
     QString server_type = config.value(QStringLiteral("server_type"),"tcp").toString();
 
     if(server_type == "websocket")
@@ -56,7 +60,7 @@ bool AdminRPC::ReadConfig()
 
     if(!parseAddress(location_addr,m_location))
     {
-        qCCritical(logRPC) << "Badly formed IP address: " << location_addr;
+        qCritical() << "Badly formed IP address '" << location_addr << "' in AdminRPC.";
         return false;
     }
     qCInfo(logRPC) << "Loading AdminRPC settings complete...";
@@ -104,12 +108,12 @@ void startRPCServer()
     {
         if (m_adminrpc->m_socket_type == SocketType::tcp)
         {
-            qCDebug(logRPC) << "Creating TCP server...";
+            qCDebug(logRPC) << "Creating RPC server using TCP...";
             m_server = new jcon::JsonRpcTcpServer();
         }
         else
         {
-            qCDebug(logRPC) << "Creating WebSocket server";
+            qCDebug(logRPC) << "Creating RPC server using WebSocket...";
             m_server = new jcon::JsonRpcWebSocketServer();
         }
     }
