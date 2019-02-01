@@ -99,7 +99,13 @@ function(windeployqt target directory)
     if( MINGW )
         message( STATUS "    Installing system-libraries: MinGW DLLs." )
         get_filename_component( Mingw_Path ${CMAKE_CXX_COMPILER} PATH )
-        set( CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Mingw_Path}/libgcc_s_dw2-1.dll ${Mingw_Path}/libstdc++-6.dll ${Mingw_Path}/libwinpthread-1.dll )
+
+        file(GLOB LIBGCC_DLL_PATH "${Mingw_Path}/libgcc_s_*.dll")
+        if(NOT LIBGCC_DLL_PATH)
+          message(FATAL_ERROR "Could not find libgcc dll")
+        endif()
+
+        set( CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${LIBGCC_DLL_PATH} ${Mingw_Path}/libstdc++-6.dll ${Mingw_Path}/libwinpthread-1.dll )
     endif( MINGW )
     # windeployqt doesn't work correctly with the system runtime libraries,
     # so we fall back to one of CMake's own modules for copying them over

@@ -71,8 +71,8 @@ public:
         shutdown_event_processor_and_wait(m_handler);
         // tell our friendship service to close too
         shutdown_event_processor_and_wait(m_friendship_service.get());
-	// tell our email service to close too
-	shutdown_event_processor_and_wait(m_email_service.get());
+        // tell our email service to close too
+        shutdown_event_processor_and_wait(m_email_service.get());
     }
 };
 

@@ -372,8 +372,7 @@ void cmdHandler_Script(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_Dialog(const QString &cmd, MapClientSession &sess)
 {
-    StandardDialogCmd *dlg = new StandardDialogCmd(cmd.mid(4));
-    sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(cmd.mid(4)));
 }
 
 void cmdHandler_InfoMessage(const QString &cmd, MapClientSession &sess)
@@ -410,8 +409,7 @@ void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess)
     if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QString contents(file.readAll());
-        StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-        sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(contents));
     }
     else {
         QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";

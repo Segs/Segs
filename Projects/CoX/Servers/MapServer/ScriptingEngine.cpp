@@ -313,8 +313,7 @@ void ScriptingEngine::registerTypes()
     m_private->m_lua["MapClientSession"]["Simple_dialog"] = [this](const char *dlgtext)
     {
         MapClientSession *cl = m_private->m_lua["client"];
-        auto n = new StandardDialogCmd(dlgtext);
-        cl->addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(n));
+        cl->addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(dlgtext));
     };
     m_private->m_lua["MapClientSession"]["Browser"] = [this](const char *content)
     {

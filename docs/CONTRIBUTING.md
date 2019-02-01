@@ -43,7 +43,8 @@ We have an official message board and a FAQ where the community chimes in with h
 
 ### Chat with us on Discord
 
-Chat with us on Discord! We're currently hosting a `#segs` channel on Splat Chat. You can join by clicking this link:
+Come and join us in `#pocket-d` channel for general chat or `#troubleshooting` for support. 
+Developers are welcome to join `#development`.  
  
  [**Click here to join SEGS Discord**](https://discord.segs.io/)
 
