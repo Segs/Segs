@@ -51,6 +51,7 @@ SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logSceneGraph,   "log.scenegraph")
 SEGS_LOGGING_CATEGORY(logStores,       "log.stores")
 SEGS_LOGGING_CATEGORY(logTasks,        "log.tasks")
+SEGS_LOGGING_CATEGORY(logRPC,          "log.rpc")
 
 void setLoggingFilter()
 {
@@ -89,6 +90,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.scenegraph="     + config.value("log_scenegraph","false").toString();
     filter_rules += "\nlog.stores="         + config.value("log_stores","false").toString();
     filter_rules += "\nlog.tasks="          + config.value("log_tasks","false").toString();
+    filter_rules += "\nlog.rpc="            + config.value("log_rpc","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -165,6 +167,8 @@ void toggleLogging(QString &category)
         cat = &logStores();
     else if(category.contains("tasks",Qt::CaseInsensitive))
         cat = &logTasks();
+    else if(category.contains("rpc",Qt::CaseInsensitive))
+        cat = &logRPC();
     else
         return;
 
@@ -207,6 +211,9 @@ void dumpLogging()
     output += "\n\t tailor: "       + QString::number(logTailor().isDebugEnabled());
     output += "\n\t scripts: "      + QString::number(logScripts().isDebugEnabled());
     output += "\n\t scenegraph: "   + QString::number(logSceneGraph().isDebugEnabled());
+    output += "\n\t stores: "       + QString::number(logStores().isDebugEnabled());
+    output += "\n\t tasks: "        + QString::number(logTasks().isDebugEnabled());
+    output += "\n\t rpc: "          + QString::number(logRPC().isDebugEnabled());
 
     qDebug().noquote() << output;
 }
