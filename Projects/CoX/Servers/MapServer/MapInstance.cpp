@@ -23,6 +23,7 @@
 #include "SEGSTimer.h"
 #include "SlashCommand.h"
 #include "TimeEvent.h"
+#include "TimeHelpers.h"
 #include "WorldSimulation.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
@@ -67,6 +68,7 @@
 #include <stdlib.h>
 
 using namespace SEGSEvents;
+struct EntityIdxCompare;
 
 namespace
 {
@@ -77,7 +79,8 @@ namespace
         Session_Reaper_Timer   = 3,
         Link_Idle_Timer   = 4,
         Sync_Service_Update_Timer = 5,
-        Afk_Update_Timer = 6
+        Afk_Update_Timer = 6,
+        Lua_Timer = 7
     };
 
     const ACE_Time_Value reaping_interval(0,1000*1000);
@@ -86,6 +89,7 @@ namespace
     const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
     const ACE_Time_Value sync_service_update_interval(0, 30000*1000);
     const ACE_Time_Value afk_update_interval(0, 1000 * 1000);
+    const ACE_Time_Value lua_timer_interval(0, 1000 * 1000);
     const ACE_Time_Value resend_interval(0,250*1000);
     const CRUDLink::duration maximum_time_without_packets(2000);
     const constexpr int MinPacketsToAck = 5;
@@ -169,6 +173,9 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service_timer =
         std::make_unique<SEGSTimer>(this, Sync_Service_Update_Timer, sync_service_update_interval, false);
     m_afk_update_timer = std::make_unique<SEGSTimer>(this, Afk_Update_Timer, afk_update_interval, false );
+
+    //Lua timer
+    m_lua_timer = std::make_unique<SEGSTimer>(this, Lua_Timer, lua_timer_interval, false );
 
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
 }
@@ -968,6 +975,9 @@ void MapInstance::on_timeout(Timeout *ev)
         case Afk_Update_Timer:
             on_afk_update();
             break;
+        case Lua_Timer:
+            on_lua_update();
+            break;
     }
 }
 
@@ -1205,6 +1215,9 @@ static MessageChannel getKindOfChatMessage(const QStringRef &msg)
     // unknown chat types are processed as local chat
     return MessageChannel::LOCAL;
 }
+
+
+
 
 void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
 {
@@ -2038,7 +2051,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
             sendServerMOTD(&session);
 
         // send Lua connection method?
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
+        //m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
     }
     else
     {
@@ -2050,7 +2063,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     }
 
     // Call Lua Connected function.
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
+   m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
 }
 
 void MapInstance::on_location_visited(LocationVisited *ev)
@@ -2058,8 +2071,8 @@ void MapInstance::on_location_visited(LocationVisited *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited", qPrintable(ev->m_name), ev->m_pos);
-    sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),session);
+    m_scripting_interface->callFuncWithClientContext(&session,"location_visited", qPrintable(ev->m_name), ev->m_pos);
+    sendInfoMessage(MessageChannel::DEBUG_INFO,qPrintable(ev->m_name),session);
 
     qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
@@ -2070,7 +2083,7 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited", qPrintable(ev->m_name), ev->m_pos);
+    m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited", qPrintable(ev->m_name), ev->m_pos);
     qCWarning(logMapEvents) << "Unhandled plaque visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
@@ -2503,7 +2516,7 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
     Entity *entity = getEntity(&session, ev->m_srv_idx);
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx, entity->m_entity_data.m_pos);
+    m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx, entity->m_entity_data.m_pos);
 }
 
 void MapInstance::on_receive_contact_status(ReceiveContactStatus *ev)
@@ -2511,7 +2524,7 @@ void MapInstance::on_receive_contact_status(ReceiveContactStatus *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "ReceiveContactStatus Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"contact_call",ev->m_srv_idx);
+    m_scripting_interface->callFuncWithClientContext(&session,"contact_call",ev->m_srv_idx);
 }
 
 void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
@@ -2613,7 +2626,7 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     }
     else
     {
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
+        m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
     }
 }
 
@@ -2672,15 +2685,15 @@ void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
     */
     // otherwise
 
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"revive_ok", session.m_ent->m_idx);
+    m_scripting_interface->callFuncWithClientContext(&session,"revive_ok", session.m_ent->m_idx);
 
-    if (val.empty())
+    /*if (val.empty())
     {
         // Set statemode to Resurrect
         setStateMode(*session.m_ent, ClientStates::RESURRECT);
         // TODO: spawn in hospital, resurrect animations, "summoning sickness"
         revivePlayer(*session.m_ent, ReviveLevel::FULL);
-    }
+    }*/
 
 }
 
@@ -2783,6 +2796,25 @@ void MapInstance::on_afk_update()
         }
     }
 
+}
+
+void MapInstance::on_lua_update()
+{
+    for(const auto &e: m_entities.m_live_entlist) // entities for all entities.
+    {
+        if(e->m_remove)
+        {
+            m_entities.m_live_entlist.erase(e);
+            break;
+        }
+
+        if(e->m_timer_enabled && e->m_on_tick_callback != NULL)
+        {
+            m_scripting_interface->updateMapInstance(this);
+            int64_t time = getSecsSince2000Epoch();
+            e->m_on_tick_callback(time);
+        }
+    }
 }
 
 void MapInstance::on_update_entities()
@@ -3086,5 +3118,9 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
         qCDebug(logStores) << "Error processing buyItem";
 }
 
+void MapInstance::add_chat_message(MapClientSession *sender,QString &msg_text)
+{
+    process_chat(sender, msg_text);
+}
 
 //! @}

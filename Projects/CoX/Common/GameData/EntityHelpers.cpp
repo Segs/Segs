@@ -97,6 +97,8 @@ void setTarget(Entity &e, uint32_t target_idx)
 {
     // TODO: set target if enemy, set assist_target if friendly
     e.m_target_idx = target_idx;
+    // To trigger update to client
+    e.m_pchar_things = true;
 }
 
 void setAssistTarget(Entity &e, uint32_t target_idx)

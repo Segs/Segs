@@ -19,6 +19,7 @@ namespace SEGSEvents
 class EntitiesResponse;
 }
 void sendChatMessage(MessageChannel t, const QString &msg, MapClientSession *src, MapClientSession &tgt);
+void sendNpcChatMessage(MessageChannel t, const QString &msg, int npc_idx, MapClientSession &tgt);
 void sendInfoMessage(MessageChannel t, const QString &msg, MapClientSession &tgt);
 
 class BitStream;

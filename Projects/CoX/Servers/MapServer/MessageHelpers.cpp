@@ -25,7 +25,7 @@ void sendChatMessage(MessageChannel t, const QString &msg, MapClientSession *src
 {
     ChatMessage * res = new ChatMessage(t,msg);
     res->m_source_player_id = getIdx(*src->m_ent);
-    res->m_target_player_id = getIdx(*src->m_ent);
+    res->m_target_player_id = getIdx(*tgt.m_ent);
 
     tgt.addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
 
@@ -35,6 +35,23 @@ void sendChatMessage(MessageChannel t, const QString &msg, MapClientSession *src
                                << "\n  Target:" << res->m_target_player_id
                                << "\n  Message:" << res->m_msg;
 }
+
+
+void sendNpcChatMessage(MessageChannel t, const QString &msg, int npc_idx, MapClientSession &tgt)
+{
+    ChatMessage * res = new ChatMessage(t,msg);
+    res->m_source_player_id = npc_idx;
+    res->m_target_player_id = getIdx(*tgt.m_ent);
+
+    tgt.addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
+
+    qCDebug(logChat).noquote() << "ChatMessage:"
+                               << "\n  Channel:" << int(res->m_channel_type)
+                               << "\n  Source:" << res->m_source_player_id
+                               << "\n  Target:" << res->m_target_player_id
+                               << "\n  Message:" << res->m_msg;
+}
+
 void sendInfoMessage(MessageChannel t, const QString &msg, MapClientSession &tgt)
 {
     tgt.addCommand<InfoMessageCmd>(t, msg);

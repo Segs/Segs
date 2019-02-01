@@ -123,6 +123,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_link_timer;
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
         std::unique_ptr<SEGSTimer> m_afk_update_timer;
+        std::unique_ptr<SEGSTimer> m_lua_timer;
         World *                 m_world;
         GameDBSyncService*      m_sync_service;
         uint32_t                m_owner_id;
@@ -154,6 +155,9 @@ public:
         glm::vec3               closest_safe_location(glm::vec3 v) const;
         QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
 
+        void send_player_update(Entity *e);
+        void                    add_chat_message(MapClientSession *sender, QString &msg_text);
+
 protected:
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
@@ -166,6 +170,7 @@ protected:
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
         void                    on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
         void                    process_chat(MapClientSession *sender, QString &msg_text);
+
         // DB -> Server messages
         void                    on_name_clash_check_result(SEGSEvents::WouldNameDuplicateResponse *ev);
         void                    on_character_created(SEGSEvents::CreateNewCharacterResponse *ev);
@@ -192,8 +197,9 @@ protected:
         void on_check_links();
         void on_update_entities();
         void on_afk_update();
+        void on_lua_update();
         void send_character_update(Entity *e);
-        void send_player_update(Entity *e);
+
 
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
         void on_window_state(SEGSEvents::WindowState *ev);

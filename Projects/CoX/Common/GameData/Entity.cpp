@@ -20,6 +20,7 @@
 #include "GameData/playerdata_definitions.h"
 #include "GameData/npc_definitions.h"
 #include <QtCore/QDebug>
+#include <QTimer>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -103,6 +104,21 @@ void Entity::dump()
 void Entity::setActiveDialogCallback(std::function<void(int)> callback)
 {
     this->m_active_dialog = callback;
+}
+
+void Entity::setOnTickCallback(std::function<void(int64_t)> callback)
+{
+    this->m_on_tick_callback = callback;
+}
+
+void Entity::stopTimer()
+{
+    this->m_timer_enabled = false;
+}
+
+void Entity::startTimer()
+{
+    this->m_timer_enabled = true;
 }
 
 Entity::Entity()
