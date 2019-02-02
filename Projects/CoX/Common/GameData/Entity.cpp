@@ -20,7 +20,6 @@
 #include "GameData/playerdata_definitions.h"
 #include "GameData/npc_definitions.h"
 #include <QtCore/QDebug>
-#include <QTimer>
 #include <algorithm>
 #include <cmath>
 #include <limits>
