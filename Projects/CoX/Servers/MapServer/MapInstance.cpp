@@ -2051,7 +2051,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
             sendServerMOTD(&session);
 
         // send Lua connection method?
-        //m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
+        // auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
     }
     else
     {
@@ -2063,7 +2063,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     }
 
     // Call Lua Connected function.
-   m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
 }
 
 void MapInstance::on_location_visited(LocationVisited *ev)
@@ -2071,7 +2071,7 @@ void MapInstance::on_location_visited(LocationVisited *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    m_scripting_interface->callFuncWithClientContext(&session,"location_visited", qPrintable(ev->m_name), ev->m_pos);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited", qPrintable(ev->m_name), ev->m_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO,qPrintable(ev->m_name),session);
 
     qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
@@ -2083,7 +2083,7 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
-    m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited", qPrintable(ev->m_name), ev->m_pos);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited", qPrintable(ev->m_name), ev->m_pos);
     qCWarning(logMapEvents) << "Unhandled plaque visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
@@ -2516,7 +2516,7 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
     Entity *entity = getEntity(&session, ev->m_srv_idx);
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
-    m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx, entity->m_entity_data.m_pos);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx, entity->m_entity_data.m_pos);
 }
 
 void MapInstance::on_receive_contact_status(ReceiveContactStatus *ev)
@@ -2524,7 +2524,7 @@ void MapInstance::on_receive_contact_status(ReceiveContactStatus *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "ReceiveContactStatus Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
-    m_scripting_interface->callFuncWithClientContext(&session,"contact_call",ev->m_srv_idx);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"contact_call",ev->m_srv_idx);
 }
 
 void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
@@ -2626,7 +2626,7 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     }
     else
     {
-        m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
+        auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
     }
 }
 
@@ -2685,7 +2685,7 @@ void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
     */
     // otherwise
 
-    m_scripting_interface->callFuncWithClientContext(&session,"revive_ok", session.m_ent->m_idx);
+    auto val = m_scripting_interface->callFuncWithClientContext(&session,"revive_ok", session.m_ent->m_idx);
 
     /*if (val.empty())
     {

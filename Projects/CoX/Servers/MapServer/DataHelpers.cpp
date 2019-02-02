@@ -976,7 +976,7 @@ void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int varia
     forcePosition(*e, loc);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
-    sess.m_current_map->m_scripting_interface->callFuncWithClientContext(&sess, "npc_added", e->m_idx);
+    auto val = sess.m_current_map->m_scripting_interface->callFuncWithClientContext(&sess, "npc_added", e->m_idx);
 }
 
 void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
