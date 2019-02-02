@@ -241,10 +241,6 @@ public:
 
         std::function<void(int)>        m_active_dialog      = NULL;
 
-        bool                m_timer_enabled             = false;
-        std::function<void(int64_t)>    m_on_tick_callback   = NULL;
-        bool                m_remove                    = false;
-
         void                dump();
 
 static  void                sendAllyID(BitStream &bs);

@@ -251,14 +251,13 @@ void ScriptingEngine::registerTypes()
         addNpcWithOrientation(*mi, npc_def_name, loc, variation, ori, name);
     };
 
-    m_private->m_lua["MapInstance"]["RemoveNpc"] = [this](int entity_idx)
+    m_private->m_lua["MapInstance"]["RemoveNpc"] = [this](int entityIdx)
     {
         MapInstance *mi = m_private->m_lua["map"];
-        Entity *e = getEntity(mi, entity_idx);
-        if (e != nullptr)
+        Entity *e = getEntity(mi, entityIdx);
+        if(e != nullptr)
         {
-            e->stopTimer();
-            e->m_remove = true;
+            mi->m_entities.removeEntityFromActiveList(e);
         }
 
     };
@@ -275,8 +274,12 @@ void ScriptingEngine::registerTypes()
     {
         MapInstance *mi = m_private->m_lua["map"];
         Entity* e = getEntity(mi, entityIdx);
-        if(e != nullptr)
-            e->setOnTickCallback(callback);
+        if(e != nullptr){
+            LuaTimer timer;
+            timer.m_entity_idx = entityIdx;
+            timer.m_on_tick_callback = callback;
+            mi->m_lua_timers.push_back(timer);
+        }
     };
 
     m_private->m_lua["MapInstance"]["StartTimer"] = [this](int entityIdx)
@@ -284,7 +287,10 @@ void ScriptingEngine::registerTypes()
         MapInstance *mi = m_private->m_lua["map"];
         Entity* e = getEntity(mi, entityIdx);
         if(e != nullptr)
-            e->startTimer();
+        {
+           mi->startTimer(entityIdx);
+        }
+
     };
 
     m_private->m_lua["MapInstance"]["StopTimer"] = [this](int entityIdx)
@@ -292,7 +298,19 @@ void ScriptingEngine::registerTypes()
         MapInstance *mi = m_private->m_lua["map"];
         Entity* e = getEntity(mi, entityIdx);
         if(e != nullptr)
-            e->stopTimer();
+        {
+            mi->stopTimer(entityIdx);
+        }
+    };
+
+    m_private->m_lua["MapInstance"]["ClearTimer"] = [this](int entityIdx)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        Entity* e = getEntity(mi, entityIdx);
+        if(e != nullptr)
+        {
+          mi->clearTimer(entityIdx);
+        }
     };
 
 
@@ -376,14 +394,22 @@ void ScriptingEngine::registerTypes()
         addNpcWithOrientation(*cl, npc_def_name, loc, variation, ori, name);
     };
 
-    m_private->m_lua["MapClientSession"]["RemoveNpc"] = [this](int entity_idx)
+    m_private->m_lua["MapClientSession"]["RemoveNpc"] = [this](int entityIdx)
     {
         MapClientSession *cl = m_private->m_lua["client"];
-        Entity *e = getEntity(cl, entity_idx);
+        MapInstance *mi = cl->m_current_map;
+        Entity *e = getEntity(mi, entityIdx);
         if(e != nullptr)
         {
-            e->stopTimer();
-            e->m_remove = true;
+           int count = 0;
+           for(auto &t: mi->m_lua_timers)
+           {
+               if(t.m_entity_idx == entityIdx)
+                   break;
+
+               ++count;
+           }
+           mi->m_lua_timers[count].m_remove = true;
         }
 
     };
@@ -460,25 +486,53 @@ void ScriptingEngine::registerTypes()
     m_private->m_lua["MapClientSession"]["SetOnTickCallback"] = [this](int entityIdx, std::function<void(int64_t)> callback)
     {
         MapClientSession *cl = m_private->m_lua["client"];
+        MapInstance *mi = cl->m_current_map;
         Entity* e = getEntity(cl, entityIdx);
         if(e != nullptr)
-            e->setOnTickCallback(callback);
+        {
+            LuaTimer timer;
+            timer.m_entity_idx = entityIdx;
+            timer.m_on_tick_callback = callback;
+            mi->m_lua_timers.push_back(timer);
+        }
     };
 
     m_private->m_lua["MapClientSession"]["StartTimer"] = [this](int entityIdx)
     {
         MapClientSession *cl = m_private->m_lua["client"];
+        MapInstance *mi = cl->m_current_map;
         Entity* e = getEntity(cl, entityIdx);
         if(e != nullptr)
-            e->startTimer();
+        {
+           int count = 0;
+           for(auto &t: mi->m_lua_timers)
+           {
+               if(t.m_entity_idx == entityIdx)
+                   break;
+
+               ++count;
+           }
+           mi->m_lua_timers[count].m_is_enabled = true;
+        }
     };
 
     m_private->m_lua["MapClientSession"]["StopTimer"] = [this](int entityIdx)
     {
         MapClientSession *cl = m_private->m_lua["client"];
+        MapInstance *mi = cl->m_current_map;
         Entity* e = getEntity(cl, entityIdx);
         if(e != nullptr)
-            e->stopTimer();
+        {
+           int count = 0;
+           for(auto &t: mi->m_lua_timers)
+           {
+               if(t.m_entity_idx == entityIdx)
+                   break;
+
+               ++count;
+           }
+           mi->m_lua_timers[count].m_is_enabled = true;
+        }
     };
 
     m_private->m_lua.new_usertype<Entity>( "Entity",
@@ -601,17 +655,6 @@ void ScriptingEngine::registerTypes()
     {
         MapClientSession *cl = m_private->m_lua["client"];
         cl->m_ent->setActiveDialogCallback(callback);
-    };
-    m_private->m_lua["Player"]["SetOnTickCallback"] = [this](std::function<void(int64_t)> callback)
-    {
-        MapClientSession *cl = m_private->m_lua["client"];
-        cl->m_ent->setOnTickCallback(callback);
-    };
-
-    m_private->m_lua["Player"]["StartTimer"] = [this]()
-    {
-        MapClientSession *cl = m_private->m_lua["client"];
-        cl->m_ent->startTimer();
     };
     m_private->m_lua["Player"]["RemoveContact"] = [this](const Contact &contact)
     {

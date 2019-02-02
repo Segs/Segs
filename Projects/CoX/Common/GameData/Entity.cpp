@@ -106,21 +106,6 @@ void Entity::setActiveDialogCallback(std::function<void(int)> callback)
     this->m_active_dialog = callback;
 }
 
-void Entity::setOnTickCallback(std::function<void(int64_t)> callback)
-{
-    this->m_on_tick_callback = callback;
-}
-
-void Entity::stopTimer()
-{
-    this->m_timer_enabled = false;
-}
-
-void Entity::startTimer()
-{
-    this->m_timer_enabled = true;
-}
-
 Entity::Entity()
 {
 }

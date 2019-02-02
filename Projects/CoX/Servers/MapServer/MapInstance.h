@@ -27,6 +27,15 @@ class SEGSTimer;
 class World;
 class GameDataStore;
 class MapSceneGraph;
+
+struct LuaTimer {
+    uint32_t                        m_entity_idx;
+    bool                            m_is_enabled        = false;
+    bool                            m_remove            = false;
+    std::function<void(int64_t)>    m_on_tick_callback;
+
+};
+
 namespace SEGSEvents
 {
 class RecvInputState;
@@ -102,6 +111,8 @@ class SouvenirDetailRequest;
 class StoreSellItem;
 class StoreBuyItem;
 
+
+
 // server<-> server event types
 struct ExpectMapClientRequest;
 struct WouldNameDuplicateResponse;
@@ -139,6 +150,7 @@ public:
         ListenAndLocationAddresses m_addresses; //! this value is sent to the clients
         MapSceneGraph *         m_map_scenegraph;
         NpcGeneratorStore       m_npc_generators;
+        std::vector<LuaTimer>   m_lua_timers;
 
 public:
                                 IMPL_ID(MapInstance)
@@ -157,6 +169,9 @@ public:
 
         void send_player_update(Entity *e);
         void                    add_chat_message(MapClientSession *sender, QString &msg_text);
+        void                    startTimer(uint32_t entity_idx);
+        void                    stopTimer(uint32_t entity_idx);
+        void                    clearTimer(uint32_t entity_idx);
 
 protected:
         // EventProcessor interface

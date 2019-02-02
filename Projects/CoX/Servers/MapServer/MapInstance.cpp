@@ -2800,20 +2800,27 @@ void MapInstance::on_afk_update()
 
 void MapInstance::on_lua_update()
 {
-    for(const auto &e: m_entities.m_live_entlist) // entities for all entities.
+    int count = 0;
+    for(const auto &t: m_lua_timers)
     {
-        if(e->m_remove)
+        if(t.m_remove)
         {
-            m_entities.m_live_entlist.erase(e);
+            Entity *e = getEntity(this, t.m_entity_idx);
+            if(e != nullptr)
+                this->m_entities.removeEntityFromActiveList(e);
+
+            m_lua_timers.erase(m_lua_timers.begin() + count);
             break;
         }
 
-        if(e->m_timer_enabled && e->m_on_tick_callback != NULL)
+        if(t.m_is_enabled && t.m_on_tick_callback != NULL)
         {
             m_scripting_interface->updateMapInstance(this);
             int64_t time = getSecsSince2000Epoch();
-            e->m_on_tick_callback(time);
+            t.m_on_tick_callback(time);
         }
+
+        ++count;
     }
 }
 
@@ -3112,6 +3119,45 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
 void MapInstance::add_chat_message(MapClientSession *sender,QString &msg_text)
 {
     process_chat(sender, msg_text);
+}
+
+void MapInstance::startTimer(uint32_t entity_idx)
+{
+    int count = 0;
+    for(auto &t: this->m_lua_timers)
+    {
+        if(t.m_entity_idx == entity_idx)
+            break;
+
+        ++count;
+    }
+    this->m_lua_timers[count].m_is_enabled = true;
+}
+
+void MapInstance::stopTimer(uint32_t entity_idx)
+{
+    int count = 0;
+    for(auto &t: this->m_lua_timers)
+    {
+        if(t.m_entity_idx == entity_idx)
+            break;
+
+        ++count;
+    }
+    this->m_lua_timers[count].m_is_enabled = false;
+}
+
+void MapInstance::clearTimer(uint32_t entity_idx)
+{
+    int count = 0;
+    for(auto &t: this->m_lua_timers)
+    {
+        if(t.m_entity_idx == entity_idx)
+            break;
+
+        ++count;
+    }
+    this->m_lua_timers[count].m_remove = true;
 }
 
 //! @}
