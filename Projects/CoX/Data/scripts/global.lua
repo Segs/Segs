@@ -1,5 +1,7 @@
 printDebug('Loading global.lua...')
 
+
+
 --Testing objects
 local enhancements = {
     'Generic_Damage', 'Generic_Accuracy', 'Generic_Resistance', 'Generic_Defense',
