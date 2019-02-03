@@ -226,7 +226,6 @@ end
 
 --End CONTACT HELPERS
 
-
 --Just for testing
 function Player.GiveRandomInsp()
     local randomIndex = math.random(1, 7)
@@ -247,8 +246,6 @@ function Player.GiveRandomTempPower()
 end
 
 
-vec3.new(107, 16, -215)
-
 printDebug('Finished Loading global.lua')
 
 --[[            Notes for scriping  
@@ -257,6 +254,25 @@ To add scripts to lua use include_lua('path') to load each extra script
 
 For contact dialogs, 11 buttons is the max you can have displayed at once. 
  Anymore and the client will crash
+
+
+    contact.name = Name in contact list
+    contact.currentStanding = Sets the progess bar
+    contact.notifyPlayer = false; ?
+    contact.npcId = sets the headshot to display in contact list
+    contact.contactIdx = ?
+    contact.hasLocation = true; Sets if the contact has a location to travel too.
+    contact.taskIndex = 0; Sets which task in the task list is tied is from this contact
+    contact.locationDescription = Description of contacts location
+    contact.location = Destination.new(); create destination object
+    contact.location.location = vec3 of where this contact is
+    contact.location.name = Name of location where contact is
+    contact.location.mapName =  Sets the name of the map where the contact is.
+    contact.confidantThreshold = Sets standing where contact becomes confidant
+    contact.friendThreshold = Sets standing where contact becomes friend
+    contact.completeThreshold = Sets standing where contact ark is complete
+    contact.canUseCell = false; Sets if call button is visible for contact
+    contact.dialogScreenIdx = 1; Sets dialog screen index. Use for branching dialogs.
 
         Contact Dialog buttons    
     {"CONTACTLINK_HELLO"                ,1}, 1

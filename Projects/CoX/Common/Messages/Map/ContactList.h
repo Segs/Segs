@@ -39,7 +39,7 @@ namespace SEGSEvents
                 bs.StoreString(contact.m_name);
                 bs.StoreString(contact.m_location_description);
                 bs.StorePackedBits(12, contact.m_npc_id);
-                bs.StorePackedBits(1, count); // m_contact_idx
+                bs.StorePackedBits(1, contact.m_contact_idx); // m_contact_idx count
                 bs.StorePackedBits(1, contact.m_task_index);
                 bs.StoreBits(1, contact.m_notify_player);
                 bs.StoreBits(1, contact.m_can_use_cell);
@@ -58,7 +58,7 @@ namespace SEGSEvents
                     bs.StoreString(contact.m_location.m_location_name);
                 }
 
-                 qCDebug(logMapEvents) << "ContactStatusList Event serializeTo. currentStanding: " << contact.m_current_standing;
+                 qCDebug(logMapEvents) << "ContactStatusList Event serializeTo. currentStanding: " << contact.m_current_standing << " contactIdx: " <<contact.m_contact_idx;
                 ++count;
             }
         }

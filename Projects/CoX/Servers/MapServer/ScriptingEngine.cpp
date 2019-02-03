@@ -154,6 +154,7 @@ void ScriptingEngine::registerTypes()
         "locationDescription", sol::property(&Contact::getLocationDescription, &Contact::setLocationDescription),
         "npcId", &Contact::m_npc_id,
         "currentStanding", &Contact::m_current_standing,
+        "contactIdx", &Contact::m_contact_idx,
         "notifyPlayer", &Contact::m_notify_player,
         "taskIndex", &Contact::m_task_index,
         "hasLocation", &Contact::m_has_location,
