@@ -32,7 +32,8 @@ struct LuaTimer {
     uint32_t                        m_entity_idx;
     bool                            m_is_enabled        = false;
     bool                            m_remove            = false;
-    std::function<void(int64_t)>    m_on_tick_callback;
+    int64_t                         m_start_time;
+    std::function<void(int64_t, int64_t, int64_t)>    m_on_tick_callback;
 
 };
 
