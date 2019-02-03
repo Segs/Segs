@@ -97,8 +97,8 @@ HideAndSeek.hidingPlaces[19].coordinates = vec3.new(-1176, 0, -511);
 HideAndSeek.hidingPlaces[19].orientation = vec3.new(0, 0.79, 0);
 HideAndSeek.hidingPlaces[19].clue = "Hyperion Way has some of my favorite music. hehehe";
 HideAndSeek.hidingPlaces[19] = {};
-HideAndSeek.hidingPlaces[19].coordinates = vec3.new(-1505, 0, -180);
-HideAndSeek.hidingPlaces[19].orientation = vec3.new(0, 3.93, 0);
+HideAndSeek.hidingPlaces[19].coordinates = vec3.new(-1429, 0, 176);
+HideAndSeek.hidingPlaces[19].orientation = vec3.new(0, 4.71, 0);
 HideAndSeek.hidingPlaces[19].clue = [[What's "Scheherazde"? Hyperion way has some strange places.]];
 
 
@@ -182,23 +182,24 @@ HideAndSeek.callback = function(id)
     end
 end
 
-HideAndSeek.onTickCallBack = function(result)
-    --printDebug("Results: " .. tostring(result));
-    local stopTime15 = contactsForZone.HideAndSeek.hideTime + 900; -- 15 minutes 900 seconds
-    local stopTime30 = contactsForZone.HideAndSeek.hideTime + 1800; -- 30 minutes  1800 seconds
+HideAndSeek.onTickCallBack = function(startTime, diff, current)
+    --printDebug("startTime: " .. tostring(startTime) .. " diff: " .. tostring(diff) .. " current: " .. tostring(current));
+    local stopTime15 = 900; -- 15 minutes 900 seconds
+    local stopTime30 = 1800; -- 30 minutes  1800 seconds
     local resetCheckInTimer = contactsForZone.HideAndSeek.checkInTime + 60;
     
     -- Once we have a "proximity check" this wouldn't need to run every minute.
     -- It could be sent when a player is within X range.
-    if(contactsForZone.HideAndSeek.isHidden and result == resetCheckInTimer) then
+    if(contactsForZone.HideAndSeek.isHidden and current == resetCheckInTimer) then
         MapInstance.NpcMessage('l', contactsForZone.HideAndSeek.entityId, "Is someone there?");
         contactsForZone.HideAndSeek.checkInTime = DeepCopy(resetCheckInTimer);
     end
 
-    if (contactsForZone.HideAndSeek.isHidden and result == stopTime15) then
+    if (contactsForZone.HideAndSeek.isHidden and diff == stopTime15) then
         MapInstance.NpcMessage('b', contactsForZone.HideAndSeek.entityId, "Heeeerrroooooesssss. Come on! Its been 15 minutes!");
         MapInstance.NpcMessage('b', contactsForZone.HideAndSeek.entityId, contactsForZone.HideAndSeek.hidingPlaces[contactsForZone.HideAndSeek.hidingPlaceId].clue);
-    elseif (contactsForZone.HideAndSeek.isHidden and result == stopTime30) then
+
+    elseif (contactsForZone.HideAndSeek.isHidden and diff == stopTime30) then
         MapInstance.StopTimer(contactsForZone.HideAndSeek.entityId);
         MapInstance.NpcMessage('b', contactsForZone.HideAndSeek.entityId, "I guess I win this one. hehehe");
         MapInstance.NpcMessage('b', contactsForZone.HideAndSeek.entityId, "I'll be back at the steps in Atlas Plaza if you want to play again.");

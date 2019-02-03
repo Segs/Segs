@@ -2817,7 +2817,8 @@ void MapInstance::on_lua_update()
         {
             m_scripting_interface->updateMapInstance(this);
             int64_t time = getSecsSince2000Epoch();
-            t.m_on_tick_callback(time);
+            int64_t diff = time - t.m_start_time;
+            t.m_on_tick_callback(t.m_start_time, diff, time);
         }
 
         ++count;
@@ -3132,6 +3133,7 @@ void MapInstance::startTimer(uint32_t entity_idx)
         ++count;
     }
     this->m_lua_timers[count].m_is_enabled = true;
+    this->m_lua_timers[count].m_start_time = getSecsSince2000Epoch();
 }
 
 void MapInstance::stopTimer(uint32_t entity_idx)

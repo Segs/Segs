@@ -270,7 +270,7 @@ void ScriptingEngine::registerTypes()
         npcSendMessage(*mi, ch, entityIdx, msg);
     };
 
-    m_private->m_lua["MapInstance"]["SetOnTickCallback"] = [this](int entityIdx, std::function<void(int64_t)> callback)
+    m_private->m_lua["MapInstance"]["SetOnTickCallback"] = [this](int entityIdx, std::function<void(int64_t,int64_t,int64_t)> callback)
     {
         MapInstance *mi = m_private->m_lua["map"];
         Entity* e = getEntity(mi, entityIdx);
@@ -483,7 +483,7 @@ void ScriptingEngine::registerTypes()
         npcSendMessage(*cl, ch, entityIdx, msg);
     };
 
-    m_private->m_lua["MapClientSession"]["SetOnTickCallback"] = [this](int entityIdx, std::function<void(int64_t)> callback)
+    m_private->m_lua["MapClientSession"]["SetOnTickCallback"] = [this](int entityIdx, std::function<void(int64_t,int64_t,int64_t)> callback)
     {
         MapClientSession *cl = m_private->m_lua["client"];
         MapInstance *mi = cl->m_current_map;
