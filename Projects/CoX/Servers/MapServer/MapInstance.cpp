@@ -2805,10 +2805,6 @@ void MapInstance::on_lua_update()
     {
         if(t.m_remove)
         {
-            Entity *e = getEntity(this, t.m_entity_idx);
-            if(e != nullptr)
-                this->m_entities.removeEntityFromActiveList(e);
-
             m_lua_timers.erase(m_lua_timers.begin() + count);
             break;
         }

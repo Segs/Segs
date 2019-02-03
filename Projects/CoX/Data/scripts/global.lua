@@ -87,7 +87,18 @@ function DeepCopy(object)
     return _copy(object);
 end
 
-
+function SecondsToClock(seconds)
+    local seconds = tonumber(seconds)
+  
+    if seconds <= 0 then
+      return "00:00:00";
+    else
+      hours = string.format("%02.f", math.floor(seconds/3600));
+      mins = string.format("%02.f", math.floor(seconds/60 - (hours*60)));
+      secs = string.format("%02.f", math.floor(seconds - hours*3600 - mins *60));
+      return hours..":"..mins..":"..secs
+    end
+  end
 
 -- CONTACT Helpers
 Contacts = {};
@@ -193,13 +204,13 @@ end
 
 function Contacts.FindContactByName(item)
     local contact = false
-    printDebug("Contact to find: " .. item)
+    --printDebug("Contact to find: " .. item)
 
     if vContacts ~= nil then
         for key, value in pairs(vContacts) do
-         printDebug(value.name)
+            --printDebug(value.name)
             if (value.name == item) then
-                printDebug("Contact found: " .. value.name)
+                --printDebug("Contact found: " .. value.name)
                 contact = value
                 break
             end
@@ -224,7 +235,32 @@ function Contacts.FindContactByNpcId (npcId)
     return contact
 end
 
---End CONTACT HELPERS
+function Contacts.FindLocationByName(locationName)
+    local location = false;
+    --printDebug("Location to find: " .. locationName)
+    if contactsForZone ~= nil then
+        for key, value in pairs(contactsForZone) do
+            --printDebug(tostring(value.locations))
+            if value.locations ~= nil then
+                for k, v in pairs(value.locations) do
+                    printDebug(tostring(v.name))
+                    if v.name == locationName then
+                        location = v;
+                        break;
+                    end
+                end
+
+                if(location ~= false) then
+                    break;
+                end
+             end
+        end
+    end
+    return location;
+end
+
+--End CONTACT HELPERS 450 0 771
+
 
 --Just for testing
 function Player.GiveRandomInsp()

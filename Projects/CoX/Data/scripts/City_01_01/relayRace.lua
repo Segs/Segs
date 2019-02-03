@@ -15,6 +15,7 @@ RelayRace.entityId = nil;
 RelayRace.minLevel = 0;
 RelayRace.isStore = false;
 RelayRace.useMapInstance = true;
+RelayRace.time = 0;
 
 RelayRace.tasks = {};
 RelayRace.tasks[1] = Task.new();
@@ -37,6 +38,42 @@ RelayRace.tasks[1].location.location = vec3.new(461, 0, 778);
 RelayRace.tasks[1].location.name  = "Atlas Park";
 RelayRace.tasks[1].location.mapName = "Atlas Park";
 
+RelayRace.locations = {};
+RelayRace.locations[1] = {};
+RelayRace.locations[1].name = "Patrol_Easy_1_City_01_01";
+RelayRace.locations[1].coordinates = vec3.new(461, 3, 778);
+RelayRace.locations[1].action = function()
+    local contactStatus = Contacts.FindContactByName("Sgt. Johnson");
+    
+    if(contactStatus ~= false) then
+        printDebug("RelayRace.locations[1].action: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
+        if(contactStatus.dialogScreenIdx == 1) then
+            contactStatus.currentStanding = 1;
+            Player.AddUpdateContact(contactStatus);
+        end
+    end
+
+    Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
+    
+   
+end
+
+RelayRace.locations[2] = {};
+RelayRace.locations[2].name = "Patrol_Easy_2_City_01_01";
+RelayRace.locations[2].coordinates = vec3.new(-928, -15, 44);
+RelayRace.locations[2].action = function()
+
+end
+
+RelayRace.locations[3] = {};
+RelayRace.locations[3].name = "Patrol_Easy_3_City_01_01";
+RelayRace.locations[3].coordinates = vec3.new(89, 0, -1785);
+RelayRace.locations[4] = {};
+RelayRace.locations[4].name = "Patrol_Easy_4_City_01_01";
+RelayRace.locations[4].coordinates = vec3.new(679, 42, -1246);
+RelayRace.locations[5] = {};
+RelayRace.locations[5].name = "Patrol_Easy_5_City_01_01";
+RelayRace.locations[5].coordinates = vec3.new(1099, 0, 124);
 
 
 RelayRace.dialogPages = {};
@@ -65,14 +102,12 @@ RelayRace.dialogPages[4] = {};
 RelayRace.dialogPages[4].contactDialog = {
     message = [[<img src="npc:2009" align="left"><br>Hurry to the police call box!]],
     buttons = {
-        button01 = {"Leave","CONTACTLINK_BYE"}
+        button01 = {"Leave","CONTACTLINK_BYE"},
+        button02 = {"Reset","CONTACTLINK_INTRODUCE_CONTACT1"},
     }
 }
 
-
-
 RelayRace.createContactDialogsWithHeroName = function (heroName)
-    --when found sometimes?
     contactsForZone.RelayRace.dialogPages[1] = {};
     contactsForZone.RelayRace.dialogPages[1].contactDialog = {
         message = string.format([[<img src="npc:2009" align="left"><br>%s! Get over here!<br><br>
@@ -93,7 +128,7 @@ RelayRace.startDialogs = function()
     
     if(contactStatus ~= false) then
         printDebug("RelayRace.StartDialogs: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
-        if(contactStatus.dialogScreenIdx ==  2) then
+        if(contactStatus.dialogScreenIdx >=  1 or contactStatus.currentStanding >= 1) then
             MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[4].contactDialog.message, contactsForZone.RelayRace.dialogPages[4].contactDialog.buttons);
         else
             MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[1].contactDialog.message, contactsForZone.RelayRace.dialogPages[1].contactDialog.buttons);
@@ -112,28 +147,81 @@ RelayRace.callback = function(id)
     local contactStatus = Contacts.FindContactByName("Sgt. Johnson");
     printDebug("RelayRace.callback: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
     if(contactStatus ~= false) then
-        if(contactStatus.dialogScreenIdx == 1) then
+        if(button == "CONTACTLINK_INTRODUCE_CONTACT1") then
+            contactStatus = contactsForZone.RelayRace.CreateContact();
+            Player.AddUpdateContact(contactStatus);
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[1].contactDialog.message, contactsForZone.RelayRace.dialogPages[1].contactDialog.buttons);
+        end
+        if(contactStatus.dialogScreenIdx == 0) then
             if(button == "CONTACTLINK_HELLO") then
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[2].contactDialog.message, contactsForZone.RelayRace.dialogPages[2].contactDialog.buttons);
             elseif(button == "CONTACTLINK_ACCEPTSHORT") then
-                contactsForZone.RelayRace.tasks[1].dbId = contactsForZone.RelayRace.entityId;
-                Player.AddUpdateTask(contactsForZone.RelayRace.tasks[1]);
+                --contactsForZone.RelayRace.tasks[1].dbId = contactsForZone.RelayRace.entityId;
+                --Player.AddUpdateTask(contactsForZone.RelayRace.tasks[1]);
 
-                contactStatus.dialogScreenIdx = 2;
+                MapInstance.SetOnTickCallback(Player.entityId, contactsForZone.RelayRace.onTickCallBack);
+                MapInstance.StartTimer(Player.entityId);
+
+                contactStatus.dialogScreenIdx = 1;
                 Player.AddUpdateContact(contactStatus);
                 Player.CloseContactDialog();
             elseif(button == "CONTACTLINK_WRONGMODE") then
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[3].contactDialog.message, contactsForZone.RelayRace.dialogPages[3].contactDialog.buttons);
             end
 
-        elseif(contactStatus.dialogScreenIdx ~= 1) then
-            -- Are there other screens?
+        elseif(contactStatus.dialogScreenIdx == 1) then
+            if(button == "CONTACTLINK_ACCEPTSHORT") then
+                --local task = DeepCopy(contactsForZone.RelayRace.tasks[1]);
+                --task.description = "Test police call box 2";
+                --task.location.location = DeepCopy(contactsForZone.RelayRace.locations[2].coordinates);
+               -- Player.AddUpdateTask(task);
+
+                MapInstance.SetOnTickCallback(Player.entityId, contactsForZone.RelayRace.onTickCallBack);
+                MapInstance.StartTimer(Player.entityId);
+
+            end
+            
         end
     end
 end
 
-RelayRace.onTickCallBack = function(result)
+RelayRace.onTickCallBack = function(start, diff, current)
+    --printDebug("startTime: " .. tostring(startTime) .. " diff: " .. tostring(diff) .. " current: " .. tostring(current));
+    --contactsForZone.RelayRace.time = diff;
 
+    local contactStatus = Contacts.FindContactByName("Sgt. Johnson");
+    
+    if(contactStatus ~= false) then
+        --printDebug("RelayRace.onTickCallBack: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
+        if(contactStatus.dialogScreenIdx ==  1 and contactStatus.currentStanding == 1) then
+            MapInstance.StopTimer(Player.entityId);
+            Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
+
+            local statistic = characterStatistic.new();
+            statistic.name = "Relay Race";
+            statistic.id = 11; -- id for race type
+            statistic.time = DeepCopy(diff);
+            Player.AddStatistic(statistic);
+
+            MapInstance.ClearTimer(Player.entityId);
+            local formatedTime = SecondsToClock(diff);
+            RelayRace.dialogPages[5] = {};
+            RelayRace.dialogPages[5].contactDialog = {
+                message = string.format([[Good job. Your time was %s.<br><br>Ok. On to the 2nd call box. This one is to the north east,
+                just south of a park in Hyperion Way. Now move fast! We don't have much time!<br><br>
+                <color #2189b9>Your time starts once you click "ready".</color>]], formatedTime),
+                buttons = {
+                    button01 = {"Ready","CONTACTLINK_ACCEPTSHORT"}
+                }
+            }
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[5].contactDialog.message, contactsForZone.RelayRace.dialogPages[5].contactDialog.buttons);
+
+            contactStatus.currentStanding = 2;
+            Player.AddUpdateContact(contactStatus);
+
+        end
+    end
+    
 end
 
 
@@ -156,7 +244,7 @@ RelayRace.CreateContact = function()
     contact.friendThreshold = 4;
     contact.completeThreshold = 6;
     contact.canUseCell = false;
-    contact.dialogScreenIdx = 1;
+    contact.dialogScreenIdx = 0;
 
     return contact;
 end

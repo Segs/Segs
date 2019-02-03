@@ -19,7 +19,7 @@ public:
 
     uint32_t m_id; // id for type to update record?
     QString m_name;
-    float m_time;
+    uint64_t m_time;
     uint32_t m_count;
 
     // for scripting language access.

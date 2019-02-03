@@ -793,7 +793,7 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
 
     if (client->m_ent->m_type == EntType::PLAYER)
     {
-        m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+        m_private->m_lua["Player"]["entityId"] = client->m_ent->m_db_id;
         m_private->m_lua["heroName"] = qPrintable(client->m_name);
         m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
 
@@ -812,7 +812,7 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     m_private->m_lua["map"] = client->m_current_map;
     m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
-    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+    m_private->m_lua["Player"]["entityId"] = client->m_ent->m_db_id;
     if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
     {
         m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
@@ -826,7 +826,7 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     m_private->m_lua["map"] = client->m_current_map;
     m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
-    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+    m_private->m_lua["Player"]["entityId"] = client->m_ent->m_db_id;
     if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
     {
         m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
