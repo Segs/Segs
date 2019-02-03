@@ -27,7 +27,7 @@ RelayRace.tasks[1].state = "";
 RelayRace.tasks[1].inProgressMaybe = true;
 RelayRace.tasks[1].isComplete = false;
 RelayRace.tasks[1].isAbandoned = false;
-RelayRace.tasks[1].finishTime = 0;
+RelayRace.tasks[1].finishTime = 30;
 RelayRace.tasks[1].unknownInt1 = 1;
 RelayRace.tasks[1].unknownInt2 = 1;
 RelayRace.tasks[1].hasLocation = true;
@@ -61,6 +61,15 @@ RelayRace.dialogPages[3].contactDialog = {
     }
 }
 
+RelayRace.dialogPages[4] = {};
+RelayRace.dialogPages[4].contactDialog = {
+    message = [[<img src="npc:2009" align="left"><br>Hurry to the police call box!]],
+    buttons = {
+        button01 = {"Leave","CONTACTLINK_BYE"}
+    }
+}
+
+
 
 RelayRace.createContactDialogsWithHeroName = function (heroName)
     --when found sometimes?
@@ -84,8 +93,11 @@ RelayRace.startDialogs = function()
     
     if(contactStatus ~= false) then
         printDebug("RelayRace.StartDialogs: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
-
-        MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[1].contactDialog.message, contactsForZone.RelayRace.dialogPages[1].contactDialog.buttons);
+        if(contactStatus.dialogScreenIdx ==  2) then
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[4].contactDialog.message, contactsForZone.RelayRace.dialogPages[4].contactDialog.buttons);
+        else
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[1].contactDialog.message, contactsForZone.RelayRace.dialogPages[1].contactDialog.buttons);
+        end
     elseif(contactStatus == false) then
         contactStatus = contactsForZone.RelayRace.CreateContact();
         Player.AddUpdateContact(contactStatus);
@@ -105,7 +117,10 @@ RelayRace.callback = function(id)
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[2].contactDialog.message, contactsForZone.RelayRace.dialogPages[2].contactDialog.buttons);
             elseif(button == "CONTACTLINK_ACCEPTSHORT") then
                 Player.AddUpdateTask(contactsForZone.RelayRace.tasks[1]);
-
+                Player.StartMissionTimer("Timer Name", 30);
+                
+                contactStatus.dialogScreenIdx = 2;
+                Player.AddUpdateContact(contactStatus);
             elseif(button == "CONTACTLINK_WRONGMODE") then
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[3].contactDialog.message, contactsForZone.RelayRace.dialogPages[3].contactDialog.buttons);
             end

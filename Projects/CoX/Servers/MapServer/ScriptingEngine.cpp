@@ -693,6 +693,14 @@ void ScriptingEngine::registerTypes()
         MapClientSession *cl = m_private->m_lua["client"];
         selectTask(*cl, task);
     };
+
+    m_private->m_lua["Player"]["StartMissionTimer"] = [this](const char* message, float timer)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        QString mess = QString::fromUtf8(message);
+        sendMissionObjectiveTimer(*cl, mess, timer);
+    };
+
     m_private->m_lua["Player"]["SetWaypoint"] = [this](const int point_idx, glm::vec3 loc)
     {
         MapClientSession *cl = m_private->m_lua["client"];

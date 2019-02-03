@@ -104,6 +104,7 @@ void sendLocation(MapClientSession &cl, VisitLocation location);
 void sendDeveloperConsoleOutput(MapClientSession &cl, QString &message);
 void sendClientConsoleOutput(MapClientSession &cl, QString &message);
 void sendKiosk(MapClientSession &cl);
+void sendMissionObjectiveTimer(MapClientSession &sess, QString &message, float time);
 
 /*
  * usePower and increaseLevel here to provide access to

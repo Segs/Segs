@@ -152,6 +152,11 @@ Entity *getEntityByDBID(MapInstance *mi,uint32_t db_id)
     return nullptr;
 }
 
+void sendMissionObjectiveTimer(MapClientSession &sess, QString &message, float time)
+{
+    sess.addCommand<MissionObjectiveTimer>(message, time);
+}
+
 void sendServerMOTD(MapClientSession *tgt)
 {
     qDebug().noquote() << "Sending Server MOTD to" << tgt->m_ent->m_char->getName();
