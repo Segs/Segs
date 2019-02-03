@@ -28,7 +28,8 @@ class World;
 class GameDataStore;
 class MapSceneGraph;
 
-struct LuaTimer {
+struct LuaTimer
+{
     uint32_t                        m_entity_idx;
     bool                            m_is_enabled        = false;
     bool                            m_remove            = false;
