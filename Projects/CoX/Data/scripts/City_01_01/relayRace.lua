@@ -18,7 +18,7 @@ RelayRace.useMapInstance = true;
 
 RelayRace.tasks = {};
 RelayRace.tasks[1] = Task.new();
-RelayRace.tasks[1].dbId = 1;
+RelayRace.tasks[1].dbId = 0;
 RelayRace.tasks[1].taskIdx = 0; -- Match contact index to show on correct contact in contact list
 RelayRace.tasks[1].description = "Test police call box 1";
 RelayRace.tasks[1].owner = "Sgt. Johnson";
@@ -30,7 +30,7 @@ RelayRace.tasks[1].isAbandoned = false;
 RelayRace.tasks[1].finishTime = 30;
 RelayRace.tasks[1].unknownInt1 = 1;
 RelayRace.tasks[1].unknownInt2 = 1;
-RelayRace.tasks[1].hasLocation = true;
+RelayRace.tasks[1].hasLocation = false;
 RelayRace.tasks[1].boardTrain = false;
 RelayRace.tasks[1].location = Destination.new();
 RelayRace.tasks[1].location.location = vec3.new(461, 0, 778);
@@ -116,11 +116,12 @@ RelayRace.callback = function(id)
             if(button == "CONTACTLINK_HELLO") then
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[2].contactDialog.message, contactsForZone.RelayRace.dialogPages[2].contactDialog.buttons);
             elseif(button == "CONTACTLINK_ACCEPTSHORT") then
+                contactsForZone.RelayRace.tasks[1].dbId = contactsForZone.RelayRace.entityId;
                 Player.AddUpdateTask(contactsForZone.RelayRace.tasks[1]);
-                Player.StartMissionTimer("Timer Name", 30);
-                
+
                 contactStatus.dialogScreenIdx = 2;
                 Player.AddUpdateContact(contactStatus);
+                Player.CloseContactDialog();
             elseif(button == "CONTACTLINK_WRONGMODE") then
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[3].contactDialog.message, contactsForZone.RelayRace.dialogPages[3].contactDialog.buttons);
             end
