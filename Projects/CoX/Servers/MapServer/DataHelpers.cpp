@@ -246,7 +246,6 @@ void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, 
         return;
     }
 
-    // uint32_t timestamp = 0;
     uint32_t timestamp = getSecsSince2000Epoch();
 
     EmailSendMessage* msgToHandler = new EmailSendMessage({
@@ -1267,11 +1266,6 @@ void showMapMenu(MapClientSession &sess)
     QString msg_body = createMapMenu();
     sendContactDialogClose(sess);
     showMapXferList(sess, has_location, location, msg_body);
-}
-
-QDateTime getPostgreEpoch()
-{
-    return QDateTime(QDate(2000,1,1));
 }
 
 int64_t getSecsSince2000Epoch()

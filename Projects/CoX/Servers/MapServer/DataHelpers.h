@@ -54,7 +54,6 @@ void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, 
 void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
 // to get the current time since whatever they set as their beginning
-QDateTime getPostgreEpoch();
 int64_t getSecsSince2000Epoch();
 
 /*
