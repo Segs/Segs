@@ -293,7 +293,6 @@ struct SpawnPointLocator
 
 QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
 {
-    qDebug() << "Get Spawn Points";
     QMultiHash<QString, glm::mat4> res;
     SpawnPointLocator locator(&res);
     for(auto v : m_scene_graph->refs)
@@ -413,7 +412,6 @@ struct MapSwapLocator
 
 std::vector<MapSwap> MapSceneGraph::map_swaps() const
 {
-    qDebug() << "Getting Map Swaps";
     std::vector<MapSwap> res;
     MapSwapLocator locator(&res);
     for (auto v : m_scene_graph->refs)

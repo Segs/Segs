@@ -3094,7 +3094,6 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
 
 void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
 {
-    qDebug() << "Map Swap Collision in Map Instance";
     uint8_t map_idx = getMapIndex(ev->m_data.m_map_name);
     Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
     MapClientSession &sess = *e->m_client;
