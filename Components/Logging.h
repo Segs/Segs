@@ -44,6 +44,7 @@ SEGS_DECLARE_LOGGING_CATEGORY(logScripts)
 SEGS_DECLARE_LOGGING_CATEGORY(logSceneGraph)
 SEGS_DECLARE_LOGGING_CATEGORY(logStores)
 SEGS_DECLARE_LOGGING_CATEGORY(logTasks)
+SEGS_DECLARE_LOGGING_CATEGORY(logRPC)
 
 void    setLoggingFilter();
 void    toggleLogging(QString &category);
