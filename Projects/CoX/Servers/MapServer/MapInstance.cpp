@@ -117,7 +117,7 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
   : m_data_path(mapdir_path), m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
     m_addresses(listen_addr)
 {
-    m_world = new World(m_entities, getGameData().m_player_fade_in);
+    m_world = new World(m_entities, getGameData().m_player_fade_in, this);
     m_scripting_interface.reset(new ScriptingEngine);
     m_scripting_interface->setIncludeDir(mapdir_path);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
@@ -140,6 +140,7 @@ void MapInstance::start(const QString &scenegraph_path)
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
                 m_all_spawners = m_map_scenegraph->getSpawnPoints();
+                m_map_swaps = m_map_scenegraph->map_swaps();
             }, "Loading original scene graph");
 
         TIMED_LOG({
@@ -147,6 +148,7 @@ void MapInstance::start(const QString &scenegraph_path)
             m_npc_generators.generate(this);
             }, "Spawning npcs");
 
+        m_world->set_map_swaps(m_map_swaps);
         // Load Lua Scripts for this Map Instance
         load_map_lua();
     }
@@ -505,6 +507,9 @@ void MapInstance::dispatch( Event *ev )
         case evMapXferComplete:
             on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
             break;
+        case evMapSwapCollisionMessage:
+            on_map_swap_collision(static_cast<MapSwapCollisionMessage *>(ev));
+            break;
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
             break;
@@ -574,6 +579,7 @@ void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
     // TODO: Do anything necessary after connecting to new map instance here.
     MapClientSession &session(m_session_store.session_from_event(ev));
     forcePosition(*session.m_ent, session.m_current_map->closest_safe_location(session.m_ent->m_entity_data.m_pos));
+    session.m_ent->m_map_swap_collided = false;
 }
 
 void MapInstance::on_idle(Idle *ev)
@@ -3086,5 +3092,16 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
         qCDebug(logStores) << "Error processing buyItem";
 }
 
+void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
+{
+    qDebug() << "Map Swap Collision in Map Instance";
+    uint8_t map_idx = getMapIndex(ev->m_data.m_map_name);
+    Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
+    MapClientSession &sess = *e->m_client;
+
+    sess.link()->putq(new MapXferWait(ev->m_data.m_map_name));
+    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+    map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_idx }, 0));
+}
 
 //! @}

@@ -27,6 +27,7 @@ class SEGSTimer;
 class World;
 class GameDataStore;
 class MapSceneGraph;
+class MapSwap;
 namespace SEGSEvents
 {
 class RecvInputState;
@@ -89,6 +90,7 @@ struct EmailSendErrorMessage;
 class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
+struct MapSwapCollisionMessage;
 class AwaitingDeadNoGurney;
 class BrowserClose;
 class LevelUpResponse;
@@ -118,6 +120,7 @@ class MapInstance final : public EventProcessor
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
         QMultiHash<QString, glm::mat4>  m_all_spawners;
+        std::vector<MapSwap> m_map_swaps;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
@@ -177,6 +180,7 @@ protected:
 
         void on_initiate_map_transfer(SEGSEvents::InitiateMapXfer *ev);
         void on_map_xfer_complete(SEGSEvents::MapXferComplete *ev);
+        void on_map_swap_collision(SEGSEvents::MapSwapCollisionMessage *ev);
 
         void on_link_lost(SEGSEvents::Event *ev);
         void on_disconnect(SEGSEvents::DisconnectRequest *ev);

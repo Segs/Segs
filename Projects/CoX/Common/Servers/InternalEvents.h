@@ -12,6 +12,7 @@
 #include <ace/Time_Value.h>
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
+#include <glm/vec3.hpp>
 
 namespace SEGSEvents
 {
@@ -27,7 +28,8 @@ enum Internal_EventTypes
     evClientConnectionRequest, //,4)
     evClientConnectionResponse, //,5)
     evReloadConfigMessage, //,6) // the server that receives this message will reload it's config file and restart with it
-    evClientMapXferMessage,
+    evClientMapXferMessage, //,7)
+    evMapSwapCollisionMessage, //,8)
     evGameServerStatusMessage = evReloadConfigMessage+4, //10)
     evMapServerStatusMessage,                     //11)
     // Message bus events
@@ -225,5 +227,19 @@ struct ClientMapXferData
 };
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(Internal_EventTypes,ClientMapXfer)
+
+struct MapSwapCollisionData
+{
+    uint32_t m_ent_db_id;
+    glm::vec3 m_pos;
+    QString m_map_name;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_ent_db_id, m_pos, m_map_name);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
 
 } // end of SEGSEvents namespace

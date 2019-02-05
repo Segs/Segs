@@ -293,6 +293,7 @@ struct SpawnPointLocator
 
 QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
 {
+    qDebug() << "Get Spawn Points";
     QMultiHash<QString, glm::mat4> res;
     SpawnPointLocator locator(&res);
     for(auto v : m_scene_graph->refs)
@@ -354,5 +355,72 @@ QString MapSceneGraph::getNearestDoor(glm::vec3 location) const
 
     return res.gotoSpawn;
 } 
+
+struct MapSwapLocator
+{
+    std::vector<MapSwap> *m_targets;
+    MapSwapLocator(std::vector<MapSwap> *targets):
+        m_targets(targets)
+    {}
+    bool operator()(SceneNode *n, const glm::mat4 &v)
+    {
+
+        if (!n->m_properties)
+        {
+            for (auto &child : n->m_children)
+            {
+                bool found_map_swap = false;
+                if (child.node->m_properties != nullptr)
+                {
+                    MapSwap map_swap = MapSwap();
+                    // Probably haven't processed the map swap node yet, so add it and handle later
+                    for (GroupProperty_Data &prop : *child.node->m_properties)
+                    {
+                        if (prop.propName == "GotoSpawn")
+                        {
+                            map_swap.m_spawn_link_val = prop.propValue;
+                            found_map_swap = true;
+                        }
+                        if (prop.propName == "GotoMap")
+                        {
+                            map_swap.m_map_link_val = prop.propValue;
+                            found_map_swap = true;
+                        }
+                    }
+                    if (found_map_swap)
+                    {
+                        map_swap.m_node_name = child.node->m_name;
+
+                        // get position
+                        glm::mat4 transform(child.m_matrix2);
+                        transform[3] = glm::vec4(child.m_translation,1);
+                        transform = v * transform;
+                        glm::vec4 pos4 {0,0,0,1};
+                        pos4 = transform * pos4;
+                        glm::vec3 pos3 = glm::vec3(pos4);
+
+                        map_swap.m_position = pos3;
+                        m_targets->emplace_back(map_swap);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+};
+
+std::vector<MapSwap> MapSceneGraph::map_swaps() const
+{
+    qDebug() << "Getting Map Swaps";
+    std::vector<MapSwap> res;
+    MapSwapLocator locator(&res);
+    for (auto v : m_scene_graph->refs)
+    {
+        walkSceneNode(v->node, v->mat, locator);
+    }
+    return res;
+}
 
 //! @}

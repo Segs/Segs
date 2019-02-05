@@ -210,6 +210,7 @@ public:
         bool                m_in_training           = false;
         bool                m_has_input_on_timeframe= false;
         bool                m_is_using_mapmenu      = false;
+        bool                m_map_swap_collided     = false;
 
         int                 u1 = 0; // used for live-debugging
 

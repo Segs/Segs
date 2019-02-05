@@ -14,6 +14,14 @@
 
 class QString;
 
+struct MapSwap
+{
+    QString m_spawn_link_val;
+    QString m_map_link_val;
+    QString m_node_name;
+    glm::vec3 m_position;
+};
+
 namespace SEGS
 {
 struct SceneGraph;
@@ -34,6 +42,7 @@ public:
     ~MapSceneGraph();
     bool loadFromFile(const QString &mapname);
     QMultiHash<QString, glm::mat4> getSpawnPoints() const;
+    std::vector<MapSwap> map_swaps() const;
     QString getNearestDoor(glm::vec3 location) const;
     void spawn_npcs(class MapInstance *instance);
     void build_combat_navigation_graph();
