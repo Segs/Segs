@@ -235,12 +235,8 @@ void GameDBSyncHandler::on_fill_email_recipient_id(FillEmailRecipientIdRequest *
     if(db_ctx.fillEmailRecipientId(ev->m_data, resp))
         HandlerLocator::getEmail_Handler()->putq(new FillEmailRecipientIdResponse(std::move(resp), ev->session_token()));
     else
-    {
-        QString error_msg = QString("Failed to send email because character "
-                                    "with name %1 doesn't exist in this server!").arg(ev->m_data.m_recipient_name);
         HandlerLocator::getEmail_Handler()->putq(new FillEmailRecipientIdErrorMessage(
-            {ev->m_data.m_sender_id, error_msg}, ev->session_token()));
-    }
+            {ev->m_data.m_sender_id, ev->m_data.m_recipient_name}, ev->session_token()));
 
 }
 

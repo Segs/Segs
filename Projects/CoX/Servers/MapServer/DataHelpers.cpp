@@ -225,7 +225,8 @@ QString createMapMenu() // TODO: compileMonorailMenu() as well
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
-void sendEmailHeaders(MapClientSession &sess)
+
+void getEmailHeaders(MapClientSession& sess)
 {
     if(!sess.m_ent->m_client)
     {
@@ -233,14 +234,8 @@ void sendEmailHeaders(MapClientSession &sess)
         return;
     }
 
-    // later on the email id should be auto-incremented from DB
-    EmailHeaderRequest* msgToHandler = new EmailHeaderRequest({
-                                        sess.m_ent->m_char->m_db_id,
-                                        sess.m_ent->m_char->getName(),
-                                        "TEST", 576956720},
-                sess.link()->session_token());
-    EventProcessor* tgt = HandlerLocator::getEmail_Handler();
-    tgt->putq(msgToHandler);
+    HandlerLocator::getEmail_Handler()->putq(new EmailHeaderRequest(
+        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));
 }
 
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
@@ -251,7 +246,7 @@ void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, 
         return;
     }
 
-    uint32_t timestamp = 0;
+    uint32_t timestamp = getSecsSince2000Epoch();
 
     EmailSendMessage* msgToHandler = new EmailSendMessage({
                 sess.m_ent->m_char->m_db_id,
@@ -1271,6 +1266,12 @@ void showMapMenu(MapClientSession &sess)
     QString msg_body = createMapMenu();
     sendContactDialogClose(sess);
     showMapXferList(sess, has_location, location, msg_body);
+}
+
+int64_t getSecsSince2000Epoch()
+{
+    QDateTime base_date(QDate(2000,1,1));
+    return base_date.secsTo(QDateTime::currentDateTime());
 }
 
 void addClue(MapClientSession &cl, Clue clue)

@@ -451,6 +451,9 @@ void MapInstance::dispatch( Event *ev )
         case evEmailHeaderResponse:
             on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
             break;
+        case evEmailHeaderToClientMessage:
+            on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev));
+            break;
         case evEmailHeadersToClientMessage:
             on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev));
             break;
@@ -460,8 +463,8 @@ void MapInstance::dispatch( Event *ev )
         case evEmailWasReadByRecipientMessage:
             on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
             break;
-        case evEmailSendErrorMessage:
-            on_email_send_error(static_cast<EmailSendErrorMessage *>(ev));
+        case evEmailCreateStatusMessage:
+            on_email_create_status(static_cast<EmailCreateStatusMessage *>(ev));
             break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
@@ -2865,9 +2868,30 @@ void MapInstance::send_player_update(Entity *e)
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
-// EmailHandler will send this event here
 void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
 {
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
+
+    for (const auto &data : ev->m_data.m_email_headers)
+    {
+        EmailHeaders *header = new EmailHeaders(
+                    data.m_email_id,
+                    data.m_sender_name,
+                    data.m_subject,
+                    data.m_timestamp);
+        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+    }
+}
+
+// EmailHandler will send this event here
+void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
+{
+    EmailHeaders *header = new EmailHeaders(
+                    ev->m_data.m_email_id,
+                    ev->m_data.m_sender_name,
+                    ev->m_data.m_subject,
+                    ev->m_data.m_timestamp);
+
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
     map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
                                                                           ev->m_data.m_sender_name,
@@ -2908,10 +2932,19 @@ void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg
     // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
 }
 
-void MapInstance::on_email_send_error(EmailSendErrorMessage *msg)
+void MapInstance::on_email_create_status(EmailCreateStatusMessage *msg)
 {
     MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_error_message, map_session);
+    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(
+                new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name)));
+
+
+    /*
+    else
+    {
+        QString successMsg = QString("Successfully sent email to %1!").arg(msg->m_data.m_recipient_name);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, successMsg, map_session);
+    }*/
 }
 
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
