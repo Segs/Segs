@@ -9,7 +9,6 @@
  * @addtogroup MapServer Projects/CoX/Servers/MapServer
  * @{
  */
-#pragma once
 #include "ScriptingEngine.h"
 
 #include "DataHelpers.h"
@@ -38,8 +37,6 @@
 #include <QtCore/QFileInfo> // for include support
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
-
-
 
 using namespace SEGSEvents;
 static constexpr const int MAX_INCLUDED_FILE_SIZE=1024*1024; // 1MB of lua code should be enough for anyone :P
@@ -309,10 +306,9 @@ void ScriptingEngine::registerTypes()
         Entity* e = getEntity(mi, entityIdx);
         if(e != nullptr)
         {
-          mi->clearTimer(entityIdx);
+            mi->clearTimer(entityIdx);
         }
     };
-
 
     //MapClientSession
     m_private->m_lua.new_usertype<MapClientSession>( "MapClientSession",
@@ -384,34 +380,6 @@ void ScriptingEngine::registerTypes()
         {
              qCDebug(logScripts) << "Entity "<< entity_idx << " not found";
         }
-    };
-
-    m_private->m_lua["MapClientSession"]["AddNpc"] = [this](const char* npc_def, glm::vec3 &loc, glm::vec3 &ori, int variation, const char* npc_name)
-    {
-        MapClientSession *cl = m_private->m_lua["client"];
-        QString npc_def_name = QString::fromUtf8(npc_def);
-        QString name = QString::fromUtf8(npc_name);
-        addNpcWithOrientation(*cl, npc_def_name, loc, variation, ori, name);
-    };
-
-    m_private->m_lua["MapClientSession"]["RemoveNpc"] = [this](int entityIdx)
-    {
-        MapClientSession *cl = m_private->m_lua["client"];
-        MapInstance *mi = cl->m_current_map;
-        Entity *e = getEntity(mi, entityIdx);
-        if(e != nullptr)
-        {
-           int count = 0;
-           for(auto &t: mi->m_lua_timers)
-           {
-               if(t.m_entity_idx == entityIdx)
-                   break;
-
-               ++count;
-           }
-           mi->m_lua_timers[count].m_remove = true;
-        }
-
     };
 
     m_private->m_lua["MapClientSession"]["SetNpcStore"] = [this](int entity_idx, const char* store_name, int item_count)
@@ -743,7 +711,6 @@ void ScriptingEngine::registerTypes()
         MapClientSession *cl = m_private->m_lua["client"];
         respawn(*cl, loc_name);
     };
-
 }
 
 int ScriptingEngine::loadAndRunFile(const QString &filename)
@@ -774,7 +741,6 @@ void ScriptingEngine::callFuncWithMapInstance(MapInstance *mi, const char *name,
 
     callFunc(name,arg1);
 }
-
 
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
@@ -825,7 +791,6 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
     return callFunc(name,arg1,loc);
 }
 
-
 std::string ScriptingEngine::callFunc(const char *name, int arg1)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
@@ -833,14 +798,14 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     if(!funcwrap.valid())
     {
         qCritical() << "Failed to retrieve script func:" << name;
-         return "";
+        return "";
     }
     auto result = funcwrap(arg1);
     if(!result.valid())
     {
         sol::error err = result;
         qCritical() << "Failed to run script func:" << name << err.what();
-         return "";
+        return "";
     }
     return result.get<std::string>();
 }

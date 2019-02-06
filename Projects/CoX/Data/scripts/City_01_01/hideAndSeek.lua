@@ -3,7 +3,6 @@ printDebug("hideAndSeek script loading...");
 
 local HideAndSeek = {};
 HideAndSeek.spawned = false;
-HideAndSeek.useMapInstance = true;
 HideAndSeek.name = "Ashley Adams";
 HideAndSeek.model = "model_pennyPreston";
 HideAndSeek.location = {};
