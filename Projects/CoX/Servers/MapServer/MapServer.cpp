@@ -206,7 +206,7 @@ void MapServer::on_client_map_xfer(ClientMapXferMessage *ev)
 {
     if(m_current_map_xfers.find(ev->m_data.m_session) == m_current_map_xfers.end())
     {
-        m_current_map_xfers.insert(std::pair<uint64_t, uint8_t>(ev->m_data.m_session, ev->m_data.m_map_idx));
+        m_current_map_xfers.insert(std::pair<uint64_t, MapXferData>(ev->m_data.m_session, {ev->m_data.m_map_idx, ev->m_data.m_spawn_location}));
     }
     else
     {
@@ -219,7 +219,7 @@ bool MapServer::session_has_xfer_in_progress(uint64_t session_token)
     return m_current_map_xfers.find(session_token) != m_current_map_xfers.end();
 }
 
-uint8_t MapServer::session_map_xfer_idx(uint64_t session_token)
+MapXferData &MapServer::session_map_xfer_idx(uint64_t session_token)
 {
     assert(session_has_xfer_in_progress(session_token));
     return m_current_map_xfers[session_token];

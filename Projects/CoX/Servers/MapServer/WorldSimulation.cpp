@@ -184,12 +184,13 @@ void World::collisionStep(Entity *e, uint32_t msec)
     {
         for (auto &map_swap : m_map_swaps)
         {
+            // TODO: This needs to check against the trigger plane for transfers. This should be part of the wall objects geobin. Also need to make sure that this doesn't cause players to immediately zone after being spawned in a spawnLocation near a zoneline.
             if ((e->m_entity_data.m_pos.x >= map_swap.m_position.x - 25 && e->m_entity_data.m_pos.x <= map_swap.m_position.x + 25) &&
                 (e->m_entity_data.m_pos.y >= map_swap.m_position.y - 25 && e->m_entity_data.m_pos.y <= map_swap.m_position.y + 25) &&
                 (e->m_entity_data.m_pos.z >= map_swap.m_position.z - 25 && e->m_entity_data.m_pos.z <= map_swap.m_position.z + 25))
             {
                 e->m_map_swap_collided = true;  // So we don't send repeated events for the same entity
-                m_owner_instance->putq(new MapSwapCollisionMessage({e->m_db_id, e->m_entity_data.m_pos, map_swap.m_map_link_val.split('.')[0]}, 0));
+                m_owner_instance->putq(new MapSwapCollisionMessage({e->m_db_id, e->m_entity_data.m_pos, map_swap.m_map_link_val.split('.')[0], map_swap.m_spawn_link_val}, 0));
                 return; // don't want to keep checking for other maps for this entity
             }
         }

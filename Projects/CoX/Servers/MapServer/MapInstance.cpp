@@ -560,8 +560,8 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     // This is used here to get the map idx to send to the client for the transfer, but we
     // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
     // can prevent motd showing every time.
-    uint8_t map_idx = map_server->session_map_xfer_idx(lnk->session_token());
-    QString map_path = getMapPath(map_idx).toLower();
+    MapXferData &map_xfer = map_server->session_map_xfer_idx(lnk->session_token());
+    QString map_path = getMapPath(map_xfer.m_map_idx).toLower();
     GameAccountResponseCharacterData c_data;
     QString serialized_data;
 
@@ -2048,7 +2048,16 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     }
     else
     {
-        setPlayerSpawn(*session.m_ent);
+        MapXferData &map_data = map_server->session_map_xfer_idx(session.link()->session_token());
+        
+        if(!m_all_spawners.empty() && m_all_spawners.contains(map_data.m_spawn_location))
+        {
+            setSpawnLocation(*session.m_ent, map_data.m_spawn_location);
+        }
+        else
+        {
+            setPlayerSpawn(*session.m_ent);
+        }        
 
         // else don't send motd, as this is from a map transfer
         // TODO: check if there's a better place to complete the map transfer..
@@ -2114,7 +2123,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
                 }
                 else
                 {
-                    map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx},0));
+                    map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx, QString()},0));
                     session.link()->putq(new MapXferWait(getMapPath(map_idx)));
                 }
             }
@@ -3100,7 +3109,7 @@ void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
 
     sess.link()->putq(new MapXferWait(ev->m_data.m_map_name));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_idx }, 0));
+    map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_idx, ev->m_data.m_spawn_location }, 0));
 }
 
 //! @}

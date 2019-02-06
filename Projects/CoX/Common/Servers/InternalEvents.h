@@ -219,10 +219,11 @@ struct ClientMapXferData
 {
     uint64_t m_session;
     uint8_t m_map_idx;
+    QString m_spawn_location;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_session, m_map_idx);
+        ar(m_session, m_map_idx, m_spawn_location);
     }
 };
 // [[ev_def:macro]]
@@ -233,10 +234,11 @@ struct MapSwapCollisionData
     uint32_t m_ent_db_id;
     glm::vec3 m_pos;
     QString m_map_name;
+    QString m_spawn_location;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_ent_db_id, m_pos, m_map_name);
+        ar(m_ent_db_id, m_pos, m_map_name, m_spawn_location);
     }
 };
 // [[ev_def:macro]]

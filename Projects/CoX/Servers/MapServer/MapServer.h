@@ -26,6 +26,13 @@ struct ExpectMapClientRequest;
 struct ClientMapXferMessage;
 }
 
+// TODO: Move this somewhere better.
+struct MapXferData
+{
+    uint8_t m_map_idx;
+    QString m_spawn_location;
+};
+
 static constexpr uint8_t INVALID_GAME_SERVER_ID = 255;
 static constexpr char RUNTIME_DATA_PATH[] = "./data/";
 
@@ -43,7 +50,7 @@ public:
         MapManager &            map_manager();
         void                    set_game_server_owner(uint8_t owner_id);
         bool                    session_has_xfer_in_progress(uint64_t session_token);
-        uint8_t                 session_map_xfer_idx(uint64_t session_token);
+        MapXferData &           session_map_xfer_idx(uint64_t session_token);
         void                    session_xfer_complete(uint64_t session_token);
 private:
         bool                    Run();
@@ -56,11 +63,11 @@ private:
 
         std::unique_ptr<PrivateData> d;
 
-        uint8_t                         m_id = 1;
-        uint8_t                         m_owner_game_server_id = INVALID_GAME_SERVER_ID;
-        ACE_INET_Addr                   m_base_location; //! this is the base map instance address
-        ACE_INET_Addr                   m_base_listen_point; //! this is used as a base map listening endpoint
-        std::map<uint64_t, uint8_t>     m_current_map_xfers;    // Current map transfers in progress on this map server.
+        uint8_t                             m_id = 1;
+        uint8_t                             m_owner_game_server_id = INVALID_GAME_SERVER_ID;
+        ACE_INET_Addr                       m_base_location; //! this is the base map instance address
+        ACE_INET_Addr                       m_base_listen_point; //! this is used as a base map listening endpoint
+        std::map<uint64_t, MapXferData>     m_current_map_xfers;    // Current map transfers in progress on this map server.
 };
 
 extern MapServer *g_GlobalMapServer;
