@@ -113,7 +113,7 @@ ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, ui
     data_src    = &data[(entry_size * 2 * num_entries + 7) / 8];
     inv_scale   = (float)(1 << *data_src);
     data_src++;
-    if (inv_scale != 0.0f)
+    if(inv_scale != 0.0f)
         scaling_val = 1.0f / inv_scale;
     for (entry_idx = 0; entry_idx < num_entries; ++entry_idx)
     {
@@ -140,7 +140,7 @@ ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, ui
             case UNPACK_FLOATS:
             {
                 float extracted_val;
-                if (extracted_2bits_ == 3)
+                if(extracted_2bits_ == 3)
                     extracted_val = *(float *)&processed_val;
                 else
                     extracted_val = (float)processed_val * scaling_val;
@@ -164,10 +164,10 @@ ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, ui
 
 void geoUnpackDeltas(const DeltaPack *a1, uint8_t *target, uint32_t entry_size, uint32_t num_entries, UnpackMode type)
 {
-    if (0 == a1->uncomp_size)
+    if(0 == a1->uncomp_size)
         return;
     ptrdiff_t consumed_bytes;
-    if (a1->compressed_size)
+    if(a1->compressed_size)
     {
         QByteArray unpacked = uncompr_zip((char *)a1->compressed_data, a1->compressed_size, a1->uncomp_size);
         consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)unpacked.data(), entry_size, num_entries, type);
@@ -189,7 +189,7 @@ inline void geoUnpackDeltas(const DeltaPack *a1, glm::ivec3 *unpacked_data, uint
 }
 void fixupDataPtr(DeltaPack &a, uint8_t *b)
 {
-    if (a.uncomp_size)
+    if(a.uncomp_size)
         a.compressed_data = b + a.buffer_offset;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,15 +199,16 @@ void fixupDataPtr(DeltaPack &a, uint8_t *b)
 
 namespace SEGS
 {
+
 void  addModelStubs(GeoSet *geoset)
 {
     RuntimeData &rd(getRuntimeData());
     for(Model * m : geoset->subs)
     {
         GeometryModifiers *gmod = findGeomModifier(*rd.m_modifiers, m->name, QString());
-        if ( gmod )
+        if(gmod)
         {
-            if ( !m->trck_node )
+            if(!m->trck_node)
                 m->trck_node = new ModelModifiers;
             *m->trck_node = gmod->node;
             m->trck_node->info = gmod;
@@ -234,7 +235,7 @@ static Model *convertAndInsertModel(GeoSet &tgt, const Model32 *v)
     z->scale = v->m_scale;
     z->box.m_min = v->m_min;
     z->box.m_max = v->m_max;
-    for (uint8_t i = 0; i < 7; ++i)
+    for(uint8_t i = 0; i < 7; ++i)
     {
         DeltaPack &dp_blk(z->packed_data[i]);
         dp_blk.compressed_size = v->pack_data[i].compressed_size;
@@ -245,12 +246,13 @@ static Model *convertAndInsertModel(GeoSet &tgt, const Model32 *v)
     tgt.subs.push_back(z);
     return z;
 }
+
 static void convertTextureNames(const int *a1, std::vector<QString> &a2)
 {
     int   num_textures          = a1[0];
     const int * indices         = a1 + 1;
     const char *start_of_strings_area = (const char *)a1 + num_textures * 4 + sizeof(int);
-    for (int idx = 0; idx < num_textures; ++idx)
+    for(int idx = 0; idx < num_textures; ++idx)
     {
         // fixup the offsets by adding the end of index area
         a2.push_back(start_of_strings_area + indices[idx]);
@@ -282,74 +284,77 @@ void geosetLoadHeader(QFile &fp, GeoSet *geoset)
     const Model32 *     ptr_subs  = (Model32 *)(stream_pos_1 + info->tex_binds_size + sizeof(GeosetHeader32));
     geoset->parent_geoset = geoset;
     geoset->name = header32->name;
-    for (int idx = 0; idx < header32->num_subs; ++idx)
+    for(int idx = 0; idx < header32->num_subs; ++idx)
     {
         const Model32 *sub_model = &ptr_subs[idx];
         std::vector<TextureBind> binds;
-        if (info->tex_binds_size) {
+        if(info->tex_binds_size)
             binds = convertTexBinds(sub_model->num_textures, sub_model->texture_bind_offsets + stream_pos_1);
-        }
+
         Model *m    = convertAndInsertModel(*geoset, sub_model);
         m->texture_bind_info = binds;
         m->geoset       = geoset;
         m->name         = QString((const char *)stream_pos_0 + sub_model->bone_name_offset);
     }
-    if (!geoset->subs.empty())
+
+    if(!geoset->subs.empty())
         addModelStubs(geoset);
 }
+
 void modelFixup(const Model &model,VBOPointers &vbo)
 {
-    if (!vbo.norm.empty() && (model.flags & OBJ_NOLIGHTANGLE))
+    if(!vbo.norm.empty() && (model.flags & OBJ_NOLIGHTANGLE))
     {
-        for (uint32_t i = 0; i<model.vertex_count; ++i)
+        for(uint32_t i = 0; i<model.vertex_count; ++i)
             vbo.norm[i] = glm::vec3(1, -1, 1);
     }
 
-    if ( vbo.uv1.empty())
+    if( vbo.uv1.empty())
         return;
 
     bool texture_scaling_used = false;
-    for (uint32_t i = 0; i < model.vertex_count; ++i )
-    {
+    for(uint32_t i = 0; i < model.vertex_count; ++i )
         vbo.uv1[i].y = 1.0f - vbo.uv1[i].y;
-    }
-    if ( !vbo.uv2.empty() )
+
+    if(!vbo.uv2.empty())
     {
-        for (uint32_t i = 0; i < model.vertex_count; ++i)
-        {
+        for(uint32_t i = 0; i < model.vertex_count; ++i)
             vbo.uv2[i].y = 1.0f - vbo.uv2[i].y;
-        }
     }
+
     for(HTexture tex : vbo.assigned_textures)
     {
         if(!tex->info)
             continue;
 
-        if ( 1.0f != tex->scaleUV0.x || 1.0f != tex->scaleUV0.y ||
+        if( 1.0f != tex->scaleUV0.x || 1.0f != tex->scaleUV0.y ||
              1.0f != tex->scaleUV1.x || 1.0f != tex->scaleUV1.y )
             texture_scaling_used = true;
     }
-    if ( !texture_scaling_used )
+
+    if(!texture_scaling_used)
         return;
 
     std::vector<bool> vertex_uv_was_scaled(model.vertex_count);
     uint32_t triangle_offset = 0;
-    for (uint32_t j = 0; j < model.num_textures; ++j )
+    for(uint32_t j = 0; j < model.num_textures; ++j )
     {
         TextureWrapper &tex(vbo.assigned_textures[j].get());
         const uint32_t bind_tri_count = model.texture_bind_info[j].tri_count;
         if(!tex.info)
             continue;
+
         glm::vec2 scaletex0 = tex.scaleUV0;
         glm::vec2 scaletex1 = tex.scaleUV1;
-        for (uint32_t v19 = 0; v19 < bind_tri_count; ++v19)
+        for(uint32_t v19 = 0; v19 < bind_tri_count; ++v19)
         {
             glm::ivec3 tri(vbo.triangles[v19+triangle_offset]);
             for(int vnum=0; vnum<3; ++vnum)
             {
                 const uint32_t vert_idx = tri[vnum];
-                if (vertex_uv_was_scaled[vert_idx])
+                if(vertex_uv_was_scaled[vert_idx])
                     continue;
+
                 vertex_uv_was_scaled[vert_idx] = true;
                 vbo.uv2[vert_idx].x *= scaletex0.x;
                 vbo.uv2[vert_idx].y *= scaletex0.y;
@@ -360,42 +365,45 @@ void modelFixup(const Model &model,VBOPointers &vbo)
         triangle_offset += bind_tri_count;
     }
 }
-static bool bumpMapped(const Model &model) {
+
+static bool bumpMapped(const Model &model)
+{
     return model.flags & (OBJ_DRAW_AS_ENT | OBJ_BUMPMAP);
 }
 
 std::unique_ptr<VBOPointers> fillVbo(const Model &model)
 {
-    std::unique_ptr<VBOPointers> vbo(new VBOPointers);
+    std::unique_ptr<VBOPointers> vbo = std::make_unique<VBOPointers>();
     std::vector<glm::ivec3> &triangles(vbo->triangles);
     triangles.resize(model.model_tri_count);//, 1, ".\\render\\model_cache.c", 138);
     geoUnpackDeltas(&model.packed_data.tris, triangles.data(), model.model_tri_count);
     uint32_t total_size = 0;
     uint32_t Vertices3D_bytes = sizeof(glm::vec3) * model.vertex_count;
     total_size += Vertices3D_bytes;
-    if (model.packed_data.norms.uncomp_size)
+    if(model.packed_data.norms.uncomp_size)
         total_size += Vertices3D_bytes;
-    if ( model.packed_data.sts.uncomp_size )
+    if( model.packed_data.sts.uncomp_size )
         total_size += 2*sizeof(glm::vec2) * model.vertex_count;
 
     vbo->pos.resize(model.vertex_count);
 
     geoUnpackDeltas(&model.packed_data.verts, vbo->pos.data(), model.vertex_count);
-    if (model.packed_data.norms.uncomp_size)
+    if(model.packed_data.norms.uncomp_size)
     {
         vbo->norm.resize(model.vertex_count);
         geoUnpackDeltas(&model.packed_data.norms, vbo->norm.data(), model.vertex_count);
     }
-    if (model.packed_data.sts.uncomp_size)
+
+    if(model.packed_data.sts.uncomp_size)
     {
         vbo->uv1.resize(model.vertex_count);
         geoUnpackDeltas(&model.packed_data.sts, (uint8_t *)vbo->uv1.data(), 2, model.vertex_count, UNPACK_FLOATS);
         vbo->uv2 = vbo->uv1;
     }
+
     if(bumpMapped(model))
-    {
         vbo->needs_tangents = true;
-    }
+
     return vbo;
 }
 
@@ -405,6 +413,7 @@ void fillVBO(Model & model)
     modelFixup(model,*databuf);
     model.vbo = std::move(databuf);
 }
+
 void geosetLoadData(QFile &fp, GeoSet *geoset)
 {
     int buffer;
@@ -415,7 +424,7 @@ void geosetLoadData(QFile &fp, GeoSet *geoset)
     fp.read(geoset->m_geo_data.data(), geoset->geo_data_size);
     uint8_t *buffer_b = (uint8_t *)geoset->m_geo_data.data();
 
-    for (Model *current_sub : geoset->subs)
+    for(Model *current_sub : geoset->subs)
     {
         fixupDataPtr(current_sub->packed_data.tris, buffer_b);
         fixupDataPtr(current_sub->packed_data.verts, buffer_b);
@@ -424,7 +433,7 @@ void geosetLoadData(QFile &fp, GeoSet *geoset)
         fixupDataPtr(current_sub->packed_data.grid, buffer_b);
         fixupDataPtr(current_sub->packed_data.weights, buffer_b);
         fixupDataPtr(current_sub->packed_data.matidxs, buffer_b);
-        if (current_sub->boneinfo_offset)
+        if(current_sub->boneinfo_offset)
         {
             qCritical() << "Models with bones are not supported yet, bother SEGS devs to fix that";
             assert(false);
@@ -432,6 +441,7 @@ void geosetLoadData(QFile &fp, GeoSet *geoset)
     }
     geoset->data_loaded = true;
 }
+
 void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model *model,const std::vector<HTexture> &textures)
 {
     model->blend_mode = CoHBlendMode::MULTIPLY_REG;
@@ -440,9 +450,9 @@ void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model 
     {
         model->flags |= OBJ_DRAW_AS_ENT;
         isgeo = true;
-        if ( model->name.contains("eyes",Qt::CaseInsensitive) )
+        if(model->name.contains("eyes",Qt::CaseInsensitive) )
         {
-            if ( !model->trck_node )
+            if(!model->trck_node)
                 model->trck_node = new ModelModifiers;
             model->trck_node->_TrickFlags |= DoubleSided;
         }
@@ -456,63 +466,70 @@ void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model 
             // missing texture, nothing to do here
             continue;
         }
+
         TextureWrapper &base_tex(seltex.get());
-        if (!isgeo && base_tex.info)
+        if(!isgeo && base_tex.info)
         {
             auto blend = CoHBlendMode(base_tex.info->BlendType);
-            if (blend == CoHBlendMode::ADDGLOW || blend == CoHBlendMode::COLORBLEND_DUAL ||
+            if(blend == CoHBlendMode::ADDGLOW || blend == CoHBlendMode::COLORBLEND_DUAL ||
                 blend == CoHBlendMode::ALPHADETAIL)
                 seltex = funcloader(base_tex.detailname);
-            if (seltex && seltex->flags & TextureWrapper::ALPHA)
+            if(seltex && seltex->flags & TextureWrapper::ALPHA)
                 model->flags |= OBJ_ALPHASORT;
         }
-        if ( base_tex.flags & TextureWrapper::DUAL )
+
+        if( base_tex.flags & TextureWrapper::DUAL )
         {
             model->flags |= OBJ_DUALTEXTURE;
-            if ( base_tex.BlendType != CoHBlendMode::MULTIPLY )
+            if( base_tex.BlendType != CoHBlendMode::MULTIPLY )
                 model->blend_mode = base_tex.BlendType;
         }
-        if ( !base_tex.bumpmap.isEmpty() )
+
+        if( !base_tex.bumpmap.isEmpty() )
         {
             HTexture wrap = funcloader(base_tex.bumpmap);
-            if ( wrap->flags & TextureWrapper::BUMPMAP )
+            if( wrap->flags & TextureWrapper::BUMPMAP )
             {
                 model->flags |= OBJ_BUMPMAP;
                 model->blend_mode = (model->blend_mode == CoHBlendMode::COLORBLEND_DUAL) ?
                             CoHBlendMode::BUMPMAP_COLORBLEND_DUAL : CoHBlendMode::BUMPMAP_MULTIPLY;
             }
-            if ( base_tex.flags & TextureWrapper::CUBEMAPFACE || (wrap->flags & TextureWrapper::CUBEMAPFACE) )
+            if( base_tex.flags & TextureWrapper::CUBEMAPFACE || (wrap->flags & TextureWrapper::CUBEMAPFACE) )
                 model->flags |= OBJ_CUBEMAP;
         }
     }
-    if ( model->trck_node && model->trck_node->info)
-    {
 
+    if( model->trck_node && model->trck_node->info)
+    {
         model->flags |= model->trck_node->info->ObjFlags;
     }
-    if ( model->blend_mode == CoHBlendMode::COLORBLEND_DUAL || model->blend_mode == CoHBlendMode::BUMPMAP_COLORBLEND_DUAL )
+
+    if( model->blend_mode == CoHBlendMode::COLORBLEND_DUAL || model->blend_mode == CoHBlendMode::BUMPMAP_COLORBLEND_DUAL )
     {
-        if ( !model->trck_node )
+        if( !model->trck_node )
             model->trck_node = new ModelModifiers;
         model->trck_node->_TrickFlags |= SetColor;
     }
-    if ( model->blend_mode == CoHBlendMode::ADDGLOW )
+
+    if( model->blend_mode == CoHBlendMode::ADDGLOW )
     {
-        if ( !model->trck_node )
+        if( !model->trck_node )
             model->trck_node = new ModelModifiers;
         model->trck_node->_TrickFlags |= SetColor | NightLight;
     }
-    if ( !model->packed_data.norms.uncomp_size ) // no normals
+
+    if( !model->packed_data.norms.uncomp_size ) // no normals
         model->flags |= OBJ_FULLBRIGHT; // only ambient light
-    if ( model->trck_node  && model->trck_node->_TrickFlags & Additive )
+    if( model->trck_node  && model->trck_node->_TrickFlags & Additive )
         model->flags |= OBJ_ALPHASORT; // alpha pass
-    if ( model->flags & OBJ_FORCEOPAQUE ) // force opaque
+    if( model->flags & OBJ_FORCEOPAQUE ) // force opaque
         model->flags &= ~OBJ_ALPHASORT;
-    if ( model->trck_node && model->trck_node->info)
+
+    if( model->trck_node && model->trck_node->info)
     {
-        if ( model->trck_node->info->blend_mode )
+        if( model->trck_node->info->blend_mode )
             model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
     }
 }
 
-}
+} // end SEGS namespace

@@ -127,27 +127,6 @@ public:
 };
 
 // [[ev_def:type]]
-class ForcedLogout final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    QString reason;
-    ForcedLogout() :MapLinkEvent(MapEventTypes::evForcedLogout) {}
-    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForcedLogout),reason(_reason)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,12); // opcode
-        bs.StoreString(reason); // opcode
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        bs.GetString(reason);
-    }
-    EVENT_IMPL(ForcedLogout)
-};
-
-// [[ev_def:type]]
 class CookieRequest final : public MapLinkEvent
 {
 public:
@@ -645,6 +624,7 @@ public:
 #include "Messages/Map/SceneEvent.h"
 #include "Messages/Map/SendStance.h"
 #include "Messages/Map/Shortcuts.h"
+#include "Messages/Map/TailorOpen.h"
 #include "Messages/Map/TradeCancel.h"
 #include "Messages/Map/TradeInit.h"
 #include "Messages/Map/TradeOffer.h"

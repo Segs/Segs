@@ -114,7 +114,8 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
 void AuthHandler::on_timeout(Timeout *ev)
 {
     uint64_t timer_id = ev->timer_id();
-    switch (timer_id) {
+    switch (timer_id)
+    {
         case Session_Reaper_Timer:
             reap_stale_links();
         break;
@@ -148,17 +149,17 @@ void AuthHandler::on_disconnect(Disconnect *ev)
     }
     AuthSession &session(m_sessions.session_from_token(ev->m_session_token));
     session.m_state = AuthSession::NOT_LOGGED_IN;
-    if (!session.m_auth_data)
+    if(!session.m_auth_data)
     {
         qWarning("Client disconnected without a valid login attempt. Old client ?");
     }
     {
         SessionStore::MTGuard guard(m_sessions.reap_lock());
-        if (session.is_connected_to_game_server_id == 0)
+        if(session.is_connected_to_game_server_id == 0)
             m_sessions.mark_session_for_reaping(&session, session.link()->session_token());
     }
 
-    if (session.link())
+    if(session.link())
     {
         session.link(nullptr);
         m_sessions.remove_from_active_sessions(&session);
@@ -215,7 +216,8 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     RetrieveAccountResponseData & acc_inf(msg->m_data);  // all the account info you can eat!
 
     // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
-    if(acc_inf.isBlocked()) {
+    if(acc_inf.isBlocked())
+    {
         lnk->putq(s_auth_error_locked_account.shallow_copy());
         return;
     }
@@ -285,7 +287,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     }
 
     // if password is too long
-    if (ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
+    if(ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;

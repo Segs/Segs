@@ -32,5 +32,6 @@ public:
     BitStream   m_character_data;
     EVENT_IMPL(NewEntity)
 };
+
 } // end of SEGSEvents namespace
 

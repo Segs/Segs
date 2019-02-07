@@ -34,6 +34,13 @@ if((MSVC_VERSION VERSION_EQUAL 1900 OR MSVC_VERSION VERSION_GREATER 1900)
     message(WARNING "Deploying with MSVC 2015+ requires CMake 3.6+")
 endif()
 
+# Set windeployqt dll type
+IF (CMAKE_BUILD_TYPE MATCHES [Dd]ebug)
+  set(WINDEPLOYQT_TYPE --debug)
+ELSE()
+  set(WINDEPLOYQT_TYPE --release)
+ENDIF()
+
 # Add commands that copy the Qt runtime to the target's output directory after
 # build and install the Qt runtime to the specified directory
 function(windeployqt target directory)
@@ -42,6 +49,7 @@ function(windeployqt target directory)
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E
             env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+                ${WINDEPLOYQT_TYPE}
                 --verbose 0
                 --no-compiler-runtime
                 --no-angle
@@ -91,7 +99,13 @@ function(windeployqt target directory)
     if( MINGW )
         message( STATUS "    Installing system-libraries: MinGW DLLs." )
         get_filename_component( Mingw_Path ${CMAKE_CXX_COMPILER} PATH )
-        set( CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Mingw_Path}/libgcc_s_dw2-1.dll ${Mingw_Path}/libstdc++-6.dll ${Mingw_Path}/libwinpthread-1.dll )
+
+        file(GLOB LIBGCC_DLL_PATH "${Mingw_Path}/libgcc_s_*.dll")
+        if(NOT LIBGCC_DLL_PATH)
+          message(FATAL_ERROR "Could not find libgcc dll")
+        endif()
+
+        set( CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${LIBGCC_DLL_PATH} ${Mingw_Path}/libstdc++-6.dll ${Mingw_Path}/libwinpthread-1.dll )
     endif( MINGW )
     # windeployqt doesn't work correctly with the system runtime libraries,
     # so we fall back to one of CMake's own modules for copying them over

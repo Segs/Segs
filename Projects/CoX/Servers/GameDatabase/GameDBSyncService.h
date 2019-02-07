@@ -6,16 +6,18 @@
 #include "Servers/GameDatabase/GameDBSyncHandler.h"
 #include <QVector>
 namespace SEGSEvents {
-struct PlayerUpdateMessage;
 struct CharacterUpdateMessage;
+struct PlayerUpdateMessage;
+struct CostumeUpdateMessage;
 }
 class GameDBSyncService : public EventProcessor
 {
 private:
     GameDBSyncHandler* m_db_handler;
 
-    void on_player_update(SEGSEvents::PlayerUpdateMessage* msg);
     void on_character_update(SEGSEvents::CharacterUpdateMessage* msg);
+    void on_player_update(SEGSEvents::PlayerUpdateMessage* msg);
+    void on_costume_update(SEGSEvents::CostumeUpdateMessage* msg);
 
 public:
     IMPL_ID(GameDBSyncService)

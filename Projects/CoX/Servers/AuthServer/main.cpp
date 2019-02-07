@@ -106,7 +106,7 @@ static void shutDownServers(const char *reason)
 {
     qDebug() << "Reason for shutdown: " << reason;
 
-    if (GlobalTimerQueue::instance()->thr_count())
+    if(GlobalTimerQueue::instance()->thr_count())
     {
         GlobalTimerQueue::instance()->deactivate();
     }
@@ -127,7 +127,7 @@ static void shutDownServers(const char *reason)
 
 void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
 {
-    if (msg->m_data.status_value != 0)
+    if(msg->m_data.status_value != 0)
     {
         qCritical().noquote() << msg->m_data.status_message;
         shutDownServers("Configuration failure");
@@ -207,37 +207,43 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
         snprintf(category_text,sizeof(category_text),"[%s]",context.category);
     QFile segs_log_target;
     segs_log_target.setFileName("output.log");
-    if (!segs_log_target.open(QFile::WriteOnly | QFile::Append))
+    if(!segs_log_target.open(QFile::WriteOnly | QFile::Append))
     {
         fprintf(stderr,"Failed to open log file in write mode, will procede with console only logging");
     }
     QByteArray localMsg = msg.toLocal8Bit();
+    std::string timestamp  = QTime::currentTime().toString("hh:mm:ss").toStdString();
 
     switch (type)
     {
         case QtDebugMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"%sDebug   : %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sDebug   : %s\n",
+                     timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtInfoMsg:
             // no prefix or category for informational messages, as these are end-user facing
-            snprintf(log_buffer,sizeof(log_buffer),"%s\n",localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"[%s] %s\n",
+                     timestamp.c_str(), localMsg.constData());
             break;
         case QtWarningMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"%sWarning : %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sWarning : %s\n",
+                     timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtCriticalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"%sCritical: %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sCritical: %s\n",
+                     timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtFatalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"%sFatal: %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sFatal: %s\n",
+                     timestamp.c_str(), category_text, localMsg.constData());
     }
     fprintf(stdout, "%s", log_buffer);
     fflush(stdout);
-    if (segs_log_target.isOpen())
+    if(segs_log_target.isOpen())
     {
         segs_log_target.write(log_buffer);
     }
-    if (type == QtFatalMsg)
+    if(type == QtFatalMsg)
     {
         segs_log_target.close();
         abort();
@@ -286,8 +292,8 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
 
     qInfo().noquote() << "main";
 
-    // Create websocket jsonrpc admin interface
-    startWebSocketServer();
+    // Create jsonrpc admin interface
+    startRPCServer();
 
     bool no_err = CreateServers();
     if(!no_err)

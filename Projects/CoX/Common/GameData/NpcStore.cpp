@@ -47,7 +47,7 @@ const Parse_NPC *NPCStorage::npc_by_name(const QStringRef &name) const
 {
     auto iter = m_name_to_npc_def.find(name.toString().toLower());
     if(iter!=m_name_to_npc_def.end())
-        return iter.value();
+        return *iter;
     return nullptr;
 }
 

@@ -234,9 +234,9 @@ bool loadFrom(BinStore *s, AllPowerCategories &target)
 
 //template <class Archive> void load_minimal(Archive const &, log_level_t & obj, std::string const & value)
 //{
-//    if (value == "message") obj = log_level_t::message;
-//    else if (value == "warning") obj = log_level_t::warning;
-//    else if (value == "error") obj = log_level_t::error;
+//    if(value == "message") obj = log_level_t::message;
+//    else if(value == "warning") obj = log_level_t::warning;
+//    else if(value == "error") obj = log_level_t::error;
 //    else obj = log_level_t::message; // Default value
 //}
 template<class Archive>

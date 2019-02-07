@@ -1,5 +1,6 @@
 #include "MessageHelpers.h"
 
+#include "DataHelpers.h"
 #include "EntityStorage.h"
 #include "EntityUpdateCodec.h"
 #include "MapClientSession.h"
@@ -18,43 +19,36 @@
 #include <glm/gtx/string_cast.hpp>
 
 
-
 using namespace SEGSEvents;
 
-void sendChatMessage(MessageChannel t,const QString &msg, MapClientSession *src, MapClientSession &tgt)
+void sendChatMessage(MessageChannel t, const QString &msg, MapClientSession *src, MapClientSession &tgt)
 {
-    ChatMessage * res = new ChatMessage(t,msg);
+    std::unique_ptr<ChatMessage> res = std::make_unique<ChatMessage>(t,msg);
     res->m_source_player_id = getIdx(*src->m_ent);
     res->m_target_player_id = getIdx(*src->m_ent);
-
-    tgt.addCommandToSendNextUpdate(std::unique_ptr<ChatMessage>(res));
 
     qCDebug(logChat).noquote() << "ChatMessage:"
                                << "\n  Channel:" << int(res->m_channel_type)
                                << "\n  Source:" << res->m_source_player_id
                                << "\n  Target:" << res->m_target_player_id
                                << "\n  Message:" << res->m_msg;
+
+    tgt.addCommandToSendNextUpdate(std::move(res));
 }
 void sendInfoMessage(MessageChannel t, const QString &msg, MapClientSession &tgt)
 {
-
-    InfoMessageCmd * res = new InfoMessageCmd(t,msg);
-    res->m_target_player_id = getIdx(*tgt.m_ent);
-
-    tgt.addCommandToSendNextUpdate(std::unique_ptr<InfoMessageCmd>(res));
-
+    tgt.addCommand<InfoMessageCmd>(t, msg);
 
     qCDebug(logInfoMsg).noquote() << "InfoMessage:"
-             << "\n  Channel:" << int(res->m_channel_type)
-             << "\n  Target:" << res->m_target_player_id
-             << "\n  Message:" << res->m_msg;
+             << "\n  Channel:" << static_cast<int>(t)
+             << "\n  Message:" << msg;
 }
 
 void storeEntityResponseCommands(BitStream &bs,float time_of_day)
 {
     PUTDEBUG("before commands");
     bs.StorePackedBits(1,1); // use 'time' shortcut
-    bs.StoreFloat(float(time_of_day)*10.0f);
+    bs.StoreFloat(time_of_day*10.0f);
     bs.StorePackedBits(1,2); // use 'time scale' shortcut
     bs.StoreFloat(4.0f);
     bs.StorePackedBits(1,3); // use 'time step scale' shortcut
@@ -111,7 +105,7 @@ void storeServerControlState(BitStream &bs,Entity *self)
         storeVector(bs,self->m_motion_state.m_speed); // This is entity speed vector !!
 
         bs.StoreFloat(self->m_motion_state.m_backup_spd);         // Backup Speed default = 1.0f
-        bs.StoreBitArray((uint8_t *)&g_world_surf_params,2*sizeof(SurfaceParams)*8);
+        bs.StoreBitArray((uint8_t *)&self->m_motion_state.m_surf_mods,2*sizeof(SurfaceParams)*8);
 
         bs.StoreFloat(self->m_motion_state.m_jump_height);        // How high entity goes before gravity bring them back down. Set by leaping default = 0.1f
         bs.StoreBits(1,self->m_motion_state.m_is_flying);         // is_flying flag
@@ -126,9 +120,9 @@ void storeServerControlState(BitStream &bs,Entity *self)
     bs.StoreBits(1,self->m_force_pos_and_cam);
     if(self->m_force_pos_and_cam)
     {
-        bs.StorePackedBits(1,self->m_states.current()->m_every_4_ticks); // sets g_client_pos_id_rel default = 0
-        storeVector(bs,self->m_entity_data.m_pos);         // server-side pos
-        storeVectorConditional(bs,self->m_motion_state.m_speed);          // server-side spd (optional)
+        bs.StorePackedBits(1,self->m_states.current()->m_every_4_ticks);    // sets g_client_pos_id_rel default = 0
+        storeVector(bs,self->m_entity_data.m_pos);                          // server-side pos
+        storeVectorConditional(bs,self->m_motion_state.m_velocity);         // server-side velocity
 
         storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.x); // Pitch not used ?
         storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.y); // Yaw
@@ -192,27 +186,27 @@ void storeGroupDyn(BitStream &bs)
     }
 }
 
-void storeTeamList(BitStream &bs,Entity *self)
+void storeTeamList(BitStream &bs, Entity *self)
 {
     assert(self);
 
     // shorthand local vars
     uint32_t    team_idx = 0;
     bool        mark_lfg = self->m_char->m_char_data.m_lfg;
-    bool        has_mission = false;
+    bool        has_taskforce = false;
     uint32_t    tm_leader_id = 0;
     uint32_t    tm_size = 0;
 
     if(self->m_has_team && self->m_team != nullptr)
     {
         team_idx        = self->m_team->m_team_idx;
-        has_mission     = self->m_team->m_team_has_mission;
+        has_taskforce   = self->m_team->m_has_taskforce;
         tm_leader_id    = self->m_team->m_team_leader_idx;
         tm_size         = self->m_team->m_team_members.size();
     }
 
     storePackedBitsConditional(bs,20,team_idx);
-    bs.StoreBits(1,has_mission);
+    bs.StoreBits(1,has_taskforce);
     bs.StoreBits(1,mark_lfg);
 
     if(team_idx == 0) // if no team, return.
@@ -670,6 +664,7 @@ void buildEntityResponse(EntitiesResponse *res,MapClientSession &to_client,Entit
     res->blob_of_death.StorePackedBits(1,is_incremental ? 2 : 3); // opcode  3 - full update.
     res->blob_of_death.StoreBits(1,res->ent_major_update); // passed to Entity::EntReceive as a parameter
     res->is_incremental(is_incremental); // full world update = op 3
+
     res->debug_info = use_debug;
     storeEntityResponseCommands(res->blob_of_death,res->m_map_time_of_day);
 

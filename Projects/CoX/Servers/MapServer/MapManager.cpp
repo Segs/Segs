@@ -45,7 +45,7 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
     while (map_dir_visitor.hasNext())
     {
         QString dirname = map_dir_visitor.next();
-        if (dirname.contains("City_",Qt::CaseInsensitive) ||
+        if(dirname.contains("City_",Qt::CaseInsensitive) ||
             dirname.contains("Hazard_",Qt::CaseInsensitive) ||
             dirname.contains("Trial_",Qt::CaseInsensitive))
         {
@@ -56,7 +56,7 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
             qInfo() << "Found map:" << map_dir_visitor.fileInfo().filePath();
         }
     }
-    // (template_directory / "tutorial.bin")
+    // (template_directory / "bin/tutorial.bin")
     return !m_templates.empty();
 }
 

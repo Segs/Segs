@@ -54,7 +54,7 @@ void SelectScriptDialog::populate_dropdown()
 
 void SelectScriptDialog::open_editor()
 {
-    if (ui->script_select->currentText() == "-- Select --")
+    if(ui->script_select->currentText() == "-- Select --")
     {
         QMessageBox select_script_msgbox;
         select_script_msgbox.setText("Please select a script from the available options");

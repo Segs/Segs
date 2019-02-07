@@ -8,8 +8,8 @@
 
 #pragma once
 #define ProjectName "SEGS"
-#define VersionNumber "0.5.0"
-#define VersionName "The Unsilencer"
+#define VersionNumber "0.6.1"
+#define VersionName "Outbreak"
 #define VersionString ProjectName " v" VersionNumber " (" VersionName ")"
 #define CopyrightString "Super Entity Game Server\nhttp://github.com/Segs/\nCopyright (c) 2006-2018 Super Entity Game Server Team (see AUTHORS.md)\nThis software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.\n";
 //const char *AdminVersionString="Undefined";

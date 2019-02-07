@@ -10,7 +10,10 @@
 #include "Common/GameData/Sidekick.h"
 #include "Common/GameData/Friend.h"
 #include "Common/GameData/Powers.h"
+#include "Common/GameData/Clue.h"
+#include "Common/GameData/Contact.h"
 #include "Common/GameData/CharacterAttributes.h"
+#include "Common/GameData/Task.h"
 
 #include <QString>
 #include <stdint.h>
@@ -18,7 +21,7 @@
 
 struct CharacterData
 {
-        enum : uint32_t {class_version       = 8}; // v8: security threat
+        enum : uint32_t {class_version       = 11}; // v11: Clue/Souvenirs
 
         QString     m_titles[3];             // Generic, Origin, Special
         QString     m_class_name;
@@ -28,7 +31,7 @@ struct CharacterData
         QString     m_afk_msg;
         QString     m_alignment         = "hero";
         QString     m_last_online;
-        uint64_t    m_last_costume_id;
+        uint32_t    m_current_costume_idx = 0;
         uint32_t    m_level             = 0;
         uint32_t    m_combat_level      = 0; // might be different if player is sidekick or exemplar.
         uint32_t    m_security_threat   = 0; // used to limit a character's participation in Task Forces, Strike Forces, and Trials
@@ -44,6 +47,9 @@ struct CharacterData
         PowerTrayGroup      m_trays;
         vInspirations       m_inspirations;
         vEnhancements       m_enhancements;     // Enhancements owned, but not attached to powers
+        vContactList        m_contacts;
+        vTaskEntryList      m_tasks_entry_list;
+        ClueSouvenirList    m_clue_souvenir_list;
         uint32_t    m_max_insp_cols     = 0;
         uint32_t    m_max_insp_rows     = 0;
         uint32_t    m_max_enhance_slots = 0;
@@ -52,7 +58,7 @@ struct CharacterData
         bool        m_has_the_prefix    = false;
         bool        m_afk               = false;
         bool        m_lfg               = false;
-        bool        m_supergroup_costume;       // player has a sg costume
+        bool        m_has_sg_costume;           // player has a supergroup costume
         bool        m_using_sg_costume;         // player uses sg costume currently
         bool        m_is_on_task_force  = false;
         bool        m_is_on_auto_logout = false;

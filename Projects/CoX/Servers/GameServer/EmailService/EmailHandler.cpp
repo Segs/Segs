@@ -20,40 +20,35 @@ void EmailHandler::dispatch(Event *ev)
     switch(ev->type())
     {
         // EmailEvents
-        case EmailEventTypes::evEmailHeaderRequest:
-        on_email_header(static_cast<EmailHeaderRequest *>(ev));
-        break;
         case EmailEventTypes::evEmailReadRequest:
-        on_email_read(static_cast<EmailReadRequest *>(ev));
-        break;
+            on_email_read(static_cast<EmailReadRequest *>(ev));
+            break;
         case EmailEventTypes::evEmailSendMessage:
-        on_email_send(static_cast<EmailSendMessage *>(ev));
-        break;
+            on_email_send(static_cast<EmailSendMessage *>(ev));
+            break;
         case EmailEventTypes::evEmailDeleteMessage:
-        on_email_delete(static_cast<EmailDeleteMessage *>(ev));
-        break;
-
+            on_email_delete(static_cast<EmailDeleteMessage *>(ev));
+            break;
         // GameDbEvents
         case GameDBEventTypes::evEmailCreateResponse:
-        on_email_create_response(static_cast<EmailCreateResponse *>(ev));
-        break;
+            on_email_create_response(static_cast<EmailCreateResponse *>(ev));
+            break;
         case GameDBEventTypes::evGetEmailsResponse:
-        on_get_emails_response(static_cast<GetEmailsResponse *>(ev));
-        break;
+            on_get_emails_response(static_cast<GetEmailsResponse *>(ev));
+            break;
         case GameDBEventTypes::evFillEmailRecipientIdResponse:
-        on_fill_email_recipient_id_response(static_cast<FillEmailRecipientIdResponse *>(ev));
-        break;
+            on_fill_email_recipient_id_response(static_cast<FillEmailRecipientIdResponse *>(ev));
+            break;
         case GameDBEventTypes::evFillEmailRecipientIdErrorMessage:
-        on_fill_email_recipient_id_error(static_cast<FillEmailRecipientIdErrorMessage *>(ev));
-        break;
-
+            on_fill_email_recipient_id_error(static_cast<FillEmailRecipientIdErrorMessage *>(ev));
+            break;
         // will be obtained from MessageBusEndpoint
         case Internal_EventTypes::evClientConnectedMessage:
-        on_client_connected(static_cast<ClientConnectedMessage *>(ev));
-        break;
+            on_client_connected(static_cast<ClientConnectedMessage *>(ev));
+            break;
         case Internal_EventTypes::evClientDisconnectedMessage:
-        on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
-        break;
+            on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
+            break;
         default: assert(false); break;
     }
 }
@@ -62,28 +57,6 @@ void EmailHandler::set_db_handler(uint8_t id)
 {
     m_db_handler = static_cast<GameDBSyncHandler*>(
                 HandlerLocator::getGame_DB_Handler(id));
-}
-
-void EmailHandler::on_email_header(EmailHeaderRequest *msg)
-{
-    /*
-    EmailData email_data = EmailData{
-                msg->m_data.sender_id,
-                msg->m_data.sender_id,
-                QString("Test Sender"),
-                msg->m_data.subject,
-                QString("Placeholder Message \n Hi"),
-                msg->m_data.timestamp,
-                false};
-
-    QString cerealizedEmailData;
-    serializeToQString(email_data, cerealizedEmailData);
-
-    m_db_handler->putq(new EmailCreateRequest({
-                                                  msg->m_data.sender_id,
-                                                  msg->m_data.sender_id, //recipient id
-                                                  cerealizedEmailData
-                                              }, uint64_t(1)));*/
 }
 
 void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
@@ -98,7 +71,18 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
     m_state.m_stored_client_datas[msg->m_data.m_sender_id]
             .m_email_state.m_sent_email_ids.insert(msg->m_data.m_email_id);
 
-    // if the recipient is not online during the time of send, return
+    // send successful EmailCreateStatusMessage to sender
+    // shouldn't need to check if sender is online... when the sender is sending the email in real-time
+    const ClientSessionData &sender_data (m_state.m_stored_client_datas[msg->m_data.m_sender_id]);
+
+    EventProcessor *sender_map_instance = HandlerLocator::getMapInstance_Handler(
+                sender_data.m_server_id,
+                sender_data.m_instance_id);
+
+    sender_map_instance->putq(new EmailCreateStatusMessage(
+        {true, msg->m_data.m_recipient_name}, sender_data.m_session_token));
+
+    // if the recipient is not online during the time of send, end the function here
     if (m_state.m_stored_client_datas.count(msg->m_data.m_recipient_id) <= 0)
         return;
 
@@ -109,16 +93,25 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
     m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
             .m_email_state.m_unread_email_ids.insert(msg->m_data.m_email_id);
 
-    EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
+    EventProcessor *recipient_map_instance = HandlerLocator::getMapInstance_Handler(
                 recipient_data.m_server_id,
                 recipient_data.m_instance_id);
 
-    tgt->putq(new EmailHeaderResponse({
+    recipient_map_instance->putq(new EmailHeaderToClientMessage({
                                           msg->m_data.m_email_id,
                                           email_data.m_sender_name,
                                           email_data.m_subject,
                                           email_data.m_timestamp
                                       }, recipient_data.m_session_token));
+}
+
+void EmailHandler::on_email_header(EmailHeaderRequest *msg)
+{
+    std::vector<EmailHeaderData> email_headers;
+    int unread_emails_count = 0;
+    fill_email_headers(email_headers, msg->m_data.m_user_id, unread_emails_count);
+
+    msg->src()->putq(new EmailHeaderResponse({email_headers}, msg->session_token()));
 }
 
 void EmailHandler::on_get_emails_response(GetEmailsResponse *msg)
@@ -144,7 +137,7 @@ void EmailHandler::on_email_read(EmailReadRequest *msg)
     m_state.m_stored_client_datas[email_data.m_recipient_id].
             m_email_state.m_received_email_ids.erase(msg->m_data.m_email_id);
 
-    if (email_data.m_sender_id == 0)
+    if(email_data.m_sender_id == 0)
         email_data.m_sender_name = "DELETED CHARACTER";
 
     QString cerealizedEmailData;
@@ -153,7 +146,7 @@ void EmailHandler::on_email_read(EmailReadRequest *msg)
     m_db_handler->putq(new EmailMarkAsReadMessage({msg->m_data.m_email_id, cerealizedEmailData}, uint64_t(1)));
 
     // the sender is not always online in this case
-    if (m_state.m_stored_client_datas.count(email_data.m_sender_id) > 0)
+    if(m_state.m_stored_client_datas.count(email_data.m_sender_id) > 0)
     {
         const ClientSessionData &sender_data (m_state.m_stored_client_datas[email_data.m_sender_id]);
         EventProcessor *sender_map_instance = HandlerLocator::getMapInstance_Handler(
@@ -209,6 +202,7 @@ void EmailHandler::on_fill_email_recipient_id_response(FillEmailRecipientIdRespo
     m_db_handler->putq(new EmailCreateRequest({
                                                   msg->m_data.m_sender_id,
                                                   msg->m_data.m_recipient_id, //recipient id
+                                                  msg->m_data.m_recipient_name,
                                                   cerealizedEmailData
                                               }, uint64_t(1)));
 }
@@ -222,8 +216,8 @@ void EmailHandler::on_fill_email_recipient_id_error(FillEmailRecipientIdErrorMes
 
     // send error msg to sender map instance
 
-    sender_map_instance->putq(new EmailSendErrorMessage(
-        {msg->m_data.m_error_message}, sender_data.m_session_token));
+    sender_map_instance->putq(new EmailCreateStatusMessage(
+            {false, msg->m_data.m_recipient_name}, sender_data.m_session_token));
 
 }
 
@@ -265,7 +259,7 @@ void EmailHandler::on_client_connected(ClientConnectedMessage *msg)
 
 void EmailHandler::on_client_disconnected(ClientDisconnectedMessage *msg)
 {
-    if (m_state.m_stored_client_datas.count(msg->m_data.m_char_db_id) > 0)
+    if(m_state.m_stored_client_datas.count(msg->m_data.m_char_db_id) > 0)
         m_state.m_stored_client_datas.erase(msg->m_data.m_char_db_id);
 }
 
@@ -273,11 +267,11 @@ void EmailHandler::fill_email_state(PlayerEmailState& email_state, uint32_t char
 {
     for(const auto &data : m_state.m_stored_email_datas)
     {
-        if (data.second.m_sender_id == char_id)
+        if(data.second.m_sender_id == char_id)
             email_state.m_sent_email_ids.insert(data.first);
-        if (data.second.m_recipient_id == char_id)
+        if(data.second.m_recipient_id == char_id)
             email_state.m_received_email_ids.insert(data.first);
-        if (data.second.m_recipient_id == char_id && !data.second.m_is_read_by_recipient)
+        if(data.second.m_recipient_id == char_id && !data.second.m_is_read_by_recipient)
             email_state.m_unread_email_ids.insert(data.first);
     }
 }
@@ -294,7 +288,7 @@ void EmailHandler::fill_email_headers(std::vector<EmailHeaderData>& email_header
 
         email_headers.push_back(email_header_data);
 
-        if (!m_state.m_stored_email_datas[email_id].m_is_read_by_recipient)
+        if(!m_state.m_stored_email_datas[email_id].m_is_read_by_recipient)
             unread_emails_count++;
     }
 }

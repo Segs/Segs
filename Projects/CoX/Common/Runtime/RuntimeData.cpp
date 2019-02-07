@@ -6,6 +6,7 @@
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
 #include "GameData/DataStorage.h"
+#include "Logging.h"
 
 #include <QDirIterator>
 #include <QString>
@@ -14,19 +15,19 @@ using namespace SEGS;
 namespace {
 static void setupTexOpt(SceneModifiers *mods,TextureModifiers *tmod)
 {
-    if (tmod->ScaleST0.x == 0.0f)
+    if(tmod->ScaleST0.x == 0.0f)
         tmod->ScaleST0.x = 1.0f;
-    if (tmod->ScaleST0.y == 0.0f)
+    if(tmod->ScaleST0.y == 0.0f)
         tmod->ScaleST0.y = 1.0f;
-    if (tmod->ScaleST1.x == 0.0f)
+    if(tmod->ScaleST1.x == 0.0f)
         tmod->ScaleST1.x = 1.0f;
-    if (tmod->ScaleST1.y == 0.0f)
+    if(tmod->ScaleST1.y == 0.0f)
         tmod->ScaleST1.y = 1.0f;
-    if (tmod->Fade.x != 0.0f || tmod->Fade.y != 0.0f)
+    if(tmod->Fade.x != 0.0f || tmod->Fade.y != 0.0f)
         tmod->Flags |= uint32_t(TexOpt::FADE);
-    if (!tmod->Blend.isEmpty())
+    if(!tmod->Blend.isEmpty())
         tmod->Flags |= uint32_t(TexOpt::DUAL);
-    if (!tmod->Surface.isEmpty())
+    if(!tmod->Surface.isEmpty())
     {
         //qCDebug(logSceneGraph) << "Has surface" << tex->Surface;
     }
@@ -36,7 +37,7 @@ static void setupTexOpt(SceneModifiers *mods,TextureModifiers *tmod)
         tmod->name.remove(0,1);
     QString lower_name = tmod->name.toLower();
     auto iter = mods->m_texture_path_to_mod.find(lower_name);
-    if (iter!=mods->m_texture_path_to_mod.end())
+    if(iter!=mods->m_texture_path_to_mod.end())
     {
         qCDebug(logSceneGraph) << "Duplicate texture info: " << tmod->name;
         return;
@@ -45,62 +46,64 @@ static void setupTexOpt(SceneModifiers *mods,TextureModifiers *tmod)
 }
 static void setupTrick(SceneModifiers *mods,GeometryModifiers *gmod)
 {
-    if (gmod->node.TintColor0.rgb_are_zero())
+    if(gmod->node.TintColor0.rgb_are_zero())
         gmod->node.TintColor0 = RGBA(0xFFFFFFFF);
-    if (gmod->node.TintColor1.rgb_are_zero())
+    if(gmod->node.TintColor1.rgb_are_zero())
         gmod->node.TintColor1 = RGBA(0xFFFFFFFF);
     gmod->AlphaRef /= 255.0f;
-    if (gmod->ObjTexBias != 0.0f)
+    if(gmod->ObjTexBias != 0.0f)
         gmod->node._TrickFlags |= TexBias;
-    if (gmod->AlphaRef != 0.0f)
+    if(gmod->AlphaRef != 0.0f)
         gmod->node._TrickFlags |= AlphaRef;
-    if (gmod->FogDist.x != 0.0f || gmod->FogDist.y != 0.0f)
+    if(gmod->FogDist.x != 0.0f || gmod->FogDist.y != 0.0f)
         gmod->node._TrickFlags |= FogHasStartAndEnd;
-    if (gmod->ShadowDist != 0.0f)
+    if(gmod->ShadowDist != 0.0f)
         gmod->node._TrickFlags |= CastShadow;
-    if (gmod->NightGlow.x != 0.0f || gmod->NightGlow.y != 0.0f)
+    if(gmod->NightGlow.x != 0.0f || gmod->NightGlow.y != 0.0f)
         gmod->node._TrickFlags |= NightGlow;
-    if (gmod->node.ScrollST0.x != 0.0f || gmod->node.ScrollST0.y != 0.0f)
+    if(gmod->node.ScrollST0.x != 0.0f || gmod->node.ScrollST0.y != 0.0f)
         gmod->node._TrickFlags |= ScrollST0;
-    if (gmod->node.ScrollST1.x != 0.0f || gmod->node.ScrollST1.y != 0.0f)
+    if(gmod->node.ScrollST1.x != 0.0f || gmod->node.ScrollST1.y != 0.0f)
         gmod->node._TrickFlags |= ScrollST1;
-    if (!gmod->StAnim.empty())
+    if(!gmod->StAnim.empty())
     {
-        //        if (setStAnim(&a1->StAnim.front()))
+        //        if(setStAnim(&a1->StAnim.front()))
         //            a1->node._TrickFlags |= STAnimate;
     }
-    if (gmod->GroupFlags & VisTray)
+    if(gmod->GroupFlags & VisTray)
         gmod->ObjFlags |= 0x400;
-    if (gmod->name.isEmpty())
+    if(gmod->name.isEmpty())
         qCDebug(logSceneGraph) << "No name in trick";
     QString lower_name = gmod->name.toLower();
     auto iter = mods->g_tricks_string_hash_tab.find(lower_name);
-    if (iter!=mods->g_tricks_string_hash_tab.end())
+    if(iter!=mods->g_tricks_string_hash_tab.end())
     {
         qCDebug(logSceneGraph) << "duplicate model trick!";
         return;
     }
     mods->g_tricks_string_hash_tab[lower_name]=gmod;
 }
+
 static void trickLoadPostProcess(SceneModifiers *mods)
 {
     mods->m_texture_path_to_mod.clear();
     mods->g_tricks_string_hash_tab.clear();
-    for (TextureModifiers &texopt : mods->texture_mods)
+    for(TextureModifiers &texopt : mods->texture_mods)
         setupTexOpt(mods,&texopt);
-    for (GeometryModifiers &trickinfo : mods->geometry_mods)
+    for(GeometryModifiers &trickinfo : mods->geometry_mods)
         setupTrick(mods,&trickinfo);
 }
+
 template<class TARGET,unsigned int CRC>
 bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
 {
-    QDebug deb=qDebug().noquote().nospace();
-    deb << "Reading "<<directory_path<<storage<<" ... ";
+    QDebug deb = qDebug().noquote().nospace();
+    deb << "Reading " << directory_path << storage << " ... ";
     BinStore bin_store;
     if(!bin_store.open(directory_path+storage,CRC))
     {
         deb << "failure";
-        qWarning().noquote() << "Couldn't load "<<storage<<" from" << directory_path;
+        qWarning().noquote() << "Couldn't load" << storage << "from" << directory_path;
         qWarning().noquote() << "Using piggtool, ensure that bin.pigg has been extracted to ./data/";
         return false;
     }
@@ -113,6 +116,7 @@ bool read_data_to(const QString &directory_path,const QString &storage,TARGET &t
         deb << "failure";
         qWarning().noquote() << "Couldn't load" << directory_path<<storage<<": wrong file format?";
     }
+
     return res;
 }
 
@@ -126,16 +130,17 @@ void preloadTextureNames(const QString &basepath)
 {
     RuntimeData &rd(getRuntimeData());
     //TODO: store texture headers into an array, and only rescan directories when forced ?
-    QDirIterator iter(basepath+"texture_library", QDir::Files, QDirIterator::Subdirectories);
-    while (iter.hasNext()) {
+    QDirIterator iter(basepath + "texture_library", QDir::Files, QDirIterator::Subdirectories);
+    while(iter.hasNext())
+    {
         QString fpath = iter.next();
         QString texture_key = iter.fileInfo().baseName().toLower();
         rd.m_texture_paths[texture_key] = fpath;
         loadTexHeader(fpath);
     }
 }
-} //end of SEGS namespace
 
+} //end of SEGS namespace
 
 bool RuntimeData::read_model_modifiers(const QString &directory_path)
 {
@@ -151,12 +156,14 @@ bool RuntimeData::read_model_modifiers(const QString &directory_path)
     trickLoadPostProcess(m_modifiers);
     return true;
 }
+
 bool RuntimeData::prepare(const QString &directory_path)
 {
     if(!read_prefab_definitions(directory_path))
         return false;
     if(!read_model_modifiers(directory_path))
         return false;
+
     return true;
 }
 

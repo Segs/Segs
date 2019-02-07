@@ -37,8 +37,7 @@ using namespace SEGSEvents;
 
 
 //! EntitiesResponse is sent to a client to inform it about the current world state.
-EntitiesResponse::EntitiesResponse() :
-    MapLinkEvent(MapEventTypes::evEntitiesResponse)
+EntitiesResponse::EntitiesResponse() : MapLinkEvent(evEntitiesResponse)
 {
     m_map_time_of_day       = 10;
     g_interpolation_level   = 2;
@@ -50,7 +49,8 @@ void EntitiesResponse::serializefrom(BitStream &src)
     ent_major_update = src.GetBits(1);
     assert(false);
 }
-void EntitiesResponse::serializeto( BitStream &tgt ) const
+
+void EntitiesResponse::serializeto(BitStream &tgt) const
 {
     tgt.appendBitStream(blob_of_death);
 }

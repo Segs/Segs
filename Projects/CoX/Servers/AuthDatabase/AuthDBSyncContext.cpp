@@ -51,7 +51,7 @@ namespace
     //! @image html dbschema/segs_dbschema.png
     bool GetAccount(RetrieveAccountResponseData &client, QSqlQuery &results)
     {
-        if (!results.next()) // TODO: handle case of multiple accounts with same name ?
+        if(!results.next()) // TODO: handle case of multiple accounts with same name ?
             return false;
         QDateTime creation;
         client.m_acc_server_acc_id = results.value("id").toULongLong();
@@ -66,13 +66,13 @@ namespace
     {
         QSqlQuery query(FETCH_DB_VERSION_QUERY, database);
 
-        if (!query.exec())
+        if(!query.exec())
         {
             qDebug() << query.lastError();
             return INVALID_DB_VERSION;
         }
 
-        if (!query.next())
+        if(!query.next())
         {
             qCritical() << "No rows found when fetching database version.";
             return INVALID_DB_VERSION;
@@ -93,7 +93,7 @@ bool AuthDbSyncContext::loadAndConfigure()
 {
     ACE_Thread_ID our_id;
 
-    if (m_setup_complete)
+    if(m_setup_complete)
     {
         qCritical() << "This AuthDBSyncContext has already been configured!";
         return false;
@@ -113,7 +113,7 @@ bool AuthDbSyncContext::loadAndConfigure()
     config.endGroup(); // CharacterDatabase
     config.endGroup(); // AdminServer
 
-    if (!DATABASE_DRIVERS.contains(dbdriver.toUpper()))
+    if(!DATABASE_DRIVERS.contains(dbdriver.toUpper()))
     {
         qWarning() << "Database driver" << dbdriver << "is not supported.";
         return false;
@@ -131,17 +131,17 @@ bool AuthDbSyncContext::loadAndConfigure()
     db2->setPassword(dbpass);
     m_db.reset(db2); // at this point we become owner of the db
 
-    if (!m_db->open())
+    if(!m_db->open())
     {
         qCritical().noquote() << "Failed to open database:" << dbname;
         return false;
     }
 
     int64_t db_version = getDatabaseVersion(*m_db);
-    if (db_version != REQUIRED_DB_VERSION)
+    if(db_version != REQUIRED_DB_VERSION)
     {
-        qCritical() << "Wrong database version:" << db_version;
-        qCritical() << "Auth database requires version:" << REQUIRED_DB_VERSION;
+        // we should just stop the server, it isn't going to work anyway
+        qFatal("Wrong database version (%d) Auth database requires version: %d", db_version, REQUIRED_DB_VERSION);
 
         return false;
     }
@@ -151,25 +151,25 @@ bool AuthDbSyncContext::loadAndConfigure()
     m_prepared_select_account_by_id.reset(new QSqlQuery(*m_db));
     m_prepared_select_account_passw.reset(new QSqlQuery(*m_db));
 
-    if (!m_add_account_query->prepare(ADD_ACCOUNT_QUERY))
+    if(!m_add_account_query->prepare(ADD_ACCOUNT_QUERY))
     {
         qDebug() << "SQL_ERROR:" << m_add_account_query->lastError();
         return false;
     }
 
-    if (!m_prepared_select_account_by_username->prepare(SELECT_ACCOUNT_BY_USERNAME_QUERY))
+    if(!m_prepared_select_account_by_username->prepare(SELECT_ACCOUNT_BY_USERNAME_QUERY))
     {
         qDebug() << "SQL_ERROR:" << m_prepared_select_account_by_username->lastError();
         return false;
     }
       
-    if (!m_prepared_select_account_by_id->prepare(SELECT_ACCOUNT_BY_ID_QUERY))
+    if(!m_prepared_select_account_by_id->prepare(SELECT_ACCOUNT_BY_ID_QUERY))
     {
         qDebug() << "SQL_ERROR:" << m_prepared_select_account_by_id->lastError();
         return false;
     }
 
-    if (!m_prepared_select_account_passw->prepare(SELECT_ACCOUNT_PASSWORD_QUERY))
+    if(!m_prepared_select_account_passw->prepare(SELECT_ACCOUNT_PASSWORD_QUERY))
     {
         qDebug() << "SQL_ERROR:" << m_prepared_select_account_passw->lastError();
         return false;
@@ -187,7 +187,7 @@ bool AuthDbSyncContext::addAccount(const CreateAccountData &data)
     m_add_account_query->bindValue(1, hashed_password);
     m_add_account_query->bindValue(2, data.access_level);
     m_add_account_query->bindValue(3, salt);
-    if (false == m_add_account_query->exec()) // Send our query to the PostgreSQL db server to process
+    if(false == m_add_account_query->exec()) // Send our query to the PostgreSQL db server to process
     {
         last_error.reset(new QSqlError(m_add_account_query->lastError()));
         qDebug() << "SQL_ERROR:" << *last_error; // Why the query failed
@@ -225,13 +225,13 @@ bool AuthDbSyncContext::checkPassword(const QString &login, const QString &passw
 {
     m_prepared_select_account_passw->bindValue(0, login);
 
-    if (!m_prepared_select_account_passw->exec())
+    if(!m_prepared_select_account_passw->exec())
     {
         last_error.reset(new QSqlError(m_prepared_select_account_passw->lastError()));
         qDebug() << "SQL_ERROR:" << *last_error; // Why the query failed
         return false;
     }
-    if (!m_prepared_select_account_passw->next())
+    if(!m_prepared_select_account_passw->next())
     {
         return false;
     }
@@ -249,9 +249,9 @@ bool AuthDbSyncContext::retrieveAccountAndCheckPassword(
     response.m_acc_server_acc_id = RetrieveAccountResponseData::INVALID_ACCOUNT_ID;
     assert(request.m_id == 0);
 
-    if (!checkPassword(request.m_login, request.m_password))
+    if(!checkPassword(request.m_login, request.m_password))
     {
-        if (!last_error)
+        if(!last_error)
         {
             response.m_acc_server_acc_id = RetrieveAccountResponseData::INVALID_ACCOUNT_ID;
             return true;
@@ -262,7 +262,7 @@ bool AuthDbSyncContext::retrieveAccountAndCheckPassword(
 
     m_prepared_select_account_by_username->bindValue(0, request.m_login);
 
-    if (!m_prepared_select_account_by_username->exec())
+    if(!m_prepared_select_account_by_username->exec())
     {
         last_error.reset(new QSqlError(m_prepared_select_account_by_username->lastError()));
         qDebug() << "SQL_ERROR:" << *last_error; // Why the query failed

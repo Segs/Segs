@@ -343,21 +343,21 @@ bool LoadFxInfoData(const QString &fname, Fx_AllInfos &infos)
 {
     BinStore binfile;
 
-    if (fname.contains(".crl"))
+    if(fname.contains(".crl"))
     {
-        if (!loadFrom(fname, infos))
+        if(!loadFrom(fname, infos))
         {
             qCritical() << "Failed to serialize data from crl:" << fname;
             return false;
         }
         return true;
     }
-    if (!binfile.open(fname, fxbehaviors_i0_requiredCrc))
+    if(!binfile.open(fname, fxbehaviors_i0_requiredCrc))
     {
         qCritical() << "Failed to open original bin:" << fname;
         return false;
     }
-    if (!loadFrom(&binfile, infos))
+    if(!loadFrom(&binfile, infos))
     {
         qCritical() << "Failed to load data from original bin:" << fname;
         return false;
@@ -446,21 +446,21 @@ bool LoadFxBehaviorData(const QString &fname, Fx_AllBehaviors &behaviors)
 {
     BinStore binfile;
 
-    if (fname.contains(".crl"))
+    if(fname.contains(".crl"))
     {
-        if (!loadFrom(fname, behaviors))
+        if(!loadFrom(fname, behaviors))
         {
             qCritical() << "Failed to serialize data from crl:" << fname;
             return false;
         }
         return true;
     }
-    if (!binfile.open(fname, fxbehaviors_i0_requiredCrc))
+    if(!binfile.open(fname, fxbehaviors_i0_requiredCrc))
     {
         qCritical() << "Failed to open original bin:" << fname;
         return false;
     }
-    if (!loadFrom(&binfile, behaviors))
+    if(!loadFrom(&binfile, behaviors))
     {
         qCritical() << "Failed to load data from original bin:" << fname;
         return false;
