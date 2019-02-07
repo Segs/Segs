@@ -170,7 +170,7 @@ public:
         QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
 
         void send_player_update(Entity *e);
-        void                    add_chat_message(MapClientSession *sender, QString &msg_text);
+        void                    add_chat_message(Entity *sender, QString &msg_text);
         void                    startTimer(uint32_t entity_idx);
         void                    stopTimer(uint32_t entity_idx);
         void                    clearTimer(uint32_t entity_idx);
@@ -186,7 +186,7 @@ protected:
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
         void                    on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
-        void                    process_chat(MapClientSession *sender, QString &msg_text);
+        void                    process_chat(Entity *sender, QString &msg_text);
 
         // DB -> Server messages
         void                    on_name_clash_check_result(SEGSEvents::WouldNameDuplicateResponse *ev);

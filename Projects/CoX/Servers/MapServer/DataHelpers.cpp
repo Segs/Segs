@@ -1582,11 +1582,8 @@ void npcSendMessage(MapClientSession &cl, QString& channel, int entityIdx, QStri
     QString formated = ch + ' '+ message;
     Entity *e = getEntity(&cl, entityIdx);
 
-    if(e != nullptr){
-        MapClientSession *session = new MapClientSession();
-        session->m_ent = e;
-        cl.m_current_map->add_chat_message(session, formated);
-    }
+    if(e != nullptr)
+        cl.m_current_map->add_chat_message(e, formated);
 }
 
 void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& message)
@@ -1595,13 +1592,9 @@ void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& m
     QString formated = ch + ' '+ message;
     Entity *e = getEntity(&mi, entityIdx);
 
-    if(e != nullptr){
-        MapClientSession *session = new MapClientSession();
-        session->m_ent = e;
-        mi.add_chat_message(session, formated);
-    }
+    if(e != nullptr)
+        mi.add_chat_message(e, formated);
 }
-
 
 void addStatistic(MapClientSession &cl, CharacterStatistic statistic)
 {
