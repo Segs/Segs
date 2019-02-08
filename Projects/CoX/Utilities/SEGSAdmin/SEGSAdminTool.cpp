@@ -181,9 +181,9 @@ void SEGSAdminTool::read_createuser()
     QString output_std = out_std;
     output_err.replace("Press ENTER to continue...", "** FINISHED **");
     output_std.replace("Press ENTER to continue...", "** FINISHED **");
-    ui->output->moveCursor(QTextCursor::End);
     ui->output->insertPlainText(output_err);
     ui->output->insertPlainText(output_std);
+	ui->output->moveCursor(QTextCursor::End);
 }
 
 void SEGSAdminTool::check_db_exist(bool on_startup)
@@ -295,9 +295,9 @@ void SEGSAdminTool::read_createDB()
     QString output_std = out_std;
     output_err.replace("Press ENTER to continue...", "** FINISHED **");
     output_std.replace("Press ENTER to continue...", "** FINISHED **");
-    ui->output->moveCursor(QTextCursor::End);
     ui->output->insertPlainText(output_err);
     ui->output->insertPlainText(output_std);
+	ui->output->moveCursor(QTextCursor::End);
     qApp->processEvents();
 }
 
