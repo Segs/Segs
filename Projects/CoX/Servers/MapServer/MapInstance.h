@@ -11,6 +11,7 @@
 #include "EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
 #include "Servers/ServerEndpoint.h"
+#include "Servers/GameServer/EmailService/EmailService.h"
 #include "Servers/GameDatabase/GameDBSyncService.h"
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
@@ -81,12 +82,6 @@ class TrashEnhancement;
 class TrashEnhancementInPower;
 class BuyEnhancementSlot;
 class RecvNewPower;
-class EmailHeaderResponse;
-class EmailReadResponse;
-class EmailWasReadByRecipientMessage;
-class EmailHeadersToClientMessage;
-class EmailHeaderToClientMessage;
-class EmailCreateStatusMessage;
 class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
@@ -125,11 +120,13 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
         std::unique_ptr<SEGSTimer> m_afk_update_timer;
         World *                 m_world;
-        GameDBSyncService*      m_sync_service;
         uint32_t                m_owner_id;
         uint32_t                m_instance_id;
         uint32_t                m_index = 1; // what does client expect this to store, and where do we send it?
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
+
+        GameDBSyncService*      m_sync_service;
+        EmailService*           m_email_service;
 
 public:
         SessionStore            m_session_store;
@@ -232,12 +229,6 @@ protected:
         void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
-        void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
-        void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
-        void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
-        void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
-        void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
-        void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);
