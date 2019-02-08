@@ -20,6 +20,9 @@ void EmailHandler::dispatch(Event *ev)
     switch(ev->type())
     {
         // EmailEvents
+        case EmailEventTypes::evEmailHeaderRequest:
+            on_email_header(static_cast<EmailHeaderRequest *>(ev));
+            break;
         case EmailEventTypes::evEmailReadRequest:
             on_email_read(static_cast<EmailReadRequest *>(ev));
             break;
@@ -49,7 +52,9 @@ void EmailHandler::dispatch(Event *ev)
         case Internal_EventTypes::evClientDisconnectedMessage:
             on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
             break;
-        default: assert(false); break;
+        default:
+            qCritical() << "EmailHandler dispatch hits default! Event info: " + QString(ev->info());
+            break;
     }
 }
 
