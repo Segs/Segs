@@ -87,11 +87,11 @@ QString AdminRPC::getVersion()
     return version;
 }
 
-QString AdminRPC::getCodename()
+QString AdminRPC::getVersionName()
 {
     qCDebug(logRPC) << "Someone requested the versions name...";
-    QString codename = VersionInfo::getVersionName();
-    return codename;
+    QString versionname = VersionInfo::getVersionName();
+    return versionname;
 }
 
 QString AdminRPC::ping()
