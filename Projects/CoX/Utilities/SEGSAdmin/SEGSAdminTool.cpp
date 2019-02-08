@@ -383,7 +383,7 @@ void SEGSAdminTool::read_segsserver()
     output_std.replace("Press ENTER to continue...", "** FINISHED **");
     ui->output->insertPlainText(output_err);
     ui->output->insertPlainText(output_std);
-    ui->output->moveCursor(QTextCursor::End);
+	ui->output->moveCursor(QTextCursor::End);
     qApp->processEvents();
 }
 
