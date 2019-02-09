@@ -141,3 +141,19 @@ QString getMapPath(const EntityData &ed)
 {
     return getMapPath(ed.m_map_idx);
 }
+
+QString getMapPath(const QString &map_name)
+{
+    for (const auto &map_data : g_defined_map_datas)
+    {
+        if(map_name.contains(map_data.m_map_name, Qt::CaseInsensitive))
+            return map_data.m_map_path;
+    }
+
+    // log a warning because this part of the code is called when things went wrong
+    qWarning() << "No matching map path in g_defined_map_datas to sent map name."
+               << "Returning Outbreak's display map path as default...";
+
+    // defaulting to Outbreak's map name
+    return g_defined_map_datas[0].m_map_path;
+}

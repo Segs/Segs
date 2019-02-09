@@ -13,6 +13,7 @@
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
 #include <glm/vec3.hpp>
+#include <Common/GameData/map_definitions.h>
 
 namespace SEGSEvents
 {
@@ -218,12 +219,11 @@ ONE_WAY_MESSAGE(Internal_EventTypes,ClientDisconnected)
 struct ClientMapXferData
 {
     uint64_t m_session;
-    uint8_t m_map_idx;
-    QString m_spawn_location;
+    MapXferData m_map_data;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_session, m_map_idx, m_spawn_location);
+        ar(m_session, m_map_data);
     }
 };
 // [[ev_def:macro]]
@@ -233,12 +233,11 @@ struct MapSwapCollisionData
 {
     uint32_t m_ent_db_id;
     glm::vec3 m_pos;
-    QString m_map_name;
-    QString m_spawn_location;
+    QString m_node_name;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_ent_db_id, m_pos, m_map_name, m_spawn_location);
+        ar(m_ent_db_id, m_pos, m_node_name);
     }
 };
 // [[ev_def:macro]]

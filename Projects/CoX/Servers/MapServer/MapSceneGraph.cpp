@@ -21,6 +21,7 @@
 #include "NpcGenerator.h"
 #include "MapInstance.h"
 #include "GameData/NpcStore.h"
+#include "Common/GameData/map_definitions.h"
 
 #include "glm/mat4x4.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -301,64 +302,10 @@ QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
     return res;
 }
 
-// TODO: doors should look for, at least, the nearest GotoMap and GotoSpawn properties
-// and keep them ready to be used whenever a door is clicked. This code looks at the
-// entire scene graph in order to find the nearest SpawnLocation every single time a
-// door is clicked.
-struct DoorProperties
+struct MapXferLocator
 {
-    float distance;
-    glm::vec3 location;
-    QString gotoSpawn;
-};
-
-struct DoorLocator
-{
-    DoorProperties *m_doorprop;
-    DoorLocator(DoorProperties *doorprop) : m_doorprop(doorprop) {}
-
-    bool operator()(SceneNode *n, const glm::mat4 &v)
-    {
-        if (!n->m_properties)
-            return true;
-
-        // Check the distance to this node, bail if it's farther than what we got.
-        glm::vec3 doorloc = glm::vec3(v[3]);
-        float doordist = glm::distance(m_doorprop->location, doorloc);
-        if (doordist >= m_doorprop->distance)
-            return true;
-
-        for (GroupProperty_Data &prop : *n->m_properties)
-        {
-            if (prop.propName == "GotoSpawn")
-            {
-                m_doorprop->gotoSpawn = prop.propValue;
-                m_doorprop->distance = doordist;
-            }
-        }
-        return true;
-    }
-};
-
-QString MapSceneGraph::getNearestDoor(glm::vec3 location) const
-{
-    DoorProperties res;
-    res.distance = 15;  // Maximum distance to look for door properties.
-    res.location = location;
-    DoorLocator locator(&res);
-
-    for (auto v : m_scene_graph->refs)
-    {
-        walkSceneNode(v->node, v->mat, locator);
-    }
-
-    return res.gotoSpawn;
-} 
-
-struct MapSwapLocator
-{
-    std::vector<MapSwap> *m_targets;
-    MapSwapLocator(std::vector<MapSwap> *targets):
+    QHash<QString, MapXferData> *m_targets;
+    MapXferLocator(QHash<QString, MapXferData> *targets):
         m_targets(targets)
     {}
     bool operator()(SceneNode *n, const glm::mat4 &v)
@@ -368,27 +315,32 @@ struct MapSwapLocator
         {
             for (auto &child : n->m_children)
             {
-                bool found_map_swap = false;
+                bool found_map_transfer = false;
                 if (child.node->m_properties != nullptr)
                 {
-                    MapSwap map_swap = MapSwap();
+                    MapXferData map_transfer = MapXferData();
                     // Probably haven't processed the map swap node yet, so add it and handle later
                     for (GroupProperty_Data &prop : *child.node->m_properties)
                     {
                         if (prop.propName == "GotoSpawn")
                         {
-                            map_swap.m_spawn_link_val = prop.propValue;
-                            found_map_swap = true;
+                            map_transfer.m_target_spawn_name = prop.propValue;
+                            found_map_transfer = true;
                         }
                         if (prop.propName == "GotoMap")
                         {
-                            map_swap.m_map_link_val = prop.propValue;
-                            found_map_swap = true;
+                            map_transfer.m_target_map_name = prop.propValue.split('.')[0];
+                            if (n->door_volume == 1) 
+                            {
+                                // transfer_type is set to door by default, so only need to change for zones.
+                                map_transfer.m_transfer_type = MapXferType::ZONE;
+                            }
+                            found_map_transfer = true;
                         }
                     }
-                    if (found_map_swap)
+                    if (found_map_transfer)
                     {
-                        map_swap.m_node_name = child.node->m_name;
+                        map_transfer.m_node_name = child.node->m_name;
 
                         // get position
                         glm::mat4 transform(child.m_matrix2);
@@ -398,8 +350,8 @@ struct MapSwapLocator
                         pos4 = transform * pos4;
                         glm::vec3 pos3 = glm::vec3(pos4);
 
-                        map_swap.m_position = pos3;
-                        m_targets->emplace_back(map_swap);
+                        map_transfer.m_position = pos3;
+                        m_targets->insert(map_transfer.m_node_name, map_transfer);
                         return false;
                     }
                 }
@@ -410,10 +362,10 @@ struct MapSwapLocator
     }
 };
 
-std::vector<MapSwap> MapSceneGraph::map_swaps() const
+QHash<QString, MapXferData> MapSceneGraph::get_map_transfers() const
 {
-    std::vector<MapSwap> res;
-    MapSwapLocator locator(&res);
+    QHash<QString, MapXferData> res;
+    MapXferLocator locator(&res);
     for (auto v : m_scene_graph->refs)
     {
         walkSceneNode(v->node, v->mat, locator);

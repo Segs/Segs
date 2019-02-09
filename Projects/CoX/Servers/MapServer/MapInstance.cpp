@@ -140,7 +140,7 @@ void MapInstance::start(const QString &scenegraph_path)
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
                 m_all_spawners = m_map_scenegraph->getSpawnPoints();
-                m_map_swaps = m_map_scenegraph->map_swaps();
+                m_map_transfers = m_map_scenegraph->get_map_transfers();
             }, "Loading original scene graph");
 
         TIMED_LOG({
@@ -148,7 +148,6 @@ void MapInstance::start(const QString &scenegraph_path)
             m_npc_generators.generate(this);
             }, "Spawning npcs");
 
-        m_world->set_map_swaps(m_map_swaps);
         // Load Lua Scripts for this Map Instance
         load_map_lua();
     }
@@ -195,6 +194,58 @@ void MapInstance::load_map_lua()
 
     for(const QString &path : script_paths)
         loadAndRunLua(m_scripting_interface, path);
+}
+
+QHash<QString, MapXferData> MapInstance::get_map_door_transfers()
+{
+    if (!m_door_transfers_checked)
+    {
+        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
+        while (i != m_map_transfers.constEnd())
+        {
+            if (i.value().m_transfer_type == MapXferType::DOOR)
+            {
+                m_map_door_transfers.insert(i.key(), i.value());
+            }
+            i++;
+        }
+        m_door_transfers_checked = true;
+    }
+
+    return m_map_door_transfers;
+}
+
+QHash<QString, MapXferData> MapInstance::get_map_zone_transfers()
+{
+    if (!m_zone_transfers_checked)
+    {
+        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
+        while (i != m_map_transfers.constEnd())
+        {
+            if (i.value().m_transfer_type == MapXferType::ZONE)
+            {
+                m_map_zone_transfers.insert(i.key(), i.value());
+            }
+            i++;
+        }
+        m_zone_transfers_checked = true;
+    }
+    return m_map_zone_transfers;
+}
+
+QString MapInstance::getNearestDoor(glm::vec3 location)
+{
+    float door_distance_check = 15.f;
+    QHash<QString, MapXferData>::const_iterator i = get_map_door_transfers().constBegin();
+    while (i != get_map_door_transfers().constEnd())
+    {
+        if (glm::distance(location, i.value().m_position) < door_distance_check)
+        {
+            return i.value().m_target_spawn_name;
+        }
+        i++;
+    }
+    return QString();
 }
 
 ///
@@ -561,14 +612,13 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
     // can prevent motd showing every time.
     MapXferData &map_xfer = map_server->session_map_xfer_idx(lnk->session_token());
-    QString map_path = getMapPath(map_xfer.m_map_idx).toLower();
     GameAccountResponseCharacterData c_data;
     QString serialized_data;
 
     fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
     serializeToQString(c_data, serialized_data);
     ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
-                                    serialized_data, session.m_requested_slot_idx, session.m_name, map_path,
+                                    serialized_data, session.m_requested_slot_idx, session.m_name, getMapPath(map_xfer.m_target_map_name),
                                     session.m_max_slots},
                                     lnk->session_token(),this);
     map_server->putq(map_req);
@@ -2050,9 +2100,9 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     {
         MapXferData &map_data = map_server->session_map_xfer_idx(session.link()->session_token());
         
-        if(!m_all_spawners.empty() && m_all_spawners.contains(map_data.m_spawn_location))
+        if(!m_all_spawners.empty() && m_all_spawners.contains(map_data.m_target_spawn_name))
         {
-            setSpawnLocation(*session.m_ent, map_data.m_spawn_location);
+            setSpawnLocation(*session.m_ent, map_data.m_target_spawn_name);
         }
         else
         {
@@ -2123,7 +2173,9 @@ void MapInstance::on_enter_door(EnterDoor *ev)
                 }
                 else
                 {
-                    map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_idx, QString()},0));
+                    MapXferData map_data = MapXferData();
+                    map_data.m_target_map_name = getMapName(map_idx);
+                    map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_data},0));
                     session.link()->putq(new MapXferWait(getMapPath(map_idx)));
                 }
             }
@@ -2142,7 +2194,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
         // Check if any doors in range have the GotoSpawn property.
         // TODO: if the node also has a GotoMap property, start a map transfer
         //       and put them in the given SpawnLocation in the target map.
-        QString gotoSpawn = m_map_scenegraph->getNearestDoor(ev->location);
+        QString gotoSpawn = getNearestDoor(ev->location);
 
         if (gotoSpawn.isEmpty())
         {
@@ -3103,13 +3155,19 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
 
 void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
 {
-    uint8_t map_idx = getMapIndex(ev->m_data.m_map_name);
+    if (!m_map_transfers.contains(ev->m_data.m_node_name))
+    {
+        qCDebug(logMapXfers) << QString("Map swap collision triggered on node_name %1, but that node_name doesn't exist in the list of map_transfers.");
+        return;
+    }
+
+    MapXferData map_transfer_data = m_map_transfers[ev->m_data.m_node_name];
     Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
     MapClientSession &sess = *e->m_client;
 
-    sess.link()->putq(new MapXferWait(ev->m_data.m_map_name));
+    sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name)));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_idx, ev->m_data.m_spawn_location }, 0));
+    map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_transfer_data}, 0));
 }
 
 //! @}
