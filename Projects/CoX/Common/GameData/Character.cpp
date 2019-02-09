@@ -56,11 +56,11 @@ Character::Character()
 
 void Character::reset()
 {
-    m_name                                  = "EMPTY";
+    m_name                                  = EMPTY_CHAR_NAME;
     m_char_data.m_level                     = 0;
     m_char_data.m_combat_level              = m_char_data.m_level;
-    m_char_data.m_class_name                = "EMPTY";
-    m_char_data.m_origin_name               = "EMPTY";
+    m_char_data.m_class_name                = EMPTY_CHAR_NAME;
+    m_char_data.m_origin_name               = EMPTY_CHAR_NAME;
     m_char_data.m_has_sg_costume            = false;
     m_char_data.m_current_costume_idx       = 0;
     m_char_data.m_using_sg_costume          = false;
@@ -74,8 +74,8 @@ void Character::reset()
 
 bool Character::isEmpty()
 {
-    return ( 0==m_name.compare("EMPTY",Qt::CaseInsensitive)&&
-            (0==m_char_data.m_class_name.compare("EMPTY",Qt::CaseInsensitive)));
+    return ( 0==m_name.compare(EMPTY_CHAR_NAME,Qt::CaseInsensitive)&&
+            (0==m_char_data.m_class_name.compare(EMPTY_CHAR_NAME,Qt::CaseInsensitive)));
 }
 
 void Character::setName(const QString &val )
@@ -83,7 +83,7 @@ void Character::setName(const QString &val )
     if(val.length()>0)
         m_name = val;
     else
-        m_name = "EMPTY";
+        m_name = EMPTY_CHAR_NAME;
 }
 
 void Character::sendTray(BitStream &bs) const
@@ -327,7 +327,7 @@ void Character::serializetoCharsel( BitStream &bs, const QString& entity_map_nam
 
     if(m_costumes.empty())
     {
-        assert(m_name.compare("EMPTY")==0); // only empty characters can have no costumes
+        assert(m_name.compare(EMPTY_CHAR_NAME)==0); // only empty characters can have no costumes
         Costume::NullCostume.storeCharsel(bs);
     }
     else
