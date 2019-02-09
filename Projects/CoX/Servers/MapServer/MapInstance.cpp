@@ -3125,41 +3125,56 @@ void MapInstance::add_chat_message(MapClientSession *sender,QString &msg_text)
 void MapInstance::startTimer(uint32_t entity_idx)
 {
     int count = 0;
+    bool found = false;
     for(auto &t: this->m_lua_timers)
     {
         if(t.m_entity_idx == entity_idx)
+        {
+            found = true;
             break;
-
+        }
         ++count;
     }
-    this->m_lua_timers[count].m_is_enabled = true;
-    this->m_lua_timers[count].m_start_time = getSecsSince2000Epoch();
+    if(found)
+    {
+        this->m_lua_timers[count].m_is_enabled = true;
+        this->m_lua_timers[count].m_start_time = getSecsSince2000Epoch();
+    }
 }
 
 void MapInstance::stopTimer(uint32_t entity_idx)
 {
     int count = 0;
+    bool found = false;
     for(auto &t: this->m_lua_timers)
     {
         if(t.m_entity_idx == entity_idx)
+        {
+            found = true;
             break;
-
+        }
         ++count;
     }
-    this->m_lua_timers[count].m_is_enabled = false;
+    if(found)
+        this->m_lua_timers[count].m_is_enabled = false;
 }
 
 void MapInstance::clearTimer(uint32_t entity_idx)
 {
     int count = 0;
+    bool found = false;
+
     for(auto &t: this->m_lua_timers)
     {
         if(t.m_entity_idx == entity_idx)
+        {
+            found = true;
             break;
-
+        }
         ++count;
     }
-    this->m_lua_timers[count].m_remove = true;
+    if(found)
+        this->m_lua_timers[count].m_remove = true;
 }
 
 //! @}

@@ -264,7 +264,7 @@ QString createKioskMessage(Entity* player)
     {
         QString lastTime = QDateTime::fromTime_t(r.m_last_time).toUTC().toString("hh:mm:ss");
         QString bestTime = QDateTime::fromTime_t(r.m_best_time).toUTC().toString("hh:mm:ss");
-        msg_body.append(QString("<tr><td>Race segment %1</td><td>Last Time: %2</td><td>Best Time: %3</td></tr>").arg(r.m_segment).arg(lastTime).arg(bestTime));
+        msg_body.append(QString("<tr><td>Box #%1</td><td>Last Time: %2</td><td>Best Time: %3</td></tr>").arg(r.m_segment).arg(lastTime).arg(bestTime));
     }
 
     msg_body.append("</table>");
@@ -1621,17 +1621,23 @@ void addRelayRaceResult(MapClientSession &cl, RelayRaceResult &raceResult)
         if(r.m_segment == raceResult.m_segment)
         {
             found = true;
-            if(r.m_best_time < raceResult.m_last_time)
+            if(r.m_best_time > raceResult.m_last_time || r.m_best_time == 0)
+            {
                 races[count] = raceResult;
+                races[count].m_best_time = raceResult.m_last_time;
+            }
             else
                 races[count].m_last_time = raceResult.m_last_time;
 
             break;
         }
+        ++count;
     }
     if(!found)
+    {
+        raceResult.m_best_time = raceResult.m_last_time;
         races.push_back(raceResult);
-
+    }
     cl.m_ent->m_player->m_player_statistics.m_relay_races = races;
     markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
 }

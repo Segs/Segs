@@ -107,8 +107,8 @@ RelayRace.locations[2].action = function()
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[6].contactDialog.message, contactsForZone.RelayRace.dialogPages[6].contactDialog.buttons);
             elseif(contactStatus.dialogScreenIdx == 5) then
                 RelayRace.dialogPages[6].contactDialog = {
-                message = string.format([[Stop standing around and get moving!.<br><br>
-                <color #2189b9> Your time was %s. The 3rd call box is to the north west, near the hospital </color>]], formatedTime),
+                message = string.format([[Stop standing around and get moving!<br><br>
+                <color #2189b9>Your time was %s. The 3rd call box is to the north west, near the hospital.</color>]], formatedTime),
                 buttons = {
                     button01 = {"Leave","CONTACTLINK_BYE"}
                 }
@@ -185,8 +185,8 @@ RelayRace.locations[4].action = function()
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[8].contactDialog.message, contactsForZone.RelayRace.dialogPages[8].contactDialog.buttons);
             elseif(contactStatus.dialogScreenIdx == 9) then
                 RelayRace.dialogPages[8].contactDialog = {
-                    message = string.format([[Did you somehow get stuck on a train? Move it!<br><br><br><br>
-                    <color #2189b9> Your time was %s. The 5th call box is far south and a litte west,
+                    message = string.format([[Did you somehow get stuck on a train? Move it!<br><br>
+                    <color #2189b9>Your time was %s. The 5th call box is far south and a litte west,
                      its in front of a Mighty Mart.</color>]], formatedTime),
                     buttons = {
                         button01 = {"Leave","CONTACTLINK_BYE"}
@@ -279,8 +279,39 @@ RelayRace.startDialogs = function()
     
     if(contactStatus ~= false) then
         printDebug("RelayRace.StartDialogs: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
-        if(contactStatus.dialogScreenIdx >=  1 or contactStatus.currentStanding >= 1) then
+        if(contactStatus.dialogScreenIdx >= 1 and contactStatus.dialogScreenIdx < 10) then
             MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[4].contactDialog.message, contactsForZone.RelayRace.dialogPages[4].contactDialog.buttons);
+        elseif(contactStatus.dialogScreenIdx == 10) then
+            local results = {};
+            results[1] = Player.GetRelayRaceResult(1);
+            results[2] = Player.GetRelayRaceResult(2);
+            results[3] = Player.GetRelayRaceResult(3);
+            results[4] = Player.GetRelayRaceResult(4);
+            results[5] = Player.GetRelayRaceResult(5);
+
+            RelayRace.dialogPages[10] = {};
+            RelayRace.dialogPages[10].contactDialog = {
+                message = string.format( [[<img src="npc:2009" align="left"><br>Not bad.<br><br>Do you want to test them again?<br><br>
+                <color #2189b9><table>
+                <tr><td>Box 1:</td><td>Last Time: %s</td><td>Best Time: %s</td></tr>
+                <tr><td>Box 2:</td><td>Last Time: %s</td><td>Best Time: %s</td></tr>
+                <tr><td>Box 3:</td><td>Last Time: %s</td><td>Best Time: %s</td></tr>
+                <tr><td>Box 4:</td><td>Last Time: %s</td><td>Best Time: %s</td></tr>
+                <tr><td>Box 5:</td><td>Last Time: %s</td><td>Best Time: %s</td></tr>
+                </table></color>]],
+                SecondsToClock(results[1].lastTime),SecondsToClock(results[1].bestTime),
+                SecondsToClock(results[2].lastTime),SecondsToClock(results[2].bestTime),
+                SecondsToClock(results[3].lastTime),SecondsToClock(results[3].bestTime),
+                SecondsToClock(results[4].lastTime),SecondsToClock(results[4].bestTime),
+                SecondsToClock(results[5].lastTime),SecondsToClock(results[5].bestTime)),
+                buttons = {
+                    button01 = {"Reset","CONTACTLINK_INTRODUCE_CONTACT1"},
+                    button02 = {"",""},
+                    button03 = {"Leave","CONTACTLINK_BYE"}
+                }
+            }
+
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[10].contactDialog.message, contactsForZone.RelayRace.dialogPages[10].contactDialog.buttons);
         else
             MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[1].contactDialog.message, contactsForZone.RelayRace.dialogPages[1].contactDialog.buttons);
         end
@@ -304,17 +335,16 @@ RelayRace.callback = function(id)
             Player.AddUpdateContact(contactStatus);
             MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[1].contactDialog.message, contactsForZone.RelayRace.dialogPages[1].contactDialog.buttons);
         end
+
         if(contactStatus.dialogScreenIdx == 0) then
             if(button == "CONTACTLINK_HELLO") then
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[2].contactDialog.message, contactsForZone.RelayRace.dialogPages[2].contactDialog.buttons);
             elseif(button == "CONTACTLINK_ACCEPTSHORT") then
-                --contactsForZone.RelayRace.tasks[1].dbId = contactsForZone.RelayRace.entityId;
-                --Player.AddUpdateTask(contactsForZone.RelayRace.tasks[1]);
-
                 MapInstance.SetOnTickCallback(Player.entityId, contactsForZone.RelayRace.onTickCallBack);
                 MapInstance.StartTimer(Player.entityId);
 
                 contactStatus.dialogScreenIdx = 1;
+                contactStatus.currentStanding = 0;
                 Player.AddUpdateContact(contactStatus);
                 Player.CloseContactDialog();
             elseif(button == "CONTACTLINK_WRONGMODE") then
