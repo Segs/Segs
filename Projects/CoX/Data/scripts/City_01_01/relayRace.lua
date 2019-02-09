@@ -47,33 +47,184 @@ RelayRace.locations[1].action = function()
     
     if(contactStatus ~= false) then
         printDebug("RelayRace.locations[1].action: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
-        if(contactStatus.dialogScreenIdx == 1) then
+        if(contactStatus.dialogScreenIdx == 1 and contactStatus.currentStanding == 0) then
             contactStatus.currentStanding = 1;
             Player.AddUpdateContact(contactStatus);
+        elseif(contactStatus.currentStanding == 1) then
+            local result = Player.GetRelayRaceResult(1);
+            local formatedTime = SecondsToClock(result.lastTime);
+
+            if(contactStatus.dialogScreenIdx == 2) then
+                RelayRace.dialogPages[5].contactDialog = {
+                    message = string.format([[Good job. Your time was %s.<br><br>Ok. On to the 2nd call box. This one is to the north east,
+                    just south of a park in Hyperion Way. Now move fast! We don't have much time!<br><br>
+                    <color #2189b9>Your time starts once you click "ready".</color>]], formatedTime),
+                    buttons = {
+                        button01 = {"Ready","CONTACTLINK_ACCEPTSHORT"}
+                    }
+                }
+                MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[5].contactDialog.message, contactsForZone.RelayRace.dialogPages[5].contactDialog.buttons);
+            elseif(contactStatus.dialogScreenIdx == 3) then
+                RelayRace.dialogPages[5].contactDialog = {
+                    message = string.format([[What are your waiting for?! Go the the 2nd call box! Time is wasting!<br><br>
+                    <color #2189b9>Your last time was %s. The next call box is to the north east,
+                    just south of a park in Hyperion Way. </color>]], formatedTime),
+                    buttons = {
+                        button01 = {"Leave","CONTACTLINK_BYE"}
+                    }
+                }
+                MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[5].contactDialog.message, contactsForZone.RelayRace.dialogPages[5].contactDialog.buttons);
+            end
         end
     end
 
     Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
-    
-   
 end
 
 RelayRace.locations[2] = {};
 RelayRace.locations[2].name = "Patrol_Easy_2_City_01_01";
 RelayRace.locations[2].coordinates = vec3.new(-928, -15, 44);
 RelayRace.locations[2].action = function()
+    local contactStatus = Contacts.FindContactByName("Sgt. Johnson");
+    if(contactStatus ~= false) then
+        --printDebug("RelayRace.locations[1].action: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
+        if(contactStatus.currentStanding == 1 and contactStatus.dialogScreenIdx == 3) then
+            contactStatus.currentStanding = 2;
+            Player.AddUpdateContact(contactStatus);
+        elseif(contactStatus.currentStanding == 2) then
+            local result = Player.GetRelayRaceResult(2);
+            local formatedTime = SecondsToClock(result.lastTime);
 
+            if(contactStatus.dialogScreenIdx == 4) then
+                RelayRace.dialogPages[6].contactDialog = {
+                    message = string.format([[Good job. Your time was %s.<br><br>Now, on to the 3rd call box. 
+                    This one is to the north west, near the hospital.<br><br>
+                    <color #2189b9>Your time starts once you click "ready".</color>]], formatedTime),
+                    buttons = {
+                        button01 = {"Ready","CONTACTLINK_ACCEPTSHORT"}
+                    }
+                }
+                MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[6].contactDialog.message, contactsForZone.RelayRace.dialogPages[6].contactDialog.buttons);
+            elseif(contactStatus.dialogScreenIdx == 5) then
+                RelayRace.dialogPages[6].contactDialog = {
+                message = string.format([[Stop standing around and get moving!.<br><br>
+                <color #2189b9> Your time was %s. The 3rd call box is to the north west, near the hospital </color>]], formatedTime),
+                buttons = {
+                    button01 = {"Leave","CONTACTLINK_BYE"}
+                }
+            }
+            
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[6].contactDialog.message, contactsForZone.RelayRace.dialogPages[6].contactDialog.buttons);
+            end
+        end
+    end
+    Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
 end
 
 RelayRace.locations[3] = {};
 RelayRace.locations[3].name = "Patrol_Easy_3_City_01_01";
 RelayRace.locations[3].coordinates = vec3.new(89, 0, -1785);
+RelayRace.locations[3].action = function()
+    local contactStatus = Contacts.FindContactByName("Sgt. Johnson");
+    if(contactStatus ~= false) then
+        --printDebug("RelayRace.locations[1].action: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
+        if(contactStatus.currentStanding == 2 and contactStatus.dialogScreenIdx == 5) then
+            contactStatus.currentStanding = 3;
+            Player.AddUpdateContact(contactStatus);
+        elseif(contactStatus.currentStanding == 3) then
+            local result = Player.GetRelayRaceResult(3);
+            local formatedTime = SecondsToClock(result.lastTime);
+
+            if(contactStatus.dialogScreenIdx == 6)then
+                RelayRace.dialogPages[7].contactDialog = {
+                    message = string.format([[Good job. Your time was %s.<br><br>Now, on to the 4th call box. 
+                    This one is to the west near the train station.<br><br>
+                    <color #2189b9>Your time starts once you click "ready".</color>]], formatedTime),
+                    buttons = {
+                        button01 = {"Ready","CONTACTLINK_ACCEPTSHORT"}
+                    }
+                }
+                MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[7].contactDialog.message, contactsForZone.RelayRace.dialogPages[7].contactDialog.buttons);
+            elseif(contactStatus.dialogScreenIdx == 7) then
+                RelayRace.dialogPages[7].contactDialog = {
+                    message = string.format([[Whats wrong? Are your sick or something? Get moving!<br><br>
+                    <color #2189b9>Your time was %s. The 4th call box is to the west near the train station.</color>]], formatedTime),
+                    buttons = {
+                        button01 = {"Leave","CONTACTLINK_BYE"}
+                    }
+                }
+                MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[7].contactDialog.message, contactsForZone.RelayRace.dialogPages[7].contactDialog.buttons);
+            end
+        end
+    end
+    Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
+end
 RelayRace.locations[4] = {};
 RelayRace.locations[4].name = "Patrol_Easy_4_City_01_01";
 RelayRace.locations[4].coordinates = vec3.new(679, 42, -1246);
+RelayRace.locations[4].action = function()
+    local contactStatus = Contacts.FindContactByName("Sgt. Johnson");
+    if(contactStatus ~= false) then
+        --printDebug("RelayRace.locations[1].action: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
+        if(contactStatus.currentStanding == 3 and contactStatus.dialogScreenIdx == 7) then
+            contactStatus.currentStanding = 4;
+            Player.AddUpdateContact(contactStatus);
+        elseif(contactStatus.currentStanding == 4) then
+            local result = Player.GetRelayRaceResult(4);
+            local formatedTime = SecondsToClock(result.lastTime);
+
+            if (contactStatus.dialogScreenIdx == 8) then
+                RelayRace.dialogPages[8].contactDialog = {
+                    message = string.format([[Good job. Your time was %s.<br><br>Now, on to the 5th call box. 
+                    This one is far south and a litte west, its in front of a Mighty Mart.<br><br>
+                    <color #2189b9>Your time starts once you click "ready".</color>]], formatedTime),
+                    buttons = {
+                        button01 = {"Ready","CONTACTLINK_ACCEPTSHORT"}
+                    }
+                }
+                MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[8].contactDialog.message, contactsForZone.RelayRace.dialogPages[8].contactDialog.buttons);
+            elseif(contactStatus.dialogScreenIdx == 9) then
+                RelayRace.dialogPages[8].contactDialog = {
+                    message = string.format([[Did you somehow get stuck on a train? Move it!<br><br><br><br>
+                    <color #2189b9> Your time was %s. The 5th call box is far south and a litte west,
+                     its in front of a Mighty Mart.</color>]], formatedTime),
+                    buttons = {
+                        button01 = {"Leave","CONTACTLINK_BYE"}
+                    }
+                }
+                MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[8].contactDialog.message, contactsForZone.RelayRace.dialogPages[8].contactDialog.buttons);
+            end
+        end
+    end
+    Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
+end
+
 RelayRace.locations[5] = {};
 RelayRace.locations[5].name = "Patrol_Easy_5_City_01_01";
 RelayRace.locations[5].coordinates = vec3.new(1099, 0, 124);
+RelayRace.locations[5].action = function()
+    local contactStatus = Contacts.FindContactByName("Sgt. Johnson");
+    if(contactStatus ~= false) then
+        --printDebug("RelayRace.locations[1].action: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
+        if(contactStatus.currentStanding == 4 and contactStatus.dialogScreenIdx == 9) then
+            contactStatus.currentStanding = 5;
+            Player.AddUpdateContact(contactStatus);
+        elseif(contactStatus.currentStanding == 5 and contactStatus.currentStanding >= 10) then
+            local result = Player.GetRelayRaceResult(5);
+            local formatedTime = SecondsToClock(result.lastTime);
+            RelayRace.dialogPages[9].contactDialog = {
+                message = string.format([[Nice work. Your time was %s.<br><br>They all seem to be working...for now.<br>
+                We should test them again soon.<br>Talk to me if you'd like to test them again. Maybe you can beat your times.
+                ]], formatedTime),
+                buttons = {
+                    button01 = {"Leave","CONTACTLINK_BYE"}
+                }
+            }
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[9].contactDialog.message, contactsForZone.RelayRace.dialogPages[9].contactDialog.buttons);
+        end
+    end
+    Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
+end
 
 
 RelayRace.dialogPages = {};
@@ -145,10 +296,11 @@ RelayRace.callback = function(id)
     printDebug("RelayRace.Callback Button String: " .. tostring(button));
     
     local contactStatus = Contacts.FindContactByName("Sgt. Johnson");
-    printDebug("RelayRace.callback: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
+    printDebug("RelayRace.callback: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx) .. " currentStanding: ".. tostring(contactStatus.currentStanding));
     if(contactStatus ~= false) then
         if(button == "CONTACTLINK_INTRODUCE_CONTACT1") then
             contactStatus = contactsForZone.RelayRace.CreateContact();
+            MapInstance.StopTimer(Player.entityId);
             Player.AddUpdateContact(contactStatus);
             MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[1].contactDialog.message, contactsForZone.RelayRace.dialogPages[1].contactDialog.buttons);
         end
@@ -169,18 +321,44 @@ RelayRace.callback = function(id)
                 MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[3].contactDialog.message, contactsForZone.RelayRace.dialogPages[3].contactDialog.buttons);
             end
 
-        elseif(contactStatus.dialogScreenIdx == 1) then
+        elseif(contactStatus.currentStanding == 1 and contactStatus.dialogScreenIdx == 2) then
             if(button == "CONTACTLINK_ACCEPTSHORT") then
-                --local task = DeepCopy(contactsForZone.RelayRace.tasks[1]);
-                --task.description = "Test police call box 2";
-                --task.location.location = DeepCopy(contactsForZone.RelayRace.locations[2].coordinates);
-               -- Player.AddUpdateTask(task);
-
+                contactStatus.dialogScreenIdx = 3;
+                Player.AddUpdateContact(contactStatus);
                 MapInstance.SetOnTickCallback(Player.entityId, contactsForZone.RelayRace.onTickCallBack);
                 MapInstance.StartTimer(Player.entityId);
-
+                Player.CloseContactDialog();
             end
-            
+        elseif(contactStatus.currentStanding == 2 and contactStatus.dialogScreenIdx == 4) then
+            if(button == "CONTACTLINK_ACCEPTSHORT") then
+                contactStatus.dialogScreenIdx = 5;
+                Player.AddUpdateContact(contactStatus);
+                MapInstance.SetOnTickCallback(Player.entityId, contactsForZone.RelayRace.onTickCallBack);
+                MapInstance.StartTimer(Player.entityId);
+                Player.CloseContactDialog();
+            end
+        elseif(contactStatus.currentStanding == 3 and contactStatus.dialogScreenIdx == 6) then
+            if(button == "CONTACTLINK_ACCEPTSHORT") then
+                contactStatus.dialogScreenIdx = 7;
+                Player.AddUpdateContact(contactStatus);
+                MapInstance.SetOnTickCallback(Player.entityId, contactsForZone.RelayRace.onTickCallBack);
+                MapInstance.StartTimer(Player.entityId);
+                Player.CloseContactDialog();
+            end
+        elseif(contactStatus.currentStanding == 4 and contactStatus.dialogScreenIdx == 8) then
+            if(button == "CONTACTLINK_ACCEPTSHORT") then
+                contactStatus.dialogScreenIdx = 9;
+                Player.AddUpdateContact(contactStatus);
+                MapInstance.SetOnTickCallback(Player.entityId, contactsForZone.RelayRace.onTickCallBack);
+                MapInstance.StartTimer(Player.entityId);
+                Player.CloseContactDialog();
+            end
+        elseif(contactStatus.currentStanding == 5 and contactStatus.dialogScreenIdx == 10) then
+            if(button == "CONTACTLINK_ACCEPTSHORT") then
+                contactStatus.currentStanding = 0;
+                contactStatus.dialogScreenIdx = 0;
+                Player.AddUpdateContact(contactStatus);
+            end
         end
     end
 end
@@ -193,18 +371,18 @@ RelayRace.onTickCallBack = function(start, diff, current)
     
     if(contactStatus ~= false) then
         --printDebug("RelayRace.onTickCallBack: dialogScreenIdx: " .. tostring(contactStatus.dialogScreenIdx));
-        if(contactStatus.dialogScreenIdx ==  1 and contactStatus.currentStanding == 1) then
+        if(contactStatus.dialogScreenIdx == 1 and contactStatus.currentStanding == 1) then
             MapInstance.StopTimer(Player.entityId);
             Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
 
-            local statistic = characterStatistic.new();
-            statistic.name = "Relay Race";
-            statistic.id = 11; -- id for race type
-            statistic.time = DeepCopy(diff);
-            Player.AddStatistic(statistic);
+            local raceResult = RelayRaceResult.new();
+            raceResult.segment = 1;
+            raceResult.lastTime = DeepCopy(diff);
+            Player.AddRelayRaceResult(raceResult);
+            printDebug("1 startTime: " .. tostring(startTime) .. " diff: " .. tostring(diff) .. " current: " .. tostring(current));
 
             MapInstance.ClearTimer(Player.entityId);
-            local formatedTime = SecondsToClock(diff);
+            local formatedTime = SecondsToClock(DeepCopy(diff));
             RelayRace.dialogPages[5] = {};
             RelayRace.dialogPages[5].contactDialog = {
                 message = string.format([[Good job. Your time was %s.<br><br>Ok. On to the 2nd call box. This one is to the north east,
@@ -216,8 +394,115 @@ RelayRace.onTickCallBack = function(start, diff, current)
             }
             MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[5].contactDialog.message, contactsForZone.RelayRace.dialogPages[5].contactDialog.buttons);
 
-            contactStatus.currentStanding = 2;
+            contactStatus.dialogScreenIdx = 2;
             Player.AddUpdateContact(contactStatus);
+
+        elseif(contactStatus.currentStanding == 2 and contactStatus.dialogScreenIdx == 3) then
+            MapInstance.StopTimer(Player.entityId);
+            Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
+    
+            local raceResult = RelayRaceResult.new();
+            raceResult.segment = 2;
+            raceResult.lastTime = DeepCopy(diff);
+            Player.AddRelayRaceResult(raceResult);
+            printDebug("2 startTime: " .. tostring(startTime) .. " diff: " .. tostring(diff) .. " current: " .. tostring(current));
+
+            MapInstance.ClearTimer(Player.entityId);
+            local formatedTime = SecondsToClock(diff);
+            RelayRace.dialogPages[6] = {};
+            RelayRace.dialogPages[6].contactDialog = {
+                message = string.format([[Good job. Your time was %s.<br><br>Now, on to the 3rd call box. 
+                This one is to the north west, near the hospital.<br><br>
+                <color #2189b9>Your time starts once you click "ready".</color>]], formatedTime),
+                buttons = {
+                    button01 = {"Ready","CONTACTLINK_ACCEPTSHORT"}
+                }
+            }
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[6].contactDialog.message, contactsForZone.RelayRace.dialogPages[6].contactDialog.buttons);
+    
+            contactStatus.dialogScreenIdx = 4;
+            Player.AddUpdateContact(contactStatus);
+
+        elseif(contactStatus.currentStanding == 3 and contactStatus.dialogScreenIdx == 5) then
+            
+            MapInstance.StopTimer(Player.entityId);
+            Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
+    
+            local raceResult = RelayRaceResult.new();
+            raceResult.segment = 3;
+            raceResult.lastTime = DeepCopy(diff);
+            Player.AddRelayRaceResult(raceResult);
+            printDebug("3 startTime: " .. tostring(startTime) .. " diff: " .. tostring(diff) .. " current: " .. tostring(current));
+    
+            MapInstance.ClearTimer(Player.entityId);
+            local formatedTime = SecondsToClock(diff);
+            RelayRace.dialogPages[7] = {};
+            RelayRace.dialogPages[7].contactDialog = {
+                message = string.format([[Good job. Your time was %s.<br><br>Now, on to the 4th call box. 
+                This one is to the west near the train station.<br><br>
+                <color #2189b9>Your time starts once you click "ready".</color>]], formatedTime),
+                buttons = {
+                    button01 = {"Ready","CONTACTLINK_ACCEPTSHORT"}
+                }
+            }
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[7].contactDialog.message, contactsForZone.RelayRace.dialogPages[7].contactDialog.buttons);
+    
+            contactStatus.dialogScreenIdx = 6;
+            Player.AddUpdateContact(contactStatus)
+
+        elseif(contactStatus.currentStanding == 4 and contactStatus.dialogScreenIdx == 7) then
+            
+            MapInstance.StopTimer(Player.entityId);
+            Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
+    
+            local raceResult = RelayRaceResult.new();
+            raceResult.segment = 4;
+            raceResult.lastTime = DeepCopy(diff);
+            Player.AddRelayRaceResult(raceResult);
+            printDebug("4 startTime: " .. tostring(startTime) .. " diff: " .. tostring(diff) .. " current: " .. tostring(current));
+    
+            MapInstance.ClearTimer(Player.entityId);
+            local formatedTime = SecondsToClock(diff);
+            RelayRace.dialogPages[8] = {};
+            RelayRace.dialogPages[8].contactDialog = {
+                message = string.format([[Good job. Your time was %s.<br><br>Now, on to the 5th and call box. 
+                This one is far south and a litte west, its in front of a Mighty Mart.<br><br>
+                <color #2189b9>Your time starts once you click "ready".</color>]], formatedTime),
+                buttons = {
+                    button01 = {"Ready","CONTACTLINK_ACCEPTSHORT"}
+                }
+            }
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[8].contactDialog.message, contactsForZone.RelayRace.dialogPages[8].contactDialog.buttons);
+    
+            contactStatus.dialogScreenIdx = 8;
+            Player.AddUpdateContact(contactStatus)
+        elseif(contactStatus.currentStanding == 5 and contactStatus.dialogScreenIdx == 9) then
+            
+            MapInstance.StopTimer(Player.entityId);
+            Player.SetActiveDialogCallback(contactsForZone.RelayRace.callback);
+    
+          
+            local raceResult = RelayRaceResult.new();
+            raceResult.segment = 5;
+            raceResult.lastTime = DeepCopy(diff);
+            Player.AddRelayRaceResult(raceResult);
+            printDebug("5 startTime: " .. tostring(startTime) .. " diff: " .. tostring(diff) .. " current: " .. tostring(current));
+
+            MapInstance.ClearTimer(Player.entityId);
+            local formatedTime = SecondsToClock(diff);
+            RelayRace.dialogPages[9] = {};
+            RelayRace.dialogPages[9].contactDialog = {
+                message = string.format([[Nice work. Your time was %s.<br><br>They all seem to be working...for now.<br>
+                We should test them again soon.<br>Talk to me if you'd like to test them again. Maybe you can beat your times.
+                ]], formatedTime),
+                buttons = {
+                    button01 = {"Leave","CONTACTLINK_BYE"}
+                }
+            }
+            MapClientSession.Contact_dialog(contactsForZone.RelayRace.dialogPages[9].contactDialog.message, contactsForZone.RelayRace.dialogPages[9].contactDialog.buttons);
+    
+            contactStatus.dialogScreenIdx = 10;
+            Player.AddUpdateContact(contactStatus)
 
         end
     end

@@ -80,6 +80,4 @@ class TaskObjectiveTimer // Shouldn't serialze to DB?
 public:
     QString m_message;
     float m_mission_time;
-
-
 };

@@ -10,11 +10,6 @@
 #include "Common/GameData/Sidekick.h"
 #include "Common/GameData/Friend.h"
 #include "Common/GameData/Powers.h"
-#include "Common/GameData/Clue.h"
-#include "Common/GameData/Contact.h"
-#include "Common/GameData/CharacterAttributes.h"
-#include "Common/GameData/CharacterStatistics.h"
-#include "Common/GameData/Task.h"
 
 #include <QString>
 #include <stdint.h>
@@ -22,7 +17,7 @@
 
 struct CharacterData
 {
-        enum : uint32_t {class_version       = 11}; // v11: Clue/Souvenirs
+        enum : uint32_t {class_version       = 12}; // v12: Moved Contacts/Clues/Souviners/Tasks to PlayerData
 
         QString     m_titles[3];             // Generic, Origin, Special
         QString     m_class_name;
@@ -48,10 +43,7 @@ struct CharacterData
         PowerTrayGroup      m_trays;
         vInspirations       m_inspirations;
         vEnhancements       m_enhancements;     // Enhancements owned, but not attached to powers
-        vContactList        m_contacts;
-        vTaskEntryList      m_tasks_entry_list;
-        ClueSouvenirList    m_clue_souvenir_list;
-        vCharacterStatistics m_character_statistics;
+
         uint32_t    m_max_insp_cols     = 0;
         uint32_t    m_max_insp_rows     = 0;
         uint32_t    m_max_enhance_slots = 0;

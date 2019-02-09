@@ -7,9 +7,9 @@
 
 #pragma once
 #include "Messages/Map/MessageChannels.h"
-#include "Common/GameData/CharacterStatistics.h"
 #include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
+#include "Common/GameData/PlayerStatistics.h"
 #include "Common/GameData/VisitLocation.h"
 #include "Common/GameData/Task.h"
 #include "glm/vec3.hpp"
@@ -146,4 +146,6 @@ void logSpawnLocations(MapClientSession &cl, const char* spawn_type);
 void respawn(MapClientSession &cl, const char* spawn_type);
 void npcSendMessage(MapClientSession &cl, QString& channel, int entityIdx, QString& message);
 void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& message);
-void addStatistic(MapClientSession &cl, CharacterStatistic statistic);
+void addRelayRaceResult(MapClientSession &cl, RelayRaceResult &raceResult);
+RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment);
+void addHideAndSeekResult(MapClientSession &cl, int points);

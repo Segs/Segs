@@ -7,7 +7,6 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterClass.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterData.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterHelpers.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/CharacterStatistics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CommonNetStructures.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Contact.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Costume.cpp
@@ -17,6 +16,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PlayerStatistics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.cpp
@@ -72,7 +72,6 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterClass.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterData.h
     ${CMAKE_CURRENT_SOURCE_DIR}/CharacterHelpers.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/CharacterStatistics.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Costume.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Entity.h
     ${CMAKE_CURRENT_SOURCE_DIR}/EntityHelpers.h
@@ -81,6 +80,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.h
     ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/PlayerStatistics.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.h

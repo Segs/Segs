@@ -164,12 +164,7 @@ HideAndSeek.callback = function(id)
         MapInstance.StopTimer(contactsForZone.HideAndSeek.entityId);
         --give point
 
-        local statistic = characterStatistic.new();
-        statistic.name = "HideAndSeek";
-        statistic.id = 1;
-        statistic.time = 0;
-        statistic.count = 1; -- Server will increment count.
-        Player.AddStatistic(statistic);
+        Player.AddHideAndSeekPoint(1);-- Server will increment count.
         Player.CloseContactDialog();
         MapInstance.NpcMessage('b', contactsForZone.HideAndSeek.entityId, string.format("Heroes! %s found me. I'll be back at the steps in Atlas Plaza if you want to play again.", heroName));
         MapInstance.RemoveNpc(contactsForZone.HideAndSeek.entityId);

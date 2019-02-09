@@ -5,17 +5,10 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#include "Character.h"
+#include "playerdata_definitions.h"
 #include "Logging.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
-
-
-void addContact(CharacterData &cd, Contact &contact)
-{
-    qCDebug(logMapEvents) << "Character addContact";
-    cd.m_contacts.push_back(contact);
-}
 
 template<class Archive>
 void Contact::serialize(Archive &archive, uint32_t const version)

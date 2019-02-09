@@ -44,18 +44,3 @@ void Souvenir::serialize(Archive &archive, uint32_t const version)
 
  CEREAL_CLASS_VERSION(Clue, Clue::class_version)   // register Clue class version
  SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(Clue)
-
- template<class Archive>
- void ClueSouvenirList::serialize(Archive &archive, uint32_t const version)
- {
-     if(version != ClueSouvenirList::class_version)
-     {
-         qCritical() << "Failed to serialize ClueSouvenirList, incompatible serialization format version " << version;
-         return;
-     }
-     archive(cereal::make_nvp("clueList",m_clue_list));
-     archive(cereal::make_nvp("souvenirList",m_souvenir_list));
- }
-
- CEREAL_CLASS_VERSION(ClueSouvenirList, ClueSouvenirList::class_version)   // register Clue class version
- SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(ClueSouvenirList)

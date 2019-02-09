@@ -46,7 +46,7 @@ static QHash<QString,int> contactLinkHash = {
 struct Destination // aka waypoint
 {
   public:
-    enum : uint32_t {class_version       = 1};
+    enum : uint32_t {class_version       = 2};
 
     int point_idx = 0;
     glm::vec3 location;
@@ -70,7 +70,7 @@ struct Destination // aka waypoint
 class Contact
 {
 public:
-    enum : uint32_t {class_version       = 1};
+    enum : uint32_t {class_version       = 2};
 
     // for scripting language access.
     std::string getName() const { return m_name.toStdString();}
