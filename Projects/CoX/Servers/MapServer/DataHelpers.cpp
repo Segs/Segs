@@ -228,6 +228,7 @@ QString createMapMenu() // TODO: compileMonorailMenu() as well
 
 void getEmailHeaders(MapClientSession& sess)
 {
+    /*
     if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
@@ -236,6 +237,7 @@ void getEmailHeaders(MapClientSession& sess)
 
     HandlerLocator::getEmail_Handler()->putq(new EmailHeaderRequest(
         {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));
+    */
 }
 
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
@@ -1271,7 +1273,9 @@ void showMapMenu(MapClientSession &sess)
 int64_t getSecsSince2000Epoch()
 {
     QDateTime base_date(QDate(2000,1,1));
-    return base_date.secsTo(QDateTime::currentDateTime());
+
+    // 25200 -> seven hours in secs
+    return base_date.secsTo(QDateTime::currentDateTimeUtc()) - 25200;
 }
 
 void addClue(MapClientSession &cl, Clue clue)
