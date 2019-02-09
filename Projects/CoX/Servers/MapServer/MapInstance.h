@@ -125,8 +125,8 @@ class MapInstance final : public EventProcessor
         uint32_t                m_index = 1; // what does client expect this to store, and where do we send it?
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
 
-        GameDBSyncService*      m_sync_service;
-        EmailService*           m_email_service;
+        std::unique_ptr<GameDBSyncService>      m_sync_service;
+        std::unique_ptr<EmailService>           m_email_service;
 
 public:
         SessionStore            m_session_store;
@@ -159,6 +159,8 @@ protected:
 
         void                    enqueue_client(MapClientSession *clnt);
         void                    spin_down();
+        void                    init_timers();
+        void                    init_services();
         uint32_t                index() const { return m_index; }
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
@@ -192,6 +194,13 @@ protected:
         void on_afk_update();
         void send_character_update(Entity *e);
         void send_player_update(Entity *e);
+
+        void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
+        void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
+        void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
+        void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
+        void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
+        void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
 
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
         void on_window_state(SEGSEvents::WindowState *ev);

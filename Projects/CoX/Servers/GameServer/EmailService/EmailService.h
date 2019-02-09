@@ -25,12 +25,9 @@ class EmailHeaderToClientMessage;
 class EmailCreateStatusMessage;
 }
 
-class EmailService : public EventProcessor
+class EmailService
 {
 private:
-    using SessionStore = ClientSessionStore<MapClientSession>;
-    SessionStore* m_session_store;
-
     void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
     void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
     void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
@@ -39,15 +36,8 @@ private:
     void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
 
 public:
-    IMPL_ID(EmailService)
-    EmailService(SessionStore& session_store) {m_session_store = &session_store;}
+    EmailService() {}
 protected:
-    // EventProcessor interface
-    bool per_thread_startup() override;
-    void dispatch(SEGSEvents::Event *ev) override;
-    void serialize_from(std::istream &is) override;
-    void serialize_to(std::ostream &is) override;
-
 };
 
-#endif // GAMEDBSYNCSERVICE_H
+#endif // EMAILSERVICE_H

@@ -156,11 +156,13 @@ void MapInstance::start(const QString &scenegraph_path)
         qWarning() << "FAILED to load map instance data. Check to see if file exists:" << m_data_path;
     }
 
-    // create a GameDbSyncService
-    m_sync_service = new GameDBSyncService();
-    m_sync_service->set_db_handler(m_game_server_id);
-    m_sync_service->activate();
+    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
+    init_timers();
+    init_services();
+}
 
+void MapInstance::init_timers()
+{
     // world simulation ticks
     m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, world_update_interval, false);
     // state broadcast ticks
@@ -169,9 +171,16 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service_timer =
         std::make_unique<SEGSTimer>(this, Sync_Service_Update_Timer, sync_service_update_interval, false);
     m_afk_update_timer = std::make_unique<SEGSTimer>(this, Afk_Update_Timer, afk_update_interval, false );
+}
 
-    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
-    m_email_service = new EmailService(m_session_store);
+void MapInstance::init_services()
+{
+    // create a GameDbSyncService
+    m_sync_service = std::make_unique<GameDBSyncService>();
+    m_sync_service->set_db_handler(m_game_server_id);
+    m_sync_service->activate();
+
+    m_email_service = std::make_unique<EmailService>(m_session_store);
     m_email_service->activate();
 }
 
@@ -237,7 +246,9 @@ MapInstance::~MapInstance()
 
     // one last update on entities before termination of MapInstance, and in turn the SyncService as well
     on_update_entities();
-    delete m_sync_service;
+
+    m_sync_service.reset();
+    m_email_service.reset();
 }
 
 void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*ev*/)
@@ -451,22 +462,22 @@ void MapInstance::dispatch( Event *ev )
             on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
         case evEmailHeaderResponse:
-            m_email_service->putq(ev);
+            on_email_header_response(static_cast<EmailHeaderResponse *>(ev));;
             break;
         case evEmailHeaderToClientMessage:
-            m_email_service->putq(ev);
+            on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev));
             break;
         case evEmailHeadersToClientMessage:
-            m_email_service->putq(ev);
+            on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev));
             break;
         case evEmailReadResponse:
-            m_email_service->putq(ev);
+            on_email_read_response(static_cast<EmailReadResponse *>(ev));
             break;
         case evEmailWasReadByRecipientMessage:
-            m_email_service->putq(ev);
+            on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
             break;
         case evEmailCreateStatusMessage:
-            m_email_service->putq(ev);
+            on_email_create_status(static_cast<EmailCreateStatusMessage *>(ev));
             break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));

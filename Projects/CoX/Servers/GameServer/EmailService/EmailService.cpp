@@ -6,6 +6,7 @@
  */
 
 #include "EmailService.h"
+#include "MapServer/MapInstance.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
 #include "Common/Servers/InternalEvents.h"
@@ -20,51 +21,9 @@
 
 using namespace SEGSEvents;
 
-bool EmailService::per_thread_startup()
+void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
 {
-    bool result = true;
-    if(!result)
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService failed to load/configure",-1},0));
-    else
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService loaded/configured",0},0));
-    return result;
-}
-
-void EmailService::dispatch(Event *ev)
-{
-    // We are servicing a request from message queue, using dispatchSync as a common processing point.
-    // nullptr result means that the given message is one-way
-    switch (ev->type())
-    {
-    case evEmailHeaderResponse:
-        on_email_header_response(static_cast<EmailHeaderResponse *>(ev)); break;
-    case evEmailReadResponse:
-        on_email_read_response(static_cast<EmailReadResponse *>(ev)); break;
-    case evEmailWasReadByRecipientMessage:
-        on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev)); break;
-    case evEmailHeadersToClientMessage:
-        on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev)); break;
-    case evEmailHeaderToClientMessage:
-        on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev)); break;
-    case evEmailCreateStatusMessage:
-        on_email_create_status(static_cast<EmailCreateStatusMessage *>(ev)); break;
-    default: assert(false); break;
-    }
-}
-
-void EmailService::serialize_from(std::istream &/*is*/)
-{
-    assert(false);
-}
-
-void EmailService::serialize_to(std::ostream &/*is*/)
-{
-    assert(false);
-}
-
-void EmailService::on_email_header_response(EmailHeaderResponse* ev)
-{
-    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
 
     for (const auto &data : ev->m_data.m_email_headers)
     {
@@ -78,18 +37,18 @@ void EmailService::on_email_header_response(EmailHeaderResponse* ev)
 }
 
 // EmailHandler will send this event here
-void EmailService::on_email_header_to_client(EmailHeaderToClientMessage* ev)
+void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
     map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
                                                                           ev->m_data.m_sender_name,
                                                                           ev->m_data.m_subject,
                                                                           ev->m_data.m_timestamp));
 }
 
-void EmailService::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
+void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
 
     for (const auto &data : ev->m_data.m_email_headers)
     {
@@ -103,26 +62,26 @@ void EmailService::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
     sendInfoMessage(MessageChannel::DEBUG_INFO, message, map_session);
 }
 
-void EmailService::on_email_read_response(EmailReadResponse *ev)
+void MapInstance::on_email_read_response(EmailReadResponse *ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
     map_session.addCommandToSendNextUpdate(std::make_unique<EmailRead>(ev->m_data.m_email_id,
                                                                        ev->m_data.m_message,
                                                                        ev->m_data.m_sender_name));
 }
 
-void EmailService::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg)
+void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(msg->session_token()));
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_message, map_session);
 
     // this is sent from the reader back to the sender via EmailHandler
     // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
 }
 
-void EmailService::on_email_create_status(EmailCreateStatusMessage *msg)
+void MapInstance::on_email_create_status(EmailCreateStatusMessage *msg)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(msg->session_token()));
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
     map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(
                 new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name)));
 }
