@@ -1,7 +1,5 @@
 printDebug('Loading global.lua...')
 
-
-
 --Testing objects
 local enhancements = {
     'Generic_Damage', 'Generic_Accuracy', 'Generic_Resistance', 'Generic_Defense',
@@ -11,7 +9,6 @@ local enhancements = {
 
 local inspirations = { 'Insight', 'Enrage', 'Luck', 'Catch_A_Breath', 'Respite',
  'Discipline', 'Awaken'
-
 }
 
 local tempPowers = {
@@ -56,17 +53,15 @@ function Tasks.UpdateTasksForZone(zone)
 end
 --End Task Functions
 
-
-
   --Global Helper Functions
 function round (num, numDecimalPlaces)
     local mult = 10^(numDecimalPlaces or 0)
     return math.floor(num * mult + 0.5) / mult
-  end
+end
 
-  function roundToString(num, numDecimalPlaces)
+function roundToString(num, numDecimalPlaces)
     return tonumber(string.format("%." .. (numDecimalPlaces or 0) .. "f", num))
-  end
+end
 
   
 function DeepCopy(object)
@@ -86,7 +81,6 @@ function DeepCopy(object)
     end
     return _copy(object);
 end
-
 function SecondsToClock(seconds)
     local seconds = tonumber(seconds)
   
@@ -111,18 +105,12 @@ function Contacts.SpawnContacts(zone)
             if(value.spawned ~= true) then
                 value.expected = true
                 spawning = true
-
-                if(value.useMapInstance == nil) then
-                    MapClientSession.AddNpc(value.model, value.location.coordinates, value.location.orientation, value.variation, value.name)
-                elseif(value.useMapInstance == true) then
-                    MapInstance.AddNpc(value.model, value.location.coordinates, value.location.orientation, value.variation, value.name)
-                end
+                MapInstance.AddNpc(value.model, value.location.coordinates, value.location.orientation, value.variation, value.name);
             end
 
             if(spawning == true) then
                 break
             end
-
         end
     end
 end
@@ -281,7 +269,6 @@ function Player.GiveRandomTempPower()
     Player.GiveTempPower(tempPowers[randomIndex])
 end
 
-
 printDebug('Finished Loading global.lua')
 
 --[[            Notes for scriping  
@@ -335,9 +322,9 @@ For contact dialogs, 11 buttons is the max you can have displayed at once.
     {"CONTACTLINK_NEWPLAYERTELEPORT_GC" ,0x17}, 23
     {"CONTACTLINK_FORMTASKFORCE"        ,0x18}, 24
     {"CONTACTLINK_GOTOTAILOR"           ,0x1A}, 26
-  ]]
 
-  --[[ Respawn Locations
+
+    Respawn Locations
 
   Hospital_Entrance
   Hospital_Exit
@@ -350,38 +337,35 @@ For contact dialogs, 11 buttons is the max you can have displayed at once.
   spn_hosp_fl1_01
   spn_hosp_fl2
   spn_hosp_fl3
-  ]]
 
   
---[[ Revive Levels
-0 = FULL:
-1 = AWAKEN:
-2 = BOUNCE_BACK:
-3 = RESTORATION:
-4 = IMMORTAL_RECOVERY:
-5 = REGEN_REVIVE:
-    ]]
+
+  Revive Levels
+  0 = FULL:
+  1 = AWAKEN:
+  2 = BOUNCE_BACK:
+  3 = RESTORATION:
+  4 = IMMORTAL_RECOVERY:
+  5 = REGEN_REVIVE:
 
 
-  --[[
-      FloatingMessage values
+  FloatingMessage values
 
-    FloatingMsg_NotEnoughEndurance  = 0,
-    FloatingMsg_OutOfRange          = 1,
-    FloatingMsg_Recharging          = 2,
-    FloatingMsg_NoEndurance         = 3,
-    FloatingMsg_Leveled             = 4,
-    FloatingMsg_FoundClue           = 5,
-    FloatingMsg_FoundEnhancement    = 6,
-    FloatingMsg_FoundInspiration    = 7,
-    FloatingMsg_MissionComplete     = 8,
-    FloatingMsg_TaskForceComplete   = 9,
-    FloatingMsg_MissionFailed       = 10,
-
+  FloatingMsg_NotEnoughEndurance  = 0,
+  FloatingMsg_OutOfRange          = 1,
+  FloatingMsg_Recharging          = 2,
+  FloatingMsg_NoEndurance         = 3,
+  FloatingMsg_Leveled             = 4,
+  FloatingMsg_FoundClue           = 5,
+  FloatingMsg_FoundEnhancement    = 6,
+  FloatingMsg_FoundInspiration    = 7,
+  FloatingMsg_MissionComplete     = 8,
+  FloatingMsg_TaskForceComplete   = 9,
+  FloatingMsg_MissionFailed       = 10,
 
     Chat MessageChannel
 
-     COMBAT         = 1, // COMBAT
+    COMBAT         = 1, // COMBAT
     DAMAGE         = 2, // DAMAGE
     SERVER         = 3, // SVR_COM
     NPC_SAYS       = 4, // NPC_SAYS
@@ -404,8 +388,8 @@ For contact dialogs, 11 buttons is the max you can have displayed at once.
     STD_TEXT       = 21, // Standard Text; unused?
 
 
-Location Coor vs MiniMap
 
+    Location Coor vs MiniMap
     X +num = West 
     X -Num = East
     Z +Num = South
@@ -415,27 +399,25 @@ Location Coor vs MiniMap
     Y +Num = Up
     Y -Num = down
 
-Rotation
 
-Use the Y axis to rotate in radians
-All entities default to facing south.
-Y +Num moves clockwise
-Y -Num moves counterclockwise
-
-Example of rotating to face North
-vec3.new(0, 3.14, 0);
-
-Statistic Ids
-
-1 HideAndSeek
+    Rotation
 
 
+    Use the Y axis to rotate in radians
+    All entities default to facing south.
+    Y +Num moves clockwise
+    Y -Num moves counterclockwise
+    Example of rotating to face North
+    vec3.new(0, 3.14, 0);
 
-Client debug commands
 
+    Statistic Ids
+    1 HideAndSeek
 
-  nocoll 1                  No Clip
-  entdebugclient 1          Player info
-  loc                       Player location
+    Client debug commands
 
-  ]]
+    nocoll 1                  No Clip
+    entdebugclient 1          Player info
+    loc                       Player location
+
+  End Notes  ]]

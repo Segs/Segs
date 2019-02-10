@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -276,7 +276,8 @@ QString createKioskMessage(Entity* player)
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
-void sendEmailHeaders(MapClientSession &sess)
+
+void getEmailHeaders(MapClientSession& sess)
 {
     if(!sess.m_ent->m_client)
     {
@@ -284,14 +285,8 @@ void sendEmailHeaders(MapClientSession &sess)
         return;
     }
 
-    // later on the email id should be auto-incremented from DB
-    EmailHeaderRequest* msgToHandler = new EmailHeaderRequest({
-                                        sess.m_ent->m_char->m_db_id,
-                                        sess.m_ent->m_char->getName(),
-                                        "TEST", 576956720},
-                sess.link()->session_token());
-    EventProcessor* tgt = HandlerLocator::getEmail_Handler();
-    tgt->putq(msgToHandler);
+    HandlerLocator::getEmail_Handler()->putq(new EmailHeaderRequest(
+        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));
 }
 
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
@@ -302,7 +297,7 @@ void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, 
         return;
     }
 
-    uint32_t timestamp = 0;
+    uint32_t timestamp = getSecsSince2000Epoch();
 
     EmailSendMessage* msgToHandler = new EmailSendMessage({
                 sess.m_ent->m_char->m_db_id,
@@ -1339,6 +1334,12 @@ void showMapMenu(MapClientSession &sess)
     showMapXferList(sess, has_location, location, msg_body);
 }
 
+int64_t getSecsSince2000Epoch()
+{
+    QDateTime base_date(QDate(2000,1,1));
+    return base_date.secsTo(QDateTime::currentDateTime());
+}
+
 void addClue(MapClientSession &cl, Clue clue)
 {
     vClueList clue_list = cl.m_ent->m_player->m_clues;
@@ -1591,11 +1592,8 @@ void npcSendMessage(MapClientSession &cl, QString& channel, int entityIdx, QStri
     QString formated = ch + ' '+ message;
     Entity *e = getEntity(&cl, entityIdx);
 
-    if(e != nullptr){
-        MapClientSession *session = new MapClientSession();
-        session->m_ent = e;
-        cl.m_current_map->add_chat_message(session, formated);
-    }
+    if(e != nullptr)
+        cl.m_current_map->add_chat_message(e, formated);
 }
 
 void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& message)
@@ -1604,11 +1602,8 @@ void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& m
     QString formated = ch + ' '+ message;
     Entity *e = getEntity(&mi, entityIdx);
 
-    if(e != nullptr){
-        MapClientSession *session = new MapClientSession();
-        session->m_ent = e;
-        mi.add_chat_message(session, formated);
-    }
+    if(e != nullptr)
+        mi.add_chat_message(e, formated);
 }
 
 void addRelayRaceResult(MapClientSession &cl, RelayRaceResult &raceResult)
