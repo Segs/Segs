@@ -216,7 +216,7 @@ ONE_WAY_MESSAGE(Internal_EventTypes,ClientDisconnected)
 struct ClientMapXferData
 {
     uint64_t m_session;
-    uint8_t m_map_idx;
+    uint32_t m_map_idx;
     template<class Archive>
     void serialize(Archive &ar)
     {

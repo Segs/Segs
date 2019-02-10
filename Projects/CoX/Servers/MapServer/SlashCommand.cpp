@@ -352,7 +352,7 @@ static Entity* getEntityFromCommand(const QString &cmd, MapClientSession& sess)
 
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
 {
-    uint8_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
+    uint32_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
     if(map_idx == getMapIndex(sess.m_current_map->name()))
         map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
     QString map_path = getMapPath(map_idx);
