@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -463,6 +463,7 @@ bool GameDbSyncContext::createEmail(const EmailCreateRequestData &data, EmailCre
     result.m_email_id = m_prepared_email_insert->lastInsertId().toUInt();
     result.m_sender_id = data.m_sender_id;
     result.m_recipient_id = data.m_recipient_id;
+    result.m_recipient_name = data.m_recipient_name;
     result.m_cerealized_email_data = data.m_email_data;
 
     // grd.commit();
@@ -536,6 +537,7 @@ bool GameDbSyncContext::fillEmailRecipientId(const FillEmailRecipientIdRequestDa
 
     result.m_sender_id = data.m_sender_id;
     result.m_sender_name = data.m_sender_name;
+    result.m_recipient_name = data.m_recipient_name;
     result.m_subject = data.m_subject;
     result.m_message = data.m_message;
     result.m_timestamp = data.m_timestamp;

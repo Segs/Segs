@@ -73,9 +73,15 @@ endif()
 
 if(MINGW)
     get_filename_component(MINGW_DIR ${CMAKE_C_COMPILER} PATH)
+    
+    file(GLOB LIBGCC_DLL_PATH "${MINGW_DIR}/libgcc_s_*.dll")
+    if(NOT LIBGCC_DLL_PATH)
+      message(FATAL_ERROR "Could not find libgcc dll")
+    endif()
+    
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${MINGW_DIR}/libgcc_s_dw2-1.dll"
+        "${LIBGCC_DLL_PATH}"
         $<TARGET_FILE_DIR:${PROJECT_NAME}>
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${MINGW_DIR}/libstdc++-6.dll"

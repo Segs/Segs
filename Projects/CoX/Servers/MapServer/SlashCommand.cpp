@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -128,6 +128,7 @@ void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -165,6 +166,7 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Tailor(const QString &cmd, MapClientSession &sess);
 void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Train(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Kiosk(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
@@ -250,6 +252,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"sendLocation"}, "Send Location Test", cmdHandler_SendLocations, 9},
     {{"developerConsoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
     {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
+    {{"clearTarget"}, "Clear current target", cmdHandler_ClearTarget, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -287,6 +290,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"tailor"}, "Open Tailor Window", cmdHandler_Tailor, 1},
     {{"cc"}, "Costume Change", cmdHandler_CostumeChange, 1},
     {{"train"}, "Train Up Level", cmdHandler_Train, 1},
+    {{"kiosk"}, "Event kiosk", cmdHandler_Kiosk, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -369,8 +373,7 @@ void cmdHandler_Script(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_Dialog(const QString &cmd, MapClientSession &sess)
 {
-    StandardDialogCmd *dlg = new StandardDialogCmd(cmd.mid(4));
-    sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(cmd.mid(4)));
 }
 
 void cmdHandler_InfoMessage(const QString &cmd, MapClientSession &sess)
@@ -407,8 +410,7 @@ void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess)
     if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QString contents(file.readAll());
-        StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-        sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(contents));
     }
     else {
         QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
@@ -1340,7 +1342,21 @@ void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess)
     sendClientConsoleOutput(sess, msg);
 }
 
+void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
 
+    if(parts.size () != 2)
+    {
+        qCDebug(logSlashCommand) << "ClearTarget. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ClearTarget '/clearTarget <targetIdx>'", sess);
+        return;
+    }
+
+    int idx = parts[1].toInt();
+    setTarget(*sess.m_ent, idx);
+}
 
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
@@ -1925,6 +1941,11 @@ void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
     playerTrain(sess);
 }
 
+void cmdHandler_Kiosk(const QString &cmd, MapClientSession &sess)
+{
+    sendKiosk(sess);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
@@ -2011,7 +2032,7 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
-    sendEmailHeaders(sess);
+    getEmailHeaders(sess);
 }
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
@@ -2019,46 +2040,48 @@ void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
     uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
     readEmailMessage(sess, id);
-
-    QString msg = "Opening Email ID: " + QString::number(id);
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
 {
     QStringList parts = cmd.split("\"");
     QStringList result;
-    for(int i = 0; i < parts.size(); i++)
+
+    for (const auto &part : parts)
     {
-        if(parts[i].endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
-            result.back() += parts[i]+"\"";
+        if(part.endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
+            result.back() += part+"\"";
         else
-            result.push_back(parts[i]);
+            result.push_back(part);
     }
 
-    if(result.size() >= 5)
+    if (result.size() != 5)
     {
-        sendInfoMessage(MessageChannel::SERVER, "Too many arguements!", sess);
+        sendInfoMessage(MessageChannel::SERVER, "Argument count for sending email is not correct! Please send emails from the email window instead.", sess);
         return;
     }
-    result[1].replace("\\q ", "");
+
+    result[1].replace("\\q ", ";");
     result[1].replace("\\q", "");
 
-    // 1 -> recipient name, 3 -> email subject, 4 -> email message
+    // result[1] -> recipient name, 3 -> email subject, 4 -> email message
+    // attempt to parse names if sending to multiple recipients
+    QStringList recipients = result[1].split(";");
+
+    // the last element will be empty in all cases (if sent through email window), so remove it
+    recipients.pop_back();
+
+    // first, check if your own character is one of the recipients in the email
     // cannot send email to self as that will trigger /emailRead without the data in db nor EmailHandler
     // and that will segfault the server :)
-    if(result[1] == sess.m_ent->m_char->getName())
+    if (recipients.contains(sess.m_ent->m_char->getName()))
     {
         sendInfoMessage(MessageChannel::SERVER, "You cannot send an email to yourself!", sess);
         return;
     }
 
-    sendEmail(sess, result[1], result[3], result[4]);
-
-    QString msg = "Email Sent to recipient: " + result[1];
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::SERVER, msg, sess);
+    for (const auto &recipient : recipients)
+        sendEmail(sess, recipient, result[3], result[4]);
 }
 
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -28,6 +28,17 @@ class World;
 class GameDataStore;
 class MapSceneGraph;
 class MapXferData;
+
+struct LuaTimer
+{
+    uint32_t                        m_entity_idx;
+    bool                            m_is_enabled        = false;
+    bool                            m_remove            = false;
+    int64_t                         m_start_time;
+    std::function<void(int64_t, int64_t, int64_t)>    m_on_tick_callback;
+
+};
+
 namespace SEGSEvents
 {
 class RecvInputState;
@@ -86,7 +97,8 @@ class EmailHeaderResponse;
 class EmailReadResponse;
 class EmailWasReadByRecipientMessage;
 class EmailHeadersToClientMessage;
-struct EmailSendErrorMessage;
+class EmailHeaderToClientMessage;
+class EmailCreateStatusMessage;
 class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
@@ -103,6 +115,8 @@ class ReceiveTaskDetailRequest;
 class SouvenirDetailRequest;
 class StoreSellItem;
 class StoreBuyItem;
+
+
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -125,6 +139,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_link_timer;
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
         std::unique_ptr<SEGSTimer> m_afk_update_timer;
+        std::unique_ptr<SEGSTimer> m_lua_timer;
         World *                 m_world;
         GameDBSyncService*      m_sync_service;
         uint32_t                m_owner_id;
@@ -151,6 +166,7 @@ public:
         ListenAndLocationAddresses m_addresses; //! this value is sent to the clients
         MapSceneGraph *         m_map_scenegraph;
         NpcGeneratorStore       m_npc_generators;
+        std::vector<LuaTimer>   m_lua_timers;
 
 public:
                                 IMPL_ID(MapInstance)
@@ -170,6 +186,12 @@ public:
         QHash<QString, MapXferData> get_map_zone_transfers();
         QString                 getNearestDoor(glm::vec3 location);
 
+        void send_player_update(Entity *e);
+        void                    add_chat_message(Entity *sender, QString &msg_text);
+        void                    startTimer(uint32_t entity_idx);
+        void                    stopTimer(uint32_t entity_idx);
+        void                    clearTimer(uint32_t entity_idx);
+
 protected:
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
@@ -181,7 +203,8 @@ protected:
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
         void                    on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
-        void                    process_chat(MapClientSession *sender, QString &msg_text);
+        void                    process_chat(Entity *sender, QString &msg_text);
+
         // DB -> Server messages
         void                    on_name_clash_check_result(SEGSEvents::WouldNameDuplicateResponse *ev);
         void                    on_character_created(SEGSEvents::CreateNewCharacterResponse *ev);
@@ -209,8 +232,9 @@ protected:
         void on_check_links();
         void on_update_entities();
         void on_afk_update();
+        void on_lua_update();
         void send_character_update(Entity *e);
-        void send_player_update(Entity *e);
+
 
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
         void on_window_state(SEGSEvents::WindowState *ev);
@@ -248,11 +272,12 @@ protected:
         void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
+        void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
         void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
-        void on_email_header_response(SEGSEvents::EmailHeaderResponse *ev);
+        void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
         void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
         void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
-        void on_email_send_error(SEGSEvents::EmailSendErrorMessage *ev);
+        void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);

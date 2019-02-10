@@ -1,12 +1,13 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
 #include "Messages/Map/MessageChannels.h"
+#include "Common/GameData/CharacterStatistics.h"
 #include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
 #include "Common/GameData/VisitLocation.h"
@@ -20,6 +21,7 @@ class Character;
 struct Friend;
 struct FriendsList;
 struct MapClientSession;
+struct MapInstance;
 struct CharacterPowerSet;
 struct CharacterPower;
 struct PowerStance;
@@ -37,6 +39,7 @@ enum class ClientStates : uint8_t;
  */
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
+Entity * getEntity(MapInstance *mi, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *sess);
 void    positionTest(MapClientSession *tgt);
@@ -48,11 +51,13 @@ QString createMapMenu();
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
-void sendEmailHeaders(MapClientSession& sess);
+void getEmailHeaders(MapClientSession& sess);
 void readEmailMessage(MapClientSession& sess, const uint32_t email_id);
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message);
 void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
+// to get the current time since whatever they set as their beginning
+int64_t getSecsSince2000Epoch();
 
 /*
  * SendUpdate Wrappers
@@ -100,6 +105,7 @@ void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout
 void sendLocation(MapClientSession &cl, VisitLocation location);
 void sendDeveloperConsoleOutput(MapClientSession &cl, QString &message);
 void sendClientConsoleOutput(MapClientSession &cl, QString &message);
+void sendKiosk(MapClientSession &cl);
 
 /*
  * usePower and increaseLevel here to provide access to
@@ -113,7 +119,8 @@ void increaseLevel(Entity &ent);
  * Lua Functions
  */
 void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name);
-void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori);
+void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
 void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);
 void giveEnd(MapClientSession &sess, float end);
@@ -138,3 +145,6 @@ void removeContact(MapClientSession &sess, Contact contact);
 void revive(MapClientSession *cl, int revive_lvl);
 void logSpawnLocations(MapClientSession &cl, const char* spawn_type);
 void respawn(MapClientSession &cl, const char* spawn_type);
+void npcSendMessage(MapClientSession &cl, QString& channel, int entityIdx, QString& message);
+void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& message);
+void addStatistic(MapClientSession &cl, CharacterStatistic statistic);

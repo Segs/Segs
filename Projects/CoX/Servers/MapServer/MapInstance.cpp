@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -23,6 +23,7 @@
 #include "SEGSTimer.h"
 #include "SlashCommand.h"
 #include "TimeEvent.h"
+#include "TimeHelpers.h"
 #include "WorldSimulation.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
@@ -67,6 +68,7 @@
 #include <stdlib.h>
 
 using namespace SEGSEvents;
+struct EntityIdxCompare;
 
 namespace
 {
@@ -77,7 +79,8 @@ namespace
         Session_Reaper_Timer   = 3,
         Link_Idle_Timer   = 4,
         Sync_Service_Update_Timer = 5,
-        Afk_Update_Timer = 6
+        Afk_Update_Timer = 6,
+        Lua_Timer = 7
     };
 
     const ACE_Time_Value reaping_interval(0,1000*1000);
@@ -86,6 +89,7 @@ namespace
     const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
     const ACE_Time_Value sync_service_update_interval(0, 30000*1000);
     const ACE_Time_Value afk_update_interval(0, 1000 * 1000);
+    const ACE_Time_Value lua_timer_interval(0, 1000 * 1000);
     const ACE_Time_Value resend_interval(0,250*1000);
     const CRUDLink::duration maximum_time_without_packets(2000);
     const constexpr int MinPacketsToAck = 5;
@@ -170,6 +174,9 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service_timer =
         std::make_unique<SEGSTimer>(this, Sync_Service_Update_Timer, sync_service_update_interval, false);
     m_afk_update_timer = std::make_unique<SEGSTimer>(this, Afk_Update_Timer, afk_update_interval, false );
+
+    //Lua timer
+    m_lua_timer = std::make_unique<SEGSTimer>(this, Lua_Timer, lua_timer_interval, false );
 
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
 }
@@ -504,6 +511,9 @@ void MapInstance::dispatch( Event *ev )
         case evEmailHeaderResponse:
             on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
             break;
+        case evEmailHeaderToClientMessage:
+            on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev));
+            break;
         case evEmailHeadersToClientMessage:
             on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev));
             break;
@@ -513,8 +523,8 @@ void MapInstance::dispatch( Event *ev )
         case evEmailWasReadByRecipientMessage:
             on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
             break;
-        case evEmailSendErrorMessage:
-            on_email_send_error(static_cast<EmailSendErrorMessage *>(ev));
+        case evEmailCreateStatusMessage:
+            on_email_create_status(static_cast<EmailCreateStatusMessage *>(ev));
             break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
@@ -1024,6 +1034,9 @@ void MapInstance::on_timeout(Timeout *ev)
         case Afk_Update_Timer:
             on_afk_update();
             break;
+        case Lua_Timer:
+            on_lua_update();
+            break;
     }
 }
 
@@ -1262,7 +1275,10 @@ static MessageChannel getKindOfChatMessage(const QStringRef &msg)
     return MessageChannel::LOCAL;
 }
 
-void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
+
+
+
+void MapInstance::process_chat(Entity *sender, QString &msg_text)
 {
     int first_space = msg_text.indexOf(QRegularExpression("\\s"), 0); // first whitespace, as the client sometimes sends tabs
     QString sender_char_name;
@@ -1273,18 +1289,29 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
     MessageChannel kind = getKindOfChatMessage(cmd_str);
     std::vector<MapClientSession *> recipients;
 
+    MapClientSession *sender_sess;
+
     if(!sender)
       return;
 
-    if(sender->m_ent)
-      sender_char_name = sender->m_ent->name();
+
+    sender_char_name = sender->name();
+
+     for(MapClientSession *cl : m_session_store)
+     {
+         if(cl->m_ent->m_db_id == sender->m_db_id)
+         {
+             sender_sess = cl;
+             break;
+         }
+     }
 
     switch(kind)
     {
         case MessageChannel::LOCAL:
         {
             // send only to clients within range
-            glm::vec3 senderpos = sender->m_ent->m_entity_data.m_pos;
+            glm::vec3 senderpos = sender->m_entity_data.m_pos;
             for(MapClientSession *cl : m_session_store)
             {
                 glm::vec3 recpos = cl->m_ent->m_entity_data.m_pos;
@@ -1339,20 +1366,28 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
                              << "\n\t" << "target_name:" << target_name
                              << "\n\t" << "msg_text:" << msg_text;
 
-            Entity *tgt = getEntity(sender,target_name);
+            Entity *tgt;
+            for(MapClientSession *cl : m_session_store)
+            {
+                if(cl->m_ent->name() == target_name)
+                {
+                    tgt = cl->m_ent;
+                    break;
+                }
+            }
 
             qWarning() << "Private chat: this only work for players on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
 
             if(tgt == nullptr)
             {
                 prepared_chat_message = QString("No player named \"%1\" currently online.").arg(target_name);
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender);
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message, *sender_sess);
                 break;
             }
             else
             {
                 prepared_chat_message = QString(" --> %1: %2").arg(target_name,msg_content.toString());
-                sendInfoMessage(MessageChannel::PRIVATE, prepared_chat_message, *sender); // in this case, sender is target
+                sendInfoMessage(MessageChannel::PRIVATE, prepared_chat_message, *sender_sess); // in this case, sender is target
 
                 prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
                 sendChatMessage(MessageChannel::PRIVATE, prepared_chat_message, sender, *tgt->m_client);
@@ -1362,10 +1397,10 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
         }
         case MessageChannel::TEAM:
         {
-            if(!sender->m_ent->m_has_team)
+            if(!sender->m_has_team)
             {
                 prepared_chat_message = "You are not a member of a Team.";
-                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender);
+                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender_sess);
                 break;
             }
 
@@ -1374,7 +1409,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             // Only send the message to characters on sender's team
             for(MapClientSession *cl : m_session_store)
             {
-                if(sender->m_ent->m_team->m_team_idx == cl->m_ent->m_team->m_team_idx)
+                if(sender->m_team->m_team_idx == cl->m_ent->m_team->m_team_idx)
                     recipients.push_back(cl);
             }
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
@@ -1386,10 +1421,10 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
         }
         case MessageChannel::SUPERGROUP:
         {
-            if(!sender->m_ent->m_has_supergroup)
+            if(!sender->m_has_supergroup)
             {
                 prepared_chat_message = "You are not a member of a SuperGroup.";
-                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender);
+                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender_sess);
                 break;
             }
 
@@ -1398,7 +1433,7 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
             // Only send the message to characters in sender's supergroup
             for(MapClientSession *cl : m_session_store)
             {
-                if(sender->m_ent->m_supergroup.m_SG_id == cl->m_ent->m_supergroup.m_SG_id)
+                if(sender->m_supergroup.m_SG_id == cl->m_ent->m_supergroup.m_SG_id)
                     recipients.push_back(cl);
             }
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
@@ -1410,11 +1445,11 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
         }
         case MessageChannel::FRIENDS:
         {
-            FriendsList * fl = &sender->m_ent->m_char->m_char_data.m_friendlist;
+            FriendsList * fl = &sender->m_char->m_char_data.m_friendlist;
             if(!fl->m_has_friends || fl->m_friends_count == 0)
             {
                 prepared_chat_message = "You don't have any friends to message.";
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender);
+                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender_sess);
                 break;
             }
 
@@ -1429,13 +1464,13 @@ void MapInstance::process_chat(MapClientSession *sender,QString &msg_text)
 
                 //TODO: this only work for friends on local server
                 // introduce a message router, and send messages to EntityIDs instead of directly using sessions.
-                Entity *tgt = getEntityByDBID(sender->m_current_map, f.m_db_id);
+                Entity *tgt = getEntityByDBID(sender_sess->m_current_map, f.m_db_id);
                 if(tgt == nullptr) // In case we didn't toggle online_status.
                     continue;
 
                 sendChatMessage(MessageChannel::FRIENDS, prepared_chat_message, sender, *tgt->m_client);
             }
-            sendChatMessage(MessageChannel::FRIENDS, prepared_chat_message, sender, *sender);
+            sendChatMessage(MessageChannel::FRIENDS, prepared_chat_message, sender, *sender_sess);
             break;
         }
         default:
@@ -1467,7 +1502,7 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
 
     if(isChatMessage(contents))
     {
-        process_chat(&session,contents);
+        process_chat(ent,contents);
     }
     else if(has_emote_prefix(contents))
     {
@@ -2034,7 +2069,7 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     }
     for(MapClientSession * cl : recipients)
     {
-        sendChatMessage(MessageChannel::EMOTE,msg,src,*cl);
+        sendChatMessage(MessageChannel::EMOTE,msg,src->m_ent,*cl);
         qCDebug(logEmotes) << msg;
     }
 }
@@ -2094,7 +2129,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
             sendServerMOTD(&session);
 
         // send Lua connection method?
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
+        // auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
     }
     else
     {
@@ -2124,7 +2159,7 @@ void MapInstance::on_location_visited(LocationVisited *ev)
     qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
 
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited", qPrintable(ev->m_name), ev->m_pos);
-    sendInfoMessage(MessageChannel::DEBUG_INFO,QString::fromStdString(val),session);
+    sendInfoMessage(MessageChannel::DEBUG_INFO,qPrintable(ev->m_name),session);
 
     qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
@@ -2287,7 +2322,7 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 
     QString description = getDescription(*tgt->m_char);
 
-    session.addCommandToSendNextUpdate(std::unique_ptr<EntityInfoResponse>(new EntityInfoResponse(description)));
+    session.addCommandToSendNextUpdate(std::make_unique<EntityInfoResponse>(description));
     qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
 }
 
@@ -2617,7 +2652,7 @@ void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
        test_task.m_task_detail = "Not found";
     }
 
-    session.addCommandToSendNextUpdate(std::unique_ptr<TaskDetail>(new TaskDetail(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail)));
+    session.addCommandToSendNextUpdate(std::make_unique<TaskDetail>(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail));
 }
 
 
@@ -2852,6 +2887,33 @@ void MapInstance::on_afk_update()
 
 }
 
+void MapInstance::on_lua_update()
+{
+    int count = 0;
+    for(const auto &t: m_lua_timers)
+    {
+        if(t.m_remove)
+        {
+            Entity *e = getEntity(this, t.m_entity_idx);
+            if(e != nullptr)
+                this->m_entities.removeEntityFromActiveList(e);
+
+            m_lua_timers.erase(m_lua_timers.begin() + count);
+            break;
+        }
+
+        if(t.m_is_enabled && t.m_on_tick_callback != NULL)
+        {
+            m_scripting_interface->updateMapInstance(this);
+            int64_t time = getSecsSince2000Epoch();
+            int64_t diff = time - t.m_start_time;
+            t.m_on_tick_callback(t.m_start_time, diff, time);
+        }
+
+        ++count;
+    }
+}
+
 void MapInstance::on_update_entities()
 {
     const std::vector<MapClientSession *> &active_sessions (m_session_store.get_active_sessions());
@@ -2932,20 +2994,7 @@ void MapInstance::send_player_update(Entity *e)
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
-// EmailHandler will send this event here
 void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
-{
-    EmailHeaders *header = new EmailHeaders(
-                    ev->m_data.m_email_id,
-                    ev->m_data.m_sender_name,
-                    ev->m_data.m_subject,
-                    ev->m_data.m_timestamp);
-
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
-}
-
-void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
 
@@ -2958,6 +3007,35 @@ void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
                     data.m_timestamp);
         map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
     }
+}
+
+// EmailHandler will send this event here
+void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
+{
+    EmailHeaders *header = new EmailHeaders(
+                    ev->m_data.m_email_id,
+                    ev->m_data.m_sender_name,
+                    ev->m_data.m_subject,
+                    ev->m_data.m_timestamp);
+
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
+    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
+                                                                          ev->m_data.m_sender_name,
+                                                                          ev->m_data.m_subject,
+                                                                          ev->m_data.m_timestamp));
+}
+
+void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
+
+    for (const auto &data : ev->m_data.m_email_headers)
+    {
+        map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(data.m_email_id,
+                                                                              data.m_sender_name,
+                                                                              data.m_subject,
+                                                                              data.m_timestamp));
+    }
 
     QString message = QString("You have %1 unread emails.").arg(ev->m_data.m_unread_emails_count);
     sendInfoMessage(MessageChannel::DEBUG_INFO, message, map_session);
@@ -2965,14 +3043,10 @@ void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 
 void MapInstance::on_email_read_response(EmailReadResponse *ev)
 {
-    EmailRead *email_read = new EmailRead(
-                ev->m_data.m_email_id,
-                ev->m_data.m_message,
-                ev->m_data.m_sender_name
-                );
-
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailRead>(email_read));
+    map_session.addCommandToSendNextUpdate(std::make_unique<EmailRead>(ev->m_data.m_email_id,
+                                                                       ev->m_data.m_message,
+                                                                       ev->m_data.m_sender_name));
 }
 
 void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg)
@@ -2984,10 +3058,19 @@ void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg
     // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
 }
 
-void MapInstance::on_email_send_error(EmailSendErrorMessage *msg)
+void MapInstance::on_email_create_status(EmailCreateStatusMessage *msg)
 {
     MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_error_message, map_session);
+    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(
+                new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name)));
+
+
+    /*
+    else
+    {
+        QString successMsg = QString("Successfully sent email to %1!").arg(msg->m_data.m_recipient_name);
+        sendInfoMessage(MessageChannel::DEBUG_INFO, successMsg, map_session);
+    }*/
 }
 
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
@@ -3123,7 +3206,7 @@ void MapInstance::on_store_sell_item(StoreSellItem* ev)
         {
             modifyInf(session, result.m_inf_amount);
             trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_enhancement_idx);
-            sendChatMessage(MessageChannel::SERVER,result.m_message,&session,session);
+            sendChatMessage(MessageChannel::SERVER,result.m_message,session.m_ent,session);
         }
         else
             qCDebug(logStores) << "Error processing sellItem";
@@ -3147,7 +3230,7 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
         else
             giveEnhancement(session, result.m_item_name, result.m_enhancement_lvl);
 
-        sendChatMessage(MessageChannel::SERVER,result.m_message,&session,session);
+        sendChatMessage(MessageChannel::SERVER,result.m_message,session.m_ent,session);
     }
     else
         qCDebug(logStores) << "Error processing buyItem";
@@ -3168,6 +3251,63 @@ void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
     sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name)));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
     map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_transfer_data}, 0));
+void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
+{
+    process_chat(sender, msg_text);
+}
+
+void MapInstance::startTimer(uint32_t entity_idx)
+{
+    int count = 0;
+    bool found = false;
+    for(auto &t: this->m_lua_timers)
+    {
+        if(t.m_entity_idx == entity_idx)
+        {
+            found = true;
+            break;
+        }
+        ++count;
+    }
+    if(found)
+    {
+        this->m_lua_timers[count].m_is_enabled = true;
+        this->m_lua_timers[count].m_start_time = getSecsSince2000Epoch();
+    }
+}
+
+void MapInstance::stopTimer(uint32_t entity_idx)
+{
+    int count = 0;
+    bool found = false;
+    for(auto &t: this->m_lua_timers)
+    {
+        if(t.m_entity_idx == entity_idx)
+        {
+            found = true;
+            break;
+        }
+        ++count;
+    }
+    if(found)
+        this->m_lua_timers[count].m_is_enabled = false;
+}
+
+void MapInstance::clearTimer(uint32_t entity_idx)
+{
+    int count = 0;
+    bool found = false;
+    for(auto &t: this->m_lua_timers)
+    {
+        if(t.m_entity_idx == entity_idx)
+        {
+            found = true;
+            break;
+        }
+        ++count;
+    }
+    if(found)
+        this->m_lua_timers[count].m_remove = true;
 }
 
 //! @}

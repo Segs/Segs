@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -181,8 +181,9 @@ void SEGSAdminTool::read_createuser()
     QString output_std = out_std;
     output_err.replace("Press ENTER to continue...", "** FINISHED **");
     output_std.replace("Press ENTER to continue...", "** FINISHED **");
-    ui->output->appendPlainText(output_err);
-    ui->output->appendPlainText(output_std);
+    ui->output->insertPlainText(output_err);
+    ui->output->insertPlainText(output_std);
+    ui->output->moveCursor(QTextCursor::End);
 }
 
 void SEGSAdminTool::check_db_exist(bool on_startup)
@@ -294,8 +295,9 @@ void SEGSAdminTool::read_createDB()
     QString output_std = out_std;
     output_err.replace("Press ENTER to continue...", "** FINISHED **");
     output_std.replace("Press ENTER to continue...", "** FINISHED **");
-    ui->output->appendPlainText(output_err);
-    ui->output->appendPlainText(output_std);
+    ui->output->insertPlainText(output_err);
+    ui->output->insertPlainText(output_std);
+    ui->output->moveCursor(QTextCursor::End);
     qApp->processEvents();
 }
 
@@ -379,8 +381,9 @@ void SEGSAdminTool::read_segsserver()
     QString output_std = out_std;
     output_err.replace("Press ENTER to continue...", "** FINISHED **");
     output_std.replace("Press ENTER to continue...", "** FINISHED **");
-    ui->output->appendPlainText(output_err);
-    ui->output->appendPlainText(output_std);
+    ui->output->insertPlainText(output_err);
+    ui->output->insertPlainText(output_std);
+    ui->output->moveCursor(QTextCursor::End);
     qApp->processEvents();
 }
 
