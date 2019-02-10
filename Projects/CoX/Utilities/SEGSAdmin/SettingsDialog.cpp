@@ -108,6 +108,7 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->acc_dbhost->setText(acc_db_host);
     ui->acc_dbport->setValue(acc_db_port);
     config_file.endGroup();
+
     config_file.beginGroup("CharacterDatabase");
     QString char_db_driver = config_file.value("db_driver","").toString();
     QString char_db_host = config_file.value("db_host","").toString();
@@ -118,6 +119,7 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->char_dbport->setValue(char_db_port);
     config_file.endGroup(); // AdminServer
     config_file.endGroup(); // AccountDatabase
+
     config_file.beginGroup("AuthServer");
     QString auth_loc_addr = config_file.value("location_addr","").toString();
     QStringList auth_portip = auth_loc_addr.split(':');
@@ -125,6 +127,7 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->auth_ip->setText(auth_portip[0]);
     ui->auth_port->setValue(auth_port);
     config_file.endGroup(); // AuthServer
+
     config_file.beginGroup("GameServer");
     QString game_listen_addr = config_file.value("listen_addr","").toString();
     QStringList game_listen_addr_portip = game_listen_addr.split(':');
@@ -141,6 +144,7 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->game_max_players->setValue(max_players);
     ui->game_max_slots->setValue(max_char_slots);
     config_file.endGroup(); // GameServer
+
     config_file.beginGroup("MapServer");
     QString map_listen_addr = config_file.value("listen_addr","").toString();
     QStringList map_listen_addr_portip = map_listen_addr.split(':');
@@ -160,12 +164,14 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->map_motd_timer->setValue(motd_timer);
     ui->costume_slot_unlocks_edit->setText(QString(config_file.value("costume_slot_unlocks", "").toString()));
     config_file.endGroup(); // MapServer
+
     config_file.beginGroup("AFKSettings");
     ui->time_to_afk_spin->setValue(config_file.value("time_to_afk", "").toInt());
     ui->time_to_logout_msg_spin->setValue(config_file.value("time_to_logout_msg", "").toInt());
     ui->time_to_auto_logout_spin->setValue(config_file.value("time_to_auto_logout", "").toInt());
     ui->auto_logout_check->setChecked(config_file.value("uses_auto_logout", "").toBool());
     config_file.endGroup(); // AFKSettings
+
     config_file.beginGroup("StartingCharacter");
     ui->inherent_powers_edit->setText(config_file.value("inherent_powers", "").toString());
     ui->starting_temp_edit->setText(config_file.value("starting_temps", "").toString());
@@ -173,6 +179,7 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->starting_level_spin->setValue(config_file.value("starting_level", "").toInt());
     ui->starting_inf_spin->setValue(config_file.value("starting_inf", "").toInt());
     config_file.endGroup(); // StartingCharacter
+
     config_file.beginGroup("Logging");
     // Read settings.cfg and populate UI elements
     QGridLayout *logging_grid = new QGridLayout(ui->logging_cats);
@@ -208,6 +215,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.setValue("db_user","segsadmin");
     config_file_write.setValue("db_pass","segs123");
     config_file_write.endGroup(); // AccountDatabase
+
     config_file_write.beginGroup("CharacterDatabase");
     config_file_write.setValue("db_driver","QSQLITE");
     config_file_write.setValue("db_host","127.0.0.1");
@@ -217,15 +225,18 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.setValue("db_pass","segs123");
     config_file_write.endGroup(); // CharacterDatabase
     config_file_write.endGroup(); // AdminServer
+
     config_file_write.beginGroup("AuthServer");
     config_file_write.setValue("location_addr",ip+":2106");
     config_file_write.endGroup(); // AuthServer
+
     config_file_write.beginGroup("GameServer");
     config_file_write.setValue("listen_addr",ip+":7002");
     config_file_write.setValue("location_addr",ip+":7002");
     config_file_write.setValue("max_players","200");
     config_file_write.setValue("max_character_slots","8");
     config_file_write.endGroup(); // GameServer
+
     config_file_write.beginGroup("MapServer");
     config_file_write.setValue("listen_addr",ip+":7003");
     config_file_write.setValue("location_addr",ip+":7003");
@@ -233,12 +244,14 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.setValue("player_fade_in", "380.0");
     config_file_write.setValue("costume_slot_unlocks", "19,29,39,49");
     config_file_write.endGroup(); // MapServer
+
     config_file_write.beginGroup("AFKSettings");
     config_file_write.setValue("time_to_afk", "300");
     config_file_write.setValue("time_to_logout_msg", "1080");
     config_file_write.setValue("time_to_auto_logout", "120");
     config_file_write.setValue("uses_auto_logout", "true");
     config_file_write.endGroup(); // AFKSettings
+
     config_file_write.beginGroup("StartingCharacter");
     config_file_write.setValue("inherent_powers", "prestige_generic_Sprintp");
     config_file_write.setValue("starting_temps", "EMP_Glove,Cryoprojection_Bracers");
@@ -246,6 +259,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.setValue("starting_level", "1");
     config_file_write.setValue("starting_inf", "0");
     config_file_write.endGroup(); // StartingCharacter
+
     config_file_write.beginGroup("Logging");
     settings_template.beginGroup("Logging");
     QStringList logging_keys = settings_template.childKeys();
@@ -269,15 +283,18 @@ void SettingsDialog::save_changes_config_file()
     config_file_write.setValue("db_host",ui->acc_dbhost->text());
     config_file_write.setValue("db_port",ui->acc_dbport->text());
     config_file_write.endGroup(); // AccountDatabase
+
     config_file_write.beginGroup("CharacterDatabase");
     config_file_write.setValue("db_driver",ui->char_dbdriver->currentText());
     config_file_write.setValue("db_host",ui->char_dbhost->text());
     config_file_write.setValue("db_port",ui->char_dbport->text());
     config_file_write.endGroup(); // CharacterDatabase
     config_file_write.endGroup(); // AdminServer
+
     config_file_write.beginGroup("AuthServer");
     config_file_write.setValue("location_addr",ui->auth_ip->text()+":"+ui->auth_port->text());
     config_file_write.endGroup(); // AuthServer
+
     config_file_write.beginGroup("GameServer");
     config_file_write.setValue("listen_addr",ui->game_listen_ip->text()+":"+ui->game_listen_port->text());
     config_file_write.setValue("location_addr",ui->game_loc_ip->text()+":"+ui->game_loc_port->text());
@@ -285,6 +302,7 @@ void SettingsDialog::save_changes_config_file()
     config_file_write.setValue("max_character_slots",ui->game_max_slots->text());
     config_file_write.setValue("costume_slot_unlocks", ui->costume_slot_unlocks_edit->text());
     config_file_write.endGroup(); // GameServer
+
     config_file_write.beginGroup("MapServer");
     config_file_write.setValue("listen_addr",ui->map_listen_ip->text()+":"+ui->map_listen_port->text());
     config_file_write.setValue("location_addr",ui->map_location_ip->text()+":"+ui->map_location_port->text());
@@ -294,12 +312,14 @@ void SettingsDialog::save_changes_config_file()
     QString motd_timer = ui->map_motd_timer->text() + ".0";
     config_file_write.setValue("motd_timer",motd_timer);
     config_file_write.endGroup(); // MapServer
+
     config_file_write.beginGroup("AFKSettings");
     config_file_write.setValue("time_to_afk", ui->time_to_afk_spin->value());
     config_file_write.setValue("time_to_logout_msg", ui->time_to_logout_msg_spin->value());
     config_file_write.setValue("time_to_auto_logout", ui->time_to_auto_logout_spin->value());
     config_file_write.setValue("uses_auto_logout", ui->auto_logout_check->isChecked());
     config_file_write.endGroup(); // AFKSettings
+
     config_file_write.beginGroup("StartingCharacter");
     config_file_write.setValue("inherent_powers", ui->inherent_powers_edit->text());
     config_file_write.setValue("starting_temps", ui->starting_temp_edit->text());
@@ -307,6 +327,7 @@ void SettingsDialog::save_changes_config_file()
     config_file_write.setValue("starting_level", ui->starting_level_spin->value());
     config_file_write.setValue("starting_inf", ui->starting_inf_spin->value());
     config_file_write.endGroup(); // StartingCharacter
+
     config_file_write.beginGroup("Logging");
     QList<QCheckBox*> check_boxes = ui->tab_logging->findChildren<QCheckBox *>();
     for(int i = 0; i < check_boxes.size(); ++i)
