@@ -152,6 +152,11 @@ Entity *getEntityByDBID(MapInstance *mi,uint32_t db_id)
     return nullptr;
 }
 
+void sendMissionObjectiveTimer(MapClientSession &sess, QString &message, float time)
+{
+    sess.addCommand<MissionObjectiveTimer>(message, time);
+}
+
 void sendServerMOTD(MapClientSession *tgt)
 {
     qDebug().noquote() << "Sending Server MOTD to" << tgt->m_ent->m_char->getName();
@@ -243,21 +248,25 @@ QString createMapMenu() // TODO: compileMonorailMenu() as well
 
 QString createKioskMessage(Entity* player)
 {
+    //Can we add hrefs to trigger dialog buttons with a script callback to navigate to other screen/pages?
     QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
     auto index = player->m_char->m_char_data.m_class_name.indexOf('_');
     msg_body.append(QString("<tr><td>%1</td><td>Level: %2 %3</td></tr>").arg(player->name()).arg(player->m_char->m_char_data.m_level + 1).arg(player->m_char->m_char_data.m_class_name.mid(index + 1)));
+    msg_body.append(QString("<tr><td>%1</td><td>%2</td></tr>").arg("Hide and seek").arg(player->m_player->m_player_statistics.m_hide_seek.m_found_count));
 
-    for (CharacterStatistic &stat : player->m_char->m_char_data.m_character_statistics)
-    {
-        if(stat.m_count > 0)
-        {
-             msg_body.append(QString("<tr><td>%1</td><td>%2</td></tr>").arg(stat.m_name).arg(stat.m_count));
-        }
-        else if(stat.m_time > 0)
-        {
-             msg_body.append(QString("<tr><td>%1</td><td>%2</td></tr>").arg(stat.m_name).arg(stat.m_time));
-        }
+    msg_body.append(QString("<tr></tr>"));// line break
+
+    if(player->m_player->m_player_statistics.m_relay_races.size() > 0){
+        msg_body.append(QString("<tr>Relay Race Results</tr>"));
     }
+
+    for(const RelayRaceResult &r: player->m_player->m_player_statistics.m_relay_races)
+    {
+        QString lastTime = QDateTime::fromTime_t(r.m_last_time).toUTC().toString("hh:mm:ss");
+        QString bestTime = QDateTime::fromTime_t(r.m_best_time).toUTC().toString("hh:mm:ss");
+        msg_body.append(QString("<tr><td>Box #%1</td><td>Last Time: %2</td><td>Best Time: %3</td></tr>").arg(r.m_segment).arg(lastTime).arg(bestTime));
+    }
+
     msg_body.append("</table>");
 
     return msg_body;
@@ -525,7 +534,7 @@ void sendContactDialogClose(MapClientSession &sess)
 
 void updateContactStatusList(MapClientSession &sess, const Contact &updated_contact_data)
 {
-    vContactList contacts = sess.m_ent->m_char->m_char_data.m_contacts;
+    vContactList contacts = sess.m_ent->m_player->m_contacts;
     //find contact
     bool found = false;
 
@@ -544,7 +553,7 @@ void updateContactStatusList(MapClientSession &sess, const Contact &updated_cont
         contacts.push_back(updated_contact_data);
 
     //update database contactList
-    sess.m_ent->m_char->m_char_data.m_contacts = contacts;
+    sess.m_ent->m_player->m_contacts = contacts;
     markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
     qCDebug(logSlashCommand) << "Sending Character Contact Database updated";
 
@@ -555,7 +564,7 @@ void updateContactStatusList(MapClientSession &sess, const Contact &updated_cont
 
 void sendContactStatusList(MapClientSession &sess)
 {
-    vContactList contacts = sess.m_ent->m_char->m_char_data.m_contacts;
+    vContactList contacts = sess.m_ent->m_player->m_contacts;
     //Send contactList to client
     sess.addCommand<ContactStatusList>(contacts);
     qCDebug(logSlashCommand) << "Sending ContactStatusList";
@@ -580,13 +589,13 @@ void sendStance(MapClientSession &sess, PowerStance &stance)
 
 void sendClueList(MapClientSession &sess)
 {
-    vClueList clue_list = sess.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list;
+    vClueList clue_list = sess.m_ent->m_player->m_clues;
     sess.addCommand<ClueList>(clue_list);
 }
 
 void sendSouvenirList(MapClientSession &sess)
 {
-    vSouvenirList souvenir_list = sess.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
+    vSouvenirList souvenir_list = sess.m_ent->m_player->m_souvenirs;
     sess.addCommand<SouvenirListHeaders>(souvenir_list);
 }
 
@@ -1149,7 +1158,7 @@ void addListOfTasks(MapClientSession *cl, vTaskList task_list)
     task_entry_list.push_back(task_entry);
 
     //update database task list
-    cl->m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
+    cl->m_ent->m_player->m_tasks_entry_list = task_entry_list;
 
     cl->addCommand<TaskStatusList>(task_entry_list);
     qCDebug(logScripts) << "Sending New TaskStatusList";
@@ -1157,7 +1166,7 @@ void addListOfTasks(MapClientSession *cl, vTaskList task_list)
 
 void sendUpdateTaskStatusList(MapClientSession &src, Task task)
 {
-    vTaskEntryList task_entry_list = src.m_ent->m_char->m_char_data.m_tasks_entry_list;
+    vTaskEntryList task_entry_list = src.m_ent->m_player->m_tasks_entry_list;
     //find task
     bool found = false;
 
@@ -1202,7 +1211,7 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
     }
 
     //update database Task list
-    src.m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
+    src.m_ent->m_player->m_tasks_entry_list = task_entry_list;
     qCDebug(logScripts) << "SendUpdateTaskStatusList DB Task list updated";
 
     //Send Task list to client
@@ -1218,7 +1227,7 @@ void selectTask(MapClientSession &src, Task task)
 
 void sendTaskStatusList(MapClientSession &src)
 {
-    vTaskEntryList task_entry_list = src.m_ent->m_char->m_char_data.m_tasks_entry_list;
+    vTaskEntryList task_entry_list = src.m_ent->m_player->m_tasks_entry_list;
 
     //Send taskList to client
     src.addCommand<TaskStatusList>(task_entry_list);
@@ -1234,7 +1243,7 @@ void updateTaskDetail(MapClientSession &src, Task task)
 
 void removeTask(MapClientSession &src, Task task)
 {
-    vTaskEntryList task_entry_list = src.m_ent->m_char->m_char_data.m_tasks_entry_list;
+    vTaskEntryList task_entry_list = src.m_ent->m_player->m_tasks_entry_list;
     //find task
     bool found = false;
 
@@ -1259,7 +1268,7 @@ void removeTask(MapClientSession &src, Task task)
     else
     {
         //update database Task list
-        src.m_ent->m_char->m_char_data.m_tasks_entry_list = task_entry_list;
+        src.m_ent->m_player->m_tasks_entry_list = task_entry_list;
 
         //Send contactList to client
         src.addCommand<TaskStatusList>(task_entry_list);
@@ -1333,9 +1342,9 @@ int64_t getSecsSince2000Epoch()
 
 void addClue(MapClientSession &cl, Clue clue)
 {
-    vClueList clue_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list;
+    vClueList clue_list = cl.m_ent->m_player->m_clues;
     clue_list.push_back(clue);
-    cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list = clue_list;
+    cl.m_ent->m_player->m_clues = clue_list;
     markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
     cl.addCommand<ClueList>(clue_list);
 
@@ -1343,7 +1352,7 @@ void addClue(MapClientSession &cl, Clue clue)
 
 void removeClue(MapClientSession &cl, Clue clue)
 {
-    vClueList clue_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list;
+    vClueList clue_list = cl.m_ent->m_player->m_clues;
     int count = 0;
     bool found = false;
     for (const Clue &c: clue_list)
@@ -1359,7 +1368,7 @@ void removeClue(MapClientSession &cl, Clue clue)
     if(found)
     {
         clue_list.erase(clue_list.begin() + count);
-        cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_clue_list = clue_list;
+        cl.m_ent->m_player->m_clues = clue_list;
         markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
         cl.addCommand<ClueList>(clue_list);
     }
@@ -1371,20 +1380,20 @@ void removeClue(MapClientSession &cl, Clue clue)
 
 void addSouvenir(MapClientSession &cl, Souvenir souvenir)
 {
-    vSouvenirList souvenir_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
+    vSouvenirList souvenir_list = cl.m_ent->m_player->m_souvenirs;
     if(souvenir_list.size() > 0)
         souvenir.m_idx = souvenir_list.size(); // Server sets the idx
 
     qCDebug(logScripts) << "Souvenir m_idx: " << souvenir.m_idx << " about to be added";
     souvenir_list.push_back(souvenir);
-    cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list = souvenir_list;
+    cl.m_ent->m_player->m_souvenirs = souvenir_list;
     markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
     cl.addCommand<SouvenirListHeaders>(souvenir_list);
 }
 
 void removeSouvenir(MapClientSession &cl, Souvenir souvenir)
 {
-    vSouvenirList souvenir_list = cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
+    vSouvenirList souvenir_list = cl.m_ent->m_player->m_souvenirs;
     int count = 0;
     bool found = false;
     for (const Souvenir &s: souvenir_list)
@@ -1400,7 +1409,7 @@ void removeSouvenir(MapClientSession &cl, Souvenir souvenir)
     if(found)
     {
         souvenir_list.erase(souvenir_list.begin() + count);
-        cl.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list = souvenir_list;
+        cl.m_ent->m_player->m_souvenirs = souvenir_list;
         markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
         cl.addCommand<SouvenirListHeaders>(souvenir_list);
     }
@@ -1413,7 +1422,7 @@ void removeSouvenir(MapClientSession &cl, Souvenir souvenir)
 
 void removeContact(MapClientSession &sess, Contact contact)
 {
-    vContactList contacts = sess.m_ent->m_char->m_char_data.m_contacts;
+    vContactList contacts = sess.m_ent->m_player->m_contacts;
 
     bool found = false;
     int count = 0;
@@ -1434,7 +1443,7 @@ void removeContact(MapClientSession &sess, Contact contact)
     else
     {
         contacts.erase(contacts.begin() + count);
-        sess.m_ent->m_char->m_char_data.m_contacts = contacts;
+        sess.m_ent->m_player->m_contacts = contacts;
         markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
         sess.addCommand<ContactStatusList>(contacts);
     }
@@ -1597,39 +1606,66 @@ void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& m
         mi.add_chat_message(e, formated);
 }
 
-void addStatistic(MapClientSession &cl, CharacterStatistic statistic)
+void addRelayRaceResult(MapClientSession &cl, RelayRaceResult &raceResult)
 {
-    vCharacterStatistics statistics = cl.m_ent->m_char->m_char_data.m_character_statistics;
-
+    vRelayRace races = cl.m_ent->m_player->m_player_statistics.m_relay_races;
+    int count = 0;
     bool found = false;
-    int loopCount = 0;
-    for(CharacterStatistic s: statistics)
+    for(const RelayRaceResult &r: races)
     {
-       if(s.m_id == statistic.m_id)
-       {
-           found = true;
-           //Update needed
-           if(statistic.m_count > 0 || statistic.m_time > 0)
-           {
-               if(statistic.m_count > 1 || statistic.m_time < s.m_time || (s.m_time == 0 && statistic.m_time > 0))
-               {
-                   statistics[loopCount] = statistic;
-               }
-               else if (statistic.m_count == 1)
-               {
-                  ++statistics[loopCount].m_count;
-               }
-           }
-           break;
-       }
-       ++loopCount;
+        if(r.m_segment == raceResult.m_segment)
+        {
+            found = true;
+            if(r.m_best_time > raceResult.m_last_time || r.m_best_time == 0)
+            {
+                races[count] = raceResult;
+                races[count].m_best_time = raceResult.m_last_time;
+            }
+            else
+                races[count].m_last_time = raceResult.m_last_time;
+
+            break;
+        }
+        ++count;
     }
-
     if(!found)
-        statistics.push_back(statistic);
-
-    cl.m_ent->m_char->m_char_data.m_character_statistics = statistics;
+    {
+        raceResult.m_best_time = raceResult.m_last_time;
+        races.push_back(raceResult);
+    }
+    cl.m_ent->m_player->m_player_statistics.m_relay_races = races;
     markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
 }
+
+void addHideAndSeekResult(MapClientSession &cl, int points)
+{
+    HideAndSeek hideAndSeek = cl.m_ent->m_player->m_player_statistics.m_hide_seek;
+
+    if(hideAndSeek.m_found_count == 0)
+        hideAndSeek.m_found_count = points;
+    else
+        hideAndSeek.m_found_count + points;
+
+    cl.m_ent->m_player->m_player_statistics.m_hide_seek = hideAndSeek;
+    markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
+}
+
+RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
+{
+    vRelayRace results = cl.m_ent->m_player->m_player_statistics.m_relay_races;
+    RelayRaceResult result;
+    for (const RelayRaceResult &r: results)
+    {
+        if(r.m_segment == segment)
+        {
+            result = r;
+            break;
+        }
+    }
+
+    return result;
+}
+
+
 
 //! @}

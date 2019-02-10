@@ -235,7 +235,7 @@ bool GameDbSyncContext::performUpdate(const CharacterUpdateData &data)
     m_prepared_char_update->bindValue(QStringLiteral(":player_data"), data.m_player_data);
     m_prepared_char_update->bindValue(QStringLiteral(":supergroup_id"), data.m_supergroup_id);
 
-    if(!doIt(*m_prepared_char_update))
+   if(!doIt(*m_prepared_char_update))
         return false;
 
     qCDebug(logDB) << "Updating Character Successful" << data.m_char_name;

@@ -81,7 +81,18 @@ function DeepCopy(object)
     end
     return _copy(object);
 end
-
+function SecondsToClock(seconds)
+    local seconds = tonumber(seconds)
+  
+    if seconds <= 0 then
+      return "00:00:00";
+    else
+      hours = string.format("%02.f", math.floor(seconds/3600));
+      mins = string.format("%02.f", math.floor(seconds/60 - (hours*60)));
+      secs = string.format("%02.f", math.floor(seconds - hours*3600 - mins *60));
+      return hours..":"..mins..":"..secs
+    end
+  end
 
 -- CONTACT Helpers
 Contacts = {};
@@ -181,13 +192,13 @@ end
 
 function Contacts.FindContactByName(item)
     local contact = false
-    printDebug("Contact to find: " .. item)
+    --printDebug("Contact to find: " .. item)
 
     if vContacts ~= nil then
         for key, value in pairs(vContacts) do
-         printDebug(value.name)
+            --printDebug(value.name)
             if (value.name == item) then
-                printDebug("Contact found: " .. value.name)
+                --printDebug("Contact found: " .. value.name)
                 contact = value
                 break
             end
@@ -212,7 +223,31 @@ function Contacts.FindContactByNpcId (npcId)
     return contact
 end
 
---End CONTACT HELPERS
+function Contacts.FindLocationByName(locationName)
+    local location = false;
+    --printDebug("Location to find: " .. locationName)
+    if contactsForZone ~= nil then
+        for key, value in pairs(contactsForZone) do
+            --printDebug(tostring(value.locations))
+            if value.locations ~= nil then
+                for k, v in pairs(value.locations) do
+                    printDebug(tostring(v.name))
+                    if v.name == locationName then
+                        location = v;
+                        break;
+                    end
+                end
+
+                if(location ~= false) then
+                    break;
+                end
+             end
+        end
+    end
+    return location;
+end
+
+--End CONTACT HELPERS 450 0 771
 
 
 --Just for testing
@@ -242,6 +277,25 @@ To add scripts to lua use include_lua('path') to load each extra script
 
 For contact dialogs, 11 buttons is the max you can have displayed at once. 
  Anymore and the client will crash
+
+
+    contact.name = Name in contact list
+    contact.currentStanding = Sets the progess bar
+    contact.notifyPlayer = false; ?
+    contact.npcId = sets the headshot to display in contact list
+    contact.contactIdx = ?
+    contact.hasLocation = true; Sets if the contact has a location to travel too.
+    contact.taskIndex = 0; Sets which task in the task list is tied is from this contact
+    contact.locationDescription = Description of contacts location
+    contact.location = Destination.new(); create destination object
+    contact.location.location = vec3 of where this contact is
+    contact.location.name = Name of location where contact is
+    contact.location.mapName =  Sets the name of the map where the contact is.
+    contact.confidantThreshold = Sets standing where contact becomes confidant
+    contact.friendThreshold = Sets standing where contact becomes friend
+    contact.completeThreshold = Sets standing where contact ark is complete
+    contact.canUseCell = false; Sets if call button is visible for contact
+    contact.dialogScreenIdx = 1; Sets dialog screen index. Use for branching dialogs.
 
         Contact Dialog buttons    
     {"CONTACTLINK_HELLO"                ,1}, 1
