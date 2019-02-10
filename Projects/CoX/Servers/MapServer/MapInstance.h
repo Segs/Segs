@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -96,7 +96,8 @@ class EmailHeaderResponse;
 class EmailReadResponse;
 class EmailWasReadByRecipientMessage;
 class EmailHeadersToClientMessage;
-struct EmailSendErrorMessage;
+class EmailHeaderToClientMessage;
+class EmailCreateStatusMessage;
 class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
@@ -254,11 +255,12 @@ protected:
         void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
+        void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
         void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
-        void on_email_header_response(SEGSEvents::EmailHeaderResponse *ev);
+        void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
         void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
         void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
-        void on_email_send_error(SEGSEvents::EmailSendErrorMessage *ev);
+        void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);

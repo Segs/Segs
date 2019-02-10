@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -346,12 +346,13 @@ struct EmailCreateRequestData
 {
     uint32_t m_sender_id;
     uint32_t m_recipient_id;
+    QString m_recipient_name;
     QString m_email_data; // cerealized email
 
     template <class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_sender_id, m_recipient_id, m_email_data);
+        ar(m_sender_id, m_recipient_id, m_recipient_name, m_email_data);
     }
 };
 
@@ -360,12 +361,13 @@ struct EmailCreateResponseData
     uint32_t m_email_id;
     uint32_t m_sender_id;
     uint32_t m_recipient_id;
+    QString m_recipient_name;
     QString m_cerealized_email_data; // cerealized email
 
     template <class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_email_id, m_sender_id, m_recipient_id, m_cerealized_email_data);
+        ar(m_email_id, m_sender_id, m_recipient_id, m_recipient_name, m_cerealized_email_data);
     }
 };
 // [[ev_def:macro]]
@@ -534,6 +536,7 @@ struct FillEmailRecipientIdResponseData
     uint32_t m_sender_id;
     uint32_t m_recipient_id;    // the point of this is to get recipient_id from recipient_name :)
     QString m_sender_name;
+    QString m_recipient_name;
     QString m_subject;
     QString m_message;
     uint32_t m_timestamp;
@@ -541,7 +544,7 @@ struct FillEmailRecipientIdResponseData
     template <class Archive>
     void serialize (Archive &ar)
     {
-        ar (m_sender_id, m_recipient_id, m_sender_name, m_subject, m_message, m_timestamp);
+        ar (m_sender_id, m_recipient_id, m_sender_name, m_recipient_name, m_subject, m_message, m_timestamp);
     }
 };
 // [[ev_def:macro]]
@@ -550,12 +553,12 @@ TWO_WAY_MESSAGE(GameDBEventTypes,FillEmailRecipientId)
 struct FillEmailRecipientIdErrorData
 {
     uint32_t m_sender_id;
-    QString m_error_message;
+    QString m_recipient_name;
 
     template <class Archive>
     void serialize (Archive &ar)
     {
-        ar (m_sender_id, m_error_message);
+        ar (m_sender_id, m_recipient_name);
     }
 };
 // [[ev_def:macro]]

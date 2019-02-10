@@ -33,3 +33,4 @@ out/
 
 # Environment activation script
 activate.env
+.directory
