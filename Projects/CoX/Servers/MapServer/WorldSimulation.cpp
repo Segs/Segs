@@ -188,9 +188,9 @@ void World::collisionStep(Entity *e, uint32_t msec)
         while (i != m_owner_instance->get_map_zone_transfers().constEnd())
         {
             // TODO: This needs to check against the trigger plane for transfers. This should be part of the wall objects geobin. Also need to make sure that this doesn't cause players to immediately zone after being spawned in a spawnLocation near a zoneline.            
-            if ((e->m_entity_data.m_pos.x >= i.value().m_position.x - 25 && e->m_entity_data.m_pos.x <= i.value().m_position.x + 25) &&
-                (e->m_entity_data.m_pos.y >= i.value().m_position.y - 25 && e->m_entity_data.m_pos.y <= i.value().m_position.y + 25) &&
-                (e->m_entity_data.m_pos.z >= i.value().m_position.z - 25 && e->m_entity_data.m_pos.z <= i.value().m_position.z + 25))
+            if ((e->m_entity_data.m_pos.x >= i.value().m_position.x - 20 && e->m_entity_data.m_pos.x <= i.value().m_position.x + 20) &&
+                (e->m_entity_data.m_pos.y >= i.value().m_position.y - 20 && e->m_entity_data.m_pos.y <= i.value().m_position.y + 20) &&
+                (e->m_entity_data.m_pos.z >= i.value().m_position.z - 20 && e->m_entity_data.m_pos.z <= i.value().m_position.z + 20))
             {
                 e->m_map_swap_collided = true;  // So we don't send repeated events for the same entity
                 m_owner_instance->putq(new MapSwapCollisionMessage({e->m_db_id, e->m_entity_data.m_pos, i.key()}, 0));
