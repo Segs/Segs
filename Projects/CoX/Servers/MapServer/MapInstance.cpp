@@ -3251,6 +3251,8 @@ void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
     sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name)));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
     map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_transfer_data}, 0));
+}
+
 void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
 {
     process_chat(sender, msg_text);
