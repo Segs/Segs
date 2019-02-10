@@ -131,6 +131,11 @@ bool AuthDbSyncContext::loadAndConfigure()
     db2->setPassword(dbpass);
     m_db.reset(db2); // at this point we become owner of the db
 
+    if(dbdriver == "QMYSQL")
+    {
+      db2.setConnectOptions("MYSQL_OPT_RECONNECT=true");
+    }
+
     if(!m_db->open())
     {
         qCritical().noquote() << "Failed to open database:" << dbname;
