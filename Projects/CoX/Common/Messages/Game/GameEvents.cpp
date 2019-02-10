@@ -120,7 +120,7 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     toActualCharacter(indexed_character, converted, player_data, entity_data);
     bs.StorePackedBits(1,6); // opcode
 
-    if(indexed_character.m_name.compare(EMPTY_CHAR_NAME)!=0)// actual character was read from db
+    if(indexed_character.m_name.compare(EMPTY_STRING)!=0)// actual character was read from db
     {
         bs.StorePackedBits(1, m_index);
         converted.getCurrentCostume()->storeCharselParts(bs);

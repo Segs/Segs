@@ -310,7 +310,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_db_id = (m_prepared_char_select->value("id").toUInt());
         character.m_account_id = (m_prepared_char_select->value("account_id").toUInt());
         QString name=m_prepared_char_select->value("char_name").toString();
-        character.m_name =  name.isEmpty() ? EMPTY_CHAR_NAME : name;
+        character.m_name =  name.isEmpty() ? EMPTY_STRING : name;
         character.m_serialized_costume_data = m_prepared_char_select->value("costume_data").toString();
         character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
         character.m_serialized_entity_data = m_prepared_char_select->value("entitydata").toString();

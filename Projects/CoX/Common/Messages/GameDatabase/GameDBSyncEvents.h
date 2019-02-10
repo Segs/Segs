@@ -14,7 +14,7 @@
 namespace SEGSEvents
 {
 
-const QString EMPTY_CHAR_NAME = "EMPTY"; // "EMPTY" is used as CharSel screen in client expects this in some cases
+const QString EMPTY_STRING = "EMPTY"; // Client expects value "EMPTY" in several places
 
 enum GameDBEventTypes : uint32_t
 {
