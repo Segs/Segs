@@ -23,7 +23,6 @@
 #include "Common/GameData/Store.h"
 
 #include <glm/gtc/constants.hpp>
-
 #include <QQueue>
 #include <array>
 #include <memory>
@@ -239,7 +238,7 @@ public:
         bool                m_is_store                  = false;
         vStoreItems         m_store_items;
 
-        std::function<void(int)>  m_active_dialog      = NULL;
+        std::function<void(int)>  m_active_dialog       = NULL;
 
         void                dump();
 

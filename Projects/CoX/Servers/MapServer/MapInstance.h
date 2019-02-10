@@ -27,6 +27,17 @@ class SEGSTimer;
 class World;
 class GameDataStore;
 class MapSceneGraph;
+
+struct LuaTimer
+{
+    uint32_t                        m_entity_idx;
+    bool                            m_is_enabled        = false;
+    bool                            m_remove            = false;
+    int64_t                         m_start_time;
+    std::function<void(int64_t, int64_t, int64_t)>    m_on_tick_callback;
+
+};
+
 namespace SEGSEvents
 {
 class RecvInputState;
@@ -103,6 +114,8 @@ class SouvenirDetailRequest;
 class StoreSellItem;
 class StoreBuyItem;
 
+
+
 // server<-> server event types
 struct ExpectMapClientRequest;
 struct WouldNameDuplicateResponse;
@@ -124,6 +137,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_link_timer;
         std::unique_ptr<SEGSTimer> m_sync_service_timer;
         std::unique_ptr<SEGSTimer> m_afk_update_timer;
+        std::unique_ptr<SEGSTimer> m_lua_timer;
         World *                 m_world;
         GameDBSyncService*      m_sync_service;
         uint32_t                m_owner_id;
@@ -139,6 +153,7 @@ public:
         ListenAndLocationAddresses m_addresses; //! this value is sent to the clients
         MapSceneGraph *         m_map_scenegraph;
         NpcGeneratorStore       m_npc_generators;
+        std::vector<LuaTimer>   m_lua_timers;
 
 public:
                                 IMPL_ID(MapInstance)
@@ -155,6 +170,12 @@ public:
         glm::vec3               closest_safe_location(glm::vec3 v) const;
         QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
 
+        void send_player_update(Entity *e);
+        void                    add_chat_message(Entity *sender, QString &msg_text);
+        void                    startTimer(uint32_t entity_idx);
+        void                    stopTimer(uint32_t entity_idx);
+        void                    clearTimer(uint32_t entity_idx);
+
 protected:
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
@@ -166,7 +187,8 @@ protected:
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
         void                    on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
-        void                    process_chat(MapClientSession *sender, QString &msg_text);
+        void                    process_chat(Entity *sender, QString &msg_text);
+
         // DB -> Server messages
         void                    on_name_clash_check_result(SEGSEvents::WouldNameDuplicateResponse *ev);
         void                    on_character_created(SEGSEvents::CreateNewCharacterResponse *ev);
@@ -193,8 +215,9 @@ protected:
         void on_check_links();
         void on_update_entities();
         void on_afk_update();
+        void on_lua_update();
         void send_character_update(Entity *e);
-        void send_player_update(Entity *e);
+
 
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
         void on_window_state(SEGSEvents::WindowState *ev);
