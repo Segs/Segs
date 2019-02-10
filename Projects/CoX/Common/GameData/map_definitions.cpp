@@ -25,8 +25,7 @@ static const std::vector<MapData> g_defined_map_datas =
     {13, "Hazard_02_01", "maps/City_Zones/Hazard_02_01/Hazard_02_01.txt", "Boomtown"},
     {43, "Hazard_03_01", "maps/City_Zones/Hazard_03_01/Hazard_03_01.txt", "Dark Astoria"},
     {15, "Hazard_04_01", "maps/City_Zones/Hazard_04_01/Hazard_04_01.txt", "Crey's Folly"},
-    // Commented out as a dev zone with no objects.
-    //{"Unknown", "Hazard_04_02", "maps/City_Zones/Hazard_04_02/Hazard_04_02.txt", , "Enviro Nightmare"},
+    {50000, "Hazard_04_02", "maps/City_Zones/Hazard_04_02/Hazard_04_02.txt", "Enviro Nightmare"},
     {9928, "Hazard_05_01", "maps/City_Zones/Hazard_05_01/Hazard_05_01.txt", "Elysium"},
 
     // Trials
