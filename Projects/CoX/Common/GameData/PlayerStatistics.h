@@ -32,8 +32,9 @@ struct RelayRaceResult
     void serialize(Archive &archive, uint32_t const version);
 };
 
-struct Hunt
+class Hunt
 {
+public:
     enum : uint32_t {class_version       = 1};
 
     QString m_type; // Skulls, hellions, etc?
