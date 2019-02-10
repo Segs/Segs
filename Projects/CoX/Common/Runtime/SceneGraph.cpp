@@ -617,7 +617,9 @@ namespace SEGS {
 
 bool loadSceneGraph(const QString &path,LoadingContext &ctx,PrefabStore &prefabs)
 {
+    qInfo() << "SceneGraph Path: " << path;
     QString binName = mapNameToPath(path,ctx);
+    qInfo() << "Scenegraph BinName: " << binName;
     SceneGraph_Data serialized_graph;
     ctx.m_renamer.basename = buildBaseName(path);
     binName.replace(QStringLiteral("Chunks.bin"), QStringLiteral("CHUNKS.bin"));
@@ -643,6 +645,9 @@ SceneGraph *loadWholeMap(const QString &filename)
     upcase_city.replace("hazard", "Hazard");
     upcase_city.replace("trial", "Trial");
     upcase_city.replace("zones", "Zones");
+    upcase_city.replace("missions", "Missions");
+    upcase_city.replace("sewer", "Sewer");
+    upcase_city.replace("layout", "Layout");
     rd.m_prefab_mapping->sceneGraphWasReset();
     bool res = loadSceneGraph(upcase_city.mid(maps_idx), ctx, *rd.m_prefab_mapping);
     if(!res)

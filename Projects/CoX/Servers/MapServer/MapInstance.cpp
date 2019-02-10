@@ -917,7 +917,14 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     int end_or_slash = m_data_path.indexOf('/',city_idx);
     assert(city_idx!=0);
     QString map_desc_from_path = m_data_path.mid(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
-    res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
+    if (map_desc_from_path.toLower().contains("sewers"))
+    {
+        res->m_map_desc        = QString("maps/missions/sewers/sewers_15/sewers_15_layout_01_01.txt");
+    }
+    else
+    {
+        res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
+    }
     res->current_map_flags = true; // off 1
     res->unkn1             = 1;
     qDebug("Scene Request: unkn1: %d, undos_PP: %d, current_map_flags: %d", res->unkn1, res->undos_PP, res->current_map_flags);

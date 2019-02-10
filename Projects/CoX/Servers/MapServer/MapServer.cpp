@@ -196,7 +196,19 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
         ev->src()->putq(new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
         return;
     }
-    EventProcessor *instance = tpl->get_instance();
+
+    bool is_mission_map = false;
+    uint8_t mission_level_cap = 0;
+    uint8_t mission_layout = 0;
+
+    qDebug() << "Requesting map for :" << request_data.m_map_name.toLower();
+    if (request_data.m_map_name.toLower().contains("sewers"))
+    {
+        is_mission_map = true;
+        mission_level_cap = 15;
+        mission_layout = 1;
+    }
+    EventProcessor *instance = tpl->get_instance(is_mission_map, mission_level_cap, mission_layout);
     // now we know which instance will handle this client, pass the event to it,
     // remember to shallow_copy to mark the event as still owned.
     instance->putq(ev->shallow_copy());

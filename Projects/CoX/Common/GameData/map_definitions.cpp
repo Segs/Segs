@@ -33,7 +33,10 @@ static const std::vector<MapData> g_defined_map_datas =
     {20, "Trial_03_01", "maps/City_Zones/Trial_03_01/Trial_03_01.txt", "Terra Volta"},
     {21, "Trial_04_01", "maps/City_Zones/Trial_04_01/Trial_04_01.txt", "Eden"},
     {22, "Trial_04_02", "maps/City_Zones/Trial_04_02/Trial_04_02.txt", "The Hive"},
-    {23, "Trial_05_01", "maps/City_Zones/Trial_05_01/Trial_05_01.txt", "Rikti Crash Site"}
+    {23, "Trial_05_01", "maps/City_Zones/Trial_05_01/Trial_05_01.txt", "Rikti Crash Site"},
+
+    // Missions
+    {24, "Sewers_15_Layout_01_01", "maps/Missions/Sewers/Sewers_15/Sewers_15_Layout_01_01.txt", "Sewers 15 Layout 1"}
 };
 
 const std::vector<MapData> &getAllMapData()

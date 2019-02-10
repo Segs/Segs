@@ -55,6 +55,17 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
 
             qInfo() << "Found map:" << map_dir_visitor.fileInfo().filePath();
         }
+
+        qInfo() << "Directory: " << dirname;
+        if (dirname.contains("Mission_", Qt::CaseInsensitive)) 
+        {
+            qInfo() << "Found Mission Map: " << map_dir_visitor.fileInfo().filePath();
+            auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc);
+            qInfo() << "Mission map base name: " << tpl->mission_base_name(15, 1);
+            m_templates[getMapIndex(tpl->mission_base_name(15, 1))] = tpl;
+            qInfo() << "Mission filename: " << tpl->client_mission_filename(15, 1);
+            m_name_to_template[tpl->client_mission_filename(15, 1)] = tpl;            
+        }
     }
     // (template_directory / "bin/tutorial.bin")
     return !m_templates.empty();

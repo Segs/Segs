@@ -155,6 +155,9 @@ set(MAPNAMES
   Trial_03_01
   Trial_04_01 Trial_04_02
   Trial_05_01
+  Mission_Sewers
+  Mission_Caves
+  Mission_Abandoned_Office
   )
 foreach(MAPDIR ${MAPNAMES})
   file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/${MAPDIR})

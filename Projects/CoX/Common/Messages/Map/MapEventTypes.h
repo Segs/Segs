@@ -19,7 +19,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evShortcutsRequest           ,2)
     EVENT_DECL(MapEventTypes, evShortcuts                  ,3)
     EVENT_DECL(MapEventTypes, evSceneRequest               ,4)
-    EVENT_DECL(MapEventTypes, evScene                      ,5)
+    EVENT_DECL(MapEventTypes, evScene                      ,5) // Should be 106
     EVENT_DECL(MapEventTypes, evEntitiesRequest            ,6)
     EVENT_DECL(MapEventTypes, evEntitiesResponse           ,7)
     EVENT_DECL(MapEventTypes, evRecvInputState             ,8)
@@ -91,6 +91,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evClueList                   ,170)
     EVENT_DECL(MapEventTypes, evSouvenirListHeaders        ,171)
     EVENT_DECL(MapEventTypes, evSouvenirDetail             ,172)
+//    EVENT_DECL(MapEventTypes, evMissionObjectiveTimer      ,173)
     EVENT_DECL(MapEventTypes, evTaskDetail                 ,175)
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
     EVENT_DECL(MapEventTypes, evStoreOpen                  ,178)
