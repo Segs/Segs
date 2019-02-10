@@ -124,12 +124,13 @@ bool GameDbSyncContext::loadAndConfigure()
 
     if(dbdriver == "QMYSQL")
     {
-      db2.setConnectOptions("MYSQL_OPT_RECONNECT=true");
+        db2->setConnectOptions("MYSQL_OPT_RECONNECT=true");
     }
 
     if(!m_db->open())
     {
         qFatal("Failed to open database: %s", dbname.toStdString().c_str());
+        db2->setConnectOptions();
         return false;
     }
 
@@ -138,7 +139,7 @@ bool GameDbSyncContext::loadAndConfigure()
     {
         // we should just stop the server, it isn't going to work anyway
         qFatal("Wrong database version (%d) Game database requires version: %d", db_version, REQUIRED_DB_VERSION);
-
+        db2->setConnectOptions();
         return false;
     }
 
