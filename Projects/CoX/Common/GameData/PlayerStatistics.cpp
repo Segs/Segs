@@ -24,7 +24,7 @@ void PlayerStatistics::serialize(Archive &archive, uint32_t const version)
      archive(cereal::make_nvp("Hunts",m_hunts));
  }
 
- CEREAL_CLASS_VERSION(PlayerStatistics, PlayerStatistics::class_version)   // register Souvenir class version
+ CEREAL_CLASS_VERSION(PlayerStatistics, PlayerStatistics::class_version)
  SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(PlayerStatistics)
 
  template<class Archive>
@@ -35,10 +35,10 @@ void PlayerStatistics::serialize(Archive &archive, uint32_t const version)
           qCritical() << "Failed to serialize Souvenir, incompatible serialization format version " << version;
           return;
       }
-      archive(cereal::make_nvp("FoundCount",m_found_count));
+      archive(cereal::make_nvp("Count",m_found_count));
   }
 
-  CEREAL_CLASS_VERSION(HideAndSeek, HideAndSeek::class_version)   // register Souvenir class version
+  CEREAL_CLASS_VERSION(HideAndSeek, HideAndSeek::class_version)
   SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(HideAndSeek)
 
   template<class Archive>
@@ -54,7 +54,7 @@ void PlayerStatistics::serialize(Archive &archive, uint32_t const version)
        archive(cereal::make_nvp("BestTime",m_best_time));
    }
 
-   CEREAL_CLASS_VERSION(RelayRaceResult, RelayRaceResult::class_version)   // register Souvenir class version
+   CEREAL_CLASS_VERSION(RelayRaceResult, RelayRaceResult::class_version)
    SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(RelayRaceResult)
 
 
@@ -70,5 +70,5 @@ void PlayerStatistics::serialize(Archive &archive, uint32_t const version)
         archive(cereal::make_nvp("Count",m_count));
     }
 
-    CEREAL_CLASS_VERSION(Hunt, Hunt::class_version)   // register Souvenir class version
+    CEREAL_CLASS_VERSION(Hunt, Hunt::class_version)
     SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(Hunt)

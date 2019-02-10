@@ -2912,8 +2912,12 @@ void MapInstance::send_player_update(Entity *e)
     PlayerData playerData = PlayerData({
                 e->m_player->m_gui,
                 e->m_player->m_keybinds,
-                e->m_player->m_options
-                });
+                e->m_player->m_options,
+                e->m_player->m_contacts,
+                e->m_player->m_tasks_entry_list,
+                e->m_player->m_clues,
+                e->m_player->m_souvenirs,
+                e->m_player->m_player_statistics });
 
     serializeToQString(playerData, cerealizedPlayerData);
 

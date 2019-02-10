@@ -1644,7 +1644,7 @@ void addHideAndSeekResult(MapClientSession &cl, int points)
     if(hideAndSeek.m_found_count == 0)
         hideAndSeek.m_found_count = points;
     else
-        hideAndSeek.m_found_count + points;
+        hideAndSeek.m_found_count += points;
 
     cl.m_ent->m_player->m_player_statistics.m_hide_seek = hideAndSeek;
     markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
