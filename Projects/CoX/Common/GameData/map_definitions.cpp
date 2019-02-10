@@ -3,6 +3,8 @@
 
 #include "Logging.h"
 
+const uint32_t DEFAULT_MAP_IDX = 24; // Outbreak
+
 static const std::vector<MapData> g_defined_map_datas =
 {
     // City_Zones
@@ -69,7 +71,7 @@ uint32_t getMapIndex(const QString &map_name)
                << "Returning Outbreak's map index as default...";
 
     // defaulting to Outbreak's map name
-    return 24;
+    return DEFAULT_MAP_IDX;
 }
 
 /// \note this functions returns the string by value, since m_display_map_name is QByteArray
