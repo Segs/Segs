@@ -558,7 +558,7 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     // This is used here to get the map idx to send to the client for the transfer, but we
     // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
     // can prevent motd showing every time.
-    uint8_t map_idx = map_server->session_map_xfer_idx(lnk->session_token());
+    uint32_t map_idx = map_server->session_map_xfer_idx(lnk->session_token());
     QString map_path = getMapPath(map_idx).toLower();
     GameAccountResponseCharacterData c_data;
     QString serialized_data;
@@ -2103,7 +2103,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
             // ev->name is the map_idx when using /mapmenu
             if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
             {
-                uint8_t map_idx = ev->name.toInt();
+                uint32_t map_idx = ev->name.toInt();
                 if (map_idx == m_index)
                 {
                     QString door_msg = "You're already here!";
