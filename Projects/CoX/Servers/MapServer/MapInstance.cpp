@@ -2627,7 +2627,7 @@ void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
     test_task.m_task_idx = ev->m_task_idx;
     test_task.m_db_id = ev->m_db_id;
 
-    vTaskEntryList task_entry_list = session.m_ent->m_char->m_char_data.m_tasks_entry_list;
+    vTaskEntryList task_entry_list = session.m_ent->m_player->m_tasks_entry_list;
     //find task
     bool found = false;
 
@@ -2894,10 +2894,6 @@ void MapInstance::on_lua_update()
     {
         if(t.m_remove)
         {
-            Entity *e = getEntity(this, t.m_entity_idx);
-            if(e != nullptr)
-                this->m_entities.removeEntityFromActiveList(e);
-
             m_lua_timers.erase(m_lua_timers.begin() + count);
             break;
         }
@@ -2945,8 +2941,12 @@ void MapInstance::send_character_update(Entity *e)
     PlayerData playerData = PlayerData({
                 e->m_player->m_gui,
                 e->m_player->m_keybinds,
-                e->m_player->m_options
-                });
+                e->m_player->m_options,
+                e->m_player->m_contacts,
+                e->m_player->m_tasks_entry_list,
+                e->m_player->m_clues,
+                e->m_player->m_souvenirs,
+                e->m_player->m_player_statistics });
 
     serializeToQString(*e->m_char->getAllCostumes(), cerealizedCostumeData);
     serializeToQString(e->m_char->m_char_data, cerealizedCharData);
@@ -2979,8 +2979,12 @@ void MapInstance::send_player_update(Entity *e)
     PlayerData playerData = PlayerData({
                 e->m_player->m_gui,
                 e->m_player->m_keybinds,
-                e->m_player->m_options
-                });
+                e->m_player->m_options,
+                e->m_player->m_contacts,
+                e->m_player->m_tasks_entry_list,
+                e->m_player->m_clues,
+                e->m_player->m_souvenirs,
+                e->m_player->m_player_statistics });
 
     serializeToQString(playerData, cerealizedPlayerData);
 
@@ -3156,7 +3160,7 @@ void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
 void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
 {
     MapClientSession& session = m_session_store.session_from_event(ev);
-    vSouvenirList sl = session.m_ent->m_char->m_char_data.m_clue_souvenir_list.m_souvenir_list;
+    vSouvenirList sl = session.m_ent->m_player->m_souvenirs;
 
     Souvenir souvenir_detail;
     bool found = false;

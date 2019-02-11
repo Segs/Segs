@@ -129,6 +129,7 @@ void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess);
+void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -253,6 +254,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"developerConsoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
     {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
     {{"clearTarget"}, "Clear current target", cmdHandler_ClearTarget, 9},
+    {{"startTimer"}, "Create a small timer", cmdHandler_StartTimer, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -1356,6 +1358,23 @@ void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess)
 
     int idx = parts[1].toInt();
     setTarget(*sess.m_ent, idx);
+}
+void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size () != 3)
+    {
+        qCDebug(logSlashCommand) << "StartTimer. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "StartTimer '/StartTimer <timerName> <seconds>'", sess);
+        return;
+    }
+    QString message = parts[1].toString();
+    float time = parts[2].toFloat();
+
+    sendMissionObjectiveTimer(sess, message, time);
+
 }
 
 // Slash commands for setting bit values

@@ -15,7 +15,7 @@
 #include "MessageHelpers.h"
 #include "MapInstance.h"
 #include "MapSceneGraph.h"
-
+#include "GameData/playerdata_definitions.h"
 #include "Messages/Map/Browser.h"
 #include "Messages/Map/ChatMessage.h"
 #include "Messages/Map/FloatingDamage.h"
@@ -124,25 +124,15 @@ static void destruction_is_an_error(T &/*v*/)
 
 void ScriptingEngine::registerTypes()
 {
-    m_private->m_lua.new_usertype<glm::vec3>( "vec3",
-        sol::constructors<glm::vec3(), glm::vec3(float,float,float)>(),
-        "x", &glm::vec3::x,
-        "y", &glm::vec3::y,
-        "z", &glm::vec3::z
+
+    m_private->m_lua.new_usertype<Clue>("Clue",
+        sol::constructors<Clue()>(),
+        "name", sol::property(&Clue::getName, &Clue::setName),
+        "displayName", sol::property(&Clue::getDisplayName, &Clue::setDisplayName),
+        "detail", sol::property(&Clue::getDetailText, &Clue::setDetailText),
+        "iconFile", sol::property(&Clue::getIconFile, &Clue::setIconFile)
     );
 
-    m_private->m_lua.new_usertype<CharacterStatistic>( "characterStatistic",
-        sol::constructors<CharacterStatistic()>(),
-        "name", sol::property(&CharacterStatistic::getName, &CharacterStatistic::setName),
-        "id", &CharacterStatistic::m_id,
-        "time", &CharacterStatistic::m_time,
-        "count", &CharacterStatistic::m_count
-    );
-
-
-    m_private->m_lua.new_usertype<QString>( "QString",
-        sol::constructors<QString(), QString(const char*)>()
-    );
     m_private->m_lua.new_usertype<Contact>( "Contact",
         // 3 constructors
         sol::constructors<Contact()>(),
@@ -151,6 +141,7 @@ void ScriptingEngine::registerTypes()
         "locationDescription", sol::property(&Contact::getLocationDescription, &Contact::setLocationDescription),
         "npcId", &Contact::m_npc_id,
         "currentStanding", &Contact::m_current_standing,
+        "contactIdx", &Contact::m_contact_idx,
         "notifyPlayer", &Contact::m_notify_player,
         "taskIndex", &Contact::m_task_index,
         "hasLocation", &Contact::m_has_location,
@@ -164,12 +155,34 @@ void ScriptingEngine::registerTypes()
         "settingTitle", &Contact::m_setting_title
     );
 
-    m_private->m_lua.new_usertype<Clue>("Clue",
-        sol::constructors<Clue()>(),
-        "name", sol::property(&Clue::getName, &Clue::setName),
-        "displayName", sol::property(&Clue::getDisplayName, &Clue::setDisplayName),
-        "detail", sol::property(&Clue::getDetailText, &Clue::setDetailText),
-        "iconFile", sol::property(&Clue::getIconFile, &Clue::setIconFile)
+    m_private->m_lua.new_usertype<Destination>("Destination",
+        sol::constructors<Destination()>(),
+        "pointIdx", &Destination::point_idx,
+        "location", &Destination::location,
+        "name", sol::property(&Destination::getLocationName, &Destination::setLocationName),
+        "mapName", sol::property(&Destination::getLocationMapName, &Destination::setLocationMapName)
+    );
+
+    m_private->m_lua.new_usertype<HideAndSeek>( "HideAndSeek",
+        sol::constructors<HideAndSeek()>(),
+        "foundCount", &HideAndSeek::m_found_count
+    );
+
+    m_private->m_lua.new_usertype<Hunt>( "Hunt",
+        sol::constructors<Hunt()>(),
+        "type", sol::property(&Hunt::getTypeString, &Hunt::setTypeString),
+        "count", &Hunt::m_count
+    );
+
+    m_private->m_lua.new_usertype<QString>( "QString",
+        sol::constructors<QString(), QString(const char*)>()
+    );
+
+    m_private->m_lua.new_usertype<RelayRaceResult>( "RelayRaceResult",
+        sol::constructors<RelayRaceResult()>(),
+        "segment", &RelayRaceResult::m_segment,
+        "lastTime", &RelayRaceResult::m_last_time,
+        "bestTime", &RelayRaceResult::m_best_time
     );
 
     m_private->m_lua.new_usertype<Souvenir>("Souvenir",
@@ -179,14 +192,6 @@ void ScriptingEngine::registerTypes()
         "icon", sol::property(&Souvenir::getIcon, &Souvenir::setIcon)
         //Server will set the index for this
         //"souvenirIdx", &Souvenir::m_idx
-    );
-
-    m_private->m_lua.new_usertype<Destination>("Destination",
-        sol::constructors<Destination()>(),
-        "pointIdx", &Destination::point_idx,
-        "location", &Destination::location,
-        "name", sol::property(&Destination::getLocationName, &Destination::setLocationName),
-        "mapName", sol::property(&Destination::getLocationMapName, &Destination::setLocationMapName)
     );
 
     m_private->m_lua.new_usertype<TaskEntry>("TaskEntry",
@@ -215,6 +220,14 @@ void ScriptingEngine::registerTypes()
           "unknownInt2", &Task::m_unknown_2,
           "boardTrain", &Task::m_board_train
       );
+
+      m_private->m_lua.new_usertype<glm::vec3>( "vec3",
+          sol::constructors<glm::vec3(), glm::vec3(float,float,float)>(),
+          "x", &glm::vec3::x,
+          "y", &glm::vec3::y,
+          "z", &glm::vec3::z
+      );
+
 
       m_private->m_lua["ParseContactButton"] = [this](uint32_t button_id)
         {
@@ -521,12 +534,6 @@ void ScriptingEngine::registerTypes()
 
     // Player Object
     m_private->m_lua["Player"] = m_private->m_lua.create_table(); // Empty Table aka Object
-    m_private->m_lua["Player"]["AddStatistic"] = [this](CharacterStatistic statistic)
-    {
-        MapClientSession *cl = m_private->m_lua["client"];
-        addStatistic(*cl, statistic);
-
-    };
     m_private->m_lua["Player"]["ClearTarget"] = [this]()
     {
         MapClientSession *cl = m_private->m_lua["client"];
@@ -660,6 +667,14 @@ void ScriptingEngine::registerTypes()
         MapClientSession *cl = m_private->m_lua["client"];
         selectTask(*cl, task);
     };
+
+    m_private->m_lua["Player"]["StartMissionTimer"] = [this](const char* message, float timer)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        QString mess = QString::fromUtf8(message);
+        sendMissionObjectiveTimer(*cl, mess, timer);
+    };
+
     m_private->m_lua["Player"]["SetWaypoint"] = [this](const int point_idx, glm::vec3 loc)
     {
         MapClientSession *cl = m_private->m_lua["client"];
@@ -711,6 +726,22 @@ void ScriptingEngine::registerTypes()
         MapClientSession *cl = m_private->m_lua["client"];
         respawn(*cl, loc_name);
     };
+    m_private->m_lua["Player"]["AddHideAndSeekPoint"] = [this](int points)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        addHideAndSeekResult(*cl, points);
+    };
+    m_private->m_lua["Player"]["AddRelayRaceResult"] = [this](RelayRaceResult *raceResult)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        addRelayRaceResult(*cl, *raceResult);
+    };
+    m_private->m_lua["Player"]["GetRelayRaceResult"] = [this](int segment)
+    {
+        MapClientSession *cl = m_private->m_lua["client"];
+        return getRelayRaceResult(*cl, segment);
+    };
+
 }
 
 int ScriptingEngine::loadAndRunFile(const QString &filename)
@@ -750,13 +781,14 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
 
     if (client->m_ent->m_type == EntType::PLAYER)
     {
-        m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
+        m_private->m_lua["Player"]["entityId"] = client->m_ent->m_db_id;
         m_private->m_lua["heroName"] = qPrintable(client->m_name);
-        m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
+        m_private->m_lua["vContacts"] = client->m_ent->m_player->m_contacts;
 
-        if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+
+        if(client->m_ent->m_player->m_tasks_entry_list.size() > 0)
         {
-            m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+            m_private->m_lua["vTaskList"] = client->m_ent->m_player->m_tasks_entry_list[0].m_task_list;
         }
     }
 
@@ -767,12 +799,12 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
 {
     m_private->m_lua["client"] = client;
     m_private->m_lua["map"] = client->m_current_map;
-    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
+    m_private->m_lua["vContacts"] = client->m_ent->m_player->m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
-    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
-    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    m_private->m_lua["Player"]["entityId"] = client->m_ent->m_db_id;
+    if(client->m_ent->m_player->m_tasks_entry_list.size() > 0)
     {
-        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+        m_private->m_lua["vTaskList"] = client->m_ent->m_player->m_tasks_entry_list[0].m_task_list;
     }
     return callFunc(name,arg1,loc);
 }
@@ -781,12 +813,12 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
 {
     m_private->m_lua["client"] = client;
     m_private->m_lua["map"] = client->m_current_map;
-    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
+    m_private->m_lua["vContacts"] = client->m_ent->m_player->m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
-    m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
-    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    m_private->m_lua["Player"]["entityId"] = client->m_ent->m_db_id;
+    if(client->m_ent->m_player->m_tasks_entry_list.size() > 0)
     {
-        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+        m_private->m_lua["vTaskList"] = client->m_ent->m_player->m_tasks_entry_list[0].m_task_list;
     }
     return callFunc(name,arg1,loc);
 }
@@ -929,12 +961,12 @@ void ScriptingEngine::updateMapInstance(MapInstance * instance)
 void ScriptingEngine::updateClientContext(MapClientSession * client)
 {
     m_private->m_lua["client"] = client;
-    m_private->m_lua["vContacts"] = client->m_ent->m_char->m_char_data.m_contacts;
+    m_private->m_lua["vContacts"] = client->m_ent->m_player->m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
-    if(client->m_ent->m_char->m_char_data.m_tasks_entry_list.size() > 0)
+    if(client->m_ent->m_player->m_tasks_entry_list.size() > 0)
     {
-        m_private->m_lua["vTaskList"] = client->m_ent->m_char->m_char_data.m_tasks_entry_list[0].m_task_list;
+        m_private->m_lua["vTaskList"] = client->m_ent->m_player->m_tasks_entry_list[0].m_task_list;
     }
 }
 

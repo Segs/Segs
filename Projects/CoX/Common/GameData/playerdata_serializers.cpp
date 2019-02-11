@@ -34,6 +34,11 @@ void serialize(Archive &archive, PlayerData &pd, uint32_t const version)
     archive(cereal::make_nvp("Gui", pd.m_gui));
     archive(cereal::make_nvp("KeyBinds", pd.m_keybinds));
     archive(cereal::make_nvp("Options", pd.m_options));
+    archive(cereal::make_nvp("KnownContacts", pd.m_contacts));
+    archive(cereal::make_nvp("Tasks", pd.m_tasks_entry_list));
+    archive(cereal::make_nvp("Clue", pd.m_clues));
+    archive(cereal::make_nvp("Souvenirs", pd.m_souvenirs));
+    archive(cereal::make_nvp("Statistics", pd.m_player_statistics));
 }
 
 SPECIALIZE_VERSIONED_SERIALIZATIONS(PlayerData)
