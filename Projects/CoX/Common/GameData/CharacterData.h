@@ -13,6 +13,7 @@
 #include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
 #include "Common/GameData/CharacterAttributes.h"
+#include "Common/GameData/CharacterStatistics.h"
 #include "Common/GameData/Task.h"
 
 #include <QString>
@@ -50,6 +51,7 @@ struct CharacterData
         vContactList        m_contacts;
         vTaskEntryList      m_tasks_entry_list;
         ClueSouvenirList    m_clue_souvenir_list;
+        vCharacterStatistics m_character_statistics;
         uint32_t    m_max_insp_cols     = 0;
         uint32_t    m_max_insp_rows     = 0;
         uint32_t    m_max_enhance_slots = 0;

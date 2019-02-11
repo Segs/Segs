@@ -9,7 +9,6 @@ local enhancements = {
 
 local inspirations = { 'Insight', 'Enrage', 'Luck', 'Catch_A_Breath', 'Respite',
  'Discipline', 'Awaken'
-
 }
 
 local tempPowers = {
@@ -54,20 +53,34 @@ function Tasks.UpdateTasksForZone(zone)
 end
 --End Task Functions
 
-
-
   --Global Helper Functions
 function round (num, numDecimalPlaces)
     local mult = 10^(numDecimalPlaces or 0)
     return math.floor(num * mult + 0.5) / mult
-  end
+end
 
-  function roundToString(num, numDecimalPlaces)
+function roundToString(num, numDecimalPlaces)
     return tonumber(string.format("%." .. (numDecimalPlaces or 0) .. "f", num))
-  end
+end
 
-
-
+  
+function DeepCopy(object)
+    local lookup_table = {};
+    local function _copy(object)
+        if type(object) ~= "table" then
+            return object;
+        elseif lookup_table[object] then
+            return lookup_table[object];
+        end
+        local new_table = {};
+        lookup_table[object] = new_table;
+        for index, value in pairs(object) do
+            new_table[_copy(index)] = _copy(value);
+        end
+        return setmetatable(new_table, getmetatable(object));
+    end
+    return _copy(object);
+end
 
 
 -- CONTACT Helpers
@@ -81,13 +94,12 @@ function Contacts.SpawnContacts(zone)
             if(value.spawned ~= true) then
                 value.expected = true
                 spawning = true
-                MapClientSession.AddNpc(value.model, value.location, value.variation, value.name)
+                MapInstance.AddNpc(value.model, value.location.coordinates, value.location.orientation, value.variation, value.name);
             end
 
             if(spawning == true) then
                 break
             end
-
         end
     end
 end
@@ -147,7 +159,6 @@ function Contacts.OpenContactDialog(id)
             if(value.entityId == id) then
                 if(Contacts.ContactAvailable(value)) then
                     -- any custom contact setup stuff
-                   
 
                     value.startDialogs();
                     isContact = true;
@@ -223,9 +234,6 @@ function Player.GiveRandomTempPower()
     Player.GiveTempPower(tempPowers[randomIndex])
 end
 
-
-vec3.new(107, 16, -215)
-
 printDebug('Finished Loading global.lua')
 
 --[[            Notes for scriping  
@@ -260,9 +268,9 @@ For contact dialogs, 11 buttons is the max you can have displayed at once.
     {"CONTACTLINK_NEWPLAYERTELEPORT_GC" ,0x17}, 23
     {"CONTACTLINK_FORMTASKFORCE"        ,0x18}, 24
     {"CONTACTLINK_GOTOTAILOR"           ,0x1A}, 26
-  ]]
 
-  --[[ Respawn Locations
+
+    Respawn Locations
 
   Hospital_Entrance
   Hospital_Exit
@@ -275,32 +283,87 @@ For contact dialogs, 11 buttons is the max you can have displayed at once.
   spn_hosp_fl1_01
   spn_hosp_fl2
   spn_hosp_fl3
-  ]]
 
   
---[[ Revive Levels
-0 = FULL:
-1 = AWAKEN:
-2 = BOUNCE_BACK:
-3 = RESTORATION:
-4 = IMMORTAL_RECOVERY:
-5 = REGEN_REVIVE:
-    ]]
 
-  --nocoll 1    No Clip
+  Revive Levels
+  0 = FULL:
+  1 = AWAKEN:
+  2 = BOUNCE_BACK:
+  3 = RESTORATION:
+  4 = IMMORTAL_RECOVERY:
+  5 = REGEN_REVIVE:
 
-  --[[
-      FloatingMessage values
 
-    FloatingMsg_NotEnoughEndurance  = 0,
-    FloatingMsg_OutOfRange          = 1,
-    FloatingMsg_Recharging          = 2,
-    FloatingMsg_NoEndurance         = 3,
-    FloatingMsg_Leveled             = 4,
-    FloatingMsg_FoundClue           = 5,
-    FloatingMsg_FoundEnhancement    = 6,
-    FloatingMsg_FoundInspiration    = 7,
-    FloatingMsg_MissionComplete     = 8,
-    FloatingMsg_TaskForceComplete   = 9,
-    FloatingMsg_MissionFailed       = 10,
-  ]]
+  FloatingMessage values
+
+  FloatingMsg_NotEnoughEndurance  = 0,
+  FloatingMsg_OutOfRange          = 1,
+  FloatingMsg_Recharging          = 2,
+  FloatingMsg_NoEndurance         = 3,
+  FloatingMsg_Leveled             = 4,
+  FloatingMsg_FoundClue           = 5,
+  FloatingMsg_FoundEnhancement    = 6,
+  FloatingMsg_FoundInspiration    = 7,
+  FloatingMsg_MissionComplete     = 8,
+  FloatingMsg_TaskForceComplete   = 9,
+  FloatingMsg_MissionFailed       = 10,
+
+    Chat MessageChannel
+
+    COMBAT         = 1, // COMBAT
+    DAMAGE         = 2, // DAMAGE
+    SERVER         = 3, // SVR_COM
+    NPC_SAYS       = 4, // NPC_SAYS
+    VILLAIN_SAYS   = 5, // VILLAIN_SAYS
+    REGULAR        = 6, // REGULAR
+    PRIVATE        = 7, // Tell/Private
+    TEAM           = 8, // Group/Team
+    SUPERGROUP     = 9, // SuperGroup
+    LOCAL          = 10, // Local
+    BROADCAST      = 11, // Shout
+    REQUEST        = 12, // Request
+    FRIENDS        = 13, // Friendlist
+    ADMIN          = 14, // [Admin]{Message}
+    USER_ERROR     = 15, // User Errors
+    DEBUG_INFO     = 16, // Debug Info
+    EMOTE          = 17, // Emotes
+    CHAT_TEXT      = 18, // General CHAT
+    PROFILE_TEXT   = 19, // Profile Text; unused?
+    HELP_TEXT      = 20, // Help Text; unused?
+    STD_TEXT       = 21, // Standard Text; unused?
+
+
+
+    Location Coor vs MiniMap
+    X +num = West 
+    X -Num = East
+    Z +Num = South
+    Z -Num = North
+
+    Y is vertial axis
+    Y +Num = Up
+    Y -Num = down
+
+
+    Rotation
+
+
+    Use the Y axis to rotate in radians
+    All entities default to facing south.
+    Y +Num moves clockwise
+    Y -Num moves counterclockwise
+    Example of rotating to face North
+    vec3.new(0, 3.14, 0);
+
+
+    Statistic Ids
+    1 HideAndSeek
+
+    Client debug commands
+
+    nocoll 1                  No Clip
+    entdebugclient 1          Player info
+    loc                       Player location
+
+  End Notes  ]]

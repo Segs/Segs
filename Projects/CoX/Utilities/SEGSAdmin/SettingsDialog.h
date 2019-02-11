@@ -31,6 +31,8 @@ public slots:
     void text_edit_updater();
     void slider_updater();
     void auto_logout_checkbox_validator();
+    void purge_logs();
+    void remove_files(QString dir, QStringList files);
 
 signals:
    void checkForConfigFile();
