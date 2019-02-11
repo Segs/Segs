@@ -330,11 +330,9 @@ struct MapXferLocator
                         if (prop.propName == "GotoMap")
                         {
                             map_transfer.m_target_map_name = prop.propValue.split('.')[0];
-                            if (n->door_volume == 1) 
-                            {
-                                // transfer_type is set to door by default, so only need to change for zones.
-                                map_transfer.m_transfer_type = MapXferType::ZONE;
-                            }
+                            // Assume that if there's a GotoMap, that it's for a map xfer.
+                            // TODO: Change the transfer type detection to something less ambiguous if possible.
+                            map_transfer.m_transfer_type = MapXferType::ZONE;
                             found_map_transfer = true;
                         }
                     }
