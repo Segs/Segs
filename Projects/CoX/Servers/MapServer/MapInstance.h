@@ -27,6 +27,7 @@ class SEGSTimer;
 class World;
 class GameDataStore;
 class MapSceneGraph;
+class MapXferData;
 
 struct LuaTimer
 {
@@ -101,6 +102,7 @@ class EmailCreateStatusMessage;
 class MapXferComplete;
 class InitiateMapXfer;
 struct ClientMapXferMessage;
+struct MapSwapCollisionMessage;
 class AwaitingDeadNoGurney;
 class BrowserClose;
 class LevelUpResponse;
@@ -131,7 +133,7 @@ class MapInstance final : public EventProcessor
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
-        QMultiHash<QString, glm::mat4>  m_all_spawners;
+        QMultiHash<QString, glm::mat4>  m_all_spawners;        
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
@@ -144,6 +146,17 @@ class MapInstance final : public EventProcessor
         uint32_t                m_instance_id;
         uint32_t                m_index = 1; // what does client expect this to store, and where do we send it?
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
+
+        // I think there's probably a better way to do this..
+        // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
+        // then copy the relevant transfers to another hash which is then used for those specific transfers.
+        // This means we only need to traverse the scenegraph once to get all transfers, but need to copy once
+        // as well, rather than having to walk the scenegraph twice (once for each type).
+        QHash<QString, MapXferData> m_map_transfers;
+        QHash<QString, MapXferData> m_map_door_transfers;
+        bool                    m_door_transfers_checked = false;
+        QHash<QString, MapXferData> m_map_zone_transfers;
+        bool                    m_zone_transfers_checked = false;
 
 public:
         SessionStore            m_session_store;
@@ -169,6 +182,9 @@ public:
         void                    setSpawnLocation(Entity &e, const QString &spawnLocation);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
         QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
+        QHash<QString, MapXferData> get_map_door_transfers();
+        QHash<QString, MapXferData> get_map_zone_transfers();
+        QString                 getNearestDoor(glm::vec3 location);
 
         void send_player_update(Entity *e);
         void                    add_chat_message(Entity *sender, QString &msg_text);
@@ -200,6 +216,7 @@ protected:
 
         void on_initiate_map_transfer(SEGSEvents::InitiateMapXfer *ev);
         void on_map_xfer_complete(SEGSEvents::MapXferComplete *ev);
+        void on_map_swap_collision(SEGSEvents::MapSwapCollisionMessage *ev);
 
         void on_link_lost(SEGSEvents::Event *ev);
         void on_disconnect(SEGSEvents::DisconnectRequest *ev);

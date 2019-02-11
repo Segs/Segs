@@ -355,11 +355,12 @@ void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
     uint32_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
     if(map_idx == getMapIndex(sess.m_current_map->name()))
         map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
-    QString map_path = getMapPath(map_idx);
-    sess.link()->putq(new MapXferWait(map_path));
+    MapXferData map_data = MapXferData();
+    map_data.m_target_map_name = getMapName(map_idx);
+    sess.link()->putq(new MapXferWait(getMapPath(map_idx)));
 
     HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)
-        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_idx}, 0));
+        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_data}, 0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
