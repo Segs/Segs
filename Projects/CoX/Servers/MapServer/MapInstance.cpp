@@ -2200,7 +2200,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
             // ev->name is the map_idx when using /mapmenu
             if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
             {
-                uint8_t map_idx = ev->name.toInt();
+                uint32_t map_idx = ev->name.toInt();
                 if (map_idx == m_index)
                 {
                     QString door_msg = "You're already here!";
