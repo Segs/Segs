@@ -49,7 +49,7 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
             dirname.contains("Hazard_",Qt::CaseInsensitive) ||
             dirname.contains("Trial_",Qt::CaseInsensitive))
         {
-            auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc);
+            auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc, false);
             m_templates[getMapIndex(tpl->base_name())] = tpl;
             m_name_to_template[tpl->client_filename()] = tpl;
 
@@ -61,11 +61,11 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
         {
             // TODO: Change this to create a single template for each mission type.
             qInfo() << "Found Mission Map: " << map_dir_visitor.fileInfo().filePath();
-            auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc);
-            qInfo() << "Mission map base name: " << tpl->mission_base_name(15, 1);
-            m_templates[getMapIndex(tpl->mission_base_name(15, 1))] = tpl;
-            qInfo() << "Mission filename: " << tpl->client_mission_filename(15, 1);
-            m_name_to_template[tpl->client_mission_filename(15, 1)] = tpl;            
+            // fileName: DefaultMapInstances/Mission_Sewers
+            auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc, true);
+            m_templates[getMapIndex(tpl->mission_base_name())] = tpl;   // Sewers, Caves, etc
+            // For missions, the client filename is only partial, as it still need the level and layouts appended to actually load
+            m_name_to_template[tpl->client_filename()] = tpl;           // maps/missions/sewers, maps/missions/caves, etc.
         }
     }
     // (template_directory / "bin/tutorial.bin")
@@ -75,6 +75,13 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
 //! \brief Retrieves template specified by it's client-side path
 MapTemplate * MapManager::get_template( QString id )
 {
+    // Mission templates are stored without all their variations, so need to just get the base mission type.
+    if (id.contains("mission"))
+    {
+        int start = QString("maps/missions/").size();
+        int index = id.indexOf(QString("/"), start, Qt::CaseInsensitive);
+        id = id.mid(0, index);
+    }
     if(m_name_to_template.find(id)==m_name_to_template.end())
         return nullptr;
     return m_name_to_template[id];

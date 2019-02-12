@@ -40,59 +40,76 @@ static std::vector<MapData> g_defined_map_datas =
     {22, "Trial_04_02", "The Hive", MapType::TRIAL },
     {60, "Trial_05_01", "Rikti Crash Site", MapType::TRIAL },
 
-    // Missions
-    
+    // Missions    
     {55000, "5th_Column", "5th_Column", MapType::MISSION },
     {55001, "Abandoned_Office", "Abandoned_Office", MapType::MISSION },
     {55002, "Abandoned_Warehouse", "Abandoned_Warehouse", MapType::MISSION },
     {55003, "Caves", "Caves", MapType::MISSION },
     {55004, "COT", "COT", MapType::MISSION },
     {55005, "Office", "Office", MapType::MISSION },
-    {55006, "Outdoor_City", "Outdoor_City", MapType::MISSION },
-    {55007, "Outdoor_Forest", "Outdoor_Forest", MapType::MISSION },
-    {55008, "Outdoor_Industrial", "Outdoor_Industrial", MapType::MISSION },
-    {55009, "Outdoor_Missions", "Outdoor_Missions", MapType::MISSION },
-    {55010, "Outdoor_Ruined", "Outdoor_Ruined", MapType::MISSION },
+    //{55006, "Outdoor_City", "Outdoor_City", MapType::MISSION },
+    //{55007, "Outdoor_Forest", "Outdoor_Forest", MapType::MISSION },
+    //{55008, "Outdoor_Industrial", "Outdoor_Industrial", MapType::MISSION },
+    //{55009, "Outdoor_Missions", "Outdoor_Missions", MapType::MISSION },
+    //{55010, "Outdoor_Ruined", "Outdoor_Ruined", MapType::MISSION },
     {55011, "Sewers", "Sewers", MapType::MISSION },
     {55012, "Tech", "Tech", MapType::MISSION },
-    {55013, "unique", "unique", MapType::MISSION },
+    //{55013, "unique", "unique", MapType::MISSION },
     {55014, "Warehouse", "Warehouse", MapType::MISSION }
     //{55000, "Sewers_15_Layout_01_01", "maps/Missions/Sewers/Sewers_15/Sewers_15_Layout_01_01.txt", "Sewers 15 Layout 1"}
 };
 
-QString createMapPath(MapData &map_data)
+uint8_t getMissionMapLevelRange(uint8_t char_level)
 {
-    switch (map_data.m_map_type)
+    uint8_t current = level_ranges[0];
+    for (auto &level_range : level_ranges)
     {
-        case MapType::MISSION:
+        if (abs(char_level - level_range) < abs(char_level - current))
         {
-            if (!map_data.m_mission_data.empty())
-            {
-                // TODO: Should be able to select this instead of just returning the first entry.
-                MissionMapData mission = map_data.m_mission_data[0];
+            current = level_range;
+        }
+    }
+    return current;
+}
+
+QString getMissionPath(QString map_name, uint8_t char_level)
+{
+    MapData map_data = getMapData(map_name);
+    uint8_t level_range = getMissionMapLevelRange(char_level);
+    if (!map_data.m_mission_data.empty())
+    {
+        for (auto &mission : map_data.m_mission_data)
+        {
+            // TODO: Currently this only selects the first layout found. This will eventually either need to return a random layout, or a selected layout.
+            // TODO: Need to handle if there is no mission with the provided level range for the selected map.
+            //if (mission.m_level == level_range)
+            //{
                 if (mission.m_has_sub_layout)
                 {
-                    return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3_%4.txt").arg(QString(map_data.m_map_name)).arg(mission.m_level).arg(mission.m_layout).arg(mission.m_sub_layout);
+                    if (map_name == "Tech")
+                    {
+                        return QString("maps/Missions/%1/%1_%2/%5_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0')).arg(mission.m_sub_layout, 2, 10, QChar('0')).arg(QString(map_name).toLower());
+                    }
+                    return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0')).arg(mission.m_sub_layout, 2, 10, QChar('0'));
                 }
                 else
                 {
-                    return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3.txt").arg(QString(map_data.m_map_name)).arg(mission.m_level).arg(mission.m_layout);
-                }                
-            }
-            qWarning() << QString("Attempted to create a map path for mission type map data, but the map data doesn't contain any mission data.");
-        }
-        case MapType::CITY:
-        case MapType::HAZARD:
-        case MapType::TRIAL:
-        default:
-        {
-            return QString("maps/City_Zones/%1/%1.txt").arg(QString(map_data.m_map_name));
+                    if (map_name == "Tech")
+                    {
+                        return QString("maps/Missions/%1/%1_%2/%5_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0')).arg(QString(map_name).toLower());
+                    }
+                    return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0'));
+                }
+            //}
         }
     }
+    qWarning() << "Attempted to get mission filename for the map -- " << map_name << " -- That map doesn't have mission data loaded.";
+    return QString();
 }
 
 void getMissionMapLevelData(QFileInfo map_level_folder, MapData &map_data)
 {
+    // TODO: Handle mission maps that don't have level subfolders.
     // maps/Missions/Sewers/Sewers_15/
     QString level = map_level_folder.fileName().mid(map_level_folder.fileName().lastIndexOf("_") + 1);
     QDir map_layout_dir(map_level_folder.filePath());
@@ -246,36 +263,40 @@ QString getMapName(uint32_t index)
     return g_defined_map_datas[0].m_map_name;
 }
 
-QString getMapPath(uint32_t index)
+QString getMapPath(uint32_t index, uint8_t char_level)
 {    
     for (auto &map_data : g_defined_map_datas)
     {
         if(index == map_data.m_map_idx)
         {
-            QString map_path = createMapPath(map_data);
-            qInfo() << "Created map path: " << map_path;
-            return map_path;
+            if (!map_data.m_mission_data.empty())
+            {
+                return getMissionPath(map_data.m_map_name, char_level);
+            }
+            return QString("maps/City_Zones/%1/%1.txt").arg(QString(map_data.m_map_name));
         }
     }
     qWarning() << "Cannot find map index \"" << index << "\" ."
                << "Returning Outbreak's map path as default...";
-    return createMapPath(g_defined_map_datas[0]);
+    return QString("maps/City_Zones/%1/%1.txt").arg(QString(g_defined_map_datas[0].m_map_name));
 }
 
-QString getMapPath(EntityData &ed)
+QString getMapPath(EntityData &ed, uint8_t char_level)
 {
-    return getMapPath(ed.m_map_idx);
+    return getMapPath(ed.m_map_idx, char_level);
 }
 
-QString getMapPath(QString &map_name)
+QString getMapPath(QString &map_name, uint8_t char_level)
 {
     for (auto &map_data : g_defined_map_datas)
     {
         if(map_name.contains(map_data.m_map_name, Qt::CaseInsensitive))
         {
-            QString map_path = createMapPath(map_data);
-            qInfo() << "Created map path: " << map_path;
-            return map_path;
+            if (!map_data.m_mission_data.empty())
+            {
+                return getMissionPath(map_data.m_map_name, char_level);
+            }
+            return QString("maps/City_Zones/%1/%1.txt").arg(QString(map_data.m_map_name));
         }
     }
 
@@ -284,5 +305,5 @@ QString getMapPath(QString &map_name)
                << "Returning Outbreak's display map path as default...";
 
     // defaulting to Outbreak's map name
-    return createMapPath(g_defined_map_datas[0]);
+    return QString("maps/City_Zones/%1/%1.txt").arg(QString(g_defined_map_datas[0].m_map_name));
 }

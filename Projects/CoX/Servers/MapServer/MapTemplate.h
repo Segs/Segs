@@ -7,6 +7,7 @@
 
 #pragma once
 #include "Servers/ServerEndpoint.h"
+#include "Common/GameData/Entity.h"
 
 #include <QString>
 #include <vector>
@@ -22,18 +23,19 @@ static  uint8_t                     s_template_id;
         uint8_t                     m_game_server_id;
         uint32_t                    m_map_server_id;
         ListenAndLocationAddresses  m_base_loc;
+        bool                        m_is_mission_map;
 
 public:
                                     MapTemplate(const QString &template_filename,
                                                 uint8_t game_server_id, uint32_t map_server_id,
-                                                const ListenAndLocationAddresses &loc);
-        MapInstance *               get_instance(bool is_mission_map = false, uint8_t mission_level_cap = 0, uint8_t mission_layout = 0); //! If there are no instances, starts a new one.
+                                                const ListenAndLocationAddresses &loc, const bool is_mission_map);
+        MapInstance *               get_instance(CharacterData &char_data); //! If there are no instances, starts a new one.
         size_t                      num_instances();
         void                        shut_down_all();
         QString                     client_filename() const;
-        QString                     client_mission_filename(uint8_t mission_level_cap, uint8_t mission_layout);
         QString                     base_name() const;
-        QString                     mission_base_name(uint8_t mission_level_cap, uint8_t mission_layout);
+        QString                     mission_base_name() const;
+        uint8_t                     get_level_range(uint8_t char_level);
 };
 
 // Generates instances based on some kind of schema file

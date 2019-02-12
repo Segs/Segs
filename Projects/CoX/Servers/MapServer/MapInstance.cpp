@@ -117,9 +117,9 @@ protected:
 };
 
 using namespace std;
-MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
+MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr, const bool is_mission_map)
   : m_data_path(mapdir_path), m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
-    m_addresses(listen_addr)
+    m_addresses(listen_addr), m_is_mission_map(is_mission_map)
 {
     m_world = new World(m_entities, getGameData().m_player_fade_in, this);
     m_scripting_interface.reset(new ScriptingEngine);
@@ -627,8 +627,10 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
 
     fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
     serializeToQString(c_data, serialized_data);
+    QString map_path = getMapPath(map_xfer.m_target_map_name,session.m_ent->m_char->m_char_data.m_level);
+    qInfo() << "Map transfer initiated to map path: " << map_path;
     ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
-                                    serialized_data, session.m_requested_slot_idx, session.m_name, getMapPath(map_xfer.m_target_map_name),
+                                    serialized_data, session.m_requested_slot_idx, session.m_name, map_path,
                                     session.m_max_slots},
                                     lnk->session_token(),this);
     map_server->putq(map_req);
@@ -980,15 +982,12 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     int end_or_slash = m_data_path.indexOf('/',city_idx);
     assert(city_idx!=0);
     QString map_desc_from_path = m_data_path.mid(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
-    if (map_desc_from_path.toLower().contains("sewers"))
-    {
-        // TODO: This needs to change to give the specificly requested map path. More than likely means adding this path to the MapInstance when creating it.
-        res->m_map_desc        = QString("maps/missions/sewers/sewers_15/sewers_15_layout_01_01.txt");
-    }
-    else
-    {
-        res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
-    }
+    qInfo() << "Scene Request for map path: " << map_desc_from_path;
+
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    QString map_path       = getMapPath(map_desc_from_path, session.m_ent->m_char->m_char_data.m_level);
+    res->m_map_desc        = map_path;
     res->current_map_flags = true; // off 1
     res->unkn1             = 1;
     qDebug("Scene Request: unkn1: %d, undos_PP: %d, current_map_flags: %d", res->unkn1, res->undos_PP, res->current_map_flags);
@@ -2219,7 +2218,9 @@ void MapInstance::on_enter_door(EnterDoor *ev)
                     MapXferData map_data = MapXferData();
                     map_data.m_target_map_name = getMapName(map_idx);
                     map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_data},0));
-                    session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+                    QString map_path = getMapPath(map_idx, session.m_ent->m_char->m_char_data.m_level);
+                    qInfo() << "On enter door map_path: " << map_path;
+                    session.link()->putq(new MapXferWait(map_path));
                 }
             }
             session.m_ent->m_is_using_mapmenu = false;
@@ -3256,7 +3257,7 @@ void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
     Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
     MapClientSession &sess = *e->m_client;
 
-    sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name)));
+    sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name, sess.m_ent->m_char->m_char_data.m_level)));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
     map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_transfer_data}, 0));
 }

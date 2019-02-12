@@ -22,6 +22,7 @@
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Servers/MessageBus.h"
+#include "Common/Messages/GameDatabase/GameDBSyncEvents.h"
 
 #include <ace/Reactor.h>
 
@@ -200,19 +201,13 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
         ev->src()->putq(new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
         return;
     }
+    // Get character data so we can get the character level for mission map level bounds.
+    GameAccountResponseCharacterData char_data;
+    serializeFromQString(char_data,request_data.char_from_db_data);
+    CharacterData cd;
+    serializeFromQString(cd, char_data.m_serialized_chardata);
 
-    bool is_mission_map = false;
-    uint8_t mission_level_cap = 0;
-    uint8_t mission_layout = 0;
-
-    qDebug() << "Requesting map for :" << request_data.m_map_name.toLower();
-    if (request_data.m_map_name.toLower().contains("sewers"))
-    {
-        is_mission_map = true;
-        mission_level_cap = 15;
-        mission_layout = 1;
-    }
-    EventProcessor *instance = tpl->get_instance(is_mission_map, mission_level_cap, mission_layout);
+    EventProcessor *instance = tpl->get_instance(cd);
     // now we know which instance will handle this client, pass the event to it,
     // remember to shallow_copy to mark the event as still owned.
     instance->putq(ev->shallow_copy());

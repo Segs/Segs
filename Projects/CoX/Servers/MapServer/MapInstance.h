@@ -157,6 +157,7 @@ class MapInstance final : public EventProcessor
         bool                    m_door_transfers_checked = false;
         QHash<QString, MapXferData> m_map_zone_transfers;
         bool                    m_zone_transfers_checked = false;
+        const bool              m_is_mission_map;
 
 public:
         SessionStore            m_session_store;
@@ -170,7 +171,7 @@ public:
 
 public:
                                 IMPL_ID(MapInstance)
-                                MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr);
+                                MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr, const bool is_mission_map);
                                 ~MapInstance() override;
         void                    dispatch(SEGSEvents::Event *ev) override;
 

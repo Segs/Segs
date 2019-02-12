@@ -73,6 +73,7 @@ struct MapXferData
 };
 
 using AllMaps_Data = std::vector<Map_Data>;
+const uint8_t level_ranges[4] = { 15, 30, 45, 60 };
 
 uint32_t       getMapIndex(const QString &map_name);
 std::vector<MapData> &getAllMapData();
@@ -82,11 +83,12 @@ QString        getMapName(uint32_t map_idx);
 QString        getDisplayMapName(uint32_t index);
 QString        getEntityDisplayMapName(const EntityData &ed);
 bool           isEntityOnMissionMap(EntityData &ed);
-QString        getMapPath(uint32_t index);
-QString        getMapPath(EntityData &ed);
-QString        getMapPath(QString &map_name);
+QString        getMapPath(uint32_t index, uint8_t char_level = 0);
+QString        getMapPath(EntityData &ed, uint8_t char_level = 0);
+QString        getMapPath(QString &map_name, uint8_t char_level = 0);
 
-QString        createMapPath(MapData &map_data);
 void           loadAllMissionMapData();
 void           getMissionMapLevelData(QFileInfo map_level_folder, MapData &map_data);
 void           getMissionMapLayoutData(QFileInfo maps_layout, uint8_t map_level, MapData& map_data);
+QString        getMissionPath(QString map_name, uint8_t level_range);
+uint8_t        getMissionMapLevelRange(uint8_t char_level);
