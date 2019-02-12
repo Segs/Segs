@@ -648,6 +648,13 @@ SceneGraph *loadWholeMap(const QString &filename)
     upcase_city.replace("missions", "Missions");
     upcase_city.replace("sewer", "Sewer");
     upcase_city.replace("layout", "Layout");
+    upcase_city.replace("tech", "Tech");
+    upcase_city.replace("warehouse", "Warehouse");
+    upcase_city.replace("office", "Office");
+    upcase_city.replace("abandoned", "Abandoned");
+    upcase_city.replace("caves", "Caves");
+    upcase_city.replace("column", "Column");
+    upcase_city.replace("cot", "COT");
     rd.m_prefab_mapping->sceneGraphWasReset();
     bool res = loadSceneGraph(upcase_city.mid(maps_idx), ctx, *rd.m_prefab_mapping);
     if(!res)

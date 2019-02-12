@@ -59,6 +59,7 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
         qInfo() << "Directory: " << dirname;
         if (dirname.contains("Mission_", Qt::CaseInsensitive)) 
         {
+            // TODO: Change this to create a single template for each mission type.
             qInfo() << "Found Mission Map: " << map_dir_visitor.fileInfo().filePath();
             auto tpl = new MapTemplate(map_dir_visitor.fileInfo().filePath(), game_id, map_id, loc);
             qInfo() << "Mission map base name: " << tpl->mission_base_name(15, 1);

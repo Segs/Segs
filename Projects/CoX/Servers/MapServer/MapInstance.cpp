@@ -982,6 +982,7 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     QString map_desc_from_path = m_data_path.mid(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
     if (map_desc_from_path.toLower().contains("sewers"))
     {
+        // TODO: This needs to change to give the specificly requested map path. More than likely means adding this path to the MapInstance when creating it.
         res->m_map_desc        = QString("maps/missions/sewers/sewers_15/sewers_15_layout_01_01.txt");
     }
     else

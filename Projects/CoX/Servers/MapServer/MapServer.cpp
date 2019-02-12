@@ -30,6 +30,8 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
+#include "Common/GameData/map_definitions.h"
+
 #include <set>
 
 using namespace SEGSEvents;
@@ -145,6 +147,8 @@ bool MapServer::ReadConfigAndRestart()
         postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 },0));
         return false;
     }
+
+    loadAllMissionMapData();
     return Run();
 }
 

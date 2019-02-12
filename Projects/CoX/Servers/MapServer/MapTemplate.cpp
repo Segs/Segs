@@ -34,6 +34,9 @@ MapInstance * MapTemplate::get_instance(bool is_mission_map, uint8_t mission_lev
         m_instances.back()->spin_up_for(m_game_server_id,m_map_server_id,s_template_id++);
         if (is_mission_map)
         {
+            // TODO: Update this to be able to pass back any mission map instance for a given mission type.
+            // TODO: map filename needs to come from the mission_data from the map definition for each
+            // TODO: Mission file paths probably need to be add to the instance so it can be sent for scene requests and such
             qDebug() << "Is mission map. Mission Level: " << mission_level_cap << " -- Layout: " << mission_layout;
             m_instances.back()->start(client_mission_filename(mission_level_cap, mission_layout));
         }
