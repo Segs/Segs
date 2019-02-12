@@ -33,6 +33,7 @@ public:
     Q_INVOKABLE bool heyServer();
     Q_INVOKABLE QString helloServer();
     Q_INVOKABLE QString getVersion();
+    Q_INVOKABLE QString getVersionName();
     Q_INVOKABLE QString getStartTime();
     Q_INVOKABLE QString ping();
 protected:

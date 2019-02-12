@@ -83,8 +83,13 @@ QString AdminRPC::helloServer()
 QString AdminRPC::getVersion()
 {
     qCDebug(logRPC) << "Someone requested the version...";
-    QString version = VersionInfo::getAuthVersionNumber() + QString(" ") + VersionInfo::getVersionName();
-    return version;
+    return VersionInfo::getAuthVersionNumber();
+}
+
+QString AdminRPC::getVersionName()
+{
+    qCDebug(logRPC) << "Someone requested the versions name...";
+    return VersionInfo::getVersionName();
 }
 
 QString AdminRPC::ping()

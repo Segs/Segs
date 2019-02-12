@@ -14,6 +14,8 @@
 namespace SEGSEvents
 {
 
+const QString EMPTY_STRING = "EMPTY"; // Client expects value "EMPTY" in several places
+
 enum GameDBEventTypes : uint32_t
 {
     BEGINE_EVENTS(GameDBEventTypes,Internal_EventTypes)
@@ -138,12 +140,13 @@ struct GameAccountResponseCharacterData
 
     void reset()
     {
-        m_name="EMPTY";
+        m_name=EMPTY_STRING;
+        m_serialized_entity_data.clear(); // Clearing entity data on character delete
     }
 
     bool isEmpty() const
     {
-        return 0==m_name.compare("EMPTY", Qt::CaseInsensitive);
+        return 0==m_name.compare(EMPTY_STRING, Qt::CaseInsensitive);
     }
 
     template <class Archive>
@@ -177,7 +180,7 @@ struct GameAccountResponseData
         int8_t res = 0;
         for(const auto & c : m_characters)
         {
-            if(c.m_name.compare("EMPTY")==0)
+            if(c.m_name.compare(EMPTY_STRING)==0)
                 return res;
             res++;
         }
