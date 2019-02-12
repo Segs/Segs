@@ -86,18 +86,10 @@ QString getMissionPath(QString map_name, uint8_t char_level)
             //{
                 if (mission.m_has_sub_layout)
                 {
-                    if (map_name == "Tech")
-                    {
-                        return QString("maps/Missions/%1/%1_%2/%5_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0')).arg(mission.m_sub_layout, 2, 10, QChar('0')).arg(QString(map_name).toLower());
-                    }
                     return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0')).arg(mission.m_sub_layout, 2, 10, QChar('0'));
                 }
                 else
                 {
-                    if (map_name == "Tech")
-                    {
-                        return QString("maps/Missions/%1/%1_%2/%5_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0')).arg(QString(map_name).toLower());
-                    }
                     return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0'));
                 }
             //}
