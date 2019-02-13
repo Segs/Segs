@@ -122,9 +122,15 @@ bool GameDbSyncContext::loadAndConfigure()
     db2->setPassword(dbpass);
     m_db.reset(db2); // at this point we become owner of the db
 
+    if(dbdriver == "QMYSQL")
+    {
+        db2->setConnectOptions("MYSQL_OPT_RECONNECT=true");
+    }
+
     if(!m_db->open())
     {
         qFatal("Failed to open database: %s", dbname.toStdString().c_str());
+        db2->setConnectOptions();
         return false;
     }
 
@@ -133,7 +139,7 @@ bool GameDbSyncContext::loadAndConfigure()
     {
         // we should just stop the server, it isn't going to work anyway
         qFatal("Wrong database version (%d) Game database requires version: %d", db_version, REQUIRED_DB_VERSION);
-
+        db2->setConnectOptions();
         return false;
     }
 
@@ -310,7 +316,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_db_id = (m_prepared_char_select->value("id").toUInt());
         character.m_account_id = (m_prepared_char_select->value("account_id").toUInt());
         QString name=m_prepared_char_select->value("char_name").toString();
-        character.m_name =  name.isEmpty() ? "EMPTY" : name;
+        character.m_name =  name.isEmpty() ? EMPTY_STRING : name;
         character.m_serialized_costume_data = m_prepared_char_select->value("costume_data").toString();
         character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
         character.m_serialized_entity_data = m_prepared_char_select->value("entitydata").toString();
