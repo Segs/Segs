@@ -10,17 +10,21 @@ find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 
 set(tool_SRC
     main.cpp
-    AddUser.cpp
-    AddUser.h
-    CreateDB.cpp
-    CreateDB.h
     DatabaseConfig.cpp
     DatabaseConfig.h
-    UpgradeDB.cpp
-    UpgradeDB.h
+    DBConnection.cpp
+    DBConnection.h
+    DBConnection_AddUser.cpp
+    DBConnection_Create.cpp
+    DBConnection_Upgrade.cpp
+    DBMigrationStep.cpp
+    DBMigrationStep.h
     UpgradeHooks.cpp
     UpgradeHooks.h
+    # Migrations should be added programatically
+    Migrations/SEGS_Migration_10.h
 )
+
 add_executable(dbtool ${tool_SRC})
 target_link_libraries(dbtool Qt5::Core Qt5::Sql)
 target_link_libraries(dbtool SEGS_Components)

@@ -29,7 +29,7 @@ public:
 
     bool initialize_from_settings(const QString &settings_file_name, const QString &group_name);
 
-    bool isMysql() const {return m_driver.startsWith("QMYSQL");}
-    bool isPostgresql() const {return m_driver.startsWith("QPSQL");}
-    bool isSqlite() const {return m_driver.startsWith("QSQLITE");}
+    bool isMysql() const { return m_driver.startsWith("QMYSQL"); }
+    bool isPostgresql() const { return m_driver.startsWith("QPSQL"); }
+    bool isSqlite() const { return m_driver.startsWith("QSQLITE"); }
 };

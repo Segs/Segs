@@ -6,7 +6,7 @@
  */
 
 /*
-* SEGS dbtool v0.5 dated 2018-11-19
+* SEGS dbtool v0.5 dated 2019-02-11
 * A database creation and management tool.
 */
 
@@ -15,10 +15,8 @@
  * @{
  */
 
-#include "AddUser.h"
-#include "CreateDB.h"
+#include "DBConnection.h"
 #include "DatabaseConfig.h"
-#include "UpgradeDB.h"
 
 #include "Settings.h"
 #include "Logging.h"
@@ -30,6 +28,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
+#include <memory>
 
 #define ProjectName "SEGS dbtool"
 #define VersionNumber "0.5"
@@ -115,8 +114,8 @@ int main(int argc, char **argv)
     configs.emplace_back(DatabaseConfig());
 
     parser.addPositionalArgument("command",
-                                 QCoreApplication::translate("main", "Command to execute."),
-                                 "(create|adduser|upgrade)");
+                                 QCoreApplication::translate("main", "Command to execute.\ncreate\nadduser\nupgrade"),
+                                 "<create|adduser|upgrade>");
 
     // A boolean option with multiple names (e.g. -f, --force)
     QCommandLineOption forceOption(QStringList() << "f" << "force",
@@ -143,7 +142,7 @@ int main(int argc, char **argv)
         if(positionalArguments.size()>=1)
             qWarning() << "Unknown command" << positionalArguments.first();
         else
-            qWarning() << "Command is required";
+            qWarning() << "Please run dbTool with a command argument.";
 
         parser.showHelp(1);
     }
@@ -166,6 +165,22 @@ int main(int argc, char **argv)
         return int(dbToolResult::DBFOLDER_MISSING);
     }
 
+    // stick all db connections in a vector to iterate over when necessary
+    std::vector<std::unique_ptr<DBConnection>> segs_dbs;
+    for(const auto &cfg : configs)
+    {
+        segs_dbs.push_back(std::make_unique<DBConnection>(cfg));
+        segs_dbs.back()->open();
+
+        if(!segs_dbs.back()->isConnected())
+        {
+            qWarning() << "Database" << cfg.m_db_path << "does not exists.";
+            segs_dbs.back()->close();
+            continue;
+        }
+    }
+
+    // Handle command argument
     int selected_operation = known_commands.indexOf(positionalArguments.first());
     switch (selected_operation)
     {
@@ -177,29 +192,31 @@ int main(int argc, char **argv)
             bool forced = parser.isSet(forceOption);
             if(!forced)
             {
-                for(const auto &cfg : configs)
+                for(const auto &db : segs_dbs)
                 {
-                    if(dbExists(cfg))
-                        qWarning() << "Database" << cfg.m_db_path << "already exists.";
+                    if(db->isConnected())
+                        qWarning() << "Database" << db->m_config.m_db_path << "already exists.";
                 }
                 
-                qInfo() << "Run dbtool with -f option to overwrite existing databases. "
+                qInfo() << "Run dbtool with -f option to overwrite ALL existing databases. "
                         << "THIS CANNOT BE UNDONE.";
                 ret = dbToolResult::NOT_FORCED;
                 break;
             }
 
-            qWarning() << "Forced flag used '-f'. Existing databases will be overwritten.";
-            ret = createDatabases(configs);
+            // if forced flag was used, create databases
+            qWarning() << "Forced flag used '-f'. ALL existing databases will be overwritten.";
+            for(const auto &db : segs_dbs)
+                ret = db->createDB();
 
             /*!
              * @brief Replaced default admin user creation with a warning that no admin account was created.
              * @brief Also added text to show them the proper format in which to enter to submit an admin account.
              */
-
             qInfo() << "\nNO ADMIN USER ACCOUNTS CREATED IN DATABASE!"
                     << "\nUse the following example to add an admin account to the database:"
                     << "\ndbtool adduser -l <username> -p <password> -a 9";
+
             break;
         }
         case dbToolCommands::ADDUSER:
@@ -214,17 +231,23 @@ int main(int argc, char **argv)
                 qCritical() << "Cannot add account, the database does not exist";
                 return int(dbToolResult::SQLITE_DB_MISSING);
             }
-            ret = addAccount(configs[0], parser.value(loginOption),
+            ret = segs_dbs[0]->addAccount(parser.value(loginOption),
                                      parser.value(passOption),
                                      parser.value(accessLevelOption).toUInt());
             break;
         }
         case dbToolCommands::UPGRADE:
         {
-            runUpgrades(configs);
+            for(auto &db : segs_dbs)
+                db->runUpgrades();
+
             break;
         }
     }
+
+    // close all database connections
+    for(auto &db : segs_dbs)
+        db->close();
 
     Pause();
     return int(ret);
