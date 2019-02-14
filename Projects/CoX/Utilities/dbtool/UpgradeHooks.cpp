@@ -18,12 +18,12 @@
 
 // handlers for segs db upgrades
 // please add new handlers in numerical order
-bool upgradeHandler_accounts_001(const DBConnection *db, QSqlQuery &query);
+bool upgradeHandler_accounts_001(const DBConnection *db, std::unique_ptr<QSqlQuery> &query);
 
 // handlers for segs_game db upgrades
 // please add new handlers in numerical order
-bool upgradeHandler_game_001(const DBConnection *db, QSqlQuery &query);
-bool upgradeHandler_game_002(const DBConnection *db, QSqlQuery &query);
+bool upgradeHandler_game_001(const DBConnection *db, std::unique_ptr<QSqlQuery> &query);
+bool upgradeHandler_game_002(const DBConnection *db, std::unique_ptr<QSqlQuery> &query);
 
 // upgrade hook vector
 // please add new handlers in numberical order
@@ -39,20 +39,20 @@ const std::vector<UpgradeHook> g_segs_upgrade_hooks = {
  * segs db upgradeHandlers
  * please add handlers in numerical order
  */
-bool upgradeHandler_accounts_001(const DBConnection *db, QSqlQuery &query)
+bool upgradeHandler_accounts_001(const DBConnection *db, std::unique_ptr<QSqlQuery> &query)
 {
     qWarning() << "PERFORMING UPGRADE 001 on" << db->m_config.m_db_path;
 
     QString querytext = "SELECT version FROM table_versions WHERE table_name='db_version'";
-    if(!query.exec(querytext))
+    if(!query->exec(querytext))
         return false;
 
-    while(query.next())
+    while(query->next())
     {
-        int cur_version = query.value(0).toInt();
+        int cur_version = query->value(0).toInt();
 
         querytext = QString("UPDATE table_versions SET version='%1' WHERE table_name='db_version'").arg(cur_version + 1);
-        if(!query.exec(querytext))
+        if(!query->exec(querytext))
             return false;
     }
 
@@ -63,40 +63,40 @@ bool upgradeHandler_accounts_001(const DBConnection *db, QSqlQuery &query)
  * segs_game db upgradeHandlers
  * please add handlers in numerical order
  */
-bool upgradeHandler_game_001(const DBConnection *db, QSqlQuery &query)
+bool upgradeHandler_game_001(const DBConnection *db, std::unique_ptr<QSqlQuery> &query)
 {
     qWarning() << "PERFORMING UPGRADE 001 on" << db->m_config.m_db_path;
 
     QString querytext = "SELECT version FROM table_versions WHERE table_name='db_version'";
-    if(!query.exec(querytext))
+    if(!query->exec(querytext))
         return false;
 
-    while(query.next())
+    while(query->next())
     {
-        int cur_version = query.value(0).toInt();
+        int cur_version = query->value(0).toInt();
 
         querytext = QString("UPDATE table_versions SET version='%1' WHERE table_name='db_version'").arg(cur_version + 1);
-        if(!query.exec(querytext))
+        if(!query->exec(querytext))
             return false;
     }
 
     return true; // if successful
 }
 
-bool upgradeHandler_game_002(const DBConnection *db, QSqlQuery &query)
+bool upgradeHandler_game_002(const DBConnection *db, std::unique_ptr<QSqlQuery> &query)
 {
     qWarning() << "PERFORMING UPGRADE 002 on" << db->m_config.m_db_path;
 
     QString querytext = "SELECT ver3sion FROM table_versions WHERE table_name='db_version'";
-    if(!query.exec(querytext))
+    if(!query->exec(querytext))
         return false;
 
-    while(query.next())
+    while(query->next())
     {
-        int cur_version = query.value(0).toInt();
+        int cur_version = query->value(0).toInt();
 
         querytext = QString("UPDATE table_versions SET ver3sion='%1' WHERE table_name='db_version'").arg(cur_version + 1);
-        if(!query.exec(querytext))
+        if(!query->exec(querytext))
             return false;
     }
 

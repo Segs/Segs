@@ -67,15 +67,15 @@ TableSchema DBConnection::getDBVersion()
     result.m_db_name = getName();
 
     QString querytext = "SELECT version FROM table_versions WHERE table_name='db_version'";
-    if(!m_query.exec(querytext))
+    if(!m_query->exec(querytext))
     {
-        qWarning() << "SQL_ERROR:" << m_query.lastError();
-        qWarning() << "QUERY:" << m_query.executedQuery();
+        qWarning() << "SQL_ERROR:" << m_query->lastError();
+        qWarning() << "QUERY:" << m_query->executedQuery();
         return result;
     }
-    while (m_query.next())
+    while(m_query->next())
     {
-        result.m_version = m_query.value(0).toInt();
+        result.m_version = m_query->value(0).toInt();
         qCDebug(logDB) << "Database Version:" << result.m_db_name << result.m_version;
     }
 
@@ -149,8 +149,8 @@ bool DBConnection::runUpgradeHooks(const std::vector<UpgradeHook> &hooks_to_run)
     // close database
     if(!m_db.commit())
     {
-        qWarning() << "Commit failed:" << m_query.lastError();
-        qWarning() << "QUERY:" << m_query.executedQuery();
+        qWarning() << "Commit failed:" << m_query->lastError();
+        qWarning() << "QUERY:" << m_query->executedQuery();
         m_db.rollback();
         return false;
     }

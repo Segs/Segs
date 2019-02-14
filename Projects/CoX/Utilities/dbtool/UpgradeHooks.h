@@ -13,7 +13,7 @@
 struct UpgradeHook
 {
     TableSchema m_table_schema;
-    std::function<bool(const DBConnection *, QSqlQuery &)> m_handler;
+    std::function<bool(const DBConnection *, std::unique_ptr<QSqlQuery> &)> m_handler;
 };
 
 extern const std::vector<UpgradeHook> g_segs_upgrade_hooks;

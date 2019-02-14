@@ -12,11 +12,13 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
 #include <vector>
+#include <memory>
 
 class QFile;
 class DatabaseConfig;
 struct UpgradeHook;
 
+// TODO: This should go away and merge with DBConnection or DatabaseConfig
 struct TableSchema
 {
     QString m_db_name;
@@ -51,7 +53,7 @@ class DBConnection
 public:
     DatabaseConfig m_config;
     QSqlDatabase m_db;
-    QSqlQuery m_query;
+    std::unique_ptr<QSqlQuery> m_query;
 
     DBConnection(const DatabaseConfig &cfg);
     ~DBConnection();
@@ -73,5 +75,5 @@ public:
     bool runUpgradeHooks(const std::vector<UpgradeHook> &hooks_to_run);
 
 private:
-    bool fileQueryDB(QFile &source_file);
+    bool runQueryFromFile(QFile &source_file);
 };

@@ -27,7 +27,7 @@
  */
 dbToolResult DBConnection::createDB()
 {
-    qInfo() << "Creating database...";
+    qInfo() << "Creating database" << getName();
 
     if(!QFileInfo(m_config.m_template_path).isReadable())
     {
@@ -45,15 +45,8 @@ dbToolResult DBConnection::createDB()
         return dbToolResult::DB_RM_FAILED;
     }
 
-    if(!fileQueryDB(source_file))
-    {
-        // Roll back the database if something goes wrong,
-        // so we're not left with useless poop.
-        m_db.rollback();
-        qCritical("One of the queries failed to execute.\n Error detail: %s\n",
-                  qPrintable(m_query.lastError().text()));
+    if(!runQueryFromFile(source_file))
         return dbToolResult::QUERY_FAILED;
-    }
 
     source_file.close();
     qInfo() << "COMPLETED creating:" << m_config.m_db_path;
@@ -78,7 +71,7 @@ bool DBConnection::deleteDB()
     {
         // Drop all tables
         QString query_text = QString("DROP TABLE [IF EXISTS] %1").arg(m_db.tables(QSql::AllTables).join(","));
-        m_query.exec(query_text);
+        m_query->exec(query_text);
     }
 
     return true;
@@ -90,7 +83,7 @@ bool DBConnection::deleteDB()
  * @param[in] Prepared query data to execute queries
  * @returns true if successful, false on failure
  */
-bool DBConnection::fileQueryDB(QFile &source_file)
+bool DBConnection::runQueryFromFile(QFile &source_file)
 {
     // Open file. If unsuccessful, return early.
     if(!source_file.open(QIODevice::ReadOnly))
@@ -98,17 +91,32 @@ bool DBConnection::fileQueryDB(QFile &source_file)
         qWarning().noquote() << "Query source file could not be opened.";
         return false;
     }
+
+    // database scripts already have transactions, let's commit and close the open
+    // transaction here before proceeding.
+    if(!m_db.commit())
+        qWarning().noquote() << "Commit failed";
+
     // The SQLite driver executes only a single (the first) query in the QSqlQuery.
     // If the script contains more queries, it needs to be split.
     QStringList scriptQueries = QTextStream(&source_file).readAll().split(';');
 
     for(QString &q : scriptQueries) // Execute each command in the source file.
     {
+        qDebug().noquote() << q;
+
         if(q.trimmed().isEmpty())
             continue;
 
-        if(!m_query.exec(q))
+        if(!m_query->exec(q))
+        {
+            qCritical("One of the queries failed to execute.\n Error detail: %s\n",
+                      qPrintable(m_query->lastError().text()));
+            qCritical() << m_query->lastQuery();
             return false;
+        }
+
+        m_query->finish();
     }
 
     return true;

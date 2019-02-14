@@ -23,7 +23,8 @@ DBConnection::~DBConnection()
 {
     close();
     // unload the database (this doesn't delete it)
-    QSqlDatabase::removeDatabase(m_config.m_db_path);
+    m_db.removeDatabase(m_config.m_db_path);
+    //QSqlDatabase::removeDatabase(m_config.m_db_path);
 }
 
 void DBConnection::open()
@@ -51,13 +52,13 @@ void DBConnection::open()
     // have transactions built in. Seems better to leave the transactions
     // in the creation scripts and use this later when needed.
     m_db.transaction();
-    m_query = QSqlQuery(m_db);
+    m_query = std::make_unique<QSqlQuery>(m_db);
 }
 
 void DBConnection::close()
 {
-    m_query.clear();
-    m_query.finish();
+    m_query->clear();
+    m_query->finish();
     m_db.close();
 }
 
@@ -81,8 +82,9 @@ bool DBConnection::isConnected()
             querytext.append("';");
         }
 
-        m_query.exec(querytext);
-        if(m_query.size() >= 1)
+        m_query->exec(querytext);
+
+        if(m_query->size() >= 1)
             return true;
     }
 }
