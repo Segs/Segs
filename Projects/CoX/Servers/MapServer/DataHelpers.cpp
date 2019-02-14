@@ -227,8 +227,7 @@ QString createMapMenu() // TODO: compileMonorailMenu() as well
  */
 
 void getEmailHeaders(MapClientSession& sess)
-{
-    /*
+{   
     if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
@@ -236,8 +235,7 @@ void getEmailHeaders(MapClientSession& sess)
     }
 
     HandlerLocator::getEmail_Handler()->putq(new EmailHeaderRequest(
-        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));
-    */
+        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));    
 }
 
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)

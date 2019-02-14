@@ -2872,15 +2872,16 @@ void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
 {
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
 
+    std::vector<EmailHeaders::EmailHeader> email_headers;
     for (const auto &data : ev->m_data.m_email_headers)
     {
-        EmailHeaders *header = new EmailHeaders(
-                    data.m_email_id,
-                    data.m_sender_name,
-                    data.m_subject,
-                    data.m_timestamp);
-        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
+                                                          data.m_sender_name,
+                                                          data.m_subject,
+                                                          data.m_timestamp});
     }
+
+    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
 }
 
 // EmailHandler will send this event here
@@ -2903,13 +2904,16 @@ void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
 
+    std::vector<EmailHeaders::EmailHeader> email_headers;
     for (const auto &data : ev->m_data.m_email_headers)
     {
-        map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(data.m_email_id,
-                                                                              data.m_sender_name,
-                                                                              data.m_subject,
-                                                                              data.m_timestamp));
+        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
+                                                          data.m_sender_name,
+                                                          data.m_subject,
+                                                          data.m_timestamp});
     }
+
+    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
 
     QString message = QString("You have %1 unread emails.").arg(ev->m_data.m_unread_emails_count);
     sendInfoMessage(MessageChannel::DEBUG_INFO, message, map_session);
