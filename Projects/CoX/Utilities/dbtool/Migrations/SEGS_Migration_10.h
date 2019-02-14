@@ -8,6 +8,8 @@
 #pragma once
 #include "Utilities/dbtool/DBMigrationStep.h"
 
+// TODO: how to handle updates to segs vs segs_game database?
+// different classes? SEGS_Game_Migration vs SEGS_Migration?
 class SEGS_Migration_10 : public DBMigrationStep
 {
     int m_target_version = 10;
@@ -20,12 +22,13 @@ class SEGS_Migration_10 : public DBMigrationStep
     bool execute(DBConnection &db) override
     {
         bool success = false;
+        qWarning() << "PERFORMING UPGRADE 10 on" << db.getName();
 
         // update database table schemas here
         // update cereal blobs once schemas are correct
         if(!success)
            return false;
 
-        return true;
+        return db.m_query->exec(q);
     }
 };

@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 {
     const QStringList known_commands {"create","adduser","upgrade"};
     dbToolResult ret = dbToolResult::SUCCESS;
-    QLoggingCategory::setFilterRules("*.debug=true\nqt.*.debug=false");
+    setLoggingFilter(); // Set QT Logging filters
     qInstallMessageHandler(errorHandler);
     QCoreApplication app(argc,argv);
     QCoreApplication::setApplicationName("segs-dbtool");
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
     configs[1].initialize_from_settings(parser.value(configFileOption), "CharacterDatabase");
     
     // Check if dbtool is being run from server directory
-    qInfo() << "Fetching default_setup directory...";
+    qInfo() << "Opening database templates directory...";
     QDir default_dbs_dir(Settings::getDefaultDirPath());
     if(!default_dbs_dir.exists())
     {
@@ -169,6 +169,7 @@ int main(int argc, char **argv)
     std::vector<std::unique_ptr<DBConnection>> segs_dbs;
     for(const auto &cfg : configs)
     {
+        qInfo() << "Fetching database configuration from settings.cfg for" << cfg.m_name;
         segs_dbs.push_back(std::make_unique<DBConnection>(cfg));
         segs_dbs.back()->open();
 

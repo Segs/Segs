@@ -37,27 +37,11 @@ dbToolResult DBConnection::createDB()
     }
 
     QFile source_file(m_config.m_template_path);
-    // Delete the existing database
-    if(!deleteDB())
+    if(!deleteDB()) // Delete the existing database
     {
         qWarning(qPrintable(QString("FAILED to remove existing file: %1").arg(m_config.m_db_path)));
         qCritical("Ensure no processes are using it and you have permission to modify it.");
         return dbToolResult::DB_RM_FAILED;
-    }
-
-    // if SQLite file doesn't exist, let's create it
-    if(m_config.m_driver.contains("QSQLITE",Qt::CaseInsensitive))
-    {
-        if(!fileExists(m_config.m_db_path))
-        {
-            QFile file(m_config.m_db_path);
-            if(!file.open(QIODevice::ReadWrite))
-            {
-                qWarning() << "Could not create SQLite database file"
-                           << m_config.m_db_path;
-                return dbToolResult::SQLITE_DB_MISSING;
-            }
-        }
     }
 
     if(!runQueryFromFile(source_file))
@@ -81,6 +65,11 @@ bool DBConnection::deleteDB()
         QFile target_file(m_config.m_db_path);
         if(target_file.exists() && !target_file.remove())
             return false;
+
+        // For SQlite we must reopen database or it wont exist and
+        // everything will fail without any real error messages
+        close(); // yes, really
+        open();
     }
     else if(m_config.isMysql() || m_config.isPostgresql())
     {

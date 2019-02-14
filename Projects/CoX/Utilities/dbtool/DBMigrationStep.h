@@ -10,7 +10,7 @@
 
 class DBMigrationStep
 {
-    DBMigrationStep();
+    DBMigrationStep(DBConnection &db);
 public:
     int m_target_version = 0;
     std::vector<TableSchema> m_table_schemas = {
@@ -19,6 +19,6 @@ public:
 
     int getVersion() const { return m_target_version; }
     bool canRun(DBConnection &db) const { return db.checkTableVersions(m_table_schemas); }
-    bool virtual execute(DBConnection &db) { return false; }
-    bool cleanup(DBConnection &db) { return db.updateTableVersions(m_table_schemas); }
+    bool virtual execute(DBConnection &/*db*/) { return false; }
+    bool cleanup(DBConnection &db);
 };

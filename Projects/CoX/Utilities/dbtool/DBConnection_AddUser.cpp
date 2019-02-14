@@ -19,7 +19,7 @@
 
 dbToolResult DBConnection::addAccount(const QString &username, const QString &password, uint16_t access_level)
 {
-    qCDebug(logSettings) << "AddAccount to database at" << m_config.m_db_path;
+    qInfo().noquote() << "Adding new account to" << getName() << "database";
 
     if(!m_query->prepare("INSERT INTO accounts (username,passw,access_level,salt,creation_date) VALUES (?,?,?,?,?);"))
     {
@@ -52,6 +52,16 @@ dbToolResult DBConnection::addAccount(const QString &username, const QString &pa
         qDebug() << "SQL_ERROR:" << m_query->lastError(); // Why the query failed
         return dbToolResult::QUERY_FAILED;
     }
+
+    // attempt to commit transaction
+    if(!m_db.commit())
+    {
+        qWarning() << "Commit unsuccessful, rolling back database.";
+        m_db.rollback();
+        return dbToolResult::QUERY_FAILED;
+    }
+
+    qInfo() << "Successfully added user" << username << "to database";
 
     return dbToolResult::SUCCESS;
 }

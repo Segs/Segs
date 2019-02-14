@@ -57,23 +57,25 @@ public:
 
     DBConnection(const DatabaseConfig &cfg);
     ~DBConnection();
+
     void open();
     void close();
     bool isConnected();
     QString getName() { return m_config.m_name; } // "segs" or "segs_game"
 
-    dbToolResult createDB();
-    bool deleteDB();
-
-    bool checkTableVersions(const std::vector<TableSchema> &table_schemas);
-    bool updateTableVersions(std::vector<TableSchema> &table_schemas);
+    // DBConnection_AddUser.cpp
     dbToolResult addAccount(const QString &username, const QString &password, uint16_t access_level);
 
+    // DBConnection_Create.cpp
+    dbToolResult createDB();
+    bool deleteDB();
+    bool checkTableVersions(const std::vector<TableSchema> &table_schemas);
+    bool updateTableVersions(std::vector<TableSchema> &table_schemas);
+    bool runQueryFromFile(QFile &source_file);
+
+    // DBConnection_Upgrade.cpp
     void runUpgrades();
     TableSchema getDBVersion();
     bool checkVersionAndUpgrade(const TableSchema &cur_version);
     bool runUpgradeHooks(const std::vector<UpgradeHook> &hooks_to_run);
-
-private:
-    bool runQueryFromFile(QFile &source_file);
 };

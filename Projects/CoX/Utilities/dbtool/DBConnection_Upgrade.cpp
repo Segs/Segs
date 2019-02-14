@@ -157,3 +157,15 @@ bool DBConnection::runUpgradeHooks(const std::vector<UpgradeHook> &hooks_to_run)
 
     return true; // if successful
 }
+
+bool DBConnection::checkTableVersions(const std::vector<TableSchema> &table_schemas)
+{
+    Q_UNUSED(table_schemas);
+    return false;
+}
+
+bool DBConnection::updateTableVersions(std::vector<TableSchema> &table_schemas)
+{
+    Q_UNUSED(table_schemas);
+    return false;
+}

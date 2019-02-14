@@ -28,6 +28,8 @@ DBConnection::~DBConnection()
 
 void DBConnection::open()
 {
+    qCInfo(logDB) << "Opening database connection at:" << m_config.m_db_path;
+
     m_db = QSqlDatabase::addDatabase(m_config.m_driver, m_config.m_db_path);
     m_db.setDatabaseName(m_config.m_db_path); // must be path
     m_db.setHostName(m_config.m_host);
@@ -47,17 +49,15 @@ void DBConnection::open()
         return;
     }
 
-    // Cannot open transaction here because database creation scripts
-    // have transactions built in. Seems better to leave the transactions
-    // in the creation scripts and use this later when needed.
+    // Open a transaction here
     m_db.transaction();
     m_query = std::make_unique<QSqlQuery>(m_db);
 }
 
 void DBConnection::close()
 {
-    //m_query->clear();
-    //m_query->finish();
+    m_query->clear();
+    m_query->finish();
     m_db.close();
     m_db.setConnectOptions();
 }
@@ -87,4 +87,7 @@ bool DBConnection::isConnected()
         if(m_query->size() >= 1)
             return true;
     }
+
+    qWarning() << "Database configuration is set to unknown DB Driver. Connection unknown!";
+    return false; // can't tell if database is connected
 }
