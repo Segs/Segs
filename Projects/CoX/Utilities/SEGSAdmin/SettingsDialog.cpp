@@ -454,7 +454,7 @@ void SettingsDialog::purge_logs()
         QStringList parts = file.split("_");
         if (!parts.isEmpty())
         {
-            QDate date = QDate::fromString(parts.value(parts.length() - 1).replace(".log", ""), "yyyy-MM-dd");
+            QDate date = QDate::fromString(parts.value(0), "yyyy-MM-dd");
             if (date < todays_date)
                 logs_to_delete.append(file);
         }
