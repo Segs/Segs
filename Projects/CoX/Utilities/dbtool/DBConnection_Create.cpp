@@ -45,6 +45,21 @@ dbToolResult DBConnection::createDB()
         return dbToolResult::DB_RM_FAILED;
     }
 
+    // if SQLite file doesn't exist, let's create it
+    if(m_config.m_driver.contains("QSQLITE",Qt::CaseInsensitive))
+    {
+        if(!fileExists(m_config.m_db_path))
+        {
+            QFile file(m_config.m_db_path);
+            if(!file.open(QIODevice::ReadWrite))
+            {
+                qWarning() << "Could not create SQLite database file"
+                           << m_config.m_db_path;
+                return dbToolResult::SQLITE_DB_MISSING;
+            }
+        }
+    }
+
     if(!runQueryFromFile(source_file))
         return dbToolResult::QUERY_FAILED;
 
@@ -103,12 +118,20 @@ bool DBConnection::runQueryFromFile(QFile &source_file)
 
     for(QString &q : scriptQueries) // Execute each command in the source file.
     {
-        qDebug().noquote() << q;
+        q = q.simplified(); // remove newlines and excess whitespace
 
-        if(q.trimmed().isEmpty())
+        if(q.isEmpty())
             continue;
 
-        if(!m_query->exec(q))
+        if(!m_query->prepare(q))
+        {
+            qCritical("One of the queries failed to prepare.\n Error detail: %s\n",
+                      qPrintable(m_query->lastError().text()));
+            qCritical() << m_query->lastQuery();
+            return false;
+        }
+
+        if(!m_query->exec())
         {
             qCritical("One of the queries failed to execute.\n Error detail: %s\n",
                       qPrintable(m_query->lastError().text()));
@@ -116,7 +139,7 @@ bool DBConnection::runQueryFromFile(QFile &source_file)
             return false;
         }
 
-        m_query->finish();
+        qCDebug(logDB) << "exec:" << m_query->lastQuery();
     }
 
     return true;

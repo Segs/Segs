@@ -24,7 +24,6 @@ DBConnection::~DBConnection()
     close();
     // unload the database (this doesn't delete it)
     m_db.removeDatabase(m_config.m_db_path);
-    //QSqlDatabase::removeDatabase(m_config.m_db_path);
 }
 
 void DBConnection::open()
@@ -57,9 +56,10 @@ void DBConnection::open()
 
 void DBConnection::close()
 {
-    m_query->clear();
-    m_query->finish();
+    //m_query->clear();
+    //m_query->finish();
     m_db.close();
+    m_db.setConnectOptions();
 }
 
 bool DBConnection::isConnected()
