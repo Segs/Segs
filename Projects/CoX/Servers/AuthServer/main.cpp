@@ -218,13 +218,13 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
         file_name.replace("]", "");
         if (file_name.isEmpty())
             file_name = "generic";
-        file_name.append("_" + todays_date.toString("ddMMyy"));
+        file_name.append("_" + todays_date.toString("yyyy-MM-dd"));
         QString log_path = QString("logs/") + file_name + ".log";
         segs_log_target.setFileName(log_path);
     }
     else // If combine_logs is on will log all to a single file.
     {
-        QString log_path = QString("logs/all_") + todays_date.toString("ddMMyy") + ".log";
+        QString log_path = QString("logs/all_") + todays_date.toString("yyyy-MM-dd") + ".log";
         segs_log_target.setFileName(log_path);
     }
     settings.endGroup();

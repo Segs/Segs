@@ -444,7 +444,7 @@ void SettingsDialog::send_maps_dir_config_check()
 
 void SettingsDialog::purge_logs()
 {
-    QString todays_date = QDate(QDate::currentDate()).toString("ddMMyy");
+    QDate todays_date = QDate::currentDate();
     QString log_dir = "logs/";
     QStringList existing_logs = QDir(log_dir).entryList(QDir::Files);
     QStringList logs_to_delete;
@@ -454,10 +454,8 @@ void SettingsDialog::purge_logs()
         QStringList parts = file.split("_");
         if (!parts.isEmpty())
         {
-            QString date = parts.value(parts.length() - 1);
-            date.replace(".log", "");
-            int compare = QString::compare(date, todays_date, Qt::CaseInsensitive);
-            if (compare < 0)
+            QDate date = QDate::fromString(parts.value(parts.length() - 1).replace(".log", ""), "yyyy-MM-dd");
+            if (date < todays_date)
                 logs_to_delete.append(file);
         }
     }
