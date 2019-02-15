@@ -25,7 +25,7 @@ DBMigrationStep::DBMigrationStep(DBConnection &db)
     {
         qWarning() << "Failed to execute database upgrades to version"
                    << getVersion() << "! Rolling back database.";
-        db.m_db.rollback();
+        db.m_db->rollback();
         return;
     }
 
@@ -39,16 +39,16 @@ bool DBMigrationStep::cleanup(DBConnection &db)
     if(!db.updateTableVersions(m_table_schemas))
     {
         qWarning() << "Failed to update database schema versions! Rolling back database.";
-        db.m_db.rollback();
+        db.m_db->rollback();
         return false;
     }
 
     // attempt to commit changes
-    if(!db.m_db.commit())
+    if(!db.m_db->commit())
     {
         qWarning() << "Commit failed:" << db.m_query->lastError();
         qWarning() << "QUERY:" << db.m_query->executedQuery();
-        db.m_db.rollback();
+        db.m_db->rollback();
         return false;
     }
 

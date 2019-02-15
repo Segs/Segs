@@ -22,44 +22,45 @@ DBConnection::DBConnection(const DatabaseConfig &cfg)
 DBConnection::~DBConnection()
 {
     close();
+    delete m_db;
     // unload the database (this doesn't delete it)
-    m_db.removeDatabase(m_config.m_db_path);
+    QSqlDatabase::removeDatabase(m_config.m_db_path);
 }
 
 void DBConnection::open()
 {
     qCInfo(logDB) << "Opening database connection at:" << m_config.m_db_path;
 
-    m_db = QSqlDatabase::addDatabase(m_config.m_driver, m_config.m_db_path);
-    m_db.setDatabaseName(m_config.m_db_path); // must be path
-    m_db.setHostName(m_config.m_host);
-    m_db.setPort(m_config.m_port.toInt());
-    m_db.setUserName(m_config.m_user);
-    m_db.setPassword(m_config.m_pass);
+    m_db = new QSqlDatabase(QSqlDatabase::addDatabase(m_config.m_driver, m_config.m_db_path));
+    m_db->setDatabaseName(m_config.m_db_path); // must be path
+    m_db->setHostName(m_config.m_host);
+    m_db->setPort(m_config.m_port.toInt());
+    m_db->setUserName(m_config.m_user);
+    m_db->setPassword(m_config.m_pass);
 
-    if(!m_db.open())
+    if(!m_db->open())
     {
         qWarning() << "Failed to open database" << m_config.m_db_path;
         return;
     }
 
-    if(!m_db.driver()->hasFeature(QSqlDriver::Transactions))
+    if(!m_db->driver()->hasFeature(QSqlDriver::Transactions))
     {
-        qWarning() << m_db.driverName() << "does not support Transactions";
+        qWarning() << m_db->driverName() << "does not support Transactions";
         return;
     }
 
     // Open a transaction here
-    m_db.transaction();
-    m_query = std::make_unique<QSqlQuery>(m_db);
+    m_db->transaction();
+    m_query = std::make_unique<QSqlQuery>(*m_db);
 }
 
 void DBConnection::close()
 {
     m_query->clear();
     m_query->finish();
-    m_db.close();
-    m_db.setConnectOptions();
+    m_db->close();
+    m_db->setConnectOptions();
 }
 
 bool DBConnection::isConnected()

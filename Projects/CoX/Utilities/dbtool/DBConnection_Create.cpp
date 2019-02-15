@@ -69,12 +69,15 @@ bool DBConnection::deleteDB()
         // For SQlite we must reopen database or it wont exist and
         // everything will fail without any real error messages
         close(); // yes, really
+        delete m_db;
+        // unload the database (this doesn't delete it)
+        QSqlDatabase::removeDatabase(m_config.m_db_path);
         open();
     }
     else if(m_config.isMysql() || m_config.isPostgresql())
     {
         // Drop all tables
-        QString query_text = QString("DROP TABLE [IF EXISTS] %1").arg(m_db.tables(QSql::AllTables).join(","));
+        QString query_text = QString("DROP TABLE [IF EXISTS] %1").arg(m_db->tables(QSql::AllTables).join(","));
         m_query->exec(query_text);
     }
 
@@ -98,7 +101,7 @@ bool DBConnection::runQueryFromFile(QFile &source_file)
 
     // database scripts already have transactions, let's commit and close the open
     // transaction here before proceeding.
-    if(!m_db.commit())
+    if(!m_db->commit())
         qWarning().noquote() << "Commit failed";
 
     // The SQLite driver executes only a single (the first) query in the QSqlQuery.

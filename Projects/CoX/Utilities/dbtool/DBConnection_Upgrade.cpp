@@ -147,11 +147,11 @@ bool DBConnection::runUpgradeHooks(const std::vector<UpgradeHook> &hooks_to_run)
     }
 
     // close database
-    if(!m_db.commit())
+    if(!m_db->commit())
     {
         qWarning() << "Commit failed:" << m_query->lastError();
         qWarning() << "QUERY:" << m_query->executedQuery();
-        m_db.rollback();
+        m_db->rollback();
         return false;
     }
 

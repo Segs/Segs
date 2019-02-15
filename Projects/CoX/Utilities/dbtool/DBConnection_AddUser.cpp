@@ -54,10 +54,10 @@ dbToolResult DBConnection::addAccount(const QString &username, const QString &pa
     }
 
     // attempt to commit transaction
-    if(!m_db.commit())
+    if(!m_db->commit())
     {
         qWarning() << "Commit unsuccessful, rolling back database.";
-        m_db.rollback();
+        m_db->rollback();
         return dbToolResult::QUERY_FAILED;
     }
 

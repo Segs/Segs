@@ -52,7 +52,7 @@ class DBConnection
 {
 public:
     DatabaseConfig m_config;
-    QSqlDatabase m_db;
+    QSqlDatabase *m_db;
     std::unique_ptr<QSqlQuery> m_query;
 
     DBConnection(const DatabaseConfig &cfg);
