@@ -144,9 +144,9 @@ void SEGSAdminTool::commit_user(QString username, QString password, QString accl
     ui->createUser->setText("Please Wait...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
+    QString program = "utilities/dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
     #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
-    program.prepend("./");
+        program.prepend("./");
     #endif
     m_createUser = new QProcess(this);
     m_createUser->start(program);
@@ -191,8 +191,8 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
-    QFileInfo file1("segs");
-    QFileInfo file2("segs_game");
+    QFileInfo file1("segs.db");
+    QFileInfo file2("segs_game.db");
     if(on_startup) // Runs this check on startup or for checking creation in other methods
     {
         if(file1.exists() && file2.exists())
@@ -248,7 +248,7 @@ void SEGSAdminTool::create_databases(bool overwrite)
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "dbtool create";
+    QString program = "utilities/dbtool create";
     if(overwrite)
     {
         program.append(" -f");

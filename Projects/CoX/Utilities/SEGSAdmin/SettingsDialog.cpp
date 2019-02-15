@@ -221,7 +221,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.beginGroup("MapServer");
         config_file_write.setValue("listen_addr",ip+":7003");
         config_file_write.setValue("location_addr",ip+":7003");
-        config_file_write.setValue("maps","DefaultMapInstances");
+        config_file_write.setValue("maps","maps");
         config_file_write.setValue("player_fade_in", "380.0");
         config_file_write.setValue("costume_slot_unlocks", "19,29,39,49");
     config_file_write.endGroup(); // MapServer
