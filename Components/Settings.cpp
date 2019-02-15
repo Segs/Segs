@@ -161,7 +161,7 @@ void Settings::setDefaultSettings()
     config.beginGroup("MapServer");
         config.setValue("listen_addr","127.0.0.1:7003");
         config.setValue("location_addr","127.0.0.1:7003");
-        config.setValue("maps","DefaultMapInstances");
+        config.setValue("maps","maps");
         config.setValue("player_fade_in", "380.0");
         config.setValue("motd_timer", "120.0");
         config.setValue("costume_slot_unlocks", "19,29,39,49");
