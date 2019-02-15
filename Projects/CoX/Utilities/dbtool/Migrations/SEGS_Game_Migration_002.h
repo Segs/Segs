@@ -10,9 +10,9 @@
 
 // TODO: how to handle updates to segs vs segs_game database?
 // different classes? SEGS_Game_Migration vs SEGS_Migration?
-class SEGS_Migration_10 : public DBMigrationStep
+class SEGS_Migration_002 : public DBMigrationStep
 {
-    int m_target_version = 10;
+    int m_target_version = 2;
     std::vector<TableSchema> m_table_schemas = {
         {"db_version", m_target_version},
         {"characters", 9},
@@ -22,7 +22,7 @@ class SEGS_Migration_10 : public DBMigrationStep
     bool execute(DBConnection &db) override
     {
         bool success = false;
-        qWarning() << "PERFORMING UPGRADE 10 on" << db.getName();
+        qWarning() << "PERFORMING UPGRADE 002 on" << db.getName();
 
         // update database table schemas here
         // update cereal blobs once schemas are correct

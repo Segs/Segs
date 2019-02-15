@@ -22,7 +22,11 @@ set(tool_SRC
     UpgradeHooks.cpp
     UpgradeHooks.h
     # Migrations should be added programatically
-    Migrations/SEGS_Migration_10.h
+    Migrations/SEGS_Migration_001.h
+    Migrations/SEGS_Game_Migration_001.h
+    Migrations/SEGS_Game_Migration_002.h
+    Migrations/SEGS_Game_Migration_003.h
+    Migrations/SEGS_Game_Migration_010.h
 )
 
 add_executable(dbtool ${tool_SRC})
