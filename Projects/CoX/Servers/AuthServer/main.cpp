@@ -237,11 +237,6 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     QByteArray localMsg = msg.toLocal8Bit();
     std::string timestamp  = QTime::currentTime().toString("hh:mm:ss").toStdString();
 
-    // if this log file has gotten too big, clear it. Issue #602
-    if(segs_log_target.size() > 500000) // 0.5mb seems sufficient?
-        segs_log_target.resize(0);
-
-    QByteArray localMsg = msg.toLocal8Bit();
     switch (type)
     {
         case QtDebugMsg:
