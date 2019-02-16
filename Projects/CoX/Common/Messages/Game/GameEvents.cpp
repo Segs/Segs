@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -120,7 +120,7 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     toActualCharacter(indexed_character, converted, player_data, entity_data);
     bs.StorePackedBits(1,6); // opcode
 
-    if(indexed_character.m_name.compare("EMPTY")!=0)// actual character was read from db
+    if(indexed_character.m_name.compare(EMPTY_STRING)!=0)// actual character was read from db
     {
         bs.StorePackedBits(1, m_index);
         converted.getCurrentCostume()->storeCharselParts(bs);

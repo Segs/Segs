@@ -373,7 +373,7 @@ static bool bumpMapped(const Model &model)
 
 std::unique_ptr<VBOPointers> fillVbo(const Model &model)
 {
-    std::unique_ptr<VBOPointers> vbo(new VBOPointers);
+    std::unique_ptr<VBOPointers> vbo = std::make_unique<VBOPointers>();
     std::vector<glm::ivec3> &triangles(vbo->triangles);
     triangles.resize(model.model_tri_count);//, 1, ".\\render\\model_cache.c", 138);
     geoUnpackDeltas(&model.packed_data.tris, triangles.data(), model.model_tri_count);

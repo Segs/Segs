@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -131,9 +131,15 @@ bool AuthDbSyncContext::loadAndConfigure()
     db2->setPassword(dbpass);
     m_db.reset(db2); // at this point we become owner of the db
 
+    if(dbdriver == "QMYSQL")
+    {
+        db2->setConnectOptions("MYSQL_OPT_RECONNECT=true");
+    }
+
     if(!m_db->open())
     {
         qCritical().noquote() << "Failed to open database:" << dbname;
+        db2->setConnectOptions();
         return false;
     }
 
@@ -142,7 +148,7 @@ bool AuthDbSyncContext::loadAndConfigure()
     {
         // we should just stop the server, it isn't going to work anyway
         qFatal("Wrong database version (%d) Auth database requires version: %d", db_version, REQUIRED_DB_VERSION);
-
+        db2->setConnectOptions();
         return false;
     }
 

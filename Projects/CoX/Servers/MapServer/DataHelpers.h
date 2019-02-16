@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -9,6 +9,8 @@
 #include "Messages/Map/MessageChannels.h"
 #include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
+#include "Common/GameData/PlayerStatistics.h"
+#include "Common/GameData/VisitLocation.h"
 #include "Common/GameData/Task.h"
 #include "glm/vec3.hpp"
 #include <vector>
@@ -19,6 +21,7 @@ class Character;
 struct Friend;
 struct FriendsList;
 struct MapClientSession;
+struct MapInstance;
 struct CharacterPowerSet;
 struct CharacterPower;
 struct PowerStance;
@@ -36,6 +39,7 @@ enum class ClientStates : uint8_t;
  */
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
+Entity * getEntity(MapInstance *mi, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *sess);
 void    positionTest(MapClientSession *tgt);
@@ -47,11 +51,13 @@ QString createMapMenu();
 /*
  * sendEmail Wrappers for providing access to Email Database
  */
-void sendEmailHeaders(MapClientSession& sess);
+void getEmailHeaders(MapClientSession& sess);
 void readEmailMessage(MapClientSession& sess, const uint32_t email_id);
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message);
 void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
+// to get the current time since whatever they set as their beginning
+int64_t getSecsSince2000Epoch();
 
 /*
  * SendUpdate Wrappers
@@ -93,6 +99,14 @@ void sendDoorAnimStart(MapClientSession &sess, glm::vec3 &entry_pos, glm::vec3 &
 void sendDoorAnimExit(MapClientSession &sess, bool force_move);
 void sendClueList(MapClientSession &sess);
 void sendSouvenirList(MapClientSession &sess);
+void openStore(MapClientSession &sess, int entity_idx);
+void modifyInf(MapClientSession &sess, int amount);
+void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message);
+void sendLocation(MapClientSession &cl, VisitLocation location);
+void sendDeveloperConsoleOutput(MapClientSession &cl, QString &message);
+void sendClientConsoleOutput(MapClientSession &cl, QString &message);
+void sendKiosk(MapClientSession &cl);
+void sendMissionObjectiveTimer(MapClientSession &sess, QString &message, float time);
 
 /*
  * usePower and increaseLevel here to provide access to
@@ -101,18 +115,20 @@ void sendSouvenirList(MapClientSession &sess);
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
 void increaseLevel(Entity &ent);
 
+
 /*
  * Lua Functions
  */
 void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name);
-void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori);
+void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
 void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);
 void giveEnd(MapClientSession &sess, float end);
 void giveHp(MapClientSession &sess, float hp);
-void giveInf(MapClientSession &sess, int inf);
 void giveInsp(MapClientSession &sess, QString &name);
 void giveXp(MapClientSession &sess, int xp);
+void giveTempPower(MapClientSession *cl, const char* power);
 void addListOfTasks(MapClientSession *cl, vTaskList task_list);
 void sendUpdateTaskStatusList(MapClientSession &src, Task task);
 void selectTask(MapClientSession &src, Task task);
@@ -120,7 +136,18 @@ void sendTaskStatusList(MapClientSession &src);
 void updateTaskDetail(MapClientSession &src, Task task);
 void removeTask(MapClientSession &src, Task task);
 void playerTrain (MapClientSession &sess);
-void setTitle (MapClientSession &sess, QString title);
+void setTitle (MapClientSession &sess, QString &title);
 void showMapMenu(MapClientSession &sess);
 void addClue(MapClientSession &cl, Clue clue);
+void removeClue(MapClientSession &cl, Clue clue);
 void addSouvenir(MapClientSession &cl, Souvenir souvenir);
+void removeSouvenir(MapClientSession &cl, Souvenir souvenir);
+void removeContact(MapClientSession &sess, Contact contact);
+void revive(MapClientSession *cl, int revive_lvl);
+void logSpawnLocations(MapClientSession &cl, const char* spawn_type);
+void respawn(MapClientSession &cl, const char* spawn_type);
+void npcSendMessage(MapClientSession &cl, QString& channel, int entityIdx, QString& message);
+void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& message);
+void addRelayRaceResult(MapClientSession &cl, RelayRaceResult &raceResult);
+RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment);
+void addHideAndSeekResult(MapClientSession &cl, int points);

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -14,6 +14,7 @@
 
 #include "DataHelpers.h"
 #include "MessageHelpers.h"
+#include "Messages/Map/ForceLogout.h"
 #include "Messages/Map/GameCommandList.h"
 #include "Messages/Map/MapXferWait.h"
 #include "GameData/ClientStates.h"
@@ -27,6 +28,7 @@
 #include "GameData/CharacterHelpers.h"
 #include "GameData/Entity.h"
 #include "GameData/EntityHelpers.h"
+#include "GameData/VisitLocation.h"
 #include "GameData/LFG.h"
 #include "GameData/Trade.h"
 #include "Settings.h"
@@ -121,6 +123,13 @@ void cmdHandler_AddCostumeSlot(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
 void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess);
+void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -137,6 +146,7 @@ void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetSpecialTitle(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MOTD(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Invite(const QString &cmd, MapClientSession &sess);
@@ -157,6 +167,7 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Tailor(const QString &cmd, MapClientSession &sess);
 void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Train(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Kiosk(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
@@ -223,7 +234,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
-    {{"movezone", "mz", "mapmove"}, "Move to a map id", cmdHandler_MoveZone, 9},
+    {{"mapmove", "movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
@@ -237,6 +248,13 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
     {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
     {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
+    {{"openStore"}, "Open store Window", cmdHandler_OpenStore, 9},
+    {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
+    {{"sendLocation"}, "Send Location Test", cmdHandler_SendLocations, 9},
+    {{"developerConsoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
+    {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
+    {{"clearTarget"}, "Clear current target", cmdHandler_ClearTarget, 9},
+    {{"startTimer"}, "Create a small timer", cmdHandler_StartTimer, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -253,6 +271,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setCustomTitles"},"Set your titles manually", cmdHandler_SetCustomTitles, 1},
     {{"setSpecialTitle"},"Set your Special title", cmdHandler_SetSpecialTitle, 1},
     {{"stuck"},"Free yourself if your character gets stuck", cmdHandler_Stuck, 1},
+    {{"gotospawn"},"Teleport to a SpawnLocation", cmdHandler_SetSpawnLocation, 1},
     {{"lfg"},"Toggle looking for group status ", cmdHandler_LFG, 1},
     {{"motd"},"View the server MOTD", cmdHandler_MOTD, 1},
     {{"i","invite"}, "Invite player to team", cmdHandler_Invite, 1},
@@ -273,6 +292,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"tailor"}, "Open Tailor Window", cmdHandler_Tailor, 1},
     {{"cc"}, "Costume Change", cmdHandler_CostumeChange, 1},
     {{"train"}, "Train Up Level", cmdHandler_Train, 1},
+    {{"kiosk"}, "Event kiosk", cmdHandler_Kiosk, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -334,14 +354,15 @@ static Entity* getEntityFromCommand(const QString &cmd, MapClientSession& sess)
 
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
 {
-    uint8_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
+    uint32_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
     if(map_idx == getMapIndex(sess.m_current_map->name()))
         map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
-    QString map_path = getMapPath(map_idx);
-    sess.link()->putq(new MapXferWait(map_path));
+    MapXferData map_data = MapXferData();
+    map_data.m_target_map_name = getMapName(map_idx);
+    sess.link()->putq(new MapXferWait(getMapPath(map_idx)));
 
     HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)
-        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_idx}, 0));
+        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_data}, 0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -354,8 +375,7 @@ void cmdHandler_Script(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_Dialog(const QString &cmd, MapClientSession &sess)
 {
-    StandardDialogCmd *dlg = new StandardDialogCmd(cmd.mid(4));
-    sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(cmd.mid(4)));
 }
 
 void cmdHandler_InfoMessage(const QString &cmd, MapClientSession &sess)
@@ -392,8 +412,7 @@ void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess)
     if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QString contents(file.readAll());
-        StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-        sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(contents));
     }
     else {
         QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
@@ -1282,6 +1301,81 @@ void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
+void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess)
+{
+    VisitLocation visitlocation;
+    visitlocation.m_location_name = "Test1";
+    visitlocation.m_pos = glm::vec3(-44, 0, 261);
+
+    sendLocation(sess, visitlocation);
+}
+
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2 )
+    {
+        qCDebug(logSlashCommand) << "SendConsoleOutput. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsoleOutput format is '/consoleOutput <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendDeveloperConsoleOutput(sess, msg);
+}
+
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2)
+    {
+        qCDebug(logSlashCommand) << "SendConsolePrintF. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsolePrintF format is '/consolePrintF <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendClientConsoleOutput(sess, msg);
+}
+
+void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size () != 2)
+    {
+        qCDebug(logSlashCommand) << "ClearTarget. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ClearTarget '/clearTarget <targetIdx>'", sess);
+        return;
+    }
+
+    int idx = parts[1].toInt();
+    setTarget(*sess.m_ent, idx);
+}
+void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size () != 3)
+    {
+        qCDebug(logSlashCommand) << "StartTimer. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "StartTimer '/StartTimer <timerName> <seconds>'", sess);
+        return;
+    }
+    QString message = parts[1].toString();
+    float time = parts[2].toFloat();
+
+    sendMissionObjectiveTimer(sess, message, time);
+
+}
 
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
@@ -1490,6 +1584,17 @@ void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
+}
+
+void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess)
+{
+    const QString spawnLocation = getCommandParameter(cmd);
+    if(spawnLocation.isEmpty())
+    {
+        // No SpawnLocation given, bail.
+        return;
+    }
+    sess.m_current_map->setSpawnLocation(*sess.m_ent, spawnLocation);
 }
 
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess)
@@ -1855,6 +1960,11 @@ void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
     playerTrain(sess);
 }
 
+void cmdHandler_Kiosk(const QString &cmd, MapClientSession &sess)
+{
+    sendKiosk(sess);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
@@ -1941,7 +2051,7 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
-    sendEmailHeaders(sess);
+    getEmailHeaders(sess);
 }
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
@@ -1949,46 +2059,48 @@ void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
     uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
     readEmailMessage(sess, id);
-
-    QString msg = "Opening Email ID: " + QString::number(id);
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
 {
     QStringList parts = cmd.split("\"");
     QStringList result;
-    for(int i = 0; i < parts.size(); i++)
+
+    for (const auto &part : parts)
     {
-        if(parts[i].endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
-            result.back() += parts[i]+"\"";
+        if(part.endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
+            result.back() += part+"\"";
         else
-            result.push_back(parts[i]);
+            result.push_back(part);
     }
 
-    if(result.size() >= 5)
+    if (result.size() != 5)
     {
-        sendInfoMessage(MessageChannel::SERVER, "Too many arguements!", sess);
+        sendInfoMessage(MessageChannel::SERVER, "Argument count for sending email is not correct! Please send emails from the email window instead.", sess);
         return;
     }
-    result[1].replace("\\q ", "");
+
+    result[1].replace("\\q ", ";");
     result[1].replace("\\q", "");
 
-    // 1 -> recipient name, 3 -> email subject, 4 -> email message
+    // result[1] -> recipient name, 3 -> email subject, 4 -> email message
+    // attempt to parse names if sending to multiple recipients
+    QStringList recipients = result[1].split(";");
+
+    // the last element will be empty in all cases (if sent through email window), so remove it
+    recipients.pop_back();
+
+    // first, check if your own character is one of the recipients in the email
     // cannot send email to self as that will trigger /emailRead without the data in db nor EmailHandler
     // and that will segfault the server :)
-    if(result[1] == sess.m_ent->m_char->getName())
+    if (recipients.contains(sess.m_ent->m_char->getName()))
     {
         sendInfoMessage(MessageChannel::SERVER, "You cannot send an email to yourself!", sess);
         return;
     }
 
-    sendEmail(sess, result[1], result[3], result[4]);
-
-    QString msg = "Email Sent to recipient: " + result[1];
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::SERVER, msg, sess);
+    for (const auto &recipient : recipients)
+        sendEmail(sess, recipient, result[3], result[4]);
 }
 
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
@@ -2149,6 +2261,38 @@ void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess)
     // TODO: this will regenerate any NPCs (luabot) that exist
     sess.m_current_map->load_map_lua();
 }
+
+
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess)
+{
+    qCDebug(logSlashCommand) << "OpenStore...";
+    openStore(sess, 0); // Default entity_idx as it doesn't change anything currently
+}
+  
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+    QString message;
+    QString name = parts[1].toString();
+    int first_space = cmd.indexOf(' ');
+    int second_space = cmd.indexOf(' ',first_space+1);
+
+    if(second_space == -1)
+    {
+        message = "ForceLogout requires a logout message. /forceLogout <HeroName> <Message!>";
+        qCDebug(logSlashCommand) << message;
+        sendInfoMessage(MessageChannel::USER_ERROR, message, sess);
+        return;
+    }
+    else
+    {
+        message = cmd.mid(second_space + 1);
+    }
+
+    sendForceLogout(sess, name, message);
+}
+
 
 } // end of anonymous namespace
 

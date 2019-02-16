@@ -14,10 +14,13 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/EntityHelpers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Friend.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PlayerStatistics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Store.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Task.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.cpp
@@ -45,6 +48,7 @@ SET(target_CPP
     #def_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/map_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/seq_serializers.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/seq_definitions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/shop_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/trick_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/trick_definitions.cpp
@@ -74,11 +78,14 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/Friend.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Contact.h
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/PlayerStatistics.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Store.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Task.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Team.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Trade.h

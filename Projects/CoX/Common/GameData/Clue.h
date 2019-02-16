@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -68,15 +68,3 @@ public:
 };
 
 using vSouvenirList = std::vector<Souvenir>;
-
-class ClueSouvenirList
-{
-public:
-    enum : uint32_t {class_version       = 1};
-
-    std::vector<Clue> m_clue_list;
-    std::vector<Souvenir> m_souvenir_list;
-
-    template<class Archive>
-    void serialize(Archive &archive, uint32_t const version);
-};

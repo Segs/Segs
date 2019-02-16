@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -124,27 +124,6 @@ public:
     }
     EVENT_IMPL(ClientQuit)
 
-};
-
-// [[ev_def:type]]
-class ForcedLogout final : public MapLinkEvent
-{
-public:
-    // [[ev_def:field]]
-    QString reason;
-    ForcedLogout() :MapLinkEvent(MapEventTypes::evForcedLogout) {}
-    ForcedLogout(const QString &_reason) :MapLinkEvent(MapEventTypes::evForcedLogout),reason(_reason)
-    {}
-    void serializeto(BitStream &bs) const override
-    {
-        bs.StorePackedBits(1,12); // opcode
-        bs.StoreString(reason);
-    }
-    void serializefrom(BitStream &bs) override
-    {
-        bs.GetString(reason);
-    }
-    EVENT_IMPL(ForcedLogout)
 };
 
 // [[ev_def:type]]

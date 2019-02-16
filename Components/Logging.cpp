@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -49,7 +49,9 @@ SEGS_LOGGING_CATEGORY(logTrades,       "log.trades")
 SEGS_LOGGING_CATEGORY(logTailor,       "log.tailor")
 SEGS_LOGGING_CATEGORY(logScripts,      "log.scripts")
 SEGS_LOGGING_CATEGORY(logSceneGraph,   "log.scenegraph")
+SEGS_LOGGING_CATEGORY(logStores,       "log.stores")
 SEGS_LOGGING_CATEGORY(logTasks,        "log.tasks")
+SEGS_LOGGING_CATEGORY(logRPC,          "log.rpc")
 
 void setLoggingFilter()
 {
@@ -86,7 +88,9 @@ void setLoggingFilter()
     filter_rules += "\nlog.tailor="         + config.value("log_tailor","false").toString();
     filter_rules += "\nlog.scripts="        + config.value("log_scripts","false").toString();
     filter_rules += "\nlog.scenegraph="     + config.value("log_scenegraph","false").toString();
+    filter_rules += "\nlog.stores="         + config.value("log_stores","false").toString();
     filter_rules += "\nlog.tasks="          + config.value("log_tasks","false").toString();
+    filter_rules += "\nlog.rpc="            + config.value("log_rpc","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -159,8 +163,12 @@ void toggleLogging(QString &category)
         cat = &logScripts();
     else if(category.contains("scenegraph",Qt::CaseInsensitive))
         cat = &logSceneGraph();
+    else if(category.contains("stores", Qt::CaseInsensitive))
+        cat = &logStores();
     else if(category.contains("tasks",Qt::CaseInsensitive))
         cat = &logTasks();
+    else if(category.contains("rpc",Qt::CaseInsensitive))
+        cat = &logRPC();
     else
         return;
 
@@ -203,6 +211,9 @@ void dumpLogging()
     output += "\n\t tailor: "       + QString::number(logTailor().isDebugEnabled());
     output += "\n\t scripts: "      + QString::number(logScripts().isDebugEnabled());
     output += "\n\t scenegraph: "   + QString::number(logSceneGraph().isDebugEnabled());
+    output += "\n\t stores: "       + QString::number(logStores().isDebugEnabled());
+    output += "\n\t tasks: "        + QString::number(logTasks().isDebugEnabled());
+    output += "\n\t rpc: "          + QString::number(logRPC().isDebugEnabled());
 
     qDebug().noquote() << output;
 }

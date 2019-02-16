@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -24,6 +24,8 @@
 #include "Common/GameData/power_serializers.h"
 #include "Common/GameData/trick_serializers.h"
 #include "Common/GameData/seq_serializers.h"
+#include "Common/GameData/shop_serializers.h"
+#include "Common/GameData/shop_definitions.h"
 #include "Common/GameData/CommonNetStructures.h"
 #include "Logging.h"
 #include "Settings.h"
@@ -302,6 +304,12 @@ bool GameDataStore::read_game_data(const QString &directory_path)
         return false;
     if(!read_sequencer_definitions(directory_path))
         return false;
+    if(!read_store_data(directory_path))
+        return false;
+    if(!read_store_items_data(directory_path))
+        return false;
+    if(!read_store_depts_data(directory_path)) //Not needed?
+        return false;
     qInfo().noquote() << "Finished reading game data:  done in"<<float(load_timer.elapsed())/1000.0f<<"s";
     {
         TIMED_LOG({
@@ -540,6 +548,24 @@ bool GameDataStore::read_sequencer_definitions(const QString &directory_path)
 {
     qDebug() << "Loading Sequencer Information:";
     return read_data_to<SequencerList, seqencerlist_i0_requiredCrc>(directory_path, "bin/sequencers.bin",m_seq_definitions);
+}
+
+bool GameDataStore::read_store_data(const QString &directory_path)
+{
+    qDebug() << "Loading shop data:";
+    return read_data_to<AllShops_Data, shoplist_i0_requiredCrc>(directory_path, "bin/stores.bin", m_shops_data);
+}
+
+bool GameDataStore::read_store_items_data(const QString &directory_path)
+{
+    qDebug() << "Loading shop items:";
+    return read_data_to<AllShopItems_Data, shopitems_i0_requiredCrc>(directory_path, "bin/items.bin", m_shop_items_data);
+}
+
+bool GameDataStore::read_store_depts_data(const QString &directory_path)
+{
+    qDebug() << "Loading shop depts:";
+    return read_data_to<AllShopDepts_Data, shopdepts_i0_requiredCrc>(directory_path, "bin/depts.bin", m_shop_depts_data);
 }
 
 const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)
