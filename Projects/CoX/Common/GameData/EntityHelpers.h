@@ -82,6 +82,7 @@ void    toggleLFG(Entity &e);
 void abortLogout(Entity *e);
 void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
+void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
 void markEntityForDbStore(Entity *e,DbStoreFlags f);
 void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);

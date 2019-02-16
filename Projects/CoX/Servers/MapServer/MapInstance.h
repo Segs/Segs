@@ -15,6 +15,7 @@
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "NpcGenerator.h"
+#include "Common/GameData/spawn_definitions.h"
 
 #include <map>
 #include <memory>
@@ -133,7 +134,9 @@ class MapInstance final : public EventProcessor
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
-        QMultiHash<QString, glm::mat4>  m_all_spawners;        
+        QMultiHash<QString, glm::mat4>  m_all_spawners;
+        QMultiHash<QString, glm::mat4>  m_encounter_spawners;
+        QHash<QString, SpawnDef>        m_spawn_encounters;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
@@ -166,6 +169,7 @@ public:
         ListenAndLocationAddresses m_addresses; //! this value is sent to the clients
         MapSceneGraph *         m_map_scenegraph;
         NpcGeneratorStore       m_npc_generators;
+        SpawnDefinitions        m_enemy_spawn_definitions;
         std::vector<LuaTimer>   m_lua_timers;
 
 public:
@@ -182,6 +186,7 @@ public:
         void                    setSpawnLocation(Entity &e, const QString &spawnLocation);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
         QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
+        QMultiHash<QString, glm::mat4> getEncounterSpawners() const { return m_encounter_spawners; }
         QHash<QString, MapXferData> get_map_door_transfers();
         QHash<QString, MapXferData> get_map_zone_transfers();
         QString                 getNearestDoor(glm::vec3 location);
@@ -191,6 +196,7 @@ public:
         void                    startTimer(uint32_t entity_idx);
         void                    stopTimer(uint32_t entity_idx);
         void                    clearTimer(uint32_t entity_idx);
+        void                    spawn_enemies();
 
 protected:
         // EventProcessor interface

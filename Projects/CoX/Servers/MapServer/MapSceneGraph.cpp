@@ -22,6 +22,7 @@
 #include "MapInstance.h"
 #include "GameData/NpcStore.h"
 #include "Common/GameData/map_definitions.h"
+#include "Common/GameData/spawn_definitions.h"
 
 #include "glm/mat4x4.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -47,9 +48,13 @@ bool MapSceneGraph::loadFromFile(const QString &filename)
         return false;
     for(SceneNode *def : m_scene_graph->all_converted_defs)
     {
+        if(def->m_name.contains("4076", Qt::CaseInsensitive))
+            bool pause = true;
+
         if(def->m_properties)
         {
             m_nodes_with_properties.emplace_back(def);
+
         }
     }
     return true;
@@ -292,6 +297,42 @@ struct SpawnPointLocator
     }
 };
 
+struct EnemySpawnPointLocator
+{
+    QMultiHash<QString, glm::mat4> *m_targets;
+    EnemySpawnPointLocator(QMultiHash<QString, glm::mat4> *targets) :
+        m_targets(targets)
+    {}
+    bool operator()(SceneNode *n, const glm::mat4 &v)
+    {
+        if(!n->m_properties)
+            return true;
+
+        for (GroupProperty_Data &prop : *n->m_properties)
+        {
+
+            if(prop.propName == "EncounterPosition")
+            {
+                qCDebug(logSpawn) << "Encounter:" << prop.propValue << prop.propertyType;
+                m_targets->insert(prop.propValue, v);
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
+
+QMultiHash<QString, glm::mat4> MapSceneGraph::getEncounterSpawnPoints() const
+{
+    QMultiHash<QString, glm::mat4> res;
+    EnemySpawnPointLocator locator(&res);
+    for(auto v : m_scene_graph->refs)
+        walkSceneNode(v->node, v->mat, locator);
+
+    return res;
+}
+
 QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
 {
     QMultiHash<QString, glm::mat4> res;
@@ -301,6 +342,7 @@ QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
 
     return res;
 }
+
 
 struct MapXferLocator
 {
@@ -364,6 +406,129 @@ QHash<QString, MapXferData> MapSceneGraph::get_map_transfers() const
 {
     QHash<QString, MapXferData> res;
     MapXferLocator locator(&res);
+    for (auto v : m_scene_graph->refs)
+    {
+        walkSceneNode(v->node, v->mat, locator);
+    }
+    return res;
+}
+
+struct SpawnDefLocator
+{
+    QHash<QString, SpawnDef> *m_spawn_def;
+    SpawnDefLocator(QHash<QString, SpawnDef> *spawn_def_hash):
+        m_spawn_def(spawn_def_hash)
+    {}
+    bool operator()(SceneNode *n, const glm::mat4 &v)
+    {
+        bool found_encounter = false;
+        if (n->m_properties)
+        {
+            SpawnDef spawnDef;
+
+            for (GroupProperty_Data &gp: *n->m_properties)
+            {
+                if(gp.propName.contains("SpawnProbability"))
+                {
+                    spawnDef.m_spawn_probability = gp.propValue.toInt();
+                }
+                else if(gp.propName.contains("VillainRadius"))
+                {
+                    spawnDef.m_villain_radius = gp.propValue.toInt();
+                }
+
+                if(gp.propName == "EncounterSpawn" || gp.propName == "EncounterGroup")
+                {
+                    for(auto &child : n->m_children)
+                    {
+                        if(child.node->m_name.contains("EG_L", Qt::CaseInsensitive)) //Atlas & Galaxy
+                        {
+                            found_encounter = true;
+                            glm::mat4 encounter_location(child.m_matrix2);
+                            encounter_location[3] = glm::vec4(child.m_translation,1);
+
+                            for(auto &c : child.node->m_children) // _ES_L  EncounterSpawn
+                            {
+                                for(auto &s : c.node->m_children)
+                                {
+                                    SpawnPoint *spawn_point = new SpawnPoint();
+                                    spawn_point->m_name = s.node->m_name;
+
+                                    glm::mat4 spawn_location(s.m_matrix2);
+                                    spawn_location[3] = glm::vec4(s.m_translation,1);
+                                    spawn_location = v * spawn_location;
+                                    glm::vec4 tpos4 {0,0,0,1};
+                                    spawn_point->m_relative_position = encounter_location;
+
+                                    if(spawn_point->m_name.contains("_V_", Qt::CaseSensitive))
+                                        spawn_point->m_is_victim = true;
+
+                                    spawnDef.m_all_spawn_points.push_back(*spawn_point);
+                                }
+
+                                spawnDef.m_node_name = child.node->m_name;
+                                if(found_encounter)
+                                {
+                                    m_spawn_def->insert(n->m_name, spawnDef);
+                                    return false;
+                                }
+                            }
+                        }
+                        else if(child.node->m_name.contains("ES_", Qt::CaseInsensitive)) // Other maps
+                        {
+                            for (GroupProperty_Data &prop : *child.node->m_properties)
+                            {
+                                if (prop.propName == "EncounterSpawn" || prop.propName == "EncounterGroup")
+                                {
+                                    found_encounter = true;
+
+                                    glm::mat4 encounter_location(child.m_matrix2);
+                                    encounter_location[3] = glm::vec4(child.m_translation,1);
+
+                                    std::vector<SpawnPoint> spawn_points;
+                                    for(auto &c_node : child.node->m_children)
+                                    {
+                                        SpawnPoint *spawn_point = new SpawnPoint();
+                                        spawn_point->m_name = c_node.node->m_name;
+
+                                        glm::mat4 spawn_location(c_node.m_matrix2);
+                                        spawn_location[3] = glm::vec4(c_node.m_translation,1);
+                                        spawn_location = v * spawn_location;
+
+                                        spawn_location = spawn_location + encounter_location;
+                                        spawn_point->m_relative_position = spawn_location;
+
+                                        if(spawn_point->m_name.contains("_V_", Qt::CaseSensitive))
+                                            spawn_point->m_is_victim = true;
+
+                                        spawn_points.push_back(*spawn_point);
+                                        spawnDef.m_all_spawn_points.push_back(*spawn_point);
+
+                                    }
+
+                                    spawnDef.m_node_name = child.node->m_name;
+
+                                    if(found_encounter)
+                                    {
+                                        m_spawn_def->insert(n->m_name, spawnDef);
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+};
+
+QHash<QString, SpawnDef> MapSceneGraph::get_encounters() const
+{
+    QHash<QString, SpawnDef> res;
+    SpawnDefLocator locator(&res);
     for (auto v : m_scene_graph->refs)
     {
         walkSceneNode(v->node, v->mat, locator);
