@@ -162,7 +162,7 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->map_location->setText(maps_loc);
     ui->map_player_fade_in->setValue(player_fade_in);
     ui->map_motd_timer->setValue(motd_timer);
-    ui->costume_slot_unlocks_edit->setText(QString(config_file.value("costume_slot_unlocks", "").toString()));
+    ui->costume_slot_unlocks_edit->setText(config_file.value("costume_slot_unlocks", "").toString());
     config_file.endGroup(); // MapServer
 
     config_file.beginGroup("AFKSettings");
