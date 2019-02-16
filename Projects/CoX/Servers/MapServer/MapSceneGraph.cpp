@@ -484,6 +484,7 @@ struct SpawnDefLocator
 
                                     glm::mat4 encounter_location(child.m_matrix2);
                                     encounter_location[3] = glm::vec4(child.m_translation,1);
+                                    encounter_location = v * encounter_location;
 
                                     std::vector<SpawnPoint> spawn_points;
                                     for(auto &c_node : child.node->m_children)
@@ -493,9 +494,9 @@ struct SpawnDefLocator
 
                                         glm::mat4 spawn_location(c_node.m_matrix2);
                                         spawn_location[3] = glm::vec4(c_node.m_translation,1);
-                                        spawn_location = v * spawn_location;
+                                        spawn_location = encounter_location * spawn_location;
 
-                                        spawn_location = spawn_location + encounter_location;
+                                        //spawn_location = spawn_location + encounter_location;
                                         spawn_point->m_relative_position = spawn_location;
 
                                         if(spawn_point->m_name.contains("_V_", Qt::CaseSensitive))

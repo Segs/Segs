@@ -3320,32 +3320,37 @@ void MapInstance::clearTimer(uint32_t entity_idx)
 
 void MapInstance::spawn_enemies()
 {
-    int diff = 2; // control number spawned in each group
-    int total_spawned = 0;
+    uint32_t diff = 3; // control number spawned in each group
+    uint32_t total_spawned = 0;
 
     if(this->m_spawn_encounters.size() > 0)
     {
-        for(const SpawnDef s: this->m_spawn_encounters)
+        for(const SpawnDef &s: this->m_spawn_encounters)
         {
             SpawnNPCList group = this->m_enemy_spawn_definitions.getSpawnGroup(s.m_node_name);
             if(s.m_node_name == group.m_spawn_group)
             {
-                int count = 0;
+                uint32_t count = 0;
                 bool spawn_all = false;
 
                 if(!spawn_all && total_spawned == 300) // limit spawning
                     break;
 
-                for (SpawnPoint sp: s.m_all_spawn_points)
+                for (const SpawnPoint &sp: s.m_all_spawn_points)
                 {
-                    EnemyDefinition ed = group.m_possible_enemies.at(rand() % (group.m_possible_enemies.size() - 1));
+                    EnemyDefinition ed;
+                    if(group.m_possible_enemies.size() > 1)
+                        ed = group.m_possible_enemies.at(rand() % (group.m_possible_enemies.size() - 1));
+                    else
+                        ed = group.m_possible_enemies.at(0);
+
                     spawn_all = ed.m_spawn_all;
 
                     if(sp.m_name.contains("encounter_e_", Qt::CaseInsensitive)) // E for Enemy?
                     {
-                        glm::vec4 pos4 {0,0,0,1};
-                        pos4 = sp.m_relative_position * pos4;
-                        glm::vec3 pos = glm::vec3(pos4);
+                        //glm::vec4 pos4 {0,0,0,1};
+                        //pos4 = sp.m_relative_position * pos4;
+                        glm::vec3 pos = glm::vec3(sp.m_relative_position[3]);
 
                         auto valquat = glm::quat_cast(sp.m_relative_position);
                         glm::vec3 angles = glm::eulerAngles(valquat);
@@ -3354,11 +3359,11 @@ void MapInstance::spawn_enemies()
                         //spawn enemy
                         addEnemy(*this, ed.m_model, pos, 1, angles, ed.m_name, 2, ed.m_faction_name, 0);
                         ++count;
+                        ++total_spawned;
                     }
 
                     if(!ed.m_spawn_all && count == diff)
                     {
-                        total_spawned += count;
                         break;
                     }
                 }
