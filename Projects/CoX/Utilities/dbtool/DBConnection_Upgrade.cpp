@@ -5,9 +5,9 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#include "UpgradeHooks.h"
 #include "DatabaseConfig.h"
 #include "DBConnection.h"
+#include "DBMigrationStep.h"
 
 #include "Logging.h"
 
@@ -16,6 +16,8 @@
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
 
+// Must declare this method to populate MigrationStep vector
+extern void register_migrations(std::vector<DBMigrationStep *> &target);
 
 /*!
  * @brief Run database upgrades
@@ -24,36 +26,58 @@
 void DBConnection::runUpgrades()
 {
     qInfo() << "Upgrading database" << getName();
-    // check database version against schema in default folder
-    if(!checkVersionAndUpgrade(getDBVersion()))
+    // register migrations to a vector that we can loop over
+    std::vector<DBMigrationStep *> migrations_to_run;
+    register_migrations(migrations_to_run);
+
+    // check for the latest version
+    int final_version = 0;
+    for(DBMigrationStep *step : migrations_to_run)
     {
-        qInfo() << "Database" << m_config.m_name << "is the latest version! No upgrade necessary.";
-        return;
+        if(getName() != step->getName())
+            continue;
+
+        if(step->getTargetVersion() < final_version)
+            final_version = step->getTargetVersion();
     }
 
-    qInfo() << "Database" << m_config.m_name << "upgraded successfully!";
+    // check database version against schema in default folder
+    if(getDBVersion() >= final_version)
+    {
+        qInfo() << QString("Database %1 is already the latest version! No upgrade necessary.").arg(getName());
+        //return;
+    }
 
-    /* PSUEDOCODE:
-        // check database versions against template files
-        auto current_db = getDatabaseVersion();
-        checkVersionForUpgrade(current_db);
+    // run through migrations_to_run and check for upgrades
+    // that are higher than our current DB version. Run them in order.
+    for(DBMigrationStep *step : migrations_to_run)
+    {
+        if(!step->canRun(this))
+            continue; // can't run? skip it.
 
-        // update database schema
-        for(auto table : tables_to_update)
-            update(table);
+        qInfo() << QString("Running %1 database migration from version %2 to %3")
+                   .arg(getName())
+                   .arg(getDBVersion())
+                   .arg(step->getTargetVersion());
 
-        // check columns for serialization versions
-        checkColumnVersions();
-        getColumnsToUpdate(current_db, tpl);
+        if(!step->execute(this))
+        {
+            qInfo() << QString("Database %1 failed to update to version %2! Rolling back changes.")
+                       .arg(getName())
+                       .arg(getDBVersion()+1);
 
-        // update those column schemas
-        for(auto column : columns_to_update)
-            update(column);
+            m_db->rollback();
+            return; // execution failed, cancel update
+        }
 
-        // make sure we didn't mess up
-        if(verifySchemas())
-            return dbToolResult::SUCCESS;
-    */
+        if(!step->cleanup(this))
+            return; // cleanup failed, cancel update
+    }
+
+    qInfo() << QString("Database %1 upgraded successfully to %2!")
+               .arg(getName())
+               .arg(getDBVersion());
+    return;
 }
 
 
@@ -61,110 +85,41 @@ void DBConnection::runUpgrades()
  * @brief Retrieve database version
  * @returns integer representing database version number
  */
-TableSchema DBConnection::getDBVersion()
+int DBConnection::getDBVersion()
 {
-    TableSchema result;
-    result.m_db_name = getName();
-
+    int version = 0;
     QString querytext = "SELECT version FROM table_versions WHERE table_name='db_version'";
     if(!m_query->exec(querytext))
     {
         qWarning() << "SQL_ERROR:" << m_query->lastError();
         qWarning() << "QUERY:" << m_query->executedQuery();
-        return result;
+        return version;
     }
     while(m_query->next())
     {
-        result.m_version = m_query->value(0).toInt();
-        qCDebug(logDB) << "Database Version:" << result.m_db_name << result.m_version;
+        version = m_query->value(0).toInt();
+        qCDebug(logDB) << "Database Version:" << getName() << version;
     }
 
-    return result; // return complete TableSchema object
+    return version;
 }
 
-
-/*!
- * @brief Check version and run upgrade
- * @param[in] Config for database file
- * @returns integer representing database version number
- */
-bool DBConnection::checkVersionAndUpgrade(const TableSchema &cur_version)
+int getFinalMigrationVersion(std::vector<DBMigrationStep *> &migrations, QString &db_name)
 {
-    int target_version = cur_version.m_version + 1; // set target version for this iteration
-    std::vector<UpgradeHook> hooks_to_run;
-
-    // run through g_segs_upgrade_hooks and check for upgrades
-    // that are higher than our current DB version. Run them in order.
-    for(const UpgradeHook &hook : g_segs_upgrade_hooks)
+    int final_version = 0;
+    for(DBMigrationStep *step : migrations)
     {
-        // g_segs_upgrade_hooks contains both databases, skip
-        // databases that don't match the one we're currently checking
-        if(hook.m_table_schema.m_db_name != cur_version.m_db_name)
-        {
-            qCDebug(logDB) << "We're currently looking for the other database, skipping to the next one."
-                           << hook.m_table_schema.m_db_name << cur_version.m_db_name;
+        if(db_name != step->getName())
             continue;
-        }
 
-        // skip upgrades beneath the current db version
-        if(hook.m_table_schema.m_version < target_version)
-        {
-            qCDebug(logDB) << "Upgrade hook is beneath current database version. Skip to the next one.";
-            continue;
-        }
-
-        if(hook.m_table_schema.m_version == target_version)
-        {
-            hooks_to_run.push_back(hook);
-            ++target_version; // iterate new version, because we've updated the database
-        }
+        if(step->getTargetVersion() < final_version)
+            final_version = step->getTargetVersion();
     }
 
-    // run upgrades and return false if failed
-    if(!runUpgradeHooks(hooks_to_run))
-        return false;
-
-    // Otherwise, success!
-    return true;
+    return final_version;
 }
 
-/*!
- * @brief Run hooks on database from cfg
- * @param[in] Config for database file
- * @param[in] Vector of UpgradeHooks
- * @returns boolean indicating success
- */
-bool DBConnection::runUpgradeHooks(const std::vector<UpgradeHook> &hooks_to_run)
-{
-    // run all hooks in order, under same transaction
-    for(const UpgradeHook &hook : hooks_to_run)
-    {
-        // hooks are in order already
-        if(!hook.m_handler(this, m_query))
-            break;
-
-        qInfo() << "Upgrading database" << getName() << "to version" << hook.m_table_schema.m_version;
-    }
-
-    // close database
-    if(!m_db->commit())
-    {
-        qWarning() << "Commit failed:" << m_query->lastError();
-        qWarning() << "QUERY:" << m_query->executedQuery();
-        m_db->rollback();
-        return false;
-    }
-
-    return true; // if successful
-}
-
-bool DBConnection::checkTableVersions(const std::vector<TableSchema> &table_schemas)
-{
-    Q_UNUSED(table_schemas);
-    return false;
-}
-
-bool DBConnection::updateTableVersions(std::vector<TableSchema> &table_schemas)
+bool DBConnection::updateTableVersions(DBSchemas &table_schemas)
 {
     Q_UNUSED(table_schemas);
     return false;

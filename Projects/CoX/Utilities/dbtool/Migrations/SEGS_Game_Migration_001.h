@@ -10,26 +10,29 @@
 
 // TODO: how to handle updates to segs vs segs_game database?
 // different classes? SEGS_Game_Migration vs SEGS_Migration?
-class SEGS_Migration_001 : public DBMigrationStep
+class SEGS_Game_Migration_001 : public DBMigrationStep
 {
+private:
     int m_target_version = 1;
+    QString m_name = "segs_game";
     std::vector<TableSchema> m_table_schemas = {
-        {'db_version',1,'2018-01-23 10:27:01'},
-        {'table_versions',0,'2017-11-11 08:57:42'},
-        {'accounts',0,'2017-11-11 08:57:43'},
-        {'characters',2,'2018-01-23 10:16:27'},
-        {'costume',0,'2017-11-11 08:57:43'},
-        {'progress',0,'2017-11-11 08:57:43'},
-        {'supergroups',0,'2018-01-23 10:16:43'},
+        {"db_version",1,"2018-01-23 10:27:01"},
+        {"table_versions",0,"2017-11-11 08:57:42"},
+        {"accounts",0,"2017-11-11 08:57:43"},
+        {"characters",2,"2018-01-23 10:16:27"},
+        {"costume",0,"2017-11-11 08:57:43"},
+        {"progress",0,"2017-11-11 08:57:43"},
+        {"supergroups",0,"2018-01-23 10:16:43"},
     };
 
-    bool execute(DBConnection &db) override
+public:
+    bool execute(DBConnection *db) override
     {
-        qInfo() << "PERFORMING UPGRADE 001 on" << db->m_config.m_db_path;
+        qInfo() << "PERFORMING UPGRADE 001 on" << db->getName();
 
         // update database table schemas here
         // first let's add the supergroups table
-        db.m_query->prepare("CREATE TABLE `supergroups` ("
+        db->m_query->prepare("CREATE TABLE `supergroups` ("
                             "`id`	INTEGER PRIMARY KEY AUTOINCREMENT, "
                             "`supergroup_id` INTEGER UNIQUE, "
                             "`sg_name` TEXT NOT NULL, "
@@ -42,35 +45,35 @@ class SEGS_Migration_001 : public DBMigrationStep
                             "`sg_members` BLOB "
                             ")");
 
-        if(!db.m_query->exec())
+        if(!db->m_query->exec())
             return false;
 
         // second: add the chardata column to the characters table
-        db.m_query->prepare("ALTER TABLE 'characters' ADD 'chardata' BLOB");
-        if(!db.m_query->exec())
+        db->m_query->prepare("ALTER TABLE 'characters' ADD 'chardata' BLOB");
+        if(!db->m_query->exec())
             return false;
 
         // third: copy the values from columns we plan to delete
-        db.m_query->prepare("SELECT * FROM 'characters'");
-        if(!db.m_query->exec())
+        db->m_query->prepare("SELECT * FROM 'characters'");
+        if(!db->m_query->exec())
             return false;
 
-        while(db.m_query->next())
+        while(db->m_query->next())
         {
             QVariantMap work_area;
-            work_area["char_level"] = db.m_query->value(4);
-            work_area["archetype"] = db.m_query->value(5);
-            work_area["origin"] = db.m_query->value(6);
-            work_area["current_map"] = db.m_query->value(8);
-            work_area["last_costume_id"] = db.m_query->value(9);
-            work_area["inf"] = db.m_query->value(13);
-            work_area["xp"] = db.m_query->value(14);
-            work_area["xpdebt"] = db.m_query->value(15);
-            work_area["xppatrol"] = db.m_query->value(16);
-            work_area["alignment"] = db.m_query->value(17);
-            work_area["title"] = db.m_query->value(24);
-            work_area["badgetitle"] = db.m_query->value(25);
-            work_area["specialtitle"] = db.m_query->value(26);
+            work_area["char_level"] = db->m_query->value(4);
+            work_area["archetype"] = db->m_query->value(5);
+            work_area["origin"] = db->m_query->value(6);
+            work_area["current_map"] = db->m_query->value(8);
+            work_area["last_costume_id"] = db->m_query->value(9);
+            work_area["inf"] = db->m_query->value(13);
+            work_area["xp"] = db->m_query->value(14);
+            work_area["xpdebt"] = db->m_query->value(15);
+            work_area["xppatrol"] = db->m_query->value(16);
+            work_area["alignment"] = db->m_query->value(17);
+            work_area["title"] = db->m_query->value(24);
+            work_area["badgetitle"] = db->m_query->value(25);
+            work_area["specialtitle"] = db->m_query->value(26);
 
             QJsonObject charObject;
             charObject.insert("Level", QJsonValue::fromVariant(work_area["char_level"]));
@@ -94,8 +97,8 @@ class SEGS_Migration_001 : public DBMigrationStep
             qDebug().noquote() << doc.toJson();
 
             // fourth: move values to new location (chardata)
-            QString querytext = QString("UPDATE characters SET charadata='%1'").arg(doc.toJson());
-            if(!db.m_query->exec(querytext))
+            QString querytext = QString("UPDATE characters SET charadata='%1'").arg(QString(doc.toJson()));
+            if(!db->m_query->exec(querytext))
                 return false;
         }
 
@@ -103,11 +106,11 @@ class SEGS_Migration_001 : public DBMigrationStep
         // 'char_level', `archetype`, `origin`, `current_map`, `last_costume_id`,
         // `inf`, `xp`, `xpdebt`, `xppatrol`, `alignment`, `title`,
         // `badgetitle`, `specialtitle`
-        db.m_query->prepare("ALTER TABLE characters DROP COLUMN "
+        db->m_query->prepare("ALTER TABLE characters DROP COLUMN "
                             "char_level, archetype, origin, current_map, "
                             "last_costume_id, inf, xp, xpdebt, xppatrol, "
                             "alignment, title, badgetitle, specialtitle");
-        if(!db.m_query->exec())
+        if(!db->m_query->exec())
             return false;
 
 

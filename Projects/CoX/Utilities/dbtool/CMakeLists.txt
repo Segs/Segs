@@ -8,6 +8,8 @@ ELSE()
 ENDIF()
 find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 
+add_subdirectory(Migrations)
+
 set(tool_SRC
     main.cpp
     DatabaseConfig.cpp
@@ -19,14 +21,8 @@ set(tool_SRC
     DBConnection_Upgrade.cpp
     DBMigrationStep.cpp
     DBMigrationStep.h
-    UpgradeHooks.cpp
-    UpgradeHooks.h
-    # Migrations should be added programatically
-    Migrations/SEGS_Migration_001.h
-    Migrations/SEGS_Game_Migration_001.h
-    Migrations/SEGS_Game_Migration_002.h
-    Migrations/SEGS_Game_Migration_003.h
-    Migrations/SEGS_Game_Migration_010.h
+    # Migrations are added programatically
+    ${MIGRATION_SOURCES}
 )
 
 add_executable(dbtool ${tool_SRC})
@@ -40,3 +36,6 @@ set_target_properties (dbtool PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
 )
+
+# hack to prevent errors with FOLDER properties when using generated files
+target_sources(dbtool PRIVATE ${MIGRATION_GEN})

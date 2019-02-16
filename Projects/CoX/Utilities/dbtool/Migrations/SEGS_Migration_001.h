@@ -8,20 +8,23 @@
 #pragma once
 #include "Utilities/dbtool/DBMigrationStep.h"
 
-// This migration will only work if db_version 0 is manually added
-// to the segs database.
+// This specific migration will only work if db_version 0 is
+// manually added to the segs database.
 class SEGS_Migration_001 : public DBMigrationStep
 {
+private:
     int m_target_version = 1;
+    QString m_name = "segs";
     std::vector<TableSchema> m_table_schemas = {
-        {'db_version',0,'2018-01-06 16:27:58'},
-        {'table_versions',0,'2017-11-11 08:55:54'},
-        {'accounts',1,'2018-01-06 11:18:01'},
-        {'game_servers',0,'2017-11-11 09:12:37'},
-        {'bans',0,'2017-11-11 09:12:37'},
+        {"db_version",0,"2018-01-06 16:27:58"},
+        {"table_versions",0,"2017-11-11 08:55:54"},
+        {"accounts",1,"2018-01-06 11:18:01"},
+        {"game_servers",0,"2017-11-11 09:12:37"},
+        {"bans",0,"2017-11-11 09:12:37"},
     };
 
-    bool execute(DBConnection &db) override
+public:
+    bool execute(DBConnection *db) override
     {
         qInfo() << "PERFORMING UPGRADE 001 on" << db->m_config.m_db_path;
 
@@ -35,7 +38,7 @@ class SEGS_Migration_001 : public DBMigrationStep
 
         for(QString &q : queries)
         {
-            if(!query->exec(q))
+            if(!db->m_query->exec(q))
                 return false;
         }
 

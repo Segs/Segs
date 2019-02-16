@@ -7,6 +7,7 @@
 
 #pragma once
 #include "DBConnection.h"
+#include "Logging.h"
 
 #include <QSqlQuery>
 #include <QJsonDocument>
@@ -15,18 +16,24 @@
 
 class DBMigrationStep
 {
-    DBMigrationStep(DBConnection &db);
-public:
+private:
     int m_target_version = 0;
+    QString m_name;
     // TODO: should table_schemas go away? We can programatically update
     // the version numbers, so we're simply being overly cautious with
     // version control. I'm undecided.
     std::vector<TableSchema> m_table_schemas = {
-        {"db_version", m_target_version}
+        {"db_version", m_target_version, "2018-02-15 10:23:43"}
     };
 
-    int getVersion() const { return m_target_version; }
-    bool canRun(DBConnection &db) const { return db.checkTableVersions(m_table_schemas); }
-    bool virtual execute(DBConnection &/*db*/) { return false; }
-    bool cleanup(DBConnection &db);
+public:
+    DBMigrationStep();
+
+    int getTargetVersion() const { return m_target_version; }
+    QString getName() const { return m_name; }
+    std::vector<TableSchema> getTableVersions() const { return m_table_schemas; }
+
+    bool canRun(DBConnection *db);
+    bool virtual execute(DBConnection */*db*/) { return false; }
+    bool cleanup(DBConnection *db);
 };

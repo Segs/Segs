@@ -39,6 +39,7 @@ enum dbToolCommands
     CREATE,
     ADDUSER,
     UPGRADE,
+    INFO,
 };
 
 void Pause(void)
@@ -96,7 +97,7 @@ void errorHandler(QtMsgType type, const QMessageLogContext &context, const QStri
 
 int main(int argc, char **argv)
 {
-    const QStringList known_commands {"create","adduser","upgrade"};
+    const QStringList known_commands {"create","adduser","upgrade","info"};
     dbToolResult ret = dbToolResult::SUCCESS;
     setLoggingFilter(); // Set QT Logging filters
     qInstallMessageHandler(errorHandler);
@@ -115,7 +116,7 @@ int main(int argc, char **argv)
 
     parser.addPositionalArgument("command",
                                  QCoreApplication::translate("main", "Command to execute.\ncreate\nadduser\nupgrade"),
-                                 "<create|adduser|upgrade>");
+                                 "<create|adduser|upgrade|info>");
 
     // A boolean option with multiple names (e.g. -f, --force)
     QCommandLineOption forceOption(QStringList() << "f" << "force",
@@ -241,6 +242,21 @@ int main(int argc, char **argv)
         {
             for(auto &db : segs_dbs)
                 db->runUpgrades();
+
+            break;
+        }
+        case dbToolCommands::INFO:
+        {
+            qInfo() << "\nDatabase Information:";
+            for(auto &db : segs_dbs)
+            {
+                qInfo().noquote() << QString("Database: %1").arg(db->getName());
+                qInfo().noquote() << QString("    Version: %1").arg(db->getDBVersion());
+                qInfo().noquote() << QString("    Driver:  %1").arg(db->m_config.m_driver);
+                qInfo().noquote() << QString("    Host:    %1:%2").arg(db->m_config.m_host).arg(db->m_config.m_port);
+                qInfo().noquote() << QString("    User:    %1").arg(db->m_config.m_user);
+                qInfo().noquote() << QString("    Pass:    %1").arg(db->m_config.m_pass);
+            }
 
             break;
         }
