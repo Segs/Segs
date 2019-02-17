@@ -69,8 +69,12 @@ void AuthDBSyncHandler::on_create_account(CreateAccountMessage *msg)
     AuthDbSyncContext &db_ctx(m_db_context.localData());
     if(!db_ctx.addAccount(msg->m_data))
     {
-        msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()},msg->session_token()));
+        if(msg->src() != nullptr)
+            msg->src()->putq(new AuthDbErrorMessage({db_ctx.getLastError()->text()},msg->session_token()));
     }
+    else
+        if(msg->src() != nullptr)
+            msg->src()->putq(new AuthDbErrorMessage({"OK"},msg->session_token()));
 }
 
 void AuthDBSyncHandler::on_retrieve_account(RetrieveAccountRequest *msg)

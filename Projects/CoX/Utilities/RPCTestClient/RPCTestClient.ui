@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RPCTestClient</class>
+ <widget class="QMainWindow" name="RPCTestClient">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>561</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <layout class="QFormLayout" name="server_ip_layout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="server_ip_label">
+        <property name="text">
+         <string>Server IP</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="server_ip"/>
+      </item>
+     </layout>
+    </item>
+    <item row="0" column="1">
+     <layout class="QFormLayout" name="rpc_service_layout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="rpc_service_label">
+        <property name="text">
+         <string>RPCService</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLineEdit" name="rpc_service"/>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <layout class="QGridLayout" name="arguments_layout">
+      <item row="0" column="0">
+       <layout class="QVBoxLayout" name="args_layout">
+        <item>
+         <widget class="QLabel" name="arg_label">
+          <property name="text">
+           <string>Arguments</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="arg_1">
+          <property name="minimumSize">
+           <size>
+            <width>221</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>Arg 1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="arg_2">
+          <property name="minimumSize">
+           <size>
+            <width>221</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>Arg 2</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="arg_3">
+          <property name="minimumSize">
+           <size>
+            <width>221</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>Arg 3</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="1">
+       <layout class="QVBoxLayout" name="type_layout">
+        <item>
+         <widget class="QLabel" name="type_label">
+          <property name="text">
+           <string>Type</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="type_combo_1">
+          <property name="minimumSize">
+           <size>
+            <width>131</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>131</width>
+            <height>22</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="type_combo_2">
+          <property name="minimumSize">
+           <size>
+            <width>131</width>
+            <height>22</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>131</width>
+            <height>22</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="type_combo_3">
+          <property name="minimumSize">
+           <size>
+            <width>131</width>
+            <height>22</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item row="2" column="0" colspan="3">
+     <layout class="QGridLayout" name="response_layout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="response_label">
+        <property name="text">
+         <string>Response from service</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPlainTextEdit" name="response">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="3" column="0" colspan="2">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>632</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="3" column="2">
+     <widget class="QPushButton" name="request_button">
+      <property name="minimumSize">
+       <size>
+        <width>141</width>
+        <height>51</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Request</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

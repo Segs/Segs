@@ -110,7 +110,7 @@ bool AuthDbSyncContext::loadAndConfigure()
     QString dbname   = config.value(QStringLiteral("db_name"), "segs").toString();
     QString dbuser   = config.value(QStringLiteral("db_user"), "segsadmin").toString();
     QString dbpass   = config.value(QStringLiteral("db_pass"), "segs123").toString();
-    config.endGroup(); // CharacterDatabase
+    config.endGroup(); // AccountDatabase
     config.endGroup(); // AdminServer
 
     if(!DATABASE_DRIVERS.contains(dbdriver.toUpper()))

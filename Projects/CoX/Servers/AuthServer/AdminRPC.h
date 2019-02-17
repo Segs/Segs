@@ -11,9 +11,18 @@
 #include <ace/INET_Addr.h>
 #include <ace/Synch.h>
 
+#include "Servers/HandlerLocator.h"
+#include "EventProcessor.h"
+
 #include <QObject>
 #include <QVariant>
 #include <QtCore/QDateTime>
+
+namespace SEGSEvents
+{
+struct CreateAccountMessage;
+struct AuthDbErrorMessage;
+}
 
 enum class SocketType
 {
@@ -21,14 +30,17 @@ enum class SocketType
     websocket
 };
 
-class AdminRPC : public QObject
+class AdminRPC : public QObject, public EventProcessor
 {
     Q_OBJECT
     class AuthHandler *m_auth_handler;
     friend void startRPCServer();
+
 private:
     AdminRPC(); // restrict construction to startRPCServer
-    ~AdminRPC();
+    ~AdminRPC() override;
+
+
 public:
     Q_INVOKABLE bool heyServer();
     Q_INVOKABLE QString helloServer();
@@ -36,6 +48,8 @@ public:
     Q_INVOKABLE QString getVersionName();
     Q_INVOKABLE QString getStartTime();
     Q_INVOKABLE QString ping();
+    Q_INVOKABLE QString addUser(const QString &username, const QString &password, const int access_level);
+
 protected:
     ACE_INET_Addr                       m_location;     //!< address rpc server will bind at.
     ACE_Thread_Mutex                    m_mutex;        //!< used to prevent multiple threads accessing config reload function
@@ -43,6 +57,22 @@ protected:
     void                                SetStartTime();
     QString                             m_start_time;
     SocketType                          m_socket_type;
+    static uint64_t                     s_last_token;
+    void                                on_db_error(SEGSEvents::AuthDbErrorMessage *ev);
+    QMap<int, QString>                  m_completion_state;
+
+signals:
+    void responseRecieved();
+
+
+    // EventProcessor interface
+public:
+    IMPL_ID(AdminRPC)
+
+protected:
+    void dispatch(SEGSEvents::Event *ev) override;
+    void serialize_from(std::istream &is) override;
+    void serialize_to(std::ostream &is) override;
 };
 
 void startRPCServer();

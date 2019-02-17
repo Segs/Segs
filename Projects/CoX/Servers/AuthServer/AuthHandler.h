@@ -81,12 +81,12 @@ class AuthHandler : public EventProcessor
     using ServerMap = std::map<uint8_t,SEGSEvents::GameServerStatusData>;
 protected:
     IMPL_ID(AuthHandler)
-    static uint64_t s_last_session_id;
-    MessageBusEndpoint m_message_bus_endpoint;
-    SessionStore m_sessions;
-    AuthServer *m_authserv = nullptr;
-    ACE_Thread_Mutex m_server_mutex;
-    ServerMap   m_known_game_servers;
+    static uint64_t         s_last_session_id;
+    MessageBusEndpoint      m_message_bus_endpoint;
+    SessionStore            m_sessions;
+    AuthServer              *m_authserv = nullptr;
+    ACE_Thread_Mutex        m_server_mutex;
+    ServerMap               m_known_game_servers;
 
     bool        isClientConnectedAnywhere(uint32_t client_id);
     void        reap_stale_links();
