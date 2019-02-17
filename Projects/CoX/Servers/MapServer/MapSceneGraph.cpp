@@ -322,17 +322,6 @@ struct EnemySpawnPointLocator
     }
 };
 
-
-QMultiHash<QString, glm::mat4> MapSceneGraph::getEncounterSpawnPoints() const
-{
-    QMultiHash<QString, glm::mat4> res;
-    EnemySpawnPointLocator locator(&res);
-    for(auto v : m_scene_graph->refs)
-        walkSceneNode(v->node, v->mat, locator);
-
-    return res;
-}
-
 QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
 {
     QMultiHash<QString, glm::mat4> res;
@@ -446,10 +435,11 @@ struct SpawnDefLocator
                             found_encounter = true;
                             glm::mat4 encounter_location(child.m_matrix2);
                             encounter_location[3] = glm::vec4(child.m_translation,1);
+                            encounter_location = v * encounter_location;
 
                             for(auto &c : child.node->m_children) // _ES_L  EncounterSpawn
                             {
-                                for(auto &s : c.node->m_children)
+                                for(auto &s : c.node->m_children) // Encounter_
                                 {
                                     SpawnPoint *spawn_point = new SpawnPoint();
                                     spawn_point->m_name = s.node->m_name;
@@ -486,8 +476,7 @@ struct SpawnDefLocator
                                     encounter_location[3] = glm::vec4(child.m_translation,1);
                                     encounter_location = v * encounter_location;
 
-                                    std::vector<SpawnPoint> spawn_points;
-                                    for(auto &c_node : child.node->m_children)
+                                    for(auto &c_node : child.node->m_children) // Encounter_
                                     {
                                         SpawnPoint *spawn_point = new SpawnPoint();
                                         spawn_point->m_name = c_node.node->m_name;
@@ -496,13 +485,11 @@ struct SpawnDefLocator
                                         spawn_location[3] = glm::vec4(c_node.m_translation,1);
                                         spawn_location = encounter_location * spawn_location;
 
-                                        //spawn_location = spawn_location + encounter_location;
                                         spawn_point->m_relative_position = spawn_location;
 
                                         if(spawn_point->m_name.contains("_V_", Qt::CaseSensitive))
                                             spawn_point->m_is_victim = true;
 
-                                        spawn_points.push_back(*spawn_point);
                                         spawnDef.m_all_spawn_points.push_back(*spawn_point);
 
                                     }

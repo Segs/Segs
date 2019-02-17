@@ -3332,8 +3332,9 @@ void MapInstance::spawn_enemies()
             {
                 uint32_t count = 0;
                 bool spawn_all = false;
+                bool m_victim_spawned = false;
 
-                if(!spawn_all && total_spawned == 300) // limit spawning
+                if(!spawn_all && total_spawned >= 400) // limit spawning
                     break;
 
                 for (const SpawnPoint &sp: s.m_all_spawn_points)
@@ -3348,10 +3349,7 @@ void MapInstance::spawn_enemies()
 
                     if(sp.m_name.contains("encounter_e_", Qt::CaseInsensitive)) // E for Enemy?
                     {
-                        //glm::vec4 pos4 {0,0,0,1};
-                        //pos4 = sp.m_relative_position * pos4;
                         glm::vec3 pos = glm::vec3(sp.m_relative_position[3]);
-
                         auto valquat = glm::quat_cast(sp.m_relative_position);
                         glm::vec3 angles = glm::eulerAngles(valquat);
                         angles.y += glm::pi<float>();
@@ -3359,6 +3357,33 @@ void MapInstance::spawn_enemies()
                         //spawn enemy
                         addEnemy(*this, ed.m_model, pos, 1, angles, ed.m_name, 2, ed.m_faction_name, 0);
                         ++count;
+                        ++total_spawned;
+                    }
+                    else if(sp.m_name.contains("encounter_v_", Qt::CaseInsensitive) && !m_victim_spawned) // V for victim?
+                    {
+                        //spawn npc
+                        const NPCStorage &npc_store(getGameData().getNPCDefinitions());
+                        QString npcName;
+                        for(const Parse_NPC &npc : npc_store.m_all_npcs)
+                        {
+                            QString name(npc.m_Name);
+
+                            if(name.contains("maleNPC", Qt::CaseInsensitive))
+                            {
+                                npcName = npc.m_Name;
+                                break;
+                            }
+                        }
+
+                        glm::vec3 pos = glm::vec3(sp.m_relative_position[3]);
+                        auto valquat = glm::quat_cast(sp.m_relative_position);
+                        glm::vec3 angles = glm::eulerAngles(valquat);
+                        angles.y += glm::pi<float>();
+
+                        QString victim = "Victim?";
+                        addVictim(*this, npcName, pos, 1, angles, victim);
+
+                        m_victim_spawned = true;
                         ++total_spawned;
                     }
 
