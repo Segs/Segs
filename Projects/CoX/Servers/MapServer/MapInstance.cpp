@@ -3320,7 +3320,7 @@ void MapInstance::clearTimer(uint32_t entity_idx)
 
 void MapInstance::spawn_enemies()
 {
-    uint32_t diff = 3; // control number spawned in each group
+    uint32_t spawn_limit = 3; // control number spawned in each group
     uint32_t total_spawned = 0;
 
     if(this->m_spawn_encounters.size() > 0)
@@ -3380,14 +3380,14 @@ void MapInstance::spawn_enemies()
                         glm::vec3 angles = glm::eulerAngles(valquat);
                         angles.y += glm::pi<float>();
 
-                        QString victim = "Victim?";
+                        QString victim = "Victim";
                         addVictim(*this, npcName, pos, 1, angles, victim);
 
                         m_victim_spawned = true;
                         ++total_spawned;
                     }
 
-                    if(!ed.m_spawn_all && count == diff)
+                    if(!ed.m_spawn_all && count == spawn_limit)
                     {
                         break;
                     }

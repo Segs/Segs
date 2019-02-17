@@ -165,12 +165,12 @@ Entity * EntityManager::CreateNpc(const GameDataStore &data,const Parse_NPC &tpl
     initializeNewNpcEntity(data,*res,&tpl,idx,variant);
     return res;
 }
-Entity * EntityManager::CreateCritter(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant)
+Entity * EntityManager::CreateCritter(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant, int level)
 {
     Entity *res = m_store.get();
     m_live_entlist.insert(res);
 
-    initializeNewCritterEntity(data,*res,&tpl,idx,variant);
+    initializeNewCritterEntity(data,*res,&tpl,idx,variant, level);
 
     return res;
 }

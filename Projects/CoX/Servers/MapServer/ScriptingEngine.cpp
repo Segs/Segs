@@ -253,13 +253,6 @@ void ScriptingEngine::registerTypes()
         "new", sol::no_constructor // Not constructible from the script side.
          );
 
-    m_private->m_lua["MapInstance"]["LogEncounterSpawns"] = [this]()
-    {
-        MapClientSession *cl = m_private->m_lua["client"];
-
-        logEncounterSpawnLocations(*cl, "Test");
-    };
-
     m_private->m_lua["MapInstance"]["AddNpc"] = [this](const char* npc_def, glm::vec3 &loc, glm::vec3 &ori, int variation, const char* npc_name)
     {
         MapInstance *mi = m_private->m_lua["map"];

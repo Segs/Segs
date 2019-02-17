@@ -266,7 +266,7 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     }
 }
 
-void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant)
+void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant, int level)
 {
     e.m_costume_type                    = AppearanceType::NpcCostume;
     e.m_destroyed                       = false;
@@ -279,7 +279,7 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_hasname                         = true;
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
-    e.m_pchar_things                    = false;
+    e.m_pchar_things                    = true;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
     e.m_target_idx                      = -1;
@@ -292,7 +292,16 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_player.reset();
     e.m_entity = std::make_unique<EntityData>();
     e.m_update_anims = e.m_rare_update   = true;
-    e.m_char->m_char_data.m_level       = src->m_Level;
+
+    e.m_char->m_char_data.m_combat_level = level;
+    e.m_char->m_char_data.m_level = level;
+    e.m_char->m_char_data.m_security_threat = level;
+
+    // Should pull attributes for critter at X level from DB or Scripts?
+    e.m_char->m_max_attribs.m_HitPoints = 100;
+    e.m_char->m_max_attribs.m_Endurance = 100;
+    e.m_char->m_char_data.m_current_attribs.m_HitPoints = 100;
+    e.m_char->m_char_data.m_current_attribs.m_Endurance = 100;
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 
@@ -310,7 +319,6 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
         p.m_timestamp = now_ms;
         addPosUpdate(e, p);
     }
-    e.m_pchar_things = true;
 }
 
 void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &data)

@@ -1478,34 +1478,6 @@ void logSpawnLocations(MapClientSession &cl, const char* spawn_type)
     }
 }
 
-void logEncounterSpawnLocations(MapClientSession &cl, const char* spawn_type)
-{
-    QString spawn_name = QString::fromUtf8(spawn_type);
-    auto spawners = cl.m_current_map->getEncounterSpawners();
-
-    if(spawners.empty())
-    {
-        qCDebug(logScripts) << "spawners empty";
-        return;
-    }
-    int count = 0;
-
-    for(auto const &s: spawners)
-    {
-        glm::mat4 mat4 = s;
-        glm::vec3 loc = glm::vec3(mat4[3]);
-        qCDebug(logScripts) << "Spawn: " << spawn_name << " loc x: " << loc.x << " y: " << loc.y << " z: " << loc.z ;
-        if(count / 3 == 0) {
-            QString name = "Thug_Contaminated_01";
-            QString test = "test";
-            addNpc(cl, name, loc, 1, test);
-        }
-
-        ++count;
-    }
-}
-
-
 void respawn(MapClientSession &cl, const char* spawn_type)
 {
     qCDebug(logScripts) << "respawn Called";
@@ -1701,34 +1673,21 @@ void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
     if(!npc_def)
     {
-        qCDebug(logScripts()) << "No NPC definition for: " + name;
+        qCDebug(logNpcSpawn) << "No NPC definition for: " + name;
         //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
         return;
     }
 
     int idx = npc_store.npc_idx(npc_def);
-    Entity *e = mi.m_entities.CreateCritter(getGameData(), *npc_def, idx, variation);
+    Entity *e = mi.m_entities.CreateCritter(getGameData(), *npc_def, idx, variation, level);
     e->m_char->setName(npc_name);
-
-    //Should these be predefined by DB/Json/Loaded by script or something else?
-    e->m_char->m_char_data.m_combat_level = level;
-    e->m_char->m_char_data.m_level = level;
-    e->m_char->m_char_data.m_security_threat = level;
-
-    e->m_char->m_max_attribs.m_HitPoints = 100;
-    e->m_char->m_max_attribs.m_Endurance = 100;
-    e->m_char->m_char_data.m_current_attribs.m_HitPoints = 100;
-    e->m_char->m_char_data.m_current_attribs.m_Endurance = 100;
 
     //Sets target info menu faction. Skull, Hellions, Freakshow, etc
     e->m_faction_data.m_faction_name = faction_name;
 
-    //Required to send changes to clients
-    e->m_pchar_things = true;
-
     forcePosition(*e, loc);
     forceOrientation(*e, ori);
-    qCDebug(logScripts()) << QString("Created Enemy with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
+    qCDebug(logNpcSpawn) << QString("Created Enemy with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 
@@ -1738,7 +1697,7 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
     if(!npc_def)
     {
-        qCDebug(logScripts()) << "No NPC definition for: " + name;
+        qCDebug(logNpcSpawn) << "No NPC definition for: " + name;
         //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
         return;
     }
@@ -1767,7 +1726,7 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
 
     forcePosition(*e, loc);
     forceOrientation(*e, ori);
-    qCDebug(logScripts()) << QString("Created Victim with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
+    qCDebug(logNpcSpawn) << QString("Created Victim with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
 }

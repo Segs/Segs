@@ -135,7 +135,6 @@ class MapInstance final : public EventProcessor
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
         QMultiHash<QString, glm::mat4>  m_all_spawners;
-        QMultiHash<QString, glm::mat4>  m_encounter_spawners;
         QHash<QString, SpawnDef>        m_spawn_encounters;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
@@ -186,7 +185,6 @@ public:
         void                    setSpawnLocation(Entity &e, const QString &spawnLocation);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
         QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
-        QMultiHash<QString, glm::mat4> getEncounterSpawners() const { return m_encounter_spawners; }
         QHash<QString, MapXferData> get_map_door_transfers();
         QHash<QString, MapXferData> get_map_zone_transfers();
         QString                 getNearestDoor(glm::vec3 location);

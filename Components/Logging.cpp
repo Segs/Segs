@@ -35,6 +35,7 @@ SEGS_LOGGING_CATEGORY(logInfoMsg,      "log.infomsg")
 SEGS_LOGGING_CATEGORY(logEmotes,       "log.emotes")
 SEGS_LOGGING_CATEGORY(logTarget,       "log.target")
 SEGS_LOGGING_CATEGORY(logSpawn,        "log.spawn")
+SEGS_LOGGING_CATEGORY(logNpcSpawn,     "log.npcspawn")
 SEGS_LOGGING_CATEGORY(logMapEvents,    "log.mapevents")
 SEGS_LOGGING_CATEGORY(logMapXfers,     "log.mapxfers")
 SEGS_LOGGING_CATEGORY(logSlashCommand, "log.slashcommand")
@@ -135,6 +136,8 @@ void toggleLogging(QString &category)
         cat = &logTarget();
     else if(category.contains("spawn",Qt::CaseInsensitive))
         cat = &logSpawn();
+    else if(category.contains("npcspawn",Qt::CaseInsensitive))
+        cat = &logNpcSpawn();
     else if(category.contains("mapevents",Qt::CaseInsensitive))
         cat = &logMapEvents();
     else if(category.contains("mapxfers",Qt::CaseInsensitive))
@@ -198,6 +201,7 @@ void dumpLogging()
     output += "\n\t emotes: "       + QString::number(logEmotes().isDebugEnabled());
     output += "\n\t target: "       + QString::number(logTarget().isDebugEnabled());
     output += "\n\t spawn: "        + QString::number(logSpawn().isDebugEnabled());
+    output += "\n\t npcspawn: "     + QString::number(logNpcSpawn().isDebugEnabled());
     output += "\n\t mapevents: "    + QString::number(logMapEvents().isDebugEnabled());
     output += "\n\t slashcommand: " + QString::number(logSlashCommand().isDebugEnabled());
     output += "\n\t description: "  + QString::number(logDescription().isDebugEnabled());
