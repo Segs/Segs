@@ -8,7 +8,6 @@
 #include "DatabaseConfig.h"
 #include "DBConnection.h"
 #include "DBMigrationStep.h"
-
 #include "Logging.h"
 
 #include <QtSql/QtSql>
@@ -30,42 +29,54 @@ void DBConnection::runUpgrades()
     std::vector<DBMigrationStep *> migrations_to_run;
     register_migrations(migrations_to_run);
 
+    // get starting DB Version once to avoid multiple queries
+    int start_version = getDBVersion();
+
     // check for the latest version
     int final_version = 0;
     for(DBMigrationStep *step : migrations_to_run)
     {
+        qCDebug(logDB) << "check:" << getName() << step->getName() << step->getTargetVersion() << final_version;
+
         if(getName() != step->getName())
             continue;
 
-        if(step->getTargetVersion() < final_version)
+        if(step->getTargetVersion() > final_version)
             final_version = step->getTargetVersion();
     }
 
+    qCDebug(logDB) << "Final migration version:" << final_version;
+
     // check database version against schema in default folder
-    if(getDBVersion() >= final_version)
+    if(start_version >= final_version)
     {
-        qInfo() << QString("Database %1 is already the latest version! No upgrade necessary.").arg(getName());
-        //return;
+        qInfo().noquote() << QString("Database %1 is already the latest version! No upgrade necessary.").arg(getName());
+        return;
     }
 
     // run through migrations_to_run and check for upgrades
     // that are higher than our current DB version. Run them in order.
     for(DBMigrationStep *step : migrations_to_run)
     {
-        if(!step->canRun(this))
-            continue; // can't run? skip it.
+        // get current DB Version once to avoid multiple queries
+        int cur_version = getDBVersion();
 
-        qInfo() << QString("Running %1 database migration from version %2 to %3")
+        if(!step->canRun(this, cur_version))
+            continue; // can't run? skip this migration step.
+
+        qInfo().noquote() << QString("Running %1 database migration from version %2 to %3")
                    .arg(getName())
-                   .arg(getDBVersion())
+                   .arg(cur_version)
                    .arg(step->getTargetVersion());
 
         if(!step->execute(this))
         {
-            qInfo() << QString("Database %1 failed to update to version %2! Rolling back changes.")
+            qInfo().noquote() << QString("Database %1 failed to update to version %2! Rolling back changes.")
                        .arg(getName())
-                       .arg(getDBVersion()+1);
+                       .arg(step->getTargetVersion());
 
+            qWarning() << "Execute query failed:" << m_query->lastError();
+            qWarning() << "QUERY:" << m_query->executedQuery();
             m_db->rollback();
             return; // execution failed, cancel update
         }
@@ -74,9 +85,26 @@ void DBConnection::runUpgrades()
             return; // cleanup failed, cancel update
     }
 
-    qInfo() << QString("Database %1 upgraded successfully to %2!")
+    // check if all updates succeeded in running
+    if(getDBVersion() < final_version)
+    {
+        qWarning() << "UPDATE FAILED! Rolling back database.";
+        m_db->rollback();
+        return;
+    }
+
+    // finally: attempt to commit changes
+    if(!m_db->commit())
+    {
+        qWarning() << "Database update failed:" << m_query->lastError();
+        qWarning() << "QUERY:" << m_query->executedQuery();
+        m_db->rollback();
+        return;
+    }
+
+    qInfo().noquote() << QString("Database %1 upgraded successfully to %2!")
                .arg(getName())
-               .arg(getDBVersion());
+               .arg(getDBVersion()); // use getDBVersion here so we know it worked
     return;
 }
 
@@ -121,6 +149,19 @@ int getFinalMigrationVersion(std::vector<DBMigrationStep *> &migrations, QString
 
 bool DBConnection::updateTableVersions(DBSchemas &table_schemas)
 {
-    Q_UNUSED(table_schemas);
-    return false;
+    for(TableSchema &table : table_schemas)
+    {
+        QString query_txt = QString("UPDATE table_versions SET version = '%1', last_update = '%2' WHERE table_name = '%3';")
+                .arg(table.m_version)
+                .arg(table.m_last_updated)
+                .arg(table.m_table_name);
+
+        m_query->prepare(query_txt);
+        if(!m_query->exec())
+            return false;
+
+        qCDebug(logDB) << "Updating Version:" << table.m_table_name << table.m_version << table.m_last_updated;
+    }
+
+    return true;
 }

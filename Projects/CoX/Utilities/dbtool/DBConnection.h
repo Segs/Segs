@@ -18,16 +18,15 @@ class QFile;
 class DatabaseConfig;
 class DBMigrationStep;
 
-// TODO: This should go away and merge with DBConnection or DatabaseConfig
 struct TableSchema
 {
-    QString m_db_name;
-    int     m_version;
+    QString m_table_name;
+    uint32_t m_version;
     QString m_last_updated;
 
     inline bool operator==(const TableSchema& other) const
     {
-        return  this->m_db_name == other.m_db_name &&
+        return  this->m_table_name == other.m_table_name &&
                 this->m_version == other.m_version;
     }
 };

@@ -8,28 +8,29 @@
 #pragma once
 #include "Utilities/dbtool/DBMigrationStep.h"
 
-// TODO: how to handle updates to segs vs segs_game database?
-// different classes? SEGS_Game_Migration vs SEGS_Migration?
 class SEGS_Game_Migration_001 : public DBMigrationStep
 {
 private:
     int m_target_version = 1;
-    QString m_name = "segs_game";
+    QString m_name = SEGS_GAME_DB_NAME;
     std::vector<TableSchema> m_table_schemas = {
-        {"db_version",1,"2018-01-23 10:27:01"},
-        {"table_versions",0,"2017-11-11 08:57:42"},
-        {"accounts",0,"2017-11-11 08:57:43"},
-        {"characters",2,"2018-01-23 10:16:27"},
-        {"costume",0,"2017-11-11 08:57:43"},
-        {"progress",0,"2017-11-11 08:57:43"},
-        {"supergroups",0,"2018-01-23 10:16:43"},
+        {"db_version", 1, "2018-01-23 10:27:01"},
+        {"table_versions", 0, "2017-11-11 08:57:42"},
+        {"accounts", 0, "2017-11-11 08:57:43"},
+        {"characters", 2, "2018-01-23 10:16:27"},
+        {"costume", 0, "2017-11-11 08:57:43"},
+        {"progress", 0, "2017-11-11 08:57:43"},
+        {"supergroups", 0, "2018-01-23 10:16:43"},
     };
 
 public:
+    int getTargetVersion() const override { return m_target_version; }
+    QString getName() const override { return m_name; }
+    std::vector<TableSchema> getTableVersions() const override { return m_table_schemas; }
+
+    // execute the migration
     bool execute(DBConnection *db) override
     {
-        qInfo() << "PERFORMING UPGRADE 001 on" << db->getName();
-
         // update database table schemas here
         // first let's add the supergroups table
         db->m_query->prepare("CREATE TABLE `supergroups` ("
@@ -97,7 +98,7 @@ public:
             qDebug().noquote() << doc.toJson();
 
             // fourth: move values to new location (chardata)
-            QString querytext = QString("UPDATE characters SET charadata='%1'").arg(QString(doc.toJson()));
+            QString querytext = QString("UPDATE characters SET chardata='%1'").arg(QString(doc.toJson()));
             if(!db->m_query->exec(querytext))
                 return false;
         }

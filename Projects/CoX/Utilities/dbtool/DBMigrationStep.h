@@ -14,6 +14,9 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+const QString SEGS_DB_NAME = "segs";
+const QString SEGS_GAME_DB_NAME = "segs_game";
+
 class DBMigrationStep
 {
 private:
@@ -29,11 +32,11 @@ private:
 public:
     DBMigrationStep();
 
-    int getTargetVersion() const { return m_target_version; }
-    QString getName() const { return m_name; }
-    std::vector<TableSchema> getTableVersions() const { return m_table_schemas; }
+    virtual int getTargetVersion() const { return m_target_version; }
+    virtual QString getName() const { return m_name; }
+    virtual std::vector<TableSchema> getTableVersions() const { return m_table_schemas; }
 
-    bool canRun(DBConnection *db);
-    bool virtual execute(DBConnection */*db*/) { return false; }
-    bool cleanup(DBConnection *db);
+    virtual bool canRun(DBConnection *db, int cur_version);
+    virtual bool execute(DBConnection */*db*/) { return false; }
+    virtual bool cleanup(DBConnection *db);
 };
