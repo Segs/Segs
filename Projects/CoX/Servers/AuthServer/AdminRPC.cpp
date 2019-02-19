@@ -105,6 +105,12 @@ QString AdminRPC::getStartTime()
     return m_start_time;
 }
 
+QVariantList AdminRPC::getWebUIData()
+{
+    qCDebug(logRPC) << "Someone requested WebUI information...";
+    return {VersionInfo::getAuthVersionNumber(), m_start_time};
+}
+
 void startRPCServer()
 {
     static jcon::JsonRpcServer *m_server;
