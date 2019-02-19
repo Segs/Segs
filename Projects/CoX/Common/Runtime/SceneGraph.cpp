@@ -435,7 +435,7 @@ void postprocessSound(const std::vector<DefSound_Data> &data,SceneNode *node)
     node->sound_info = handle;
 }
 
-void postprocessEditorBeacon(const std::vector<DefBeacon_Data> &data, SceneNode *node)
+void postprocessEditorBeacon(const std::vector<DefBeacon_Data> &data, SceneNode * /*node*/)
 {
     if( data.empty())
         return;
@@ -448,7 +448,7 @@ void postprocessEditorBeacon(const std::vector<DefBeacon_Data> &data, SceneNode 
 //        node->m_editor_beacon=b;
 }
 
-void postprocessFog(const std::vector<DefFog_Data> &data, SceneNode *node)
+void postprocessFog(const std::vector<DefFog_Data> &data, SceneNode * /*node*/)
 {
     //TODO: only 1 fog value is used here, either change the source structure or consider how multi-fog would work ?
     if( data.empty() )
@@ -464,7 +464,7 @@ void postprocessFog(const std::vector<DefFog_Data> &data, SceneNode *node)
     // f->far = fog_data.fogY;
 }
 
-void postprocessAmbient(const std::vector<DefAmbient_Data> &data, SceneNode *a2)
+void postprocessAmbient(const std::vector<DefAmbient_Data> &data, SceneNode * /*a2*/)
 {
     //TODO: only one value is used here, either change the source structure or consider how multi-ambient would work ?
     if( data.empty() )
@@ -477,7 +477,7 @@ void postprocessAmbient(const std::vector<DefAmbient_Data> &data, SceneNode *a2)
     // l->color = light_data.clr;
 }
 
-void postprocessTintColor(const std::vector<TintColor_Data> &data, SceneNode *node)
+void postprocessTintColor(const std::vector<TintColor_Data> &data, SceneNode * /*node*/)
 {
     //TODO: only 1 tint is used here, either change the source structure or consider how multi-tint would work ?
     if( data.empty() )
@@ -490,7 +490,7 @@ void postprocessTintColor(const std::vector<TintColor_Data> &data, SceneNode *no
     //SetColor would set the blend colors to tint values
 }
 
-void postprocessTextureReplacers(const std::vector<ReplaceTex_Data> &data, SceneNode *node)
+void postprocessTextureReplacers(const std::vector<ReplaceTex_Data> &data, SceneNode * /*node*/)
 {
     //WARNING: This needs pretty urgent attention, MapViewer does not handle this at all
     // and it's a pretty important piece of the puzzle.
