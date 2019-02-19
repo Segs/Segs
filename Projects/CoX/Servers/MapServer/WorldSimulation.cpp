@@ -178,7 +178,7 @@ void World::regenHealthEnd(Entity *e, uint32_t msec)
     }
 }
 
-void World::collisionStep(Entity *e, uint32_t msec)
+void World::collisionStep(Entity *e, uint32_t /*msec*/)
 {
     if (e->m_player != nullptr && !e->m_map_swap_collided)
     {
