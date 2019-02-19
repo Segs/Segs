@@ -105,10 +105,11 @@ QString AdminRPC::getStartTime()
     return m_start_time;
 }
 
-QVariantList AdminRPC::getWebUIData()
+QVariantMap AdminRPC::getWebUIData()
 {
     qCDebug(logRPC) << "Someone requested WebUI information...";
-    return {VersionInfo::getAuthVersionNumber(), m_start_time};
+    return {std::pair<QString,QString>("version",VersionInfo::getAuthVersionNumber()),
+	    std::pair<QString,QString>("starttime", m_start_time)};
 }
 
 void startRPCServer()
