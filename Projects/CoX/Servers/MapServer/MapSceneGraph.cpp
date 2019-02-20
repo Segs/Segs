@@ -287,7 +287,7 @@ struct SpawnPointLocator
         {
             if(prop.propName == "SpawnLocation")
             {
-                qCDebug(logSpawn) << "Spawner:" << prop.propValue << prop.propertyType;
+                qCDebug(logPlayerSpawn) << "Spawner:" << prop.propValue << prop.propertyType;
                 m_targets->insert(prop.propValue, v);
                 return false;
             }
@@ -312,7 +312,7 @@ struct EnemySpawnPointLocator
 
             if(prop.propName == "EncounterPosition")
             {
-                qCDebug(logSpawn) << "Encounter:" << prop.propValue << prop.propertyType;
+                qCDebug(logPlayerSpawn) << "Encounter:" << prop.propValue << prop.propertyType;
                 m_targets->insert(prop.propValue, v);
                 return false;
             }

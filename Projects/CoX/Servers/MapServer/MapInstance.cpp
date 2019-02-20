@@ -860,9 +860,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     // make sure to 'off' the AFK from the character in db first
     toggleAFK(*e->m_char, false);
 
-    if(logSpawn().isDebugEnabled())
+    if(logPlayerSpawn().isDebugEnabled())
     {
-        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
+        qCDebug(logPlayerSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
     }
 
@@ -893,9 +893,9 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
     // Can't pass direction through cereal, so let's update it here.
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
-    if(logSpawn().isDebugEnabled())
+    if(logPlayerSpawn().isDebugEnabled())
     {
-        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
+        qCDebug(logPlayerSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
     }
 
