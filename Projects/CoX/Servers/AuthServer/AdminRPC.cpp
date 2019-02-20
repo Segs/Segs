@@ -105,11 +105,18 @@ QString AdminRPC::getStartTime()
     return m_start_time;
 }
 
+/*!
+ * @brief Get a dictionary of information as used by the WebUI
+ * @return Returns a QMap<QString,QVariant> with server information
+ */
+
 QVariantMap AdminRPC::getWebUIData()
 {
     qCDebug(logRPC) << "Someone requested WebUI information...";
-    return {std::pair<QString,QString>("version",VersionInfo::getAuthVersionNumber()),
-	    std::pair<QString,QString>("starttime", m_start_time)};
+    QMap<QString,QVariant> ret;
+    ret.insert("version", VersionInfo::getAuthVersionNumber());
+    ret.insert("starttime", m_start_time);
+    return ret;
 }
 
 void startRPCServer()
