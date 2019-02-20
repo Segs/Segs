@@ -145,13 +145,13 @@ void MapInstance::start(const QString &scenegraph_path)
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
                 m_all_spawners = m_map_scenegraph->getSpawnPoints();
                 m_map_transfers = m_map_scenegraph->get_map_transfers();
-                m_spawn_encounters = m_map_scenegraph->get_encounters();
             }, "Loading original scene graph");
 
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
-            spawn_enemies();
+            m_map_scenegraph->spawn_critters(this);
+            m_critter_generators.generate(this);
             }, "Spawning npcs");
 
         // Load Lua Scripts for this Map Instance
@@ -3318,83 +3318,5 @@ void MapInstance::clearTimer(uint32_t entity_idx)
         this->m_lua_timers[count].m_remove = true;
 }
 
-void MapInstance::spawn_enemies()
-{
-    uint32_t spawn_limit = 3; // control number spawned in each group
-    uint32_t total_spawned = 0;
-
-    if(this->m_spawn_encounters.size() > 0)
-    {
-        for(const SpawnDef &s: this->m_spawn_encounters)
-        {
-            SpawnNPCList group = this->m_enemy_spawn_definitions.getSpawnGroup(s.m_node_name);
-            if(s.m_node_name == group.m_spawn_group)
-            {
-                uint32_t count = 0;
-                bool spawn_all = false;
-                bool m_victim_spawned = false;
-
-                if(!spawn_all && total_spawned >= 400) // limit spawning
-                    break;
-
-                for (const SpawnPoint &sp: s.m_all_spawn_points)
-                {
-                    EnemyDefinition ed;
-                    if(group.m_possible_enemies.size() > 1)
-                        ed = group.m_possible_enemies.at(rand() % (group.m_possible_enemies.size() - 1));
-                    else
-                        ed = group.m_possible_enemies.at(0);
-
-                    spawn_all = ed.m_spawn_all;
-
-                    if(sp.m_name.contains("encounter_e_", Qt::CaseInsensitive)) // E for Enemy?
-                    {
-                        glm::vec3 pos = glm::vec3(sp.m_relative_position[3]);
-                        auto valquat = glm::quat_cast(sp.m_relative_position);
-                        glm::vec3 angles = glm::eulerAngles(valquat);
-                        angles.y += glm::pi<float>();
-
-                        //spawn enemy
-                        addEnemy(*this, ed.m_model, pos, 1, angles, ed.m_name, 2, ed.m_faction_name, 0);
-                        ++count;
-                        ++total_spawned;
-                    }
-                    else if(sp.m_name.contains("encounter_v_", Qt::CaseInsensitive) && !m_victim_spawned) // V for victim?
-                    {
-                        //spawn npc
-                        const NPCStorage &npc_store(getGameData().getNPCDefinitions());
-                        QString npcName;
-                        for(const Parse_NPC &npc : npc_store.m_all_npcs)
-                        {
-                            QString name(npc.m_Name);
-
-                            if(name.contains("maleNPC", Qt::CaseInsensitive))
-                            {
-                                npcName = npc.m_Name;
-                                break;
-                            }
-                        }
-
-                        glm::vec3 pos = glm::vec3(sp.m_relative_position[3]);
-                        auto valquat = glm::quat_cast(sp.m_relative_position);
-                        glm::vec3 angles = glm::eulerAngles(valquat);
-                        angles.y += glm::pi<float>();
-
-                        QString victim = "Victim";
-                        addVictim(*this, npcName, pos, 1, angles, victim);
-
-                        m_victim_spawned = true;
-                        ++total_spawned;
-                    }
-
-                    if(!ed.m_spawn_all && count == spawn_limit)
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
 
 //! @}

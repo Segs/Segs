@@ -12,22 +12,22 @@
 #include <QtCore/QHash>
 #include <vector>
 
-struct SpawnPoint
+struct CritterSpawnPoint
 {
     QString         m_name;
     bool            m_is_victim;
     glm::mat4       m_relative_position;
 };
 
-struct SpawnDef
+struct CritterSpawnLocations
 {
     QString                                     m_node_name;
-    std::vector<SpawnPoint>                     m_all_spawn_points;
+    std::vector<CritterSpawnPoint>              m_all_spawn_points;
     uint8_t                                     m_spawn_probability;
     uint8_t                                     m_villain_radius; // Aggro range?
 };
 
-struct EnemyDefinition
+struct CritterDefinition
 {
     QString     m_model;
     QString     m_name;
@@ -35,20 +35,20 @@ struct EnemyDefinition
     bool        m_spawn_all;
 };
 
-struct SpawnNPCList
+struct CritterSpawnDef
 {
-   QString                          m_spawn_group;
-   std::vector<EnemyDefinition>     m_possible_enemies;
+   QString                              m_spawn_group;
+   std::vector<CritterDefinition>       m_possible_critters;
 };
 
 class SpawnDefinitions
 {
-    std::vector<SpawnNPCList>       m_spawn_npc_list;
+    std::vector<CritterSpawnDef>        m_critter_spawn_list;
 public:
 
-    SpawnDefinitions()              { buildList();}
-    SpawnNPCList                    getSpawnGroup(const QString &spawn_group_name);
-    std::vector<SpawnNPCList>       getEnemySpawnGroups();
-    void                            buildList();
+    SpawnDefinitions()                  { buildList();}
+    CritterSpawnDef                     getSpawnGroup(const QString &spawn_group_name);
+    std::vector<CritterSpawnDef>        getCritterSpawnDefinitions();
+    void                                buildList();
 
 };

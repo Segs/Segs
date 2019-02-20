@@ -5,41 +5,41 @@
 
 void SpawnDefinitions::buildList()
 {
-    SpawnNPCList* list = new SpawnNPCList();
+    CritterSpawnDef* list = new CritterSpawnDef();
 
     //Outbreak
     list->m_spawn_group =  "ES_Contaminated_City_00_01";
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_01", "Contaminated Thug", "Contaminated", false });
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_02", "Contaminated Slicer", "Contaminated", false });
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_03", "Contaminated Scavenger", "Contaminated", false });
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_04", "Contaminated Thug", "Contaminated", false });
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_05", "Contaminated Slicer", "Contaminated", false });
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_06", "Contaminated Scavenger", "Contaminated", false });
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_07", "Contaminated Thug", "Contaminated", false });
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_08", "Contaminated Slicer", "Contaminated", false });
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_09", "Contaminated Scavenger", "Contaminated", false });
-    list->m_possible_enemies.push_back({ "Thug_Contaminated_10", "Contaminated Thug", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_01", "Contaminated Thug", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_02", "Contaminated Slicer", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_03", "Contaminated Scavenger", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_04", "Contaminated Thug", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_05", "Contaminated Slicer", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_06", "Contaminated Scavenger", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_07", "Contaminated Thug", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_08", "Contaminated Slicer", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_09", "Contaminated Scavenger", "Contaminated", false });
+    list->m_possible_critters.push_back({ "Thug_Contaminated_10", "Contaminated Thug", "Contaminated", false });
 
-    m_spawn_npc_list.push_back(*list);
+    m_critter_spawn_list.push_back(*list);
 
-    list = new SpawnNPCList();
+    list = new CritterSpawnDef();
     list->m_spawn_group = "ES_Robot1_City_00_01";
-    list->m_possible_enemies.push_back({ "RiktiDrone_Down", "Destroyed Drone", "Rikti", true });
-    m_spawn_npc_list.push_back(*list);
+    list->m_possible_critters.push_back({ "RiktiDrone_Down", "Destroyed Drone", "Rikti", true });
+    m_critter_spawn_list.push_back(*list);
 
-    list = new SpawnNPCList();
+    list = new CritterSpawnDef();
     list->m_spawn_group = "ES_Robot2_City_00_01";
-    list->m_possible_enemies.push_back({ "RiktiDrone_1", "Practice Drone", "Rikti", true });
-    list->m_possible_enemies.push_back({ "RiktiDrone_2", "Practice Drone", "Rikti", true });
-    list->m_possible_enemies.push_back({ "RiktiDrone_3", "Practice Drone", "Rikti", true });
-    m_spawn_npc_list.push_back(*list);
+    list->m_possible_critters.push_back({ "RiktiDrone_1", "Practice Drone", "Rikti", true });
+    list->m_possible_critters.push_back({ "RiktiDrone_2", "Practice Drone", "Rikti", true });
+    list->m_possible_critters.push_back({ "RiktiDrone_3", "Practice Drone", "Rikti", true });
+    m_critter_spawn_list.push_back(*list);
 
-    list = new SpawnNPCList();
+    list = new CritterSpawnDef();
     list->m_spawn_group = "ES_Robot3_City_00_01";
-    list->m_possible_enemies.push_back({ "RiktiDrone_1", "Practice Drone", "Rikti", true });
-    list->m_possible_enemies.push_back({ "RiktiDrone_2", "Practice Drone", "Rikti", true });
-    list->m_possible_enemies.push_back({ "RiktiDrone_3", "Practice Drone", "Rikti", true });
-    m_spawn_npc_list.push_back(*list);
+    list->m_possible_critters.push_back({ "RiktiDrone_1", "Practice Drone", "Rikti", true });
+    list->m_possible_critters.push_back({ "RiktiDrone_2", "Practice Drone", "Rikti", true });
+    list->m_possible_critters.push_back({ "RiktiDrone_3", "Practice Drone", "Rikti", true });
+    m_critter_spawn_list.push_back(*list);
 
     //Atlas
 
@@ -84,24 +84,24 @@ static const SpawnNPCList g_defined_enemy_spawn_groups =
     }
 };*/
 
-std::vector<SpawnNPCList> SpawnDefinitions::getEnemySpawnGroups()
+std::vector<CritterSpawnDef> SpawnDefinitions::getCritterSpawnDefinitions()
 {
-    if(m_spawn_npc_list.size() < 1)
+    if(m_critter_spawn_list.size() < 1)
     {
         buildList();
     }
 
-    return m_spawn_npc_list;
+    return m_critter_spawn_list;
 }
 
-SpawnNPCList SpawnDefinitions::getSpawnGroup(const QString &spawn_group_name)
+CritterSpawnDef SpawnDefinitions::getSpawnGroup(const QString &spawn_group_name)
 {
-    if(m_spawn_npc_list.size() < 1)
+    if(m_critter_spawn_list.size() < 1)
     {
         buildList();
     }
 
-    for(const auto &spawn_group : m_spawn_npc_list)
+    for(const auto &spawn_group : m_critter_spawn_list)
     {
         if(spawn_group.m_spawn_group.contains(spawn_group_name, Qt::CaseInsensitive))
             return spawn_group;
@@ -109,5 +109,5 @@ SpawnNPCList SpawnDefinitions::getSpawnGroup(const QString &spawn_group_name)
     qWarning() << "No matching \"" << spawn_group_name << "\" in g_defined_enemy_spawn_groups to sent group name."
                << "Returning ES_Contaminated_City_00_01 group as default...";
 
-    return m_spawn_npc_list[0];
+    return m_critter_spawn_list[0];
 }

@@ -21,6 +21,7 @@
 #include "NpcGenerator.h"
 #include "MapInstance.h"
 #include "GameData/NpcStore.h"
+#include "CritterGenerator.h"
 #include "Common/GameData/map_definitions.h"
 #include "Common/GameData/spawn_definitions.h"
 
@@ -48,9 +49,6 @@ bool MapSceneGraph::loadFromFile(const QString &filename)
         return false;
     for(SceneNode *def : m_scene_graph->all_converted_defs)
     {
-        if(def->m_name.contains("4076", Qt::CaseInsensitive))
-            bool pause = true;
-
         if(def->m_properties)
         {
             m_nodes_with_properties.emplace_back(def);
@@ -158,6 +156,7 @@ QString getCostumeFromName(const QString &n)
     // As fallback, always return some costume
     return "ChessPawn";
 }
+
 
 struct NpcCreator
 {
@@ -402,10 +401,10 @@ QHash<QString, MapXferData> MapSceneGraph::get_map_transfers() const
     return res;
 }
 
-struct SpawnDefLocator
+struct CritterSpawnLocator
 {
-    QHash<QString, SpawnDef> *m_spawn_def;
-    SpawnDefLocator(QHash<QString, SpawnDef> *spawn_def_hash):
+    QHash<QString, CritterSpawnLocations> *m_spawn_def;
+    CritterSpawnLocator(QHash<QString, CritterSpawnLocations> *spawn_def_hash):
         m_spawn_def(spawn_def_hash)
     {}
     bool operator()(SceneNode *n, const glm::mat4 &v)
@@ -413,7 +412,7 @@ struct SpawnDefLocator
         bool found_encounter = false;
         if (n->m_properties)
         {
-            SpawnDef spawnDef;
+            CritterSpawnLocations spawnDef;
 
             for (GroupProperty_Data &gp: *n->m_properties)
             {
@@ -441,7 +440,7 @@ struct SpawnDefLocator
                             {
                                 for(auto &s : c.node->m_children) // Encounter_
                                 {
-                                    SpawnPoint *spawn_point = new SpawnPoint();
+                                    CritterSpawnPoint *spawn_point = new CritterSpawnPoint();
                                     spawn_point->m_name = s.node->m_name;
 
                                     glm::mat4 spawn_location(s.m_matrix2);
@@ -478,7 +477,7 @@ struct SpawnDefLocator
 
                                     for(auto &c_node : child.node->m_children) // Encounter_
                                     {
-                                        SpawnPoint *spawn_point = new SpawnPoint();
+                                        CritterSpawnPoint *spawn_point = new CritterSpawnPoint();
                                         spawn_point->m_name = c_node.node->m_name;
 
                                         glm::mat4 spawn_location(c_node.m_matrix2);
@@ -513,15 +512,28 @@ struct SpawnDefLocator
     }
 };
 
-QHash<QString, SpawnDef> MapSceneGraph::get_encounters() const
+
+void MapSceneGraph::spawn_critters(MapInstance *instance)
 {
-    QHash<QString, SpawnDef> res;
-    SpawnDefLocator locator(&res);
+    QHash<QString, CritterSpawnLocations> res;
+    CritterSpawnLocator locator(&res);
     for (auto v : m_scene_graph->refs)
     {
         walkSceneNode(v->node, v->mat, locator);
     }
-    return res;
+
+    //Creates one generator per encounter.
+    int count = 1;
+    for (auto r: res)
+    {
+        CritterGenerator cg;
+        cg.m_encounter_node_name = r.m_node_name;
+        cg.m_generator_name = "Encounter " + QString(count);
+        cg.m_critter_encounter = r;
+        instance->m_critter_generators.m_generators.insert(cg.m_generator_name, cg);
+        ++count;
+    }
 }
+
 
 //! @}
