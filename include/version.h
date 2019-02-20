@@ -11,7 +11,12 @@
 #define VersionNumber "0.6.1"
 #define VersionName "Outbreak"
 #define VersionString ProjectName " v" VersionNumber " (" VersionName ")"
+#define ConfigVersion "1.0.0"
 #define CopyrightString "Super Entity Game Server\nhttp://github.com/Segs/\nCopyright (c) 2006-2018 Super Entity Game Server Team (see AUTHORS.md)\nThis software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.\n";
+
+static constexpr int RequiredAuthDBVersion = 1;
+static constexpr int RequiredGameDBVersion = 9;
+
 //const char *AdminVersionString="Undefined";
 //const char *AuthVersionString="Undefined";
 //const char *GameVersionString="Undefined";
@@ -40,11 +45,18 @@ public:
 {
         return CopyrightString;
 }
+    static const char *getConfigVersion(void)
+{
+        return ConfigVersion;
+}
+    static constexpr int getRequiredAuthDBVersion(void) { return RequiredAuthDBVersion; }
+    static constexpr int getRequiredGameDBVersion(void) { return RequiredGameDBVersion; }
 };
 
 #undef ProjectName
 #undef VersionName
 #undef VersionNumber
 #undef VersionString
+#undef ConfigVersion
 #undef CopyrightString
 

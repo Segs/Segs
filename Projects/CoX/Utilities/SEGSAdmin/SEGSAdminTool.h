@@ -48,6 +48,7 @@ public slots:
     void check_for_config_file();
     void check_data_and_dir(QString maps_dir);
     void read_release_info(const QString &error);
+    void check_config_version(QString filePath);
 
 signals:
     void readyToRead(QString filePath);
@@ -58,6 +59,8 @@ signals:
     void sendMapsDir(QString maps_dir);
     void newVersionAvailable(QString release_id);
     void getLatestReleases();
+    void checkConfigVersion(QString filePath);
+    void recreateConfig();
 
 
 private:

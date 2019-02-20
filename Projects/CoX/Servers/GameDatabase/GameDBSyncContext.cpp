@@ -20,6 +20,8 @@
 #include "Logging.h"
 #include "Settings.h"
 #include "Database.h"
+#include "version.h"
+
 
 #include <ace/Thread.h>
 
@@ -58,7 +60,7 @@ namespace
 GameDbSyncContext::GameDbSyncContext() = default;
 GameDbSyncContext::~GameDbSyncContext() = default;
 
-int64_t GameDbSyncContext::getDatabaseVersion(QSqlDatabase &db)
+int GameDbSyncContext::getDatabaseVersion(QSqlDatabase &db)
 {
     QSqlQuery version_query(
                 QStringLiteral("SELECT version FROM table_versions WHERE table_name='db_version' ORDER BY id DESC LIMIT 1"),
@@ -134,11 +136,13 @@ bool GameDbSyncContext::loadAndConfigure()
         return false;
     }
 
-    int64_t db_version = getDatabaseVersion(*m_db);
-    if(db_version != REQUIRED_DB_VERSION)
+    int db_version = getDatabaseVersion(*m_db);
+    int required_db_version = VersionInfo::getRequiredGameDBVersion();
+
+    if(db_version != required_db_version)
     {
         // we should just stop the server, it isn't going to work anyway
-        qFatal("Wrong database version (%d) Game database requires version: %d", db_version, REQUIRED_DB_VERSION);
+        qFatal("Wrong database version (%d) Game database requires version: %d", db_version, required_db_version);
         db2->setConnectOptions();
         return false;
     }
