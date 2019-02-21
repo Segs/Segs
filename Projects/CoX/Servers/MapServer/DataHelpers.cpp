@@ -1270,10 +1270,8 @@ void showMapMenu(MapClientSession &sess)
 
 int64_t getSecsSince2000Epoch()
 {
-    QDateTime base_date(QDate(2000,1,1));
-
-    // 25200 -> seven hours in secs
-    return base_date.secsTo(QDateTime::currentDateTimeUtc()) - 25200;
+    QDateTime base_date(QDate(2000,1,1), QTime(0,0), Qt::UTC);
+    return base_date.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 void addClue(MapClientSession &cl, Clue clue)
