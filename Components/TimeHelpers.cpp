@@ -16,6 +16,6 @@
 int64_t getSecsSince2000Epoch()
 {
     QDateTime base_date(QDate(2000,1,1),QTime(0,0),Qt::UTC);
-    return base_date.secsTo(QDateTime::currentDateTime());
+    return base_date.secsTo(QDateTime::currentDateTimeUtc());
 }
 //! @}
