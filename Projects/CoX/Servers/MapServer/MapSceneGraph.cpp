@@ -21,6 +21,7 @@
 #include "NpcGenerator.h"
 #include "MapInstance.h"
 #include "GameData/NpcStore.h"
+#include "Common/GameData/map_definitions.h"
 
 #include "glm/mat4x4.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -301,58 +302,73 @@ QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
     return res;
 }
 
-// TODO: doors should look for, at least, the nearest GotoMap and GotoSpawn properties
-// and keep them ready to be used whenever a door is clicked. This code looks at the
-// entire scene graph in order to find the nearest SpawnLocation every single time a
-// door is clicked.
-struct DoorProperties
+struct MapXferLocator
 {
-    float distance;
-    glm::vec3 location;
-    QString gotoSpawn;
-};
-
-struct DoorLocator
-{
-    DoorProperties *m_doorprop;
-    DoorLocator(DoorProperties *doorprop) : m_doorprop(doorprop) {}
-
+    QHash<QString, MapXferData> *m_targets;
+    MapXferLocator(QHash<QString, MapXferData> *targets):
+        m_targets(targets)
+    {}
     bool operator()(SceneNode *n, const glm::mat4 &v)
     {
+
         if (!n->m_properties)
-            return true;
-
-        // Check the distance to this node, bail if it's farther than what we got.
-        glm::vec3 doorloc = glm::vec3(v[3]);
-        float doordist = glm::distance(m_doorprop->location, doorloc);
-        if (doordist >= m_doorprop->distance)
-            return true;
-
-        for (GroupProperty_Data &prop : *n->m_properties)
         {
-            if (prop.propName == "GotoSpawn")
+            for (auto &child : n->m_children)
             {
-                m_doorprop->gotoSpawn = prop.propValue;
-                m_doorprop->distance = doordist;
+                bool found_map_transfer = false;
+                if (child.node->m_properties != nullptr)
+                {
+                    MapXferData map_transfer = MapXferData();
+                    // Probably haven't processed the map swap node yet, so add it and handle later
+                    for (GroupProperty_Data &prop : *child.node->m_properties)
+                    {
+                        if (prop.propName == "GotoSpawn")
+                        {
+                            map_transfer.m_target_spawn_name = prop.propValue;
+                            found_map_transfer = true;
+                        }
+                        if (prop.propName == "GotoMap")
+                        {
+                            map_transfer.m_target_map_name = prop.propValue.split('.')[0];
+                            // Assume that if there's a GotoMap, that it's for a map xfer.
+                            // TODO: Change the transfer type detection to something less ambiguous if possible.
+                            map_transfer.m_transfer_type = MapXferType::ZONE;
+                            found_map_transfer = true;
+                        }
+                    }
+                    if (found_map_transfer)
+                    {
+                        map_transfer.m_node_name = child.node->m_name;
+
+                        // get position
+                        glm::mat4 transform(child.m_matrix2);
+                        transform[3] = glm::vec4(child.m_translation,1);
+                        transform = v * transform;
+                        glm::vec4 pos4 {0,0,0,1};
+                        pos4 = transform * pos4;
+                        glm::vec3 pos3 = glm::vec3(pos4);
+
+                        map_transfer.m_position = pos3;
+                        m_targets->insert(map_transfer.m_node_name, map_transfer);
+                        return false;
+                    }
+                }
             }
         }
+
         return true;
     }
 };
 
-QString MapSceneGraph::getNearestDoor(glm::vec3 location) const
+QHash<QString, MapXferData> MapSceneGraph::get_map_transfers() const
 {
-    DoorProperties res;
-    res.distance = 15;  // Maximum distance to look for door properties.
-    res.location = location;
-    DoorLocator locator(&res);
-
+    QHash<QString, MapXferData> res;
+    MapXferLocator locator(&res);
     for (auto v : m_scene_graph->refs)
     {
         walkSceneNode(v->node, v->mat, locator);
     }
-
-    return res.gotoSpawn;
-} 
+    return res;
+}
 
 //! @}
