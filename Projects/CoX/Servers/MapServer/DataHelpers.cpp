@@ -15,6 +15,7 @@
 #include "MapServer.h"
 #include "MapInstance.h"
 #include "MessageHelpers.h"
+#include "TimeHelpers.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/ClientStates.h"
 #include "GameData/map_definitions.h"
@@ -1332,12 +1333,6 @@ void showMapMenu(MapClientSession &sess)
     QString msg_body = createMapMenu();
     sendContactDialogClose(sess);
     showMapXferList(sess, has_location, location, msg_body);
-}
-
-int64_t getSecsSince2000Epoch()
-{
-    QDateTime base_date(QDate(2000,1,1), QTime(0,0), Qt::UTC);
-    return base_date.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 void addClue(MapClientSession &cl, Clue clue)
