@@ -23,11 +23,16 @@ enum MapXferType : uint8_t
 
 enum MapType : uint8_t
 {
-    CITY        = 0,
-    TRIAL       = 1,
-    HAZARD      = 2,
-    MISSION     = 3
+    CITY            = 0,
+    TRIAL           = 1,
+    HAZARD          = 2,
+    MISSION         = 3,
+    MISSION_OUTDOOR = 4,
+    MISSION_UNIQUE  = 5
 };
+
+const uint8_t OUTDOOR_MISSION_LEVEL_RANGE = 15;
+const uint8_t level_ranges[4] = { 60, 45, 30, 15 };
 
 struct EntityData;
 
@@ -39,13 +44,18 @@ struct Map_Data
     QByteArray Icon;
 };
 
+struct MissionLayout
+{
+    uint8_t m_layout;
+    uint8_t m_sub_layout;
+    bool m_has_sub_layout;
+};
+
 
 struct MissionMapData
 {
     uint8_t m_level;        // Sewers_15
-    uint8_t m_layout;       // Sewers_15_Layout_01
-    uint8_t m_sub_layout;   // Sewers_15_Layout_01_01
-    bool m_has_sub_layout;
+    std::vector<MissionLayout> m_layouts;
 };
 
 struct MapData
@@ -55,7 +65,7 @@ struct MapData
     QByteArray m_display_map_name;     // Outbreak, Atlas Park...
     MapType m_map_type;
     QByteArray m_map_path;             // The ones ending with .txt
-    std::vector<MissionMapData> m_mission_data;
+    QHash<uint8_t, MissionMapData> m_mission_data;
 };
 
 struct MapXferData
@@ -73,7 +83,6 @@ struct MapXferData
 };
 
 using AllMaps_Data = std::vector<Map_Data>;
-const uint8_t level_ranges[4] = { 15, 30, 45, 60 };
 
 uint32_t       getMapIndex(const QString &map_name);
 std::vector<MapData> &getAllMapData();
@@ -92,3 +101,4 @@ void           getMissionMapLevelData(QFileInfo map_level_folder, MapData &map_d
 void           getMissionMapLayoutData(QFileInfo maps_layout, uint8_t map_level, MapData& map_data);
 QString        getMissionPath(QString map_name, uint8_t level_range);
 uint8_t        getMissionMapLevelRange(uint8_t char_level);
+void           getMissionMapOutdoorData(QFileInfo map_file, MapData& map_data);

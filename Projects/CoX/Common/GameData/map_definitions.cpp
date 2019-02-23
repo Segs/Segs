@@ -47,29 +47,28 @@ static std::vector<MapData> g_defined_map_datas =
     {55003, "Caves", "Caves", MapType::MISSION },
     {55004, "COT", "COT", MapType::MISSION },
     {55005, "Office", "Office", MapType::MISSION },
-    //{55006, "Outdoor_City", "Outdoor_City", MapType::MISSION },
-    //{55007, "Outdoor_Forest", "Outdoor_Forest", MapType::MISSION },
-    //{55008, "Outdoor_Industrial", "Outdoor_Industrial", MapType::MISSION },
-    //{55009, "Outdoor_Missions", "Outdoor_Missions", MapType::MISSION },
-    //{55010, "Outdoor_Ruined", "Outdoor_Ruined", MapType::MISSION },
+    {55006, "Outdoor_City", "Outdoor_City", MapType::MISSION_OUTDOOR },
+    {55007, "Outdoor_Forest", "Outdoor_Forest", MapType::MISSION_OUTDOOR },
+    {55008, "Outdoor_Industrial", "Outdoor_Industrial", MapType::MISSION_OUTDOOR },
+    //{55009, "Outdoor_Missions", "Outdoor_Missions", MapType::MISSION_OUTDOOR },
+    {55010, "Outdoor_Ruined", "Outdoor_Ruined", MapType::MISSION_OUTDOOR },
     {55011, "Sewers", "Sewers", MapType::MISSION },
     {55012, "Tech", "Tech", MapType::MISSION },
-    //{55013, "unique", "unique", MapType::MISSION },
+    //{55013, "unique", "unique", MapType::MISSION_UNIQUE },
     {55014, "Warehouse", "Warehouse", MapType::MISSION }
-    //{55000, "Sewers_15_Layout_01_01", "maps/Missions/Sewers/Sewers_15/Sewers_15_Layout_01_01.txt", "Sewers 15 Layout 1"}
 };
 
 uint8_t getMissionMapLevelRange(uint8_t char_level)
 {
-    uint8_t current = level_ranges[0];
-    for (auto &level_range : level_ranges)
+    for (auto &level : level_ranges)
     {
-        if (abs(char_level - level_range) < abs(char_level - current))
+        if (char_level >= level)
         {
-            current = level_range;
+            return level;
         }
     }
-    return current;
+
+    return level_ranges[3]; // return 15 if a level isn't found.
 }
 
 QString getMissionPath(QString map_name, uint8_t char_level)
@@ -78,22 +77,55 @@ QString getMissionPath(QString map_name, uint8_t char_level)
     uint8_t level_range = getMissionMapLevelRange(char_level);
     if (!map_data.m_mission_data.empty())
     {
-        for (auto &mission : map_data.m_mission_data)
+        switch (map_data.m_map_type)
         {
-            // TODO: Currently this only selects the first layout found. This will eventually either need to return a random layout, or a selected layout.
-            // TODO: Need to handle if there is no mission with the provided level range for the selected map.
-            //if (mission.m_level == level_range)
-            //{
-                if (mission.m_has_sub_layout)
+            case MapType::MISSION:
+            {
+                if (map_data.m_mission_data.contains(level_range))
                 {
-                    return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0')).arg(mission.m_sub_layout, 2, 10, QChar('0'));
+                    MissionMapData mission_data = map_data.m_mission_data[level_range];
+                    MissionLayout layout = mission_data.m_layouts.front();
+                    if (layout.m_has_sub_layout)
+                    {
+                        return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10, QChar('0')).arg(layout.m_sub_layout, 2, 10, QChar('0'));
+                    }
+                    else
+                    {
+                        return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10,QChar('0'));
+                    }
                 }
                 else
                 {
-                    return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission.m_level).arg(mission.m_layout, 2, 10, QChar('0'));
+                    MissionMapData mission_data = map_data.m_mission_data.values().front();
+                    MissionLayout layout = mission_data.m_layouts.front();
+                    if (layout.m_has_sub_layout)
+                    {
+                        return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10, QChar('0')).arg(layout.m_sub_layout, 2, 10, QChar('0'));
+                    }
+                    else
+                    {
+                        return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10,QChar('0'));
+                    }
                 }
-            //}
+                
+                break;
+            }
+            case MapType::MISSION_OUTDOOR:
+            {
+                if (map_data.m_mission_data.contains(OUTDOOR_MISSION_LEVEL_RANGE))
+                {
+                    MissionMapData mission_data = map_data.m_mission_data[OUTDOOR_MISSION_LEVEL_RANGE];
+                    MissionLayout layout = mission_data.m_layouts.front();
+                    return QString("maps/Missions/%1/%1_%2.txt").arg(QString(map_name)).arg(layout.m_layout, 2, 10, QChar('0'));
+                }
+                break;
+            }
+            default:
+            {
+                break;
+            }
         }
+        
     }
     qWarning() << "Attempted to get mission filename for the map -- " << map_name << " -- That map doesn't have mission data loaded.";
     return QString();
@@ -101,17 +133,22 @@ QString getMissionPath(QString map_name, uint8_t char_level)
 
 void getMissionMapLevelData(QFileInfo map_level_folder, MapData &map_data)
 {
-    // TODO: Handle mission maps that don't have level subfolders.
     // maps/Missions/Sewers/Sewers_15/
     QString level = map_level_folder.fileName().mid(map_level_folder.fileName().lastIndexOf("_") + 1);
     QDir map_layout_dir(map_level_folder.filePath());
     map_layout_dir.setFilter(QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDot | QDir::NoDotDot);
     for (auto &map_layout : map_layout_dir.entryInfoList())
     {
-        getMissionMapLayoutData(map_layout, level.toInt(), map_data);        
+        if (map_data.m_map_type == MapType::MISSION)
+        {
+            getMissionMapLayoutData(map_layout, level.toInt(), map_data);
+        }
+        else if (map_data.m_map_type == MapType::MISSION_UNIQUE)
+        {
+            //TODO: Handle unique maps.
+        }
     }
 }
-
 void getMissionMapLayoutData(QFileInfo map_layout, uint8_t map_level, MapData& map_data)
 {
     if (map_layout.isFile())
@@ -120,32 +157,60 @@ void getMissionMapLayoutData(QFileInfo map_layout, uint8_t map_level, MapData& m
         QString layoutSubstring = map_layout.baseName().mid(map_layout.baseName().indexOf("Layout"));
         int layoutUnderscore = layoutSubstring.indexOf("_") + 1;
         int subLayoutUnderscore = layoutSubstring.lastIndexOf("_") + 1;
-        QString sublayout = layoutSubstring.mid(subLayoutUnderscore);
-        QString layout = layoutSubstring.mid(layoutUnderscore, 2);
+        QString sublayout_value = layoutSubstring.mid(subLayoutUnderscore);
+        QString layout_value = layoutSubstring.mid(layoutUnderscore, 2);        
 
-        MissionMapData mission_data;
-        mission_data.m_level = map_level;
-        mission_data.m_layout = layout.toInt();
+        if (!map_data.m_mission_data.contains(map_level))
+        {
+            MissionMapData mission_data;
+            mission_data.m_level = map_level;
+            map_data.m_mission_data[map_level] = mission_data;
+        }
+
+        MissionLayout layout;
+        layout.m_layout = layout_value.toInt();
         if (layoutUnderscore != subLayoutUnderscore)
         {
-            mission_data.m_sub_layout = sublayout.toInt();
-            mission_data.m_has_sub_layout = true;
+            layout.m_sub_layout = sublayout_value.toInt();
+            layout.m_has_sub_layout = true;
         }
         else
         {
-            mission_data.m_has_sub_layout = false;
+            layout.m_has_sub_layout = false;
         }
         
-        map_data.m_mission_data.push_back(mission_data);
+        qInfo() << "Added mission layout data for: " << map_data.m_map_name;
+        map_data.m_mission_data[map_level].m_layouts.push_back(layout);
     }
 }
+
+void getMissionMapOutdoorData(QFileInfo map_file, MapData& map_data)
+{
+    if (!map_data.m_mission_data.contains(OUTDOOR_MISSION_LEVEL_RANGE))
+    {
+        MissionMapData mission_data;
+        mission_data.m_level = OUTDOOR_MISSION_LEVEL_RANGE;
+        map_data.m_mission_data[OUTDOOR_MISSION_LEVEL_RANGE] = mission_data;
+    }
+    
+    MissionLayout layout;
+    layout.m_has_sub_layout = false;
+    QString layoutString = map_file.baseName().mid(map_data.m_map_name.length() + 1, 2);
+    layout.m_layout = layoutString.toInt();
+    map_data.m_mission_data[OUTDOOR_MISSION_LEVEL_RANGE].m_layouts.push_back(layout);
+}
+
 
 void loadAllMissionMapData()
 {
     for(auto& map_data : g_defined_map_datas)
     {
-        if (map_data.m_map_type == MapType::MISSION)
+        qInfo() << "Loading mission data for: " << map_data.m_map_name;
+        if (map_data.m_map_type == MapType::MISSION || 
+            map_data.m_map_type == MapType::MISSION_OUTDOOR || 
+            map_data.m_map_type == MapType::MISSION_UNIQUE)
         {
+           
             QString base_path = QFileInfo(QString("data/geobin/maps/Missions/%1").arg(QString(map_data.m_map_name))).filePath();
             qInfo() << "Mission map for path: " << base_path;
             QDir mapDir(base_path);
@@ -158,7 +223,21 @@ void loadAllMissionMapData()
             {
                 for (auto &map_level : mapDir.entryInfoList())
                 {
-                    getMissionMapLevelData(map_level, map_data);
+                    if (map_level.isDir())
+                    {
+                        if (map_data.m_map_type == MapType::MISSION)
+                        {
+                            getMissionMapLevelData(map_level, map_data);
+                        }
+                        else if (map_data.m_map_type == MapType::MISSION_UNIQUE)
+                        {
+                            //TODO: Handle unique maps
+                        }
+                    }
+                    else if (map_level.isFile())
+                    {
+                        getMissionMapOutdoorData(map_level, map_data);
+                    }
                 }
             }
         }
