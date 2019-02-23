@@ -48,7 +48,7 @@ public:
     Q_INVOKABLE QString getVersionName();
     Q_INVOKABLE QString getStartTime();
     Q_INVOKABLE QString ping();
-    Q_INVOKABLE QString addUser(const QString &username, const QString &password, const int access_level);
+    Q_INVOKABLE QString addUser(const QString &username, const QString &password, int access_level);
 
 protected:
     ACE_INET_Addr                       m_location;     //!< address rpc server will bind at.
