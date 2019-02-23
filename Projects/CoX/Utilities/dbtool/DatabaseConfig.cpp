@@ -17,7 +17,7 @@
 
 bool DatabaseConfig::initialize_from_settings(const QString &settings_file_name, const QString &group_name)
 {
-    // Set settings file path based upon possible cli switch defined
+    // Set settings file path, since we're in a different directory
     Settings::setSettingsPath(settings_file_name);
     QString settings_full_path = Settings::getSettingsPath();
 

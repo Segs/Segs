@@ -24,7 +24,7 @@ extern void register_migrations(std::vector<DBMigrationStep *> &target);
  */
 void DBConnection::runUpgrades()
 {
-    qInfo() << "Upgrading database" << getName();
+    qInfo().noquote() << QString("Checking for upgrades to database %1...").arg(getName());
     // register migrations to a vector that we can loop over
     std::vector<DBMigrationStep *> migrations_to_run;
     register_migrations(migrations_to_run);
@@ -36,10 +36,10 @@ void DBConnection::runUpgrades()
     int final_version = 0;
     for(DBMigrationStep *step : migrations_to_run)
     {
-        qCDebug(logDB) << "check:" << getName() << step->getName() << step->getTargetVersion() << final_version;
-
         if(getName() != step->getName())
             continue;
+
+        qCDebug(logDB) << "Checking migration step version:" << step->getName() << step->getTargetVersion();
 
         if(step->getTargetVersion() > final_version)
             final_version = step->getTargetVersion();
@@ -54,17 +54,17 @@ void DBConnection::runUpgrades()
         return;
     }
 
+    // set cur_version to starting version, it will be incremented as we update
+    int cur_version = start_version;
+
     // run through migrations_to_run and check for upgrades
     // that are higher than our current DB version. Run them in order.
     for(DBMigrationStep *step : migrations_to_run)
     {
-        // get current DB Version once to avoid multiple queries
-        int cur_version = getDBVersion();
-
         if(!step->canRun(this, cur_version))
             continue; // can't run? skip this migration step.
 
-        qInfo().noquote() << QString("Running %1 database migration from version %2 to %3")
+        qInfo().noquote() << QString("Running %1 database migration from version %2 to %3...")
                    .arg(getName())
                    .arg(cur_version)
                    .arg(step->getTargetVersion());
@@ -83,6 +83,8 @@ void DBConnection::runUpgrades()
 
         if(!step->cleanup(this))
             return; // cleanup failed, cancel update
+
+        cur_version++; // increment current version for next run
     }
 
     // check if all updates succeeded in running
@@ -102,7 +104,7 @@ void DBConnection::runUpgrades()
         return;
     }
 
-    qInfo().noquote() << QString("Database %1 upgraded successfully to %2!")
+    qInfo().noquote() << QString("SUCCESS! Database %1 upgraded to %2!")
                .arg(getName())
                .arg(getDBVersion()); // use getDBVersion here so we know it worked
     return;
@@ -126,9 +128,9 @@ int DBConnection::getDBVersion()
     while(m_query->next())
     {
         version = m_query->value(0).toInt();
-        qCDebug(logDB) << "Database Version:" << getName() << version;
     }
 
+    qCDebug(logDB) << "Fetching database version:" << getName() << version;
     return version;
 }
 

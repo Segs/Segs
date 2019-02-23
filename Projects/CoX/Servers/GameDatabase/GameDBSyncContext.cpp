@@ -101,7 +101,7 @@ bool GameDbSyncContext::loadAndConfigure()
         QString dbdriver = config.value(QStringLiteral("db_driver"),"QSQLITE").toString();
         QString dbhost = config.value(QStringLiteral("db_host"),"127.0.0.1").toString();
         int dbport = config.value(QStringLiteral("db_port"),"5432").toInt();
-        QString dbname = config.value(QStringLiteral("db_name"),"segs_game").toString();
+        QString dbname = config.value(QStringLiteral("db_name"),"segs_game.db").toString();
         QString dbuser = config.value(QStringLiteral("db_user"),"segsadmin").toString();
         QString dbpass = config.value(QStringLiteral("db_pass"),"segs123").toString();
     config.endGroup(); // CharacterDatabase

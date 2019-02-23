@@ -18,6 +18,7 @@ set(tool_SRC
     DBConnection.h
     DBConnection_AddUser.cpp
     DBConnection_Create.cpp
+    DBConnection_Helpers.cpp
     DBConnection_Upgrade.cpp
     DBMigrationStep.cpp
     DBMigrationStep.h

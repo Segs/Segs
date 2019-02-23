@@ -99,9 +99,11 @@ int main(int argc, char **argv)
 {
     const QStringList known_commands {"create","adduser","upgrade","info"};
     dbToolResult ret = dbToolResult::SUCCESS;
-    setLoggingFilter(); // Set QT Logging filters
+
     qInstallMessageHandler(errorHandler);
     QCoreApplication app(argc,argv);
+    QCoreApplication::setOrganizationDomain("segs.io");
+    QCoreApplication::setOrganizationName("SEGS Project");
     QCoreApplication::setApplicationName("segs-dbtool");
     QCoreApplication::setApplicationVersion(VersionNumber);
 
@@ -109,10 +111,6 @@ int main(int argc, char **argv)
     parser.setApplicationDescription("SEGS database management utility");
     parser.addHelpOption();
     parser.addVersionOption();
-
-    std::vector<DatabaseConfig> configs;
-    configs.emplace_back(DatabaseConfig());
-    configs.emplace_back(DatabaseConfig());
 
     parser.addPositionalArgument("command",
                                  QCoreApplication::translate("main", "Command to execute.\ncreate\nadduser\nupgrade"),
@@ -137,6 +135,10 @@ int main(int argc, char **argv)
     parser.addOption(configFileOption);
     
     parser.process(app);
+
+    // Print out Project Name and Version
+    qInfo().noquote() << VersionString << endl;
+
     const QStringList positionalArguments = parser.positionalArguments();
     if(positionalArguments.size()<1 || !known_commands.contains(positionalArguments.first()))
     {
@@ -147,6 +149,11 @@ int main(int argc, char **argv)
 
         parser.showHelp(1);
     }
+
+    // Setup config file an database configs
+    std::vector<DatabaseConfig> configs;
+    configs.emplace_back(DatabaseConfig());
+    configs.emplace_back(DatabaseConfig());
     
     if(!configs[0].initialize_from_settings(parser.value(configFileOption), "AccountDatabase"))
     {
@@ -156,7 +163,10 @@ int main(int argc, char **argv)
     // we've just checked if settings exists, so we can safely assume it does here
     configs[1].initialize_from_settings(parser.value(configFileOption), "CharacterDatabase");
     
-    // Check if dbtool is being run from server directory
+    // Set QT Logging filters after we've initialized settings.cfg with the correct path
+    setLoggingFilter();
+
+    // Find database templates directory
     qInfo() << "Opening database templates directory...";
     QDir default_dbs_dir(Settings::getDefaultDirPath());
     if(!default_dbs_dir.exists())

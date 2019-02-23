@@ -15,6 +15,7 @@
 #include <memory>
 
 class QFile;
+class QJsonObject;
 class DatabaseConfig;
 class DBMigrationStep;
 
@@ -61,7 +62,7 @@ public:
     void open();
     void close();
     bool isConnected();
-    QString getName() const { return m_config.m_name; } // "segs" or "segs_game"
+    QString getName() const { return m_config.m_name; } // "segs.db" or "segs_game.db"
 
     // DBConnection_AddUser.cpp
     dbToolResult    addAccount(const QString &username, const QString &password, uint16_t access_level);
@@ -70,6 +71,9 @@ public:
     dbToolResult    createDB();
     bool            deleteDB();
     bool            runQueryFromFile(QFile &source_file);
+
+    // DBConnection_Helpers.cpp
+    QJsonObject prepareBlob(QJsonObject &obj);
 
     // DBConnection_Upgrade.cpp
     void            runUpgrades();

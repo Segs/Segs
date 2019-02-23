@@ -29,7 +29,7 @@ DBConnection::~DBConnection()
 
 void DBConnection::open()
 {
-    qCInfo(logDB) << "Opening database connection at:" << m_config.m_db_path;
+    qCDebug(logDB) << "Opening database connection at:" << m_config.m_db_path;
 
     m_db = new QSqlDatabase(QSqlDatabase::addDatabase(m_config.m_driver, m_config.m_db_path));
     m_db->setDatabaseName(m_config.m_db_path); // must be path

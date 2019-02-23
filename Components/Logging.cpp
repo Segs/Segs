@@ -74,9 +74,9 @@ void setLoggingFilter()
     filter_rules += "\nlog.emotes="         + config.value("log_emotes","true").toString();
     filter_rules += "\nlog.target="         + config.value("log_target","false").toString();
     filter_rules += "\nlog.spawn="          + config.value("log_spawn","false").toString();
-    filter_rules += "\nlog.mapevents="      + config.value("log_mapevents","true").toString();
-    filter_rules += "\nlog.mapxfers="       + config.value("log.mapxfers", "true").toString();
-    filter_rules += "\nlog.slashcommand="   + config.value("log_slashcommand","true").toString();
+    filter_rules += "\nlog.mapevents="      + config.value("log_mapevents","false").toString();
+    filter_rules += "\nlog.mapxfers="       + config.value("log.mapxfers", "false").toString();
+    filter_rules += "\nlog.slashcommand="   + config.value("log_slashcommand","false").toString();
     filter_rules += "\nlog.description="    + config.value("log_description","false").toString();
     filter_rules += "\nlog.friends="        + config.value("log_friends","false").toString();
     filter_rules += "\nlog.minimap="        + config.value("log_minimap","false").toString();

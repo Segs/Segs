@@ -22,24 +22,12 @@ class VersionInfo
 {
 public:
     static const char *getAdminVersion(void);
-    static const char *getAuthVersion(void)
-{
-        return VersionString;
-}
-    static const char *getAuthVersionNumber(void)
-{
-        return VersionNumber;
-}
-    static const char *getVersionName(void)
-{
-        return VersionName;
-}
+    static const char *getAuthVersion(void) { return VersionString; }
+    static const char *getAuthVersionNumber(void) { return VersionNumber; }
+    static const char *getVersionName(void) { return VersionName; }
     static const char *getGameVersion(void);
     static const char *getMapVersion(void);
-    static const char *getCopyright(void)
-{
-        return CopyrightString;
-}
+    static const char *getCopyright(void) { return CopyrightString; }
 };
 
 #undef ProjectName

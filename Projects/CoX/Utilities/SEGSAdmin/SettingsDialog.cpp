@@ -211,7 +211,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.setValue("db_driver","QSQLITE");
     config_file_write.setValue("db_host","127.0.0.1");
     config_file_write.setValue("db_port","5432");
-    config_file_write.setValue("db_name","segs");
+    config_file_write.setValue("db_name","segs.db");
     config_file_write.setValue("db_user","segsadmin");
     config_file_write.setValue("db_pass","segs123");
     config_file_write.endGroup(); // AccountDatabase
@@ -220,7 +220,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.setValue("db_driver","QSQLITE");
     config_file_write.setValue("db_host","127.0.0.1");
     config_file_write.setValue("db_port","5432");
-    config_file_write.setValue("db_name","segs_game");
+    config_file_write.setValue("db_name","segs_game.db");
     config_file_write.setValue("db_user","segsadmin");
     config_file_write.setValue("db_pass","segs123");
     config_file_write.endGroup(); // CharacterDatabase
