@@ -11,6 +11,7 @@
  */
 
 #include "GameEvents.h"
+#include "GameData/Character.h"
 #include "GameData/Costume.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/map_definitions.h"
