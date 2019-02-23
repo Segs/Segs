@@ -207,7 +207,7 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     CharacterData cd;
     serializeFromQString(cd, char_data.m_serialized_chardata);
 
-    EventProcessor *instance = tpl->get_instance(cd);
+    EventProcessor *instance = tpl->get_instance(cd.m_combat_level);
     // now we know which instance will handle this client, pass the event to it,
     // remember to shallow_copy to mark the event as still owned.
     instance->putq(ev->shallow_copy());

@@ -81,33 +81,25 @@ QString getMissionPath(QString map_name, uint8_t char_level)
         {
             case MapType::MISSION:
             {
+                MissionMapData mission_data;
                 if (map_data.m_mission_data.contains(level_range))
                 {
-                    MissionMapData mission_data = map_data.m_mission_data[level_range];
-                    MissionLayout layout = mission_data.m_layouts.front();
-                    if (layout.m_has_sub_layout)
-                    {
-                        return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10, QChar('0')).arg(layout.m_sub_layout, 2, 10, QChar('0'));
-                    }
-                    else
-                    {
-                        return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10,QChar('0'));
-                    }
+                    mission_data = map_data.m_mission_data[level_range];
                 }
                 else
                 {
-                    MissionMapData mission_data = map_data.m_mission_data.values().front();
-                    MissionLayout layout = mission_data.m_layouts.front();
-                    if (layout.m_has_sub_layout)
-                    {
-                        return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10, QChar('0')).arg(layout.m_sub_layout, 2, 10, QChar('0'));
-                    }
-                    else
-                    {
-                        return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10,QChar('0'));
-                    }
+                    mission_data = map_data.m_mission_data.values().front();
                 }
                 
+                MissionLayout layout = mission_data.m_layouts.front();
+                if (layout.m_has_sub_layout)
+                {
+                    return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3_%4.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10, QChar('0')).arg(layout.m_sub_layout, 2, 10, QChar('0'));
+                }
+                else
+                {
+                    return QString("maps/Missions/%1/%1_%2/%1_%2_Layout_%3.txt").arg(QString(map_name)).arg(mission_data.m_level).arg(layout.m_layout, 2, 10,QChar('0'));
+                }                
                 break;
             }
             case MapType::MISSION_OUTDOOR:

@@ -627,7 +627,7 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
 
     fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
     serializeToQString(c_data, serialized_data);
-    QString map_path = getMapPath(map_xfer.m_target_map_name,session.m_ent->m_char->m_char_data.m_level);
+    QString map_path = getMapPath(map_xfer.m_target_map_name,session.m_ent->m_char->m_char_data.m_combat_level);
     qInfo() << "Map transfer initiated to map path: " << map_path;
     ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
                                     serialized_data, session.m_requested_slot_idx, session.m_name, map_path,
@@ -986,7 +986,7 @@ void MapInstance::on_scene_request(SceneRequest *ev)
 
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    QString map_path       = getMapPath(map_desc_from_path, session.m_ent->m_char->m_char_data.m_level);
+    QString map_path       = getMapPath(map_desc_from_path, session.m_ent->m_char->m_char_data.m_combat_level);
     res->m_map_desc        = map_path;
     res->current_map_flags = true; // off 1
     res->unkn1             = 1;
@@ -2218,7 +2218,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
                     MapXferData map_data = MapXferData();
                     map_data.m_target_map_name = getMapName(map_idx);
                     map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_data},0));
-                    QString map_path = getMapPath(map_idx, session.m_ent->m_char->m_char_data.m_level);
+                    QString map_path = getMapPath(map_idx, session.m_ent->m_char->m_char_data.m_combat_level);
                     qInfo() << "On enter door map_path: " << map_path;
                     session.link()->putq(new MapXferWait(map_path));
                 }
@@ -3257,7 +3257,7 @@ void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
     Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
     MapClientSession &sess = *e->m_client;
 
-    sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name, sess.m_ent->m_char->m_char_data.m_level)));
+    sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name, sess.m_ent->m_char->m_char_data.m_combat_level)));
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
     map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_transfer_data}, 0));
 }

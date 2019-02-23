@@ -29,7 +29,7 @@ public:
                                     MapTemplate(const QString &template_filename,
                                                 uint8_t game_server_id, uint32_t map_server_id,
                                                 const ListenAndLocationAddresses &loc, const bool is_mission_map);
-        MapInstance *               get_instance(CharacterData &char_data); //! If there are no instances, starts a new one.
+        MapInstance *               get_instance(uint8_t char_level); //! If there are no instances, starts a new one.
         size_t                      num_instances();
         void                        shut_down_all();
         QString                     client_filename() const;
