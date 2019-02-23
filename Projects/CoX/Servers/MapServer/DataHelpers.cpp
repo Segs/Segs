@@ -15,6 +15,7 @@
 #include "MapServer.h"
 #include "MapInstance.h"
 #include "MessageHelpers.h"
+#include "TimeHelpers.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/ClientStates.h"
 #include "GameData/map_definitions.h"
@@ -278,7 +279,7 @@ QString createKioskMessage(Entity* player)
  */
 
 void getEmailHeaders(MapClientSession& sess)
-{
+{   
     if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
@@ -286,7 +287,7 @@ void getEmailHeaders(MapClientSession& sess)
     }
 
     HandlerLocator::getEmail_Handler()->putq(new EmailHeaderRequest(
-        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));
+        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));    
 }
 
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
@@ -1332,12 +1333,6 @@ void showMapMenu(MapClientSession &sess)
     QString msg_body = createMapMenu();
     sendContactDialogClose(sess);
     showMapXferList(sess, has_location, location, msg_body);
-}
-
-int64_t getSecsSince2000Epoch()
-{
-    QDateTime base_date(QDate(2000,1,1));
-    return base_date.secsTo(QDateTime::currentDateTime());
 }
 
 void addClue(MapClientSession &cl, Clue clue)
