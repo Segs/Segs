@@ -11,7 +11,6 @@
  */
 
 #include "GameEvents.h"
-#include "GameData/Character.h"
 #include "GameData/Costume.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/map_definitions.h"
@@ -86,11 +85,10 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     assert(m_data.m_max_slots>0);
     for(int i=0; i<m_data.m_max_slots; i++)
     {
-        Character converted;
         EntityData entity_data;
         PlayerData player_data;
-        toActualCharacter(m_data.m_characters[i], converted, player_data, entity_data);
-        converted.serializetoCharsel(tgt, getDisplayMapName(entity_data.m_map_idx));
+        toActualCharacter(m_data.m_characters[i], m_characters->at(i), player_data, entity_data);
+        m_characters->at(i).serializetoCharsel(tgt, getDisplayMapName(entity_data.m_map_idx));
     }
     //tgt.StoreBitArray(m_clientinfo,128);
 }
@@ -114,16 +112,15 @@ void UpdateCharacter::serializefrom( BitStream &bs )
 void CharacterResponse::serializeto( BitStream &bs ) const
 {
     GameAccountResponseCharacterData indexed_character(m_data.get_character(m_index));
-    Character converted;
     PlayerData player_data;
     EntityData entity_data;
-    toActualCharacter(indexed_character, converted, player_data, entity_data);
+    toActualCharacter(indexed_character, *m_character, player_data, entity_data);
     bs.StorePackedBits(1,6); // opcode
 
     if(indexed_character.m_name.compare(EMPTY_STRING)!=0)// actual character was read from db
     {
         bs.StorePackedBits(1, m_index);
-        converted.getCurrentCostume()->storeCharselParts(bs);
+        m_character->getCurrentCostume()->storeCharselParts(bs);
     }
     else
     {

@@ -12,6 +12,7 @@
 
 #include <unordered_set>
 class CharacterClient;
+class Character;
 class GameServer;
 class SEGSTimer;
 struct GameLink;
@@ -42,6 +43,8 @@ struct GameSession
     uint32_t is_connected_to_map_instance_id=0;
     eTravelDirection m_direction;
     uint8_t m_access_level=0;
+
+    std::vector<Character> m_characters;
 
     uint32_t auth_id() const { return m_auth_account_id; }
     void reset()

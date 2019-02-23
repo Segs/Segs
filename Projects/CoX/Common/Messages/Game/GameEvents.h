@@ -12,6 +12,7 @@
 //#include "CRUDP_Protocol/CRUD_Link.h"
 #include "CRUDP_Protocol/CRUD_Events.h"
 #include "Servers/InternalEvents.h"
+#include "GameData/Character.h"
 
 // GameEvents make use of some of the event Data defined in GameDBSyncEvents
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
@@ -173,12 +174,19 @@ public:
         m_index=idx;
         m_data=gad;
     }
+    CharacterResponse(EventProcessor *src,uint8_t idx, Character *character, const GameAccountResponseData &gad) : GameLinkEvent(GameEventTypes::evCharacterResponse,src)
+    {
+        m_index=idx;
+        m_data=gad;
+        m_character = character;
+    }
     void serializeto(BitStream &bs) const override;
     void serializefrom(BitStream &bs) override;
     // [[ev_def:field]]
     uint8_t m_index;
     // [[ev_def:field]]
     GameAccountResponseData m_data;
+    Character *m_character;
     EVENT_IMPL(CharacterResponse)
 };
 
@@ -216,6 +224,8 @@ class CharacterSlots : public GameLinkEvent
 public:
     CharacterSlots():GameLinkEvent(GameEventTypes::evCharacterSlots)
     {}
+    CharacterSlots(std::vector<Character> *characters):GameLinkEvent(GameEventTypes::evCharacterSlots)
+    { m_characters = characters; }
     void serializeto( BitStream &tgt ) const override;
     void serializefrom( BitStream &src ) override;
 
@@ -225,6 +235,7 @@ public:
     std::array<uint8_t,16> m_clientinfo;
     // [[ev_def:field]]
     GameAccountResponseData m_data;
+    std::vector<Character> *m_characters;
     EVENT_IMPL(CharacterSlots)
 };
 
