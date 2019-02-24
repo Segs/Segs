@@ -148,3 +148,6 @@ void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& m
 void addRelayRaceResult(MapClientSession &cl, RelayRaceResult &raceResult);
 RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment);
 void addHideAndSeekResult(MapClientSession &cl, int points);
+
+void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
+void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);

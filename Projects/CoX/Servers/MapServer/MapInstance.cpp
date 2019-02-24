@@ -150,6 +150,8 @@ void MapInstance::start(const QString &scenegraph_path)
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
+            m_map_scenegraph->spawn_critters(this);
+            m_critter_generators.generate(this);
             }, "Spawning npcs");
 
         // Load Lua Scripts for this Map Instance
@@ -858,9 +860,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     // make sure to 'off' the AFK from the character in db first
     toggleAFK(*e->m_char, false);
 
-    if(logSpawn().isDebugEnabled())
+    if(logPlayerSpawn().isDebugEnabled())
     {
-        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
+        qCDebug(logPlayerSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
     }
 
@@ -891,9 +893,9 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
     // Can't pass direction through cereal, so let's update it here.
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
-    if(logSpawn().isDebugEnabled())
+    if(logPlayerSpawn().isDebugEnabled())
     {
-        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
+        qCDebug(logPlayerSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
     }
 
@@ -3319,5 +3321,6 @@ void MapInstance::clearTimer(uint32_t entity_idx)
     if(found)
         this->m_lua_timers[count].m_remove = true;
 }
+
 
 //! @}
