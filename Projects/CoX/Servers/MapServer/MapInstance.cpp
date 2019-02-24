@@ -27,7 +27,7 @@
 #include "WorldSimulation.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
-#include "version.h"
+#include "Version.h"
 #include "Common/GameData/CoHMath.h"
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"

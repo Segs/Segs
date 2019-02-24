@@ -22,7 +22,7 @@
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
 #include "SelectScriptDialog.h"
-#include "version.h"
+#include "Version.h"
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -31,6 +31,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QDir>
+#include <QSettings>
 #include <iostream>
 
 SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
@@ -61,6 +62,8 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(this,&SEGSAdminTool::checkForConfigFile,this,&SEGSAdminTool::check_for_config_file);
     connect(this,&SEGSAdminTool::getMapsDirConfigCheck,m_settings_dialog,&SettingsDialog::send_maps_dir_config_check); // May be a much better way to do this, but this works for now
     connect(this,&SEGSAdminTool::readyToRead,m_settings_dialog,&SettingsDialog::read_config_file);
+    connect(this,&SEGSAdminTool::checkConfigVersion,this,&SEGSAdminTool::check_config_version);
+    connect(this,&SEGSAdminTool::recreateConfig,m_generate_config_dialog,&GenerateConfigFileDialog::on_generate_config_file);
     connect(ui->actionAbout,&QAction::triggered,m_about_dialog,&AboutDialog::show_ui);
     connect(ui->update_detail,&QPushButton::clicked,m_update_dialog,&UpdateDetailDialog::show_update);
     connect(ui->createUser,&QPushButton::clicked,m_add_user_dialog,&AddNewUserDialog::on_add_user);
@@ -421,6 +424,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     {
         QString config_file_path = config_file.absoluteFilePath();
         ui->output->appendPlainText("SUCCESS: Configuration file found!");
+        emit checkConfigVersion(config_file_path);
         ui->icon_status_config->setPixmap(check_icon);
         ui->gen_config_file->setEnabled(false);
         ui->runDBTool->setEnabled(true);
@@ -438,6 +442,40 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
         ui->set_up_data_button->setEnabled(false); // Shouldn't create data before config file exists
         ui->authserver_start->setEnabled(false); // Shouldn't run authserver if no config file exists
         ui->settings_button->setEnabled(false); // Shouldn't be able to edit settings if no config file exists
+    }
+}
+
+void SEGSAdminTool::check_config_version(QString filePath)
+{
+    
+    ui->output->appendPlainText("Checking configuration version...");
+    
+    QSettings config_file(filePath, QSettings::IniFormat);
+    config_file.beginGroup("MetaData");
+    int config_version = config_file.value("config_version","").toInt();
+    config_file.endGroup();
+     
+    if (config_version != VersionInfo::getConfigVersion())
+    {
+        ui->output->appendPlainText("WARNING: Configuration file version incorrect or missing. Prompting for recreation");
+        QMessageBox::StandardButton ask_recreate_config = QMessageBox::warning(this,
+                    "Config File Version Incorrect", "Your settings.cfg may be out of date. Do you want to to recreate?" 
+                    "\n\nWARNING: All settings will be overwritten",
+                    QMessageBox::Yes | QMessageBox::No);
+        
+        if(ask_recreate_config == QMessageBox::Yes) 
+        {
+            ui->output->appendPlainText("Recreating settings.cfg");
+            emit recreateConfig();
+        }
+        else 
+        {
+            ui->output->appendPlainText("Not Recreating settings.cfg");
+        }        
+    }
+    else
+    {
+        ui->output->appendPlainText("SUCCESS: Configuration file version correct");
     }
 }
 

@@ -18,7 +18,7 @@
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Logging.h"
-#include "version.h"
+#include "Version.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "AuthServer.h"
