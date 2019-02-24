@@ -20,7 +20,7 @@
 #include "Logging.h"
 #include "Settings.h"
 #include "Database.h"
-#include "version.h"
+#include "Version.h"
 
 
 #include <ace/Thread.h>

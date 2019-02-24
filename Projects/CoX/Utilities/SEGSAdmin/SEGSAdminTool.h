@@ -8,7 +8,7 @@
 #ifndef SEGSADMINTOOL_H
 #define SEGSADMINTOOL_H
 
-#include "version.h"
+#include "Version.h"
 #include <QMainWindow>
 #include <QDialog>
 #include <QProcess>

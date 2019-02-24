@@ -22,7 +22,7 @@
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
 #include "SelectScriptDialog.h"
-#include "version.h"
+#include "Version.h"
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -452,10 +452,10 @@ void SEGSAdminTool::check_config_version(QString filePath)
     
     QSettings config_file(filePath, QSettings::IniFormat);
     config_file.beginGroup("MetaData");
-    QString config_version = config_file.value("config_version","").toString();
+    int config_version = config_file.value("config_version","").toInt();
     config_file.endGroup();
      
-    if ((config_version != VersionInfo::getConfigVersion()) || (config_version.isEmpty()))
+    if (config_version != VersionInfo::getConfigVersion())
     {
         ui->output->appendPlainText("WARNING: Configuration file version incorrect or missing. Prompting for recreation");
         QMessageBox::StandardButton ask_recreate_config = QMessageBox::warning(this,

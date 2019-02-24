@@ -1,6 +1,6 @@
 #include "AdminRPC.h"
 #include "AuthHandler.h"
-#include "version.h"
+#include "Version.h"
 #include "ConfigExtension.h"
 #include "Settings.h"
 
