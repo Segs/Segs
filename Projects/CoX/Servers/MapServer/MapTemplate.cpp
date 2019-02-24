@@ -37,7 +37,7 @@ MapInstance * MapTemplate::get_instance(uint8_t char_level)
         m_instances.back()->spin_up_for(m_game_server_id,m_map_server_id,s_template_id++);
         if (m_is_mission_map)
         {
-            QString filename = getMissionPath(mission_base_name(), char_level);
+            QString filename = getMissionPath(mission_base_name(), MissionCategory::MEDIUM);
             m_instances.back()->start(filename);
         }
         else
