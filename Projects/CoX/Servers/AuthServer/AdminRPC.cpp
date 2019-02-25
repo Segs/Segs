@@ -218,6 +218,7 @@ void AdminRPC::on_db_error(AuthDbStatusMessage *ev)
     m_completion_state[static_cast<int>(ev->session_token())] = ev->m_data.message;
 }
 
+/*
  * @brief Get a dictionary of information as used by the WebUI
  * @return Returns a QMap<QString,QVariant> with server information
  */
