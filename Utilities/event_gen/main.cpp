@@ -38,6 +38,10 @@ void generate_cpp(const std::vector<DefFile> &files,const QString &group_name,co
     tgt_file.open(QFile::WriteOnly);
     QTextStream tgt_stream(&tgt_file);
     tgt_stream << "// THIS FILE WAS GENERATED, DO NOT EDIT\n";
+    if(group_name=="MapServerEvents")
+    {
+        tgt_stream << "#include \"BitStream.h\"\n";
+    }
     for(const DefFile &d : files)
     {
         tgt_stream << QString("#include \"%1\"\n\n").arg(d.source_name);
