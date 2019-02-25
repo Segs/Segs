@@ -6,6 +6,7 @@
  */
 
 #include "EmailService.h"
+#include "MapServer/MapInstance.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
 #include "Common/Servers/InternalEvents.h"
@@ -20,31 +21,9 @@
 
 using namespace SEGSEvents;
 
-void EmailService::dispatch(Event *ev)
-{
-    // We are servicing a request from message queue, using dispatchSync as a common processing point.
-    // nullptr result means that the given message is one-way
-    switch (ev->type())
-    {
-    case evEmailHeaderResponse:
-        on_email_header_response(static_cast<EmailHeaderResponse *>(ev)); break;
-    case evEmailReadResponse:
-        on_email_read_response(static_cast<EmailReadResponse *>(ev)); break;
-    case evEmailWasReadByRecipientMessage:
-        on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev)); break;
-    case evEmailHeadersToClientMessage:
-        on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev)); break;
-    case evEmailHeaderToClientMessage:
-        on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev)); break;
-    case evEmailCreateStatusMessage:
-        on_email_create_status(static_cast<EmailCreateStatusMessage *>(ev)); break;
-    default: assert(false); break;
-    }
-}
-
 void EmailService::on_email_header_response(EmailHeaderResponse* ev)
 {
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
+    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
 
     std::vector<EmailHeaders::EmailHeader> email_headers;
     for (const auto &data : ev->m_data.m_email_headers)

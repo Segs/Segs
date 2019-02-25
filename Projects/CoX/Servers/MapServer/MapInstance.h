@@ -142,8 +142,8 @@ class MapInstance final : public EventProcessor
         uint32_t                m_index = 1; // what does client expect this to store, and where do we send it?
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
 
-        GameDBSyncService*      m_sync_service;
-        EmailService*           m_email_service;
+        std::unique_ptr<GameDBSyncService>      m_sync_service;
+        std::unique_ptr<EmailService>           m_email_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -199,6 +199,8 @@ protected:
 
         void                    enqueue_client(MapClientSession *clnt);
         void                    spin_down();
+        void                    init_timers();
+        void                    init_services();
         uint32_t                index() const { return m_index; }
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
@@ -234,7 +236,6 @@ protected:
         void on_afk_update();
         void on_lua_update();
         void send_character_update(Entity *e);
-
 
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
         void on_window_state(SEGSEvents::WindowState *ev);

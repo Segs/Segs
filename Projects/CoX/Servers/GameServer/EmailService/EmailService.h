@@ -33,14 +33,14 @@ private:
 
 public:
     EmailService(SessionStore& session_store) {m_session_store = &session_store;}
+
     void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
     void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
     void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
     void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
     void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
     void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
-
 protected:
 };
 
-#endif // GAMEDBSYNCSERVICE_H
+#endif // EMAILSERVICE_H

@@ -163,11 +163,13 @@ void MapInstance::start(const QString &scenegraph_path)
         qWarning() << "FAILED to load map instance data. Check to see if file exists:" << m_data_path;
     }
 
-    // create a GameDbSyncService
-    m_sync_service = new GameDBSyncService();
-    m_sync_service->set_db_handler(m_game_server_id);
-    m_sync_service->activate();
+    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
+    init_timers();
+    init_services();
+}
 
+void MapInstance::init_timers()
+{
     // world simulation ticks
     m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, world_update_interval, false);
     // state broadcast ticks
@@ -179,10 +181,17 @@ void MapInstance::start(const QString &scenegraph_path)
 
     //Lua timer
     m_lua_timer = std::make_unique<SEGSTimer>(this, Lua_Timer, lua_timer_interval, false );
-
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
-    m_email_service = new EmailService(m_session_store);
-    m_email_service->activate();
+}
+
+void MapInstance::init_services()
+{
+    // create a GameDbSyncService
+    m_sync_service = std::make_unique<GameDBSyncService>();
+    m_sync_service->set_db_handler(m_game_server_id);
+    m_sync_service->activate();
+
+    m_email_service = std::make_unique<EmailService>(m_session_store);
 }
 
 ///
@@ -299,7 +308,9 @@ MapInstance::~MapInstance()
 
     // one last update on entities before termination of MapInstance, and in turn the SyncService as well
     on_update_entities();
-    delete m_sync_service;
+
+    m_sync_service.reset();
+    m_email_service.reset();
 }
 
 void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*ev*/)
