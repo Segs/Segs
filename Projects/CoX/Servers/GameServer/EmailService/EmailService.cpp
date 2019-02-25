@@ -20,16 +20,6 @@
 
 using namespace SEGSEvents;
 
-bool EmailService::per_thread_startup()
-{
-    bool result = true;
-    if(!result)
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService failed to load/configure",-1},0));
-    else
-        postGlobalEvent(new ServiceStatusMessage({"GameDbSyncService loaded/configured",0},0));
-    return result;
-}
-
 void EmailService::dispatch(Event *ev)
 {
     // We are servicing a request from message queue, using dispatchSync as a common processing point.
@@ -52,29 +42,20 @@ void EmailService::dispatch(Event *ev)
     }
 }
 
-void EmailService::serialize_from(std::istream &/*is*/)
-{
-    assert(false);
-}
-
-void EmailService::serialize_to(std::ostream &/*is*/)
-{
-    assert(false);
-}
-
 void EmailService::on_email_header_response(EmailHeaderResponse* ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
+    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
 
+    std::vector<EmailHeaders::EmailHeader> email_headers;
     for (const auto &data : ev->m_data.m_email_headers)
     {
-        EmailHeaders *header = new EmailHeaders(
-                    data.m_email_id,
-                    data.m_sender_name,
-                    data.m_subject,
-                    data.m_timestamp);
-        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
+                                                          data.m_sender_name,
+                                                          data.m_subject,
+                                                          data.m_timestamp});
     }
+
+    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
 }
 
 // EmailHandler will send this event here

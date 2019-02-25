@@ -128,6 +128,8 @@ void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess);
+void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess);
 
 // For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
@@ -165,6 +167,7 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Tailor(const QString &cmd, MapClientSession &sess);
 void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Train(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Kiosk(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
@@ -250,6 +253,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"sendLocation"}, "Send Location Test", cmdHandler_SendLocations, 9},
     {{"developerConsoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
     {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
+    {{"clearTarget"}, "Clear current target", cmdHandler_ClearTarget, 9},
+    {{"startTimer"}, "Create a small timer", cmdHandler_StartTimer, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -287,6 +292,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"tailor"}, "Open Tailor Window", cmdHandler_Tailor, 1},
     {{"cc"}, "Costume Change", cmdHandler_CostumeChange, 1},
     {{"train"}, "Train Up Level", cmdHandler_Train, 1},
+    {{"kiosk"}, "Event kiosk", cmdHandler_Kiosk, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -348,14 +354,15 @@ static Entity* getEntityFromCommand(const QString &cmd, MapClientSession& sess)
 
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
 {
-    uint8_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
+    uint32_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
     if(map_idx == getMapIndex(sess.m_current_map->name()))
         map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
-    QString map_path = getMapPath(map_idx);
-    sess.link()->putq(new MapXferWait(map_path));
+    MapXferData map_data = MapXferData();
+    map_data.m_target_map_name = getMapName(map_idx);
+    sess.link()->putq(new MapXferWait(getMapPath(map_idx)));
 
     HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)
-        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_idx}, 0));
+        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_data}, 0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1268,7 +1275,7 @@ void cmdHandler_AddCostumeSlot(const QString &/*cmd*/, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
+void cmdHandler_ContactStatusList(const QString &/*cmd*/, MapClientSession &sess)
 {
     Contact startingContact;
     startingContact.setName("Officer Flint"); // "OfficerFlint
@@ -1294,7 +1301,7 @@ void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess)
+void cmdHandler_SendLocations(const QString &/*cmd*/, MapClientSession &sess)
 {
     VisitLocation visitlocation;
     visitlocation.m_location_name = "Test1";
@@ -1337,7 +1344,38 @@ void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess)
     sendClientConsoleOutput(sess, msg);
 }
 
+void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
 
+    if(parts.size () != 2)
+    {
+        qCDebug(logSlashCommand) << "ClearTarget. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ClearTarget '/clearTarget <targetIdx>'", sess);
+        return;
+    }
+
+    int idx = parts[1].toInt();
+    setTarget(*sess.m_ent, idx);
+}
+void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size () != 3)
+    {
+        qCDebug(logSlashCommand) << "StartTimer. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "StartTimer '/StartTimer <timerName> <seconds>'", sess);
+        return;
+    }
+    QString message = parts[1].toString();
+    float time = parts[2].toFloat();
+
+    sendMissionObjectiveTimer(sess, message, time);
+
+}
 
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
@@ -1920,6 +1958,11 @@ void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess)
 void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
 {
     playerTrain(sess);
+}
+
+void cmdHandler_Kiosk(const QString &/*cmd*/, MapClientSession &sess)
+{
+    sendKiosk(sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

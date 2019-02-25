@@ -97,6 +97,8 @@ void setTarget(Entity &e, uint32_t target_idx)
 {
     // TODO: set target if enemy, set assist_target if friendly
     e.m_target_idx = target_idx;
+    // To trigger update to client
+    e.m_pchar_things = true;
 }
 
 void setAssistTarget(Entity &e, uint32_t target_idx)
@@ -245,6 +247,61 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_entity = std::make_unique<EntityData>();
     e.m_update_anims = e.m_rare_update   = true;
     e.m_char->m_char_data.m_level       = src->m_Level;
+
+    std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
+
+    e.m_states.init(); // Initialize movement input state pointers
+    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
+
+    PosUpdate p;
+    for(int i = 0; i<64; i++)
+    {
+        // Get timestamp in ms
+        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+
+        p.m_position = e.m_entity_data.m_pos;
+        p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
+        p.m_timestamp = now_ms;
+        addPosUpdate(e, p);
+    }
+}
+
+void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant, int level)
+{
+    e.m_costume_type                    = AppearanceType::NpcCostume;
+    e.m_destroyed                       = false;
+    e.m_type                            = EntType::CRITTER;
+    e.m_create_player                   = false;
+    e.m_is_hero                         = false;
+    e.m_is_villian                      = true;
+    e.m_entity_data.m_origin_idx        = {0};
+    e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
+    e.m_hasname                         = true;
+    e.m_has_supergroup                  = false;
+    e.m_has_team                        = false;
+    e.m_pchar_things                    = true;
+    e.m_faction_data.m_has_faction      = true;
+    e.m_faction_data.m_rank             = src->m_Rank;
+    e.m_target_idx                      = -1;
+    e.m_assist_target_idx               = -1;
+    e.m_move_type                       = MoveType::MOVETYPE_WALK;
+    e.m_motion_state.m_is_falling       = true;
+
+    e.m_char = std::make_unique<Character>();
+    e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
+    e.m_player.reset();
+    e.m_entity = std::make_unique<EntityData>();
+    e.m_update_anims = e.m_rare_update   = true;
+
+    e.m_char->m_char_data.m_combat_level = level;
+    e.m_char->m_char_data.m_level = level;
+    e.m_char->m_char_data.m_security_threat = level;
+
+    // Should pull attributes for critter at X level from DB or Scripts?
+    e.m_char->m_max_attribs.m_HitPoints = 100;
+    e.m_char->m_max_attribs.m_Endurance = 100;
+    e.m_char->m_char_data.m_current_attribs.m_HitPoints = 100;
+    e.m_char->m_char_data.m_current_attribs.m_Endurance = 100;
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 

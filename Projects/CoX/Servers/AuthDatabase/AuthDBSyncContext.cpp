@@ -15,6 +15,7 @@
 #include "Messages/AuthDatabase/AuthDBSyncEvents.h"
 #include "PasswordHasher.h"
 #include "Settings.h"
+#include "Version.h"
 
 #include <ace/Thread.h>
 
@@ -62,7 +63,7 @@ namespace
         return true;
     }
 
-    int64_t getDatabaseVersion(QSqlDatabase &database)
+    int getDatabaseVersion(QSqlDatabase &database)
     {
         QSqlQuery query(FETCH_DB_VERSION_QUERY, database);
 
@@ -131,18 +132,26 @@ bool AuthDbSyncContext::loadAndConfigure()
     db2->setPassword(dbpass);
     m_db.reset(db2); // at this point we become owner of the db
 
+    if(dbdriver == "QMYSQL")
+    {
+        db2->setConnectOptions("MYSQL_OPT_RECONNECT=true");
+    }
+
     if(!m_db->open())
     {
         qCritical().noquote() << "Failed to open database:" << dbname;
+        db2->setConnectOptions();
         return false;
     }
 
-    int64_t db_version = getDatabaseVersion(*m_db);
-    if(db_version != REQUIRED_DB_VERSION)
+    int db_version = getDatabaseVersion(*m_db);
+    int required_db_version = VersionInfo::getRequiredAuthDBVersion();
+
+    if(db_version != required_db_version)
     {
         // we should just stop the server, it isn't going to work anyway
-        qFatal("Wrong database version (%d) Auth database requires version: %d", db_version, REQUIRED_DB_VERSION);
-
+        qFatal("Wrong database version (%d) Auth database requires version: %d", db_version, required_db_version);
+        db2->setConnectOptions();
         return false;
     }
 

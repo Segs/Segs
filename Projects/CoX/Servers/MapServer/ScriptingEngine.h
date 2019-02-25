@@ -12,6 +12,7 @@
 
 class QString;
 struct MapClientSession;
+struct MapInstance;
 
 class ScriptingEngine
 {
@@ -20,6 +21,7 @@ public:
     ~ScriptingEngine();
     void registerTypes();
     int loadAndRunFile(const QString &path);
+    void callFuncWithMapInstance(MapInstance *mi, const char *name, int arg1);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1, glm::vec3 loc);
     std::string callFuncWithClientContext(MapClientSession *client, const char *name, const char *arg1, glm::vec3 loc);
@@ -27,6 +29,7 @@ public:
     std::string callFunc(const char *name,int arg1, glm::vec3 loc);
     std::string callFunc(const char *name, const char *arg1, glm::vec3 loc);
     std::string callFunc(const char *name, std::vector<Contact> contact_list);
+    void updateMapInstance(MapInstance * instance);
     void updateClientContext(MapClientSession * client);
     int runScript(const QString &script_contents,const char *script_name="unnamed script");
     int runScript(MapClientSession *client,const QString &script_contents,const char *script_name="unnamed script");

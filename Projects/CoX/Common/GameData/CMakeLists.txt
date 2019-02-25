@@ -16,6 +16,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PlayerStatistics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.cpp
@@ -54,7 +55,7 @@ SET(target_CPP
     #titles_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/power_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/map_definitions.cpp
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/spawn_definitions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DataStorage.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GameDataStore.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/NpcStore.cpp
@@ -79,6 +80,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/LFG.h
     ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/PlayerStatistics.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.h
@@ -127,6 +129,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/scenegraph_definitions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/shop_definitions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/map_definitions.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/spawn_definitions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/costume_definitions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/bodypart_definitions.h
         #titles_serializers.h
