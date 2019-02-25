@@ -34,8 +34,8 @@ void AdminRPC::dispatch( Event *ev )
     assert(ev);
     switch(ev->type())
     {
-    case evAuthDbErrorMessage:
-        on_db_error(static_cast<AuthDbErrorMessage *>(ev)); break;
+    case evAuthDbStatusMessage:
+        on_db_error(static_cast<AuthDbStatusMessage *>(ev)); break;
     }
 }
 
@@ -97,7 +97,6 @@ bool AdminRPC::ReadConfig()
  * @brief Test method - heyServer
  * @return Returns a bool, always true
  */
-
 bool AdminRPC::heyServer()
 {
     qCDebug(logRPC) << "Someone said hey...";
@@ -108,7 +107,6 @@ bool AdminRPC::heyServer()
  * @brief Test method - helloServer
  * @return Returns a string "Hello Web Browser!"
  */
-
 QString AdminRPC::helloServer()
 {
     qCDebug(logRPC) << "Someone said hello...";
@@ -120,7 +118,6 @@ QString AdminRPC::helloServer()
  * @brief Get the currently running server version number
  * @return Returns a string with the server version (e.g. "0.6.1")
  */
-
 QString AdminRPC::getVersion()
 {
     qCDebug(logRPC) << "Someone requested the version...";
@@ -131,7 +128,6 @@ QString AdminRPC::getVersion()
  * @brief Get the currently running server version name
  * @return Returns a string with the server version name (e.g. "Outbreak")
  */
-
 QString AdminRPC::getVersionName()
 {
     qCDebug(logRPC) << "Someone requested the versions name...";
@@ -142,7 +138,6 @@ QString AdminRPC::getVersionName()
  * @brief A simple ping/pong. Can be used to determine server online status
  * @return Returns a string "pong"
  */
-
 QString AdminRPC::ping()
 {
     qCDebug(logRPC) << "Someone sent a ping...";
@@ -154,7 +149,6 @@ QString AdminRPC::ping()
  * @brief Gets the start time of the currently running server
  * @return Returns a string with currentSecsSinceEpoch
  */
-
 QString AdminRPC::getStartTime()
 {
     qCDebug(logRPC) << "Someone requested the server start time...";
@@ -168,7 +162,6 @@ QString AdminRPC::getStartTime()
  * @param[in]   access_level
  * @return      Returns a string, if successful "OK" otherwise an error
  */
-
 QString AdminRPC::addUser(const QString &username, const QString &password, int access_level)
 {
     QString result;
@@ -220,7 +213,7 @@ QString AdminRPC::addUser(const QString &username, const QString &password, int 
 
 // Internal methods
 
-void AdminRPC::on_db_error(AuthDbErrorMessage *ev)
+void AdminRPC::on_db_error(AuthDbStatusMessage *ev)
 {
     m_completion_state[static_cast<int>(ev->session_token())] = ev->m_data.message;
 }

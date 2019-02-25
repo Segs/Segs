@@ -8,11 +8,12 @@
 #pragma once
 
 // ACE includes
-#include <ace/INET_Addr.h>
-#include <ace/Synch.h>
 
 #include "Servers/HandlerLocator.h"
 #include "EventProcessor.h"
+
+#include <ace/INET_Addr.h>
+#include <ace/Synch.h>
 
 #include <QObject>
 #include <QVariant>
@@ -21,7 +22,7 @@
 namespace SEGSEvents
 {
 struct CreateAccountMessage;
-struct AuthDbErrorMessage;
+struct AuthDbStatusMessage;
 }
 
 enum class SocketType
@@ -40,7 +41,6 @@ private:
     AdminRPC(); // restrict construction to startRPCServer
     ~AdminRPC() override;
 
-
 public:
     Q_INVOKABLE bool heyServer();
     Q_INVOKABLE QString helloServer();
@@ -58,7 +58,7 @@ protected:
     QString                             m_start_time;
     SocketType                          m_socket_type;
     static uint64_t                     s_last_token;
-    void                                on_db_error(SEGSEvents::AuthDbErrorMessage *ev);
+    void                                on_db_error(SEGSEvents::AuthDbStatusMessage *ev);
     QMap<int, QString>                  m_completion_state;
 
 signals:

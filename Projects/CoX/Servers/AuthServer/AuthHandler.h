@@ -116,7 +116,7 @@ protected:
     void        on_client_expected(SEGSEvents::ExpectClientResponse *ev);
     void        on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
     void        on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
-    void        on_db_error(SEGSEvents::AuthDbErrorMessage *ev);
+    void        on_db_error(SEGSEvents::AuthDbStatusMessage *ev);
 
     void        dispatch(SEGSEvents::Event *ev) override;
 public:
