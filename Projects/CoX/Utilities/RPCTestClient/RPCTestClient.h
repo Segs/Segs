@@ -5,8 +5,7 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#ifndef RPCTESTCLIENT_H
-#define RPCTESTCLIENT_H
+#pragma once
 
 #include <QMainWindow>
 #include <QComboBox>
@@ -32,5 +31,3 @@ private:
     QList<QComboBox*> m_type_combo_boxes;
     void populate();
 };
-
-#endif // RPCTESTCLIENT_H
