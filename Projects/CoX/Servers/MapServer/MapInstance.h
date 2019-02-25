@@ -15,6 +15,7 @@
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "NpcGenerator.h"
+#include "CritterGenerator.h"
 
 #include <map>
 #include <memory>
@@ -133,7 +134,7 @@ class MapInstance final : public EventProcessor
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
         QString                m_data_path;
-        QMultiHash<QString, glm::mat4>  m_all_spawners;        
+        QMultiHash<QString, glm::mat4>  m_all_spawners;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
         std::unique_ptr<SEGSTimer> m_resend_timer;
         std::unique_ptr<SEGSTimer> m_link_timer;
@@ -166,6 +167,8 @@ public:
         ListenAndLocationAddresses m_addresses; //! this value is sent to the clients
         MapSceneGraph *         m_map_scenegraph;
         NpcGeneratorStore       m_npc_generators;
+        CritterGeneratorStore   m_critter_generators;
+        SpawnDefinitions        m_enemy_spawn_definitions;
         std::vector<LuaTimer>   m_lua_timers;
 
 public:

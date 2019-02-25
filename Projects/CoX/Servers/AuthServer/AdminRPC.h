@@ -47,6 +47,7 @@ public:
     Q_INVOKABLE QString getVersion();
     Q_INVOKABLE QString getVersionName();
     Q_INVOKABLE QString getStartTime();
+    Q_INVOKABLE QVariantMap getWebUIData(QString const& version);
     Q_INVOKABLE QString ping();
     Q_INVOKABLE QString addUser(const QString &username, const QString &password, int access_level);
 

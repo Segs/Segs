@@ -55,7 +55,7 @@ SET(target_CPP
     #titles_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/power_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/map_definitions.cpp
-
+    ${CMAKE_CURRENT_SOURCE_DIR}/spawn_definitions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DataStorage.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GameDataStore.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/NpcStore.cpp
@@ -129,6 +129,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/scenegraph_definitions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/shop_definitions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/map_definitions.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/spawn_definitions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/costume_definitions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/bodypart_definitions.h
         #titles_serializers.h

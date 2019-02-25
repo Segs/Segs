@@ -53,6 +53,7 @@ public:
     Entity *        CreatePlayer();
     Entity *        CreateNpc(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant);
     Entity *        CreateGeneric(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant, EntType type);
+    Entity *        CreateCritter(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant, int level);
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }
