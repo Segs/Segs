@@ -174,19 +174,12 @@ public:
         m_index=idx;
         m_data=gad;
     }
-    CharacterResponse(EventProcessor *src,uint8_t idx, Character *character, const GameAccountResponseData &gad) : GameLinkEvent(GameEventTypes::evCharacterResponse,src)
-    {
-        m_index=idx;
-        m_data=gad;
-        m_character = character;
-    }
     void serializeto(BitStream &bs) const override;
     void serializefrom(BitStream &bs) override;
     // [[ev_def:field]]
     uint8_t m_index;
     // [[ev_def:field]]
     GameAccountResponseData m_data;
-    Character *m_character;
     EVENT_IMPL(CharacterResponse)
 };
 
@@ -224,8 +217,6 @@ class CharacterSlots : public GameLinkEvent
 public:
     CharacterSlots():GameLinkEvent(GameEventTypes::evCharacterSlots)
     {}
-    CharacterSlots(Character *character):GameLinkEvent(GameEventTypes::evCharacterSlots)
-    { m_character = character; }
     void serializeto( BitStream &tgt ) const override;
     void serializefrom( BitStream &src ) override;
 
@@ -235,7 +226,6 @@ public:
     std::array<uint8_t,16> m_clientinfo;
     // [[ev_def:field]]
     GameAccountResponseData m_data;
-    Character *m_character;
     EVENT_IMPL(CharacterSlots)
 };
 

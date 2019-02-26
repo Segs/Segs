@@ -151,7 +151,7 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
     m_session_store.add_to_active_sessions(&session);
     //Create character objects.
 
-    CharacterSlots *slots_event=new CharacterSlots(&session.m_character);
+    CharacterSlots *slots_event=new CharacterSlots();
     slots_event->m_data = std::move(ev->m_data);
     session.link()->putq(slots_event);
 }
@@ -199,7 +199,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     GameSession &session = m_session_store.session_from_event(ev);
     assert(session.m_game_account.valid());
 
-    ev->src()->putq(new CharacterResponse(this,ev->m_index, &session.m_character, session.m_game_account));
+    ev->src()->putq(new CharacterResponse(this,ev->m_index, session.m_game_account));
 }
 
 void GameHandler::on_idle(Idle */*ev*/)

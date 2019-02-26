@@ -84,12 +84,13 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     tgt.StorePackedBits(1, 2); //opcode
     tgt.StorePackedBits(1,static_cast<uint32_t>(m_data.m_max_slots));
     assert(m_data.m_max_slots>0);
+    Character converted;
     for(int i=0; i<m_data.m_max_slots; i++)
     {
         EntityData entity_data;
         PlayerData player_data;
-        toActualCharacter(m_data.m_characters[i], *m_character, player_data, entity_data);
-        m_character->serializetoCharsel(tgt, getDisplayMapName(entity_data.m_map_idx));
+        toActualCharacter(m_data.m_characters[i], converted, player_data, entity_data);
+        converted.serializetoCharsel(tgt, getDisplayMapName(entity_data.m_map_idx));
     }
     //tgt.StoreBitArray(m_clientinfo,128);
 }
@@ -115,13 +116,14 @@ void CharacterResponse::serializeto( BitStream &bs ) const
     GameAccountResponseCharacterData indexed_character(m_data.get_character(m_index));
     PlayerData player_data;
     EntityData entity_data;
-    toActualCharacter(indexed_character, *m_character, player_data, entity_data);
+    Character converted;
+    toActualCharacter(indexed_character, converted, player_data, entity_data);
     bs.StorePackedBits(1,6); // opcode
 
     if(indexed_character.m_name.compare(EMPTY_STRING)!=0)// actual character was read from db
     {
         bs.StorePackedBits(1, m_index);
-        m_character->getCurrentCostume()->storeCharselParts(bs);
+        converted.getCurrentCostume()->storeCharselParts(bs);
     }
     else
     {
