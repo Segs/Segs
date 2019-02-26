@@ -224,8 +224,8 @@ class CharacterSlots : public GameLinkEvent
 public:
     CharacterSlots():GameLinkEvent(GameEventTypes::evCharacterSlots)
     {}
-    CharacterSlots(std::vector<Character> *characters):GameLinkEvent(GameEventTypes::evCharacterSlots)
-    { m_characters = characters; }
+    CharacterSlots(Character *character):GameLinkEvent(GameEventTypes::evCharacterSlots)
+    { m_character = character; }
     void serializeto( BitStream &tgt ) const override;
     void serializefrom( BitStream &src ) override;
 
@@ -235,7 +235,7 @@ public:
     std::array<uint8_t,16> m_clientinfo;
     // [[ev_def:field]]
     GameAccountResponseData m_data;
-    std::vector<Character> *m_characters;
+    Character *m_character;
     EVENT_IMPL(CharacterSlots)
 };
 
