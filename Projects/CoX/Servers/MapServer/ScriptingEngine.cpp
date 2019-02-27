@@ -228,6 +228,19 @@ void ScriptingEngine::registerTypes()
           "z", &glm::vec3::z
       );
 
+      m_private->m_lua.new_usertype<CritterSpawnPoint>("CritterSpawnPoint",
+          sol::constructors<CritterSpawnPoint>(),
+          "name", sol::property(&CritterSpawnPoint::getName, &CritterSpawnPoint::setName),
+          "isVictim", &CritterSpawnPoint::m_is_victim,
+          "position", &CritterSpawnPoint::m_relative_position,
+          "rotation", &CritterSpawnPoint::m_rotation);
+
+      m_private->m_lua.new_usertype<CritterSpawnLocations>("critterSpawnLocations",
+          sol::constructors<CritterSpawnLocations>(),
+          "nodeName", sol::property(&CritterSpawnLocations::getNodeName, &CritterSpawnLocations::setNodeName),
+          "allSpawnPoints", &CritterSpawnLocations::m_all_spawn_points,
+          "spawnProbability", &CritterSpawnLocations::m_spawn_probability,
+          "villain", &CritterSpawnLocations::m_villain_radius);
 
       m_private->m_lua["ParseContactButton"] = [this](uint32_t button_id)
         {
