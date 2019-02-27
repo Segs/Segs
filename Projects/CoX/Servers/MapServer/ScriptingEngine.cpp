@@ -261,6 +261,16 @@ void ScriptingEngine::registerTypes()
         addNpcWithOrientation(*mi, npc_def_name, loc, variation, ori, name);
     };
 
+    m_private->m_lua["MapInstance"]["AddEnemy"] = [this](const char* npc_def, glm::vec3 &loc, glm::vec3 &ori, int variation, const char* npc_name, int level, const char* faction_name, int rank)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        QString npc_def_name = QString::fromUtf8(npc_def);
+        QString name = QString::fromUtf8(npc_name);
+        QString faction = QString::fromUtf8(faction_name);
+        addEnemy(*mi, npc_def_name, loc, variation, ori, name, level, faction, rank);
+    };
+
+
     m_private->m_lua["MapInstance"]["RemoveNpc"] = [this](int entityIdx)
     {
         MapInstance *mi = m_private->m_lua["map"];

@@ -20,6 +20,9 @@ void EmailHandler::dispatch(Event *ev)
     switch(ev->type())
     {
         // EmailEvents
+        case EmailEventTypes::evEmailHeaderRequest:
+            on_email_header(static_cast<EmailHeaderRequest *>(ev));
+            break;
         case EmailEventTypes::evEmailReadRequest:
             on_email_read(static_cast<EmailReadRequest *>(ev));
             break;
@@ -49,7 +52,9 @@ void EmailHandler::dispatch(Event *ev)
         case Internal_EventTypes::evClientDisconnectedMessage:
             on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
             break;
-        default: assert(false); break;
+        default:
+            qCritical() << "EmailHandler dispatch hits default! Event info: " + QString(ev->info());
+            break;
     }
 }
 
@@ -111,7 +116,12 @@ void EmailHandler::on_email_header(EmailHeaderRequest *msg)
     int unread_emails_count = 0;
     fill_email_headers(email_headers, msg->m_data.m_user_id, unread_emails_count);
 
-    msg->src()->putq(new EmailHeaderResponse({email_headers}, msg->session_token()));
+    const ClientSessionData &session (m_state.m_stored_client_datas[msg->m_data.m_user_id]);
+    EventProcessor *session_map_instance = HandlerLocator::getMapInstance_Handler(
+                session.m_server_id,
+                session.m_instance_id);
+
+    session_map_instance->putq(new EmailHeaderResponse({email_headers}, msg->session_token()));
 }
 
 void EmailHandler::on_get_emails_response(GetEmailsResponse *msg)

@@ -282,18 +282,18 @@ static void serialize(Archive & archive, SeqBitNames & src)
 }
 namespace cereal
 {
-static std::string save_minimal(cereal::JSONOutputArchive & archive, const SeqBitNames & src)
+static std::string save_minimal(cereal::JSONOutputArchive & /*archive*/, const SeqBitNames & src)
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums::SeqBitNames>();
     QString val = metaEnum.valueToKey(std::underlying_type<SeqBitNames>::type(src));
     return val.toStdString();
 }
-static void load_minimal(const cereal::JSONInputArchive & archive, SeqBitNames & val,const std::string &src)
+static void load_minimal(const cereal::JSONInputArchive & /*archive*/, SeqBitNames & val,const std::string &src)
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums::SeqBitNames>();
     val  = SeqBitNames(metaEnum.keyToValue(src.c_str()));
 }
-static std::string save_minimal(cereal::JSONOutputArchive & archive, const AttackType & src)
+static std::string save_minimal(cereal::JSONOutputArchive & /*archive*/, const AttackType & src)
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums_Power::AttackType>();
     QString val = metaEnum.valueToKey(std::underlying_type<AttackType>::type(src));

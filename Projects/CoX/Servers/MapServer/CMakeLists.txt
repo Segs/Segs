@@ -4,6 +4,7 @@ else()
     set(SCRIPTING_CPP ScriptingEngine_Null.cpp)
 endif()
 SET(target_CPP
+    CritterGenerator.cpp
     DataHelpers.cpp
     EntityStorage.cpp
     EntityUpdateCodec.cpp
@@ -23,6 +24,7 @@ SET(target_CPP
     ${SCRIPTING_CPP}
 )
 SET(target_INCLUDE
+    CritterGenerator.h
     DataHelpers.h
     EntityStorage.h
     EntityUpdateCodec.h

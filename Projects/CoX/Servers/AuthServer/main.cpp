@@ -18,7 +18,7 @@
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Logging.h"
-#include "version.h"
+#include "Version.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "AuthServer.h"
@@ -218,13 +218,13 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
         file_name.replace("]", "");
         if (file_name.isEmpty())
             file_name = "generic";
-        file_name.append("_" + todays_date.toString("ddMMyy"));
+        file_name = todays_date.toString("yyyy-MM-dd") + "_" + file_name;
         QString log_path = QString("logs/") + file_name + ".log";
         segs_log_target.setFileName(log_path);
     }
     else // If combine_logs is on will log all to a single file.
     {
-        QString log_path = QString("logs/all_") + todays_date.toString("ddMMyy") + ".log";
+        QString log_path = QString("logs/") + todays_date.toString("yyyy-MM-dd") + "_all.log";
         segs_log_target.setFileName(log_path);
     }
     settings.endGroup();

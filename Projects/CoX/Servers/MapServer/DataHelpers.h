@@ -56,9 +56,6 @@ void readEmailMessage(MapClientSession& sess, const uint32_t email_id);
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message);
 void deleteEmailHeaders(MapClientSession& sess, const uint32_t email_id);
 
-// to get the current time since whatever they set as their beginning
-int64_t getSecsSince2000Epoch();
-
 /*
  * SendUpdate Wrappers
  */
@@ -151,3 +148,6 @@ void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& m
 void addRelayRaceResult(MapClientSession &cl, RelayRaceResult &raceResult);
 RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment);
 void addHideAndSeekResult(MapClientSession &cl, int points);
+
+void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
+void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);

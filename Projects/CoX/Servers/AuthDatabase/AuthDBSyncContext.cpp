@@ -15,6 +15,7 @@
 #include "Messages/AuthDatabase/AuthDBSyncEvents.h"
 #include "PasswordHasher.h"
 #include "Settings.h"
+#include "Version.h"
 
 #include <ace/Thread.h>
 
@@ -62,7 +63,7 @@ namespace
         return true;
     }
 
-    int64_t getDatabaseVersion(QSqlDatabase &database)
+    int getDatabaseVersion(QSqlDatabase &database)
     {
         QSqlQuery query(FETCH_DB_VERSION_QUERY, database);
 
@@ -143,11 +144,13 @@ bool AuthDbSyncContext::loadAndConfigure()
         return false;
     }
 
-    int64_t db_version = getDatabaseVersion(*m_db);
-    if(db_version != REQUIRED_DB_VERSION)
+    int db_version = getDatabaseVersion(*m_db);
+    int required_db_version = VersionInfo::getRequiredAuthDBVersion();
+
+    if(db_version != required_db_version)
     {
         // we should just stop the server, it isn't going to work anyway
-        qFatal("Wrong database version (%d) Auth database requires version: %d", db_version, REQUIRED_DB_VERSION);
+        qFatal("Wrong database version (%d) Auth database requires version: %d", db_version, required_db_version);
         db2->setConnectOptions();
         return false;
     }
