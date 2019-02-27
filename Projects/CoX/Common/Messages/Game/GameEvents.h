@@ -12,7 +12,6 @@
 //#include "CRUDP_Protocol/CRUD_Link.h"
 #include "CRUDP_Protocol/CRUD_Events.h"
 #include "Servers/InternalEvents.h"
-#include "GameData/Character.h"
 
 // GameEvents make use of some of the event Data defined in GameDBSyncEvents
 #include "Messages/GameDatabase/GameDBSyncEvents.h"

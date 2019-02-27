@@ -45,8 +45,6 @@ struct GameSession
     eTravelDirection m_direction;
     uint8_t m_access_level=0;
 
-    Character m_character;
-
     uint32_t auth_id() const { return m_auth_account_id; }
     void reset()
     {
