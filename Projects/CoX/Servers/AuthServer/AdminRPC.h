@@ -35,6 +35,7 @@ public:
     Q_INVOKABLE QString getVersion();
     Q_INVOKABLE QString getVersionName();
     Q_INVOKABLE QString getStartTime();
+    Q_INVOKABLE QVariantMap getWebUIData(QString const& version);
     Q_INVOKABLE QString ping();
 protected:
     ACE_INET_Addr                       m_location;     //!< address rpc server will bind at.

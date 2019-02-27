@@ -98,6 +98,11 @@ void SettingsDialog::open_settings_dialog()
 void SettingsDialog::read_config_file(QString filePath)
 {
     QSettings config_file(filePath, QSettings::IniFormat);
+    config_file.beginGroup("MetaData");
+    QString config_version = config_file.value("config_version","").toString();
+    ui->config_version_data_label->setText(config_version);
+    config_file.endGroup(); // MetaData   
+    
     config_file.beginGroup("AdminServer");
     config_file.beginGroup("AccountDatabase");
     QString acc_db_driver = config_file.value("db_driver","").toString();
@@ -206,6 +211,10 @@ void SettingsDialog::generate_default_config_file(QString ip)
 {
     QSettings config_file_write("settings.cfg", QSettings::IniFormat);
     QSettings settings_template("settings_template.cfg", QSettings::IniFormat);
+    config_file_write.beginGroup("MetaData");
+    config_file_write.setValue("config_version", settings_template.value("MetaData/config_version","").toString());
+    config_file_write.endGroup(); // MetaData
+
     config_file_write.beginGroup("AdminServer");
     config_file_write.beginGroup("AccountDatabase");
     config_file_write.setValue("db_driver","QSQLITE");
@@ -444,7 +453,7 @@ void SettingsDialog::send_maps_dir_config_check()
 
 void SettingsDialog::purge_logs()
 {
-    QString todays_date = QDate(QDate::currentDate()).toString("ddMMyy");
+    QDate todays_date = QDate::currentDate();
     QString log_dir = "logs/";
     QStringList existing_logs = QDir(log_dir).entryList(QDir::Files);
     QStringList logs_to_delete;
@@ -454,10 +463,8 @@ void SettingsDialog::purge_logs()
         QStringList parts = file.split("_");
         if (!parts.isEmpty())
         {
-            QString date = parts.value(parts.length() - 1);
-            date.replace(".log", "");
-            int compare = QString::compare(date, todays_date, Qt::CaseInsensitive);
-            if (compare < 0)
+            QDate date = QDate::fromString(parts.value(0), "yyyy-MM-dd");
+            if (date < todays_date)
                 logs_to_delete.append(file);
         }
     }

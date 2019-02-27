@@ -27,7 +27,7 @@ public:
         bs.StorePackedBits(1, 12); //packet 12
         bs.StoreString(reason);
     }
-    void serializefrom(BitStream &bs) override
+    void serializefrom(BitStream &/*bs*/) override
     {
         qWarning() << "Server does not receive ForceLogout packet from Client.";
     }
