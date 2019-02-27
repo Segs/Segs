@@ -14,7 +14,8 @@ private:
     int m_target_version = 8;
     QString m_name = SEGS_GAME_DB_NAME;
     std::vector<TableSchema> m_table_schemas = {
-        {"db_version", 8, "2018-01-23 10:27:01"},
+        {"db_version", 8, "2018-05-03 17:52:33"},
+        {"emails", 0, "2018-09-23 08:00:00"},
     };
 
 public:
@@ -25,10 +26,24 @@ public:
     // execute the migration
     bool execute(DBConnection *db) override
     {
-        // update database table schemas here
-        qWarning().noquote() << QString("CANNOT UPGRADE from %1 to %2. Please overwrite your databases with `create -f`")
-                          .arg(getTargetVersion())
-                          .arg(db->getName());
-        return false;
+        // This update adds the emails table
+        db->m_query->prepare("INSERT INTO table_versions VALUES(8,'emails',0,'2018-09-23 08:00:00')");
+        if(!db->m_query->exec())
+            return false;
+
+        QString email_table = QStringLiteral("CREATE TABLE 'emails'("
+            "`id`	INTEGER PRIMARY KEY AUTOINCREMENT,"
+            "`sender_id`	INTEGER NOT NULL,"
+            "`recipient_id` INTEGER NOT NULL,"
+            "`email_data` BLOB,"
+            "FOREIGN KEY(`sender_id`) REFERENCES characters ( id ) ON DELETE CASCADE,"
+            "FOREIGN KEY(`recipient_id`) REFERENCES characters ( id ) ON DELETE CASCADE"
+            ")");
+
+        db->m_query->prepare(email_table);
+        if(!db->m_query->exec())
+            return false;
+
+        return true;
     }
 };

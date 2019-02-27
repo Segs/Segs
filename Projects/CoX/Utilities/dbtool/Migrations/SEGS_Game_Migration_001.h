@@ -61,54 +61,40 @@ public:
 
         while(db->m_query->next())
         {
-            QVariantMap work_area;
-            work_area["char_level"] = db->m_query->value(4);
-            work_area["archetype"] = db->m_query->value(5);
-            work_area["origin"] = db->m_query->value(6);
-            work_area["current_map"] = db->m_query->value(8);
-            work_area["last_costume_id"] = db->m_query->value(9);
-            work_area["inf"] = db->m_query->value(13);
-            work_area["xp"] = db->m_query->value(14);
-            work_area["xpdebt"] = db->m_query->value(15);
-            work_area["xppatrol"] = db->m_query->value(16);
-            work_area["alignment"] = db->m_query->value(17);
-            work_area["title"] = db->m_query->value(24);
-            work_area["badgetitle"] = db->m_query->value(25);
-            work_area["specialtitle"] = db->m_query->value(26);
-
             // store in json object to save to blob
-            QJsonObject charObject;
-            charObject.insert("Level", QJsonValue::fromVariant(work_area["char_level"]));
-            charObject.insert("CombatLevel", QJsonValue::fromVariant(work_area["char_level"])); // should have the same value as char_level
-            charObject.insert("XP", QJsonValue::fromVariant(work_area["xp"]));
-            charObject.insert("XPDebt", QJsonValue::fromVariant(work_area["xpdebt"]));
-            charObject.insert("XPPatrol", QJsonValue::fromVariant(work_area["xppatrol"]));
-            charObject.insert("Influence", QJsonValue::fromVariant(work_area["inf"]));
+            QJsonObject char_obj;
+            char_obj.insert("Level", db->m_query->value("char_level").toJsonValue());
+            char_obj.insert("CombatLevel", db->m_query->value("char_level").toJsonValue()); // should have the same value as char_level
+            char_obj.insert("XP", db->m_query->value("xp").toJsonValue());
+            char_obj.insert("XPDebt", db->m_query->value("xpdebt").toJsonValue());
+            char_obj.insert("XPPatrol", db->m_query->value("xppatrol").toJsonValue());
+            char_obj.insert("Influence", db->m_query->value("inf").toJsonValue());
 
-            QJsonArray titlesArray;
-            titlesArray.push_back(QJsonValue::fromVariant(work_area["title"]));
-            titlesArray.push_back(QJsonValue::fromVariant(work_area["badgetitle"]));
-            titlesArray.push_back(QJsonValue::fromVariant(work_area["specialtitle"]));
+            QJsonObject titles_obj;
+            titles_obj.insert("value0", db->m_query->value("title").toJsonValue());
+            titles_obj.insert("value1", db->m_query->value("badgetitle").toJsonValue());
+            titles_obj.insert("value2", db->m_query->value("specialtitle").toJsonValue());
 
-            charObject.insert("HasTitles", QJsonValue(titlesArray.isEmpty()));
-            charObject.insert("ThePrefix", QJsonValue(false));
-            charObject.insert("Title", titlesArray);
+            char_obj.insert("HasTitles", titles_obj.isEmpty());
+            char_obj.insert("ThePrefix", false);
+            char_obj.insert("Title", titles_obj);
 
-            charObject.insert("BattleCry", "");
-            charObject.insert("Description", "");
-            charObject.insert("AFK", false);
-            charObject.insert("AfkMsg", "");
-            charObject.insert("LFG", false);
-            charObject.insert("Alignment", "hero");
-            charObject.insert("LastCostumeId", QJsonValue::fromVariant(work_area["last_costume_id"]));
-            charObject.insert("Class", QJsonValue::fromVariant(work_area["archetype"]));
-            charObject.insert("Origin", QJsonValue::fromVariant(work_area["origin"]));
-            charObject.insert("MapName", QJsonValue::fromVariant(work_area["current_map"]));
-            charObject.insert("SuperGroupCostume", false);
-            charObject.insert("UsingSGCostume", false);
+            char_obj.insert("BattleCry", "");
+            char_obj.insert("Description", "");
+            char_obj.insert("AFK", false);
+            char_obj.insert("AfkMsg", "");
+            char_obj.insert("LFG", false);
+            char_obj.insert("Alignment", "hero");
+            char_obj.insert("LastCostumeId", db->m_query->value("last_costume_id").toJsonValue());
+            char_obj.insert("Class", db->m_query->value("archetype").toJsonValue());
+            char_obj.insert("Origin", db->m_query->value("origin").toJsonValue());
+            char_obj.insert("MapName", db->m_query->value("current_map").toJsonValue());
+            char_obj.insert("SuperGroupCostume", false);
+            char_obj.insert("UsingSGCostume", false);
 
-            QJsonDocument doc(charObject);
-            qDebug().noquote() << doc.toJson();
+            db->saveBlob(char_obj);
+            QJsonDocument doc(char_obj);
+            //qDebug().noquote() << doc.toJson();
 
             // fourth: move values to new location (chardata)
             QString querytext = QString("UPDATE characters SET chardata='%1'").arg(QString(doc.toJson()));

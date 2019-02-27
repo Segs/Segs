@@ -14,7 +14,10 @@ private:
     int m_target_version = 7;
     QString m_name = SEGS_GAME_DB_NAME;
     std::vector<TableSchema> m_table_schemas = {
-        {"db_version", 7, "2018-01-23 10:27:01"},
+        {"db_version", 7, "2018-05-03 17:52:33"},
+        {"accounts", 1, "2017-05-03 12:56:03"},
+        {"characters", 8, "2018-05-04 14:58:27"},
+        {"supergroups", 1, "2018-05-03 12:56:43"},
     };
 
 public:
@@ -25,11 +28,105 @@ public:
     // execute the migration
     bool execute(DBConnection *db) override
     {
-        // update database table schemas here
-        qWarning().noquote() << QString("CANNOT UPGRADE from %1 to %2. Please overwrite your databases with `create -f`")
-                          .arg(getTargetVersion())
-                          .arg(db->getName());
+        // first: select the data from characters table
+        db->m_query->prepare("SELECT * FROM 'characters'");
+        if(!db->m_query->exec())
+            return false;
 
-        return false;
+        // second column copy data over to character data blob
+        while(db->m_query->next())
+        {
+            QJsonObject char_obj = db->m_query->value("chardata").toJsonObject();
+            db->loadBlob(char_obj);
+
+            QJsonObject cur_attribs;
+            for(int i = 0; i < 24; ++i)
+            {
+                // fill 24 Damage Types
+                QString keyname = QString("DamageType%1").arg(i, 2, 10, QChar('0'));
+                cur_attribs.insert(keyname, 0);
+            }
+
+            cur_attribs.insert("HitPoints", db->m_query->value("hitpoints").toJsonValue());
+            cur_attribs.insert("Endurance", db->m_query->value("endurance").toJsonValue());
+            cur_attribs.insert("ToHit", 0);
+
+            for(int i = 0; i < 24; ++i)
+            {
+                // fill 24 Defense Types
+                QString keyname = QString("DefenseType00%1").arg(i, 2, 10, QChar('0'));
+                cur_attribs.insert(keyname, 0);
+            }
+
+            cur_attribs.insert("Defense", 0);
+            cur_attribs.insert("Evade", 0);
+            cur_attribs.insert("SpeedRunning", 0);
+            cur_attribs.insert("SpeedFlying", 0);
+            cur_attribs.insert("SpeedSwimming", 0);
+            cur_attribs.insert("SpeedJumping", 0);
+            cur_attribs.insert("JumpHeight", 0);
+            cur_attribs.insert("MovementControl", 0);
+            cur_attribs.insert("MovementFriction", 0);
+            cur_attribs.insert("Stealth", 0);
+            cur_attribs.insert("StealthRadius", 0);
+            cur_attribs.insert("PerceptionRadius", 0);
+            cur_attribs.insert("Regeneration", 0);
+            cur_attribs.insert("Recovery", 0);
+            cur_attribs.insert("ThreatLevel", 0);
+            cur_attribs.insert("Taunt", 0);
+            cur_attribs.insert("Confused", 0);
+            cur_attribs.insert("Afraid", 0);
+            cur_attribs.insert("Held", 0);
+            cur_attribs.insert("Immobilized", 0);
+            cur_attribs.insert("Stunned", 0);
+            cur_attribs.insert("Sleep", 0);
+            cur_attribs.insert("Fly", 0);
+            cur_attribs.insert("Jumppack", 0);
+            cur_attribs.insert("Teleport", 0);
+            cur_attribs.insert("Untouchable", 0);
+            cur_attribs.insert("Intangible", 0);
+            cur_attribs.insert("OnlyAffectsSelf", 0);
+            cur_attribs.insert("Knockup", 0);
+            cur_attribs.insert("Knockback", 0);
+            cur_attribs.insert("Repel", 0);
+            cur_attribs.insert("Accuracy", 0);
+            cur_attribs.insert("Radius", 0);
+            cur_attribs.insert("Arc", 0);
+            cur_attribs.insert("Range", 0);
+            cur_attribs.insert("TimeToActivate", 0);
+            cur_attribs.insert("RechargeTime", 0);
+            cur_attribs.insert("InterruptTime", 0);
+            cur_attribs.insert("EnduranceDiscount", 0);
+
+            char_obj.insert("CurrentAttribs", cur_attribs); // cereal objects are wrapped in key 'value0'
+
+            db->saveBlob(char_obj);
+            QJsonDocument chardoc(char_obj);
+            //qCDebug(logDB).noquote() << chardoc.toJson(); // print output for debug
+
+            QString querytext = QString("UPDATE characters SET chardata='%1'")
+                    .arg(QString(chardoc.toJson()));
+            if(!db->m_query->exec(querytext))
+                return false;
+        }
+
+        // the rest of this update just simplified our table foreign keys
+        QStringList queries = {
+            "ALTER TABLE characters DROP FOREIGN KEY account_id",        // drop key because we're going to change it
+            "ALTER TABLE characters ADD FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE",
+            "ALTER TABLE supergroups DROP COLUMN supergroup_id",        // drop column from supergroups table. this foreign key was never actually set
+            "ALTER TABLE accounts DROP COLUMN account_id",              // drop column from accounts table. this foreign key has been replaced
+            "ALTER TABLE characters DROP COLUMN hitpoints, endurance",  // drop columns from characters table
+        };
+
+        for(auto &q : queries)
+        {
+            db->m_query->prepare(q);
+            if(!db->m_query->exec())
+                return false;
+        }
+
+        // we're done, return true
+        return true;
     }
 };

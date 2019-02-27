@@ -22,7 +22,10 @@
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
 #include "SelectScriptDialog.h"
+
+#include "Settings.h"
 #include "version.h"
+
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -192,8 +195,13 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
-    QFileInfo file1("segs.db");
-    QFileInfo file2("segs_game.db");
+
+    QFileInfo config_file("settings.cfg");
+    QString config_file_path = config_file.absoluteFilePath();
+    QSettings config(config_file_path, QSettings::IniFormat, nullptr);
+
+    QFileInfo file1(config.value(QStringLiteral("AdminServer/AccountDatabase/db_name"), "segs.db").toString());
+    QFileInfo file2(config.value(QStringLiteral("AdminServer/CharacterDatabase/db_name"), "segs_game.db").toString());
     if(on_startup) // Runs this check on startup or for checking creation in other methods
     {
         if(file1.exists() && file2.exists())
@@ -223,7 +231,8 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
             db_overwrite_msgBox.setDefaultButton(QMessageBox::No);
             db_overwrite_msgBox.setIcon(QMessageBox::Warning);
             int confirm = db_overwrite_msgBox.exec();
-            switch (confirm) {
+            switch (confirm)
+            {
             case QMessageBox::Yes:
                 SEGSAdminTool::create_databases(true);
                 break;

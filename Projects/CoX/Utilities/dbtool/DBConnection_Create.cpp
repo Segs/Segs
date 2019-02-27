@@ -5,6 +5,11 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
+/*!
+ * @addtogroup dbtool Projects/CoX/Utilities/dbtool
+ * @{
+ */
+
 #include "DatabaseConfig.h"
 #include "DBConnection.h"
 
@@ -111,28 +116,18 @@ bool DBConnection::runQueryFromFile(QFile &source_file)
     for(QString &q : scriptQueries) // Execute each command in the source file.
     {
         q = q.simplified(); // remove newlines and excess whitespace
-
+        /*!
+         * @addtogroup dbtool Projects/CoX/Utilities/dbtool
+         * @{
+         */
         if(q.isEmpty())
             continue;
 
-        if(!m_query->prepare(q))
-        {
-            qCritical("One of the queries failed to prepare.\n Error detail: %s\n",
-                      qPrintable(m_query->lastError().text()));
-            qCritical() << m_query->lastQuery();
+        if(!runQuery(q))
             return false;
-        }
-
-        if(!m_query->exec())
-        {
-            qCritical("One of the queries failed to execute.\n Error detail: %s\n",
-                      qPrintable(m_query->lastError().text()));
-            qCritical() << m_query->lastQuery();
-            return false;
-        }
-
-        qCDebug(logDB) << "exec:" << m_query->lastQuery();
     }
 
     return true;
 }
+
+//! @}

@@ -8,7 +8,6 @@
 #include "DBConnection.h"
 #include "DatabaseConfig.h"
 #include "Logging.h"
-#include "Settings.h"
 
 #include <QtSql/QtSql>
 #include <QtSql/QSqlDatabase>
@@ -61,34 +60,4 @@ void DBConnection::close()
     m_query->finish();
     m_db->close();
     m_db->setConnectOptions();
-}
-
-bool DBConnection::isConnected()
-{
-    QString querytext;
-    if(m_config.isSqlite())
-    {
-        // For SQLite we can just check that the file exists
-        return fileExists(m_config.m_db_path);
-    }
-    else if(m_config.isMysql() || m_config.isPostgresql())
-    {
-        if(m_config.isMysql())
-            querytext = "show tables";
-        else
-        {
-            querytext = "SELECT table_schema || '.' || table_name FROM";
-            querytext.append("information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema ='");
-            querytext.append(m_config.m_db_path);
-            querytext.append("';");
-        }
-
-        m_query->exec(querytext);
-
-        if(m_query->size() >= 1)
-            return true;
-    }
-
-    qWarning() << "Database configuration is set to unknown DB Driver. Connection unknown!";
-    return false; // can't tell if database is connected
 }

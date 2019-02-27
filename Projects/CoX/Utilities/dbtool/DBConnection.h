@@ -61,7 +61,6 @@ public:
 
     void open();
     void close();
-    bool isConnected();
     QString getName() const { return m_config.m_name; } // "segs.db" or "segs_game.db"
 
     // DBConnection_AddUser.cpp
@@ -73,7 +72,10 @@ public:
     bool            runQueryFromFile(QFile &source_file);
 
     // DBConnection_Helpers.cpp
-    QJsonObject prepareBlob(QJsonObject &obj);
+    bool isConnected();
+    bool runQuery(QString &q);
+    void loadBlob(QJsonObject &obj);
+    void saveBlob(QJsonObject &obj);
 
     // DBConnection_Upgrade.cpp
     void            runUpgrades();

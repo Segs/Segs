@@ -49,6 +49,44 @@ void Pause(void)
     return;
 }
 
+bool setupConfigs(const QString &config_file, std::vector<DatabaseConfig> &configs)
+{
+    // Setup config file an database configs
+    configs.emplace_back(DatabaseConfig());
+    configs.emplace_back(DatabaseConfig());
+
+    if(!configs[0].initialize_from_settings(config_file, "AccountDatabase"))
+    {
+        qCritical(qPrintable(QString("File \"%1\" not found.").arg(config_file)));
+        return false;
+    }
+    // we've just checked if settings exists, so we can safely assume it does here
+    configs[1].initialize_from_settings(config_file, "CharacterDatabase");
+
+    return true;
+}
+
+bool createDBConns(std::vector<DatabaseConfig> &configs, std::vector< std::unique_ptr<DBConnection> > &segs_dbs)
+{
+    for(const auto &cfg : configs)
+    {
+        qInfo() << "Fetching database configuration from settings.cfg for" << cfg.m_name;
+        segs_dbs.push_back(std::make_unique<DBConnection>(cfg));
+        segs_dbs.back()->open();
+
+        if(!segs_dbs.back()->isConnected())
+        {
+            qWarning() << "Database" << cfg.m_db_path << "does not exist, or is an empty file!";
+            if(!cfg.isSqlite()) // can't close a sqlite db that doesn't exist (has no data)
+                segs_dbs.back()->close();
+
+            continue;
+        }
+    }
+
+    return true;
+}
+
 void errorHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     static char log_buffer[4096]={0};
@@ -150,47 +188,18 @@ int main(int argc, char **argv)
         parser.showHelp(1);
     }
 
-    // Setup config file an database configs
+    // Locate and setup database configs
     std::vector<DatabaseConfig> configs;
-    configs.emplace_back(DatabaseConfig());
-    configs.emplace_back(DatabaseConfig());
-    
-    if(!configs[0].initialize_from_settings(parser.value(configFileOption), "AccountDatabase"))
-    {
-        qCritical(qPrintable(QString("File \"%1\" not found.").arg(parser.value(configFileOption))));
+    if(!setupConfigs(parser.value(configFileOption), configs))
         return int(dbToolResult::SETTINGS_MISSING);
-    }
-    // we've just checked if settings exists, so we can safely assume it does here
-    configs[1].initialize_from_settings(parser.value(configFileOption), "CharacterDatabase");
-    
+
     // Set QT Logging filters after we've initialized settings.cfg with the correct path
     setLoggingFilter();
 
-    // Find database templates directory
-    qInfo() << "Opening database templates directory...";
-    QDir default_dbs_dir(Settings::getDefaultDirPath());
-    if(!default_dbs_dir.exists())
-    {
-        qWarning() << "SEGS dbtool cannot find the SEGS root folder "
-                   << "(where the default_setup directory resides)";
-        return int(dbToolResult::DBFOLDER_MISSING);
-    }
-
     // stick all db connections in a vector to iterate over when necessary
-    std::vector<std::unique_ptr<DBConnection>> segs_dbs;
-    for(const auto &cfg : configs)
-    {
-        qInfo() << "Fetching database configuration from settings.cfg for" << cfg.m_name;
-        segs_dbs.push_back(std::make_unique<DBConnection>(cfg));
-        segs_dbs.back()->open();
-
-        if(!segs_dbs.back()->isConnected())
-        {
-            qWarning() << "Database" << cfg.m_db_path << "does not exists.";
-            segs_dbs.back()->close();
-            continue;
-        }
-    }
+    std::vector< std::unique_ptr<DBConnection> > segs_dbs;
+    if(!createDBConns(configs, segs_dbs))
+        return int(dbToolResult::DB_CONN_FAILED);
 
     // Handle command argument
     int selected_operation = known_commands.indexOf(positionalArguments.first());
@@ -199,25 +208,31 @@ int main(int argc, char **argv)
         case dbToolCommands::CREATE:
         {
             // Check if database already exists
-            qInfo() << "Checking for existing databases OR -f command...";
-
+            qInfo() << "Checking for existing databases OR forced (-f) command...";
             bool forced = parser.isSet(forceOption);
-            if(!forced)
+
+            bool dbs_exist = false;
+            for(const auto &db : segs_dbs)
             {
-                for(const auto &db : segs_dbs)
+                if(db->isConnected())
                 {
-                    if(db->isConnected())
-                        qWarning() << "Database" << db->m_config.m_db_path << "already exists.";
+                    dbs_exist &= true; // dbs_exists must be true all times
+                    qWarning() << "Database" << db->m_config.m_db_path << "already exists.";
                 }
-                
+            }
+
+            if(forced) // if forced flag was used, display warning
+                qWarning() << "Forced flag used '-f'. ALL existing databases will be overwritten.";
+
+            if(!forced && dbs_exist)
+            {
                 qInfo() << "Run dbtool with -f option to overwrite ALL existing databases. "
                         << "THIS CANNOT BE UNDONE.";
                 ret = dbToolResult::NOT_FORCED;
                 break;
             }
 
-            // if forced flag was used, create databases
-            qWarning() << "Forced flag used '-f'. ALL existing databases will be overwritten.";
+            // if forced || dbs do not exist: create databases one at a time
             for(const auto &db : segs_dbs)
                 ret = db->createDB();
 

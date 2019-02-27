@@ -17,7 +17,7 @@ public:
     static void         setSEGSDir();
     static QString      getSEGSDir();
     static QString      getSettingsTplPath();
-    static QString      getDefaultDirPath();
+    static QString      getTemplateDirPath();
     void                createSettingsFile();
 
 private:

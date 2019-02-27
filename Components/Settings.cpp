@@ -27,7 +27,7 @@ bool fileExists(const QString &path)
 {
     QFileInfo check_file(path);
     // check if file exists and if yes: Is it really a file and not a directory?
-    return check_file.exists() && check_file.isFile();
+    return check_file.exists() && check_file.isFile() && check_file.size() > 0;
 }
 
 Settings::Settings()
@@ -92,7 +92,7 @@ QString Settings::getSettingsTplPath()
     return curdir.absolutePath() + QDir::separator() + m_default_settings_path;
 }
 
-QString Settings::getDefaultDirPath()
+QString Settings::getTemplateDirPath()
 {
     QDir curdir(getSEGSDir()); // Get the SEGS working directory
     if(!QDir(curdir.absolutePath() + QDir::separator() + m_default_tpl_dir).exists())

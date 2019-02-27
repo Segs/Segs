@@ -14,7 +14,8 @@ private:
     int m_target_version = 5;
     QString m_name = SEGS_GAME_DB_NAME;
     std::vector<TableSchema> m_table_schemas = {
-        {"db_version", 5, "2018-01-23 10:27:01"},
+        {"db_version", 5, "2018-04-09 00:55:01"},
+        {"characters", 6, "2018-04-09 00:54:27"},
     };
 
 public:
@@ -26,10 +27,12 @@ public:
     bool execute(DBConnection *db) override
     {
         // update database table schemas here
-        qWarning().noquote() << QString("CANNOT UPGRADE from %1 to %2. Please overwrite your databases with `create -f`")
-                          .arg(getTargetVersion())
-                          .arg(db->getName());
+        // first: add columns to the characters table
+        db->m_query->prepare("ALTER TABLE 'characters' ADD 'height' REAL, 'physique' REAL");
+        if(!db->m_query->exec())
+            return false;
 
-        return false;
+        // we're done, return true
+        return true;
     }
 };

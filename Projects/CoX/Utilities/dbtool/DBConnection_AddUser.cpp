@@ -5,11 +5,15 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
+/*!
+ * @addtogroup dbtool Projects/CoX/Utilities/dbtool
+ * @{
+ */
+
 #include "DBConnection.h"
 
 #include "PasswordHasher.h"
 #include "Logging.h"
-#include "Settings.h"
 
 #include <QtCore/QDir>
 #include <QtSql/QSqlDatabase>
@@ -17,6 +21,13 @@
 #include <QtSql/QSqlQuery>
 #include <QtCore/QDateTime>
 
+/*!
+ * @brief       Add an account to the database
+ * @param[in]   Username as String
+ * @param[in]   Plain text password to be hashed herein
+ * @param[in]   Access Level ranging from 0-9
+ * @returns     Returns an enum value based upon result, 0 == SUCCESS
+ */
 dbToolResult DBConnection::addAccount(const QString &username, const QString &password, uint16_t access_level)
 {
     qInfo().noquote() << "Adding new account to" << getName() << "database";
@@ -62,6 +73,7 @@ dbToolResult DBConnection::addAccount(const QString &username, const QString &pa
     }
 
     qInfo() << "Successfully added user" << username << "to database";
-
     return dbToolResult::SUCCESS;
 }
+
+//! @}

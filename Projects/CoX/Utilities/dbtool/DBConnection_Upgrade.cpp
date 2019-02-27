@@ -5,6 +5,11 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
+/*!
+ * @addtogroup dbtool Projects/CoX/Utilities/dbtool
+ * @{
+ */
+
 #include "DatabaseConfig.h"
 #include "DBConnection.h"
 #include "DBMigrationStep.h"
@@ -167,3 +172,5 @@ bool DBConnection::updateTableVersions(DBSchemas &table_schemas)
 
     return true;
 }
+
+//! @}
