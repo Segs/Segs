@@ -56,7 +56,9 @@ struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
     explicit name ## Message() :  InternalEvent(enum_name::ev ## name ## Message) {}\
-    name ## Message(name ## Data &&d,uint64_t token) :  InternalEvent(enum_name::ev ## name ## Message),m_data(d) { session_token(token); }\
+    name ## Message(name ## Data &&d,uint64_t token,EventProcessor *ev_src=nullptr) : \
+        InternalEvent(enum_name::ev ## name ## Message) , m_data(std::move(d)) {\
+        session_token(token); src(ev_src);}\
     EVENT_IMPL(name ## Message)\
 };
 
