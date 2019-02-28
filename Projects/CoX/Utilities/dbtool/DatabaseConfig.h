@@ -17,6 +17,7 @@ private:
 public:
     QString m_driver;
     QString m_name;
+    QString m_filename;
     QString m_db_path;
     QString m_host;
     QString m_port;

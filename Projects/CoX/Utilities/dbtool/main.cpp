@@ -70,7 +70,7 @@ bool createDBConns(std::vector<DatabaseConfig> &configs, std::vector< std::uniqu
 {
     for(const auto &cfg : configs)
     {
-        qInfo() << "Fetching database configuration from settings.cfg for" << cfg.m_name;
+        qInfo() << "Fetching database configuration from settings.cfg for" << cfg.m_filename;
         segs_dbs.push_back(std::make_unique<DBConnection>(cfg));
         segs_dbs.back()->open();
 
@@ -188,6 +188,7 @@ int main(int argc, char **argv)
         parser.showHelp(1);
     }
 
+    qInfo() << "Reading configuration file and checking templates...";
     // Locate and setup database configs
     std::vector<DatabaseConfig> configs;
     if(!setupConfigs(parser.value(configFileOption), configs))

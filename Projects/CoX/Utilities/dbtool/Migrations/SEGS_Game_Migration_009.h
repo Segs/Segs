@@ -31,7 +31,10 @@ public:
         QStringList queries = {
             "ALTER TABLE 'characters' ADD 'costume_data' BLOB", // add new costume_data blob to characters table
             "ALTER TABLE 'supergroups' ADD 'sg_data' BLOB",     // add new sg_data blob to supergroups table
-            "ALTER TABLE characters DROP COLUMN sg_motto, sg_motd, sg_rank_names, sg_rank_perms, sg_emblem, sg_colors",
+            // SQLite has limited ALTER TABLE support and cannot drop columns.
+            // the workaround is to duplicate the table without the "dropped" columns
+            // TODO: create dropColumn() method to obscure this from the user
+            //"ALTER TABLE 'supergroups' DROP COLUMN sg_motto, sg_motd, sg_rank_names, sg_rank_perms, sg_emblem, sg_colors",
         };
 
         for(auto &q : queries)
@@ -41,7 +44,58 @@ public:
                 return false;
         }
 
+        // select existing costumes from costume table
+        // we only knew how to save one costume per character, so we
+        // can make some assumptions about costume index
+        db->m_query->prepare("SELECT * FROM 'costume'");
+        if(!db->m_query->exec())
+            return false;
 
+        // copy costume data over to character costume blob
+        while(db->m_query->next())
+        {
+            QVariant char_id = db->m_query->value("character_id");
+
+            QJsonObject costume_obj;
+            costume_obj.insert("cereal_class_version", 1);
+            costume_obj.insert("CharacterID", char_id.toJsonValue());
+
+            // get character data for character that owns costume
+            QSqlQuery char_query(*db->m_db);
+            QString querytext = QString("SELECT * FROM 'characters' WHERE id=%1").arg(char_id.toInt());
+            char_query.prepare(querytext);
+            if(!char_query.exec())
+                return false;
+
+            while(char_query.next())
+            {
+                costume_obj.insert("Height", char_query.value("height").toJsonValue());
+                costume_obj.insert("Physique", char_query.value("physique").toJsonValue());
+                costume_obj.insert("BodyType", char_query.value("bodytype").toJsonValue());
+            }
+
+            costume_obj.insert("CostumeIdx", db->m_query->value("costume_index").toJsonValue());
+            costume_obj.insert("SkinColor", db->m_query->value("skin_color").toJsonValue());
+            costume_obj.insert("SendFullCostume", true);
+
+            // parts object can be copied wholesale
+            QString parts_obj = db->m_query->value("parts").toString();
+            costume_obj.insert("NumParts", 15); // all player "primary" costumes are 15
+            costume_obj.insert("Parts", parts_obj); // cereal objects are wrapped in key 'value0'
+
+            db->saveBlob(costume_obj);
+            QJsonDocument costumedoc(costume_obj);
+            qDebug().noquote() << costumedoc.toJson(); // print output for debug
+
+            querytext = QString("UPDATE characters SET costume_data='%1'")
+                    .arg(QString(costumedoc.toJson()));
+            if(!db->m_query->exec(querytext))
+                return false;
+        }
+
+        db->m_query->prepare("DROP TABLE costume");
+        if(!db->m_query->exec())
+            return false;
 
         // we're done, return true
         return true;
