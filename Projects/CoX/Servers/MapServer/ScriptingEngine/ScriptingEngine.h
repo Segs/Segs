@@ -9,10 +9,11 @@
 #include <memory>
 #include <string>
 #include "Common/GameData/Contact.h"
+#include "ScriptingEnginePrivate.h"
 
 class QString;
 struct MapClientSession;
-struct MapInstance;
+class MapInstance;
 
 class ScriptingEngine
 {
@@ -20,6 +21,7 @@ public:
     ScriptingEngine();
     ~ScriptingEngine();
     void registerTypes();
+    void registerGenericTypes();
     int loadAndRunFile(const QString &path);
     void callFuncWithMapInstance(MapInstance *mi, const char *name, int arg1);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1);
@@ -36,7 +38,6 @@ public:
     bool setIncludeDir(const QString &path);
 private:
 #ifdef SCRIPTING_ENABLED
-    struct ScriptingEnginePrivate;
     std::unique_ptr<ScriptingEnginePrivate> m_private;
 #endif
 };
