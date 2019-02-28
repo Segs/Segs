@@ -98,6 +98,11 @@ void SettingsDialog::open_settings_dialog()
 void SettingsDialog::read_config_file(QString filePath)
 {
     QSettings config_file(filePath, QSettings::IniFormat);
+    config_file.beginGroup("MetaData");
+    QString config_version = config_file.value("config_version","").toString();
+    ui->config_version_data_label->setText(config_version);
+    config_file.endGroup(); // MetaData   
+    
     config_file.beginGroup("AdminServer");
     config_file.beginGroup("AccountDatabase");
     QString acc_db_driver = config_file.value("db_driver","").toString();
@@ -206,6 +211,10 @@ void SettingsDialog::generate_default_config_file(QString ip)
 {
     QSettings config_file_write("settings.cfg", QSettings::IniFormat);
     QSettings settings_template("settings_template.cfg", QSettings::IniFormat);
+    config_file_write.beginGroup("MetaData");
+    config_file_write.setValue("config_version", settings_template.value("MetaData/config_version","").toString());
+    config_file_write.endGroup(); // MetaData
+
     config_file_write.beginGroup("AdminServer");
     config_file_write.beginGroup("AccountDatabase");
     config_file_write.setValue("db_driver","QSQLITE");

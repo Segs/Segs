@@ -34,7 +34,9 @@ SEGS_LOGGING_CATEGORY(logChat,         "log.chat")
 SEGS_LOGGING_CATEGORY(logInfoMsg,      "log.infomsg")
 SEGS_LOGGING_CATEGORY(logEmotes,       "log.emotes")
 SEGS_LOGGING_CATEGORY(logTarget,       "log.target")
-SEGS_LOGGING_CATEGORY(logSpawn,        "log.spawn")
+SEGS_LOGGING_CATEGORY(logCharSel,      "log.charsel")
+SEGS_LOGGING_CATEGORY(logPlayerSpawn,  "log.playerspawn")
+SEGS_LOGGING_CATEGORY(logNpcSpawn,     "log.npcspawn")
 SEGS_LOGGING_CATEGORY(logMapEvents,    "log.mapevents")
 SEGS_LOGGING_CATEGORY(logMapXfers,     "log.mapxfers")
 SEGS_LOGGING_CATEGORY(logSlashCommand, "log.slashcommand")
@@ -91,6 +93,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.stores="         + config.value("log_stores","false").toString();
     filter_rules += "\nlog.tasks="          + config.value("log_tasks","false").toString();
     filter_rules += "\nlog.rpc="            + config.value("log_rpc","false").toString();
+    filter_rules += "\nlog.charsel="        + config.value("log_charsel","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -117,6 +120,8 @@ void toggleLogging(QString &category)
         cat = &logTeams();
     else if(category.contains("db",Qt::CaseInsensitive))
         cat = &logDB();
+    else if(category.contains("charsel",Qt::CaseInsensitive))
+        cat = &logCharSel();
     else if(category.contains("input",Qt::CaseInsensitive))
         cat = &logInput();
     else if(category.contains("position",Qt::CaseInsensitive))
@@ -134,7 +139,9 @@ void toggleLogging(QString &category)
     else if(category.contains("target",Qt::CaseInsensitive))
         cat = &logTarget();
     else if(category.contains("spawn",Qt::CaseInsensitive))
-        cat = &logSpawn();
+        cat = &logPlayerSpawn();
+    else if(category.contains("npcspawn",Qt::CaseInsensitive))
+        cat = &logNpcSpawn();
     else if(category.contains("mapevents",Qt::CaseInsensitive))
         cat = &logMapEvents();
     else if(category.contains("mapxfers",Qt::CaseInsensitive))
@@ -197,7 +204,9 @@ void dumpLogging()
     output += "\n\t infomsg: "      + QString::number(logInfoMsg().isDebugEnabled());
     output += "\n\t emotes: "       + QString::number(logEmotes().isDebugEnabled());
     output += "\n\t target: "       + QString::number(logTarget().isDebugEnabled());
-    output += "\n\t spawn: "        + QString::number(logSpawn().isDebugEnabled());
+    output += "\n\t logCharSel: "   + QString::number(logCharSel().isDebugEnabled());
+    output += "\n\t playerspawn: "  + QString::number(logPlayerSpawn().isDebugEnabled());
+    output += "\n\t npcspawn: "     + QString::number(logNpcSpawn().isDebugEnabled());
     output += "\n\t mapevents: "    + QString::number(logMapEvents().isDebugEnabled());
     output += "\n\t slashcommand: " + QString::number(logSlashCommand().isDebugEnabled());
     output += "\n\t description: "  + QString::number(logDescription().isDebugEnabled());

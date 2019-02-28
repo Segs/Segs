@@ -46,7 +46,6 @@ struct FillEmailRecipientIdResponseData;
 ///
 class GameDbSyncContext
 {
-    static constexpr int REQUIRED_DB_VERSION = 9;
 
     std::unique_ptr<QSqlDatabase> m_db;
     std::unique_ptr<QSqlQuery> m_prepared_char_update;
@@ -99,5 +98,5 @@ public:
     bool getEmails(const SEGSEvents::GetEmailsRequestData &data, SEGSEvents::GetEmailsResponseData &result);
     bool fillEmailRecipientId(const SEGSEvents::FillEmailRecipientIdRequestData &data, SEGSEvents::FillEmailRecipientIdResponseData &result);
 private:
-    int64_t getDatabaseVersion(QSqlDatabase &);
+    int getDatabaseVersion(QSqlDatabase &);
 };

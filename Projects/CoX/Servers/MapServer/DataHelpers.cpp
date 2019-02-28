@@ -15,6 +15,7 @@
 #include "MapServer.h"
 #include "MapInstance.h"
 #include "MessageHelpers.h"
+#include "TimeHelpers.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/ClientStates.h"
 #include "GameData/map_definitions.h"
@@ -278,7 +279,7 @@ QString createKioskMessage(Entity* player)
  */
 
 void getEmailHeaders(MapClientSession& sess)
-{
+{   
     if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
@@ -286,7 +287,7 @@ void getEmailHeaders(MapClientSession& sess)
     }
 
     HandlerLocator::getEmail_Handler()->putq(new EmailHeaderRequest(
-        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));
+        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));    
 }
 
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
@@ -1334,12 +1335,6 @@ void showMapMenu(MapClientSession &sess)
     showMapXferList(sess, has_location, location, msg_body);
 }
 
-int64_t getSecsSince2000Epoch()
-{
-    QDateTime base_date(QDate(2000,1,1));
-    return base_date.secsTo(QDateTime::currentDateTime());
-}
-
 void addClue(MapClientSession &cl, Clue clue)
 {
     vClueList clue_list = cl.m_ent->m_player->m_clues;
@@ -1667,5 +1662,69 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
 }
 
 
+void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank)
+{
+    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
+    const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
+    if(!npc_def)
+    {
+        qCDebug(logNpcSpawn) << "No NPC definition for: " + name;
+        //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
+        return;
+    }
+
+    int idx = npc_store.npc_idx(npc_def);
+    Entity *e = mi.m_entities.CreateCritter(getGameData(), *npc_def, idx, variation, level);
+    e->m_char->setName(npc_name);
+
+    //Sets target info menu faction. Skull, Hellions, Freakshow, etc
+    e->m_faction_data.m_faction_name = faction_name;
+
+    forcePosition(*e, loc);
+    forceOrientation(*e, ori);
+    qCDebug(logNpcSpawn) << QString("Created Enemy with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
+    //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
+}
+
+void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
+{
+    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
+    const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
+    if(!npc_def)
+    {
+        qCDebug(logNpcSpawn) << "No NPC definition for: " + name;
+        //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
+        return;
+    }
+
+    int idx = npc_store.npc_idx(npc_def);
+    Entity *e = mi.m_entities.CreateGeneric(getGameData(), *npc_def, idx, variation, EntType::CRITTER);
+    e->m_char->setName(npc_name);
+    e->m_is_hero = true;
+    e->m_is_villian = false;
+
+    //Should these be predefined by DB/Json/Loaded by script or something else?
+    e->m_char->m_char_data.m_combat_level = 1;
+    e->m_char->m_char_data.m_level = 1;
+    e->m_char->m_char_data.m_security_threat = 1;
+
+    e->m_char->m_max_attribs.m_HitPoints = 100;
+    e->m_char->m_max_attribs.m_Endurance = 100;
+    e->m_char->m_char_data.m_current_attribs.m_HitPoints = 100;
+    e->m_char->m_char_data.m_current_attribs.m_Endurance = 100;
+
+    //Sets target info menu faction. Skull, Hellions, Freakshow, etc
+    e->m_faction_data.m_faction_name = "Citizen";
+
+    //Required to send changes to clients
+    e->m_pchar_things = true;
+
+    forcePosition(*e, loc);
+    forceOrientation(*e, ori);
+    qCDebug(logNpcSpawn) << QString("Created Victim with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
+    //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
+
+}
 
 //! @}
+

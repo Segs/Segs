@@ -9,7 +9,7 @@ namespace
     const char *event_names[] =
     {
         "CreateAccountMessage",
-        "AuthDbErrorMessage",
+        "AuthDbStatusMessage",
         "RetrieveAccountRequest",
         "RetrieveAccountResponse",
         "ValidatePasswordRequest",

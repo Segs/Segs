@@ -189,7 +189,7 @@ namespace SEGSEvents
             bs.StoreFloat(m_mission_time);
         }
 
-        void serializefrom(BitStream &bs)
+        void serializefrom(BitStream /*&bs*/)
         {
             assert(!"SendMissionObjectTimer serializefrom");
         }

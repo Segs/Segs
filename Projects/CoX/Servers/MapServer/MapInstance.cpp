@@ -27,7 +27,7 @@
 #include "WorldSimulation.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
-#include "version.h"
+#include "Version.h"
 #include "Common/GameData/CoHMath.h"
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
@@ -150,6 +150,8 @@ void MapInstance::start(const QString &scenegraph_path)
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);
             m_npc_generators.generate(this);
+            m_map_scenegraph->spawn_critters(this);
+            m_critter_generators.generate(this);
             }, "Spawning npcs");
 
         // Load Lua Scripts for this Map Instance
@@ -807,7 +809,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     }
     GameAccountResponseCharacterData char_data;
     serializeFromQString(char_data,request_data.char_from_db_data);
-    qCDebug(logDB).noquote() << "expected_client: Costume:" << char_data.m_serialized_costume_data;
+    qCDebug(logCharSel).noquote() << "expected_client: Costume:" << char_data.m_serialized_costume_data;
     // existing character
     Entity *ent = m_entities.CreatePlayer();
     toActualCharacter(char_data, *ent->m_char, *ent->m_player, *ent->m_entity);
@@ -858,9 +860,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     // make sure to 'off' the AFK from the character in db first
     toggleAFK(*e->m_char, false);
 
-    if(logSpawn().isDebugEnabled())
+    if(logPlayerSpawn().isDebugEnabled())
     {
-        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
+        qCDebug(logPlayerSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
     }
 
@@ -891,9 +893,9 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
     // Can't pass direction through cereal, so let's update it here.
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
-    if(logSpawn().isDebugEnabled())
+    if(logPlayerSpawn().isDebugEnabled())
     {
-        qCDebug(logSpawn).noquote() << "Dumping Entity Data during spawn:\n";
+        qCDebug(logPlayerSpawn).noquote() << "Dumping Entity Data during spawn:\n";
         map_session.m_ent->dump();
     }
 
@@ -3002,15 +3004,16 @@ void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
 {
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
 
+    std::vector<EmailHeaders::EmailHeader> email_headers;
     for (const auto &data : ev->m_data.m_email_headers)
     {
-        EmailHeaders *header = new EmailHeaders(
-                    data.m_email_id,
-                    data.m_sender_name,
-                    data.m_subject,
-                    data.m_timestamp);
-        map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailHeaders>(header));
+        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
+                                                          data.m_sender_name,
+                                                          data.m_subject,
+                                                          data.m_timestamp});
     }
+
+    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
 }
 
 // EmailHandler will send this event here
@@ -3033,13 +3036,16 @@ void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
 {
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
 
+    std::vector<EmailHeaders::EmailHeader> email_headers;
     for (const auto &data : ev->m_data.m_email_headers)
     {
-        map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(data.m_email_id,
-                                                                              data.m_sender_name,
-                                                                              data.m_subject,
-                                                                              data.m_timestamp));
+        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
+                                                          data.m_sender_name,
+                                                          data.m_subject,
+                                                          data.m_timestamp});
     }
+
+    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
 
     QString message = QString("You have %1 unread emails.").arg(ev->m_data.m_unread_emails_count);
     sendInfoMessage(MessageChannel::DEBUG_INFO, message, map_session);
@@ -3315,5 +3321,6 @@ void MapInstance::clearTimer(uint32_t entity_idx)
     if(found)
         this->m_lua_timers[count].m_remove = true;
 }
+
 
 //! @}

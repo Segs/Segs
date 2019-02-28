@@ -1275,7 +1275,7 @@ void cmdHandler_AddCostumeSlot(const QString &/*cmd*/, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
+void cmdHandler_ContactStatusList(const QString &/*cmd*/, MapClientSession &sess)
 {
     Contact startingContact;
     startingContact.setName("Officer Flint"); // "OfficerFlint
@@ -1301,7 +1301,7 @@ void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess)
+void cmdHandler_SendLocations(const QString &/*cmd*/, MapClientSession &sess)
 {
     VisitLocation visitlocation;
     visitlocation.m_location_name = "Test1";
@@ -1960,7 +1960,7 @@ void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
     playerTrain(sess);
 }
 
-void cmdHandler_Kiosk(const QString &cmd, MapClientSession &sess)
+void cmdHandler_Kiosk(const QString &/*cmd*/, MapClientSession &sess)
 {
     sendKiosk(sess);
 }

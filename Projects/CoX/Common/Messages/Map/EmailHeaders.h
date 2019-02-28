@@ -19,10 +19,10 @@ class EmailHeaders final : public GameCommandEvent
 public:
     struct EmailHeader
     {
-        int id;
+        uint32_t id;
         QString sender;
         QString subject;
-        int timestamp;
+        uint32_t timestamp;
         template<class Archive>
         void serialize(Archive &ar)
         {
@@ -39,7 +39,7 @@ public:
     }
 
     /*Defines a single email header to send*/
-    EmailHeaders(const int &id, const QString &sender, const QString &subject, const int &timestamp)
+    EmailHeaders(const uint32_t &id, const QString &sender, const QString &subject, const uint32_t &timestamp)
         : GameCommandEvent(evEmailHeaders), m_fullupdate(false)
     {
         m_emails.push_back(EmailHeader{ id, sender, subject, timestamp });
