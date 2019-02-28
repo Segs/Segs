@@ -7,13 +7,11 @@
 
 #pragma once
 #include "EventProcessor.h"
-#include "Common/GameData/Character.h"
 #include "Common/Servers/ClientManager.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
 
 #include <unordered_set>
 class CharacterClient;
-class Character;
 class GameServer;
 class SEGSTimer;
 struct GameLink;
