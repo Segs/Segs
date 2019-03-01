@@ -32,7 +32,6 @@
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/InternalEvents.h"
-#include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/MessageBus.h"
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
@@ -191,7 +190,8 @@ void MapInstance::init_services()
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
-    m_email_service = std::make_unique<EmailService>(m_session_store);
+    m_email_service = std::make_unique<EmailService>();
+    m_settings_service = std::make_unique<SettingsService>(m_session_store);
 }
 
 ///
@@ -510,36 +510,38 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evEntityInfoRequest:
             on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
-            break;
+            break;     
+            // ---------- Settings Service ------------
         case evSelectKeybindProfile:
-            on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
+            // m_settings_service->on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
             break;
         case evSetKeybind:
-            on_set_keybind(static_cast<SetKeybind *>(ev));
+            // m_settings_service->on_set_keybind(static_cast<SetKeybind *>(ev));
             break;
         case evRemoveKeybind:
-            on_remove_keybind(static_cast<RemoveKeybind *>(ev));
+            // m_settings_service->on_remove_keybind(static_cast<RemoveKeybind *>(ev));
             break;
         case evResetKeybinds:
-            on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
+            // m_settings_service->on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
             break;
+            // ---------- Email Service ----------------
         case evEmailHeaderResponse:
-            m_email_service->on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
+            on_service_to_client_message(m_email_service->on_email_header_response(ev));
             break;
         case evEmailHeaderToClientMessage:
-            m_email_service->on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev));
+            on_service_to_client_message(m_email_service->on_email_header_to_client(ev));
             break;
         case evEmailHeadersToClientMessage:
-            m_email_service->on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev));
+            on_service_to_client_message(m_email_service->on_email_headers_to_client(ev));
             break;
         case evEmailReadResponse:
-            m_email_service->on_email_read_response(static_cast<EmailReadResponse *>(ev));
+            on_service_to_client_message(m_email_service->on_email_read_response(ev));
             break;
         case evEmailWasReadByRecipientMessage:
-            m_email_service->on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
+            on_service_to_client_message(m_email_service->on_email_read_by_recipient(ev));
             break;
         case evEmailCreateStatusMessage:
-            m_email_service->on_email_create_status(static_cast<EmailCreateStatusMessage *>(ev));
+            on_service_to_client_message(m_email_service->on_email_create_status(ev));
             break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
@@ -2480,27 +2482,6 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
    //qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray_group.m_primary_tray_idx+1 << "Tray2:" << ev->tray_group.m_second_tray_idx+1;
 }
 
-void MapInstance::on_set_keybind(SetKeybind *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    KeyName key = static_cast<KeyName>(ev->key);
-    ModKeys mod = static_cast<ModKeys>(ev->mods);
-
-    ent->m_player->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
-    //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
-}
-
-void MapInstance::on_remove_keybind(RemoveKeybind *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
-    //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
-}
-
 void MapInstance::setPlayerSpawn(Entity &e)
 {
     // Spawn player position and PYR
@@ -2593,25 +2574,6 @@ void MapInstance::serialize_from(istream &/*is*/)
 void MapInstance::serialize_to(ostream &/*is*/)
 {
     assert(false);
-}
-void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
-{
-    const GameDataStore &data(getGameData());
-    const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.resetKeybinds(default_profiles);
-    //qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
-}
-
-void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.setKeybindProfile(ev->profile);
-    //qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }
 
 void MapInstance::on_interact_with(InteractWithEntity *ev)
@@ -3196,6 +3158,21 @@ void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
 void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
 {
     process_chat(sender, msg_text);
+}
+
+void MapInstance::on_service_to_client_message(ServiceToClientMessage* ev)
+{
+    // Warning: Might be able to segfault
+    MapClientSession& session = ev->session_token() == 0
+            ? m_session_store.session_from_event(ev)
+            : m_session_store.session_from_token(ev->session_token());
+
+    if (ev->m_data.command != nullptr)
+        session.addCommandToSendNextUpdate(std::make_unique<GameCommandEvent>(ev->m_data.command));
+
+    // is not null and is not empty
+    if (!ev->m_data.message.isEmpty() && !ev->m_data.message.isNull())
+        sendInfoMessage(MessageChannel::DEBUG_INFO, ev->m_data.message, session);
 }
 
 void MapInstance::startTimer(uint32_t entity_idx)

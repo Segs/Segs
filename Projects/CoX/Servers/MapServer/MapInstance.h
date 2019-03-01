@@ -12,6 +12,7 @@
 #include "Common/Servers/ClientManager.h"
 #include "Servers/ServerEndpoint.h"
 #include "Servers/GameServer/EmailService/EmailService.h"
+#include "Servers/GameServer/SettingsService/SettingsService.h"
 #include "Servers/GameDatabase/GameDBSyncService.h"
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
@@ -112,8 +113,6 @@ class SouvenirDetailRequest;
 class StoreSellItem;
 class StoreBuyItem;
 
-
-
 // server<-> server event types
 struct ExpectMapClientRequest;
 struct WouldNameDuplicateResponse;
@@ -128,6 +127,7 @@ class MapInstance final : public EventProcessor
 {
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
+        using GameCommandEventPtr = std::unique_ptr<SEGSEvents::GameCommandEvent>;
         QString                m_data_path;
         QMultiHash<QString, glm::mat4>  m_all_spawners;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
@@ -144,6 +144,7 @@ class MapInstance final : public EventProcessor
 
         std::unique_ptr<GameDBSyncService>      m_sync_service;
         std::unique_ptr<EmailService>           m_email_service;
+        std::unique_ptr<SettingsService>        m_settings_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -267,10 +268,6 @@ protected:
         void on_activate_inspiration(SEGSEvents::ActivateInspiration *ev);
         void on_powers_dockmode(SEGSEvents::PowersDockMode *ev);
         void on_switch_tray(SEGSEvents::SwitchTray *ev);
-        void on_select_keybind_profile(SEGSEvents::SelectKeybindProfile *ev);
-        void on_reset_keybinds(SEGSEvents::ResetKeybinds *ev);
-        void on_set_keybind(SEGSEvents::SetKeybind *ev);
-        void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
@@ -295,4 +292,6 @@ protected:
         void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
         void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
         void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
+
+        void on_service_to_client_message(SEGSEvents::ServiceToClientMessage* ev);
 };

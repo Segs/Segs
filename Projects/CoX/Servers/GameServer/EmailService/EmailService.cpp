@@ -6,10 +6,6 @@
  */
 
 #include "EmailService.h"
-#include "MapServer/MapInstance.h"
-#include "Common/Servers/HandlerLocator.h"
-#include "Common/Servers/MessageBus.h"
-#include "Common/Servers/InternalEvents.h"
 #include "Messages/EmailService/EmailDefinitions.h"
 #include "Messages/EmailService/EmailEvents.h"
 #include "Messages/Map/EmailHeaders.h"
@@ -21,68 +17,67 @@
 
 using namespace SEGSEvents;
 
-void EmailService::on_email_header_response(EmailHeaderResponse* ev)
+ServiceToClientMessage* EmailService::on_email_header_response(Event* ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
+    EmailHeaderResponse* resp = static_cast<EmailHeaderResponse *>(ev);
 
     std::vector<EmailHeaders::EmailHeader> email_headers;
-    for (const auto &data : ev->m_data.m_email_headers)
+    for (const auto &email_header : resp->m_data.m_email_headers)
     {
-        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
-                                                          data.m_sender_name,
-                                                          data.m_subject,
-                                                          data.m_timestamp});
+        email_headers.push_back(EmailHeaders::EmailHeader{email_header.m_email_id,
+                                                          email_header.m_sender_name,
+                                                          email_header.m_subject,
+                                                          email_header.m_timestamp});
     }
 
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
+    return new ServiceToClientMessage({new EmailHeaders(email_headers), QString()}, resp->session_token());
 }
 
 // EmailHandler will send this event here
-void EmailService::on_email_header_to_client(EmailHeaderToClientMessage* ev)
+ServiceToClientMessage* EmailService::on_email_header_to_client(Event* ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
-                                                                          ev->m_data.m_sender_name,
-                                                                          ev->m_data.m_subject,
-                                                                          ev->m_data.m_timestamp));
+    EmailHeaderToClientMessage* msg = static_cast<EmailHeaderToClientMessage *>(ev);
+    EmailHeaders* email_header = new EmailHeaders(
+                msg->m_data.m_email_id,
+                msg->m_data.m_sender_name,
+                msg->m_data.m_subject,
+                msg->m_data.m_timestamp);
+    return new ServiceToClientMessage({email_header, "message"}, msg->session_token());
 }
 
-void EmailService::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
+ServiceToClientMessage* EmailService::on_email_headers_to_client(Event* ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
+    EmailHeadersToClientMessage* msg = static_cast<EmailHeadersToClientMessage *>(ev);
 
-    for (const auto &data : ev->m_data.m_email_headers)
+    std::vector<EmailHeaders::EmailHeader> email_headers;
+    for (const auto &email_header : msg->m_data.m_email_headers)
     {
-        map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(data.m_email_id,
-                                                                              data.m_sender_name,
-                                                                              data.m_subject,
-                                                                              data.m_timestamp));
+        email_headers.push_back(EmailHeaders::EmailHeader{email_header.m_email_id,
+                                                          email_header.m_sender_name,
+                                                          email_header.m_subject,
+                                                          email_header.m_timestamp});
     }
 
-    QString message = QString("You have %1 unread emails.").arg(ev->m_data.m_unread_emails_count);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, message, map_session);
+    QString msgToClient = QString("You have %1 unread emails.").arg(msg->m_data.m_unread_emails_count);
+    return new ServiceToClientMessage({new EmailHeaders(email_headers), msgToClient}, msg->session_token());
 }
 
-void EmailService::on_email_read_response(EmailReadResponse *ev)
+ServiceToClientMessage* EmailService::on_email_read_response(Event* ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailRead>(ev->m_data.m_email_id,
-                                                                       ev->m_data.m_message,
-                                                                       ev->m_data.m_sender_name));
+    EmailReadResponse* resp = static_cast<EmailReadResponse *>(ev);
+    EmailRead* email_read = new EmailRead(resp->m_data.m_email_id, resp->m_data.m_message, resp->m_data.m_sender_name);
+    return new ServiceToClientMessage({email_read, QString()}, resp->session_token());
 }
 
-void EmailService::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg)
+ServiceToClientMessage* EmailService::on_email_read_by_recipient(Event* ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(msg->session_token()));
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_message, map_session);
-
-    // this is sent from the reader back to the sender via EmailHandler
-    // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
+    EmailWasReadByRecipientMessage* msg = static_cast<EmailWasReadByRecipientMessage *>(ev);
+    return new ServiceToClientMessage({nullptr, msg->m_data.m_message}, msg->session_token());
 }
 
-void EmailService::on_email_create_status(EmailCreateStatusMessage *msg)
+ServiceToClientMessage* EmailService::on_email_create_status(Event* ev)
 {
-    MapClientSession &map_session(m_session_store->session_from_token(msg->session_token()));
-    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(
-                new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name)));
+    EmailCreateStatusMessage* msg = static_cast<EmailCreateStatusMessage* >(ev);
+    EmailMessageStatus* email_status = new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name);
+    return new ServiceToClientMessage({email_status, QString()}, msg->session_token());
 }

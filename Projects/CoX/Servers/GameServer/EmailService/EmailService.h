@@ -5,42 +5,40 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#ifndef EMAILSERVICE_H
-#define EMAILSERVICE_H
+#pragma once
 
-#include "EventProcessor.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/ClientManager.h"
+#include "Common/Servers/InternalEvents.h"
 #include "Servers/GameDatabase/GameDBSyncHandler.h"
 #include "Servers/MapServer/MapClientSession.h"
+
 #include <QVector>
 
 namespace SEGSEvents
 {
-class EmailHeaderResponse;
-class EmailReadResponse;
-class EmailWasReadByRecipientMessage;
-class EmailHeadersToClientMessage;
-class EmailHeaderToClientMessage;
-class EmailCreateStatusMessage;
+class EmailHeaderResponseData;
+class EmailReadResponseData;
+class EmailWasReadByRecipientData;
+class EmailHeadersToClientData;
+class EmailHeaderToClientData;
+class EmailCreateStatusData;
+class EmailHeaders;
+class EmailMessageStatus;
 }
 
 class EmailService
 {
 private:
-    using SessionStore = ClientSessionStore<MapClientSession>;
-    SessionStore* m_session_store;
-
 public:
-    EmailService(SessionStore& session_store) {m_session_store = &session_store;}
+    SEGSEvents::ServiceToClientMessage* on_email_header_response(SEGSEvents::Event* ev);
+    SEGSEvents::ServiceToClientMessage* on_email_headers_to_client(SEGSEvents::Event* ev);
+    SEGSEvents::ServiceToClientMessage* on_email_header_to_client(SEGSEvents::Event* ev);
+    SEGSEvents::ServiceToClientMessage* on_email_read_response(SEGSEvents::Event* ev);
+    SEGSEvents::ServiceToClientMessage* on_email_create_status(SEGSEvents::Event* ev);
+    SEGSEvents::ServiceToClientMessage* on_email_read_by_recipient(SEGSEvents::Event* ev);
 
-    void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
-    void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
-    void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
-    void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
-    void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
-    void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
 protected:
 };
 
-#endif // EMAILSERVICE_H
+

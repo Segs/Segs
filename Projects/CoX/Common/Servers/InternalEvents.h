@@ -14,6 +14,7 @@
 #include <QtCore/QDateTime>
 #include <glm/vec3.hpp>
 #include <Common/GameData/map_definitions.h>
+#include <Common/Messages/Map/GameCommand.h>
 
 namespace SEGSEvents
 {
@@ -33,6 +34,7 @@ enum Internal_EventTypes
     evMapSwapCollisionMessage, //,8)
     evGameServerStatusMessage = evReloadConfigMessage+4, //10)
     evMapServerStatusMessage,                     //11)
+    evServiceToClientMessage,
     // Message bus events
     evServiceStatusMessage = evExpectClientRequest+101,
     evClientConnectedMessage, // 102
@@ -242,5 +244,19 @@ struct MapSwapCollisionData
 };
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
+
+struct ServiceToClientData
+{
+    GameCommandEvent* command;
+    QString message;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(command->type(), message);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,ServiceToClient)
 
 } // end of SEGSEvents namespace
