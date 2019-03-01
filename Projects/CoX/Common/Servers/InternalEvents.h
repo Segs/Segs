@@ -247,16 +247,9 @@ ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
 
 struct ServiceToClientData
 {
-    GameCommandEvent* command;
+    uint64_t token = 0;
+    std::unique_ptr<GameCommandEvent> command;
     QString message;
-
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar(command->type(), message);
-    }
 };
-// [[ev_def:macro]]
-ONE_WAY_MESSAGE(Internal_EventTypes,ServiceToClient)
 
 } // end of SEGSEvents namespace

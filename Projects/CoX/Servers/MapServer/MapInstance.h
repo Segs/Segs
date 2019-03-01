@@ -127,7 +127,6 @@ class MapInstance final : public EventProcessor
 {
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
-        using GameCommandEventPtr = std::unique_ptr<SEGSEvents::GameCommandEvent>;
         QString                m_data_path;
         QMultiHash<QString, glm::mat4>  m_all_spawners;
         std::unique_ptr<SEGSTimer> m_world_update_timer;
@@ -293,5 +292,5 @@ protected:
         void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
         void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
 
-        void on_service_to_client_message(SEGSEvents::ServiceToClientMessage* ev);
+        void on_service_to_client_response(SEGSEvents::ServiceToClientData* ev);
 };

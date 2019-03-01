@@ -526,22 +526,22 @@ void MapInstance::dispatch( Event *ev )
             break;
             // ---------- Email Service ----------------
         case evEmailHeaderResponse:
-            on_service_to_client_message(m_email_service->on_email_header_response(ev));
+            on_service_to_client_response(m_email_service->on_email_header_response(ev));
             break;
         case evEmailHeaderToClientMessage:
-            on_service_to_client_message(m_email_service->on_email_header_to_client(ev));
+            on_service_to_client_response(m_email_service->on_email_header_to_client(ev));
             break;
         case evEmailHeadersToClientMessage:
-            on_service_to_client_message(m_email_service->on_email_headers_to_client(ev));
+            on_service_to_client_response(m_email_service->on_email_headers_to_client(ev));
             break;
         case evEmailReadResponse:
-            on_service_to_client_message(m_email_service->on_email_read_response(ev));
+            on_service_to_client_response(m_email_service->on_email_read_response(ev));
             break;
         case evEmailWasReadByRecipientMessage:
-            on_service_to_client_message(m_email_service->on_email_read_by_recipient(ev));
+            on_service_to_client_response(m_email_service->on_email_read_by_recipient(ev));
             break;
         case evEmailCreateStatusMessage:
-            on_service_to_client_message(m_email_service->on_email_create_status(ev));
+            on_service_to_client_response(m_email_service->on_email_create_status(ev));
             break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
@@ -3160,19 +3160,26 @@ void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
     process_chat(sender, msg_text);
 }
 
-void MapInstance::on_service_to_client_message(ServiceToClientMessage* ev)
+void MapInstance::on_service_to_client_response(ServiceToClientData* data)
 {
-    // Warning: Might be able to segfault
-    MapClientSession& session = ev->session_token() == 0
-            ? m_session_store.session_from_event(ev)
-            : m_session_store.session_from_token(ev->session_token());
+    if (data->token == 0)
+        return;
 
-    if (ev->m_data.command != nullptr)
-        session.addCommandToSendNextUpdate(std::make_unique<GameCommandEvent>(ev->m_data.command));
+    try
+    {
+        MapClientSession& session = m_session_store.session_from_token(data->token);
 
-    // is not null and is not empty
-    if (!ev->m_data.message.isEmpty() && !ev->m_data.message.isNull())
-        sendInfoMessage(MessageChannel::DEBUG_INFO, ev->m_data.message, session);
+        if (data->command != nullptr)
+            session.addCommandToSendNextUpdate(std::move(data->command));
+
+        // is not null and is not empty
+        if (data->message.isEmpty() && data->message.isNull())
+            sendInfoMessage(MessageChannel::DEBUG_INFO, data->message, session);
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
 }
 
 void MapInstance::startTimer(uint32_t entity_idx)
