@@ -125,7 +125,7 @@ public:
             auto iter = m_token_to_session.find(lnk->session_token());
             assert(iter!=m_token_to_session.end());
             SESSION_CLASS &session(iter->second);
-            //assert(session.link()==lnk);
+            assert(session.link()==lnk);
             return session;
         }
 

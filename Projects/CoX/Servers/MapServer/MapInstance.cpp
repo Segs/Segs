@@ -191,7 +191,7 @@ void MapInstance::init_services()
     m_sync_service->activate();
 
     m_email_service = std::make_unique<EmailService>();
-    m_settings_service = std::make_unique<SettingsService>(m_session_store);
+    m_client_option_service = std::make_unique<ClientOptionService>();
 }
 
 ///
@@ -511,18 +511,18 @@ void MapInstance::dispatch( Event *ev )
         case evEntityInfoRequest:
             on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
             break;     
-            // ---------- Settings Service ------------
+            // ---------- Client Option Service ------------
         case evSelectKeybindProfile:
-            // m_settings_service->on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
+            m_client_option_service->on_select_keybind_profile(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evSetKeybind:
-            // m_settings_service->on_set_keybind(static_cast<SetKeybind *>(ev));
+            m_client_option_service->on_set_keybind(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evRemoveKeybind:
-            // m_settings_service->on_remove_keybind(static_cast<RemoveKeybind *>(ev));
+            m_client_option_service->on_remove_keybind(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evResetKeybinds:
-            // m_settings_service->on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
+            m_client_option_service->on_reset_keybinds(m_session_store.session_from_event(ev).m_ent, ev);
             break;
             // ---------- Email Service ----------------
         case evEmailHeaderResponse:

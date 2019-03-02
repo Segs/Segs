@@ -12,7 +12,7 @@
 #include "Common/Servers/ClientManager.h"
 #include "Servers/ServerEndpoint.h"
 #include "Servers/GameServer/EmailService/EmailService.h"
-#include "Servers/GameServer/SettingsService/SettingsService.h"
+#include "Servers/GameServer/ClientOptionService/ClientOptionService.h"
 #include "Servers/GameDatabase/GameDBSyncService.h"
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
@@ -143,7 +143,7 @@ class MapInstance final : public EventProcessor
 
         std::unique_ptr<GameDBSyncService>      m_sync_service;
         std::unique_ptr<EmailService>           m_email_service;
-        std::unique_ptr<SettingsService>        m_settings_service;
+        std::unique_ptr<ClientOptionService>    m_client_option_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
