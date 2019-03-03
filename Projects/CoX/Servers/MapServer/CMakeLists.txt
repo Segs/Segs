@@ -52,10 +52,7 @@ target_link_libraries(MapServer PUBLIC gameData)
 
 add_subdirectory(ScriptingEngine)
 
-if(ENABLE_SCRIPTING_ENGINE)
-    target_compile_definitions(MapServer PUBLIC -DSCRIPTING_ENABLED=1)
-    target_link_libraries(MapServer INTERFACE lua_IMP sol2_IMP)
-endif()
+target_link_libraries(MapServer PUBLIC Qt5::Core ScriptingEngine)
 
 if(ENABLE_TESTS)
     add_subdirectory(UnitTests)

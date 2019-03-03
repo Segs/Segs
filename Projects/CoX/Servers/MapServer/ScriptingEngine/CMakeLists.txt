@@ -1,17 +1,22 @@
 if(ENABLE_SCRIPTING_ENGINE)
     set(SCRIPTING_CPP ScriptingEngine.cpp)
+    set(SCRIPTING_REGISTERTYPES_CPP ScriptingEngine_RegisterTypes.cpp)
+    set(SCRIPTING_HELPERS_CPP ScriptingEngine_Helpers.cpp)
+    set(SCRIPTING_PRIVATE_CPP ScriptingEnginePrivate.cpp)
+    set(SCRIPTING_PRIVATE_H ScriptingEnginePrivate.h)
 else()
     set(SCRIPTING_CPP ScriptingEngine_Null.cpp)
 endif()
+
 SET(target_CPP
     ${SCRIPTING_CPP}
-    ScriptingEnginePrivate.cpp
-    ScriptingEngine_RegisterTypes.cpp
-    ScriptingEngine_Helpers.cpp
+    ${SCRIPTING_REGISTERTYPES_CPP}
+    ${SCRIPTING_HELPERS_CPP}
+    ${SCRIPTING_PRIVATE_CPP}
 )
 SET(target_INCLUDE
     ScriptingEngine.h
-    ScriptingEnginePrivate.h
+    ${SCRIPTING_PRIVATE_H}
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -23,9 +28,8 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 
-add_handler(ScriptingEngine ${target_SOURCES})
+add_library(ScriptingEngine ${target_SOURCES})
 target_link_libraries(ScriptingEngine PUBLIC Qt5::Core gameData)
-target_link_libraries(ScriptingEngine INTERFACE SEGS_Components )
 
 if(ENABLE_SCRIPTING_ENGINE)
     target_compile_definitions(ScriptingEngine PUBLIC -DSCRIPTING_ENABLED=1)

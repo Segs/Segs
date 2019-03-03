@@ -9,7 +9,9 @@
 #include <memory>
 #include <string>
 #include "Common/GameData/Contact.h"
-#include "ScriptingEnginePrivate.h"
+#ifdef SCRIPTING_ENABLED
+    #include "ScriptingEnginePrivate.h"
+#endif
 
 class QString;
 struct MapClientSession;
@@ -21,7 +23,9 @@ public:
     ScriptingEngine();
     ~ScriptingEngine();
     void registerTypes();
-    void registerGenericTypes();
+    void register_GenericTypes();
+    void register_CharacterTypes();
+    void register_SpawnerTypes();
     int loadAndRunFile(const QString &path);
     void callFuncWithMapInstance(MapInstance *mi, const char *name, int arg1);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1);
