@@ -13,7 +13,7 @@ SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
-add_handler(ClientOptionService ${target_SOURCES})
+add_library(ClientOptionService ${target_SOURCES})
 target_link_libraries(ClientOptionService PUBLIC Qt5::Core gameData)
 target_link_libraries(ClientOptionService INTERFACE SEGS_Components )
 

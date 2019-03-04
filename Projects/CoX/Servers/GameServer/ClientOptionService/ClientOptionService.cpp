@@ -8,32 +8,28 @@
 #include "ClientOptionService.h"
 #include "GameData/Entity.h"
 #include "GameData/playerdata_definitions.h"
-#include "Common/Servers/InternalEvents.h"
-#include "Common/Servers/ClientManager.h"
-#include "Servers/MapServer/MapClientSession.h"
-#include "Servers/MapServer/MapInstance.h"
 #include "GameData/map_definitions.h"
+#include "GameData/EntityHelpers.h"
 #include "Messages/Map/MapEvents.h"
 #include <QtCore/QDebug>
 
 using namespace SEGSEvents;
 
-
 void ClientOptionService::on_set_keybind(Entity* ent, Event *ev)
 {
-    SetKeybind* data = static_cast<SetKeybind *>(ev);
-    KeyName key = static_cast<KeyName>(data->key);
-    ModKeys mod = static_cast<ModKeys>(data->mods);
+    SetKeybind* casted_ev = static_cast<SetKeybind *>(ev);
+    KeyName key = static_cast<KeyName>(casted_ev->key);
+    ModKeys mod = static_cast<ModKeys>(casted_ev->mods);
 
-    ent->m_player->m_keybinds.setKeybind(data->profile, key, mod, data->command, data->is_secondary);
+    ent->m_player->m_keybinds.setKeybind(casted_ev->profile, key, mod, casted_ev->command, casted_ev->is_secondary);
     //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
 }
 
 
 void ClientOptionService::on_remove_keybind(Entity* ent, Event *ev)
 {
-    RemoveKeybind* data = static_cast<RemoveKeybind *>(ev);
-    ent->m_player->m_keybinds.removeKeybind(data->profile,(KeyName &)data->key,(ModKeys &)data->mods);
+    RemoveKeybind* casted_ev = static_cast<RemoveKeybind *>(ev);
+    ent->m_player->m_keybinds.removeKeybind(casted_ev->profile,(KeyName &)casted_ev->key,(ModKeys &)casted_ev->mods);
     //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
@@ -49,10 +45,25 @@ void ClientOptionService::on_reset_keybinds(Entity* ent, Event *ev)
 
 void ClientOptionService::on_select_keybind_profile(Entity* ent, Event *ev)
 {
-    SelectKeybindProfile* data = static_cast<SelectKeybindProfile *>(ev);
-    ent->m_player->m_keybinds.setKeybindProfile(data->profile);
+    SelectKeybindProfile* casted_ev = static_cast<SelectKeybindProfile *>(ev);
+    ent->m_player->m_keybinds.setKeybindProfile(casted_ev->profile);
     //qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }
 
+void ClientOptionService::on_client_options(Entity* ent, Event* ev)
+{
+    SaveClientOptions* casted_ev = static_cast<SaveClientOptions *>(ev);
+
+    markEntityForDbStore(ent,DbStoreFlags::PlayerData);
+    ent->m_player->m_options = casted_ev->data;
+}
+
+void ClientOptionService::on_switch_viewpoint(Entity* ent, Event *ev)
+{
+    SwitchViewPoint* casted_ev = static_cast<SwitchViewPoint *>(ev);
+
+    ent->m_player->m_options.m_first_person_view = casted_ev->new_viewpoint_is_firstperson;
+    qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << casted_ev->new_viewpoint_is_firstperson;
+}
 
 

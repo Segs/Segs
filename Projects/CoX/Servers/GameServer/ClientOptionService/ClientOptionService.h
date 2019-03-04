@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "EventProcessor.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/ClientManager.h"
 #include "Common/GameData/Entity.h"
@@ -22,5 +21,7 @@ public:
     void on_reset_keybinds(Entity* ent, SEGSEvents::Event *ev);
     void on_set_keybind(Entity* ent, SEGSEvents::Event *ev);
     void on_remove_keybind(Entity* ent, SEGSEvents::Event *ev);
+    void on_client_options(Entity* ent, SEGSEvents::Event *ev);
+    void on_switch_viewpoint(Entity* ent, SEGSEvents::Event *ev);
 protected:
 };

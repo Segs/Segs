@@ -472,12 +472,6 @@ void MapInstance::dispatch( Event *ev )
         case evPlaqueVisited:
             on_plaque_visited(static_cast<PlaqueVisited *>(ev));
             break;
-        case evSwitchViewPoint:
-            on_switch_viewpoint(static_cast<SwitchViewPoint *>(ev));
-            break;
-        case evSaveClientOptions:
-            on_client_options(static_cast<SaveClientOptions *>(ev));
-            break;
         case evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
             break;
@@ -523,6 +517,12 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evResetKeybinds:
             m_client_option_service->on_reset_keybinds(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evSwitchViewPoint:
+            m_client_option_service->on_switch_viewpoint(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evSaveClientOptions:
+            m_client_option_service->on_client_options(m_session_store.session_from_event(ev).m_ent, ev);
             break;
             // ---------- Email Service ----------------
         case evEmailHeaderResponse:
@@ -2341,25 +2341,6 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 
     session.addCommandToSendNextUpdate(std::make_unique<EntityInfoResponse>(description));
     qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
-}
-
-void MapInstance::on_client_options(SaveClientOptions * ev)
-{
-    // Save options/keybinds to character entity and entry in the database.
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    Entity *ent = session.m_ent;
-    markEntityForDbStore(ent,DbStoreFlags::PlayerData);
-    ent->m_player->m_options = ev->data;
-}
-
-void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
-    qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
 }
 
 void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
