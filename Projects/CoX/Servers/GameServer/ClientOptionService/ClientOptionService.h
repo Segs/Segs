@@ -7,11 +7,8 @@
 
 #pragma once
 
-#include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/ClientManager.h"
 #include "Common/GameData/Entity.h"
-#include "Servers/GameDatabase/GameDBSyncHandler.h"
-#include <QVector>
 
 class ClientOptionService
 {

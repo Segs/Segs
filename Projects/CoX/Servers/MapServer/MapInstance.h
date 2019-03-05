@@ -11,13 +11,18 @@
 #include "EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
 #include "Servers/ServerEndpoint.h"
-#include "Servers/GameServer/EmailService/EmailService.h"
-#include "Servers/GameServer/ClientOptionService/ClientOptionService.h"
 #include "Servers/GameDatabase/GameDBSyncService.h"
 #include "ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "NpcGenerator.h"
 #include "CritterGenerator.h"
+
+#include "GameServer/EmailService/EmailService.h"
+#include "GameServer/ClientOptionService/ClientOptionService.h"
+#include "GameServer/CharacterService/CharacterService.h"
+#include "GameServer/CharacterService/EnhancementService/EnhancementService.h"
+#include "GameServer/CharacterService/InspirationService/InspirationService.h"
+#include "GameServer/CharacterService/PowerService/PowerService.h"
 
 #include <map>
 #include <memory>
@@ -138,6 +143,10 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<GameDBSyncService>      m_sync_service;
         std::unique_ptr<EmailService>           m_email_service;
         std::unique_ptr<ClientOptionService>    m_client_option_service;
+        std::unique_ptr<CharacterService>       m_character_service;
+        std::unique_ptr<EnhancementService>    m_enhancement_service;
+        std::unique_ptr<InspirationService>     m_inspiration_service;
+        std::unique_ptr<PowerService>           m_power_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -241,41 +250,27 @@ protected:
         void on_client_resumed(SEGSEvents::ClientResumedRendering *ev);
         void on_location_visited(SEGSEvents::LocationVisited *ev);
         void on_plaque_visited(SEGSEvents::PlaqueVisited *ev);
-        void on_inspiration_dockmode(SEGSEvents::InspirationDockMode *ev);
         void on_enter_door(SEGSEvents::EnterDoor *ev);
         void on_change_stance(SEGSEvents::ChangeStance *ev);
         void on_set_destination(SEGSEvents::SetDestination *ev);
         void on_has_entered_door(SEGSEvents::HasEnteredDoor *ev);
-        void on_abort_queued_power(SEGSEvents::AbortQueuedPower *ev);
         void on_description_and_battlecry(SEGSEvents::DescriptionAndBattleCry *ev);
         void on_entity_info_request(SEGSEvents::EntityInfoRequest *ev);
         void on_chat_reconfigured(SEGSEvents::ChatReconfigure *ev);
-        void on_set_default_power(SEGSEvents::SetDefaultPower *ev);
-        void on_unset_default_power(SEGSEvents::UnsetDefaultPower *ev);
+
         void on_unqueue_all(SEGSEvents::UnqueueAll *ev);
         void on_target_chat_channel_selected(SEGSEvents::TargetChatChannelSelected *ev);
-        void on_activate_power(SEGSEvents::ActivatePower *ev);
-        void on_activate_power_at_location(SEGSEvents::ActivatePowerAtLocation *ev);
-        void on_activate_inspiration(SEGSEvents::ActivateInspiration *ev);
-        void on_powers_dockmode(SEGSEvents::PowersDockMode *ev);
-        void on_switch_tray(SEGSEvents::SwitchTray *ev);
+
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
-        void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);
-        void on_combine_enhancements(SEGSEvents::CombineEnhancementsReq *ev);
-        void on_move_enhancement(SEGSEvents::MoveEnhancement *ev);
-        void on_set_enhancement(SEGSEvents::SetEnhancement *ev);
-        void on_trash_enhancement(SEGSEvents::TrashEnhancement *ev);
-        void on_trash_enhancement_in_power(SEGSEvents::TrashEnhancementInPower *ev);
-        void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
-        void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
+
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
         void on_dead_no_gurney_ok(SEGSEvents::DeadNoGurneyOK *ev);
         void on_browser_close(SEGSEvents::BrowserClose *ev);
         void on_recv_costume_change(SEGSEvents::RecvCostumeChange *ev);
-        void on_levelup_response(SEGSEvents::LevelUpResponse *ev);
+
         void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
         void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);
         void on_receive_contact_status(SEGSEvents::ReceiveContactStatus *ev);

@@ -7,25 +7,8 @@
 
 #pragma once
 
-#include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/ClientManager.h"
 #include "Common/Servers/InternalEvents.h"
-#include "Servers/GameDatabase/GameDBSyncHandler.h"
-#include "Servers/MapServer/MapClientSession.h"
-
-#include <QVector>
-
-namespace SEGSEvents
-{
-class EmailHeaderResponseData;
-class EmailReadResponseData;
-class EmailWasReadByRecipientData;
-class EmailHeadersToClientData;
-class EmailHeaderToClientData;
-class EmailCreateStatusData;
-class EmailHeaders;
-class EmailMessageStatus;
-}
 
 class EmailService
 {

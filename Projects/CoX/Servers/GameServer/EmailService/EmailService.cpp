@@ -12,7 +12,6 @@
 #include "Messages/Map/EmailMessageStatus.h"
 #include "Messages/Map/EmailRead.h"
 #include "Common/Servers/InternalEvents.h"
-#include "Servers/MapServer/MapClientSession.h"
 #include "Servers/MapServer/MessageHelpers.h"
 
 using namespace SEGSEvents;

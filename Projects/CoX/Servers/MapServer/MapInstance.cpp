@@ -192,6 +192,10 @@ void MapInstance::init_services()
 
     m_email_service = std::make_unique<EmailService>();
     m_client_option_service = std::make_unique<ClientOptionService>();
+    m_character_service = std::make_unique<CharacterService>();
+    m_enhancement_service = std::make_unique<EnhancementService>();
+    m_inspiration_service = std::make_unique<InspirationService>();
+    m_power_service = std::make_unique<PowerService>();
 }
 
 ///
@@ -442,15 +446,6 @@ void MapInstance::dispatch( Event *ev )
         case evWindowState:
             on_window_state(static_cast<WindowState *>(ev));
             break;
-        case evInspirationDockMode:
-            on_inspiration_dockmode(static_cast<InspirationDockMode *>(ev));
-            break;
-        case evPowersDockMode:
-            on_powers_dockmode(static_cast<PowersDockMode *>(ev));
-            break;
-        case evAbortQueuedPower:
-            on_abort_queued_power(static_cast<AbortQueuedPower *>(ev));
-            break;
         case evConsoleCommand:
             on_console_command(static_cast<ConsoleCommand *>(ev));
             break;
@@ -475,36 +470,40 @@ void MapInstance::dispatch( Event *ev )
         case evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
             break;
-        case evSetDefaultPower:
-            on_set_default_power(static_cast<SetDefaultPower *>(ev));
-            break;
-        case evUnsetDefaultPower:
-            on_unset_default_power(static_cast<UnsetDefaultPower *>(ev));
-            break;
         case evUnqueueAll:
             on_unqueue_all(static_cast<UnqueueAll *>(ev));
             break;
-        case evActivatePower:
-            on_activate_power(static_cast<ActivatePower *>(ev));
-            break;
-        case evActivatePowerAtLocation:
-            on_activate_power_at_location(static_cast<ActivatePowerAtLocation *>(ev));
-            break;
-        case evActivateInspiration:
-            on_activate_inspiration(static_cast<ActivateInspiration *>(ev));
-            break;
         case evInteractWithEntity:
             on_interact_with(static_cast<InteractWithEntity *>(ev));
-            break;
-        case evSwitchTray:
-            on_switch_tray(static_cast<SwitchTray *>(ev));
             break;
         case evTargetChatChannelSelected:
             on_target_chat_channel_selected(static_cast<TargetChatChannelSelected *>(ev));
             break;
         case evEntityInfoRequest:
             on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
-            break;     
+            break;
+            // --------------- Power Service ---------------
+        case evActivatePower:
+            m_power_service->on_activate_power(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evActivatePowerAtLocation:
+            m_power_service->on_activate_power_at_location(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evSetDefaultPower:
+            m_power_service->on_set_default_power(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evUnsetDefaultPower:
+            m_power_service->on_unset_default_power(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evPowersDockMode:
+            m_power_service->on_powers_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evAbortQueuedPower:
+            m_power_service->on_abort_queued_power(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evRecvNewPower:
+            m_power_service->on_recv_new_power(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
             // ---------- Client Option Service ------------
         case evSelectKeybindProfile:
             m_client_option_service->on_select_keybind_profile(m_session_store.session_from_event(ev).m_ent, ev);
@@ -543,35 +542,47 @@ void MapInstance::dispatch( Event *ev )
         case evEmailCreateStatusMessage:
             on_service_to_client_response(m_email_service->on_email_create_status(ev));
             break;
+            // --------------- Inspiration Service -----------------
         case evMoveInspiration:
-            on_move_inspiration(static_cast<MoveInspiration *>(ev));
+            m_inspiration_service->on_move_inspiration(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evInspirationDockMode:
+            m_inspiration_service->on_inspiration_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evActivateInspiration:
+            m_inspiration_service->on_activate_inspiration(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+            // ------------- Enhancement Service --------------------
+        case evCombineEnhancementsReq:
+            m_enhancement_service->on_combine_enhancements(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evMoveEnhancement:
+            m_enhancement_service->on_move_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evSetEnhancement:
+            m_enhancement_service->on_set_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evTrashEnhancement:
+            m_enhancement_service->on_trash_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evTrashEnhancementInPower:
+            m_enhancement_service->on_trash_enhancement_in_power(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evBuyEnhancementSlot:
+            m_enhancement_service->on_buy_enhancement_slot(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+            // ------------------ Character Service ---------------
+        case evLevelUpResponse:
+            m_character_service->on_levelup_response(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evSwitchTray:
+            m_character_service->on_switch_tray(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evRecvSelectedTitles:
             on_recv_selected_titles(static_cast<RecvSelectedTitles *>(ev));
             break;
         case evDialogButton:
             on_dialog_button(static_cast<DialogButton *>(ev));
-            break;
-        case evCombineEnhancementsReq:
-            on_combine_enhancements(static_cast<CombineEnhancementsReq *>(ev));
-            break;
-        case evMoveEnhancement:
-            on_move_enhancement(static_cast<MoveEnhancement *>(ev));
-            break;
-        case evSetEnhancement:
-            on_set_enhancement(static_cast<SetEnhancement *>(ev));
-            break;
-        case evTrashEnhancement:
-            on_trash_enhancement(static_cast<TrashEnhancement *>(ev));
-            break;
-        case evTrashEnhancementInPower:
-            on_trash_enhancement_in_power(static_cast<TrashEnhancementInPower *>(ev));
-            break;
-        case evBuyEnhancementSlot:
-            on_buy_enhancement_slot(static_cast<BuyEnhancementSlot *>(ev));
-            break;
-        case evRecvNewPower:
-            on_recv_new_power(static_cast<RecvNewPower *>(ev));
             break;
         case evTradeWasCancelledMessage:
             on_trade_cancelled(static_cast<TradeWasCancelledMessage *>(ev));
@@ -600,9 +611,6 @@ void MapInstance::dispatch( Event *ev )
         case evRecvCostumeChange:
             on_recv_costume_change(static_cast<RecvCostumeChange *>(ev));
             break;
-        case evLevelUpResponse:
-            on_levelup_response(static_cast<LevelUpResponse *>(ev));
-            break;
         case evReceiveContactStatus:
             on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
             break;
@@ -615,7 +623,7 @@ void MapInstance::dispatch( Event *ev )
         case evStoreSellItem:
             on_store_sell_item(static_cast<StoreSellItem *>(ev));
             break;
-    case evStoreBuyItem:
+        case evStoreBuyItem:
             on_store_buy_item(static_cast<StoreBuyItem *>(ev));
             break;
         default:
@@ -1089,16 +1097,6 @@ void MapInstance::sendState()
 
 }
 
-void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    CombineResult res=combineEnhancements(*session.m_ent, ev->first_power, ev->second_power);
-    sendEnhanceCombineResponse(session, res.success, res.destroyed);
-    session.m_ent->m_char->m_char_data.m_has_updated_powers = res.success || res.destroyed;
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
-}
-
 void MapInstance::on_input_state(RecvInputState *st)
 {
     MapClientSession &session(m_session_store.session_from_event(st));
@@ -1291,9 +1289,6 @@ static MessageChannel getKindOfChatMessage(const QStringRef &msg)
     // unknown chat types are processed as local chat
     return MessageChannel::LOCAL;
 }
-
-
-
 
 void MapInstance::process_chat(Entity *sender, QString &msg_text)
 {
@@ -2192,15 +2187,6 @@ void MapInstance::on_plaque_visited(PlaqueVisited * ev)
                   QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
 }
 
-void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_gui.m_insps_tray_mode = ev->dock_mode;
-    qCDebug(logMapEvents) << "Saving inspirations dock mode to GUISettings:" << ev->dock_mode;
-}
-
 void MapInstance::on_enter_door(EnterDoor *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2301,20 +2287,6 @@ void MapInstance::on_has_entered_door(HasEnteredDoor *ev)
     qCDebug(logAnimations).noquote() << output_msg;
 }
 
-void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    if(session.m_ent->m_queued_powers.isEmpty())
-        return;
-
-    // remove first queued power
-    session.m_ent->m_queued_powers.dequeue();
-    session.m_ent->m_char->m_char_data.m_has_updated_powers = true; // this must be true, because we're updating queued powers
-
-    qCWarning(logMapEvents) << "Aborting queued power";
-}
-
 void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2354,30 +2326,6 @@ void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
     qCDebug(logMapEvents) << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
 }
 
-void MapInstance::on_set_default_power(SetDefaultPower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    PowerTrayGroup *ptray = &session.m_ent->m_char->m_char_data.m_trays;
-
-    ptray->m_has_default_power = true;
-    ptray->m_default_pset_idx = ev->powerset_idx;
-    ptray->m_default_pow_idx = ev->power_idx;
-
-    qCDebug(logMapEvents) << "Set Default Power:" << ev->powerset_idx << ev->power_idx;
-}
-
-void MapInstance::on_unset_default_power(UnsetDefaultPower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    PowerTrayGroup *ptray = &session.m_ent->m_char->m_char_data.m_trays;
-
-    ptray->m_has_default_power = false;
-    ptray->m_default_pset_idx = 0;
-    ptray->m_default_pow_idx = 0;
-
-    qCDebug(logMapEvents) << "Unset Default Power.";
-}
-
 void MapInstance::on_unqueue_all(UnqueueAll *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2398,69 +2346,6 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
 
     ent->m_player->m_gui.m_cur_chat_channel = ev->m_chat_type;
     qCDebug(logMapEvents) << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
-}
-
-void MapInstance::on_activate_power(ActivatePower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    session.m_ent->m_has_input_on_timeframe = true;
-    uint32_t tgt_idx = ev->target_idx;
-
-    if(ev->target_idx <= 0 || ev->target_idx == session.m_ent->m_idx)
-        tgt_idx = -1;
-
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
-}
-
-void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    session.m_ent->m_has_input_on_timeframe = true;
-
-    // TODO: Check that target is valid, then Do Power!
-    QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    sendFaceLocation(session, ev->location);
-
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
-}
-
-void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    session.m_ent->m_has_input_on_timeframe = true;
-    bool success = useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
-
-    if(!success)
-        return;
-
-    QString contents = "Inspired!";
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
-}
-
-void MapInstance::on_powers_dockmode(PowersDockMode *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
-    //qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
-}
-
-void MapInstance::on_switch_tray(SwitchTray *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_gui.m_tray1_number = ev->tray_group.m_primary_tray_idx;
-    ent->m_player->m_gui.m_tray2_number = ev->tray_group.m_second_tray_idx;
-    ent->m_char->m_char_data.m_trays = ev->tray_group;
-    markEntityForDbStore(ent, DbStoreFlags::PlayerData);
-
-   //qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray_group.m_primary_tray_idx+1 << "Tray2:" << ev->tray_group.m_second_tray_idx+1;
 }
 
 void MapInstance::setPlayerSpawn(Entity &e)
@@ -2613,14 +2498,6 @@ void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
     session.addCommandToSendNextUpdate(std::make_unique<TaskDetail>(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail));
 }
 
-
-void MapInstance::on_move_inspiration(MoveInspiration *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    moveInspiration(session.m_ent->m_char->m_char_data, ev->src_col, ev->src_row, ev->dest_col, ev->dest_row);
-}
-
 void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2677,48 +2554,6 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     }
 }
 
-void MapInstance::on_move_enhancement(MoveEnhancement *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    moveEnhancement(session.m_ent->m_char->m_char_data, ev->m_src_idx, ev->m_dest_idx);
-}
-
-void MapInstance::on_set_enhancement(SetEnhancement *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    setEnhancement(*session.m_ent, ev->m_pset_idx, ev->m_pow_idx, ev->m_src_idx, ev->m_dest_idx);
-}
-
-void MapInstance::on_trash_enhancement(TrashEnhancement *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_idx);
-}
-
-void MapInstance::on_trash_enhancement_in_power(TrashEnhancementInPower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    trashEnhancementInPower(session.m_ent->m_char->m_char_data, ev->m_pset_idx, ev->m_pow_idx, ev->m_eh_idx);
-}
-
-void MapInstance::on_buy_enhancement_slot(BuyEnhancementSlot *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    buyEnhancementSlots(*session.m_ent, ev->m_available_slots, ev->m_pset_idx, ev->m_pow_idx);
-}
-
-void MapInstance::on_recv_new_power(RecvNewPower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    addPower(session.m_ent->m_char->m_char_data, ev->ppool);
-}
-
 void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2773,17 +2608,6 @@ void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
     session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
     session.m_ent->m_rare_update = true; // re-send costumes, they've changed.
     markEntityForDbStore(session.m_ent, DbStoreFlags::Full);
-}
-
-void MapInstance::on_levelup_response(LevelUpResponse *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    // if successful, set level
-    if(session.m_ent->m_char->m_in_training) // if training, raise level
-        increaseLevel(*session.m_ent);
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received LevelUpResponse" << ev->button_id << ev->result;
 }
 
 void MapInstance::on_afk_update()
