@@ -35,13 +35,11 @@ void CritterGenerator::generate(MapInstance *map_instance)
 
         if(encounter_location.m_name.contains("encounter_e_", Qt::CaseInsensitive))
         {
-            glm::vec3 pos = glm::vec3(encounter_location.m_relative_position[3]);
-            auto valquat = glm::quat_cast(encounter_location.m_relative_position);
-            glm::vec3 angles = glm::eulerAngles(valquat);
-            angles.y += glm::pi<float>();
+            glm::vec3 pos = encounter_location.m_relative_position;
+            glm::vec3 rotation = encounter_location.m_rotation;
 
             //spawn enemy
-            addEnemy(*map_instance, cd.m_model, pos, 1, angles, cd.m_name, 2, cd.m_faction_name, 0);
+            addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
             ++count;
         }
         else if(encounter_location.m_name.contains("encounter_v_", Qt::CaseInsensitive) && !m_victim_spawned)
@@ -59,25 +57,20 @@ void CritterGenerator::generate(MapInstance *map_instance)
                 }
             }
 
-            glm::vec3 pos = glm::vec3(encounter_location.m_relative_position[3]);
-            auto valquat = glm::quat_cast(encounter_location.m_relative_position);
-            glm::vec3 angles = glm::eulerAngles(valquat);
-            angles.y += glm::pi<float>();
+            glm::vec3 pos = encounter_location.m_relative_position;
+            glm::vec3 rotation = encounter_location.m_rotation;
 
             QString victim = "Victim";
-            addVictim(*map_instance, npcName, pos, 1, angles, victim);
+            addVictim(*map_instance, npcName, pos, 1, rotation, victim);
 
             m_victim_spawned = true;
         }
         else if(encounter_location.m_name.contains("encounter_s_", Qt::CaseInsensitive)) // Scenario? Glowie or critter attacking victim?
         {
-            glm::vec3 pos = glm::vec3(encounter_location.m_relative_position[3]);
-            auto valquat = glm::quat_cast(encounter_location.m_relative_position);
-            glm::vec3 angles = glm::eulerAngles(valquat);
-            angles.y += glm::pi<float>();
-
+            glm::vec3 pos = encounter_location.m_relative_position;
+            glm::vec3 rotation = encounter_location.m_rotation;
             //spawn enemy
-            addEnemy(*map_instance, cd.m_model, pos, 1, angles, cd.m_name, 2, cd.m_faction_name, 0);
+            addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
             ++count;
         }
 
