@@ -180,7 +180,10 @@ QJsonObject JsonRpcClient::createRequestJsonObject(const QString& method,
 
 QJsonObject JsonRpcClient::createNotificationJsonObject(const QString& method)
 {
-    return createRequestJsonObject(method, "null");
+    return QJsonObject {
+        { "jsonrpc", "2.0" },
+        { "method", method }
+    };
 }
 
 bool JsonRpcClient::connectToServer(const QString& host, int port)
