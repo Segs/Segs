@@ -27,17 +27,17 @@ JsonRpcWebSocketServer::~JsonRpcWebSocketServer()
     m_server = nullptr;
 }
 
-void JsonRpcWebSocketServer::listen(int port)
+bool JsonRpcWebSocketServer::listen(int port)
 {
     logInfo(QString("listening on port %2").arg(port));
-    m_server->listen(QHostAddress::AnyIPv4, port);
+    return m_server->listen(QHostAddress::AnyIPv4, port);
 }
 
 
-void JsonRpcWebSocketServer::listen(const QHostAddress& addr, int port)
+bool JsonRpcWebSocketServer::listen(const QHostAddress& addr, int port)
 {
     logInfo(QString("listening on port %2").arg(port));
-    m_server->listen(addr, port);
+    return m_server->listen(addr, port);
 }
 
 void JsonRpcWebSocketServer::close()
