@@ -13,10 +13,11 @@
 class InspirationService
 {
 private:
+    const float ACTIVATE_INSPIRATION_DELAY = 4.0;
 public:
     void on_move_inspiration(Entity* ent, SEGSEvents::Event* ev);
     void on_inspiration_dockmode(Entity* ent, SEGSEvents::Event* ev);
-    void on_activate_inspiration(Entity* ent, SEGSEvents::Event* ev);
+    SEGSEvents::MapServiceToClientData* on_activate_inspiration(Entity* ent, SEGSEvents::Event* ev);
 protected:
 };
 

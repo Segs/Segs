@@ -61,8 +61,8 @@ void PowerService::on_activate_power_at_location(Entity* ent, Event* ev)
             .arg(casted_ev->location.y)
             .arg(casted_ev->location.z);
 
-    //sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    //sendFaceLocation(session, ev->location);
+    sendFloatingInfo(*ent->m_client, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
+    sendFaceLocation(*ent->m_client, casted_ev->location);
 
     qCDebug(logPowers) << "Entity: " << ent->m_idx << "has activated power"
                        << casted_ev->pset_idx << casted_ev->pow_idx

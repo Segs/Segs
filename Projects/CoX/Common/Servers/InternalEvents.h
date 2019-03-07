@@ -15,6 +15,7 @@
 #include <glm/vec3.hpp>
 #include <Common/GameData/map_definitions.h>
 #include <Common/Messages/Map/GameCommand.h>
+#include "GameData/Entity.h"
 
 namespace SEGSEvents
 {
@@ -245,9 +246,16 @@ struct MapSwapCollisionData
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
 
-struct ServiceToClientData
+struct InternalServiceToClientData
 {
     uint64_t token = 0;
+    std::unique_ptr<GameCommandEvent> command;
+    QString message;
+};
+
+struct MapServiceToClientData
+{
+    Entity* ent;
     std::unique_ptr<GameCommandEvent> command;
     QString message;
 };

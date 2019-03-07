@@ -525,22 +525,22 @@ void MapInstance::dispatch( Event *ev )
             break;
             // ---------- Email Service ----------------
         case evEmailHeaderResponse:
-            on_service_to_client_response(m_email_service->on_email_header_response(ev));
+            on_internal_service_to_client_response(m_email_service->on_email_header_response(ev));
             break;
         case evEmailHeaderToClientMessage:
-            on_service_to_client_response(m_email_service->on_email_header_to_client(ev));
+            on_internal_service_to_client_response(m_email_service->on_email_header_to_client(ev));
             break;
         case evEmailHeadersToClientMessage:
-            on_service_to_client_response(m_email_service->on_email_headers_to_client(ev));
+            on_internal_service_to_client_response(m_email_service->on_email_headers_to_client(ev));
             break;
         case evEmailReadResponse:
-            on_service_to_client_response(m_email_service->on_email_read_response(ev));
+            on_internal_service_to_client_response(m_email_service->on_email_read_response(ev));
             break;
         case evEmailWasReadByRecipientMessage:
-            on_service_to_client_response(m_email_service->on_email_read_by_recipient(ev));
+            on_internal_service_to_client_response(m_email_service->on_email_read_by_recipient(ev));
             break;
         case evEmailCreateStatusMessage:
-            on_service_to_client_response(m_email_service->on_email_create_status(ev));
+            on_internal_service_to_client_response(m_email_service->on_email_create_status(ev));
             break;
             // --------------- Inspiration Service -----------------
         case evMoveInspiration:
@@ -550,7 +550,7 @@ void MapInstance::dispatch( Event *ev )
             m_inspiration_service->on_inspiration_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evActivateInspiration:
-            m_inspiration_service->on_activate_inspiration(m_session_store.session_from_event(ev).m_ent, ev);
+            on_map_service_to_client_response(m_inspiration_service->on_activate_inspiration(m_session_store.session_from_event(ev).m_ent, ev));
             break;
             // ------------- Enhancement Service --------------------
         case evCombineEnhancementsReq:
@@ -2965,7 +2965,7 @@ void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
     process_chat(sender, msg_text);
 }
 
-void MapInstance::on_service_to_client_response(ServiceToClientData* data)
+void MapInstance::on_internal_service_to_client_response(InternalServiceToClientData* data)
 {
     if (data->token == 0)
         return;
@@ -2985,6 +2985,40 @@ void MapInstance::on_service_to_client_response(ServiceToClientData* data)
     {
         qCritical() << e.what();
     }
+}
+
+void MapInstance::on_internal_service_to_client_response(std::vector<InternalServiceToClientData*> events)
+{
+    for (int i = 0; i < events.size(); i++)
+        on_internal_service_to_client_response(events[i]);
+}
+
+void MapInstance::on_map_service_to_client_response(MapServiceToClientData* data)
+{
+    if (data->ent == nullptr)
+        return;
+
+    try
+    {
+        MapClientSession& session = *data->ent->m_client;
+
+        if (data->command != nullptr)
+            session.addCommandToSendNextUpdate(std::move(data->command));
+
+        // is not null and is not empty
+        if (data->message.isEmpty() && data->message.isNull())
+            sendInfoMessage(MessageChannel::DEBUG_INFO, data->message, session);
+    }
+    catch(std::exception &e)
+    {
+        qCritical() << e.what();
+    }
+}
+
+void MapInstance::on_map_service_to_client_response(std::vector<MapServiceToClientData*> events)
+{
+    for (int i = 0; i < events.size(); i++)
+        on_map_service_to_client_response(events[i]);
 }
 
 void MapInstance::startTimer(uint32_t entity_idx)

@@ -16,7 +16,7 @@
 
 using namespace SEGSEvents;
 
-ServiceToClientData* EmailService::on_email_header_response(Event* ev)
+InternalServiceToClientData* EmailService::on_email_header_response(Event* ev)
 {
     EmailHeaderResponse* resp = static_cast<EmailHeaderResponse *>(ev);
 
@@ -29,21 +29,21 @@ ServiceToClientData* EmailService::on_email_header_response(Event* ev)
                                                           email_header.m_timestamp});
     }
 
-    return new ServiceToClientData({resp->session_token(), std::make_unique<EmailHeaders>(email_headers), QString()});
+    return new InternalServiceToClientData({resp->session_token(), std::make_unique<EmailHeaders>(email_headers), QString()});
 }
 
 // EmailHandler will send this event here
-ServiceToClientData* EmailService::on_email_header_to_client(Event* ev)
+InternalServiceToClientData* EmailService::on_email_header_to_client(Event* ev)
 {
     EmailHeaderToClientMessage* msg = static_cast<EmailHeaderToClientMessage *>(ev);
-    return new ServiceToClientData({msg->session_token(), std::make_unique<EmailHeaders>(
+    return new InternalServiceToClientData({msg->session_token(), std::make_unique<EmailHeaders>(
                                     msg->m_data.m_email_id,
                                     msg->m_data.m_sender_name,
                                     msg->m_data.m_subject,
                                     msg->m_data.m_timestamp), "message"});
 }
 
-ServiceToClientData* EmailService::on_email_headers_to_client(Event* ev)
+InternalServiceToClientData* EmailService::on_email_headers_to_client(Event* ev)
 {
     EmailHeadersToClientMessage* msg = static_cast<EmailHeadersToClientMessage *>(ev);
 
@@ -57,28 +57,28 @@ ServiceToClientData* EmailService::on_email_headers_to_client(Event* ev)
     }
 
     QString msgToClient = QString("You have %1 unread emails.").arg(msg->m_data.m_unread_emails_count);
-    return new ServiceToClientData({msg->session_token(), std::make_unique<EmailHeaders>(email_headers), msgToClient});
+    return new InternalServiceToClientData({msg->session_token(), std::make_unique<EmailHeaders>(email_headers), msgToClient});
 }
 
-ServiceToClientData* EmailService::on_email_read_response(Event* ev)
+InternalServiceToClientData* EmailService::on_email_read_response(Event* ev)
 {
     EmailReadResponse* resp = static_cast<EmailReadResponse *>(ev);
-    return new ServiceToClientData({resp->session_token(), std::make_unique<EmailRead>(
+    return new InternalServiceToClientData({resp->session_token(), std::make_unique<EmailRead>(
                                     resp->m_data.m_email_id,
                                     resp->m_data.m_message,
                                     resp->m_data.m_sender_name), QString()});
 }
 
-ServiceToClientData* EmailService::on_email_read_by_recipient(Event* ev)
+InternalServiceToClientData* EmailService::on_email_read_by_recipient(Event* ev)
 {
     EmailWasReadByRecipientMessage* msg = static_cast<EmailWasReadByRecipientMessage *>(ev);
-    return new ServiceToClientData({msg->session_token(), nullptr, msg->m_data.m_message});
+    return new InternalServiceToClientData({msg->session_token(), nullptr, msg->m_data.m_message});
 }
 
-ServiceToClientData* EmailService::on_email_create_status(Event* ev)
+InternalServiceToClientData* EmailService::on_email_create_status(Event* ev)
 {
     EmailCreateStatusMessage* msg = static_cast<EmailCreateStatusMessage* >(ev);
-    return new ServiceToClientData({msg->session_token(), std::make_unique<EmailMessageStatus>(
+    return new InternalServiceToClientData({msg->session_token(), std::make_unique<EmailMessageStatus>(
                                     msg->m_data.m_status,
                                     msg->m_data.m_recipient_name), QString()});
 }
