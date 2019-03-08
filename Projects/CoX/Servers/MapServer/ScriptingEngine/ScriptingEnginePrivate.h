@@ -5,13 +5,8 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#pragma once
-
 #include <QString>
 #include <QSet>
-#include <memory>
-#include <string>
-#include <lua/lua.hpp>
 #include <sol2/sol.hpp>
 
 class ScriptingEnginePrivate
