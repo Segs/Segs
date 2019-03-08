@@ -386,7 +386,14 @@ void ScriptingEngine::register_SpawnerTypes()
         {
             mi->m_entities.removeEntityFromActiveList(e);
         }
+    };
 
+    m_private->m_lua["MapInstance"]["GetMapEncounters"] = [this]()
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        std::vector<CritterSpawnLocations> encounters = getMapEncounters(mi);
+        //return sol::as_table(encounters);
+        return encounters;
     };
 }
 
