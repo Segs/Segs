@@ -149,7 +149,9 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
                                           ev->m_data.m_game_server_acc_id, ev->m_data.m_game_server_acc_id},0));
 
     m_session_store.add_to_active_sessions(&session);
-    CharacterSlots *slots_event=new CharacterSlots;
+    //Create character objects.
+
+    CharacterSlots *slots_event=new CharacterSlots();
     slots_event->m_data = std::move(ev->m_data);
     session.link()->putq(slots_event);
 }
@@ -197,7 +199,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     GameSession &session = m_session_store.session_from_event(ev);
     assert(session.m_game_account.valid());
 
-    ev->src()->putq(new CharacterResponse(this,ev->m_index,session.m_game_account));
+    ev->src()->putq(new CharacterResponse(this,ev->m_index, session.m_game_account));
 }
 
 void GameHandler::on_idle(Idle */*ev*/)
@@ -419,6 +421,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
                                    lnk->session_token(),this);
     qInfo("Telling map server to expect a client with character %s, %d\n", qPrintable(ev->m_char_name),
             ev->m_character_index);
+
     session.m_direction = GameSession::EXITING_TO_MAP;
     map_handler->putq(expect_client);
 }

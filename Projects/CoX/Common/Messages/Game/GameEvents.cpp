@@ -84,9 +84,9 @@ void CharacterSlots::serializeto( BitStream &tgt ) const
     tgt.StorePackedBits(1, 2); //opcode
     tgt.StorePackedBits(1,static_cast<uint32_t>(m_data.m_max_slots));
     assert(m_data.m_max_slots>0);
+    Character converted;
     for(int i=0; i<m_data.m_max_slots; i++)
     {
-        Character converted;
         EntityData entity_data;
         PlayerData player_data;
         toActualCharacter(m_data.m_characters[i], converted, player_data, entity_data);
@@ -114,9 +114,9 @@ void UpdateCharacter::serializefrom( BitStream &bs )
 void CharacterResponse::serializeto( BitStream &bs ) const
 {
     GameAccountResponseCharacterData indexed_character(m_data.get_character(m_index));
-    Character converted;
     PlayerData player_data;
     EntityData entity_data;
+    Character converted;
     toActualCharacter(indexed_character, converted, player_data, entity_data);
     bs.StorePackedBits(1,6); // opcode
 

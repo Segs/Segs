@@ -36,6 +36,7 @@ set(INSTALLED_TARGETS)
 OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
 OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
+OPTION(BUILD_RPC_TEST_CLIENT "Build RPC Test Client ?" OFF)
 
 ########################################################################################
 # Prerequisites
