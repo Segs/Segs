@@ -623,8 +623,8 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
 
     try
     {
-        qCDebug(logDB) << src.m_name << src.m_db_id << src.m_account_id << src.m_slot_idx;
-        qCDebug(logDB).noquote() << "Costume:" << src.m_serialized_costume_data;
+        qCDebug(logCharSel) << src.m_name << src.m_db_id << src.m_account_id << src.m_slot_idx;
+        qCDebug(logCharSel).noquote() << "Costume:" << src.m_serialized_costume_data;
         serializeFromQString(tgt.m_costumes, src.m_serialized_costume_data);
         serializeFromQString(cd, src.m_serialized_chardata);
         serializeFromQString(entity, src.m_serialized_entity_data);

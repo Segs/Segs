@@ -20,7 +20,7 @@ enum AuthDBEventTypes : uint32_t
     evValidatePasswordRequest,
     evValidatePasswordResponse,
     evCreateAccountMessage,
-    evAuthDbErrorMessage
+    evAuthDbStatusMessage
 };
 
 
@@ -38,7 +38,7 @@ struct CreateAccountData
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(AuthDBEventTypes,CreateAccount)
 
-struct AuthDbErrorData
+struct AuthDbStatusData
 {
     QString message;
     template <class Archive>
@@ -48,7 +48,7 @@ struct AuthDbErrorData
     }
 };
 // [[ev_def:macro]]
-ONE_WAY_MESSAGE(AuthDBEventTypes,AuthDbError)
+ONE_WAY_MESSAGE(AuthDBEventTypes,AuthDbStatus)
 
 struct RetrieveAccountResponseData
 {

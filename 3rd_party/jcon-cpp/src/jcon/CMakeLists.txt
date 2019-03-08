@@ -23,3 +23,4 @@ install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
 		PUBLIC_HEADER DESTINATION include/jcon
 )
+target_compile_definitions(jcon PUBLIC NDEBUG)
