@@ -166,15 +166,14 @@ void geoUnpackDeltas(const DeltaPack *a1, uint8_t *target, uint32_t entry_size, 
 {
     if(0 == a1->uncomp_size)
         return;
-    ptrdiff_t consumed_bytes;
     if(a1->compressed_size)
     {
         QByteArray unpacked = uncompr_zip((char *)a1->compressed_data, a1->compressed_size, a1->uncomp_size);
-        consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)unpacked.data(), entry_size, num_entries, type);
+        unpackedDeltaPack((int *)target, (uint8_t *)unpacked.data(), entry_size, num_entries, type);
     }
     else
     {
-        consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)a1->compressed_data, entry_size, num_entries, type);
+        unpackedDeltaPack((int *)target, (uint8_t *)a1->compressed_data, entry_size, num_entries, type);
     }
 }
 

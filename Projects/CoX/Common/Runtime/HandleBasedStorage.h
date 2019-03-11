@@ -24,7 +24,7 @@ struct HandleBasedStorage
     {
         uint32_t internal_idx = uint32_t(m_nodes.size());
         m_nodes.emplace_back(std::forward<Args>(args)...);
-        uint32_t node_idx        = getNextFreeNode();
+        uint32_t node_idx        = nextFreeNodeIdx();
         m_free_list_head         = m_sparse_array[m_free_list_head].idx;
         m_sparse_array[node_idx] = HType(internal_idx, m_sparse_array[node_idx].gen);
         m_dense_to_sparse.emplace_back(node_idx);
@@ -56,13 +56,7 @@ struct HandleBasedStorage
     iterator begin() { return m_nodes.begin(); }
     iterator end() { return m_nodes.end(); }
 
-    static HandleBasedStorage &instance()
-    {
-        static HandleBasedStorage instance;
-        return instance;
-    }
-    
-private:
+protected:
     HandleBasedStorage()
     {
         m_sparse_array.reserve(256);
@@ -80,7 +74,7 @@ private:
         m_sparse_array[node_idx].idx = m_free_list_head;
         m_free_list_head             = node_idx;
     }
-    uint32_t getNextFreeNode()
+    uint32_t nextFreeNodeIdx()
     {
         if(m_free_list_head != HType::FREE_LIST_TERMINATOR)
             return m_free_list_head;
@@ -98,6 +92,15 @@ private:
         return m_free_list_head;
     }
 };
+template<class T>
+struct SingletonStorage : public HandleBasedStorage<T>
+{
+    static SingletonStorage &instance()
+    {
+        static SingletonStorage instance;
+        return instance;
+    }    
+};
 
 template <int idx_bits, int gen_bits, typename T>
 struct SingularStoreHandleT : public HandleT<idx_bits, gen_bits,T>
@@ -108,7 +111,7 @@ struct SingularStoreHandleT : public HandleT<idx_bits, gen_bits,T>
     // allow initializing SingularStorage handles from underlying type
     constexpr SingularStoreHandleT(super from) : super(from) {}
     constexpr SingularStoreHandleT() : super() {}
-    T *  operator->() const { return &HandleBasedStorage<T>::instance().access(*this); }
-    T &  get() const { return HandleBasedStorage<T>::instance().access(*this); }
-    void destroy() { HandleBasedStorage<T>::instance.destroy(*this); }
+    T *  operator->() const { return &SingletonStorage<T>::instance().access(*this); }
+    T &  get() const { return SingletonStorage<T>::instance().access(*this); }
+    void destroy() { SingletonStorage<T>::instance.destroy(*this); }
 };

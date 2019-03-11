@@ -26,6 +26,6 @@ struct SoundInfo
     uint8_t vol=0; // sound source volume 0-255
 };
 using HSound = SingularStoreHandleT<20,12,SoundInfo>;
-using SoundStorage = HandleBasedStorage<SoundInfo>;
+using SoundStorage = SingletonStorage<SoundInfo>;
 
 }
