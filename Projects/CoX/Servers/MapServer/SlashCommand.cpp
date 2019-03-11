@@ -1362,7 +1362,6 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     int variation = 0;
-    QString align = "none";
 
     if(cmd.contains('"')) // assume /addNpc "A guy in a hat" 1
     {
@@ -1384,7 +1383,7 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     if(parts.size()<2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
-        sendInfoMessage(MessageChannel::USER_ERROR, "Addnpc requires a valid npc name, optionally followed by a varaition number, optionally followed by an alignment (hero, villian, both, none)"+cmd, sess);
+        sendInfoMessage(MessageChannel::USER_ERROR, "Addnpc requires a valid npc name"+cmd, sess);
         return;
     }
 
@@ -1392,10 +1391,7 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     glm::vec3 offset = glm::vec3 {2,0,1};
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos + offset;
 
-    if(parts.size()>3) // assume /addNpc Monsterifier 1 hero
-        align = parts[3].toString();
-
-    addNpc(sess, name, gm_loc, variation, name, align);
+    addNpc(sess, name, gm_loc, variation, name);
 
 }
 
@@ -1429,8 +1425,9 @@ void cmdHandler_Alignment(const QString &cmd, MapClientSession &sess)
         sendInfoMessage(MessageChannel::DEBUG_INFO, "New alignment: "+parts[1], sess);
         return;
     }
-    qCDebug(logSlashCommand) << "Bad invocation: "<<cmd;
-    sendInfoMessage(MessageChannel::USER_ERROR, "Choose from hero, villian, both or none/neither: "+cmd, sess);
+    QString msg = "Choose from hero, villian, both or none/neither: ";
+    qCDebug(logSlashCommand) << msg <<cmd;
+    sendInfoMessage(MessageChannel::USER_ERROR, msg+cmd, sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

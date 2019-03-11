@@ -41,7 +41,12 @@ void setSpeed(Entity &e, float v1, float v2, float v3) { e.m_motion_state.m_spee
 void setBackupSpd(Entity &e, float val) { e.m_motion_state.m_backup_spd = val; }
 void setJumpHeight(Entity &e, float val) { e.m_motion_state.m_jump_height = val; }
 void setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
-
+void resetSpeed(Entity &e)
+{
+    e.m_motion_state.m_speed = {e.m_char->m_char_data.m_current_attribs.m_SpeedRunning,
+                                e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
+                                e.m_char->m_char_data.m_current_attribs.m_SpeedFlying};
+}
 void setTeamID(Entity &e, uint8_t team_id)
 {
     if(team_id == 0)
@@ -168,11 +173,8 @@ void toggleMovementAuthority(Entity &e)
 }
 
 
-bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum target)
+bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum const &target)
 {
-    if (&target_ent == nullptr)
-        return false;
-
     // first check if the target needs to be dead, and isn't dead yet
     if (target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate || target == StoredEntEnum::DeadVillain)
         if (target_ent.m_char->getHealth() != 0.0f)             // target.dead() maybe?
@@ -204,14 +206,14 @@ bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum target)
 }
 
 // checks a vector of possible targets
-bool validTargets(Entity &target_ent, Entity &ent, std::vector<StoredEntEnum> targets)
+bool validTargets(Entity &target_ent, Entity &ent, std::vector<StoredEntEnum> const & targets)
 {
-    if (targets.size() == 0)
+    if (targets.empty())
         return false;
 
-    for (uint i =0; i < targets.size(); ++i)
+    for (auto tar : targets)
     {
-        if (validTarget(target_ent, ent,targets.at(i)))
+        if (validTarget(target_ent, ent, tar))
             return true;                            // just needs 1 to be valid
     }
     return false;
@@ -232,18 +234,19 @@ void modifyAttrib(Entity &e, QString name, float value)
     else if (name == "damage_boost")
         e.m_char->m_char_data.m_current_attribs.m_DamageTypes[0] += value;  //dmg type 0 applies to all damage
     else if (name == "jump_height")
+    {
         e.m_char->m_char_data.m_current_attribs.m_jump_height += value;
-    else if (name == "jump_boost")
+        e.m_motion_state.m_jump_height = e.m_char->m_char_data.m_current_attribs.m_jump_height;
+    }
+    else if (name == "jump_speed")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedJumping += value;
-        setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
-                 e.m_char->m_char_data.m_current_attribs.m_SpeedFlying);
+        resetSpeed(e);
     }
     else if (name == "run_speed")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedRunning += value;
-        setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
-                 e.m_char->m_char_data.m_current_attribs.m_SpeedFlying);
+        resetSpeed(e);
     }
     else if (name == "flight")
     {
@@ -256,18 +259,38 @@ void modifyAttrib(Entity &e, QString name, float value)
     else if (name == "flight_speed")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedFlying += value;
-        setSpeed(e, e.m_char->m_char_data.m_current_attribs.m_SpeedRunning, e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
-                 e.m_char->m_char_data.m_current_attribs.m_SpeedFlying);
+        resetSpeed(e);
     }
-    else if (name == "immobolized")//copy for hold, sleep,stun
+    else if (name == "immobilized") //TODO: copy for hold, sleep,stun
     {
         e.m_char->m_char_data.m_current_attribs.m_Immobilized += value;
-        if (e.m_char->m_char_data.m_current_attribs.m_Immobilized > 1)
-            e.m_motion_state.m_controls_disabled = true;
-        else
-            e.m_motion_state.m_controls_disabled = false;
+        checkMovement(e);
     }
+    else if (name == "onlyaffectsself")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_OnlyAffectsSelf += value;
+        checkMovement(e);
+    }
+
 }
+
+//called after movment state might change, makes sure everything is clear before allowing movement
+void checkMovement(Entity &e)
+{
+    Parse_CharAttrib & temp = e.m_char->m_char_data.m_current_attribs;
+    if (temp.m_Immobilized > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1 || e.m_is_activating || e.m_state_mode == ClientStates::DEAD)
+        e.m_motion_state.m_controls_disabled = true;
+    else
+        e.m_motion_state.m_controls_disabled = false;
+}
+
+//return true if any status effect would prevent the use of powers
+bool checkPowerBlock(Entity &e)
+{
+    Parse_CharAttrib & temp = e.m_char->m_char_data.m_current_attribs;
+    return(temp.m_is_stunned > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1|| temp.m_OnlyAffectsSelf > 1);
+}
+//TODO on both of the above, check for the entity's protection against each status effect and use that value instead of 1
 
 // Misc Methods
 void abortLogout(Entity *e)

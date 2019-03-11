@@ -2050,7 +2050,6 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     }
 
     initializeCharacter(*session.m_ent->m_char);
-    autoPowerOn(*session.m_ent);
 
     // Call Lua Connected function.
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
@@ -2672,7 +2671,6 @@ void MapInstance::on_recv_new_power(RecvNewPower *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     addPower(session.m_ent->m_char->m_char_data, ev->ppool);
-    autoPowerOn(*session.m_ent);
 }
 
 void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)

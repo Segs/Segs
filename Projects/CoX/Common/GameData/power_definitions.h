@@ -164,7 +164,7 @@ public:
     int                Attrib; //
     AttribMod_Aspect   Aspect;
     AttribModType      Type             = AttribModType::Magnitude;
-    float              Duration; // Special values in DurationEnum
+    float              Duration         = 0.0; // Special values in DurationEnum
     float              Magnitude        = 1.0;
     int                Delay            = 0;    //should be float, for now I'm just dividing by 1000
     int                Period           = 0;    //same

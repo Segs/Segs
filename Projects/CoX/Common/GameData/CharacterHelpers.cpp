@@ -144,48 +144,11 @@ void setBattleCry(Character &c, QString val)
 void initializeCharacter(Character &c)
 {
     GameDataStore &data(getGameData());
-
     uint entclass = getEntityClassIndex(data, true, c.m_char_data.m_class_name);
-    c.m_char_data.m_current_attribs.m_ToHit             = data.m_player_classes[entclass].m_AttribBase[0].m_ToHit;
-    c.m_char_data.m_current_attribs.m_Defense           = data.m_player_classes[entclass].m_AttribBase[0].m_Defense;
-    c.m_char_data.m_current_attribs.m_Evade             = data.m_player_classes[entclass].m_AttribBase[0].m_Evade;
-    c.m_char_data.m_current_attribs.m_SpeedRunning      = data.m_player_classes[entclass].m_AttribBase[0].m_SpeedRunning;
-    c.m_char_data.m_current_attribs.m_SpeedFlying       = data.m_player_classes[entclass].m_AttribBase[0].m_SpeedFlying;
-    c.m_char_data.m_current_attribs.m_SpeedSwimming     = data.m_player_classes[entclass].m_AttribBase[0].m_SpeedSwimming;
-    c.m_char_data.m_current_attribs.m_SpeedJumping      = data.m_player_classes[entclass].m_AttribBase[0].m_SpeedJumping;
-    c.m_char_data.m_current_attribs.m_jump_height       = data.m_player_classes[entclass].m_AttribBase[0].m_jump_height;
-    c.m_char_data.m_current_attribs.m_MovementControl   = data.m_player_classes[entclass].m_AttribBase[0].m_MovementControl;
-    c.m_char_data.m_current_attribs.m_MovementFriction  = data.m_player_classes[entclass].m_AttribBase[0].m_MovementFriction;
-    c.m_char_data.m_current_attribs.m_Stealth           = data.m_player_classes[entclass].m_AttribBase[0].m_Stealth;
-    c.m_char_data.m_current_attribs.m_StealthRadius     = data.m_player_classes[entclass].m_AttribBase[0].m_StealthRadius;
-    c.m_char_data.m_current_attribs.m_PerceptionRadius  = data.m_player_classes[entclass].m_AttribBase[0].m_PerceptionRadius;
-    c.m_char_data.m_current_attribs.m_Regeneration      = data.m_player_classes[entclass].m_AttribBase[0].m_Regeneration*4;//for some reason default is 0.25
-    c.m_char_data.m_current_attribs.m_Recovery          = data.m_player_classes[entclass].m_AttribBase[0].m_Regeneration;
-    c.m_char_data.m_current_attribs.m_ThreatLevel       = data.m_player_classes[entclass].m_AttribBase[0].m_ThreatLevel;
-    c.m_char_data.m_current_attribs.m_Taunt             = data.m_player_classes[entclass].m_AttribBase[0].m_Taunt;
-    c.m_char_data.m_current_attribs.m_Confused          = data.m_player_classes[entclass].m_AttribBase[0].m_Confused;
-    c.m_char_data.m_current_attribs.m_Afraid            = data.m_player_classes[entclass].m_AttribBase[0].m_Afraid;
-    c.m_char_data.m_current_attribs.m_Held              = data.m_player_classes[entclass].m_AttribBase[0].m_Held;
-    c.m_char_data.m_current_attribs.m_Immobilized       = data.m_player_classes[entclass].m_AttribBase[0].m_Immobilized;
-    c.m_char_data.m_current_attribs.m_is_stunned        = data.m_player_classes[entclass].m_AttribBase[0].m_is_stunned;
-    c.m_char_data.m_current_attribs.m_Sleep             = data.m_player_classes[entclass].m_AttribBase[0].m_Sleep;
-    c.m_char_data.m_current_attribs.m_is_flying         = data.m_player_classes[entclass].m_AttribBase[0].m_is_flying;
-    c.m_char_data.m_current_attribs.m_has_jumppack      = data.m_player_classes[entclass].m_AttribBase[0].m_has_jumppack;
-    c.m_char_data.m_current_attribs.m_Teleport          = data.m_player_classes[entclass].m_AttribBase[0].m_Teleport;
-    c.m_char_data.m_current_attribs.m_Untouchable       = data.m_player_classes[entclass].m_AttribBase[0].m_Untouchable;
-    c.m_char_data.m_current_attribs.m_Intangible        = data.m_player_classes[entclass].m_AttribBase[0].m_Intangible;
-    c.m_char_data.m_current_attribs.m_OnlyAffectsSelf   = data.m_player_classes[entclass].m_AttribBase[0].m_OnlyAffectsSelf;
-    c.m_char_data.m_current_attribs.m_Knockup           = data.m_player_classes[entclass].m_AttribBase[0].m_Knockup;
-    c.m_char_data.m_current_attribs.m_Knockback         = data.m_player_classes[entclass].m_AttribBase[0].m_Knockback;
-    c.m_char_data.m_current_attribs.m_Repel             = data.m_player_classes[entclass].m_AttribBase[0].m_Repel;
-    c.m_char_data.m_current_attribs.m_Accuracy          = data.m_player_classes[entclass].m_AttribBase[0].m_Accuracy;
-    c.m_char_data.m_current_attribs.m_Radius            = data.m_player_classes[entclass].m_AttribBase[0].m_Radius;
-    c.m_char_data.m_current_attribs.m_Arc               = data.m_player_classes[entclass].m_AttribBase[0].m_Arc;
-    c.m_char_data.m_current_attribs.m_Range             = data.m_player_classes[entclass].m_AttribBase[0].m_Range;
-    c.m_char_data.m_current_attribs.m_TimeToActivate    = data.m_player_classes[entclass].m_AttribBase[0].m_TimeToActivate;
-    c.m_char_data.m_current_attribs.m_RechargeTime      = data.m_player_classes[entclass].m_AttribBase[0].m_RechargeTime;
-    c.m_char_data.m_current_attribs.m_InterruptTime     = data.m_player_classes[entclass].m_AttribBase[0].m_InterruptTime;
-    c.m_char_data.m_current_attribs.m_EnduranceDiscount = data.m_player_classes[entclass].m_AttribBase[0].m_EnduranceDiscount;
+    c.m_char_data.m_current_attribs = data.m_player_classes[entclass].m_AttribBase[0];
+    c.m_char_data.m_current_attribs.m_HitPoints = c.m_max_attribs.m_HitPoints;
+    c.m_char_data.m_current_attribs.m_Endurance = c.m_max_attribs.m_Endurance;
+    c.m_char_data.m_current_attribs.m_Regeneration *=4;     //for some reason the base regen rate is .25
 }
 
 void updateLastOnline(Character &c)

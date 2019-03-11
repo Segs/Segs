@@ -86,54 +86,57 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     // for now we only run this on players
     if(e->m_type != EntType::PLAYER)
         return;
-
     // Activation Timers -- queue FIFO
     if(e->m_queued_powers.size() > 0)
     {
         QueuedPowers &qpow = e->m_queued_powers.front();
-        if (e->m_is_activating == false)            // currently only set if the power is still recharging
+        if (e->m_is_activating == false)
         {
             if (checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx)
                     && checkPowerRange(*e, qpow.m_tgt_idx, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx))
-                   e->m_is_activating = true;       //only pass this check once the power is recharged
-            else if(e->m_queued_powers.size() > 1)
             {
-                e->m_queued_powers.append(qpow);
-                e->m_queued_powers.replace(e->m_queued_powers.size()-1, qpow);     //push recharging power to the back
+                   e->m_is_activating = true;       //queued power can move forward to an active power
+                   checkMovement(*e);               //stop movement while casting
             }
         }
-        else
+        else if (qpow.m_activation_state)           //sometimes powers get turned off before they can be removed from the queue
         {
-            if(qpow.m_time_to_activate <= -0.3f)        // wait a little longer to make sure the activation state has been sent
-            {
-                e->m_queued_powers.dequeue();           // remove first from queue
-                e->m_char->m_char_data.m_has_updated_powers = true;
+            qpow.m_time_to_activate -= (float(msec)/1000);
 
-            }
-            else if(qpow.m_time_to_activate < 0 && qpow.m_activation_state == true)
+            if(qpow.m_time_to_activate < 0 && qpow.m_activation_state)
             {
                 CharacterPower * ppower = getOwnedPowerByVecIdx(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx);
                 if (ppower->getPowerTemplate().Type == PowerType::Toggle)
                 {
                     e->m_auto_powers.push_back(qpow);
+                    e->m_queued_powers.dequeue();
                 }
                 else
                 {
                     doPower(*e, qpow);
+                    qpow.m_activation_state = false;                //this will turn off the activation ring and then dequeue
+                    qpow.m_active_state_change = true;
+                    e->m_char->m_char_data.m_has_updated_powers = true;
                 }
-                qpow.m_activation_state = false;
-
+                e->m_is_activating = false;
+                checkMovement(*e);                                  //frees up movement, unless held by other means
             }
-            qpow.m_time_to_activate -= (float(msec)/1000);
-
+            else
+            {
+                QString from_msg = "charging!";                     //so players know they are activating a power
+                sendFloatingInfo(*e->m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
+            }
         }
     }
-    else if(e->m_char->m_char_data.m_trays.m_has_default_power) // only activate the default power if there is no other power in the activation queue
-    {
-        if (checkPowerRecharge(*e, e->m_char->m_char_data.m_trays.m_default_pset_idx, e->m_char->m_char_data.m_trays.m_default_pow_idx))
-            usePower(*e, e->m_char->m_char_data.m_trays.m_default_pset_idx, e->m_char->m_char_data.m_trays.m_default_pow_idx, getTargetIdx(*e));
+    else
+    {           // only activate the default power if there is no other power in the activation queue
+        PowerTrayGroup &trays =  e->m_char->m_char_data.m_trays;
+        if(trays.m_has_default_power)
+        {
+            if (checkPowerRecharge(*e, trays.m_default_pset_idx, trays.m_default_pow_idx))
+                usePower(*e, trays.m_default_pset_idx, trays.m_default_pow_idx, getTargetIdx(*e));
+        }
     }
-
     // Recharging Timers -- iterate through and remove finished timers
     for(auto rpow_idx = e->m_recharging_powers.begin(); rpow_idx != e->m_recharging_powers.end(); /*rpow_idx updated inside loop*/ )
     {
@@ -149,50 +152,55 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     }
 
     // Auto and Toggle Power Activation Timers
-    for(auto rpow_idx = e->m_auto_powers.begin(); rpow_idx != e->m_auto_powers.end(); /*rpow_idx updated inside loop*/ )
+    for(auto &rpow_idx : e->m_auto_powers)
     {
-        rpow_idx->m_time_to_activate   -= (float(msec)/1000);
-        if(rpow_idx->m_time_to_activate   <= 0)
-        {
-            CharacterPower * ppower = getOwnedPowerByVecIdx(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx);
-            const Power_Data powtpl = ppower->getPowerTemplate();
+        CharacterPower * ppower = getOwnedPowerByVecIdx(*e, rpow_idx.m_pow_idxs.m_pset_vec_idx, rpow_idx.m_pow_idxs.m_pow_vec_idx);
+        const Power_Data powtpl = ppower->getPowerTemplate();
 
-            if ((powtpl.Type == PowerType::Toggle && ((getEnd(*e->m_char) < powtpl.EnduranceCost)
-                || !checkPowerRange(*e, rpow_idx->m_tgt_idx, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx)))
-                || (isPlayerDead(e)/*getHP(*e->m_char) == 0.0f*/))
-            {
-                queueRecharge(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx, powtpl.RechargeTime);
-                rpow_idx = e->m_auto_powers.erase(rpow_idx);
-                --rpow_idx;
-            }
-            else
-            {
-                doPower(*e, *rpow_idx);
-                rpow_idx->m_time_to_activate += 0.2F + powtpl.ActivatePeriod;
-            }
+        if (//(powtpl.Type == PowerType::Toggle && (
+                 (getEnd(*e->m_char) < powtpl.EnduranceCost)
+            || (isPlayerDead(e)) || (isPlayerDead(getEntity(e->m_client, rpow_idx.m_tgt_idx)))
+            || !checkPowerRange(*e, rpow_idx.m_tgt_idx, rpow_idx.m_pow_idxs.m_pset_vec_idx, rpow_idx.m_pow_idxs.m_pow_vec_idx))//))
+
+        {
+            rpow_idx.m_activation_state = false;
+            rpow_idx.m_active_state_change = true;
+            e->m_char->m_char_data.m_has_updated_powers = true;         // dequeued in messagehelper
+
         }
-        ++rpow_idx;
-    }
-    // Buffs
-    for (uint i =0; i<e->m_buffs.size();)
-    {
-        e->m_buffs[i].m_duration -= (float(msec)/1000); // activate period is in minutes
-
-        if(e->m_buffs[i].m_duration <= 0)
+        if(rpow_idx.m_time_to_activate   <= 0)
         {
-            removeBuff(*e, e->m_buffs[i]);
+            doPower(*e, rpow_idx);//qWarning() << rpow_idx.m_time_to_activate;
+            rpow_idx.m_time_to_activate += rpow_idx.m_activate_period;
         }
         else
-            i++;
+            rpow_idx.m_time_to_activate   -= (float(msec)/1000);
+    }
+    // Buffs
+    for(auto thisbuff = e->m_buffs.begin(); thisbuff != e->m_buffs.end(); /*thisbuff updated inside loop*/)
+    {
+        if(thisbuff->m_duration <= 0 || isPlayerDead(e))
+        {
+            for (uint i =0; i<thisbuff->m_value_name.size();i++)        //there can be multiple values for one buff
+            {
+                modifyAttrib(*e, thisbuff->m_value_name[i], -thisbuff->m_value[i]);
+            }
+            thisbuff = e->m_buffs.erase(thisbuff);
+        }
+        else
+        {
+            thisbuff->m_duration -= (float(msec)/1000);                 // activate period is in minutes
+            ++thisbuff;
+        }
     }
 }
-
 bool World::isPlayerDead(Entity *e)
 {
     if(e->m_type == EntType::PLAYER
             && getHP(*e->m_char) == 0.0f)
     {
         setStateMode(*e, ClientStates::DEAD);
+        checkMovement(*e);
         return true;
     }
 

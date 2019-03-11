@@ -109,7 +109,7 @@ struct Buffs
     float           m_time_to_activate      = 0.0f;
     float           m_duration              = 0.0f;
     std::vector<float>           m_value;
-    std::vector<QString>         m_value_name;
+    std::vector<QString>         m_value_name;      //For buffs with multiple effects
     int32_t         source_ent_idx          = -1;
 };
 
