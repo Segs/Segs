@@ -23,7 +23,7 @@
 #include "Common/GameData/Store.h"
 
 #include <glm/gtc/constants.hpp>
-#include <QQueue>
+#include <deque>
 #include <array>
 #include <memory>
 
@@ -135,7 +135,7 @@ class Entity
 {
     // only EntityStore can create instances of this class
     friend class EntityStore;
-    friend std::array<Entity,10240>;
+    friend std::array<Entity,10240>; // allow std::array access to the private constructor/desctructor
     using CharacterPtr = std::unique_ptr<Character>;
     using PlayerPtr = std::unique_ptr<PlayerData>;
     using EntityPtr = std::unique_ptr<EntityData>;
@@ -167,12 +167,12 @@ public:
         uint32_t            m_idx                   = {0};
         uint32_t            m_db_id                 = {0};
         EntType             m_type                  = {EntType::Invalid};
-        glm::quat           m_direction;
+
         int32_t             m_target_idx            = -1;
         int32_t             m_assist_target_idx     = -1;
 
         std::vector<Buffs>          m_buffs;
-        QQueue<QueuedPowers>        m_queued_powers;
+        std::deque<QueuedPowers>    m_queued_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
         PowerStance                 m_stance;
         bool                        m_update_buffs  = false;
@@ -200,7 +200,7 @@ public:
         bool                m_is_villian            = false;
         bool                m_contact               = false;
         uint8_t             m_update_id             = 1;
-         bool               m_update_part_1         = true;     // EntityResponse sendServerControlState
+        bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
         bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
         bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
@@ -229,6 +229,7 @@ public:
         uint32_t            ownerEntityId               = 0;
         uint32_t            creatorEntityId             = 0;
         MapClientSession *  m_client                    = nullptr;
+        class World *       m_world                     = nullptr;
         FadeDirection       m_fading_direction          = FadeDirection::In;
         uint32_t            m_db_store_flags            = 0;
         Destination         m_cur_destination;
@@ -239,7 +240,7 @@ public:
         bool                m_is_store                  = false;
         vStoreItems         m_store_items;
 
-        std::function<void(int)>  m_active_dialog       = NULL;
+        std::function<void(int)>  m_active_dialog       = nullptr;
 
         void                dump();
 

@@ -144,8 +144,6 @@ void setVelocity(Entity &e);
 
 void addPosUpdate(Entity &e, const PosUpdate &p);
 bool updateRotation(const Entity &e, int axis); // returns true if given axis needs updating;
-void forcePosition(Entity &e, glm::vec3 pos);
-void forceOrientation(Entity &e, glm::vec3 pyr);
 
 // Move to Sequences or Triggers files later
 void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_idx);

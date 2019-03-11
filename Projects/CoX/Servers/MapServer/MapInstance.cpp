@@ -137,23 +137,10 @@ void MapInstance::start(const QString &scenegraph_path)
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
     {
         qInfo() << "Loading map instance data...";
-        bool scene_graph_loaded = false;
-        Q_UNUSED(scene_graph_loaded);
-
-        TIMED_LOG({
-                m_map_scenegraph = new MapSceneGraph;
-                scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
-                m_all_spawners = m_map_scenegraph->getSpawnPoints();
-                m_map_transfers = m_map_scenegraph->get_map_transfers();
-            }, "Loading original scene graph");
-
-        TIMED_LOG({
-            m_map_scenegraph->spawn_npcs(this);
-            m_npc_generators.generate(this);
-            m_map_scenegraph->spawn_critters(this);
-            m_critter_generators.generate(this);
-            }, "Spawning npcs");
-
+        if(!m_world->start(scenegraph_path))
+        {
+            qCritical() << "Failed to load world scene graph:" << scenegraph_path;
+        }
         // Load Lua Scripts for this Map Instance
         load_map_lua();
     }
@@ -203,58 +190,6 @@ void MapInstance::load_map_lua()
 
     for(const QString &path : script_paths)
         loadAndRunLua(m_scripting_interface, path);
-}
-
-QHash<QString, MapXferData> MapInstance::get_map_door_transfers()
-{
-    if (!m_door_transfers_checked)
-    {
-        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
-        while (i != m_map_transfers.constEnd())
-        {
-            if (i.value().m_transfer_type == MapXferType::DOOR)
-            {
-                m_map_door_transfers.insert(i.key(), i.value());
-            }
-            i++;
-        }
-        m_door_transfers_checked = true;
-    }
-
-    return m_map_door_transfers;
-}
-
-QHash<QString, MapXferData> MapInstance::get_map_zone_transfers()
-{
-    if (!m_zone_transfers_checked)
-    {
-        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
-        while (i != m_map_transfers.constEnd())
-        {
-            if (i.value().m_transfer_type == MapXferType::ZONE)
-            {
-                m_map_zone_transfers.insert(i.key(), i.value());
-            }
-            i++;
-        }
-        m_zone_transfers_checked = true;
-    }
-    return m_map_zone_transfers;
-}
-
-QString MapInstance::getNearestDoor(glm::vec3 location)
-{
-    float door_distance_check = 15.f;
-    QHash<QString, MapXferData>::const_iterator i = get_map_door_transfers().constBegin();
-    while (i != get_map_door_transfers().constEnd())
-    {
-        if (glm::distance(location, i.value().m_position) < door_distance_check)
-        {
-            return i.value().m_target_spawn_name;
-        }
-        i++;
-    }
-    return QString();
 }
 
 ///
@@ -640,7 +575,9 @@ void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
 {
     // TODO: Do anything necessary after connecting to new map instance here.
     MapClientSession &session(m_session_store.session_from_event(ev));
-    forcePosition(*session.m_ent, session.m_current_map->closest_safe_location(session.m_ent->m_entity_data.m_pos));
+    // all held sessions must be 'local' to the MapInstance
+    assert(session.m_current_map==this);
+    movePlayerToClosestSafeLocation(*m_world,session.m_ent);
     session.m_ent->m_map_swap_collided = false;
 }
 
@@ -854,8 +791,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_supergroup.m_SG_id = ev->m_data.m_supergroup_id;
     serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
 
+    
     // Can't pass direction through cereal, so let's update it here.
-    e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
+    m_world->m_physics.forceOrientation(*e,e->m_entity_data.m_orientation_pyr);
 
     // make sure to 'off' the AFK from the character in db first
     toggleAFK(*e->m_char, false);
@@ -891,7 +829,7 @@ void MapInstance::on_entity_by_name_response(GetEntityByNameResponse *ev)
     serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
 
     // Can't pass direction through cereal, so let's update it here.
-    e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
+    m_world->m_physics.forceOrientation(*e,e->m_entity_data.m_orientation_pyr);
 
     if(logPlayerSpawn().isDebugEnabled())
     {
@@ -934,7 +872,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         map_session.m_ent = e;
 
         // Set player spawn position and PYR
-        setPlayerSpawn(*e);
+        m_world->setPlayerSpawn(*e);
 
         e->m_entity_data.m_access_level = map_session.m_access_level;
         // new characters are transmitted nameless, use the name provided in on_expect_client
@@ -1117,8 +1055,7 @@ void MapInstance::on_input_state(RecvInputState *st)
     // Set Orientation
     if(st->m_next_state.m_orientation_pyr.p || st->m_next_state.m_orientation_pyr.y || st->m_next_state.m_orientation_pyr.r)
     {
-        ent->m_entity_data.m_orientation_pyr = st->m_next_state.m_orientation_pyr;
-        ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
+        m_world->m_physics.forceOrientation(*ent,st->m_next_state.m_orientation_pyr);
     }
 
     // Input state messages can be followed by multiple commands.
@@ -2103,6 +2040,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         session.m_in_map = true;
     if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
     {
+        Entity *ent = session.m_ent;
         // Send current contact list
         sendContactStatusList(session);
         sendTaskStatusList(session);
@@ -2112,8 +2050,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         sendClueList(session);
 
         // Force position and orientation to fix #617 spawn at 0,0,0 bug
-        forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
-        forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
+        m_world->m_physics.forcePositionAndOrientation(*ent, ent->m_entity_data.m_pos, ent->m_entity_data.m_orientation_pyr);
 
         char buf[256];
         std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
@@ -2135,16 +2072,9 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     }
     else
     {
-        MapXferData &map_data = map_server->session_map_xfer_idx(session.link()->session_token());
+        MapXferData &xfer_data = map_server->session_map_xfer_idx(session.link()->session_token());
         
-        if(!m_all_spawners.empty() && m_all_spawners.contains(map_data.m_target_spawn_name))
-        {
-            setSpawnLocation(*session.m_ent, map_data.m_target_spawn_name);
-        }
-        else
-        {
-            setPlayerSpawn(*session.m_ent);
-        }        
+        movePlayerToNamedSpawn(*m_world,session.m_ent,xfer_data.m_target_spawn_name);
 
         // else don't send motd, as this is from a map transfer
         // TODO: check if there's a better place to complete the map transfer..
@@ -2231,7 +2161,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
         // Check if any doors in range have the GotoSpawn property.
         // TODO: if the node also has a GotoMap property, start a map transfer
         //       and put them in the given SpawnLocation in the target map.
-        QString gotoSpawn = getNearestDoor(ev->location);
+        QString gotoSpawn = getNearestDoor(m_world,ev->location);
 
         if (gotoSpawn.isEmpty())
         {
@@ -2244,7 +2174,7 @@ void MapInstance::on_enter_door(EnterDoor *ev)
             QString anim_name = "RUNIN";
             glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
             sendDoorAnimStart(session, ev->location, offset, true, anim_name);
-            session.m_current_map->setSpawnLocation(*session.m_ent, gotoSpawn);
+            m_world->setSpawnLocation(*session.m_ent, gotoSpawn);
         }
     }
 }
@@ -2290,11 +2220,11 @@ void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    if(session.m_ent->m_queued_powers.isEmpty())
+    if(session.m_ent->m_queued_powers.empty())
         return;
 
     // remove first queued power
-    session.m_ent->m_queued_powers.dequeue();
+    session.m_ent->m_queued_powers.pop_front();
     session.m_ent->m_char->m_char_data.m_has_updated_powers = true; // this must be true, because we're updating queued powers
 
     qCWarning(logMapEvents) << "Aborting queued power";
@@ -2486,90 +2416,6 @@ void MapInstance::on_remove_keybind(RemoveKeybind *ev)
 
     ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
     //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
-}
-
-void MapInstance::setPlayerSpawn(Entity &e)
-{
-    // Spawn player position and PYR
-    glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
-    glm::vec3 spawn_pyr = glm::vec3(0.0f, 0.0f, 0.0f);
-
-    if(!m_all_spawners.empty())
-    {
-        glm::mat4 v = glm::mat4(1.0f);
-
-        if(m_all_spawners.contains("NewPlayer"))
-            v = m_all_spawners.values("NewPlayer")[rand() % m_all_spawners.values("NewPlayer").size()];
-        else if(m_all_spawners.contains("PlayerSpawn"))
-            v = m_all_spawners.values("PlayerSpawn")[rand() % m_all_spawners.values("PlayerSpawn").size()];
-        else if(m_all_spawners.contains("Citywarp01"))
-            v = m_all_spawners.values("Citywarp01")[rand() % m_all_spawners.values("Citywarp01").size()];
-        else
-        {
-            qWarning() << "No default spawn location found. Spawning at random spawner";
-            v = m_all_spawners.values()[rand() % m_all_spawners.values().size()];
-        }
-
-        // Position
-        spawn_pos = glm::vec3(v[3]);
-
-        // Orientation
-        auto valquat = glm::quat_cast(v);
-        spawn_pyr = toCoH_YPR(valquat);
-    }
-
-    forcePosition(e, spawn_pos);
-    forceOrientation(e, spawn_pyr);
-}
-
-// Teleport to a specific SpawnLocation; do nothing if the SpawnLocation is not found.
-void MapInstance::setSpawnLocation(Entity &e, const QString &spawnLocation)
-{
-    if(m_all_spawners.empty() || !m_all_spawners.contains(spawnLocation))
-        return;
-
-    glm::mat4 v = m_all_spawners.values(spawnLocation)[rand() % m_all_spawners.values(spawnLocation).size()];
-
-    // Position
-    glm::vec3 spawn_pos = glm::vec3(v[3]);
-
-    // Orientation
-    auto valquat = glm::quat_cast(v);
-    glm::vec3 spawn_pyr = toCoH_YPR(valquat);
-    forcePosition(e, spawn_pos);
-    forceOrientation(e, spawn_pyr);
-}
-
-glm::vec3 MapInstance::closest_safe_location(glm::vec3 v) const
-{
-    // In the future this should get the closet NAV or NAVCMBT
-    // node and return it. For now let's just pick some known
-    // safe spawn locations
-
-    Q_UNUSED(v);
-    glm::vec3 loc = glm::vec3(0,0,0);
-
-    // If no default spawners if available, spawn at 0,0,0
-    if(m_all_spawners.empty())
-        return loc;
-
-    // Try NewPlayer spawners first, then hospitals, then random
-    if(m_all_spawners.contains("NewPlayer"))
-        loc = m_all_spawners.values("NewPlayer")[rand() % m_all_spawners.values("NewPlayer").size()][3];
-    else if(m_all_spawners.contains("PlayerSpawn"))
-        loc = m_all_spawners.values("PlayerSpawn")[rand() % m_all_spawners.values("PlayerSpawn").size()][3];
-    else if(m_all_spawners.contains("LinkFrom_Monorail_Red"))
-        loc = m_all_spawners.values("LinkFrom_Monorail_Red")[rand() % m_all_spawners.values("LinkFrom_Monorail_Red").size()][3];
-    else if(m_all_spawners.contains("LinkFrom_Monorail_Blue"))
-        loc = m_all_spawners.values("LinkFrom_Monorail_Blue")[rand() % m_all_spawners.values("LinkFrom_Monorail_Blue").size()][3];
-    else if(m_all_spawners.contains("Citywarp01"))
-        loc = m_all_spawners.values("Citywarp01")[rand() % m_all_spawners.values("Citywarp01").size()][3];
-    else if(m_all_spawners.contains("Hospital_Exit"))
-        loc = m_all_spawners.values("Hospital_Exit")[rand() % m_all_spawners.values("Hospital_Exit").size()][3];
-    else
-        loc = m_all_spawners.values()[rand() % m_all_spawners.values().size()][3];
-
-    return loc;
 }
 
 void MapInstance::serialize_from(istream &/*is*/)
@@ -3248,13 +3094,13 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
 
 void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
 {
-    if (!m_map_transfers.contains(ev->m_data.m_node_name))
+    if (!m_world->m_map_transfers.contains(ev->m_data.m_node_name))
     {
         qCDebug(logMapXfers) << QString("Map swap collision triggered on node_name %1, but that node_name doesn't exist in the list of map_transfers.");
         return;
     }
 
-    MapXferData map_transfer_data = m_map_transfers[ev->m_data.m_node_name];
+    MapXferData map_transfer_data = m_world->m_map_transfers[ev->m_data.m_node_name];
     Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
     MapClientSession &sess = *e->m_client;
 

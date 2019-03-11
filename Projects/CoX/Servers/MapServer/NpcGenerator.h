@@ -15,6 +15,7 @@
 #include <vector>
 
 enum class EntType : uint8_t;
+class World;
 struct NpcTemplate
 {
     QString m_costume_name;
@@ -29,13 +30,13 @@ struct NpcGenerator
     EntType m_type;
     std::vector<glm::mat4> m_initial_positions;
     std::vector<NpcTemplate> m_possible_npcs;
-    void generate(class MapInstance *);
+    void generate(World *instance);
 };
 
 struct NpcGeneratorStore
 {
     QHash<QString, NpcGenerator> m_generators;
-    void generate(class MapInstance *instance);
+    void generate(World *instance);
 };
 
 QString makeReadableName(QString &name);

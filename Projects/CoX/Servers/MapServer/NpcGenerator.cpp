@@ -2,6 +2,7 @@
 
 #include "MapInstance.h"
 #include "MapSceneGraph.h"
+#include "WorldSimulation.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/NpcStore.h"
 #include "GameData/Character.h"
@@ -14,7 +15,7 @@ QString makeReadableName(QString &name)
     return name.remove(QRegularExpression(".*\\\\")).remove(QRegularExpression("\\..*")).replace("_"," ");
 }
 
-void NpcGenerator::generate(MapInstance *map_instance)
+void NpcGenerator::generate(World *world)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
 
@@ -34,14 +35,14 @@ void NpcGenerator::generate(MapInstance *map_instance)
             continue;
 
         int idx = npc_store.npc_idx(npc_def);
-        Entity *e = map_instance->m_entities.CreateGeneric(getGameData(), *npc_def, idx, 0, m_type);
+        Entity *e = world->CreateGeneric(*npc_def, idx, 0, m_type);
         e->m_char->setName(makeReadableName(npc_costume_name));
-        forcePosition(*e, glm::vec3(v[3]));
+        world->m_physics.forcePosition(*e, glm::vec3(v[3]));
 
         auto valquat = glm::quat_cast(v);
         glm::vec3 angles = glm::eulerAngles(valquat);
         angles.y += glm::pi<float>();
-        forceOrientation(*e, angles);
+        world->m_physics.forceOrientation(*e, angles);
         e->m_motion_state.m_velocity = { 0,0,0 };
 
         if(m_generator_name.contains("door", Qt::CaseInsensitive))
@@ -52,7 +53,7 @@ void NpcGenerator::generate(MapInstance *map_instance)
     }
 }
 
-void NpcGeneratorStore::generate(MapInstance *instance)
+void NpcGeneratorStore::generate(World *instance)
 {
     for(NpcGenerator &gen : m_generators)
     {

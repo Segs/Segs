@@ -16,6 +16,7 @@
 #include "MapInstance.h"
 #include "MessageHelpers.h"
 #include "TimeHelpers.h"
+#include "WorldSimulation.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/ClientStates.h"
 #include "GameData/map_definitions.h"
@@ -973,15 +974,15 @@ void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int varia
         sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
         return;
     }
-
+    MapInstance *map_inst = sess.m_current_map;
+    World *world = map_inst->world();
     int idx = npc_store.npc_idx(npc_def);
-    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
+    Entity *e = world->CreateNpc(*npc_def, idx, variation);
     e->m_char->setName(name);
-
-    forcePosition(*e, loc);
+    world->m_physics.forcePosition(*e, loc);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
-    auto val = sess.m_current_map->m_scripting_interface->callFuncWithClientContext(&sess, "npc_added", e->m_idx);
+    auto val = map_inst->m_scripting_interface->callFuncWithClientContext(&sess, "npc_added", e->m_idx);
 }
 
 void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
@@ -1000,12 +1001,13 @@ void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int v
         return;
     }
 
+    MapInstance *map_inst = &mi;
+    World *world = map_inst->world();
     int idx = npc_store.npc_idx(npc_def);
-    Entity *e = mi.m_entities.CreateNpc(getGameData(), *npc_def, idx, variation);
+    Entity *e = world->CreateNpc(*npc_def, idx, variation);
     e->m_char->setName(npc_name);
-
-    forcePosition(*e, loc);
-    forceOrientation(*e, ori);
+    world->m_physics.forcePositionAndOrientation(*e, loc,ori);
+    
     qCDebug(logScripts()) << QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
@@ -1454,7 +1456,7 @@ void revive(MapClientSession *cl, int revive_lvl)
 void logSpawnLocations(MapClientSession &cl, const char* spawn_type)
 {
     QString spawn_name = QString::fromUtf8(spawn_type);
-    auto spawners = cl.m_current_map->getSpawners();
+    auto spawners = cl.m_current_map->world()->getSpawners();
 
     if(spawners.empty())
     {
@@ -1484,34 +1486,33 @@ void respawn(MapClientSession &cl, const char* spawn_type)
     glm::vec3 spawn_pos = glm::vec3(128.0f,16.0f,-198.0f);
     glm::vec3 spawn_pyr = glm::vec3(0.0f, 0.0f, 0.0f);
 
-    auto spawners = cl.m_current_map->getSpawners();
+    auto spawners = cl.m_current_map->world()->getSpawners();
 
-    if(!spawners.empty())
+    if(spawners.empty())
     {
-        glm::mat4 v = glm::mat4(1.0f);
-        auto spawn_list = spawners.values(spawn_name);
-        if(!spawn_list.empty())
-        {
-            v = spawn_list[rand() % spawn_list.size()];
+        qCDebug(logScripts) << "spawners empty";
+        return;
+    }
 
-            // Position
-            spawn_pos = glm::vec3(v[3]);
+    glm::mat4 v = glm::mat4(1.0f);
+    auto spawn_list = spawners.values(spawn_name);
+    World *world = e->m_world;
+    if(!spawn_list.empty())
+    {
+        v = spawn_list[rand() % spawn_list.size()];
 
-            // Orientation
-            auto valquat = glm::quat_cast(v);
-            spawn_pyr = toCoH_YPR(valquat);
+        // Position
+        spawn_pos = glm::vec3(v[3]);
 
-            forcePosition(*e, spawn_pos);
-            forceOrientation(*e, spawn_pyr);
-        }
-        else
-        {
-            qCDebug(logScripts) << "spawn_list for " << spawn_name << " is empty.";
-        }
+        // Orientation
+        auto valquat = glm::quat_cast(v);
+        spawn_pyr = toCoH_YPR(valquat);
+        world->m_physics.forcePosition(*e, spawn_pos);
+        world->m_physics.forceOrientation(*e, spawn_pyr);
     }
     else
     {
-        qCDebug(logScripts) << "spawners empty";
+        qCDebug(logScripts) << "spawn_list for " << spawn_name << " is empty.";
     }
 }
 
@@ -1662,7 +1663,7 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
 }
 
 
-void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank)
+void addEnemy(World &world, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -1674,19 +1675,19 @@ void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm
     }
 
     int idx = npc_store.npc_idx(npc_def);
-    Entity *e = mi.m_entities.CreateCritter(getGameData(), *npc_def, idx, variation, level);
+
+    Entity *e = world.CreateCritter(*npc_def, idx, variation, level);
     e->m_char->setName(npc_name);
 
     //Sets target info menu faction. Skull, Hellions, Freakshow, etc
     e->m_faction_data.m_faction_name = faction_name;
+    e->m_faction_data.m_rank = f_rank;
 
-    forcePosition(*e, loc);
-    forceOrientation(*e, ori);
+    e->m_world->m_physics.forcePositionAndOrientation(*e, loc,ori);
     qCDebug(logNpcSpawn) << QString("Created Enemy with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
-    //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 
-void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
+void addVictim(World &world, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -1698,7 +1699,8 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
     }
 
     int idx = npc_store.npc_idx(npc_def);
-    Entity *e = mi.m_entities.CreateGeneric(getGameData(), *npc_def, idx, variation, EntType::CRITTER);
+    
+    Entity *e = world.CreateGeneric(*npc_def, idx, variation, EntType::CRITTER);
     e->m_char->setName(npc_name);
     e->m_is_hero = true;
     e->m_is_villian = false;
@@ -1718,12 +1720,8 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
 
     //Required to send changes to clients
     e->m_pchar_things = true;
-
-    forcePosition(*e, loc);
-    forceOrientation(*e, ori);
+    world.m_physics.forcePositionAndOrientation(*e, loc,ori);
     qCDebug(logNpcSpawn) << QString("Created Victim with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
-    //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
-
 }
 
 //! @}

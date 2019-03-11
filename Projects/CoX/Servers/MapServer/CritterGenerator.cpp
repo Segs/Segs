@@ -9,7 +9,7 @@
 #include "DataHelpers.h"
 #include "MapInstance.h"
 
-void CritterGenerator::generate(MapInstance *map_instance)
+void CritterGenerator::generate(World *map_instance)
 {
     const NPCStorage &npc_store(getGameData().getNPCDefinitions());
     SpawnDefinitions *sp = new SpawnDefinitions();
@@ -86,7 +86,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
     }
 }
 
-void CritterGeneratorStore::generate(MapInstance *instance)
+void CritterGeneratorStore::generate(World *instance)
 {
     uint32_t total_spawned = 0;
     uint32_t spawn_limit = 300;

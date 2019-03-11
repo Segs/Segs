@@ -11,20 +11,20 @@
 #include <QtCore/QString>
 #include <QtCore/QHash>
 #include <vector>
-
+class World;
 struct CritterGenerator
 {
     QString                                 m_generator_name;
     QString                                 m_encounter_node_name;
     CritterSpawnLocations                   m_critter_encounter;
     std::vector<CritterSpawnDef>            m_possible_critters_and_groups;
-    void generate(class MapInstance *);
+    void generate(World *);
 };
 
 struct CritterGeneratorStore
 {
     QHash<QString, CritterGenerator> m_generators;
-    void generate(class MapInstance *instance);
+    void generate(World *instance);
 };
 
 QString makeReadableName(QString &name);

@@ -14,6 +14,7 @@
 
 #include "DataHelpers.h"
 #include "MessageHelpers.h"
+#include "WorldSimulation.h"
 #include "Messages/Map/ForceLogout.h"
 #include "Messages/Map/GameCommandList.h"
 #include "Messages/Map/MapXferWait.h"
@@ -1443,8 +1444,7 @@ void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
       parts[2].toFloat(),
       parts[3].toFloat()
     };
-
-    forcePosition(*sess.m_ent,new_pos);
+    sess.m_current_map->world()->m_physics.forcePosition(*sess.m_ent,new_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("New position set"), sess);
 }
 
@@ -1575,7 +1575,7 @@ void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 {
     // TODO: Implement true move-to-safe-location-nearby logic
     //forcePosition(*sess.m_ent, sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
-    sess.m_current_map->setPlayerSpawn(*sess.m_ent);
+    sess.m_current_map->world()->setPlayerSpawn(*sess.m_ent);
 
     QString msg = QString("Resetting location to default spawn <%1, %2, %3>")
             .arg(sess.m_ent->m_entity_data.m_pos.x, 0, 'f', 1)
@@ -1594,7 +1594,7 @@ void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess)
         // No SpawnLocation given, bail.
         return;
     }
-    sess.m_current_map->setSpawnLocation(*sess.m_ent, spawnLocation);
+    sess.m_current_map->world()->setSpawnLocation(*sess.m_ent, spawnLocation);
 }
 
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess)

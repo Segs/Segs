@@ -15,6 +15,7 @@
 #include "MessageHelpers.h"
 #include "MapInstance.h"
 #include "MapSceneGraph.h"
+#include "WorldSimulation.h"
 #include "GameData/playerdata_definitions.h"
 #include "Messages/Map/Browser.h"
 #include "Messages/Map/ChatMessage.h"
@@ -267,7 +268,7 @@ void ScriptingEngine::registerTypes()
         QString npc_def_name = QString::fromUtf8(npc_def);
         QString name = QString::fromUtf8(npc_name);
         QString faction = QString::fromUtf8(faction_name);
-        addEnemy(*mi, npc_def_name, loc, variation, ori, name, level, faction, rank);
+        addEnemy(*mi->world(),npc_def_name, loc, variation, ori, name, level, faction, rank);
     };
 
 
@@ -394,8 +395,7 @@ void ScriptingEngine::registerTypes()
         Entity *e = getEntity(cl, entity_idx);
         if(e != nullptr)
         {
-            forcePosition(*e, loc);
-            forceOrientation(*e, ori);
+            e->m_world->m_physics.forcePositionAndOrientation(*e,loc,ori);
             QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entity_idx).arg(ori.x).arg(ori.y).arg(ori.z);
             qCDebug(logScripts) << msg;
         }

@@ -202,7 +202,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_entity = std::make_unique<EntityData>();
     e.m_update_anims = e.m_rare_update   = true;
 
-    std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
+    std::copy(std::begin(g_world_surf_params), std::end(g_world_surf_params), e.m_motion_state.m_surf_mods);
 
     e.m_states.init(); // Initialize movement input state pointers
     e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
@@ -220,8 +220,10 @@ void initializeNewPlayerEntity(Entity &e)
     }
 }
 
-void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant)
+void initializeNewNpcEntity(Entity &e, const Parse_NPC *src, int idx, int variant)
 {
+    GameDataStore &data(getGameData());
+    
     e.m_costume_type                    = AppearanceType::NpcCostume;
     e.m_destroyed                       = false;
     e.m_type                            = EntType::NPC; // 2
@@ -248,7 +250,7 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_update_anims = e.m_rare_update   = true;
     e.m_char->m_char_data.m_level       = src->m_Level;
 
-    std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
+    std::copy(std::begin(g_world_surf_params), std::end(g_world_surf_params), e.m_motion_state.m_surf_mods);
 
     e.m_states.init(); // Initialize movement input state pointers
     e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
@@ -266,8 +268,9 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     }
 }
 
-void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant, int level)
+void initializeNewCritterEntity(Entity &e, const Parse_NPC *src, int idx, int variant, int level)
 {
+    GameDataStore &data(getGameData());
     e.m_costume_type                    = AppearanceType::NpcCostume;
     e.m_destroyed                       = false;
     e.m_type                            = EntType::CRITTER;
@@ -303,7 +306,7 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_char->m_char_data.m_current_attribs.m_HitPoints = 100;
     e.m_char->m_char_data.m_current_attribs.m_Endurance = 100;
 
-    std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
+    std::copy(std::begin(g_world_surf_params), std::end(g_world_surf_params), e.m_motion_state.m_surf_mods);
 
     e.m_states.init(); // Initialize movement input state pointers
     e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
@@ -339,8 +342,6 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &da
     e.m_entity_data.m_class_idx = getEntityClassIndex(data,true, getClass(*e.m_char));
     e.m_player->m_keybinds.resetKeybinds(data.m_keybind_profiles);
     e.m_is_hero = true;
-
-    e.m_direction = glm::quat(1.0f,0.0f,0.0f,0.0f);
 }
 
 void markEntityForDbStore(Entity *e, DbStoreFlags f)

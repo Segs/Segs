@@ -9,9 +9,11 @@
 
 #include "GameData/Entity.h"
 #include "GameData/EntityHelpers.h"
+#include "HandleBasedStorage.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
+
 #include <array>
 #include <set>
 #include <deque>
@@ -20,6 +22,7 @@ struct MapClientSession;
 class MapInstance;
 class Entity;
 class BitStream;
+
 
 class EntityStore
 {
@@ -33,6 +36,7 @@ public:
 
 class EntityManager
 {
+    friend class World;
     struct EntityIdxCompare
     {
         bool operator()(const Entity *a,const Entity *b) const
@@ -41,6 +45,8 @@ class EntityManager
         }
     };
     using lEntity = std::set<Entity *,EntityIdxCompare>;
+    Entity *        CreateCritter(const Parse_NPC &tpl, int idx, int variant, int level);
+    Entity *        CreateGeneric(const Parse_NPC &tpl, int idx, int variant, EntType type);
 public:
     EntityStore     m_store;
     lEntity         m_live_entlist;
@@ -51,9 +57,6 @@ public:
     void            sendEntities(BitStream &tgt, MapClientSession &target, bool is_incremental) const;
     void            InsertPlayer(Entity *);
     Entity *        CreatePlayer();
-    Entity *        CreateNpc(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant);
-    Entity *        CreateGeneric(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant, EntType type);
-    Entity *        CreateCritter(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant, int level);
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }

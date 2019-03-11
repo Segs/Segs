@@ -157,30 +157,13 @@ Entity * EntityManager::CreatePlayer()
     return res;
 }
 
-Entity * EntityManager::CreateNpc(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant)
+Entity * EntityManager::CreateCritter(const Parse_NPC &tpl,int idx,int variant, int level)
 {
     Entity *res = m_store.get();
     m_live_entlist.insert(res);
 
-    initializeNewNpcEntity(data,*res,&tpl,idx,variant);
-    return res;
-}
-Entity * EntityManager::CreateCritter(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant, int level)
-{
-    Entity *res = m_store.get();
-    m_live_entlist.insert(res);
+    initializeNewCritterEntity(*res,&tpl,idx,variant, level);
 
-    initializeNewCritterEntity(data,*res,&tpl,idx,variant, level);
-
-    return res;
-}
-Entity * EntityManager::CreateGeneric(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant,EntType type)
-{
-    Entity *res = m_store.get();
-    m_live_entlist.insert(res);
-
-    initializeNewNpcEntity(data,*res,&tpl,idx,variant);
-    res->m_type = type;
     return res;
 }
 void EntityManager::removeEntityFromActiveList(Entity *ent)

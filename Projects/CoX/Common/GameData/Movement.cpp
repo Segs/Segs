@@ -15,6 +15,7 @@
 #include "Entity.h"
 #include "Character.h"
 #include "CharacterHelpers.h"
+
 #include "Servers/MapServer/DataHelpers.h"
 #include "Common/GameData/CoHMath.h"
 #include "Common/GameData/seq_definitions.h"
@@ -234,19 +235,6 @@ bool updateRotation(const Entity &src, int axis ) /* returns true if given axis 
         return false;
 
     return true;
-}
-
-void forcePosition(Entity &e, glm::vec3 pos)
-{
-    e.m_entity_data.m_pos = pos;
-    e.m_force_pos_and_cam = true;
-}
-
-void forceOrientation(Entity &e, glm::vec3 pyr)
-{
-    e.m_direction = glm::quat(pyr);
-    e.m_entity_data.m_orientation_pyr = pyr;
-    e.m_force_pos_and_cam = true;
 }
 
 // Move to Sequences or Triggers files later
