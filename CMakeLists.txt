@@ -9,6 +9,10 @@ IF(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 ELSEIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14")
+   
+   if(MINGW)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+   endif()
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14 -Wno-nested-anon-types -Wno-gnu-anonymous-struct -Wno-gnu-zero-variadic-macro-arguments")
 endif()
@@ -32,6 +36,7 @@ set(INSTALLED_TARGETS)
 OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
 OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
+OPTION(BUILD_RPC_TEST_CLIENT "Build RPC Test Client ?" OFF)
 
 ########################################################################################
 # Prerequisites
@@ -155,3 +160,4 @@ set(MAPNAMES
 foreach(MAPDIR ${MAPNAMES})
   file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/${MAPDIR})
 endforeach(MAPDIR)
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/logs)

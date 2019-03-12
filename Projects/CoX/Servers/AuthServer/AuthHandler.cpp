@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -85,8 +85,8 @@ void AuthHandler::dispatch( Event *ev )
         case AuthDBEventTypes::evRetrieveAccountResponse:
             on_retrieve_account_response(static_cast<RetrieveAccountResponse *>(ev));
             break;
-        case evAuthDbErrorMessage:
-            on_db_error(static_cast<AuthDbErrorMessage *>(ev)); break;
+        case evAuthDbStatusMessage:
+            on_db_error(static_cast<AuthDbStatusMessage *>(ev)); break;
         case Internal_EventTypes::evExpectClientResponse:
             on_client_expected(static_cast<ExpectClientResponse *>(ev)); break;
         case Internal_EventTypes::evClientConnectedMessage:
@@ -449,7 +449,7 @@ void AuthHandler::on_server_status_change(GameServerStatusMessage *ev)
     m_known_game_servers[ev->m_data.m_id] = ev->m_data;
 }
 
-void AuthHandler::on_db_error(AuthDbErrorMessage *ev)
+void AuthHandler::on_db_error(AuthDbStatusMessage *ev)
 {
     AuthSession &session(m_sessions.session_from_event(ev));
     session.link()->putq(s_auth_error_db_error.shallow_copy());

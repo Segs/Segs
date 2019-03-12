@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -73,13 +73,13 @@ void Settings::createSettingsFile()
                  << "\n#      for example: 10.0.0.2"
                  << "\n#"
                  << "\n#    Default ports are listed below:"
-                 << "\n#      AccountDatabase db_port:		5432"
-                 << "\n#      CharacterDatabase db_port:	5432"
-                 << "\n#      AuthServer location_addr:		2106"
-                 << "\n#      GameServer listen_addr:		7002"
+                 << "\n#      AccountDatabase db_port:      5432"
+                 << "\n#      CharacterDatabase db_port:    5432"
+                 << "\n#      AuthServer location_addr:     2106"
+                 << "\n#      GameServer listen_addr:       7002"
                  << "\n#      GameServer location_addr:     7002"
-                 << "\n#      MapServer listen_addr:		7003"
-                 << "\n#      MapServer location_addr:		7003"
+                 << "\n#      MapServer listen_addr:        7003"
+                 << "\n#      MapServer location_addr:      7003"
                  << "\n#"
                  << "\n##############################################################";
 

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -29,6 +29,14 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
 
+// helper wrapper for serializing default-value fields
+template <typename T>
+struct wrap_optional {
+    T &tgt;
+    constexpr wrap_optional(T &s) : tgt(s) {}
+    // returns true if the referenced value is non-default
+    operator bool() const { return tgt!=T();}
+};
 
 namespace cereal {
 inline void epilogue(BinaryOutputArchive &, QString const &) { }
@@ -51,6 +59,23 @@ inline void prologue(JSONInputArchive &, QByteArray const &) { }
 inline void prologue(BinaryOutputArchive &, QByteArray const &) { }
 inline void prologue(BinaryInputArchive &, QByteArray const &) { }
 
+template <typename T>
+inline void prologue(JSONOutputArchive &, wrap_optional<T> const &) { }
+template <typename T>
+inline void prologue(JSONInputArchive &, wrap_optional<T> const &) { }
+template <typename T>
+inline void prologue(BinaryOutputArchive &, wrap_optional<T> const &) { }
+template <typename T>
+inline void prologue(BinaryInputArchive &, wrap_optional<T> const &) { }
+
+template <typename T>
+inline void epilogue(BinaryOutputArchive &, wrap_optional<T> const &) { }
+template <typename T>
+inline void epilogue(BinaryInputArchive &, wrap_optional<T> const &) { }
+template <typename T>
+inline void epilogue(JSONOutputArchive &, wrap_optional<T> const &) { }
+template <typename T>
+inline void epilogue(JSONInputArchive &, wrap_optional<T> const &) { }
 template<class Archive>
 inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, ::QString const & str)
 {
@@ -115,6 +140,34 @@ void serialize(Archive & archive, glm::vec2 & m)
     for( int i=0; i<2; ++i )
       archive( m[i] );
 }
+//! Saving for wrap_optional
+template <class Archive, typename T> inline
+void CEREAL_SAVE_FUNCTION_NAME(Archive& ar, const wrap_optional<T>& optional)
+{
+    if(optional) {
+        ar(optional.tgt);
+    }
+}
+
+//! Loading for wrap_optional
+template <class Archive, typename T> inline
+void CEREAL_LOAD_FUNCTION_NAME(Archive& ar, wrap_optional<T>& optional)
+{
+    try
+    {
+        T value;
+        ar(value);
+        optional.tgt = std::move(value);
+    }
+    catch(cereal::Exception&)
+    {
+        ar.setNextName(nullptr);
+        optional.tgt = T();
+        // Loading a key that doesn't exist results in an exception
+        // Since "Not Found" is a valid condition for us, we swallow
+        // this exception and the archive will not load anything
+    }
+}
 } // namespace cereal
 
 template <class Archive>
@@ -167,4 +220,10 @@ template<class Archive>
 inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, const ACE_Time_Value & str)
 {
     ar( uint64_t(str.usec()) );
+}
+template<class Archive,class Type>
+static void serialize_as_optional(Archive & archive, const char *name, Type & m)
+{
+    wrap_optional<Type> value(m);
+    archive(cereal::make_nvp(name,value));
 }

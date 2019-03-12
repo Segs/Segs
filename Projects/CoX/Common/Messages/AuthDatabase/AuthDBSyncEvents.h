@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -20,7 +20,7 @@ enum AuthDBEventTypes : uint32_t
     evValidatePasswordRequest,
     evValidatePasswordResponse,
     evCreateAccountMessage,
-    evAuthDbErrorMessage
+    evAuthDbStatusMessage
 };
 
 
@@ -38,7 +38,7 @@ struct CreateAccountData
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(AuthDBEventTypes,CreateAccount)
 
-struct AuthDbErrorData
+struct AuthDbStatusData
 {
     QString message;
     template <class Archive>
@@ -48,7 +48,7 @@ struct AuthDbErrorData
     }
 };
 // [[ev_def:macro]]
-ONE_WAY_MESSAGE(AuthDBEventTypes,AuthDbError)
+ONE_WAY_MESSAGE(AuthDBEventTypes,AuthDbStatus)
 
 struct RetrieveAccountResponseData
 {

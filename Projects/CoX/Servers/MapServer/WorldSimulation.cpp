@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -18,6 +18,11 @@
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
 #include <glm/gtx/vector_query.hpp>
+#include "MapInstance.h"
+#include "Common/Servers/InternalEvents.h"
+
+using namespace SEGSEvents;
+
 void World::update(const ACE_Time_Value &tick_timer)
 {
     ACE_Time_Value delta;
@@ -90,7 +95,7 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     if(e->m_queued_powers.size() > 0)
     {
         QueuedPowers &qpow = e->m_queued_powers.front();
-        if (e->m_is_activating == false)
+        if (e->m_is_activating == false && qpow.m_activation_state)
         {
             if (checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx)
                     && checkPowerRange(*e, qpow.m_tgt_idx, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx))
@@ -157,10 +162,9 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         CharacterPower * ppower = getOwnedPowerByVecIdx(*e, rpow_idx.m_pow_idxs.m_pset_vec_idx, rpow_idx.m_pow_idxs.m_pow_vec_idx);
         const Power_Data powtpl = ppower->getPowerTemplate();
 
-        if (//(powtpl.Type == PowerType::Toggle && (
-                 (getEnd(*e->m_char) < powtpl.EnduranceCost)
-            || (isPlayerDead(e)) || (isPlayerDead(getEntity(e->m_client, rpow_idx.m_tgt_idx)))
-            || !checkPowerRange(*e, rpow_idx.m_tgt_idx, rpow_idx.m_pow_idxs.m_pset_vec_idx, rpow_idx.m_pow_idxs.m_pow_vec_idx))//))
+        if ((powtpl.Type == PowerType::Toggle && ((getEnd(*e->m_char) < powtpl.EnduranceCost)
+            || (e->m_char->m_is_dead) || (getEntity(e->m_client, rpow_idx.m_tgt_idx)->m_char->m_is_dead)
+            || !checkPowerRange(*e, rpow_idx.m_tgt_idx, rpow_idx.m_pow_idxs.m_pset_vec_idx, rpow_idx.m_pow_idxs.m_pow_vec_idx))))
 
         {
             rpow_idx.m_activation_state = false;
@@ -179,7 +183,7 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     // Buffs
     for(auto thisbuff = e->m_buffs.begin(); thisbuff != e->m_buffs.end(); /*thisbuff updated inside loop*/)
     {
-        if(thisbuff->m_duration <= 0 || isPlayerDead(e))
+        if(thisbuff->m_duration <= 0 || e->m_char->m_is_dead)
         {
             for (uint i =0; i<thisbuff->m_value_name.size();i++)        //there can be multiple values for one buff
             {
@@ -194,7 +198,7 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         }
     }
 }
-bool World::isPlayerDead(Entity *e)
+/*bool World::isPlayerDead(Entity *e)
 {
     if(e->m_type == EntType::PLAYER
             && getHP(*e->m_char) == 0.0f)
@@ -206,12 +210,12 @@ bool World::isPlayerDead(Entity *e)
 
     return false;
 }
-
+*/
 void World::regenHealthEnd(Entity *e, uint32_t msec)
 {
     // for now on Players only
-    if(e->m_type == EntType::PLAYER)
-    {
+//    if(e->m_type == EntType::PLAYER )
+//    {
         float hp = getHP(*e->m_char);
         float end = getEnd(*e->m_char);
 
@@ -222,6 +226,30 @@ void World::regenHealthEnd(Entity *e, uint32_t msec)
             setHP(*e->m_char, hp + regeneration);
         if(end < getMaxEnd(*e->m_char))
             setEnd(*e->m_char, end + recovery);
+ //   }
+}
+
+void World::collisionStep(Entity *e, uint32_t /*msec*/)
+{
+    if (e->m_player != nullptr && !e->m_map_swap_collided)
+    {
+        // Range-For only uses the values, so you can't get the keys unless you use toStdMap() or iterate keys().
+        // Both are less efficient than just using an iterator.
+        QHash<QString, MapXferData>::const_iterator i = m_owner_instance->get_map_zone_transfers().constBegin();
+        while (i != m_owner_instance->get_map_zone_transfers().constEnd())
+        {
+            // TODO: This needs to check against the trigger plane for transfers. This should be part of the wall objects geobin. Also need to make sure that this doesn't cause players to immediately zone after being spawned in a spawnLocation near a zoneline.            
+            if ((e->m_entity_data.m_pos.x >= i.value().m_position.x - 20 && e->m_entity_data.m_pos.x <= i.value().m_position.x + 20) &&
+                (e->m_entity_data.m_pos.y >= i.value().m_position.y - 20 && e->m_entity_data.m_pos.y <= i.value().m_position.y + 20) &&
+                (e->m_entity_data.m_pos.z >= i.value().m_position.z - 20 && e->m_entity_data.m_pos.z <= i.value().m_position.z + 20))
+            {
+                e->m_map_swap_collided = true;  // So we don't send repeated events for the same entity
+                m_owner_instance->putq(new MapSwapCollisionMessage({e->m_db_id, e->m_entity_data.m_pos, i.key()}, 0));
+                return; // don't want to keep checking for other maps for this entity
+            }
+            i++;
+
+        }
     }
 }
 
@@ -230,7 +258,7 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
     physicsStep(e, dT.msec());
     effectsStep(e, dT.msec());
     checkPowerTimers(e, dT.msec());
-
+    collisionStep(e, dT.msec());
     // TODO: Issue #555 needs to handle team cleanup properly
     // and we need to remove the following
     if(e->m_team != nullptr)
@@ -245,8 +273,25 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
 
     // check death, set clienstate if dead, and
     // if alive, recover endurance and health
-    if(!isPlayerDead(e))
+    if(e->m_char != nullptr && !e->m_char->m_is_dead)
         regenHealthEnd(e, dT.msec());
+    else
+        if (e->m_type == EntType::CRITTER)
+        {
+            EntityManager &em(m_owner_instance->m_entities);            //temporary rewards for defeating critters
+
+              for (Entity* pEnt : em.m_live_entlist)
+              {
+                   if (pEnt->m_type == EntType::PLAYER && glm::distance(e->m_entity_data.m_pos, pEnt->m_entity_data.m_pos) < 50)
+                   {
+                        sendInfoMessage(MessageChannel::COMBAT, QString("%1 has been defeated!") .arg(e->m_char->getName()) , *pEnt->m_client);
+                        sendInfoMessage(MessageChannel::COMBAT, QString("You gain %1 exp and inf!") .arg(e->m_char->m_char_data.m_combat_level) , *pEnt->m_client);
+                        pEnt->m_char->m_char_data.m_influence += e->m_char->m_char_data.m_combat_level;
+                        pEnt->m_char->m_char_data.m_experience_points += e->m_char->m_char_data.m_combat_level;
+                   }
+              }
+              em.removeEntityFromActiveList(e);         //todo: some sort of delay
+        }
 
     if(e->m_is_logging_out)
     {

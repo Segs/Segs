@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -46,7 +46,7 @@ static QHash<QString,int> contactLinkHash = {
 struct Destination // aka waypoint
 {
   public:
-    enum : uint32_t {class_version       = 1};
+    enum : uint32_t {class_version       = 2};
 
     int point_idx = 0;
     glm::vec3 location;
@@ -70,7 +70,7 @@ struct Destination // aka waypoint
 class Contact
 {
 public:
-    enum : uint32_t {class_version       = 1};
+    enum : uint32_t {class_version       = 2};
 
     // for scripting language access.
     std::string getName() const { return m_name.toStdString();}
@@ -82,12 +82,12 @@ public:
        QString         m_name;
        QString         m_location_description;
        uint32_t        m_npc_id;
-       uint8_t         m_contact_idx;
-       uint8_t         m_current_standing;
-       uint8_t         m_confidant_threshold;
-       uint8_t         m_friend_threshold;
-       uint8_t         m_complete_threshold;
-       uint8_t         m_task_index            = 0;
+       uint32_t        m_contact_idx;
+       uint32_t        m_current_standing;
+       uint32_t        m_confidant_threshold;
+       uint32_t        m_friend_threshold;
+       uint32_t        m_complete_threshold;
+       uint32_t        m_task_index            = 0;
        bool            m_notify_player         = false;
        bool            m_can_use_cell          = false;
        bool            m_has_location          = false;

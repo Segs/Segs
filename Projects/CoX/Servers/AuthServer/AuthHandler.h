@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -81,12 +81,12 @@ class AuthHandler : public EventProcessor
     using ServerMap = std::map<uint8_t,SEGSEvents::GameServerStatusData>;
 protected:
     IMPL_ID(AuthHandler)
-    static uint64_t s_last_session_id;
-    MessageBusEndpoint m_message_bus_endpoint;
-    SessionStore m_sessions;
-    AuthServer *m_authserv = nullptr;
-    ACE_Thread_Mutex m_server_mutex;
-    ServerMap   m_known_game_servers;
+    static uint64_t         s_last_session_id;
+    MessageBusEndpoint      m_message_bus_endpoint;
+    SessionStore            m_sessions;
+    AuthServer              *m_authserv = nullptr;
+    ACE_Thread_Mutex        m_server_mutex;
+    ServerMap               m_known_game_servers;
 
     bool        isClientConnectedAnywhere(uint32_t client_id);
     void        reap_stale_links();
@@ -116,7 +116,7 @@ protected:
     void        on_client_expected(SEGSEvents::ExpectClientResponse *ev);
     void        on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
     void        on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
-    void        on_db_error(SEGSEvents::AuthDbErrorMessage *ev);
+    void        on_db_error(SEGSEvents::AuthDbStatusMessage *ev);
 
     void        dispatch(SEGSEvents::Event *ev) override;
 public:

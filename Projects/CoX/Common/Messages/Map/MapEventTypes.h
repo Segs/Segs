@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -91,6 +91,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evClueList                   ,170)
     EVENT_DECL(MapEventTypes, evSouvenirListHeaders        ,171)
     EVENT_DECL(MapEventTypes, evSouvenirDetail             ,172)
+    EVENT_DECL(MapEventTypes, evMissionObjectiveTimer      ,173)
     EVENT_DECL(MapEventTypes, evTaskDetail                 ,175)
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
     EVENT_DECL(MapEventTypes, evStoreOpen                  ,178)

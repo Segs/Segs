@@ -4,6 +4,7 @@ else()
     set(SCRIPTING_CPP ScriptingEngine_Null.cpp)
 endif()
 SET(target_CPP
+    CritterGenerator.cpp
     DataHelpers.cpp
     EntityStorage.cpp
     EntityUpdateCodec.cpp
@@ -23,6 +24,7 @@ SET(target_CPP
     ${SCRIPTING_CPP}
 )
 SET(target_INCLUDE
+    CritterGenerator.h
     DataHelpers.h
     EntityStorage.h
     EntityUpdateCodec.h
@@ -49,8 +51,6 @@ SET (target_SOURCES
 ${target_CPP}
 ${target_INCLUDE}
 )
-scan_event_types(MapEvents ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Events)
-add_event_sources(MapEvents target_SOURCES)
 add_handler(MapServer ${target_SOURCES})
 target_link_libraries(MapServer PUBLIC CRUDP_Protocol common_runtime)
 target_link_libraries(MapServer PUBLIC Qt5::Core)

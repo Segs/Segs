@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -109,6 +109,7 @@ const   QString &       getName() const { return m_name; }
         uint32_t            m_db_id;
         bool                m_in_training   = false;
         bool                m_add_new_costume = true;
+        bool                m_is_dead = false;
 
 protected:
         QString         m_name;

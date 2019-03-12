@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -20,6 +20,8 @@
 #include "Logging.h"
 #include "Settings.h"
 #include "Database.h"
+#include "Version.h"
+
 
 #include <ace/Thread.h>
 
@@ -58,7 +60,7 @@ namespace
 GameDbSyncContext::GameDbSyncContext() = default;
 GameDbSyncContext::~GameDbSyncContext() = default;
 
-int64_t GameDbSyncContext::getDatabaseVersion(QSqlDatabase &db)
+int GameDbSyncContext::getDatabaseVersion(QSqlDatabase &db)
 {
     QSqlQuery version_query(
                 QStringLiteral("SELECT version FROM table_versions WHERE table_name='db_version' ORDER BY id DESC LIMIT 1"),
@@ -122,18 +124,26 @@ bool GameDbSyncContext::loadAndConfigure()
     db2->setPassword(dbpass);
     m_db.reset(db2); // at this point we become owner of the db
 
+    if(dbdriver == "QMYSQL")
+    {
+        db2->setConnectOptions("MYSQL_OPT_RECONNECT=true");
+    }
+
     if(!m_db->open())
     {
         qFatal("Failed to open database: %s", dbname.toStdString().c_str());
+        db2->setConnectOptions();
         return false;
     }
 
-    int64_t db_version = getDatabaseVersion(*m_db);
-    if(db_version != REQUIRED_DB_VERSION)
+    int db_version = getDatabaseVersion(*m_db);
+    int required_db_version = VersionInfo::getRequiredGameDBVersion();
+
+    if(db_version != required_db_version)
     {
         // we should just stop the server, it isn't going to work anyway
-        qFatal("Wrong database version (%d) Game database requires version: %d", db_version, REQUIRED_DB_VERSION);
-
+        qFatal("Wrong database version (%d) Game database requires version: %d", db_version, required_db_version);
+        db2->setConnectOptions();
         return false;
     }
 
@@ -235,7 +245,7 @@ bool GameDbSyncContext::performUpdate(const CharacterUpdateData &data)
     m_prepared_char_update->bindValue(QStringLiteral(":player_data"), data.m_player_data);
     m_prepared_char_update->bindValue(QStringLiteral(":supergroup_id"), data.m_supergroup_id);
 
-    if(!doIt(*m_prepared_char_update))
+   if(!doIt(*m_prepared_char_update))
         return false;
 
     qCDebug(logDB) << "Updating Character Successful" << data.m_char_name;
@@ -310,7 +320,7 @@ bool GameDbSyncContext::getAccount(const GameAccountRequestData &data,GameAccoun
         character.m_db_id = (m_prepared_char_select->value("id").toUInt());
         character.m_account_id = (m_prepared_char_select->value("account_id").toUInt());
         QString name=m_prepared_char_select->value("char_name").toString();
-        character.m_name =  name.isEmpty() ? "EMPTY" : name;
+        character.m_name =  name.isEmpty() ? EMPTY_STRING : name;
         character.m_serialized_costume_data = m_prepared_char_select->value("costume_data").toString();
         character.m_serialized_chardata = m_prepared_char_select->value("chardata").toString();
         character.m_serialized_entity_data = m_prepared_char_select->value("entitydata").toString();
@@ -463,6 +473,7 @@ bool GameDbSyncContext::createEmail(const EmailCreateRequestData &data, EmailCre
     result.m_email_id = m_prepared_email_insert->lastInsertId().toUInt();
     result.m_sender_id = data.m_sender_id;
     result.m_recipient_id = data.m_recipient_id;
+    result.m_recipient_name = data.m_recipient_name;
     result.m_cerealized_email_data = data.m_email_data;
 
     // grd.commit();
@@ -536,6 +547,7 @@ bool GameDbSyncContext::fillEmailRecipientId(const FillEmailRecipientIdRequestDa
 
     result.m_sender_id = data.m_sender_id;
     result.m_sender_name = data.m_sender_name;
+    result.m_recipient_name = data.m_recipient_name;
     result.m_subject = data.m_subject;
     result.m_message = data.m_message;
     result.m_timestamp = data.m_timestamp;

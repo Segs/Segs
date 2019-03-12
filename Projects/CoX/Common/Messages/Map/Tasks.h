@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -143,26 +143,57 @@ namespace SEGSEvents
     };
 
     // [[ev_def:type]]
-        class ReceiveTaskDetailRequest final : public MapLinkEvent
+    class ReceiveTaskDetailRequest : public MapLinkEvent
+    {
+    public:
+        // [[ev_def:field]]
+        int32_t m_db_id = 0;
+        // [[ev_def:field]]
+        int32_t m_task_idx = 0;
+        explicit ReceiveTaskDetailRequest() : MapLinkEvent(MapEventTypes::evReceiveTaskDetailRequest){}
+
+        void serializeto(BitStream &/*bs*/) const override
         {
+            assert(!"ReceiveContactStatus serializeto");
+        }
 
-        public:
-            // [[ev_def:field]]
-            int32_t m_db_id = 0;
-            int32_t m_task_idx = 0;
-            explicit ReceiveTaskDetailRequest() : MapLinkEvent(MapEventTypes::evReceiveTaskDetailRequest){}
+        void    serializefrom(BitStream &bs)
+        {
+            m_db_id = bs.GetPackedBits(1);
+            m_task_idx = bs.GetPackedBits(1);
+            qCDebug(logMapEvents) << "ReceiveContactStatus Event";
+        }
 
-            void serializeto(BitStream &/*bs*/) const override
-            {
-                assert(!"ReceiveContactStatus serializeto");
-            }
-            void    serializefrom(BitStream &bs)
-            {
-                m_db_id = bs.GetPackedBits(1);
-                m_task_idx = bs.GetPackedBits(1);
-                qCDebug(logMapEvents) << "ReceiveContactStatus Event";
-            }
+        EVENT_IMPL(ReceiveTaskDetailRequest)
+    };
 
-            EVENT_IMPL(ReceiveTaskDetailRequest)
-        };
+    // [[ev_def:type]]
+    class MissionObjectiveTimer : public GameCommandEvent
+    {
+    public:
+        // [[ev_def:field]]
+        QString m_message;
+        // [[ev_def:field]]
+        float_t m_mission_time = 0;
+
+        explicit MissionObjectiveTimer() : GameCommandEvent(MapEventTypes::evMissionObjectiveTimer){}
+        MissionObjectiveTimer(QString message, float mission_time) : GameCommandEvent(MapEventTypes::evMissionObjectiveTimer){
+            m_message = message;
+            m_mission_time = mission_time;
+        }
+
+        void serializeto(BitStream &bs) const override // packet 73
+        {
+            bs.StorePackedBits(1, type()-evFirstServerToClient);
+            bs.StoreString(m_message);
+            bs.StoreFloat(m_mission_time);
+        }
+
+        void serializefrom(BitStream /*&bs*/)
+        {
+            assert(!"SendMissionObjectTimer serializefrom");
+        }
+
+        EVENT_IMPL(MissionObjectiveTimer)
+    };
 }

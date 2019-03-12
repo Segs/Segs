@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -52,7 +52,9 @@ void EmailHandler::dispatch(Event *ev)
         case Internal_EventTypes::evClientDisconnectedMessage:
             on_client_disconnected(static_cast<ClientDisconnectedMessage *>(ev));
             break;
-        default: assert(false); break;
+        default:
+            qCritical() << "EmailHandler dispatch hits default! Event info: " + QString(ev->info());
+            break;
     }
 }
 
@@ -60,28 +62,6 @@ void EmailHandler::set_db_handler(uint8_t id)
 {
     m_db_handler = static_cast<GameDBSyncHandler*>(
                 HandlerLocator::getGame_DB_Handler(id));
-}
-
-void EmailHandler::on_email_header(EmailHeaderRequest *msg)
-{
-    /*
-    EmailData email_data = EmailData{
-                msg->m_data.sender_id,
-                msg->m_data.sender_id,
-                QString("Test Sender"),
-                msg->m_data.subject,
-                QString("Placeholder Message \n Hi"),
-                msg->m_data.timestamp,
-                false};
-
-    QString cerealizedEmailData;
-    serializeToQString(email_data, cerealizedEmailData);
-
-    m_db_handler->putq(new EmailCreateRequest({
-                                                  msg->m_data.sender_id,
-                                                  msg->m_data.sender_id, //recipient id
-                                                  cerealizedEmailData
-                                              }, uint64_t(1)));*/
 }
 
 void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
@@ -96,8 +76,19 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
     m_state.m_stored_client_datas[msg->m_data.m_sender_id]
             .m_email_state.m_sent_email_ids.insert(msg->m_data.m_email_id);
 
-    // if the recipient is not online during the time of send, return
-    if(m_state.m_stored_client_datas.count(msg->m_data.m_recipient_id) <= 0)
+    // send successful EmailCreateStatusMessage to sender
+    // shouldn't need to check if sender is online... when the sender is sending the email in real-time
+    const ClientSessionData &sender_data (m_state.m_stored_client_datas[msg->m_data.m_sender_id]);
+
+    EventProcessor *sender_map_instance = HandlerLocator::getMapInstance_Handler(
+                sender_data.m_server_id,
+                sender_data.m_instance_id);
+
+    sender_map_instance->putq(new EmailCreateStatusMessage(
+        {true, msg->m_data.m_recipient_name}, sender_data.m_session_token));
+
+    // if the recipient is not online during the time of send, end the function here
+    if (m_state.m_stored_client_datas.count(msg->m_data.m_recipient_id) <= 0)
         return;
 
     const ClientSessionData &recipient_data (m_state.m_stored_client_datas[msg->m_data.m_recipient_id]);
@@ -107,16 +98,30 @@ void EmailHandler::on_email_create_response(EmailCreateResponse* msg)
     m_state.m_stored_client_datas[msg->m_data.m_recipient_id]
             .m_email_state.m_unread_email_ids.insert(msg->m_data.m_email_id);
 
-    EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
+    EventProcessor *recipient_map_instance = HandlerLocator::getMapInstance_Handler(
                 recipient_data.m_server_id,
                 recipient_data.m_instance_id);
 
-    tgt->putq(new EmailHeaderResponse({
+    recipient_map_instance->putq(new EmailHeaderToClientMessage({
                                           msg->m_data.m_email_id,
                                           email_data.m_sender_name,
                                           email_data.m_subject,
                                           email_data.m_timestamp
                                       }, recipient_data.m_session_token));
+}
+
+void EmailHandler::on_email_header(EmailHeaderRequest *msg)
+{
+    std::vector<EmailHeaderData> email_headers;
+    int unread_emails_count = 0;
+    fill_email_headers(email_headers, msg->m_data.m_user_id, unread_emails_count);
+
+    const ClientSessionData &session (m_state.m_stored_client_datas[msg->m_data.m_user_id]);
+    EventProcessor *session_map_instance = HandlerLocator::getMapInstance_Handler(
+                session.m_server_id,
+                session.m_instance_id);
+
+    session_map_instance->putq(new EmailHeaderResponse({email_headers}, msg->session_token()));
 }
 
 void EmailHandler::on_get_emails_response(GetEmailsResponse *msg)
@@ -207,6 +212,7 @@ void EmailHandler::on_fill_email_recipient_id_response(FillEmailRecipientIdRespo
     m_db_handler->putq(new EmailCreateRequest({
                                                   msg->m_data.m_sender_id,
                                                   msg->m_data.m_recipient_id, //recipient id
+                                                  msg->m_data.m_recipient_name,
                                                   cerealizedEmailData
                                               }, uint64_t(1)));
 }
@@ -220,8 +226,8 @@ void EmailHandler::on_fill_email_recipient_id_error(FillEmailRecipientIdErrorMes
 
     // send error msg to sender map instance
 
-    sender_map_instance->putq(new EmailSendErrorMessage(
-        {msg->m_data.m_error_message}, sender_data.m_session_token));
+    sender_map_instance->putq(new EmailCreateStatusMessage(
+            {false, msg->m_data.m_recipient_name}, sender_data.m_session_token));
 
 }
 

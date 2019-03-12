@@ -6,7 +6,7 @@ need to be adjusted for use on the internet.
 
 **Requirements**
 - Ubuntu 18.04 Server installed with default settings.
-- CoX Client for the PIGG files (```magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f```)
+- CoX Client Issue 0 for the PIGG files (```magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f```)
 
 **1. Install dependencies**  
 

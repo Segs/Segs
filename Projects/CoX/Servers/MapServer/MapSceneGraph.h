@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 #include <QStringList>
+#include <../Common/GameData/map_definitions.h>
+#include <../Common/GameData/spawn_definitions.h>
 
 class QString;
 
@@ -34,7 +36,9 @@ public:
     ~MapSceneGraph();
     bool loadFromFile(const QString &mapname);
     QMultiHash<QString, glm::mat4> getSpawnPoints() const;
-    QString getNearestDoor(glm::vec3 location) const;
+    QMultiHash<QString, glm::mat4> getEncounterSpawnPoints() const;
+    QHash<QString, MapXferData> get_map_transfers() const;
+    void spawn_critters(class MapInstance *instance);
     void spawn_npcs(class MapInstance *instance);
     void build_combat_navigation_graph();
     void build_pedestrian_navigation_graph();

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -44,18 +44,3 @@ void Souvenir::serialize(Archive &archive, uint32_t const version)
 
  CEREAL_CLASS_VERSION(Clue, Clue::class_version)   // register Clue class version
  SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(Clue)
-
- template<class Archive>
- void ClueSouvenirList::serialize(Archive &archive, uint32_t const version)
- {
-     if(version != ClueSouvenirList::class_version)
-     {
-         qCritical() << "Failed to serialize ClueSouvenirList, incompatible serialization format version " << version;
-         return;
-     }
-     archive(cereal::make_nvp("clueList",m_clue_list));
-     archive(cereal::make_nvp("souvenirList",m_souvenir_list));
- }
-
- CEREAL_CLASS_VERSION(ClueSouvenirList, ClueSouvenirList::class_version)   // register Clue class version
- SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(ClueSouvenirList)

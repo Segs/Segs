@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -74,3 +74,10 @@ public:
 };
 
 using vTaskEntryList = std::vector<TaskEntry>;
+
+class TaskObjectiveTimer // Shouldn't serialze to DB?
+{
+public:
+    QString m_message;
+    float m_mission_time;
+};

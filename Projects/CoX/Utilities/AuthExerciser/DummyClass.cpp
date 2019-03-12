@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -63,12 +63,12 @@ void DummyClass::dispatch(Event * ev)
     }
 }
 
-void DummyClass::serialize_from(std::istream &is)
+void DummyClass::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void DummyClass::serialize_to(std::ostream &is)
+void DummyClass::serialize_to(std::ostream &/*is*/)
 {
     assert(false);
 }
