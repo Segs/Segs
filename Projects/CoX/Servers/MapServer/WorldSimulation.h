@@ -52,20 +52,20 @@ public:
         //TODO: replace this with HEntity (handle) ?
         Entity *m_ent=nullptr;
     };
-private:    
+private:
     std::vector<PhysicsState> m_per_entity_data;
 public:
     // state queries.
     void entitiesInRange(const Sphere &range,std::vector<int> &entity_idx);
-    
+
     void update(float dt);
     void forcePosition(Entity &e, glm::vec3 pos);
     void forceOrientation(Entity &e, glm::vec3 pyr);
     void forcePositionAndOrientation(Entity &e, glm::vec3 pos,glm::vec3 pyr);
-    
+
     void addEntity(Entity *e);
     void removeEntity(Entity *e);
-    
+
     PhysicsState *stateForEntity(const Entity *e);
 };
 class World
@@ -83,31 +83,39 @@ class World
     // as well, rather than having to walk the scenegraph twice (once for each type).
     QHash<QString, MapXferData> m_map_door_transfers;
     QHash<QString, MapXferData> m_map_zone_transfers;
-    
-    
+
+
     friend void spawn_critters(MapSceneGraph *map_scene_graph,World *instance);
     friend void spawn_npcs(MapSceneGraph *map_scene_graph,World *instance);
 public:
                         World(EntityManager &em, const float player_fade_in, MapInstance *owner_instance);
-        bool start(const QString &scenegraph_path);                        
+        bool start(const QString &scenegraph_path);
         void            update(const ACE_Time_Value &tick_timer);
         float           time_of_day() const { return m_time_of_day; }
+        // Entity Creation/Destruction
         Entity *        CreateCritter(const Parse_NPC &tpl,int idx,int variant, int level);
         Entity *        CreateGeneric(const Parse_NPC &tpl,int idx,int variant,EntType type);
         Entity *        CreateNpc(const Parse_NPC &tpl,int idx,int variant);
-        
+        Entity *        CreatePlayer();
+        void            releaseEntity(Entity *e);
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Scene graph element access functions:
-        const SpawnsStorage &getSpawners() const
-                        {
-                            return m_all_spawners;
-                        }
-        glm::vec3       closest_safe_location(glm::vec3 v) const;
-        void            setSpawnLocation(Entity &e, const QString &spawnLocation);
-        void            setPlayerSpawn(Entity &e);
-        
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        const SpawnsStorage &   getSpawners() const { return m_all_spawners; }
+        glm::vec3               closest_safe_location(glm::vec3 v) const;
+        void                    setSpawnLocation(Entity &e, const QString &spawnLocation);
+        void                    setPlayerSpawn(Entity &e);
+
         const QHash<QString, MapXferData> &get_map_door_transfers() const;
         const QHash<QString, MapXferData> &get_map_zone_transfers() const;
-        
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Entity queries
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        Entity * getEntity(const QString &name);
+        Entity * getEntity(uint32_t idx);
+        Entity * getEntityByDBID(uint32_t idx);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         float           sim_frame_time = 1; // in seconds
         float           accumulated_time=0;
         // for now physics state is publicly accessible.

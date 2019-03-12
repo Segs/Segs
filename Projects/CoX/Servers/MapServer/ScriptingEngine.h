@@ -25,10 +25,8 @@ public:
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1, glm::vec3 loc);
     std::string callFuncWithClientContext(MapClientSession *client, const char *name, const char *arg1, glm::vec3 loc);
-    std::string callFunc(const char *name,int arg1);
-    std::string callFunc(const char *name,int arg1, glm::vec3 loc);
-    std::string callFunc(const char *name, const char *arg1, glm::vec3 loc);
-    std::string callFunc(const char *name, std::vector<Contact> contact_list);
+    template <typename... Args>
+    std::string callFunc(const char *name, Args&&... args);
     void updateMapInstance(MapInstance * instance);
     void updateClientContext(MapClientSession * client);
     int runScript(const QString &script_contents,const char *script_name="unnamed script");

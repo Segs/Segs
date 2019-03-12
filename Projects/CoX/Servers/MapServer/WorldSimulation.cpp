@@ -25,10 +25,7 @@
 using namespace SEGSEvents;
 using namespace SEGS;
 
-World::World(EntityManager &em, const float player_fade_in, MapInstance *owner_instance)
-    : ref_ent_mager(em), m_player_fade_in(player_fade_in), m_owner_instance(owner_instance)
-{
-}
+namespace  {
 /******************************** MAP-SPAWN SUPPORT ROUTINES ************************************/
 struct CritterSpawnLocator
 {
@@ -138,25 +135,6 @@ struct CritterSpawnLocator
         return true;
     }
 };
-
-void spawn_critters(MapSceneGraph *map_scene_graph,World *instance)
-{
-    QHash<QString, CritterSpawnLocations> res;
-    CritterSpawnLocator locator(&res);
-    map_scene_graph->visitNodesFromRoots(locator);
-
-    //Creates one generator per encounter.
-    int count = 1;
-    for (auto r: res)
-    {
-        CritterGenerator cg;
-        cg.m_encounter_node_name = r.m_node_name;
-        cg.m_generator_name = "Encounter " + QString(count);
-        cg.m_critter_encounter = r;
-        instance->m_critter_generators.m_generators.insert(cg.m_generator_name, cg);
-        ++count;
-    }
-}
 struct NpcCreator
 {
     World *map_instance = nullptr;
@@ -193,7 +171,7 @@ struct NpcCreator
             int idx = npc_store.npc_idx(npc_def);
             Entity *e = map_instance->CreateNpc(*npc_def, idx, 0);
             e->m_char->setName(makeReadableName(persistent_name));
-            
+
             glm::vec3 pos = glm::vec3(v[3]);
             glm::quat valquat = glm::quat_cast(v);
             glm::vec3 angles = glm::eulerAngles(valquat);
@@ -261,13 +239,6 @@ struct NpcCreator
     }
 };
 
-void spawn_npcs(MapSceneGraph *map_scene_graph,World *instance)
-{
-    NpcCreator creator;
-    creator.generators = &instance->m_npc_generators;
-    creator.map_instance = instance;
-    map_scene_graph->visitNodesFromRoots(creator);
-}
 struct SpawnPointLocator
 {
     QMultiHash<QString, glm::mat4> *m_targets;
@@ -291,15 +262,6 @@ struct SpawnPointLocator
         return true;
     }
 };
-
-static QMultiHash<QString, glm::mat4> getSpawnPoints(MapSceneGraph *map_scene_graph)
-{
-    QMultiHash<QString, glm::mat4> res;
-    SpawnPointLocator locator(&res);
-    map_scene_graph->visitNodesFromRoots(locator);
-    return res;
-}
-
 struct MapXferLocator
 {
     QHash<QString, MapXferData> *m_targets;
@@ -309,47 +271,46 @@ struct MapXferLocator
     bool operator()(SceneNode *n, const glm::mat4 &v)
     {
 
-        if (!n->m_properties)
+        if (n->m_properties)
+            return true;
+        for (auto &child : n->m_children)
         {
-            for (auto &child : n->m_children)
+            bool found_map_transfer = false;
+            if (child.node->m_properties != nullptr)
             {
-                bool found_map_transfer = false;
-                if (child.node->m_properties != nullptr)
+                MapXferData map_transfer = MapXferData();
+                // Probably haven't processed the map swap node yet, so add it and handle later
+                for (GroupProperty_Data &prop : *child.node->m_properties)
                 {
-                    MapXferData map_transfer = MapXferData();
-                    // Probably haven't processed the map swap node yet, so add it and handle later
-                    for (GroupProperty_Data &prop : *child.node->m_properties)
+                    if (prop.propName == "GotoSpawn")
                     {
-                        if (prop.propName == "GotoSpawn")
-                        {
-                            map_transfer.m_target_spawn_name = prop.propValue;
-                            found_map_transfer = true;
-                        }
-                        if (prop.propName == "GotoMap")
-                        {
-                            map_transfer.m_target_map_name = prop.propValue.split('.')[0];
-                            // Assume that if there's a GotoMap, that it's for a map xfer.
-                            // TODO: Change the transfer type detection to something less ambiguous if possible.
-                            map_transfer.m_transfer_type = MapXferType::ZONE;
-                            found_map_transfer = true;
-                        }
+                        map_transfer.m_target_spawn_name = prop.propValue;
+                        found_map_transfer = true;
                     }
-                    if (found_map_transfer)
+                    if (prop.propName == "GotoMap")
                     {
-                        map_transfer.m_node_name = child.node->m_name;
-
-                        // get position
-                        glm::mat4 transform(child.m_matrix2);
-                        transform[3] = glm::vec4(child.m_translation,1);
-                        transform = v * transform;
-                        glm::vec4 pos4 {0,0,0,1};
-                        pos4 = transform * pos4;
-                        glm::vec3 pos3 = glm::vec3(pos4);
-
-                        map_transfer.m_position = pos3;
-                        m_targets->insert(map_transfer.m_node_name, map_transfer);
-                        return false;
+                        map_transfer.m_target_map_name = prop.propValue.split('.')[0];
+                        // Assume that if there's a GotoMap, that it's for a map xfer.
+                        // TODO: Change the transfer type detection to something less ambiguous if possible.
+                        map_transfer.m_transfer_type = MapXferType::ZONE;
+                        found_map_transfer = true;
                     }
+                }
+                if (found_map_transfer)
+                {
+                    map_transfer.m_node_name = child.node->m_name;
+
+                    // get position
+                    glm::mat4 transform(child.m_matrix2);
+                    transform[3] = glm::vec4(child.m_translation,1);
+                    transform = v * transform;
+                    glm::vec4 pos4 {0,0,0,1};
+                    pos4 = transform * pos4;
+                    glm::vec3 pos3 = glm::vec3(pos4);
+
+                    map_transfer.m_position = pos3;
+                    m_targets->insert(map_transfer.m_node_name, map_transfer);
+                    return false;
                 }
             }
         }
@@ -357,6 +318,46 @@ struct MapXferLocator
         return true;
     }
 };
+
+} // end of anonymous namespace
+World::World(EntityManager &em, const float player_fade_in, MapInstance *owner_instance)
+    : ref_ent_mager(em), m_player_fade_in(player_fade_in), m_owner_instance(owner_instance)
+{
+}
+
+void spawn_critters(MapSceneGraph *map_scene_graph,World *instance)
+{
+    QHash<QString, CritterSpawnLocations> res;
+    CritterSpawnLocator locator(&res);
+    map_scene_graph->visitNodesFromRoots(locator);
+
+    //Creates one generator per encounter.
+    int count = 1;
+    for (auto r: res)
+    {
+        CritterGenerator cg;
+        cg.m_encounter_node_name = r.m_node_name;
+        cg.m_generator_name = "Encounter " + QString(count);
+        cg.m_critter_encounter = r;
+        instance->m_critter_generators.m_generators.insert(cg.m_generator_name, cg);
+        ++count;
+    }
+}
+void spawn_npcs(MapSceneGraph *map_scene_graph,World *instance)
+{
+    NpcCreator creator;
+    creator.generators = &instance->m_npc_generators;
+    creator.map_instance = instance;
+    map_scene_graph->visitNodesFromRoots(creator);
+}
+
+static QMultiHash<QString, glm::mat4> getSpawnPoints(MapSceneGraph *map_scene_graph)
+{
+    QMultiHash<QString, glm::mat4> res;
+    SpawnPointLocator locator(&res);
+    map_scene_graph->visitNodesFromRoots(locator);
+    return res;
+}
 
 QHash<QString, MapXferData> get_map_transfers(MapSceneGraph *map_scene_graph)
 {
@@ -385,11 +386,13 @@ bool World::start(const QString &scenegraph_path)
         }, "Spawning npcs");
     return scene_graph_loaded;
 }
+
 const QHash<QString, MapXferData> &World::get_map_door_transfers() const
 {
     return m_map_door_transfers;
 }
-const QHash<QString, MapXferData> &World::get_map_zone_transfers() const 
+
+const QHash<QString, MapXferData> &World::get_map_zone_transfers() const
 {
     return m_map_zone_transfers;
 }
@@ -397,7 +400,7 @@ const QHash<QString, MapXferData> &World::get_map_zone_transfers() const
 void World::prepareZoneTransfers()
 {
     QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
-    while (i != m_map_transfers.constEnd())
+    for ( ;i != m_map_transfers.constEnd(); ++i)
     {
         if (i.value().m_transfer_type == MapXferType::DOOR)
         {
@@ -407,7 +410,6 @@ void World::prepareZoneTransfers()
         {
             m_map_zone_transfers.insert(i.key(), i.value());
         }
-        i++;
     }
 }
 
@@ -429,7 +431,7 @@ void World::update(const ACE_Time_Value &tick_timer)
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_ent_mager.getEntitiesMutex());
 
     m_physics.update(delta.usec()/1000000.0f);
-    
+
     for(Entity * e : ref_ent_mager.m_live_entlist)
         updateEntity(e,delta);
 }
@@ -443,7 +445,7 @@ Entity *World::CreateGeneric(const Parse_NPC &tpl, int idx, int variant, EntType
 {
     Entity *res = ref_ent_mager.m_store.get();
     ref_ent_mager.m_live_entlist.insert(res);
-    
+
     initializeNewNpcEntity(*res,&tpl,idx,variant);
     res->m_type = type;
     res->m_world = this;
@@ -456,19 +458,30 @@ Entity *World::CreateNpc(const Parse_NPC &tpl, int idx, int variant)
     return CreateGeneric(tpl,idx,variant,EntType::Invalid);
 }
 
+Entity *World::CreatePlayer()
+{
+    return ref_ent_mager.CreatePlayer();
+}
+
+void World::releaseEntity(Entity *e)
+{
+    ref_ent_mager.removeEntityFromActiveList(e);
+    m_physics.removeEntity(e);
+}
+
 glm::vec3 World::closest_safe_location(glm::vec3 v) const
 {
     // In the future this should get the closet NAV or NAVCMBT
     // node and return it. For now let's just pick some known
     // safe spawn locations
-    
+
     Q_UNUSED(v);
     glm::vec3 loc = glm::vec3(0,0,0);
-    
+
     // If no default spawners if available, spawn at 0,0,0
     if(m_all_spawners.empty())
         return loc;
-    
+
     // Try NewPlayer spawners first, then hospitals, then random
     if(m_all_spawners.contains("NewPlayer"))
         loc = m_all_spawners.values("NewPlayer")[rand() % m_all_spawners.values("NewPlayer").size()][3];
@@ -484,7 +497,7 @@ glm::vec3 World::closest_safe_location(glm::vec3 v) const
         loc = m_all_spawners.values("Hospital_Exit")[rand() % m_all_spawners.values("Hospital_Exit").size()][3];
     else
         loc = m_all_spawners.values()[rand() % m_all_spawners.values().size()][3];
-    
+
     return loc;
 }
 
@@ -493,12 +506,12 @@ void World::setSpawnLocation(Entity &e, const QString &spawnLocation)
 {
     if(m_all_spawners.empty() || !m_all_spawners.contains(spawnLocation))
         return;
-    
+
     glm::mat4 v = m_all_spawners.values(spawnLocation)[rand() % m_all_spawners.values(spawnLocation).size()];
-    
+
     // Position
     glm::vec3 spawn_pos = glm::vec3(v[3]);
-    
+
     // Orientation
     auto valquat = glm::quat_cast(v);
     glm::vec3 spawn_pyr = toCoH_YPR(valquat);
@@ -568,13 +581,13 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     // for now we only run this on players
     if(e->m_type != EntType::PLAYER)
         return;
-    
+
     // Activation Timers -- queue FIFO
     if(e->m_queued_powers.size() > 0)
     {
         QueuedPowers &qpow = e->m_queued_powers.front();
         qpow.m_activate_period -= (float(msec)/1000);
-        
+
         // this must come before the activation_period check
         // to ensure that the queued power ui-effect is reset properly
         if(qpow.m_activation_state == false)
@@ -582,11 +595,11 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
             e->m_queued_powers.pop_front(); // remove first from queue
             e->m_char->m_char_data.m_has_updated_powers = true;
         }
-        
+
         if(qpow.m_activate_period <= 0)
             qpow.m_activation_state = false;
     }
-    
+
     // Recharging Timers -- iterate through and remove finished timers
     for(auto rpow_idx = e->m_recharging_powers.begin(); rpow_idx != e->m_recharging_powers.end(); /*rpow_idx updated inside loop*/ )
     {
@@ -664,7 +677,7 @@ void World::collisionStep(Entity *e, uint32_t /*msec*/)
         QHash<QString, MapXferData>::const_iterator i = get_map_zone_transfers().constBegin();
         while (i != get_map_zone_transfers().constEnd())
         {
-            // TODO: This needs to check against the trigger plane for transfers. This should be part of the wall objects geobin. Also need to make sure that this doesn't cause players to immediately zone after being spawned in a spawnLocation near a zoneline.            
+            // TODO: This needs to check against the trigger plane for transfers. This should be part of the wall objects geobin. Also need to make sure that this doesn't cause players to immediately zone after being spawned in a spawnLocation near a zoneline.
             if ((e->m_entity_data.m_pos.x >= i.value().m_position.x - 20 && e->m_entity_data.m_pos.x <= i.value().m_position.x + 20) &&
                 (e->m_entity_data.m_pos.y >= i.value().m_position.y - 20 && e->m_entity_data.m_pos.y <= i.value().m_position.y + 20) &&
                 (e->m_entity_data.m_pos.z >= i.value().m_position.z - 20 && e->m_entity_data.m_pos.z <= i.value().m_position.z + 20))
@@ -709,6 +722,11 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
     }
 }
 
+void WorldPhysics::entitiesInRange(const Sphere &range, std::vector<int> &entity_idx)
+{
+
+}
+
 void WorldPhysics::update(float dt)
 {
     //Copy input speed to velocity, taking care to use proper surface params;
@@ -734,14 +752,14 @@ void WorldPhysics::update(float dt)
         Entity *e=iter->m_ent;
         setVelocity(*e);
         //e->m_motion_state.m_velocity = za*e->m_states.current()->m_pos_delta;
-        
+
         // todo: take into account time between updates
         glm::mat3 za = static_cast<glm::mat3>(iter->m_orientation); // quat to mat4x4 conversion
         //float vel_scale = e->inp_state.m_input_vel_scale/255.0f;
         const float time_scale_factor = 40.0f/1000.0f; // formerly 50.0f
-        e->m_entity_data.m_pos += ((za*e->m_states.current()->m_pos_delta)*dt)/time_scale_factor; 
+        e->m_entity_data.m_pos += ((za*e->m_states.current()->m_pos_delta)*dt)/time_scale_factor;
     }
-    
+
 }
 
 void WorldPhysics::forcePosition(Entity &e, glm::vec3 pos)
@@ -809,7 +827,6 @@ void movePlayerToClosestSafeLocation(World &world, Entity *player)
 {
     world.m_physics.forcePosition(*player,world.closest_safe_location(player->m_entity_data.m_pos));
 }
-//! @}
 
 void movePlayerToNamedSpawn(World &world, Entity *player, const QString &name)
 {
@@ -820,7 +837,7 @@ void movePlayerToNamedSpawn(World &world, Entity *player, const QString &name)
     else
     {
         world.setPlayerSpawn(*player);
-    }        
+    }
 }
 
 QString getNearestDoor(World *world, glm::vec3 location)
@@ -837,3 +854,63 @@ QString getNearestDoor(World *world, glm::vec3 location)
     }
     return QString();
 }
+
+// Poll EntityManager to return Entity by Name or IDX
+Entity * World::getEntity(const QString &name)
+{
+    EntityManager &em(ref_ent_mager);
+    QString errormsg;
+
+    // Iterate through all active entities and return entity by name
+    for (Entity* pEnt : em.m_live_entlist)
+    {
+        if(pEnt->name() == name)
+            return pEnt;
+    }
+
+    errormsg = "Entity " + name + " does not exist, or is not currently online.";
+    qWarning() << errormsg;
+    return nullptr;
+}
+
+Entity * World::getEntity(uint32_t idx)
+{
+    EntityManager &em(ref_ent_mager);
+    QString errormsg;
+
+    if(idx!=0) // Entity idx 0 is special case, so we can't return it
+    {
+        // Iterate through all active entities and return entity by idx
+        for (Entity* pEnt : em.m_live_entlist)
+        {
+            if(pEnt->m_idx == idx)
+                return pEnt;
+        }
+    }
+    errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
+    qWarning() << errormsg;
+    return nullptr;
+}
+/**
+ * @brief Finds the Entity in this World
+ * @param db_id db id of the entity to find.
+ * @return pointer to the entity or nullptr if it does not exist.
+ */
+Entity *World::getEntityByDBID(uint32_t db_id)
+{
+    EntityManager &em(ref_ent_mager);
+    QString        errormsg;
+
+    if(db_id == 0)
+        return nullptr;
+    // TODO: Iterate through all entities in Database and return entity by db_id
+    for (Entity *pEnt : em.m_live_entlist)
+    {
+        if(pEnt->m_db_id == db_id)
+            return pEnt;
+    }
+    return nullptr;
+}
+
+
+//! @}

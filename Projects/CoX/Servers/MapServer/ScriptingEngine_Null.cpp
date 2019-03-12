@@ -48,37 +48,11 @@ bool ScriptingEngine::setIncludeDir(const QString &)
 {
     return false;
 }
-
-std::string ScriptingEngine::callFunc(const char *name, int arg1)
+template <typename... Args>
+std::string callFunc(const char *name, Args&&... args)
 {
-    Q_UNUSED(name);
-    Q_UNUSED(arg1);
     return "";
 }
-
-std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
-{
-    Q_UNUSED(name);
-    Q_UNUSED(arg1);
-    Q_UNUSED(loc);
-    return "";
-}
-
-std::string ScriptingEngine::callFunc(const char *name, const char *arg1, glm::vec3 loc)
-{
-    Q_UNUSED(name);
-    Q_UNUSED(arg1);
-    Q_UNUSED(loc);
-    return "";
-}
-
-std::string ScriptingEngine::callFunc(const char *name, std::vector<Contact> contact_list)
-{
-    Q_UNUSED(name);
-    Q_UNUSED(contact_list);
-    return "";
-}
-
 
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {

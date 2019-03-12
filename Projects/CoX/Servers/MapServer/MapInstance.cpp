@@ -284,8 +284,7 @@ void MapInstance::reap_stale_links()
 void MapInstance::enqueue_client(MapClientSession *clnt)
 {
     // m_world stores a ref to m_entities, so its entity mgr is updated as well
-    m_entities.InsertPlayer(clnt->m_ent);
-
+    // m_world.InsertPlayer(clnt->m_ent); this is redundant since CreatePlayer already inserted the Entity into the 'live' list
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
 
@@ -581,9 +580,9 @@ void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
     session.m_ent->m_map_swap_collided = false;
 }
 
-void MapInstance::on_idle(Idle *ev)
+void MapInstance::on_idle(Idle */*ev*/)
 {
-    MapLink * lnk = (MapLink *)ev->src();
+    //MapLink * lnk = (MapLink *)ev->src();
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
     // we don't have to respond with an idle message here, check links will send idle events as needed.
     //lnk->putq(new Idle);
@@ -653,7 +652,7 @@ void MapInstance::on_link_lost(Event *ev)
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
-    m_entities.removeEntityFromActiveList(ent);
+    m_world->releaseEntity(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
@@ -679,7 +678,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
 
     // one last character update for the disconnecting entity
     send_character_update(ent);
-    m_entities.removeEntityFromActiveList(ent);
+    m_world->releaseEntity(ent);
 
     m_session_store.session_link_lost(session_token);
     m_session_store.remove_by_token(session_token, session.auth_id());
@@ -748,7 +747,7 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     serializeFromQString(char_data,request_data.char_from_db_data);
     qCDebug(logCharSel).noquote() << "expected_client: Costume:" << char_data.m_serialized_costume_data;
     // existing character
-    Entity *ent = m_entities.CreatePlayer();
+    Entity *ent = m_world->CreatePlayer();
     toActualCharacter(char_data, *ent->m_char, *ent->m_player, *ent->m_entity);
     ent->m_char->finalizeLevel(); // done here to fix spawn with 0 hp/end bug
     ent->fillFromCharacter(getGameData());
@@ -791,7 +790,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_supergroup.m_SG_id = ev->m_data.m_supergroup_id;
     serializeFromDb(e->m_entity_data, ev->m_data.m_ent_data);
 
-    
+
     // Can't pass direction through cereal, so let's update it here.
     m_world->m_physics.forceOrientation(*e,e->m_entity_data.m_orientation_pyr);
 
@@ -862,7 +861,7 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
     if(ev->m_new_character)
     {
         QString ent_data;
-        Entity *e = m_entities.CreatePlayer();
+        Entity *e = m_world->CreatePlayer();
 
         const GameDataStore &data(getGameData());
         fillEntityFromNewCharData(*e, ev->m_character_data, data);
@@ -1153,11 +1152,11 @@ QString process_replacement_strings(MapClientSession *sender,const QString &msg_
 
     if(target_idx > 0)
     {
-        Entity   *tgt    = getEntity(sender,target_idx);
+        Entity   *tgt    = sender->m_current_map->world()->getEntity(target_idx);
         target_char_name = tgt->name(); // change name
     }
 
-    foreach (const QString &str, replacements)
+    for(const QString &str : replacements)
     {
         if(str == "\\$archetype")
             new_msg.replace(QRegularExpression(str), sender_class);
@@ -1233,7 +1232,7 @@ void MapInstance::process_chat(Entity *sender, QString &msg_text)
     if(!sender)
       return;
 
-
+    World *sender_world = world();
     sender_char_name = sender->name();
 
      for(MapClientSession *cl : m_session_store)
@@ -1403,7 +1402,7 @@ void MapInstance::process_chat(Entity *sender, QString &msg_text)
 
                 //TODO: this only work for friends on local server
                 // introduce a message router, and send messages to EntityIDs instead of directly using sessions.
-                Entity *tgt = getEntityByDBID(sender_sess->m_current_map, f.m_db_id);
+                Entity *tgt = world()->getEntityByDBID(f.m_db_id);
                 if(tgt == nullptr) // In case we didn't toggle online_status.
                     continue;
 
@@ -2073,7 +2072,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     else
     {
         MapXferData &xfer_data = map_server->session_map_xfer_idx(session.link()->session_token());
-        
+
         movePlayerToNamedSpawn(*m_world,session.m_ent,xfer_data.m_target_spawn_name);
 
         // else don't send motd, as this is from a map transfer
@@ -2245,7 +2244,7 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    Entity *tgt = getEntity(&session,ev->entity_idx);
+    Entity *tgt = world()->getEntity(ev->entity_idx);
     if(tgt == nullptr)
     {
         qCDebug(logMapEvents) << "No target active, doing nothing";
@@ -2450,7 +2449,7 @@ void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
 void MapInstance::on_interact_with(InteractWithEntity *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *entity = getEntity(&session, ev->m_srv_idx);
+    Entity *entity = world()->getEntity(ev->m_srv_idx);
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx, entity->m_entity_data.m_pos);
@@ -2941,7 +2940,7 @@ void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
     }
 
     const uint32_t tgt_db_id = session.m_ent->m_trade->getOtherMember(*session.m_ent).m_db_id;
-    Entity* const tgt = getEntityByDBID(session.m_ent->m_client->m_current_map, tgt_db_id);
+    Entity* const tgt = world()->getEntityByDBID(tgt_db_id);
     if(tgt == nullptr)
     {
         // Only one side left in the game.
@@ -2969,7 +2968,7 @@ void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
 {
     MapClientSession& session = m_session_store.session_from_event(ev);
 
-    Entity* const tgt = getEntityByDBID(session.m_current_map, ev->m_info.m_db_id);
+    Entity* const tgt = world()->getEntityByDBID(ev->m_info.m_db_id);
     if(tgt == nullptr)
         return;
 
@@ -3041,7 +3040,7 @@ void MapInstance::on_store_sell_item(StoreSellItem* ev)
 {
     qCDebug(logStores) << "on_store_sell_item. NpcId: " << ev->m_npc_idx << " isEnhancement: " << ev->m_is_enhancement << " TrayNumber: " << ev->m_tray_number << " enhancement_idx: " << ev->m_enhancement_idx;
     MapClientSession& session = m_session_store.session_from_event(ev);
-    Entity *e = getEntity(&session, ev->m_npc_idx);
+    Entity *e = world()->getEntity(ev->m_npc_idx);
 
     QString enhancement_name;
     CharacterEnhancement enhancement = session.m_ent->m_char->m_char_data.m_enhancements[ev->m_enhancement_idx];
@@ -3075,7 +3074,7 @@ void MapInstance::on_store_buy_item(StoreBuyItem* ev)
 {
     qCDebug(logMapEvents) << "on_store_buy_item. NpcId: " <<ev->m_npc_idx << " ItemName: " << ev->m_item_name;
     MapClientSession& session = m_session_store.session_from_event(ev);
-    Entity *e = getEntity(&session, ev->m_npc_idx);
+    Entity *e = world()->getEntity(ev->m_npc_idx);
 
     StoreTransactionResult result = Store::buyItem(e, ev->m_item_name);
     if(result.m_is_success)
@@ -3101,7 +3100,7 @@ void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
     }
 
     MapXferData map_transfer_data = m_world->m_map_transfers[ev->m_data.m_node_name];
-    Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
+    Entity *e = world()->getEntityByDBID(ev->m_data.m_ent_db_id);
     MapClientSession &sess = *e->m_client;
 
     sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name)));

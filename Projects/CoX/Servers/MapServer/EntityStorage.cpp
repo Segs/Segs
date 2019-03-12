@@ -144,11 +144,6 @@ void EntityManager::sendEntities(BitStream& bs, MapClientSession &target, bool /
     bs.StoreBits(1, 1); // empty entity. will finish the receiving loop
 }
 
-void EntityManager::InsertPlayer(Entity *ent)
-{
-    m_live_entlist.insert(ent);
-}
-
 Entity * EntityManager::CreatePlayer()
 {
     Entity *res = m_store.get();

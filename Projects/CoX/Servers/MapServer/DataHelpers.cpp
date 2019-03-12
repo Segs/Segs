@@ -71,89 +71,6 @@ void toggleLFG(Entity &e)
     }
 }
 
-// Poll EntityManager to return Entity by Name or IDX
-Entity * getEntity(MapClientSession *src, const QString &name)
-{
-    MapInstance *mi = src->m_current_map;
-    EntityManager &em(mi->m_entities);
-    QString errormsg;
-
-    // Iterate through all active entities and return entity by name
-    for (Entity* pEnt : em.m_live_entlist)
-    {
-        if(pEnt->name() == name)
-            return pEnt;
-    }
-
-    errormsg = "Entity " + name + " does not exist, or is not currently online.";
-    qWarning() << errormsg;
-    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
-    return nullptr;
-}
-
-Entity * getEntity(MapClientSession *src, uint32_t idx)
-{
-    MapInstance *mi = src->m_current_map;
-    EntityManager &em(mi->m_entities);
-    QString errormsg;
-
-    if(idx!=0) // Entity idx 0 is special case, so we can't return it
-    {
-        // Iterate through all active entities and return entity by idx
-        for (Entity* pEnt : em.m_live_entlist)
-        {
-            if(pEnt->m_idx == idx)
-                return pEnt;
-        }
-    }
-    errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
-    qWarning() << errormsg;
-    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
-    return nullptr;
-}
-
-Entity * getEntity(MapInstance* mi, uint32_t idx)
-{
-    EntityManager &em(mi->m_entities);
-    QString errormsg;
-
-    if(idx!=0) // Entity idx 0 is special case, so we can't return it
-    {
-        // Iterate through all active entities and return entity by idx
-        for (Entity* pEnt : em.m_live_entlist)
-        {
-            if(pEnt->m_idx == idx)
-                return pEnt;
-        }
-    }
-    errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
-    qWarning() << errormsg;
-    //sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
-    return nullptr;
-}
-
-/**
- * @brief Finds the Entity in the MapInstance
- * @param mi map instance
- * @param db_id db id of the entity to find.
- * @return pointer to the entity or nullptr if it does not exist.
- */
-Entity *getEntityByDBID(MapInstance *mi,uint32_t db_id)
-{
-    EntityManager &em(mi->m_entities);
-    QString        errormsg;
-
-    if(db_id == 0)
-        return nullptr;
-    // TODO: Iterate through all entities in Database and return entity by db_id
-    for (Entity *pEnt : em.m_live_entlist)
-    {
-        if(pEnt->m_db_id == db_id)
-            return pEnt;
-    }
-    return nullptr;
-}
-
 void sendMissionObjectiveTimer(MapClientSession &sess, QString &message, float time)
 {
     sess.addCommand<MissionObjectiveTimer>(message, time);
@@ -218,7 +135,9 @@ void positionTest(MapClientSession *tgt)
 bool isFriendOnline(Entity &src, uint32_t db_id)
 {
     // TODO: src is needed for mapclient
-    return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
+    assert(src.m_client);
+    assert(src.m_client->m_current_map);
+    return src.m_client->m_current_map->world()->getEntityByDBID(db_id) != nullptr;
 }
 
 void setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits)
@@ -280,7 +199,7 @@ QString createKioskMessage(Entity* player)
  */
 
 void getEmailHeaders(MapClientSession& sess)
-{   
+{
     if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
@@ -288,7 +207,7 @@ void getEmailHeaders(MapClientSession& sess)
     }
 
     HandlerLocator::getEmail_Handler()->putq(new EmailHeaderRequest(
-        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));    
+        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));
 }
 
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
@@ -657,7 +576,8 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         tgt_idx = getIdx(ent);
 
     // Get target and check that it's valid
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+
+    Entity *target_ent = ent.m_world->getEntity(tgt_idx);
     if(target_ent == nullptr)
     {
         qCDebug(logPowers) << "Failed to find target:" << tgt_idx << tgt_id;
@@ -670,7 +590,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     // Check Range -- TODO: refactor as checkRange() and checkTarget()
     // self targeting doesn't need these checks
     // we can check EntsAffected for StoredEntsEnum::CASTER here
-    if(powtpl.Range == float(0.0))
+    if(powtpl.Range == 0.0f)
     {
         target_ent = &ent;
         tgt_idx = ent.m_idx;
@@ -1007,7 +927,7 @@ void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int v
     Entity *e = world->CreateNpc(*npc_def, idx, variation);
     e->m_char->setName(npc_name);
     world->m_physics.forcePositionAndOrientation(*e, loc,ori);
-    
+
     qCDebug(logScripts()) << QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
@@ -1543,9 +1463,9 @@ void modifyInf(MapClientSession &sess, int amount)
     setInf(*sess.m_ent->m_char, inf);
 }
 
-void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message)
+void sendForceLogout(MapClientSession &cl,const QString &player_name,const QString &logout_message)
 {
-    Entity* e = getEntity(&cl, player_name);
+    Entity* e = cl.m_current_map->world()->getEntity(player_name);
 
     if(e == nullptr)
     {
@@ -1586,7 +1506,8 @@ void npcSendMessage(MapClientSession &cl, QString& channel, int entityIdx, QStri
 {
     QStringRef ch(&channel,0,1); //Get first char of channel name. Channel will default to local if unknown
     QString formated = ch + ' '+ message;
-    Entity *e = getEntity(&cl, entityIdx);
+    World *word=cl.m_current_map->world();
+    Entity *e = word->getEntity(entityIdx);
 
     if(e != nullptr)
         cl.m_current_map->add_chat_message(e, formated);
@@ -1596,7 +1517,8 @@ void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& m
 {
     QStringRef ch(&channel,0,1); //Get first char of channel name. Channel will default to local if unknown
     QString formated = ch + ' '+ message;
-    Entity *e = getEntity(&mi, entityIdx);
+    World *word=mi.world();
+    Entity *e = word->getEntity(entityIdx);
 
     if(e != nullptr)
         mi.add_chat_message(e, formated);
@@ -1699,7 +1621,7 @@ void addVictim(World &world, QString &name, glm::vec3 &loc, int variation, glm::
     }
 
     int idx = npc_store.npc_idx(npc_def);
-    
+
     Entity *e = world.CreateGeneric(*npc_def, idx, variation, EntType::CRITTER);
     e->m_char->setName(npc_name);
     e->m_is_hero = true;

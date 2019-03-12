@@ -1,4 +1,5 @@
 #include "MessageHelpers.h"
+#include "WorldSimulation.h"
 
 #include "DataHelpers.h"
 #include "EntityStorage.h"
@@ -215,10 +216,10 @@ void storeTeamList(BitStream &bs, Entity *self)
 
     bs.StoreBits(32,tm_leader_id); // must be db_id
     bs.StorePackedBits(1,tm_size);
-
+    World *world = self->m_client->m_current_map->world();
     for(const auto &member : self->m_team->m_team_members)
     {
-        Entity *tm_ent = getEntityByDBID(self->m_client->m_current_map, member.tm_idx);
+        Entity *tm_ent = world->getEntityByDBID(member.tm_idx);
 
         if(tm_ent == nullptr)
         {

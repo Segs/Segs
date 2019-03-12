@@ -47,6 +47,8 @@ class EntityManager
     using lEntity = std::set<Entity *,EntityIdxCompare>;
     Entity *        CreateCritter(const Parse_NPC &tpl, int idx, int variant, int level);
     Entity *        CreateGeneric(const Parse_NPC &tpl, int idx, int variant, EntType type);
+    Entity *        CreatePlayer();
+    void            removeEntityFromActiveList(Entity *ent);
 public:
     EntityStore     m_store;
     lEntity         m_live_entlist;
@@ -55,9 +57,6 @@ public:
     void            sendGlobalEntDebugInfo(BitStream &tgt) const;
     void            sendDeletes(BitStream &tgt, MapClientSession &client) const;
     void            sendEntities(BitStream &tgt, MapClientSession &target, bool is_incremental) const;
-    void            InsertPlayer(Entity *);
-    Entity *        CreatePlayer();
-    void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }
 

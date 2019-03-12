@@ -335,7 +335,7 @@ static Entity* getTargetEntity(MapClientSession& sess)
         return nullptr;
     }
 
-    return getEntity(&sess, idx);
+    return sess.m_current_map->world()->getEntity(idx);
 }
 
 static Entity* getEntityFromCommand(const QString &cmd, MapClientSession& sess)
@@ -346,7 +346,7 @@ static Entity* getEntityFromCommand(const QString &cmd, MapClientSession& sess)
         return getTargetEntity(sess);
     }
 
-    return getEntity(&sess, name);
+    return sess.m_current_map->world()->getEntity(name);
 }
 
 /************************************************************
@@ -800,7 +800,7 @@ void cmdHandler_SendFloatingNumbers(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    tgt = getEntity(&sess,name); // get Entity by name
+    tgt = sess.m_current_map->world()->getEntity(name); // get Entity by name
 
     if(tgt == nullptr)
     {
@@ -1057,7 +1057,7 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
     }
 
     QString name = parts[1].toString();
-    tgt = getEntity(&sess, name); // get Entity by name
+    tgt = sess.m_current_map->world()->getEntity(name); // get Entity by name
     if(tgt == nullptr)
     {
         QString msg = QString("FaceEntity target %1 cannot be found.").arg(name);
@@ -1248,7 +1248,7 @@ void cmdHandler_Revive(const QString &cmd, MapClientSession &sess)
     if(parts.size() > 2)
     {
         QString name = parts[2].toString();
-        tgt = getEntity(&sess, name); // get Entity by name
+        tgt = sess.m_current_map->world()->getEntity(name); // get Entity by name
         if(tgt == nullptr)
         {
             msg = QString("Revive target %1 cannot be found. Targeting Self.").arg(name);
@@ -1618,6 +1618,8 @@ void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
     Entity* const tgt = getEntityFromCommand(cmd, sess);
     if(tgt == nullptr)
     {
+        const QString msg = "Target entity does not exist";
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
         return;
     }
 
@@ -1656,6 +1658,8 @@ void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
     Entity* const tgt = getEntityFromCommand(cmd, sess);
     if(tgt == nullptr)
     {
+        const QString msg = "Target entity does not exist";
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
         return;
     }
 
@@ -1692,6 +1696,8 @@ void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
     Entity* const tgt = getEntityFromCommand(cmd, sess);
     if(tgt == nullptr)
     {
+        const QString msg = "Target entity does not exist";
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
         return;
     }
 
@@ -1713,7 +1719,7 @@ void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
     // the last friendly target you selected. We need to check target type
     // and set m_target_idx or m_assist_target_idx depending on result.
 
-    Entity *target_ent = getEntity(&sess, getTargetIdx(*sess.m_ent));
+    Entity *target_ent = sess.m_current_map->world()->getEntity(getTargetIdx(*sess.m_ent));
     if(target_ent == nullptr)
         return;
 
@@ -1736,6 +1742,9 @@ void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)
     Entity* const tgt = getEntityFromCommand(cmd, sess);
     if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
+        const QString msg = "Target entity does not exist";
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        qCDebug(logTeams).noquote() << msg;
         return;
     }
 
@@ -1776,7 +1785,7 @@ void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
     }
     else if(res==SidekickChangeStatus::SUCCESS)
     {
-        Entity *tgt = getEntityByDBID(sess.m_current_map, sidekick_id);
+        Entity *tgt = sess.m_current_map->world()->getEntityByDBID(sidekick_id);
         QString tgt_name = tgt ? tgt->name() : "Unknown Player";
         if(isSidekickMentor(*sess.m_ent))
         {
@@ -1821,6 +1830,9 @@ void cmdHandler_Friend(const QString &cmd, MapClientSession &sess)
     const Entity* const tgt = getEntityFromCommand(cmd, sess);
     if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
+        const QString msg = "Target entity does not exist";
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        qCDebug(logFriends).noquote() << msg;
         return;
     }
 
@@ -1907,7 +1919,12 @@ void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
 {
     Entity* const tgt = getEntityFromCommand(cmd, sess);
     if(tgt == nullptr || sess.m_ent == nullptr)
+    {
+        const QString msg = "Target entity does not exist";
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        qCDebug(logTrades).noquote() << msg;
         return;
+    }
 
     QString msg, tgt_msg;
     TradeSystemMessages result;
@@ -1984,7 +2001,7 @@ void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess)
     if(tgt_db_id != tgt_db_id_2)
         qWarning() << "TeamAccept db_ids do not match!";
 
-    Entity *from_ent = getEntity(&sess,from_name);
+    Entity *from_ent = sess.m_current_map->world()->getEntity(from_name);
     if(from_ent == nullptr)
         return;
 
@@ -2015,7 +2032,7 @@ void cmdHandler_TeamDecline(const QString &cmd, MapClientSession &sess)
     uint32_t tgt_db_id  = args.value(2).toUInt();
     QString tgt_name    = args.value(3);
 
-    Entity *from_ent = getEntity(&sess,from_name);
+    Entity *from_ent = sess.m_current_map->world()->getEntity(from_name);
     if(from_ent == nullptr)
         return;
 
@@ -2032,9 +2049,14 @@ void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)
 {
     uint32_t db_id  = sess.m_ent->m_char->m_char_data.m_sidekick.m_db_id;
     //TODO: Check that entity is in the same map ?
-    Entity *tgt     = getEntityByDBID(sess.m_current_map,db_id);
+    Entity *tgt     = sess.m_current_map->world()->getEntityByDBID(db_id);
     if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
+    {
+        const QString msg = "Sidekick is not on the same map";
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        qCDebug(logTeams).noquote() << msg;
         return;
+    }
 
     addSidekick(*sess.m_ent,*tgt);
     // Send message to each player
@@ -2127,9 +2149,13 @@ void cmdHandler_TradeAccept(const QString &cmd, MapClientSession &sess)
 
     // We need only the "from" name.
     const QString from_name = args.value(1);
-    Entity* const from_ent = getEntity(&sess, from_name);
+    Entity* const from_ent = sess.m_current_map->world()->getEntity(from_name);
     if(from_ent == nullptr)
     {
+        const QString msg = "Trader name does not match any entity in this map";
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+        qCDebug(logTrades).noquote() << msg;
+
         discardTrade(*sess.m_ent);
         return;
     }
@@ -2175,7 +2201,7 @@ void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
 
     // We need only the "from" name.
     const QString from_name  = args.value(1);
-    Entity* const from_ent = getEntity(&sess, from_name);
+    Entity* const from_ent = sess.m_current_map->world()->getEntity(from_name);
     if(from_ent == nullptr)
     {
         discardTrade(*sess.m_ent);
@@ -2268,7 +2294,7 @@ void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess)
     qCDebug(logSlashCommand) << "OpenStore...";
     openStore(sess, 0); // Default entity_idx as it doesn't change anything currently
 }
-  
+
 void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;

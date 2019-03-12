@@ -38,10 +38,6 @@ enum class ClientStates : uint8_t;
  * This file is intended to hold helper functions for methods
  * requiring access to MapClientSession or MapInstance
  */
-Entity * getEntity(MapClientSession *src, const QString &name);
-Entity * getEntity(MapClientSession *src, uint32_t idx);
-Entity * getEntity(MapInstance *mi, uint32_t idx);
-Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *sess);
 void    positionTest(MapClientSession *tgt);
 bool    isFriendOnline(Entity &sess, uint32_t db_id);
@@ -99,7 +95,7 @@ void sendClueList(MapClientSession &sess);
 void sendSouvenirList(MapClientSession &sess);
 void openStore(MapClientSession &sess, int entity_idx);
 void modifyInf(MapClientSession &sess, int amount);
-void sendForceLogout(MapClientSession &cl, QString &player_name, QString &logout_message);
+void sendForceLogout(MapClientSession &cl, const QString &player_name, const QString &logout_message);
 void sendLocation(MapClientSession &cl, VisitLocation location);
 void sendDeveloperConsoleOutput(MapClientSession &cl, QString &message);
 void sendClientConsoleOutput(MapClientSession &cl, QString &message);
