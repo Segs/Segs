@@ -324,6 +324,41 @@ void MapSceneGraph::spawn_npcs(MapInstance *instance)
         walkSceneNode(v->node, v->mat, creator);
 }
 
+struct SpawnPointLocator
+{
+    QMultiHash<QString, glm::mat4> *m_targets;
+    SpawnPointLocator(QMultiHash<QString, glm::mat4> *targets) :
+        m_targets(targets)
+    {}
+    bool operator()(SceneNode *n, const glm::mat4 &v)
+    {
+        if(!n->m_properties)
+            return true;
+
+        for (GroupProperty_Data &prop : *n->m_properties)
+        {
+            if(prop.propName == "SpawnLocation")
+            {
+                qCDebug(logPlayerSpawn) << "Spawner:" << prop.propValue << prop.propertyType;
+                m_targets->insert(prop.propValue, v);
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
+QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
+{
+    QMultiHash<QString, glm::mat4> res;
+    SpawnPointLocator locator(&res);
+    for(auto v : m_scene_graph->refs)
+        walkSceneNode(v->node, v->mat, locator);
+
+    return res;
+}
+
+
 struct MapXferLocator
 {
     QHash<QString, MapXferData> *m_targets;

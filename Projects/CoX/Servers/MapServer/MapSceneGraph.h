@@ -35,6 +35,7 @@ public:
     MapSceneGraph();
     ~MapSceneGraph();
     bool loadFromFile(const QString &mapname);
+    QMultiHash<QString, glm::mat4> getSpawnPoints() const;
     QHash<QString, MapXferData> get_map_transfers() const;
     void spawn_npcs(class MapInstance *instance);
     void build_combat_navigation_graph();
@@ -43,7 +44,6 @@ public:
     std::vector<SpawnerNode> m_persNodes;
     std::vector<SpawnerNode> m_carNodes;
     std::vector<SpawnerNode> m_npcNodes;
-    //void locateSpawners(class MapInstance *instance);
 };
 
 QString getCostumeFromName(const QString &n);
