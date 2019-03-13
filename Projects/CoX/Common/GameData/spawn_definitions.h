@@ -12,6 +12,16 @@
 #include <QtCore/QHash>
 #include <vector>
 
+class SpawnerNode
+{
+    public:
+    QString                     m_name;         // Nodes name
+    std::vector<SpawnerNode>    m_markers;      // Children nodes, typically spawn markers
+    glm::vec3                   m_position;     // definite world position
+    glm::vec3                   m_rotation;     // definite rotation
+};
+
+// Everything below this point obselete?
 class CritterSpawnPoint
 {
 public:

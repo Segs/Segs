@@ -25,6 +25,7 @@
 #include "Common/GameData/Contact.h"
 #include "Common/GameData/Entity.h"
 #include "Common/GameData/Contact.h"
+#include "Common/GameData/spawn_definitions.h"
 #include "Common/GameData/Task.h"
 #include "TimeHelpers.h"
 
@@ -71,8 +72,6 @@ void ScriptingEngine::register_GenericTypes()
     m_private->m_lua.new_usertype<MapSceneGraph>( "MapSceneGraph",
         "new", sol::no_constructor // The client links are not constructible from the script side.
     );
-
-
 
     m_private->m_lua.script("function ErrorHandler(msg) return \"Lua call error:\"..msg end");
     m_private->m_lua["printDebug"] = [](const char* msg)
@@ -346,19 +345,175 @@ void ScriptingEngine::register_GenericTypes()
 
 void ScriptingEngine::register_SpawnerTypes()
 {
-    m_private->m_lua.new_usertype<CritterSpawnPoint>("CritterSpawnPoint",
-        sol::constructors<CritterSpawnPoint>(),
-        "name", sol::property(&CritterSpawnPoint::getName, &CritterSpawnPoint::setName),
-        "isVictim", &CritterSpawnPoint::m_is_victim,
-        "position", &CritterSpawnPoint::m_relative_position,
-        "rotation", &CritterSpawnPoint::m_rotation);
+    // usertype for dealing with spawner groups
+    m_private->m_lua.new_usertype<SpawnerNode>("SpawnerNode",
+        sol::constructors<SpawnerNode>(),
+        "name", &SpawnerNode::m_name,
+        "markers", &SpawnerNode::m_markers,
+        "position", &SpawnerNode::m_position,
+        "rotation", &SpawnerNode::m_rotation);
 
-    m_private->m_lua.new_usertype<CritterSpawnLocations>("critterSpawnLocations",
-        sol::constructors<CritterSpawnLocations>(),
-        "nodeName", sol::property(&CritterSpawnLocations::getNodeName, &CritterSpawnLocations::setNodeName),
-        "allSpawnPoints", &CritterSpawnLocations::m_all_spawn_points,
-        "spawnProbability", &CritterSpawnLocations::m_spawn_probability,
-        "villain", &CritterSpawnLocations::m_villain_radius);
+    // Returns count of located spawners
+    m_private->m_lua["MapInstance"]["GetSpawnerCount"] = [this]()
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_csNodes;
+        uint sCount = sg->size();
+        return sCount;
+    };
+
+    // Returns count of children belonging to spawner at the specified index
+    m_private->m_lua["MapInstance"]["GetSpawnerChildCount"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_csNodes;
+        uint sChildCount = sg->at(index).m_markers.size();
+        return sChildCount;
+    };
+
+    // Returns the name of the spawner at the specified index
+    m_private->m_lua["MapInstance"]["GetSpawnerName"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_csNodes;
+        QString sName = sg->at(index).m_name;
+        return sName.toStdString();
+    };
+
+    // Returns the name of the child spawner at the specified indexes
+    m_private->m_lua["MapInstance"]["GetSpawnerChildName"] = [this](uint index, uint cindex)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_csNodes;
+        QString sName = sg->at(index).m_markers.at(cindex).m_name;
+        return sName.toStdString();
+    };
+
+    // Returns the position of the spawner at the specified index
+    m_private->m_lua["MapInstance"]["GetSpawnerPosition"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_csNodes;
+        glm::vec3 sPos = sg->at(index).m_position;
+        return sPos;
+    };
+
+    // Returns the position of the child spawner at the specified indexes
+    m_private->m_lua["MapInstance"]["GetSpawnerChildPosition"] = [this](uint index, uint cindex)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_csNodes;
+        glm::vec3 sPos = sg->at(index).m_markers.at(cindex).m_position;
+        return sPos;
+    };
+
+    // Returns the rotation of the spawner at the specified index
+    m_private->m_lua["MapInstance"]["GetSpawnerRotation"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_csNodes;
+        glm::vec3 sRot = sg->at(index).m_rotation;
+        return sRot;
+    };
+
+    // Returns the rotation of the child spawner at the specified indexex
+    m_private->m_lua["MapInstance"]["GetSpawnerChildRotation"] = [this](uint index, uint cindex)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_csNodes;
+        glm::vec3 sRot = sg->at(index).m_markers.at(cindex).m_rotation;
+        return sRot;
+    };
+
+    // Returns count of located persistents
+    m_private->m_lua["MapInstance"]["GetPersistentCount"] = [this]()
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_persNodes;
+        uint pCount = sg->size();
+        return pCount;
+    };
+
+    // Returns the name of the persistent NPC at the specified index
+    m_private->m_lua["MapInstance"]["GetPersistentName"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_persNodes;
+        QString pName = sg->at(index).m_name;
+        return pName.toStdString();
+    };
+
+    // Returns the position of the persistent NPC at the specified index
+    m_private->m_lua["MapInstance"]["GetPersistentPosition"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_persNodes;
+        glm::vec3 pPos = sg->at(index).m_position;
+        return pPos;
+    };
+
+    // Returns the rotation of the persistent NPC at the specified index
+    m_private->m_lua["MapInstance"]["GetPersistentRotation"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_persNodes;
+        glm::vec3 pRot = sg->at(index).m_rotation;
+        return pRot;
+    };
+
+    // Returns count of located car nodes
+    m_private->m_lua["MapInstance"]["GetCarCount"] = [this]()
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_carNodes;
+        uint cCount = sg->size();
+        return cCount;
+    };
+
+    // Returns the position of the car node at the specified index
+    m_private->m_lua["MapInstance"]["GetCarPosition"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_carNodes;
+        glm::vec3 cPos = sg->at(index).m_position;
+        return cPos;
+    };
+
+    // Returns the rotation of the car node at the specified index
+    m_private->m_lua["MapInstance"]["GetCarRotation"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_carNodes;
+        glm::vec3 cRot = sg->at(index).m_rotation;
+        return cRot;
+    };
+
+    // Returns count of located Civ/Npc nodes
+    m_private->m_lua["MapInstance"]["GetCivCount"] = [this]()
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_npcNodes;
+        uint nCount = sg->size();
+        return nCount;
+    };
+
+    // Returns the position of the Civ/NPC node at the specified index
+    m_private->m_lua["MapInstance"]["GetCivPosition"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_npcNodes;
+        glm::vec3 cPos = sg->at(index).m_position;
+        return cPos;
+    };
+
+    // Returns the rotation of the Civ/NPC node at the specified index
+    m_private->m_lua["MapInstance"]["GetCivRotation"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        auto sg = &mi->m_map_scenegraph->m_npcNodes;
+        glm::vec3 cRot = sg->at(index).m_rotation;
+        return cRot;
+    };
 
     m_private->m_lua["MapInstance"]["AddNpc"] = [this](const char* npc_def, glm::vec3 &loc, glm::vec3 &ori, int variation, const char* npc_name)
     {

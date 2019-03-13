@@ -143,15 +143,12 @@ void MapInstance::start(const QString &scenegraph_path)
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
-                m_all_spawners = m_map_scenegraph->getSpawnPoints();
                 m_map_transfers = m_map_scenegraph->get_map_transfers();
             }, "Loading original scene graph");
 
         TIMED_LOG({
-            m_map_scenegraph->spawn_npcs(this);
-            m_npc_generators.generate(this);
-            m_map_scenegraph->spawn_critters(this);
-            m_critter_generators.generate(this);
+            m_map_scenegraph->spawn_npcs(this);         // handles persistents, Spawndef, npc/vehicle encounters
+            m_npc_generators.generate(this);            // handles doors, monorails (?), trains(?)
             }, "Spawning npcs");
 
         // Load Lua Scripts for this Map Instance
@@ -191,14 +188,19 @@ void MapInstance::load_map_lua()
     qInfo() << "Loading custom scripts";
 
     QStringList script_paths = {
-        "scripts/global.lua", // global helper script
+        "scripts/global.lua",                   // global helper script
+        "scripts/Encounter_Manager.lua",        // used by all maps for encounter generation
+        "scripts/ES_OL_Functions.lua",          // used by all maps for object library reference functionality
+        "scripts/Global_NPC_Extras.lua",        // universal "faction table" for civilian NPCs, vehicles and later police drones
+        "scripts/Global_Persistents.lua",       // universal file for referencing persistent NPCs/model lookup
+        "scripts/spawners.lua",                 // handles exposed Scenegraph data for all Lua-side managed spawning activity
+
         // per zone scripts
         m_data_path+'/'+"contacts.lua",
         m_data_path+'/'+"locations.lua",
         m_data_path+'/'+"plaques.lua",
         m_data_path+'/'+"entities.lua",
         m_data_path+'/'+"missions.lua"
-
     };
 
     for(const QString &path : script_paths)
