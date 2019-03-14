@@ -1,3 +1,107 @@
+local FreedomCorp = {
+        "Freedom_Corp_Male_01",
+        "Freedom_Corp_Male_02",
+        "Freedom_Corp_Male_03",
+        "Freedom_Corp_Male_04",
+        "Freedom_Corp_Female_01",
+        "Freedom_Corp_Female_02",
+        "Freedom_Corp_Female_03",
+}
+
+local FreedomCorpStore = {
+        "Model_Freedom_Corp_Store_NPC_05",
+        "Model_Freedom_Corp_Store_NPC_07",
+        "Model_Freedom_Corp_Store_NPC_03",
+        "Model_Freedom_Corp_Store_NPC_04",
+        "Model_Freedom_Corp_Store_NPC_01",
+        "Model_Freedom_Corp_Store_NPC_02",
+        "Model_Freedom_Corp_Store_NPC_07",
+        "Model_Freedom_Corp_Store_NPC_08",        
+}
+
+local HeroCorp = {
+        "Hero_Corp_Male_01",
+        "Hero_Corp_Male_02",
+        "Hero_Corp_Male_03",
+        "Hero_Corp_Male_04",
+        "Hero_Corp_Male_05",
+        "Hero_Corp_Male_06",
+        "Hero_Corp_Male_07",
+        "Hero_Corp_Male_08",
+        "Hero_Corp_Male_09",
+        "Hero_Corp_Male_10",
+        "Hero_Corp_Female_01",
+        "Hero_Corp_Female_02",
+        "Hero_Corp_Female_03",
+        "Hero_Corp_Female_04",
+        "Hero_Corp_Female_05",
+        "Hero_Corp_Female_06",
+        "Hero_Corp_Female_07",
+        "Hero_Corp_Female_08",
+        "Hero_Corp_Female_09",
+        "Hero_Corp_Female_10",
+}
+
+local NaturalStore = {
+        "Model_Natural_Store_NPC_01",
+        "Model_Natural_Store_NPC_02",
+        "Model_Natural_Store_NPC_03",
+        "Model_Natural_Store_NPC_04",
+        "Model_Natural_Store_NPC_05",
+        "Model_Natural_Store_NPC_06",
+        "Model_Natural_Store_NPC_07",
+        "Model_Natural_Store_NPC_08",
+}
+
+local TechStore = {
+        "Model_Tech_Store_NPC_01",
+        "Model_Tech_Store_NPC_02",
+        "Model_Tech_Store_NPC_03",
+        "Model_Tech_Store_NPC_04",
+        "Model_Tech_Store_NPC_05",
+        "Model_Tech_Store_NPC_06",
+        "Model_Tech_Store_NPC_07",
+        "Model_Tech_Store_NPC_08",       
+}
+
+local ScienceStore = {
+        "Model_Science_Store_NPC_01",
+        "Model_Science_Store_NPC_02",
+        "Model_Science_Store_NPC_03",
+        "Model_Science_Store_NPC_04",
+        "Model_Science_Store_NPC_05",
+        "Model_Science_Store_NPC_06",
+        "Model_Science_Store_NPC_07",
+        "Model_Science_Store_NPC_08",        
+}
+
+local MutantStore = {
+        "Model_Mutant_Store_NPC_01",
+        "Model_Mutant_Store_NPC_02",
+        "Model_Mutant_Store_NPC_03",
+        "Model_Mutant_Store_NPC_04",
+        "Model_Mutant_Store_NPC_05",
+        "Model_Mutant_Store_NPC_06",
+        "Model_Mutant_Store_NPC_07",
+        "Model_Mutant_Store_NPC_08",  
+}
+
+local MagicStore = {
+        "Model_Magic_Store_NPC_01",
+        "Model_Magic_Store_NPC_02",
+        "Model_Magic_Store_NPC_03",
+        "Model_Magic_Store_NPC_04",
+        "Model_Magic_Store_NPC_05",
+        "Model_Magic_Store_NPC_06",
+        "Model_Magic_Store_NPC_07",
+        "Model_Magic_Store_NPC_08",       
+}
+
+local SecurityChiefs = {
+        "MaleNPC_230",
+        "MaleNPC_231",
+}
+
 local All_Persistents = {
         ["Sergeant_Hicks"] = "Model_SergeantHicks",
         ["Officer_Parks"] = "Model_OfficerParks",
@@ -5,13 +109,13 @@ local All_Persistents = {
         ["Detective_Wright"] = "Model_DetectiveWright",
         ["Officer_Flint"] = "Model_OfficerFlint",
         ["Lt_MacReady"] = "CSE_01",
-        ["Paragon_SWAT"] = "MaleNPC_230",
+        ["Paragon_SWAT"] = SecurityChiefs,
         ["Professor_Hoffman"] = "Model_ProfessorHoffman",
         ["Laurence_Mansfield"] = "Model_LaurenceMansfield",
-        ["Iris_Parker"] =	"Model_IrisParker",
+        ["Iris_Parker"] = "Model_IrisParker",
         ["Sarah_Juarez"] = "Model_SarahJuarez",
-        ["Security_Chief_01"] =	"MaleNPC_230",
-        ["Security_Chief_04"] =	"MaleNPC_231",
+        ["Security_Chief_01"] =	SecurityChiefs,
+        ["Security_Chief_04"] =	SecurityChiefs,
         ["City_Representative"] = "Model_CityRepresentative",
         ["SuperGroupRegistrar"] = "MaleNPC_01",
         ["Charlie"] = "Model_Charlie",
@@ -24,21 +128,21 @@ local All_Persistents = {
         ["Tony_Kord"] = "Model_TonyKord",
         ["Jose_Brogan"] = "Model_JoseBrogan",
         ["Sarah_Peters"] = "Model_SarahPeters",
-        ["FreedomCorp_City_01_01"] = "Model_Freedom_Corp_Store_NPC_01",
-        ["FreedomCorp_City_01_03"] = "Model_Freedom_Corp_Store_NPC_03",
-        ["FreedomCorp_City_01_01c"] = "Model_Freedom_Corp_Store_NPC_01",
-        ["FreedomCorp_City_01_01b"] = "Model_Freedom_Corp_Store_NPC_01",
+        ["FreedomCorp_City_01_01"] = FreedomCorp,
+        ["FreedomCorp_City_01_03"] = FreedomCorp,
+        ["FreedomCorp_City_01_01c"] = FreedomCorp,
+        ["FreedomCorp_City_01_01b"] = FreedomCorp,
         ["Henry_Peter_Wong"] = "Model_HenryWong",
         ["Linda_Summers"] = "Model_LindaSummers",
         ["Vic_Johansson"] = "Model_VicJohansson",
-        ["Security_Chief_03"] = "MaleNPC_230",
+        ["Security_Chief_03"] = SecurityChiefs,
         ["Genevieve_Sanders"] = "Model_GenevieveSanders",
         ["Juan_Jimenez"] = "Model_JuanJimenez",
         ["Ron_Hughes"] = "Model_RonHughes",
         ["Samuel_Pierce"] = "Model_SamuelPierce",
         ["Paula_Dempsey"] = "Model_PaulaDempsey",
         ["Blue_Steel"] = "Model_Blue_Steel",
-        ["Security_Chief_02"] = "MaleNPC_230",
+        ["Security_Chief_02"] = SecurityChiefs,
         ["Kip_Cantorum"] = "Model_KipCantorum",
         ["Charlie_Sparks"] = "Model_CharlieSparks",
         ["Maurice_Feldon"] = "Model_MauriceFeldon",
@@ -51,9 +155,9 @@ local All_Persistents = {
         ["Caitlin_Murray"] = "Model_CaitlinMurray",
         ["Rebecca_Brinell"] = "Model_RebeccaBrinell",
         ["Gregor_Richardson"] = "Model_GregorRichardson",
-        ["FreedomCorp_City_01_03b"] = "Model_Freedom_Corp_Store_NPC_03",
-        ["FreedomCorp_City_01_03c"] = "Model_Freedom_Corp_Store_NPC_03",
-        ["FreedomCorp_City_01_03"] = "Model_Freedom_Corp_Store_NPC_03",
+        ["FreedomCorp_City_01_03b"] = FreedomCorp,
+        ["FreedomCorp_City_01_03c"] = FreedomCorp,
+        ["FreedomCorp_City_01_03"] = FreedomCorp,
         ["Virginia_Hoffman"] = "Model_VirginiaHoffman",
         ["Fareed_Abdullah"] = "Model_FareedAbdullah",
         ["Carlos_Herrera"] = "Model_CarlosHerrera",
@@ -65,9 +169,9 @@ local All_Persistents = {
         ["Shelly_Knowles"] = "Model_ShellyKnowles",
         ["Olivia_Chung"] = "Model_OliviaChung",
         ["Valkyrie"] = "Model_Valkyrie",
-        ["Security_Chief_05"] = "MaleNPC_230",
-        ["Security_Chief_17"] = "MaleNPC_231",
-        ["Security_Chief_06"] = "MaleNPC_230",
+        ["Security_Chief_05"] = SecurityChiefs,
+        ["Security_Chief_17"] = SecurityChiefs,
+        ["Security_Chief_06"] = SecurityChiefs,
         ["Hugo_Redding"] = "Model_HugoRedding",
         ["Dr_Trevor_Seaborn"] = "Model_TrevorSeaborn",
         ["Alfonse_Rubel"] = "Model_AlfonseRubel",
@@ -102,11 +206,11 @@ local All_Persistents = {
         ["Sgt_Suzanne_Bernhard"] = "Model_SuzanneBernhard",
         ["Karen_Parker"] = "Model_KarenParker",
         ["Warren_Trudeau"] = "Model_WarrenTrudeau",
-        ["Security_Chief_17"] = "MaleNPC_230",
-        ["Security_Chief_07"] = "MaleNPC_231",
-        ["Security_Chief_08"] = "MaleNPC_230",
+        ["Security_Chief_17"] = SecurityChiefs,
+        ["Security_Chief_07"] = SecurityChiefs,
+        ["Security_Chief_08"] = SecurityChiefs,
         ["Mynx"] = "Model_Minx",
-        ["FreedomCorp_City_02_02b"] = "Model_Freedom_Corp_Store_NPC_02",
+        ["FreedomCorp_City_02_02b"] = FreedomCorp,
         ["Haley_Philips"] = "Model_HaleyPhilips",
         ["Sanjay_Chandra"] = "Model_SanjayChandra",
         ["Lorenzo_DiCosta"] = "Model_LorenzoDicosta",
@@ -142,8 +246,8 @@ local All_Persistents = {
         ["Marvin_Weintraub"] = "Model_MarvinWeintraub",
         ["Eliza_Thorpe"] = "Model_ElizaThorpe",
         ["Miriam_Bloechl"] = "Model_MiriamBloechl",
-        ["Security_Chief_09"] = "MaleNPC_230",
-        ["Security_Chief_10"] = "MaleNPC_231",
+        ["Security_Chief_09"] = SecurityChiefs,
+        ["Security_Chief_10"] = SecurityChiefs,
         ["Alexander"] = "",
         ["Luminary"] = "Model_Luminary",
         ["Sister_Psyche"] = "Model_Sister_Psyche",
@@ -169,16 +273,16 @@ local All_Persistents = {
         ["Collin_Larson"] = "Model_CollinLarson",
         ["Christine_Lansdale"] = "Model_ChristineLansdale",
         ["Ashwin_Lannister"] = "Model_AshwinLannister",
-        ["Security_Chief_11"] = "MaleNPC_230",
-        ["Security_Chief_12"] = "MaleNPC_231",
+        ["Security_Chief_11"] = SecurityChiefs,
+        ["Security_Chief_12"] = SecurityChiefs,
         ["Malaise"] = "Model_Malaise",
         ["IconEmployee2"] = "Model_IconEmployeeB",
         ["IconEmployee_City_03_02d"] = "Model_IconEmployeeI",
         ["IconEmployee_City_03_02e"] = "Model_IconEmployeeH",
         ["IconEmployee_City_03_02f"] = "Model_IconEmployeeG",
         ["Numina"] = "Model_Numina",
-        ["Security_Chief_15"] = "MaleNPC_230",
-        ["Security_Chief_16"] = "MaleNPC_231",
+        ["Security_Chief_15"] = SecurityChiefs,
+        ["Security_Chief_16"] = SecurityChiefs,
         ["Phillipa_Meraux"] = "Model_PhillipaMeraux",
         ["Peter_Stemitz"] = "Model_PeterStemitz",
         ["Tina_Chung"] = "Model_TinaChung",
@@ -202,8 +306,8 @@ local All_Persistents = {
         ["Madeleine_Casey"] = "Model_MadeleineCasey",
         ["Maren_MacGregor"] = "Model_MarenMacGregor",
         ["Manticore"] = "Model_Manticore",
-        ["Security_Chief_13"] = "MaleNPC_230",
-        ["Security_Chief_14"] = "MaleNPC_231",
+        ["Security_Chief_13"] = SecurityChiefs,
+        ["Security_Chief_14"] = SecurityChiefs,
         ["Allison_King"] = "Model_AllisonKing",
         ["Neal_Kendrick"] = "Model_NealKendrick",
         ["Lou_Pasterelli"] = "Model_LouPasterelli",
@@ -220,14 +324,46 @@ local All_Persistents = {
         ["Harvey_Maylor"] = "Model_HarveyMaylor",
         ["Crimson"] = "Model_Crimson",
         ["Ghost_Falcon"] = "Model_GhostFalcon",
+        ["Magic_City_02_01"] = MagicStore,
+        ["Magic_City_02_01b"] = MagicStore,
+        ["Magic_City_02_01c"] = MagicStore,
+        ["Mannequin_Mage_Male"] = "Mannequin_Mage_Male",        
+        ["Mannequin_Mage_Female"] = "Mannequin_Mage_Female",
+        ["Science_City_02_01"] = ScienceStore,
+        ["Science_City_02_01b"] = ScienceStore,
+        ["Science_City_02_01c"] = ScienceStore,
+        ["Mannequin_Sci_Male"] = "Mannequin_Sci_Male",        
+        ["Mannequin_Sci_Female"] = "Mannequin_Sci_Female",                
+        ["Natural_City_02_01"] = NaturalStore,
+        ["Natural_City_02_01b"] = NaturalStore,
+        ["Natural_City_02_01c"] = NaturalStore,
+        ["Mannequin_Nat_Male"] = "Mannequin_Nat_Male",        
+        ["Mannequin_Nat_Female"] = "Mannequin_Nat_Female",
+        ["Tech_City_02_01"] = TechStore,
+        ["Tech_City_02_01b"] = TechStore,
+        ["Tech_City_02_01c"] = TechStore,
+        ["Mannequin_Tech_Male"] = "Mannequin_Tech_Male",        
+        ["Mannequin_Tech_Female"] = "Mannequin_Tech_Female",          
+        ["Mutant_City_02_01"] = MutantStore,
+        ["Mutant_City_02_01b"] = MutantStore,
+        ["Mutant_City_02_01c"] = MutantStore,
+        ["Mannequin_Mut_Male"] = "Mannequin_Mut_Male",        
+        ["Mannequin_Mut_Female"] = "Mannequin_Mut_Female",                         
 }
 
 function GetPersistentModel(npc)
         local Model = All_Persistents[npc]
 
+        --handle variable model instances
+        if type(Model) == "table" then
+
+                Model = Model[math.random(1, #Model)]
+        end
+
+        --setup a default return in the case of a bad value
         if Model == nil or Model == "" then
                 return "ChessPawn"
         end
 
-        return Model    --default
+        return Model
 end

@@ -434,6 +434,22 @@ void ScriptingEngine::register_SpawnerTypes()
         return pCount;
     };
 
+    // Jumps to specified Persistent NPC and announces NPC's name
+    m_private->m_lua["MapInstance"]["JumpPersist"] = [this](uint index)
+    {
+        MapInstance *mi = m_private->m_lua["map"];
+        MapClientSession *cl = m_private->m_lua["client"];
+        auto sg = &mi->m_map_scenegraph->m_persNodes;
+        if(index < 1 || index > sg->size())
+        {
+            sendInfoMessage(static_cast<MessageChannel>(14), "Invalid persistent.", *cl);
+            return;
+        }
+        glm::vec3 pPos = sg->at(index-1).m_position;
+        forcePosition(*cl->m_ent, pPos);
+        sendInfoMessage(static_cast<MessageChannel>(14), sg->at(index-1).m_name, *cl);
+    };
+
     // Returns the name of the persistent NPC at the specified index
     m_private->m_lua["MapInstance"]["GetPersistentName"] = [this](uint index)
     {

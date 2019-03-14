@@ -143,18 +143,6 @@ QString getCostumeFromName(const QString &n)
     if(n.contains("BlimpGenerator", Qt::CaseInsensitive))
         return "Car_Blimp";
 
-    // Outbreak
-    if(n.contains("Paragon_SWAT", Qt::CaseInsensitive))
-        return getRandCostumeFromName("MaleNPC_230");
-    if(n.contains("Lt_MacReady", Qt::CaseInsensitive))
-        return "CSE_01";
-    if(n.contains("Security_Chief", Qt::CaseInsensitive))
-        return getRandCostumeFromName("Security_Chief");
-
-    // Atlas Park
-    if(n.contains("FreedomCorp", Qt::CaseInsensitive))
-        return getRandCostumeFromName("Freedom_Corp");
-
     // Most costumes are the object's name without spaces
     // and with Model_ prepended. Assume this as fallback
     QString result = n;
@@ -178,7 +166,6 @@ struct NpcCreator
     bool checkPersistent(SceneNode *n, const glm::mat4 &v)
     {
         assert(map_instance);
-        //bool has_npc = false;
 
         for (GroupProperty_Data &prop : *n->m_properties)
         {
@@ -278,9 +265,6 @@ struct NpcCreator
 
         if(!generators->m_generators.contains(generator_type))
         {
-            if(generator_type.contains("Cardrdr", Qt::CaseSensitive))
-                qCDebug(logNPCs) << "Adding generator for" << generator_type;
-
             // Get costume by generator name, includes overrides
             NpcGenerator npcgen = {generator_type, EntType::NPC, {}, {}};
 
@@ -339,7 +323,7 @@ struct SpawnPointLocator
         {
             if(prop.propName == "SpawnLocation")
             {
-                qCDebug(logPlayerSpawn) << "Spawner:" << prop.propValue << prop.propertyType;
+                //qCDebug(logPlayerSpawn) << "Spawner:" << prop.propValue << prop.propertyType;
                 m_targets->insert(prop.propValue, v);
                 return false;
             }
