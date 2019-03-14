@@ -293,7 +293,7 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
         // construct from euler angles
         glm::quat qPitch = glm::angleAxis(dat.rot.x, glm::vec3(-1, 0, 0));
         glm::quat qYaw =  glm::angleAxis(dat.rot.y, glm::vec3(0, 1, 0));
-        glm::quat qRoll = glm::angleAxis(dat.rot.z, glm::vec3(0, 0, 1));
+        glm::quat qRoll = glm::angleAxis(dat.rot.z, glm::vec3(0, 0, -1));
         glm::quat rotQuat = qYaw * qPitch * qRoll;
         child.m_pyr = dat.rot;
         child.m_matrix2 = glm::mat3(rotQuat);
