@@ -5,7 +5,6 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#pragma once
 #include "ScriptingEnginePrivate.h"
 #include <QtCore/QFileInfo> // for include support
 #include <QtCore/QDir>

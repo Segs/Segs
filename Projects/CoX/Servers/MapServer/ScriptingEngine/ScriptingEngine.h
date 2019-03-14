@@ -6,16 +6,39 @@
  */
 
 #pragma once
+
+#include "ScriptingEnginePrivate.h"
+#include "DataHelpers.h"
+#include "MessageHelpers.h"
+#include "MapSceneGraph.h"
+#include "GameData/playerdata_definitions.h"
+#include "Messages/Map/Browser.h"
+#include "Messages/Map/ChatMessage.h"
+#include "Messages/Map/FloatingDamage.h"
+#include "Messages/Map/StandardDialogCmd.h"
+#include "Messages/Map/StoresEvents.h"
+#include "Messages/Map/InfoMessageCmd.h"
+#include "Messages/Map/SendVisitLocation.h"
+#include "Common/GameData/Character.h"
+#include "Common/GameData/CharacterHelpers.h"
+#include "Common/GameData/Contact.h"
+#include "Common/GameData/Entity.h"
+#include "Common/GameData/Contact.h"
+#include "Common/GameData/Task.h"
+#include "TimeHelpers.h"
+
+#include <lua/lua.hpp>
+#include <sol2/sol.hpp>
 #include <memory>
 #include <string>
-#include "Common/GameData/Contact.h"
-#ifdef SCRIPTING_ENABLED
-    #include "ScriptingEnginePrivate.h"
-#endif
+#include <QtCore/QFileInfo> // for include support
+#include <QtCore/QDir>
+#include <QtCore/QDebug>
 
 class QString;
 struct MapClientSession;
 class MapInstance;
+
 
 class ScriptingEngine
 {
@@ -41,7 +64,10 @@ public:
     int runScript(MapClientSession *client,const QString &script_contents,const char *script_name="unnamed script");
     bool setIncludeDir(const QString &path);
 private:
-#ifdef SCRIPTING_ENABLED
     std::unique_ptr<ScriptingEnginePrivate> m_private;
-#endif
+
+    MapInstance *mi;
+    MapClientSession *cl;
+    Entity *e;
+
 };

@@ -209,6 +209,7 @@ void dumpLogging()
     output += "\n\t playerspawn: "  + QString::number(logPlayerSpawn().isDebugEnabled());
     output += "\n\t npcspawn: "     + QString::number(logNpcSpawn().isDebugEnabled());
     output += "\n\t mapevents: "    + QString::number(logMapEvents().isDebugEnabled());
+    output += "\n\t mapxfers: "     + QString::number(logMapXfers().isDebugEnabled());
     output += "\n\t slashcommand: " + QString::number(logSlashCommand().isDebugEnabled());
     output += "\n\t description: "  + QString::number(logDescription().isDebugEnabled());
     output += "\n\t friends: "      + QString::number(logFriends().isDebugEnabled());
