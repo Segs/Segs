@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -53,7 +53,7 @@ QByteArray PasswordHasher::generateSalt()
 QByteArray PasswordHasher::hashPassword(const QByteArray &pass, const QByteArray &salt)
 {
     QByteArray pass_array(pass+salt);
-    QByteArray hashed_pass_array = m_hasher.hash(pass_array, QCryptographicHash::Sha256);
+    QByteArray hashed_pass_array = QCryptographicHash::hash(pass_array, QCryptographicHash::Sha256);
     return hashed_pass_array;
 }
 

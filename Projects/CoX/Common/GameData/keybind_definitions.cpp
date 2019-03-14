@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -72,7 +72,7 @@ void KeybindSettings::setKeybind(QString &profile, KeyName &key, ModKeys &mods, 
     for(auto &p : m_keybind_profiles)
     {
         if(p.Name == profile)
-            p.KeybindArr.push_back({key,mods,keystring,command,is_secondary});
+            p.KeybindArr.push_back({key,mods,keystring.toLatin1(),command.toLatin1(),is_secondary});
     }
 
     qCDebug(logKeybinds) << "Setting keybind: " << profile << key << mods << keystring << command << is_secondary;

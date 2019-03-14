@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -47,11 +47,11 @@ namespace
         ok &=s->prepare_nested();
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("CostumePart")==0) {
+            if("CostumePart"==_name) {
                 target.m_CostumeParts.emplace_back();
                 ok &= loadFrom(s,target.m_CostumeParts.back());
             } else
@@ -89,14 +89,14 @@ namespace
         ok &=s->prepare_nested();
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("Power")==0) {
+            if("Power"==_name) {
                 target.m_Powers.emplace_back();
                 ok &= loadFrom(s,target.m_Powers.back());
-            } else if(_name.compare("Costume")==0) {
+            } else if("Costume"==_name) {
                 target.m_Costumes.emplace_back();
                 ok &= loadFrom(s,target.m_Costumes.back());
             } else
@@ -114,11 +114,11 @@ bool loadFrom(BinStore *s, AllNpcs_Data &target)
     bool ok = s->prepare_nested();
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("NPC")==0) {
+        if("NPC"==_name) {
             target.emplace_back();
             ok &= loadFrom(s,target.back());
         } else

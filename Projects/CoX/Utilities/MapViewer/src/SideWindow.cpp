@@ -13,6 +13,7 @@
 #include "SideWindow.h"
 #include "ui_SideWindow.h"
 
+#include "Common/Runtime/Prefab.h"
 #include "MapViewerApp.h"
 #include "CoHSceneConverter.h"
 #include "CoHModelLoader.h"
@@ -20,6 +21,7 @@
 #include "DataPathsDialog.h"
 
 #include "glm/gtc/quaternion.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 #include <QtWidgets/QFileDialog>
 #include <QtCore/QDebug>
@@ -76,7 +78,7 @@ void SideWindow::onCameraPositionChanged(float x, float y, float z)
                                .arg(z, 5, 'f', 2, QChar(' ')));
 }
 
-void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
+void SideWindow::onModelSelected(SEGS::SceneNode * /*n*/, SEGS::Model *m, Urho3D::Drawable *d)
 {
     if(!m)
     {
@@ -97,7 +99,7 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
     else
         ui->txtTrickName->setText("none");
     QString          matDesc;
-    ConvertedGeoSet *geoset = m->geoset;
+    SEGS::GeoSet *geoset = m->geoset;
     StaticModel *    model  = (StaticModel *)d;
     matDesc += "<p>Geometries:<b>";
     QSet<void *> dumpedmats;
@@ -123,7 +125,7 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
         matDesc += "</p>";
     }
     matDesc+="Textures in use<br>";
-    for(TextureBind tbind : m->texture_bind_info) {
+    for(SEGS::TextureBind tbind : m->texture_bind_info) {
         matDesc += "Tex:<b>"+ geoset->tex_names[tbind.tex_idx]+"</b><br>";
     }
     ui->matDescriptionTxt->setHtml(matDesc);
@@ -141,12 +143,15 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
         if(stored!=Variant::EMPTY)
         {
             CoHNode * cn = (CoHNode *)stored.GetVoidPtr();
-            if(cn->properties)
+            if(cn->m_properties)
             {
-                prop_text += QString("%1\n").arg(cn->name);
-                for(const GroupProperty_Data &prop : *cn->properties)
+                prop_text += QString("%1\n").arg(cn->m_name);
+                for(const GroupProperty_Data &prop : *cn->m_properties)
                 {
-                    prop_text += QString("%2 - %3 [%4]\n").arg(prop.propName).arg(prop.propValue).arg(prop.propertyType);
+                    prop_text += QString("%2 - %3 [%4]\n")
+                            .arg(QString(prop.propName))
+                            .arg(QString(prop.propValue))
+                            .arg(prop.propertyType);
                 }
             }
         }
@@ -158,26 +163,26 @@ void SideWindow::onModelSelected(CoHNode *n,CoHModel *m, Urho3D::Drawable *d)
 static QStandardItem * fillModel(CoHNode *node)
 {
     QStandardItem *root = new QStandardItem;
-    root->setData(node->name + ": Children("+QString::number(node->children.size())+")",Qt::DisplayRole);
+    root->setData(node->m_name + ": Children("+QString::number(node->m_children.size())+")",Qt::DisplayRole);
     root->setData(QVariant::fromValue((void*)node),Qt::UserRole);
     root->setData(QVariant::fromValue(false),Qt::UserRole+1); // not a root node
 
-    for(auto child : node->children)
+    for(const SEGS::SceneNodeChildTransform &child : node->m_children)
     {
-        QStandardItem *rowItem = fillModel(child.m_def);
+        QStandardItem *rowItem = fillModel(child.node);
         root->appendRow(rowItem);
     }
     return root;
 }
 
-void SideWindow::onScenegraphLoaded(const CoHSceneGraph & sc)
+void SideWindow::onScenegraphLoaded(const SEGS::SceneGraph & sc)
 {
     QStandardItemModel *m=new QStandardItemModel();
     QStandardItem *item = m->invisibleRootItem();
     for(auto ref : sc.refs)
     {
         QStandardItem *rowItem = new QStandardItem;
-        rowItem->setData(ref->node->name,Qt::DisplayRole);
+        rowItem->setData(ref->node->m_name,Qt::DisplayRole);
         rowItem->setData(QVariant::fromValue((void*)ref),Qt::UserRole);
         rowItem->setData(QVariant::fromValue(true),Qt::UserRole+1);
         item->appendRow(rowItem);
@@ -185,12 +190,12 @@ void SideWindow::onScenegraphLoaded(const CoHSceneGraph & sc)
     if(sc.refs.empty())  // no scene graph roots in the graph
     {
         QSet<void *> ischild;
-        for(auto node : sc.all_converted_defs)
+        for(SEGS::SceneNode *node : sc.all_converted_defs)
         {
-            for(auto chld : node->children)
-                ischild.insert(chld.m_def);
+            for(auto chld : node->m_children)
+                ischild.insert(chld.node);
         }
-        for(auto node : sc.all_converted_defs) {
+        for(SEGS::SceneNode *node : sc.all_converted_defs) {
             if(ischild.contains(node))
                 continue;
             QStandardItem *rowItem = fillModel(node);
@@ -219,7 +224,7 @@ void SideWindow::on_nodeList_clicked(const QModelIndex &index)
     QVariant v=m_model->data(index,Qt::UserRole);
     QVariant isroot=m_model->data(index,Qt::UserRole+1);
     CoHNode *n = (CoHNode *)v.value<void *>();
-    ConvertedRootNode *ref = (ConvertedRootNode *)v.value<void *>();
+    SEGS::RootNode *ref = (SEGS::RootNode *)v.value<void *>();
 
     if(isroot.isValid() && isroot.toBool())
         emit nodeSelected(ref->node);
@@ -247,10 +252,11 @@ void SideWindow::on_nodeList_clicked(const QModelIndex &index)
     CoHNode *parent_node = (CoHNode *)parentv.value<void *>();
     if(!parent_node)
         return;
-    for(auto chld : parent_node->children)
+    for(const SEGS::SceneNodeChildTransform &chld : parent_node->m_children)
     {
-        if(chld.m_def==n) {
-            Urho3D::Quaternion quat=chld.m_matrix.Rotation();
+        if(chld.node==n) {
+            glm::quat q = glm::quat_cast(chld.m_matrix2);
+            Urho3D::Quaternion quat(q.w,q.x,q.y,q.z);
             ui->pitchEdt->setText(QString::number(quat.PitchAngle()));
             ui->yawEdt->setText(QString::number(quat.YawAngle()));
             ui->rollEdt->setText(QString::number(quat.RollAngle()));
@@ -270,13 +276,13 @@ void SideWindow::on_nodeList_doubleClicked(const QModelIndex &index)
         {
             if(isroot.toBool())
             {
-                ConvertedRootNode *n = (ConvertedRootNode *)val;
+                SEGS::RootNode *n = (SEGS::RootNode *)val;
 
                 emit refDisplayRequest(n,ui->show_editor_nodes->isChecked());
             }
             else
             {
-                CoHNode *n = (CoHNode *)val;
+                SEGS::SceneNode *n = (SEGS::SceneNode *)val;
                 emit nodeDisplayRequest(n,isroot.value<bool>());
             }
             return;

@@ -8,7 +8,7 @@
 #pragma once
 
 #include "Servers/InternalEvents.h"
-#include "NetStructures/SuperGroup.h"
+#include "Common/GameData/SuperGroup.h"
 #include "GameData/chardata_serializers.h"
 namespace SEGSEvents
 {

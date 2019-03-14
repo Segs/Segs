@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -60,7 +60,7 @@ void AddNewUserDialog::capture_input()
     QString username = ui->usernameedit->text();
     QString password = ui->passedit->text();
     QString acclevel = ui->accleveledit->text();
-    if (username.toLatin1() == username && password.toLatin1() == password)
+    if(username.toLatin1() == username && password.toLatin1() == password)
     {
         emit sendInput(username,password,acclevel);
     }

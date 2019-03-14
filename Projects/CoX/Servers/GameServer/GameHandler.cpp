@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -16,10 +16,10 @@
 #include "GameData/chardata_serializers.h"
 #include "GameData/entitydata_serializers.h"
 #include "GameData/map_definitions.h"
-#include "GameEvents.h"
+#include "Messages/Game/GameEvents.h"
 #include "GameLink.h"
 #include "GameServer.h"
-#include "NetStructures/Character.h"
+#include "GameData/Character.h"
 #include "SEGSTimer.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
@@ -149,7 +149,9 @@ void GameHandler::on_account_data(GameAccountResponse *ev)
                                           ev->m_data.m_game_server_acc_id, ev->m_data.m_game_server_acc_id},0));
 
     m_session_store.add_to_active_sessions(&session);
-    CharacterSlots *slots_event=new CharacterSlots;
+    //Create character objects.
+
+    CharacterSlots *slots_event=new CharacterSlots();
     slots_event->m_data = std::move(ev->m_data);
     session.link()->putq(slots_event);
 }
@@ -197,9 +199,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     GameSession &session = m_session_store.session_from_event(ev);
     assert(session.m_game_account.valid());
 
-    ev->src()->putq(new CharacterResponse(this,ev->m_index,session.m_game_account));
-
-    // TODO: Do we update database here? issue #271
+    ev->src()->putq(new CharacterResponse(this,ev->m_index, session.m_game_account));
 }
 
 void GameHandler::on_idle(Idle */*ev*/)
@@ -246,7 +246,8 @@ void GameHandler::on_timeout(Timeout *ev)
     //   Disconnect given link.
 
     intptr_t timer_id = ev->timer_id();
-    switch (timer_id) {
+    switch (timer_id)
+    {
         case Link_Idle_Timer:
             on_check_links();
         break;
@@ -347,9 +348,9 @@ void GameHandler::on_delete_character(DeleteCharacter *ev)
     const GameAccountResponseCharacterData& selected_slot = session.m_game_account.get_character(ev->m_index);
 
     // check if character exists, and if it's name is the same as the one passed here
-    if (selected_slot.m_name == ev->m_char_name)
+    if(selected_slot.m_name == ev->m_char_name)
     {
-        game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, selected_slot.index},
+        game_db->putq(new RemoveCharacterRequest({session.m_game_account.m_game_server_acc_id, selected_slot.m_slot_idx},
                                                  lnk->session_token(), this));
     }
     else
@@ -373,7 +374,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
     GameSession &session = m_session_store.session_from_event(ev);
-    if (!session.m_game_account.valid())
+    if(!session.m_game_account.valid())
         return; // TODO:  return some kind of error.
 
     GameAccountResponseCharacterData *selected_slot = &session.m_game_account.get_character(ev->m_character_index);
@@ -420,6 +421,7 @@ void GameHandler::on_map_req(MapServerAddrRequest *ev)
                                    lnk->session_token(),this);
     qInfo("Telling map server to expect a client with character %s, %d\n", qPrintable(ev->m_char_name),
             ev->m_character_index);
+
     session.m_direction = GameSession::EXITING_TO_MAP;
     map_handler->putq(expect_client);
 }

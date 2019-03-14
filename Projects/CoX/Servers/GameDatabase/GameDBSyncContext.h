@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -58,7 +58,7 @@ struct FillEmailRecipientIdResponseData;
 ///
 class GameDbSyncContext
 {
-    static constexpr int required_db_version = 8;
+
     std::unique_ptr<QSqlDatabase> m_db;
     std::unique_ptr<QSqlQuery> m_prepared_char_update;
     std::unique_ptr<QSqlQuery> m_prepared_costume_update;
@@ -78,8 +78,6 @@ class GameDbSyncContext
     std::unique_ptr<QSqlQuery> m_prepared_supergroup_delete;
     std::unique_ptr<QSqlQuery> m_prepared_supergroup_select;
     std::unique_ptr<QSqlQuery> m_prepared_options_update;
-    std::unique_ptr<QSqlQuery> m_prepared_fill;
-    std::unique_ptr<QSqlQuery> m_prepared_costume_insert;
 
     // email stuff
     std::unique_ptr<QSqlQuery> m_prepared_email_insert;
@@ -125,5 +123,5 @@ public:
     bool fillEmailRecipientId(const SEGSEvents::FillEmailRecipientIdRequestData &data, SEGSEvents::FillEmailRecipientIdResponseData &result);
 
 private:
-    int64_t getDbVersion(QSqlDatabase &);
+    int getDatabaseVersion(QSqlDatabase &);
 };

@@ -8,6 +8,7 @@ CREATE TABLE `table_versions` (
 );
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 INSERT INTO table_versions VALUES(1,'db_version',8,'2018-10-02 02:56:43');
 =======
 INSERT INTO table_versions VALUES(1,'db_version',8,'2018-05-03 17:52:33');
@@ -20,6 +21,13 @@ INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
 INSERT INTO table_versions VALUES(7,'supergroups',2,'2018-10-02 02:56:43');
 =======
 INSERT INTO table_versions VALUES(7,'supergroups',1,'2018-05-03 12:56:43');
+=======
+INSERT INTO table_versions VALUES(1,'db_version',9,'2018-10-22 22:56:43');
+INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
+INSERT INTO table_versions VALUES(3,'accounts',1,'2017-05-03 12:56:03');
+INSERT INTO table_versions VALUES(4,'characters',9,'2018-10-22 22:56:43');
+INSERT INTO table_versions VALUES(7,'supergroups',2,'2018-10-22 22:56:43');
+>>>>>>> upstream/develop
 INSERT INTO table_versions VALUES(8,'emails',0,'2018-09-23 08:00:00');
 >>>>>>> upstream/develop
 
@@ -33,31 +41,23 @@ CREATE TABLE `characters` (
     `account_id`	INTEGER NOT NULL,
     `slot_index`	INTEGER NOT NULL DEFAULT 0,
     `char_name`	TEXT NOT NULL,
+    `costume_data` BLOB,
     `chardata`	BLOB,
     `entitydata`	BLOB,
-    `bodytype`	INTEGER NOT NULL DEFAULT 4,
-    `height` real NOT NULL DEFAULT 0.0,
-    `physique` real NOT NULL DEFAULT 0.0,
-    `supergroup_id`	INTEGER NOT NULL DEFAULT 0,
     `player_data` BLOB,
+    `supergroup_id`	INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY(`account_id`) REFERENCES accounts ( id ) ON DELETE CASCADE
-);
-
-CREATE TABLE `costume` (
-    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    `character_id` INTEGER NOT NULL,
-    `costume_index` INTEGER NOT NULL,
-    `skin_color` INTEGER NOT NULL,
-    `parts` blob,
-    FOREIGN KEY(`character_id`) REFERENCES characters ( id ) ON DELETE CASCADE,
-    UNIQUE (character_id, costume_index)
 );
 
 CREATE TABLE `supergroups` (
     `id`	INTEGER PRIMARY KEY AUTOINCREMENT,
     `sg_name`	TEXT NOT NULL,
     `sg_data`	BLOB,
+<<<<<<< HEAD
     `sg_members`    BLOB
+=======
+    `sg_members`	BLOB
+>>>>>>> upstream/develop
 );
 
 <<<<<<< HEAD

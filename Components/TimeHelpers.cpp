@@ -13,15 +13,10 @@
 #include "TimeHelpers.h"
 #include <QDateTime>
 
-QDateTime getPostgreEpoch()
-{
-    return QDateTime(QDate(2000,1,1));
-}
-
 int64_t getSecsSince2000Epoch()
 {
-    QDateTime base_date(QDate(2000,1,1));
-    return base_date.secsTo(QDateTime::currentDateTime());
+    QDateTime base_date(QDate(2000,1,1),QTime(0,0),Qt::UTC);
+    return base_date.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 //! @}

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -123,12 +123,12 @@ bool AuthServer::ReadConfigAndRestart()
  */
 bool AuthServer::Run()
 {
-    if (m_running)
+    if(m_running)
     {
         m_acceptor->close();
         m_running = false;
     }
-    if (m_acceptor->open(m_location) == -1)
+    if(m_acceptor->open(m_location) == -1)
     {
         qCritical() << "Auth server failed to accept connections on:" << m_location.get_host_addr();
         return false;
@@ -144,7 +144,7 @@ bool AuthServer::Run()
 void AuthServer::per_thread_shutdown()
 {
     ACE_Guard<ACE_Thread_Mutex> guard(m_mutex);
-    if (m_running)
+    if(m_running)
     {
         qWarning() << "Auth server listener is closing down";
         m_acceptor->close();

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -123,58 +123,27 @@ NetCommand * NetCommandManager::getCommandByName( const QString &name )
 
 void NetCommandManager::serializeto(BitStream &tgt, const vNetCommand &commands)
 {
-    if(commands.size()==0)
+    for(uint32_t i=0; i<commands.size(); i++)
     {
-        tgt.StorePackedBits(1,~0u);//0xFFFFFFFF
+        tgt.StorePackedBits(1,i+1);
+        tgt.StoreString(commands[i]->m_name);
     }
-    else
-    {
-        for(uint32_t i=0; i<commands.size(); i++)
-        {
-            tgt.StorePackedBits(1,i+1);
-            tgt.StoreString(commands[i]->m_name);
-        }
-    }
-//    tgt.StorePackedBits(1,(uint32_t)commands2.size());
-//    if(commands2.size()>0)
-//    {
-//        for(uint32_t i=0; i<(uint32_t)commands2.size(); i++)
-//        {
-//            tgt.StoreString(commands2[i]->m_name);
-//        }
-//    }
-    tgt.StorePackedBits(1,~0u);
+    tgt.StorePackedBits(1,~0u); // end of command list
 }
-
-void NetCommandManager::SendCommandShortcuts(MapClientSession *client, BitStream &tgt)
+void NetCommandManager::UpdateCommandShortcuts(MapClientSession *client, std::vector<QString> &commands)
 {
     static bool initialized=false;
     if(!initialized)  {
         initialized=true;
         FillCommands();
     }
-
-    switch(client->m_access_level)
+    // add shortcuts to client's shortcut map.
+    //TODO: differentiate the commands based on access level ?
+    commands.reserve(m_commands_level0.size());
+    for(size_t i=0, total = m_commands_level0.size(); i<total; ++i)
     {
-        case 0:
-        case 1:
-            // add shortcuts to client's shortcut map.
-            for(size_t i=0; i<m_commands_level0.size(); ++i)
-                client->AddShortcut(i,m_commands_level0[i]);
-            serializeto(tgt,m_commands_level0);
-            break;
-        case 9:
-            // add shortcuts to client's shortcut map.
-            for(size_t i=0; i<m_commands_level0.size(); ++i)
-                client->AddShortcut(i,m_commands_level0[i]);
-            serializeto(tgt,m_commands_level0);
-            break;
-        default:
-            // add shortcuts to client's shortcut map.
-            for (size_t i = 0; i<m_commands_level0.size(); ++i)
-                client->AddShortcut(i, m_commands_level0[i]);
-            serializeto(tgt, m_commands_level0);
+        client->AddShortcut(i,m_commands_level0[i]);
+        commands.push_back(m_commands_level0[i]->m_name);
     }
 }
-
 //! @}

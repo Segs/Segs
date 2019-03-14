@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -12,6 +12,8 @@
 #include <ace/Time_Value.h>
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
+#include <glm/vec3.hpp>
+#include <Common/GameData/map_definitions.h>
 
 namespace SEGSEvents
 {
@@ -27,7 +29,8 @@ enum Internal_EventTypes
     evClientConnectionRequest, //,4)
     evClientConnectionResponse, //,5)
     evReloadConfigMessage, //,6) // the server that receives this message will reload it's config file and restart with it
-    evClientMapXferMessage,
+    evClientMapXferMessage, //,7)
+    evMapSwapCollisionMessage, //,8)
     evGameServerStatusMessage = evReloadConfigMessage+4, //10)
     evMapServerStatusMessage,                     //11)
     // Message bus events
@@ -53,7 +56,9 @@ struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
     explicit name ## Message() :  InternalEvent(enum_name::ev ## name ## Message) {}\
-    name ## Message(name ## Data &&d,uint64_t token) :  InternalEvent(enum_name::ev ## name ## Message),m_data(d) { session_token(token); }\
+    name ## Message(name ## Data &&d,uint64_t token,EventProcessor *ev_src=nullptr) : \
+        InternalEvent(enum_name::ev ## name ## Message) , m_data(std::move(d)) {\
+        session_token(token); src(ev_src);}\
     EVENT_IMPL(name ## Message)\
 };
 
@@ -216,14 +221,28 @@ ONE_WAY_MESSAGE(Internal_EventTypes,ClientDisconnected)
 struct ClientMapXferData
 {
     uint64_t m_session;
-    uint8_t m_map_idx;
+    MapXferData m_map_data;
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_session, m_map_idx);
+        ar(m_session, m_map_data);
     }
 };
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(Internal_EventTypes,ClientMapXfer)
+
+struct MapSwapCollisionData
+{
+    uint32_t m_ent_db_id;
+    glm::vec3 m_pos;
+    QString m_node_name;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_ent_db_id, m_pos, m_node_name);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
 
 } // end of SEGSEvents namespace

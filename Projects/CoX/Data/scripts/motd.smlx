@@ -1,25 +1,30 @@
-<face heading><span align=center><color #ff0000>SEGS Release Notes v0.5.0</color></span></face><br>
-<color #ff0000><span align=center><b>NOTICE!</b></color></span>
+<br><face title><span align=center><color Red>SEGS Release Notes: v0.6.0 Outbreak</color></span></face><br>
+<face heading>
+<color Tomato><span align=center><b>NOTICE!</b></color></span>
 <br>
-<color #ff0000>By default, server synchoronization of player positions have been disabled</color>
-This change removes the rubber-banding effect, but positions of other players may not be updated properly
-<br>
+<color Tomato>By default, server synchoronization of player positions has been disabled. This change removes the rubber-banding effect, but positions of other players may not be updated properly. We are actively working on it.</color><br>
+</face><br>
 Welcome to the Super Entity Game Server! SEGS is under active development and is far from being feature complete.<br>
 <br>
-Please consider contributing to our success by reporting bugs on our github:<br>
-<face heading><span align=center><a href="http://github.com/Segs/">http://github.com/Segs/</a></span></face><br>
+Please consider contributing to our success by reporting bugs on our github and joining our community on Discord:<br>
+<face heading>
+<span align=center><a href="https://github.com/Segs/">https://github.com/Segs/</a> and <a href="https://discord.segs.io">https://discord.segs.io/</a></span>
+</face><br>
 <br>
-<color #ffff00>Latest Changes:</color><br>
-- Completely new SEGSAdmin GUI tool to faciliate simple server setup<br>
-- Periodic state saves to database for Character/Player data permanence. Player Spawns now work properly too!<br>
-- NPC Spawns! Static NPCs such as police drones and contacts now spawn from client files<br>
-- Generator NPCs! Server now properly recognizes NPC generators (spawners) from the client files. This is the first step towards spawning bad guys, cars, and pedestrians<br>
-- Deep changes to the server architecture enabling NPC spawns, and building a framework for future enhancements<br>
+<color SteelBlue>Latest Changes:</color><br>
+- Preliminary Power Support, including Powers, PowerTrays, Enhancements, Inspirations, Temp Powers, and Buffs. With some fun results!<br>
+- Trade between players! Contacts, Contact Lists, Door Anims<br>
+- Minor improvements to Movement. We're not done here, but we're making progress on fixing movement completely!<br>
+- Set Titles with <color BurlyWood><i>/title</i></color> and Leveling up using the new <color BurlyWood><i>/train</i></color> command<br>
+- A big step forward in Lua scripting for the server. Make sure to download the community scripts on the segs-community GitHub repo.<br>
+- Further work on Dialogs (browser), Teams, FriendsLists, Emails, SEGSAdmin, LFG, AFK, Respawns<br>
 <br>
-<color #ff9900>Useful Slash Commands:</color><br>
-<color #ffCC99><i>/stuck</i></color> - resets your character to the starting location in current map<br>
-<color #ffCC99><i>/moveto x y z</i></color> - move character to the x y z coordinates<br>
-<color #ffCC99><i>/fly</i></color> - toggles the "flying" flag for your character<br>
-<color #ffCC99><i>/cmdlist</i></color> - list all available slash commands<br>
-<br><br>
-<a href={OK}>Click OK below to close this box and begin playing!</a><br>
+<color SandyBrown>Useful Slash Commands:</color><br>
+<color BurlyWood><i>/stuck</i></color>  - resets your character to the starting location in current map<br>
+<color BurlyWood><i>/moveto x y z</i></color>  - move character to the x y z coordinates<br>
+<color BurlyWood><i>/fly</i></color>  - toggles the "flying" flag for your character<br>
+<color BurlyWood><i>/mapmenu</i></color>  - Shows a menu that allows you to change maps (zones)<br>
+<color BurlyWood><i>/train</i></color>  - train up to the next level! Make sure you have enough XP<br>
+<color BurlyWood><i>/cmdlist</i></color>  - list all available slash commands<br>
+<br>
+<span align=center><a href={OK}>Click OK below to close this box and begin playing!</a></span>

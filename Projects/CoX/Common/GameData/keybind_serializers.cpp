@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -59,7 +59,7 @@ namespace
         ok &= s->read(target.Command);
         ok &= s->prepare_nested(); // will update the file size left
 
-        QStringList combo = target.KeyString.split("+");
+        QList<QByteArray> combo = target.KeyString.split('+');
 
         if(combo.size() > 1)
         {
@@ -87,11 +87,11 @@ namespace
 
         qCDebug(logKeybinds) << "Loading Profile:" << target.DisplayName << target.Name;
 
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("KeyBind")==0) {
+            if("KeyBind"==_name) {
                 target.KeybindArr.emplace_back();
                 ok &= loadFrom(s,target.KeybindArr.back());
             } else
@@ -131,11 +131,11 @@ namespace
         ok &= s->prepare_nested(); // will update the file size left
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("Command")==0) {
+            if("Command"==_name) {
                 target.commands.emplace_back();
                 ok &= loadFrom(s,target.commands.back());
             } else
@@ -154,11 +154,11 @@ bool loadFrom(BinStore * s, Parse_AllKeyProfiles & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("KeyProfile")==0) {
+        if("KeyProfile"==_name) {
             target.emplace_back();
             ok &= loadFrom(s,target.back());
         } else
@@ -176,11 +176,11 @@ bool loadFrom(BinStore * s, Parse_AllCommandCategories & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("CommandCategory")==0) {
+        if("CommandCategory"==_name) {
             target.emplace_back();
             ok &= loadFrom(s,target.back());
         } else

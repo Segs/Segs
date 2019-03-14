@@ -8,8 +8,9 @@
 
 namespace SEGSEvents
 {
-struct PlayerUpdateMessage;
 struct CharacterUpdateMessage;
+struct PlayerUpdateMessage;
+struct CostumeUpdateMessage;
 struct SuperGroupUpdateMessage;
 }
 
@@ -18,8 +19,9 @@ class GameDBSyncService : public EventProcessor
 private:
     GameDBSyncHandler* m_db_handler;
 
-    void on_player_update(SEGSEvents::PlayerUpdateMessage* msg);
     void on_character_update(SEGSEvents::CharacterUpdateMessage* msg);
+    void on_player_update(SEGSEvents::PlayerUpdateMessage* msg);
+    void on_costume_update(SEGSEvents::CostumeUpdateMessage* msg);
     void on_supergroup_update(SEGSEvents::SuperGroupUpdateMessage* msg);
 
 public:

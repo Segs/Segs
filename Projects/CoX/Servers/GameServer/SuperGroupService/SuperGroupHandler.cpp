@@ -7,7 +7,7 @@
 
 #include "SuperGroupHandler.h"
 #include "SuperGroupHandlerEvents.h"
-#include "Servers/GameServer/GameEvents.h"
+#include "Common/GameData/SuperGroup.h"
 #include "Common/Servers/HandlerLocator.h"
 
 using namespace SEGSEvents;
@@ -47,10 +47,10 @@ void send_update_sg_roster(SuperGroupHandlerState &state, uint32_t sg_db_id)
     {
         const SuperGroupInfo &entry(state.m_sg_info_map[sg_db_id]);
         EventProcessor *tgt = HandlerLocator::getMapInstance_Handler(
-                    entry.m_map_info.server_id,
-                    entry.m_map_info.instance_id);
+                    entry.m_sg_session_data.server_id,
+                    entry.m_sg_session_data.instance_id);
 
-        tgt->putq(new SendSGRosterMessage({entry.m_map_info.session_token, entry.m_sg_members},0));
+        tgt->putq(new SendSGRosterMessage({entry.m_sg_session_data.session_token, entry.m_sg_members},0));
     }
 }
 /*
@@ -98,15 +98,15 @@ void on_client_connected(SuperGroupHandlerState &state, SGMemberConnectedMessage
     uint64_t session_token = msg->m_data.m_session;
     uint32_t server_id = msg->m_data.m_server_id;
     uint32_t instance_id = msg->m_data.m_sub_server_id;
-    state.m_sg_info_map[char_db_id].m_map_info = MapInfo{session_token, server_id, instance_id};
+    state.m_sg_info_map[char_db_id].m_sg_session_data = SuperGroupSessionData{session_token, server_id, instance_id};
 
     //Update this player/character's online status
     state.m_sg_info_map[char_db_id].m_is_online = true;
 
     //This might need to go into the for loop below?  Should work either way I think
     EventProcessor *inst_tgt = HandlerLocator::getMapInstance_Handler(
-                state.m_sg_info_map[char_db_id].m_map_info.server_id,
-                state.m_sg_info_map[char_db_id].m_map_info.instance_id);
+                state.m_sg_info_map[char_db_id].m_sg_session_data.server_id,
+                state.m_sg_info_map[char_db_id].m_sg_session_data.instance_id);
 
     //Iterate over set of all people who have added this character
     for(auto const& val : state.m_sg_info_map[char_db_id].m_sg_idxs)
@@ -115,8 +115,8 @@ void on_client_connected(SuperGroupHandlerState &state, SGMemberConnectedMessage
         if(state.is_online(val)){
             uint32_t friend_id = val;
             refresh_sg_roster(state,val);
-            inst_tgt->putq(new SendNotifySGMembersMessage({state.m_sg_info_map[char_db_id].m_map_info.session_token,
-                                                        state.m_sg_info_map[friend_id].m_map_info.session_token},0));
+            inst_tgt->putq(new SendNotifySGMembersMessage({state.m_sg_info_map[char_db_id].m_sg_session_data.session_token,
+                                                        state.m_sg_info_map[friend_id].m_sg_session_data.session_token},0));
         }
     }
 

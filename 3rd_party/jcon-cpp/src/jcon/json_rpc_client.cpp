@@ -4,7 +4,8 @@
 #include "jcon_assert.h"
 #include "string_util.h"
 
-#include <QSignalSpy>
+//#include <QSignalSpy>
+#include <QCoreApplication>
 #include <QUuid>
 
 #include <memory>
@@ -179,7 +180,10 @@ QJsonObject JsonRpcClient::createRequestJsonObject(const QString& method,
 
 QJsonObject JsonRpcClient::createNotificationJsonObject(const QString& method)
 {
-    return createRequestJsonObject(method, "null");
+    return QJsonObject {
+        { "jsonrpc", "2.0" },
+        { "method", method }
+    };
 }
 
 bool JsonRpcClient::connectToServer(const QString& host, int port)

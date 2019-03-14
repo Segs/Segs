@@ -2,7 +2,7 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/MessageBus.h"
 #include "Common/Servers/InternalEvents.h"
-#include "GameDBSyncEvents.h"
+#include "Messages/GameDatabase/GameDBSyncEvents.h"
 
 using namespace SEGSEvents;
 
@@ -28,6 +28,8 @@ void GameDBSyncService::dispatch(Event *ev)
         on_character_update(static_cast<CharacterUpdateMessage *>(ev)); break;
     case evPlayerUpdateMessage:
         on_player_update(static_cast<PlayerUpdateMessage *>(ev)); break;
+    case evCostumeUpdateMessage:
+        on_costume_update(static_cast<CostumeUpdateMessage *>(ev)); break;
     case evSuperGroupUpdateMessage:
         on_supergroup_update(static_cast<SuperGroupUpdateMessage *>(ev)); break;
     default: assert(false); break;
@@ -43,6 +45,7 @@ void GameDBSyncService::serialize_to(std::ostream &/*is*/)
 {
     assert(false);
 }
+
 void GameDBSyncService::set_db_handler(const uint8_t id)
 {
     m_db_handler = static_cast<GameDBSyncHandler*>(
@@ -50,17 +53,6 @@ void GameDBSyncService::set_db_handler(const uint8_t id)
 }
 
 // they are quite literally the 'postman' between MapInstance and DbHandler :)
-void GameDBSyncService::on_player_update(PlayerUpdateMessage * msg)
-{
-    PlayerUpdateMessage* newMsg = new PlayerUpdateMessage(
-    {
-                    msg->m_data.m_id,
-                    msg->m_data.m_player_data
-                }, uint64_t(1));
-
-    m_db_handler->putq(newMsg);
-}
-
 void GameDBSyncService::on_character_update(CharacterUpdateMessage* msg)
 {
     CharacterUpdateMessage* newMsg = new CharacterUpdateMessage(
@@ -68,16 +60,36 @@ void GameDBSyncService::on_character_update(CharacterUpdateMessage* msg)
                     msg->m_data.m_char_name,
 
                     // Cerealized blobs
+                    msg->m_data.m_costume_data,
                     msg->m_data.m_char_data,
                     msg->m_data.m_entity_data,
                     msg->m_data.m_player_data,
 
                     // plain values
-                    msg->m_data.m_bodytype,
-                    msg->m_data.m_height,
-                    msg->m_data.m_physique,
                     msg->m_data.m_supergroup_id,
                     msg->m_data.m_id
+    }, uint64_t(1));
+
+    m_db_handler->putq(newMsg);
+}
+
+void GameDBSyncService::on_player_update(PlayerUpdateMessage * msg)
+{
+    PlayerUpdateMessage* newMsg = new PlayerUpdateMessage(
+    {
+                    msg->m_data.m_id,
+                    msg->m_data.m_player_data
+    }, uint64_t(1));
+
+    m_db_handler->putq(newMsg);
+}
+
+void GameDBSyncService::on_costume_update(CostumeUpdateMessage * msg)
+{
+    CostumeUpdateMessage* newMsg = new CostumeUpdateMessage(
+    {
+                    msg->m_data.m_id,
+                    msg->m_data.m_costume_data
     }, uint64_t(1));
 
     m_db_handler->putq(newMsg);
@@ -91,7 +103,7 @@ void GameDBSyncService::on_supergroup_update(SuperGroupUpdateMessage * msg)
                     msg->m_data.m_sg_name,
                     msg->m_data.m_serialized_sg_data,
                     msg->m_data.m_serialized_sg_members
-                }, uint64_t(1));
+    }, uint64_t(1));
 
     m_db_handler->putq(newMsg);
 }

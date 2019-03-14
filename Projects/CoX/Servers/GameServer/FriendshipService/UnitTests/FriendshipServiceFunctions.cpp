@@ -1,7 +1,7 @@
 #include "Servers/HandlerLocator.h"
 
 #include "FriendHandler.h"
-#include "FriendHandlerEvents.h"
+#include "Messages/FriendshipService/FriendHandlerEvents.h"
 #include "InternalEvents.h"
 #include "MessageBus.h"
 #include "SEGSEventFactory.h"
@@ -24,7 +24,7 @@ protected:
     void serialize_to(std::ostream &) override { QVERIFY(false); }
 };
 
-extern void register_FriendHandlerEvents();
+extern void register_FriendshipServiceEvents();
 void        sendMessages(EventSrc *tgt, std::initializer_list<Event *> msgs)
 {
     for (auto *msg : msgs)
@@ -66,7 +66,7 @@ class FriendshipServiceFunctions : public QObject
 private slots:
     void initTestCase()
     {
-        register_FriendHandlerEvents();
+        register_FriendshipServiceEvents();
         HandlerLocator::setMessageBus(&m_message_bus);
         // createMockGameHandler();
         mock_char_id_A     = createMockChar();

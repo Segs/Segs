@@ -10,7 +10,7 @@
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
 #include "Common/Servers/ClientManager.h"
-#include "NetStructures/SuperGroup.h"
+#include "Common/GameData/SuperGroup.h"
 #include <unordered_map>
 #include <set>
 #include <vector>
@@ -24,7 +24,7 @@ struct SGMemberAddedMessage;
 struct SGMemberRemovedMessage;
 } // end of namespace SEGSEvents
 
-struct MapInfo
+struct SuperGroupSessionData
 {
     uint64_t session_token;
     uint32_t server_id; //this is the owner ID aka game server id
@@ -35,7 +35,7 @@ struct SuperGroupInfo
 {
     std::set<uint32_t> m_sg_idxs; //a set of sg_db_ids
     vSuperGroupRoster m_sg_members;
-    MapInfo m_map_info;
+    SuperGroupSessionData m_sg_session_data;
     bool m_is_online;
 };
 

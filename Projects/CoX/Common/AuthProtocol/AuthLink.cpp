@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -16,6 +16,7 @@
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"
 #include "AuthProtocol/AuthPacketCodec.h"
+#include "Auth/AuthEvents.h"
 
 #include <ace/Reactor.h>
 
@@ -34,7 +35,7 @@ struct AuthLinkState
     int                     m_protocol_version=-1;
 };
 namespace  {
-static void encode_buffer(AuthLinkState &state,const AuthLinkEvent *ev)
+void encode_buffer(AuthLinkState &state,const AuthLinkEvent *ev)
 {
     assert(ev);
     if(ev==nullptr)
@@ -65,7 +66,7 @@ static void encode_buffer(AuthLinkState &state,const AuthLinkEvent *ev)
   \arg opcode packet opcode byte
   \arg direction if this is false then the packet is from server to client, other way around otherwise
 */
-static eAuthPacketType OpcodeToType(AuthLinkType link_type,uint8_t opcode )
+eAuthPacketType OpcodeToType(AuthLinkType link_type,uint8_t opcode )
 {
     // packets coming in from server to client
     if(link_type==AuthLinkType::Client)
@@ -173,13 +174,13 @@ void set_protocol_version(AuthLinkState &m_state, int vers )
 bool send_buffer(ACE_SOCK_Stream &m_peer,AuthLinkState &m_state)
 {
     ssize_t send_cnt = m_peer.send(m_state.m_unsent_bytes_storage.read_ptr(), m_state.m_unsent_bytes_storage.GetReadableDataSize());
-    if (send_cnt == -1)
+    if(send_cnt == -1)
         ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
     else
     {
         m_state.m_unsent_bytes_storage.PopFront(send_cnt); // this many bytes were sent
     }
-    if (m_state.m_unsent_bytes_storage.GetReadableDataSize() > 0) // and still there is something left
+    if(m_state.m_unsent_bytes_storage.GetReadableDataSize() > 0) // and still there is something left
     {
         return false; // couldn't send all, either send failed, or we send only a part of the buffer, either way retry
     }
@@ -231,12 +232,12 @@ void AuthLink::set_link_stage(AuthLink::eLinkStage stage)
 int AuthLink::open (void *p)
 {
     m_state->m_connection_stage=AuthLink::INITIAL;
-    if (this->m_peer.get_remote_addr (m_peer_addr) == -1)
+    if(this->m_peer.get_remote_addr (m_peer_addr) == -1)
         ACE_ERROR_RETURN ((LM_ERROR,ACE_TEXT ("%p\n"),ACE_TEXT ("get_remote_addr")),-1);
-    if (super::open (p) == -1)
+    if(super::open (p) == -1)
         return -1;
     // Register this as a READ handler, this way will be notified/waken up when new bytes are available
-    if (this->reactor () && this->reactor ()->register_handler(this,ACE_Event_Handler::READ_MASK) == -1)
+    if(this->reactor () && this->reactor ()->register_handler(this,ACE_Event_Handler::READ_MASK) == -1)
         ACE_ERROR_RETURN ((LM_ERROR,ACE_TEXT ("%p\n"),ACE_TEXT ("unable to register client handler")),-1);
     // m_notifier will tell reactor to wake us when new packet is ready for sending
     m_notifier.reactor(reactor());                      // notify reactor with write event,
@@ -254,7 +255,7 @@ int AuthLink::handle_input( ACE_HANDLE )
     const size_t INPUT_SIZE = 4096;
     char buffer[INPUT_SIZE];
     ssize_t recv_cnt;
-    if ((recv_cnt = m_peer.recv(buffer, sizeof(buffer))) <= 0)
+    if((recv_cnt = m_peer.recv(buffer, sizeof(buffer))) <= 0)
     {
         ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Connection closed\n")));
         return -1;
@@ -307,7 +308,7 @@ int AuthLink::handle_output( ACE_HANDLE /*= ACE_INVALID_HANDLE*/ )
             break;
         }
     }
-    if (msg_queue()->is_empty ()) // we don't want to be woken up
+    if(msg_queue()->is_empty ()) // we don't want to be woken up
         reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
     else // unless there is something to send still
         reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
@@ -321,7 +322,7 @@ int AuthLink::handle_close( ACE_HANDLE handle,ACE_Reactor_Mask close_mask )
 {
     // client handle was closed, posting disconnect event with higher priority
     m_target->msg_queue()->enqueue_prio(new Disconnect(session_token()),nullptr,100);
-    if (close_mask == ACE_Event_Handler::WRITE_MASK)
+    if(close_mask == ACE_Event_Handler::WRITE_MASK)
         return 0;
     return super::handle_close (handle, close_mask);
 

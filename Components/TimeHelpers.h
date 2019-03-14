@@ -11,5 +11,4 @@
 
 class QDateTime;
 
-extern QDateTime getPostgreEpoch();
 extern int64_t getSecsSince2000Epoch();

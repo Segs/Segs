@@ -68,11 +68,11 @@ bool loadFrom(BinStore * s, FxBehavior & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("StAnim")==0) {
+        if("StAnim"==_name) {
             target.m_stAnim.emplace_back();
             ok &= loadFrom(s,target.m_stAnim.back());
         } else
@@ -135,11 +135,11 @@ bool loadFrom(BinStore * s, FxGeoEntry_Event & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Geom")==0) {
+        if("Geom"==_name) {
             target.m_Geom.emplace_back();
             ok &= s->read(target.m_Geom.back());
         } else if(_name.startsWith("Part")) {
@@ -149,7 +149,7 @@ bool loadFrom(BinStore * s, FxGeoEntry_Event & target)
             target.m_Splats.emplace_back();
             ok &= loadFrom(s,target.m_Splats.back());
         } else if(_name.startsWith("Sound")) {
-            std::vector<QString> snd_entry;
+            std::vector<QByteArray> snd_entry;
             ok &= s->read(snd_entry);
             ok &= snd_entry.size()>1;
             FxSoundData true_data;
@@ -189,14 +189,14 @@ bool loadFrom(BinStore * s, FxInfo_Condition & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Event")==0) {
+        if("Event"==_name) {
             target.m_Event.emplace_back();
             ok &= loadFrom(s,target.m_Event.back());
-        } else if(_name.compare("TriggerBits")==0) {
+        } else if("TriggerBits"==_name) {
             target.str_TriggerBits.emplace_back();
             ok &= s->read(target.str_TriggerBits.back());
         } else
@@ -219,14 +219,14 @@ bool loadFrom(BinStore * s, FxInfo & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Input")==0) {
+        if("Input"==_name) {
             target.m_Inputs.emplace_back();
             ok &= loadFrom(s,target.m_Inputs.back());
-        } else if(_name.compare("Condition")==0) {
+        } else if("Condition"==_name) {
             target.m_Conditions.emplace_back();
             ok &= loadFrom(s,target.m_Conditions.back());
         } else
@@ -246,11 +246,11 @@ bool loadFrom(BinStore * s, Fx_AllInfos & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("FxInfo")==0) {
+        if("FxInfo"==_name) {
             target.emplace_back();
             ok &= loadFrom(s,target.back());
         } else
@@ -343,21 +343,21 @@ bool LoadFxInfoData(const QString &fname, Fx_AllInfos &infos)
 {
     BinStore binfile;
 
-    if (fname.contains(".crl"))
+    if(fname.contains(".crl"))
     {
-        if (!loadFrom(fname, infos))
+        if(!loadFrom(fname, infos))
         {
             qCritical() << "Failed to serialize data from crl:" << fname;
             return false;
         }
         return true;
     }
-    if (!binfile.open(fname, fxbehaviors_i0_requiredCrc))
+    if(!binfile.open(fname, fxbehaviors_i0_requiredCrc))
     {
         qCritical() << "Failed to open original bin:" << fname;
         return false;
     }
-    if (!loadFrom(&binfile, infos))
+    if(!loadFrom(&binfile, infos))
     {
         qCritical() << "Failed to load data from original bin:" << fname;
         return false;
@@ -373,11 +373,11 @@ bool loadFrom(BinStore * s, Fx_AllBehaviors & target)
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Behavior")==0) {
+        if("Behavior"==_name) {
             target.emplace_back();
             ok &= loadFrom(s,target.back());
         } else
@@ -446,21 +446,21 @@ bool LoadFxBehaviorData(const QString &fname, Fx_AllBehaviors &behaviors)
 {
     BinStore binfile;
 
-    if (fname.contains(".crl"))
+    if(fname.contains(".crl"))
     {
-        if (!loadFrom(fname, behaviors))
+        if(!loadFrom(fname, behaviors))
         {
             qCritical() << "Failed to serialize data from crl:" << fname;
             return false;
         }
         return true;
     }
-    if (!binfile.open(fname, fxbehaviors_i0_requiredCrc))
+    if(!binfile.open(fname, fxbehaviors_i0_requiredCrc))
     {
         qCritical() << "Failed to open original bin:" << fname;
         return false;
     }
-    if (!loadFrom(&binfile, behaviors))
+    if(!loadFrom(&binfile, behaviors))
     {
         qCritical() << "Failed to load data from original bin:" << fname;
         return false;

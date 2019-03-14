@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -68,7 +68,8 @@ public:
 
 };
 
-bool ConfigStruct::initialize_from_settings(const QString &settings_file_name, const QString &group_name){
+bool ConfigStruct::initialize_from_settings(const QString &settings_file_name, const QString &group_name)
+{
     if(!fileExists(settings_file_name))
         return false;
     
@@ -209,7 +210,8 @@ void errorHandler(QtMsgType type, const QMessageLogContext &context, const QStri
     const char * resetColor="\033[0m";
     #endif
 
-    switch (type) {
+    switch (type)
+    {
         case QtDebugMsg:
             fprintf(stderr, "%s\n", localMsg.constData());
             break;
@@ -308,7 +310,8 @@ int addAccount(const ConfigStruct &char_database, const QString & username,
     {
         target_file_string = db_dir.currentPath() + "/" + char_database.m_dbname ;
         QFile target_file(target_file_string);
-        if(!target_file.exists()){
+        if(!target_file.exists())
+        {
             qCritical("Target file could not be found. Verify its existence and try again.");
             return SQLITE_DB_MISSING;
         }
@@ -345,7 +348,8 @@ int addAccount(const ConfigStruct &char_database, const QString & username,
     if(!query.exec())
     {
         int sqlErrorCode = query.lastError().nativeErrorCode().toInt();
-        if(sqlErrorCode == 19 || sqlErrorCode == 1062 || sqlErrorCode == 23503){
+        if(sqlErrorCode == 19 || sqlErrorCode == 1062 || sqlErrorCode == 23503)
+        {
             // Unique constraint error.
             // SQLite:        19
             // MySQL:       1062
@@ -421,7 +425,8 @@ int main(int argc, char **argv)
     configs[1].initialize_from_settings(parser.value(configFileOption), "CharacterDatabase");
     
     int selected_operation = known_commands.indexOf(positionalArguments.first());
-    switch (selected_operation) {
+    switch (selected_operation)
+    {
         case 0:
         {
             bool forced = parser.isSet(forceOption);

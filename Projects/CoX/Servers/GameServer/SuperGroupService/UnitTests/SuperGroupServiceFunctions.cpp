@@ -1,7 +1,7 @@
 #include "Servers/HandlerLocator.h"
 
-#include "FriendHandler.h"
-#include "FriendHandlerEvents.h"
+#include "SuperGroupHandler.h"
+#include "SuperGroupHandlerEvents.h"
 #include "InternalEvents.h"
 #include "MessageBus.h"
 #include "SEGSEventFactory.h"
@@ -24,7 +24,7 @@ protected:
     void serialize_to(std::ostream &) override { QVERIFY(false); }
 };
 
-extern void register_FriendHandlerEvents();
+extern void register_SuperGroupHandlerEvents();
 void        sendMessages(EventSrc *tgt, std::initializer_list<Event *> msgs)
 {
     for (auto *msg : msgs)
@@ -36,7 +36,7 @@ uint32_t createMockChar()
     //assert(false);
     return char_id++;
 }
-class FriendshipServiceFunctions : public QObject
+class SuperGroupServiceFunctions : public QObject
 {
     Q_OBJECT
     uint32_t            m_bound_game_server=0;
@@ -47,12 +47,12 @@ class FriendshipServiceFunctions : public QObject
     MockEventProcessor *m_mock_map_server = nullptr;
     MockEventProcessor *m_mock_game_db_server = nullptr;
     MessageBus          m_message_bus;
-    void simulateUserComingOnline(FriendHandler* tgt,uint32_t user_id,const FriendsList &friendlist)
+    void simulateUserComingOnline(SuperGroupHandler* tgt,uint32_t user_id,const vSuperGroupRoster &memberlist)
     {
        tgt->putq(new ClientConnectedMessage({0,m_bound_game_server,0, user_id },0));
-       tgt->putq(new FriendConnectedMessage({0,m_bound_game_server,0, user_id, friendlist},0));
+       tgt->putq(new SGMemberConnectedMessage({0,m_bound_game_server,0, user_id, memberlist},0));
     }
-    void processAllMessages(FriendHandler *tgt, int limit = 10)
+    void processAllMessages(SuperGroupHandler *tgt, int limit = 10)
     {
         // process all messages to completion
         bool completed = false;
@@ -66,7 +66,7 @@ class FriendshipServiceFunctions : public QObject
 private slots:
     void initTestCase()
     {
-        register_FriendHandlerEvents();
+        register_SuperGroupHandlerEvents();
         HandlerLocator::setMessageBus(&m_message_bus);
         // createMockGameHandler();
         mock_char_id_A     = createMockChar();
@@ -81,26 +81,26 @@ private slots:
     }
     void connectedUserWithoutFriendsWillNotPostAnyMessages()
     {
-        FriendHandler fh(0);
-        simulateUserComingOnline(&fh,mock_char_id_A,{});
-        processAllMessages(&fh,10);
+        SuperGroupHandler sg(0);
+        simulateUserComingOnline(&sg,mock_char_id_A,{});
+        processAllMessages(&sg,10);
         QVERIFY(m_mock_game_server->hasNoMessages());
         QVERIFY(m_mock_game_db_server->hasNoMessages());
         QVERIFY(m_mock_map_server->hasNoMessages());
     }
     void addingAndRemovingSame()
     {
-        FriendHandler fh(0);
-        sendMessages(&fh, {
-                                    new FriendAddedMessage({mock_char_id_A, mock_char_id_B, {}}, 0),
-                                    new FriendRemovedMessage({mock_char_id_A, mock_char_id_B}, 0),
+        SuperGroupHandler sg(0);
+        sendMessages(&sg, {
+                                    new SGMemberAddedMessage({mock_char_id_A, mock_char_id_B, {}}, 0),
+                                    new SGMemberRemovedMessage({mock_char_id_A, mock_char_id_B}, 0),
                                 });
-        processAllMessages(&fh,10);
+        processAllMessages(&sg,10);
         // todo: verify that mock_char_id_A and mock_char_id_B are no longer friends.
         QVERIFY(false);
     }
 };
 
-QTEST_MAIN(FriendshipServiceFunctions)
+QTEST_MAIN(SuperGroupServiceFunctions)
 
-#include "FriendshipServiceFunctions.moc"
+#include "SuperGroupServiceFunctions.moc"

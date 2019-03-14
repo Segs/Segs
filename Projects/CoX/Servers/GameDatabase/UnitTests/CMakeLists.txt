@@ -9,5 +9,6 @@ add_test(GameDBEventRegistry GameDBEventRegistry)
 
 target_link_libraries(GameDBEventRegistry
     Qt5::Test
-    game_db_sync_lib
+    GameDatabase_interface
+    SEGS_Components
 )

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -236,6 +236,11 @@ void BitStream::StoreString(const char *str)
     m_write_off  += idx;
 }
 
+void BitStream::StoreString(const QByteArray &str)
+{
+    StoreString(str.constData());
+}
+
 void BitStream::StoreString(const QString &str)
 {
     StoreString(qPrintable(str));
@@ -356,7 +361,7 @@ int64_t BitStream::Get64Bits()
     int64_t result=0;
     uint32_t *res_ptr=reinterpret_cast<uint32_t *>(&result);
     int byte_count=GetBits(3);
-    if ( byte_count > 4 )
+    if( byte_count > 4 )
     {
         result=GetBits(BITS_PER_UINT32);
         byte_count-=4;
@@ -367,10 +372,10 @@ int64_t BitStream::Get64Bits()
     return result;
 }
 
-size_t BitStream::GetAvailSize() const
+uint32_t BitStream::GetAvailSize() const
 {
     int64_t res = int64_t(m_size)- int64_t(m_write_off)-(m_write_bit_off!=0);
-    return size_t(std::max<int64_t>(0,res));
+    return uint32_t(std::max<int64_t>(0,res));
 }
 /************************************************************************
 Function:    GetFloat/GetFloatWithDebugInfo()
