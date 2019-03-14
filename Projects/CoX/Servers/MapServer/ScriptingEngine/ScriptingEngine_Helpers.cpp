@@ -40,6 +40,7 @@ void ScriptingEngine::callFuncWithMapInstance(MapInstance *mi, const char *name,
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
     this->cl = client;
+    this->mi = client->m_current_map;
     m_private->m_lua["contactDialogButtons"] = contactLinkHash;
 
     if (client->m_ent->m_type == EntType::PLAYER)
@@ -168,6 +169,7 @@ std::string ScriptingEngine::callFunc(const char *name, std::vector<Contact> con
 int ScriptingEngine::runScript(MapClientSession * client, const QString &script_contents, const char *script_name)
 {
     this->cl = client;
+    this->mi = client->m_current_map;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     sol::load_result load_res=m_private->m_lua.load(script_contents.toStdString(),script_name);
     if(!load_res.valid())
@@ -224,6 +226,7 @@ void ScriptingEngine::updateMapInstance(MapInstance * instance)
 void ScriptingEngine::updateClientContext(MapClientSession * client)
 {
     this->cl = client;
+    this->mi = client->m_current_map;
     m_private->m_lua["vContacts"] = client->m_ent->m_player->m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;
