@@ -90,6 +90,17 @@ bool DBConnection::runQuery(QString &q)
 
 /*!
  * @brief           Cereal adds a wrapper around the entire object
+ *                  with a key of `value0`. We add that here.
+ * @param[in,out]   obj
+ */
+void DBConnection::deleteColumns(QString &tablename, QStringList &cols)
+{
+    QSqlRecord record = m_db->record(tablename);
+    //record.value()
+}
+
+/*!
+ * @brief           Cereal adds a wrapper around the entire object
  *                  with a key of `value0`. We remove that here.
  * @param[in,out]   obj
  */
