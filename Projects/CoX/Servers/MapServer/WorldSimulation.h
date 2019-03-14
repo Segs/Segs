@@ -68,6 +68,29 @@ public:
 
     PhysicsState *stateForEntity(const Entity *e);
 };
+struct NavNode {
+    glm::vec3 position;
+    SEGS::SceneNode *node;
+};
+struct NavGraph
+{
+    // bidirectionaly navigation graph
+    std::vector<NavNode> m_nodes;
+};
+struct DirectedNavGraph
+{
+    // uni-directional navigation graph, for car/blimp etc paths
+    std::vector<NavNode> m_nodes;
+};
+class WorldNavigation
+{
+public:
+    NavGraph m_combat;
+    NavGraph m_giant_combat; // navigation nodes for huge creatures
+    NavGraph m_non_combat;
+    DirectedNavGraph m_paths;
+};
+
 class World
 {
     using SpawnsStorage = QMultiHash<QString, glm::mat4>;
@@ -92,6 +115,8 @@ public:
         bool start(const QString &scenegraph_path);
         void            update(const ACE_Time_Value &tick_timer);
         float           time_of_day() const { return m_time_of_day; }
+        
+        MapSceneGraph * sceneGraph() { return m_map_scenegraph; }
         // Entity Creation/Destruction
         Entity *        CreateCritter(const Parse_NPC &tpl,int idx,int variant, int level);
         Entity *        CreateGeneric(const Parse_NPC &tpl,int idx,int variant,EntType type);
@@ -120,6 +145,8 @@ public:
         float           accumulated_time=0;
         // for now physics state is publicly accessible.
         WorldPhysics    m_physics;
+        //
+        WorldNavigation m_navigation;
         // public for now, since MapInstance was using this directly
         QHash<QString, MapXferData> m_map_transfers;
 protected:

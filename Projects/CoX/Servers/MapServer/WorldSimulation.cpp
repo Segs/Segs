@@ -262,6 +262,24 @@ struct SpawnPointLocator
         return true;
     }
 };
+struct NavPointLocator
+{
+    std::vector<NavNode> &m_targets;
+    const char *m_beacon_type;
+    NavPointLocator(std::vector<NavNode> &targets,const char *type) :
+        m_targets(targets),m_beacon_type(type)
+    {}
+    bool operator()(SceneNode *n, const glm::mat4 &v)
+    {
+        if(!n->m_properties)
+            return true;
+        if(n->m_name==m_beacon_type)
+        {
+            m_targets.push_back({v[3],n});
+        }
+        return true;
+    }
+};
 struct MapXferLocator
 {
     QHash<QString, MapXferData> *m_targets;
@@ -318,8 +336,37 @@ struct MapXferLocator
         return true;
     }
 };
-
+void generate_navigation_graphs(World *world)
+{
+    MapSceneGraph *scene_graph = world->sceneGraph();
+    
+    // locate all navcmbt beacons
+    NavPointLocator navcmbt_locator(world->m_navigation.m_combat.m_nodes,"_NAVCMBT");
+    scene_graph->visitNodesFromRoots(navcmbt_locator);
+    // locate all giant navcmbt beacons
+    NavPointLocator giantnavcmbt_locator(world->m_navigation.m_giant_combat.m_nodes,"_GIANTNAVCMBT");
+    scene_graph->visitNodesFromRoots(giantnavcmbt_locator);
+    // locate all plain nav beacons
+    NavPointLocator cmbt_locator(world->m_navigation.m_non_combat.m_nodes,"_NAV");
+    scene_graph->visitNodesFromRoots(cmbt_locator);
+    // locate the directional path markers ( cars/blimps/rails )
+    NavPointLocator dir_locator(world->m_navigation.m_non_combat.m_nodes,"_DIR");
+    scene_graph->visitNodesFromRoots(dir_locator);
+    // TODO: actually build the nav graphs from the found nodes.
+}
+void build_static_collision_meshes(World *world) 
+{
+    //TODO: Large amount of work to implement.
+    //foreach scene_node N
+    //  if N has a coll mesh
+    //      unpack coll mesh data
+    //      create mesh collider
+    //      apply physics material to collider (ice/water/etc. )
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 } // end of anonymous namespace
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 World::World(EntityManager &em, const float player_fade_in, MapInstance *owner_instance)
     : ref_ent_mager(em), m_player_fade_in(player_fade_in), m_owner_instance(owner_instance)
 {
@@ -367,6 +414,7 @@ QHash<QString, MapXferData> get_map_transfers(MapSceneGraph *map_scene_graph)
     return res;
 }
 
+
 bool World::start(const QString &scenegraph_path)
 {
     bool scene_graph_loaded=false;
@@ -384,6 +432,14 @@ bool World::start(const QString &scenegraph_path)
         spawn_critters(m_map_scenegraph,this);
         m_critter_generators.generate(this);
         }, "Spawning npcs");
+    TIMED_LOG({
+        build_static_collision_meshes(this);
+    }, "Preparing static collsion meshes");
+    
+    TIMED_LOG({
+        generate_navigation_graphs(this);
+    }, "Preparing navigation graph");
+    
     return scene_graph_loaded;
 }
 
