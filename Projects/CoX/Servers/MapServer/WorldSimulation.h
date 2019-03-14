@@ -107,9 +107,6 @@ class World
     QHash<QString, MapXferData> m_map_door_transfers;
     QHash<QString, MapXferData> m_map_zone_transfers;
 
-
-    friend void spawn_critters(MapSceneGraph *map_scene_graph,World *instance);
-    friend void spawn_npcs(MapSceneGraph *map_scene_graph,World *instance);
 public:
                         World(EntityManager &em, const float player_fade_in, MapInstance *owner_instance);
         bool start(const QString &scenegraph_path);
@@ -117,6 +114,8 @@ public:
         float           time_of_day() const { return m_time_of_day; }
         
         MapSceneGraph * sceneGraph() { return m_map_scenegraph; }
+        NpcGeneratorStore &npcGenerators() { return m_npc_generators; }
+        CritterGeneratorStore &critterGenerators() {return m_critter_generators; }
         // Entity Creation/Destruction
         Entity *        CreateCritter(const Parse_NPC &tpl,int idx,int variant, int level);
         Entity *        CreateGeneric(const Parse_NPC &tpl,int idx,int variant,EntType type);
