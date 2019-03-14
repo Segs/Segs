@@ -19,7 +19,7 @@
 #include <deque>
 
 struct MapClientSession;
-class MapInstance;
+struct MapInstance;
 class Entity;
 class BitStream;
 

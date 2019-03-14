@@ -722,9 +722,17 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
     }
 }
 
-void WorldPhysics::entitiesInRange(const Sphere &range, std::vector<int> &entity_idx)
+void WorldPhysics::entitiesInRange(const Sphere &range, std::vector<Entity *> &entity_idx)
 {
-
+    const float rad_squared = range.radius*range.radius;
+    //TODO: use grid based approach to accelerating this ?
+    for(const PhysicsState &p : m_per_entity_data)
+    {
+        if(glm::distance2(p.m_position,range.center)<=rad_squared)
+        {
+            entity_idx.push_back(p.m_ent);
+        }
+    }
 }
 
 void WorldPhysics::update(float dt)

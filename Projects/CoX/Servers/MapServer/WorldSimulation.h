@@ -56,7 +56,7 @@ private:
     std::vector<PhysicsState> m_per_entity_data;
 public:
     // state queries.
-    void entitiesInRange(const Sphere &range,std::vector<int> &entity_idx);
+    void entitiesInRange(const Sphere &range, std::vector<Entity *> &entity_idx);
 
     void update(float dt);
     void forcePosition(Entity &e, glm::vec3 pos);
