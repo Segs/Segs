@@ -21,6 +21,7 @@ ServiceToClientData* EmailService::on_email_header_response(Event* ev)
     EmailHeaderResponse* casted_ev = static_cast<EmailHeaderResponse *>(ev);
 
     std::vector<EmailHeaders::EmailHeader> emailHeadersVector;
+    emailHeadersVector.reserve(casted_ev->m_data.m_email_headers.size());
     for (const auto &email_header : casted_ev->m_data.m_email_headers)
     {
         emailHeadersVector.push_back(EmailHeaders::EmailHeader{email_header.m_email_id,
@@ -30,7 +31,7 @@ ServiceToClientData* EmailService::on_email_header_response(Event* ev)
     }
 
     std::unique_ptr<EmailHeaders> emailHeaders = std::make_unique<EmailHeaders>(emailHeadersVector);
-    return make_service_to_client_data(casted_ev->session_token(), {std::move(emailHeaders)}, QString());
+    return make_service_to_client_data(casted_ev->session_token(), {}, QString());
 }
 
 // EmailHandler will send this event here
@@ -39,7 +40,7 @@ ServiceToClientData* EmailService::on_email_header_to_client(Event* ev)
     EmailHeaderToClientMessage* casted_ev = static_cast<EmailHeaderToClientMessage *>(ev);
     std::unique_ptr<EmailHeaders> emailHeaders = std::make_unique<EmailHeaders>( casted_ev->m_data.m_email_id, casted_ev->m_data.m_sender_name,
                                                                                  casted_ev->m_data.m_subject, casted_ev->m_data.m_timestamp);
-    return make_service_to_client_data(casted_ev->session_token(), {std::move(emailHeaders)}, QString());
+    return make_service_to_client_data(casted_ev->session_token(), {}, QString());
 }
 
 ServiceToClientData* EmailService::on_email_headers_to_client(Event* ev)
@@ -57,7 +58,7 @@ ServiceToClientData* EmailService::on_email_headers_to_client(Event* ev)
 
     QString messageToClient = QString("You have %1 unread emails.").arg(casted_ev->m_data.m_unread_emails_count);
     std::unique_ptr<EmailHeaders> emailHeaders = std::make_unique<EmailHeaders>(emailHeadersVector);
-    return make_service_to_client_data(casted_ev->session_token(), {std::move(emailHeaders)}, messageToClient);
+    return make_service_to_client_data(casted_ev->session_token(), {}, messageToClient);
 }
 
 ServiceToClientData* EmailService::on_email_read_response(Event* ev)
@@ -65,7 +66,7 @@ ServiceToClientData* EmailService::on_email_read_response(Event* ev)
     EmailReadResponse* casted_ev = static_cast<EmailReadResponse *>(ev);
     std::unique_ptr<EmailRead> emailRead = std::make_unique<EmailRead>(
                 casted_ev->m_data.m_email_id, casted_ev->m_data.m_message, casted_ev->m_data.m_sender_name);
-    return make_service_to_client_data(casted_ev->session_token(), {std::move(emailRead)}, QString());
+    return make_service_to_client_data(casted_ev->session_token(), {}, QString());
 }
 
 ServiceToClientData* EmailService::on_email_read_by_recipient(Event* ev)
@@ -79,14 +80,14 @@ ServiceToClientData* EmailService::on_email_create_status(Event* ev)
     EmailCreateStatusMessage* casted_ev = static_cast<EmailCreateStatusMessage* >(ev);
 
     std::unique_ptr<EmailMessageStatus> emailStatus = std::make_unique<EmailMessageStatus>(casted_ev->m_data.m_status, casted_ev->m_data.m_recipient_name);
-    return make_service_to_client_data(casted_ev->session_token(), {std::move(emailStatus)}, QString());
+    return make_service_to_client_data(casted_ev->session_token(), {}, QString());
 }
 
 ServiceToClientData* EmailService::make_service_to_client_data(uint64_t token, GameCommandVector commands, QString message)
 {
     ServiceToClientData* data = new ServiceToClientData();
     data->token = token;
-    data->commands = commands;
+    data->commands = std::move(commands);
     data->message = message;
     return data;
 }

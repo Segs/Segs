@@ -271,6 +271,18 @@ struct ServiceToClientData
     std::vector<InternalEvent* > internal_events;               // currently for mapserver
     std::vector<ScriptingServiceToClientData* > scripts;          // lua stuff
     QString message;
+
+    ServiceToClientData(){}
+    ServiceToClientData(const ServiceToClientData&) = delete;
+    ServiceToClientData& operator= (const ServiceToClientData&) = delete;
+    ~ServiceToClientData() = default;
+
+    ServiceToClientData(Entity* e, std::vector<std::unique_ptr<GameCommandEvent>> comms, QString msg)
+        : commands(std::move(comms))
+    {
+        ent = e;
+        message = msg;
+    }
 };
 
 } // end of SEGSEvents namespace

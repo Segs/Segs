@@ -17,7 +17,7 @@ private:
 public:
     void on_move_inspiration(Entity* ent, SEGSEvents::Event* ev);
     void on_inspiration_dockmode(Entity* ent, SEGSEvents::Event* ev);
-    SEGSEvents::MapServiceToClientData* on_activate_inspiration(Entity* ent, SEGSEvents::Event* ev);
+    SEGSEvents::ServiceToClientData* on_activate_inspiration(Entity* ent, SEGSEvents::Event* ev);
 protected:
 };
 

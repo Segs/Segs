@@ -31,7 +31,7 @@ void InspirationService::on_inspiration_dockmode(Entity* ent, Event* ev)
     qCDebug(logMapEvents) << "Saving inspirations dock mode to GUISettings:" << casted_ev->dock_mode;
 }
 
-MapServiceToClientData* InspirationService::on_activate_inspiration(Entity* ent, Event* ev)
+ServiceToClientData* InspirationService::on_activate_inspiration(Entity* ent, Event* ev)
 {
     ActivateInspiration* casted_ev = static_cast<ActivateInspiration *>(ev);
 
@@ -39,11 +39,11 @@ MapServiceToClientData* InspirationService::on_activate_inspiration(Entity* ent,
     bool success = useInspiration(*ent, casted_ev->slot_idx, casted_ev->row_idx);
 
     if(!success)
-        return new MapServiceToClientData({ent, nullptr, QString()});
+        return new ServiceToClientData(ent, {}, QString());
 
     std::unique_ptr<FloatingInfo> cmd = std::make_unique<FloatingInfo>(
                 ent->m_idx, "Inspired!", FloatingInfoStyle::FloatingInfo_Attention, ACTIVATE_INSPIRATION_DELAY);
 
-    return new MapServiceToClientData({ent, std::move(cmd), QString()});
+    return new ServiceToClientData(ent, {}, QString());
     // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
 }

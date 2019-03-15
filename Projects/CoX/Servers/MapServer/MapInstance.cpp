@@ -550,7 +550,7 @@ void MapInstance::dispatch( Event *ev )
             m_inspiration_service->on_inspiration_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evActivateInspiration:
-            on_map_service_to_client_response(m_inspiration_service->on_activate_inspiration(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_inspiration_service->on_activate_inspiration(m_session_store.session_from_event(ev).m_ent, ev));
             break;
             // ------------- Enhancement Service --------------------
         case evCombineEnhancementsReq:
