@@ -19,6 +19,7 @@
 
 #include "GameServer/EmailService/EmailService.h"
 #include "GameServer/ClientOptionService/ClientOptionService.h"
+#include "GameServer/LocationService/LocationService.h"
 #include "GameServer/CharacterService/CharacterService.h"
 #include "GameServer/CharacterService/EnhancementService/EnhancementService.h"
 #include "GameServer/CharacterService/InspirationService/InspirationService.h"
@@ -131,6 +132,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<EnhancementService>     m_enhancement_service;
         std::unique_ptr<InspirationService>     m_inspiration_service;
         std::unique_ptr<PowerService>           m_power_service;
+        std::unique_ptr<LocationService>        m_location_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -232,8 +234,6 @@ protected:
         void on_command_chat_divider_moved(SEGSEvents::ChatDividerMoved *ev);
         void on_minimap_state(SEGSEvents::MiniMapState *ev);
         void on_client_resumed(SEGSEvents::ClientResumedRendering *ev);
-        void on_location_visited(SEGSEvents::LocationVisited *ev);
-        void on_plaque_visited(SEGSEvents::PlaqueVisited *ev);
         void on_enter_door(SEGSEvents::EnterDoor *ev);
         void on_change_stance(SEGSEvents::ChangeStance *ev);
         void on_set_destination(SEGSEvents::SetDestination *ev);
@@ -263,8 +263,6 @@ protected:
         void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
         void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
 
-        void on_internal_service_to_client_response(SEGSEvents::InternalServiceToClientData* ev);
-        void on_internal_service_to_client_response(std::vector<SEGSEvents::InternalServiceToClientData*> events);
-        void on_map_service_to_client_response(SEGSEvents::MapServiceToClientData* ev);
-        void on_map_service_to_client_response(std::vector<SEGSEvents::MapServiceToClientData*> events);
+        // Service <--> MapInstance
+        void on_service_to_client_response(SEGSEvents::ServiceToClientData* data);
 };

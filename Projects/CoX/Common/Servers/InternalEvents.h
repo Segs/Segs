@@ -246,17 +246,30 @@ struct MapSwapCollisionData
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
 
-struct InternalServiceToClientData
+enum class ScriptingServiceFlags : uint32_t
 {
-    uint64_t token = 0;
-    std::unique_ptr<GameCommandEvent> command;
+    UpdateMapInstance,
+    CallFuncWithClientContext,
+    CallFunc,
+    UpdateClientContext
+};
+
+struct ScriptingServiceToClientData
+{
+    uint32_t flags;
+    QString funcName;
+    QString charArg;
+    glm::vec3 locArg;
     QString message;
 };
 
-struct MapServiceToClientData
+struct ServiceToClientData
 {
-    Entity* ent;
-    std::unique_ptr<GameCommandEvent> command;
+    uint64_t token = 0;
+    Entity* ent = nullptr;
+    std::vector<std::unique_ptr<GameCommandEvent>> commands;
+    std::vector<InternalEvent* > internal_events;               // currently for mapserver
+    std::vector<ScriptingServiceToClientData* > scripts;          // lua stuff
     QString message;
 };
 
