@@ -28,16 +28,12 @@ endif()
 # version number
 set(SEGS_VERSION_MAJOR "0")
 set(SEGS_VERSION_MINOR "6")
-if(SEGS_BRANCH STREQUAL "master")
-  set(SEGS_VERSION_PATCH "0")
-else()
-  set(SEGS_VERSION_PATCH ${SEGS_DESCRIPTION})
-endif()
+set(SEGS_VERSION_PATCH "1")
 
 # If SEGS is not built from a Git repository, default the version info to
 # reasonable values.
 if(NOT SEGS_REVISION)
-  set(SEGS_DESCRIPTION "${SEGS_VERSION_MAJOR}.${SEGS_VERSION_MINOR}")
+  set(SEGS_DESCRIPTION "${SEGS_VERSION_MAJOR}.${SEGS_VERSION_MINOR}.${SEGS_VERSION_PATCH}")
   set(SEGS_REVISION "${SEGS_DESCRIPTION} (no further info)")
   set(SEGS_BRANCH "develop")
 endif()
@@ -46,7 +42,6 @@ add_definitions(
     "-DSEGS_VERSION=\"${SEGS_VERSION_MAJOR}.${SEGS_VERSION_MINOR}.${SEGS_VERSION_PATCH}\""
     "-DSEGS_BRANCH=\"${SEGS_BRANCH}\""
     "-DSEGS_DESCRIPTION=\"${SEGS_DESCRIPTION}\""
-    "-DSEGS_REVISION=\"${SEGS_REVISION}\""
     )
 
 IF(MSVC)
