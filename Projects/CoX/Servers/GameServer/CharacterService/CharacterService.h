@@ -16,6 +16,8 @@ private:
 public:
     void on_switch_tray(Entity* ent, SEGSEvents::Event* ev);
     void on_levelup_response(Entity* ent, SEGSEvents::Event* ev);
+    void on_recv_costume_change(Entity* ent, SEGSEvents::Event* ev);
+    void on_recv_selected_titles(Entity* ent, SEGSEvents::Event* ev);
 protected:
 };
 

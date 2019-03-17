@@ -6,12 +6,7 @@
  */
 
 #include "LocationService.h"
-#include "GameData/Powers.h"
 #include "GameData/Entity.h"
-#include "GameData/playerdata_definitions.h"
-#include "GameData/Character.h"
-#include "GameData/map_definitions.h"
-#include "GameData/EntityHelpers.h"
 #include "Messages/Map/MapEvents.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include <QtCore/QDebug>
@@ -35,10 +30,7 @@ ServiceToClientData* LocationService::on_location_visited(Entity* ent, Event *ev
     scriptData->charArg = casted_ev->m_name;
     scriptData->locArg = casted_ev->m_pos;
 
-    ServiceToClientData* data = new ServiceToClientData();
-    data->ent = ent;
-    data->scripts = {scriptData};
-    return data;
+    return new ServiceToClientData(ent, {scriptData}, casted_ev->m_name);
 }
 
 ServiceToClientData* LocationService::on_plaque_visited(Entity* ent, Event* ev)
@@ -56,8 +48,5 @@ ServiceToClientData* LocationService::on_plaque_visited(Entity* ent, Event* ev)
     scriptData->charArg = casted_ev->m_name;
     scriptData->locArg = casted_ev->m_pos;
 
-    ServiceToClientData* data = new ServiceToClientData();
-    data->ent = ent;
-    data->scripts = {scriptData};
-    return data;
+    return new ServiceToClientData(ent, {scriptData}, QString());
 }

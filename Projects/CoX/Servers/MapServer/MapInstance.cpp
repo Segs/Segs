@@ -143,7 +143,6 @@ void MapInstance::start(const QString &scenegraph_path)
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
                 m_all_spawners = m_map_scenegraph->getSpawnPoints();
-                m_map_transfers = m_map_scenegraph->get_map_transfers();
             }, "Loading original scene graph");
 
         TIMED_LOG({
@@ -196,6 +195,9 @@ void MapInstance::init_services()
     m_enhancement_service = std::make_unique<EnhancementService>();
     m_inspiration_service = std::make_unique<InspirationService>();
     m_power_service = std::make_unique<PowerService>();
+    m_location_service = std::make_unique<LocationService>();
+    m_transaction_service = std::make_unique<TransactionService>();
+    m_zone_transfer_service = std::make_unique<ZoneTransferService>(this);
 }
 
 ///
@@ -218,58 +220,6 @@ void MapInstance::load_map_lua()
 
     for(const QString &path : script_paths)
         loadAndRunLua(m_scripting_interface, path);
-}
-
-QHash<QString, MapXferData> MapInstance::get_map_door_transfers()
-{
-    if (!m_door_transfers_checked)
-    {
-        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
-        while (i != m_map_transfers.constEnd())
-        {
-            if (i.value().m_transfer_type == MapXferType::DOOR)
-            {
-                m_map_door_transfers.insert(i.key(), i.value());
-            }
-            i++;
-        }
-        m_door_transfers_checked = true;
-    }
-
-    return m_map_door_transfers;
-}
-
-QHash<QString, MapXferData> MapInstance::get_map_zone_transfers()
-{
-    if (!m_zone_transfers_checked)
-    {
-        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
-        while (i != m_map_transfers.constEnd())
-        {
-            if (i.value().m_transfer_type == MapXferType::ZONE)
-            {
-                m_map_zone_transfers.insert(i.key(), i.value());
-            }
-            i++;
-        }
-        m_zone_transfers_checked = true;
-    }
-    return m_map_zone_transfers;
-}
-
-QString MapInstance::getNearestDoor(glm::vec3 location)
-{
-    float door_distance_check = 15.f;
-    QHash<QString, MapXferData>::const_iterator i = get_map_door_transfers().constBegin();
-    while (i != get_map_door_transfers().constEnd())
-    {
-        if (glm::distance(location, i.value().m_position) < door_distance_check)
-        {
-            return i.value().m_target_spawn_name;
-        }
-        i++;
-    }
-    return QString();
 }
 
 ///
@@ -431,17 +381,11 @@ void MapInstance::dispatch( Event *ev )
         case evCookieRequest:
             on_cookie_confirm(static_cast<CookieRequest *>(ev));
             break;
-        case evEnterDoor:
-            on_enter_door(static_cast<EnterDoor *>(ev));
-            break;
         case evChangeStance:
             on_change_stance(static_cast<ChangeStance *>(ev));
             break;
         case evSetDestination:
             on_set_destination(static_cast<SetDestination *>(ev));
-            break;
-        case evHasEnteredDoor:
-            on_has_entered_door(static_cast<HasEnteredDoor *>(ev));
             break;
         case evWindowState:
             on_window_state(static_cast<WindowState *>(ev));
@@ -458,14 +402,8 @@ void MapInstance::dispatch( Event *ev )
         case evMiniMapState:
             on_minimap_state(static_cast<MiniMapState *>(ev));
             break;
-        case evLocationVisited:
-            on_service_to_client_response(m_location_service->on_location_visited(m_session_store.session_from_event(ev).m_ent, ev));
-            break;
         case evChatReconfigure:
             on_chat_reconfigured(static_cast<ChatReconfigure *>(ev));
-            break;
-        case evPlaqueVisited:
-            on_service_to_client_response(m_location_service->on_plaque_visited(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
@@ -579,25 +517,55 @@ void MapInstance::dispatch( Event *ev )
             m_character_service->on_switch_tray(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evRecvSelectedTitles:
-            on_recv_selected_titles(static_cast<RecvSelectedTitles *>(ev));
+            m_character_service->on_recv_selected_titles(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evDialogButton:
-            on_dialog_button(static_cast<DialogButton *>(ev));
+        case evRecvCostumeChange:
+            m_character_service->on_levelup_response(m_session_store.session_from_event(ev).m_ent, ev);
             break;
+            // -------------------- Transaction Service ---------------
         case evTradeWasCancelledMessage:
-            on_trade_cancelled(static_cast<TradeWasCancelledMessage *>(ev));
+            on_service_to_client_response(m_transaction_service->on_trade_cancelled(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evTradeWasUpdatedMessage:
-            on_trade_updated(static_cast<TradeWasUpdatedMessage *>(ev));
+            on_service_to_client_response(m_transaction_service->on_trade_updated(m_session_store.session_from_event(ev).m_ent, ev));
             break;
+        case evStoreSellItem:
+            on_service_to_client_response(m_transaction_service->on_store_sell_item(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evStoreBuyItem:
+            on_service_to_client_response(m_transaction_service->on_store_buy_item(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+            // ------------------------- Location Service --------------------
+        case evLocationVisited:
+            on_service_to_client_response(m_location_service->on_location_visited(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evPlaqueVisited:
+            on_service_to_client_response(m_location_service->on_plaque_visited(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+            // ----------------------- Zone Transfer Service -----------------
         case evInitiateMapXfer:
-            on_initiate_map_transfer(static_cast<InitiateMapXfer *>(ev));
+            on_service_to_client_response(m_zone_transfer_service->on_initiate_map_transfer(
+                                              (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id),
+                                              m_session_store.session_from_event(ev).link(),
+                                              m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evMapXferComplete:
-            on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
+            m_zone_transfer_service->on_map_xfer_complete(m_session_store.session_from_event(ev).m_ent, closest_safe_location(m_session_store.session_from_event(ev).m_ent->m_entity_data.m_pos), ev);
             break;
         case evMapSwapCollisionMessage:
-            on_map_swap_collision(static_cast<MapSwapCollisionMessage *>(ev));
+            on_service_to_client_response(m_zone_transfer_service->on_map_swap_collision(
+                                              m_session_store.session_from_event(ev).link(),
+                                              m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evEnterDoor:
+            on_service_to_client_response(m_zone_transfer_service->on_enter_door(
+                                              (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id),
+                                              m_session_store.session_from_event(ev).link(),
+                                              m_session_store.session_from_event(ev).m_ent,
+                                              m_index, ev));
+            break;
+        case evHasEnteredDoor:
+            on_service_to_client_response(m_zone_transfer_service->on_has_entered_door(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evAwaitingDeadNoGurney:
             on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
@@ -605,11 +573,11 @@ void MapInstance::dispatch( Event *ev )
         case evDeadNoGurneyOK:
             on_dead_no_gurney_ok(static_cast<DeadNoGurneyOK *>(ev));
             break;
+        case evDialogButton:
+            on_dialog_button(static_cast<DialogButton *>(ev));
+            break;
         case evBrowserClose:
             on_browser_close(static_cast<BrowserClose *>(ev));
-            break;
-        case evRecvCostumeChange:
-            on_recv_costume_change(static_cast<RecvCostumeChange *>(ev));
             break;
         case evReceiveContactStatus:
             on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
@@ -620,51 +588,9 @@ void MapInstance::dispatch( Event *ev )
         case evSouvenirDetailRequest:
             on_souvenir_detail_request(static_cast<SouvenirDetailRequest *>(ev));
             break;
-        case evStoreSellItem:
-            on_store_sell_item(static_cast<StoreSellItem *>(ev));
-            break;
-        case evStoreBuyItem:
-            on_store_buy_item(static_cast<StoreBuyItem *>(ev));
-            break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
-}
-
-void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
-{
-
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    MapLink *lnk = session.link();
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    if(!map_server->session_has_xfer_in_progress(lnk->session_token()))
-    {
-         qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
-         return;
-    }
-
-    // This is used here to get the map idx to send to the client for the transfer, but we
-    // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
-    // can prevent motd showing every time.
-    MapXferData &map_xfer = map_server->session_map_xfer_idx(lnk->session_token());
-    GameAccountResponseCharacterData c_data;
-    QString serialized_data;
-
-    fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
-    serializeToQString(c_data, serialized_data);
-    ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
-                                    serialized_data, session.m_requested_slot_idx, session.m_name, getMapPath(map_xfer.m_target_map_name),
-                                    session.m_max_slots},
-                                    lnk->session_token(),this);
-    map_server->putq(map_req);
-}
-
-void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
-{
-    // TODO: Do anything necessary after connecting to new map instance here.
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    forcePosition(*session.m_ent, session.m_current_map->closest_safe_location(session.m_ent->m_entity_data.m_pos));
-    session.m_ent->m_map_swap_collided = false;
 }
 
 void MapInstance::on_idle(Idle *ev)
@@ -2165,69 +2091,6 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
 }
 
-void MapInstance::on_enter_door(EnterDoor *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-
-    QString output_msg = "Door entry request to: " + ev->name;
-    if(ev->no_location)
-    {
-        qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
-
-        // Doors with no location may be a /mapmenu call.
-        if(session.m_ent->m_is_using_mapmenu)
-        {
-            // ev->name is the map_idx when using /mapmenu
-            if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
-            {
-                uint32_t map_idx = ev->name.toInt();
-                if (map_idx == m_index)
-                {
-                    QString door_msg = "You're already here!";
-                    sendDoorMessage(session, 2, door_msg);
-                }
-                else
-                {
-                    MapXferData map_data = MapXferData();
-                    map_data.m_target_map_name = getMapName(map_idx);
-                    map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_data},0));
-                    session.link()->putq(new MapXferWait(getMapPath(map_idx)));
-                }
-            }
-            session.m_ent->m_is_using_mapmenu = false;
-        }
-        else
-        {
-            QString door_msg = "Door coordinates unavailable.";
-            sendDoorMessage(session, 2, door_msg);
-        }
-    }
-    else
-    {
-        qCDebug(logMapXfers).noquote() << output_msg << " loc:" << ev->location.x << ev->location.y << ev->location.z;
-
-        // Check if any doors in range have the GotoSpawn property.
-        // TODO: if the node also has a GotoMap property, start a map transfer
-        //       and put them in the given SpawnLocation in the target map.
-        QString gotoSpawn = getNearestDoor(ev->location);
-
-        if (gotoSpawn.isEmpty())
-        {
-            QString door_msg = "You cannot enter.";
-            sendDoorMessage(session, 2, door_msg);
-        }
-        else
-        {
-            // Attempt to send the player to that SpawnLocation in the current map.
-            QString anim_name = "RUNIN";
-            glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
-            sendDoorAnimStart(session, ev->location, offset, true, anim_name);
-            session.m_current_map->setSpawnLocation(*session.m_ent, gotoSpawn);
-        }
-    }
-}
-
 void MapInstance::on_change_stance(ChangeStance * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2252,17 +2115,6 @@ void MapInstance::on_set_destination(SetDestination * ev)
     // store destination, confirm accuracy and send back to client as waypoint.
     setCurrentDestination(*session.m_ent, ev->point_index, ev->destination);
     sendWaypoint(session, ev->point_index, ev->destination);
-}
-
-void MapInstance::on_has_entered_door(HasEnteredDoor *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-
-    sendDoorAnimExit(session, false);
-
-    QString output_msg = "Enter door animation has finished.";
-    qCDebug(logAnimations).noquote() << output_msg;
 }
 
 void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
@@ -2476,20 +2328,6 @@ void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
     session.addCommandToSendNextUpdate(std::make_unique<TaskDetail>(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail));
 }
 
-void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    sendContactDialogClose(session); // must do this here, due to I1 client bug
-
-    QString generic, origin, special;
-    generic = getGenericTitle(ev->m_generic);
-    origin  = getOriginTitle(ev->m_origin);
-    special = getSpecialTitle(*session.m_ent->m_char);
-
-    setTitles(*session.m_ent->m_char, ev->m_has_prefix, generic, origin, special);
-    qCDebug(logMapEvents) << "Entity sending titles: " << session.m_ent->m_idx << ev->m_has_prefix << generic << origin << special;
-}
-
 void MapInstance::on_dialog_button(DialogButton *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2574,18 +2412,6 @@ void MapInstance::on_browser_close(BrowserClose *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received BrowserClose";
-}
-
-void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
-{
-    // has changed costume in tailor
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logTailor) << "Entity: " << session.m_ent->m_idx << "has received CostumeChange";
-
-    uint32_t idx = getCurrentCostumeIdx(*session.m_ent->m_char);
-    session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
-    session.m_ent->m_rare_update = true; // re-send costumes, they've changed.
-    markEntityForDbStore(session.m_ent, DbStoreFlags::Full);
 }
 
 void MapInstance::on_afk_update()
@@ -2758,86 +2584,6 @@ void MapInstance::send_player_update(Entity *e)
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
-void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
-{
-    MapClientSession& session = m_session_store.session_from_event(ev);
-
-    if(session.m_ent->m_trade == nullptr)
-    {
-        // Trade already cancelled.
-        // The client sends this many times while closing the trade window for some reason.
-        return;
-    }
-
-    const uint32_t tgt_db_id = session.m_ent->m_trade->getOtherMember(*session.m_ent).m_db_id;
-    Entity* const tgt = getEntityByDBID(session.m_ent->m_client->m_current_map, tgt_db_id);
-    if(tgt == nullptr)
-    {
-        // Only one side left in the game.
-        discardTrade(*session.m_ent);
-
-        const QString msg = "Trade cancelled because the other player left.";
-        sendTradeCancel(session, msg);
-
-        qCDebug(logTrades) << session.m_ent->name() << "cancelled a trade where target has disappeared";
-        return;
-    }
-
-    discardTrade(*session.m_ent);
-    discardTrade(*tgt);
-
-    const QString msg_src = "You cancelled the trade with " + tgt->name() + ".";
-    const QString msg_tgt = session.m_ent->name() + " canceled the trade.";
-    sendTradeCancel(session, msg_src);
-    sendTradeCancel(*tgt->m_client, msg_tgt);
-
-    qCDebug(logTrades) << session.m_ent->name() << "cancelled a trade with" << tgt->name();
-}
-
-void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
-{
-    MapClientSession& session = m_session_store.session_from_event(ev);
-
-    Entity* const tgt = getEntityByDBID(session.m_current_map, ev->m_info.m_db_id);
-    if(tgt == nullptr)
-        return;
-
-    QString msg;
-    TradeSystemMessages result;
-    result = updateTrade(*session.m_ent, *tgt, ev->m_info);
-    switch(result)
-    {
-    case TradeSystemMessages::HAS_SENT_NO_TRADE:
-        msg = "You have not sent a trade offer.";
-        break;
-    case TradeSystemMessages::TGT_RECV_NO_TRADE:
-        msg = QString("%1 has not received a trade offer.").arg(tgt->name());
-        break;
-    case TradeSystemMessages::SRC_RECV_NO_TRADE:
-        msg = QString("You are not considering a trade offer from %1.").arg(tgt->name());
-        break;
-    case TradeSystemMessages::SUCCESS:
-    {
-        // send tradeUpdate pkt to client
-        Trade& trade = *session.m_ent->m_trade;
-        TradeMember& trade_src = trade.getMember(*session.m_ent);
-        TradeMember& trade_tgt = trade.getMember(*tgt);
-        sendTradeUpdate(session, *tgt->m_client, trade_src, trade_tgt);
-
-        if(session.m_ent->m_trade->isAccepted())
-        {
-            finishTrade(*session.m_ent, *tgt); // finish handling trade
-            sendTradeSuccess(session, *tgt->m_client); // send tradeSuccess pkt to client
-        }
-        break;
-    }
-    default:
-        msg = "Something went wrong with trade update!"; // this should never happen
-    }
-
-    sendInfoMessage(MessageChannel::SERVER, msg, session);
-}
-
 void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
 {
     MapClientSession& session = m_session_store.session_from_event(ev);
@@ -2866,78 +2612,6 @@ void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
     session.addCommand<SouvenirDetail>(souvenir_detail);
 }
 
-void MapInstance::on_store_sell_item(StoreSellItem* ev)
-{
-    qCDebug(logStores) << "on_store_sell_item. NpcId: " << ev->m_npc_idx << " isEnhancement: " << ev->m_is_enhancement << " TrayNumber: " << ev->m_tray_number << " enhancement_idx: " << ev->m_enhancement_idx;
-    MapClientSession& session = m_session_store.session_from_event(ev);
-    Entity *e = getEntity(&session, ev->m_npc_idx);
-
-    QString enhancement_name;
-    CharacterEnhancement enhancement = session.m_ent->m_char->m_char_data.m_enhancements[ev->m_enhancement_idx];
-    enhancement_name = enhancement.m_name + "_" + QString::number(enhancement.m_level);
-
-    if(enhancement_name.isEmpty())
-    {
-        qCDebug(logStores) << "on_store_sell_item. EnhancementId " << ev->m_enhancement_idx << " not found";
-        return;
-    }
-
-    if(e->m_is_store && !e->m_store_items.empty())
-    {
-        //Find store in entity store list
-        StoreTransactionResult result = Store::sellItem(e, enhancement_name);
-
-        if(result.m_is_success)
-        {
-            modifyInf(session, result.m_inf_amount);
-            trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_enhancement_idx);
-            sendChatMessage(MessageChannel::SERVER,result.m_message,session.m_ent,session);
-        }
-        else
-            qCDebug(logStores) << "Error processing sellItem";
-    }
-    else
-        qCDebug(logStores) << "Entity is not a store or has no items";
-}
-
-void MapInstance::on_store_buy_item(StoreBuyItem* ev)
-{
-    qCDebug(logMapEvents) << "on_store_buy_item. NpcId: " <<ev->m_npc_idx << " ItemName: " << ev->m_item_name;
-    MapClientSession& session = m_session_store.session_from_event(ev);
-    Entity *e = getEntity(&session, ev->m_npc_idx);
-
-    StoreTransactionResult result = Store::buyItem(e, ev->m_item_name);
-    if(result.m_is_success)
-    {
-        modifyInf(session, result.m_inf_amount);
-        if(result.m_is_insp)
-            giveInsp(session, result.m_item_name);
-        else
-            giveEnhancement(session, result.m_item_name, result.m_enhancement_lvl);
-
-        sendChatMessage(MessageChannel::SERVER,result.m_message,session.m_ent,session);
-    }
-    else
-        qCDebug(logStores) << "Error processing buyItem";
-}
-
-void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
-{
-    if (!m_map_transfers.contains(ev->m_data.m_node_name))
-    {
-        qCDebug(logMapXfers) << QString("Map swap collision triggered on node_name %1, but that node_name doesn't exist in the list of map_transfers.");
-        return;
-    }
-
-    MapXferData map_transfer_data = m_map_transfers[ev->m_data.m_node_name];
-    Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
-    MapClientSession &sess = *e->m_client;
-
-    sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name)));
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_transfer_data}, 0));
-}
-
 void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
 {
     process_chat(sender, msg_text);
@@ -2945,27 +2619,36 @@ void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
 
 void MapInstance::on_service_to_client_response(ServiceToClientData* data)
 {
+    if (data == nullptr)
+        return;
+
     // generally only ONE of these is filled
     // if both of them are not filled, we'd be in trouble
-    if (data->token == 0 && data->ent == nullptr)
+    if (data->m_token == 0 && data->m_ent == nullptr)
         return;
 
     try
     {
         // if token is empty, get it from the entity
-        MapClientSession& session = data->token != 0
-                ? m_session_store.session_from_token(data->token)
-                : *data->ent->m_client;
+        MapClientSession& session = data->m_token != 0
+                ? m_session_store.session_from_token(data->m_token)
+                : *data->m_ent->m_client;
 
-        for (auto &command : data->commands)
+        for (auto &command : data->m_commands)
             session.addCommandToSendNextUpdate(std::move(command));
 
         MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
-        for (auto &internal_event : data->internal_events)
+        for (auto &internal_event : data->m_internal_events)
+        {
+            // it's a nullptr when initialized in the service
+            EventSrc* src = internal_event->src();
+            src = this;
             map_server->putq(internal_event);
+        }
 
-        for (auto &script : data->scripts)
+
+        for (auto &script : data->m_scripts)
         {
             if (script->flags & uint32_t(ScriptingServiceFlags::CallFuncWithClientContext))
                 m_scripting_interface->callFuncWithClientContext(&session, qPrintable(script->funcName), qPrintable(script->charArg), script->locArg);
@@ -2978,13 +2661,70 @@ void MapInstance::on_service_to_client_response(ServiceToClientData* data)
         }
 
         // is not null and is not empty
-        if (data->message.isEmpty() && data->message.isNull())
-            sendInfoMessage(MessageChannel::DEBUG_INFO, data->message, session);
+        if (data->m_message.isEmpty() && data->m_message.isNull())
+            sendInfoMessage(MessageChannel::DEBUG_INFO, data->m_message, session);
     }
     catch(std::exception &e)
     {
         qCritical() << e.what();
     }
+}
+
+QHash<QString, MapXferData> MapInstance::get_map_transfers()
+{
+    return m_map_transfers;
+}
+
+QHash<QString, MapXferData> MapInstance::get_map_door_transfers()
+{
+    if (!m_door_transfers_checked)
+    {
+        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
+        while (i != m_map_transfers.constEnd())
+        {
+            if (i.value().m_transfer_type == MapXferType::DOOR)
+            {
+                m_map_door_transfers.insert(i.key(), i.value());
+            }
+            i++;
+        }
+        m_door_transfers_checked = true;
+    }
+
+    return m_map_door_transfers;
+}
+
+QHash<QString, MapXferData> MapInstance::get_map_zone_transfers()
+{
+    if (!m_zone_transfers_checked)
+    {
+        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
+        while (i != m_map_transfers.constEnd())
+        {
+            if (i.value().m_transfer_type == MapXferType::ZONE)
+            {
+                m_map_zone_transfers.insert(i.key(), i.value());
+            }
+            i++;
+        }
+        m_zone_transfers_checked = true;
+    }
+    return m_map_zone_transfers;
+}
+
+QString MapInstance::getNearestDoor(glm::vec3 location)
+{
+    float door_distance_check = 15.f;
+    QHash<QString, MapXferData>::const_iterator i = get_map_door_transfers().constBegin();
+    while (i != get_map_door_transfers().constEnd())
+    {
+        if (glm::distance(location, i.value().m_position) < door_distance_check)
+        {
+            return i.value().m_target_spawn_name;
+        }
+        i++;
+    }
+    return QString();
 }
 
 void MapInstance::startTimer(uint32_t entity_idx)

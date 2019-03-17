@@ -18,10 +18,10 @@
 
 using namespace SEGSEvents;
 
-void PowerService::on_abort_queued_power(Entity* ent, Event* ev)
+void PowerService::on_abort_queued_power(Entity* ent, Event* /*ev*/)
 {
     // unused event
-    AbortQueuedPower* casted_ev = static_cast<AbortQueuedPower*>(ev);
+    // AbortQueuedPower* casted_ev = static_cast<AbortQueuedPower*>(ev);
 
     if(ent->m_queued_powers.isEmpty())
         return;
@@ -88,9 +88,10 @@ void PowerService::on_set_default_power(Entity* ent, Event* ev)
     qCDebug(logMapEvents) << "Set Default Power:" << casted_ev->powerset_idx << casted_ev->power_idx;
 }
 
-void PowerService::on_unset_default_power(Entity* ent, Event* ev)
+void PowerService::on_unset_default_power(Entity* ent, Event* /*ev*/)
 {
-    UnsetDefaultPower* casted_ev = static_cast<UnsetDefaultPower *>(ev);
+    // unused event
+    // UnsetDefaultPower* casted_ev = static_cast<UnsetDefaultPower *>(ev);
     PowerTrayGroup *ptray = &ent->m_char->m_char_data.m_trays;
 
     ptray->m_has_default_power = false;

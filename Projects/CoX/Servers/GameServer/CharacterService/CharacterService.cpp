@@ -10,6 +10,7 @@
 #include "GameData/playerdata_definitions.h"
 #include "GameData/Character.h"
 #include "GameData/EntityHelpers.h"
+#include "GameData/CharacterHelpers.h"
 #include "Messages/Map/MapEvents.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include <QtCore/QDebug>
@@ -37,6 +38,33 @@ void CharacterService::on_levelup_response(Entity* ent, Event *ev)
         increaseLevel(*ent);
 
     qCDebug(logMapEvents) << "Entity: " << ent->m_idx << "has received LevelUpResponse" << casted_ev->button_id << casted_ev->result;
+}
+
+void CharacterService::on_recv_costume_change(Entity* ent, Event *ev)
+{
+    RecvCostumeChange* casted_ev = static_cast<RecvCostumeChange *>(ev);
+    qCDebug(logTailor) << "Entity: " << ent->m_idx << "has received CostumeChange";
+
+    uint32_t idx = getCurrentCostumeIdx(*ent->m_char);
+    ent->m_char->saveCostume(idx, casted_ev->m_new_costume);
+    ent->m_rare_update = true; // re-send costumes, they've changed.
+    markEntityForDbStore(ent, DbStoreFlags::Full);
+}
+
+void CharacterService::on_recv_selected_titles(Entity* ent, Event *ev)
+{
+    RecvSelectedTitles* casted_ev = static_cast<RecvSelectedTitles*>(ev);
+
+    // TODO in Helper classes refactoring - these functions should return the command and not send them to the session by themselves
+    sendContactDialogClose(*ent->m_client); // must do this here, due to I1 client bug
+
+    QString generic, origin, special;
+    generic = getGenericTitle(casted_ev->m_generic);
+    origin  = getOriginTitle(casted_ev->m_origin);
+    special = getSpecialTitle(*ent->m_char);
+
+    setTitles(*ent->m_char, casted_ev->m_has_prefix, generic, origin, special);
+    qCDebug(logMapEvents) << "Entity sending titles: " << ent->m_idx << casted_ev->m_has_prefix << generic << origin << special;
 }
 
 

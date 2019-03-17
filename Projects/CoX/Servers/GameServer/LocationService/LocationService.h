@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "Common/Servers/ClientManager.h"
 #include "Common/Servers/InternalEvents.h"
 #include "Servers/MapServer/ScriptingEngine.h"
 

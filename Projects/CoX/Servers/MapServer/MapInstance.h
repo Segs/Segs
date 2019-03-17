@@ -24,6 +24,8 @@
 #include "GameServer/CharacterService/EnhancementService/EnhancementService.h"
 #include "GameServer/CharacterService/InspirationService/InspirationService.h"
 #include "GameServer/CharacterService/PowerService/PowerService.h"
+#include "GameServer/TransactionService/TransactionService.h"
+#include "GameServer/ZoneTransferService/ZoneTransferService.h"
 
 #include <map>
 #include <memory>
@@ -65,8 +67,6 @@ class ConnectRequest;
 class ChatDividerMoved;
 class MiniMapState;
 class ClientResumedRendering;
-class LocationVisited;
-class PlaqueVisited;
 class EnterDoor;
 class ChangeStance;
 class SetDestination;
@@ -78,7 +78,6 @@ class UnqueueAll;
 class TargetChatChannelSelected;
 class SwitchTray;
 class InteractWithEntity;
-class RecvSelectedTitles;
 class DialogButton;
 class MapXferComplete;
 class InitiateMapXfer;
@@ -86,16 +85,10 @@ struct ClientMapXferMessage;
 struct MapSwapCollisionMessage;
 class AwaitingDeadNoGurney;
 class BrowserClose;
-class LevelUpResponse;
-class TradeWasCancelledMessage;
-class TradeWasUpdatedMessage;
-class RecvCostumeChange;
 class DeadNoGurneyOK;
 class ReceiveContactStatus;
 class ReceiveTaskDetailRequest;
 class SouvenirDetailRequest;
-class StoreSellItem;
-class StoreBuyItem;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -133,6 +126,8 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<InspirationService>     m_inspiration_service;
         std::unique_ptr<PowerService>           m_power_service;
         std::unique_ptr<LocationService>        m_location_service;
+        std::unique_ptr<TransactionService>     m_transaction_service;
+        std::unique_ptr<ZoneTransferService>    m_zone_transfer_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -171,11 +166,13 @@ public:
         void                    setSpawnLocation(Entity &e, const QString &spawnLocation);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
         QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
-        QHash<QString, MapXferData> get_map_door_transfers();
-        QHash<QString, MapXferData> get_map_zone_transfers();
-        QString                 getNearestDoor(glm::vec3 location);
 
-        void send_player_update(Entity *e);
+        QHash<QString, MapXferData> get_map_transfers();
+        QHash<QString, MapXferData> get_map_zone_transfers();
+        QHash<QString, MapXferData> get_map_door_transfers();
+        QString getNearestDoor(glm::vec3 location);
+
+        void                    send_player_update(Entity *e);
         void                    add_chat_message(Entity *sender, QString &msg_text);
         void                    startTimer(uint32_t entity_idx);
         void                    stopTimer(uint32_t entity_idx);
@@ -205,10 +202,6 @@ protected:
         void on_expect_client(SEGSEvents::ExpectMapClientRequest *ev);
         void on_expect_client_response(SEGSEvents::ExpectMapClientResponse *ev);
 
-        void on_initiate_map_transfer(SEGSEvents::InitiateMapXfer *ev);
-        void on_map_xfer_complete(SEGSEvents::MapXferComplete *ev);
-        void on_map_swap_collision(SEGSEvents::MapSwapCollisionMessage *ev);
-
         void on_link_lost(SEGSEvents::Event *ev);
         void on_disconnect(SEGSEvents::DisconnectRequest *ev);
         void on_scene_request(SEGSEvents::SceneRequest *ev);
@@ -229,12 +222,11 @@ protected:
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
         void on_window_state(SEGSEvents::WindowState *ev);
         void on_console_command(SEGSEvents::ConsoleCommand *ev);
-        void on_client_quit(SEGSEvents::ClientQuit *ev);
-        void on_connection_request(SEGSEvents::ConnectRequest *ev);
         void on_command_chat_divider_moved(SEGSEvents::ChatDividerMoved *ev);
         void on_minimap_state(SEGSEvents::MiniMapState *ev);
         void on_client_resumed(SEGSEvents::ClientResumedRendering *ev);
-        void on_enter_door(SEGSEvents::EnterDoor *ev);
+        void on_client_quit(SEGSEvents::ClientQuit *ev);
+        void on_connection_request(SEGSEvents::ConnectRequest* ev);
         void on_change_stance(SEGSEvents::ChangeStance *ev);
         void on_set_destination(SEGSEvents::SetDestination *ev);
         void on_has_entered_door(SEGSEvents::HasEnteredDoor *ev);
@@ -247,21 +239,15 @@ protected:
 
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
-        void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);
 
         void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
         void on_dead_no_gurney_ok(SEGSEvents::DeadNoGurneyOK *ev);
         void on_browser_close(SEGSEvents::BrowserClose *ev);
-        void on_recv_costume_change(SEGSEvents::RecvCostumeChange *ev);
 
-        void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
-        void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);
         void on_receive_contact_status(SEGSEvents::ReceiveContactStatus *ev);
         void on_receive_task_detail_request(SEGSEvents::ReceiveTaskDetailRequest *ev);
         void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
-        void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
-        void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
 
         // Service <--> MapInstance
         void on_service_to_client_response(SEGSEvents::ServiceToClientData* data);

@@ -39,11 +39,14 @@ ServiceToClientData* InspirationService::on_activate_inspiration(Entity* ent, Ev
     bool success = useInspiration(*ent, casted_ev->slot_idx, casted_ev->row_idx);
 
     if(!success)
-        return new ServiceToClientData(ent, {}, QString());
+        return nullptr;
 
     std::unique_ptr<FloatingInfo> cmd = std::make_unique<FloatingInfo>(
                 ent->m_idx, "Inspired!", FloatingInfoStyle::FloatingInfo_Attention, ACTIVATE_INSPIRATION_DELAY);
 
-    return new ServiceToClientData(ent, {}, QString());
+    std::vector<std::unique_ptr<GameCommandEvent>> cmds;
+    cmds.push_back(std::move(cmd));
+
+    return new ServiceToClientData(ent, {std::move(cmds)}, QString());
     // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
 }
