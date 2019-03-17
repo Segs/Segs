@@ -13,9 +13,7 @@
 #include "CharacterHelpers.h"
 #include "Character.h"
 #include "Costume.h"
-#include "Settings.h"
 #include <QDateTime>
-#include <QSettings>
 
 /*
  * Character Methods
