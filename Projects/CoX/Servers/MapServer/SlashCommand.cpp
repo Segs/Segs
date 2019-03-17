@@ -2044,6 +2044,9 @@ void cmdHandler_SuperGroupInvite(const QString &cmd, MapClientSession &sess)
     if(space == -1 || name.isEmpty())
     {
         tgt = getEntity(&sess, getTargetIdx(*sess.m_ent));
+        if(tgt == nullptr)
+            tgt = sess.m_ent;
+
         name = tgt->name();
     }
     else

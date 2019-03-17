@@ -55,31 +55,12 @@ CREATE TABLE `table_versions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `table_versions` (`id`, `table_name`, `version`, `last_update`) VALUES
-<<<<<<< HEAD
-<<<<<<< HEAD
-(1, 'db_version', 8, '2018-10-02 02:56:43'),
-=======
-(1, 'db_version', 8, '2018-05-03 17:54:32'),
->>>>>>> upstream/develop
-(2, 'table_versions', 0, '2017-11-11 08:57:42'),
-(3, 'accounts', 1, '2018-05-03 12:52:03'),
-(4, 'characters', 8, '2018-05-04 14:58:27'),
-(5, 'costume', 0, '2017-11-11 08:57:43'),
-<<<<<<< HEAD
-(7, 'supergroups', 2, '2018-10-02 02:56:43');
-
-=======
-(7, 'supergroups', 1, '2018-05-03 12:52:53'),
-(8, 'emails', 0, '2018-09-23 08:00;00');
->>>>>>> upstream/develop
-=======
-(1, 'db_version', 9, '2018-10-22 22:56:43'),
+(1, 'db_version', 10, '2019-03-17 22:56:43'),
 (2, 'table_versions', 0, '2017-11-11 08:57:42'),
 (3, 'accounts', 1, '2018-05-03 12:52:03'),
 (4, 'characters', 9, '2018-10-22 22:56:43'),
-(7, 'supergroups', 2, '2018-10-22 22:56:43'),
+(7, 'supergroups', 3, '2019-03-17 22:56:43'),
 (8, 'emails', 0, '2018-09-23 08:00:00');
->>>>>>> upstream/develop
 
 ALTER TABLE `accounts`
   ADD PRIMARY KEY (`id`);

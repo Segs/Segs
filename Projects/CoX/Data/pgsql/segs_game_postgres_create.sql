@@ -8,29 +8,14 @@ CREATE TABLE "table_versions" (
   OIDS=FALSE
 );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-INSERT INTO table_versions VALUES(1,'db_version',8,'2018-10-02 02:56:43');
-=======
-INSERT INTO table_versions VALUES(1,'db_version',8,'2018-05-03 17:52:33');
->>>>>>> upstream/develop
-INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
-INSERT INTO table_versions VALUES(3,'accounts',1,'2018-05-03 14:06:03');
-INSERT INTO table_versions VALUES(4,'characters',8,'2018-05-04 14:58:27');
-INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
-<<<<<<< HEAD
-INSERT INTO table_versions VALUES(7,'supergroups',2,'2018-10-02 02:56:43');
-=======
-INSERT INTO table_versions VALUES(7,'supergroups',1,'2018-05-03 14:06:43');
-=======
-INSERT INTO table_versions VALUES(1,'db_version',9,'2018-10-22 22:56:43');
+
+
+INSERT INTO table_versions VALUES(1,'db_version',10,'2019-03-17 22:56:43');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
 INSERT INTO table_versions VALUES(3,'accounts',1,'2018-05-03 14:06:03');
 INSERT INTO table_versions VALUES(4,'characters',9,'2018-10-22 22:56:43');
-INSERT INTO table_versions VALUES(7,'supergroups',1,'2018-10-22 22:56:43');
->>>>>>> upstream/develop
+INSERT INTO table_versions VALUES(7,'supergroups',3,'2019-03-17 22:56:43');
 INSERT INTO table_versions VALUES(8,'emails',0,'2018-09-23 08:00:00');
->>>>>>> upstream/develop
 
 CREATE TABLE "accounts" (
     "id" integer NOT NULL,

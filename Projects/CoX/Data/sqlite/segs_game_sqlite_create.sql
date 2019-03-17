@@ -7,29 +7,12 @@ CREATE TABLE `table_versions` (
     `last_update` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-INSERT INTO table_versions VALUES(1,'db_version',8,'2018-10-02 02:56:43');
-=======
-INSERT INTO table_versions VALUES(1,'db_version',8,'2018-05-03 17:52:33');
->>>>>>> upstream/develop
+INSERT INTO table_versions VALUES(1,'db_version',10,'2019-03-17 22:56:43');
 INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
-INSERT INTO table_versions VALUES(3,'accounts',1,'2017-05-03 12:56:03');
-INSERT INTO table_versions VALUES(4,'characters',8,'2018-05-04 14:58:27');
-INSERT INTO table_versions VALUES(5,'costume',0,'2017-11-11 08:57:43');
-<<<<<<< HEAD
-INSERT INTO table_versions VALUES(7,'supergroups',2,'2018-10-02 02:56:43');
-=======
-INSERT INTO table_versions VALUES(7,'supergroups',1,'2018-05-03 12:56:43');
-=======
-INSERT INTO table_versions VALUES(1,'db_version',9,'2018-10-22 22:56:43');
-INSERT INTO table_versions VALUES(2,'table_versions',0,'2017-11-11 08:57:42');
-INSERT INTO table_versions VALUES(3,'accounts',1,'2017-05-03 12:56:03');
+INSERT INTO table_versions VALUES(3,'accounts',1,'2018-05-03 14:06:03');
 INSERT INTO table_versions VALUES(4,'characters',9,'2018-10-22 22:56:43');
-INSERT INTO table_versions VALUES(7,'supergroups',2,'2018-10-22 22:56:43');
->>>>>>> upstream/develop
+INSERT INTO table_versions VALUES(7,'supergroups',3,'2019-03-17 22:56:43');
 INSERT INTO table_versions VALUES(8,'emails',0,'2018-09-23 08:00:00');
->>>>>>> upstream/develop
 
 CREATE TABLE `accounts` (
     `id` INTEGER PRIMARY KEY,
@@ -53,15 +36,10 @@ CREATE TABLE `supergroups` (
     `id`	INTEGER PRIMARY KEY AUTOINCREMENT,
     `sg_name`	TEXT NOT NULL,
     `sg_data`	BLOB,
-<<<<<<< HEAD
-    `sg_members`    BLOB
-=======
     `sg_members`	BLOB
->>>>>>> upstream/develop
 );
 
-<<<<<<< HEAD
-=======
+
 CREATE TABLE 'emails'(
 	`id`	INTEGER PRIMARY KEY AUTOINCREMENT,
 	`sender_id`	INTEGER NOT NULL,
@@ -70,6 +48,6 @@ CREATE TABLE 'emails'(
 	FOREIGN KEY(`sender_id`) REFERENCES characters ( id ) ON DELETE CASCADE,
 	FOREIGN KEY(`recipient_id`) REFERENCES characters ( id ) ON DELETE CASCADE
 );
->>>>>>> upstream/develop
+
 COMMIT;
 
