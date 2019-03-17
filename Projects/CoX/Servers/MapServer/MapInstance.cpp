@@ -381,15 +381,6 @@ void MapInstance::dispatch( Event *ev )
         case evCookieRequest:
             on_cookie_confirm(static_cast<CookieRequest *>(ev));
             break;
-        case evChangeStance:
-            on_change_stance(static_cast<ChangeStance *>(ev));
-            break;
-        case evSetDestination:
-            on_set_destination(static_cast<SetDestination *>(ev));
-            break;
-        case evWindowState:
-            on_window_state(static_cast<WindowState *>(ev));
-            break;
         case evConsoleCommand:
             on_console_command(static_cast<ConsoleCommand *>(ev));
             break;
@@ -407,9 +398,6 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
-            break;
-        case evUnqueueAll:
-            on_unqueue_all(static_cast<UnqueueAll *>(ev));
             break;
         case evInteractWithEntity:
             on_interact_with(static_cast<InteractWithEntity *>(ev));
@@ -442,6 +430,12 @@ void MapInstance::dispatch( Event *ev )
         case evRecvNewPower:
             m_power_service->on_recv_new_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
+        case evChangeStance:
+            m_power_service->on_change_stance(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evUnqueueAll:
+            m_power_service->on_unqueue_all(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
             // ---------- Client Option Service ------------
         case evSelectKeybindProfile:
             m_client_option_service->on_select_keybind_profile(m_session_store.session_from_event(ev).m_ent, ev);
@@ -460,6 +454,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evSaveClientOptions:
             m_client_option_service->on_client_options(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evWindowState:
+            m_client_option_service->on_window_state(m_session_store.session_from_event(ev).m_ent, ev);
             break;
             // ---------- Email Service ----------------
         case evEmailHeaderResponse:
@@ -541,6 +538,9 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evPlaqueVisited:
             on_service_to_client_response(m_location_service->on_plaque_visited(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evSetDestination:
+            on_service_to_client_response(m_location_service->on_set_destination(m_session_store.session_from_event(ev).m_ent, ev));
             break;
             // ----------------------- Zone Transfer Service -----------------
         case evInitiateMapXfer:
@@ -1100,20 +1100,6 @@ void MapInstance::on_cookie_confirm(CookieRequest * ev)
     res->abs_time = 30 * 100 * (m_world->accumulated_time);
     buildEntityResponse(res, session, EntityUpdateMode::FULL, false);
     session.link()->putq(res);
-}
-
-void MapInstance::on_window_state(WindowState * ev)
-{
-    // Save GUISettings to character entity and entry in the database.
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *e = session.m_ent;
-
-    int idx = ev->wnd.m_idx;
-    e->m_player->m_gui.m_wnds.at(idx) = ev->wnd;
-
-    qCDebug(logGUI) << "Received window state" << ev->wnd.m_idx << "-" << ev->wnd.m_mode;
-    if(logGUI().isDebugEnabled())
-        e->m_player->m_gui.m_wnds.at(idx).guiWindowDump();
 }
 
 QString process_replacement_strings(MapClientSession *sender,const QString &msg_text)
@@ -2091,32 +2077,6 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
 }
 
-void MapInstance::on_change_stance(ChangeStance * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    session.m_ent->m_stance = ev->m_stance;
-    if(ev->m_stance.has_stance)
-        qCDebug(logMapEvents) << "Change stance request" << session.m_ent->m_idx << ev->m_stance.pset_idx << ev->m_stance.pow_idx;
-    else
-        qCDebug(logMapEvents) << "Exit stance request" << session.m_ent->m_idx;
-}
-
-void MapInstance::on_set_destination(SetDestination * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    qCWarning(logMapEvents) << QString("SetDestination request: %1 <%2, %3, %4>")
-                                .arg(ev->point_index)
-                                .arg(ev->destination.x, 0, 'f', 1)
-                                .arg(ev->destination.y, 0, 'f', 1)
-                                .arg(ev->destination.z, 0, 'f', 1);
-
-    // store destination, confirm accuracy and send back to client as waypoint.
-    setCurrentDestination(*session.m_ent, ev->point_index, ev->destination);
-    sendWaypoint(session, ev->point_index, ev->destination);
-}
-
 void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2154,19 +2114,6 @@ void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
     ent->m_player->m_gui.m_chat_bottom_flags = ev->m_chat_bottom_flags;
 
     qCDebug(logMapEvents) << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
-}
-
-void MapInstance::on_unqueue_all(UnqueueAll *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    // What else could go here?
-    ent->m_target_idx = -1;
-    ent->m_assist_target_idx = -1;
-    ent->m_queued_powers.clear();
-
-    qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
 
 void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)

@@ -93,7 +93,7 @@ ServiceToClientData* TransactionService::on_trade_cancelled(Entity* ent, Event* 
     }
 
     const uint32_t tgt_db_id = ent->m_trade->getOtherMember(*ent).m_db_id;
-    Entity* const tgt = getEntityByDBID(ent->m_client->m_current_map, tgt_db_id);
+    Entity* tgt = getEntityByDBID(ent->m_client->m_current_map, tgt_db_id);
     if(tgt == nullptr)
     {
         // Only one side left in the game.
@@ -124,7 +124,7 @@ ServiceToClientData* TransactionService::on_trade_updated(Entity* ent, Event* ev
 {
     TradeWasUpdatedMessage* casted_ev = static_cast<TradeWasUpdatedMessage *>(ev);
 
-    Entity* const tgt = getEntityByDBID(ent->m_client->m_current_map, casted_ev->m_info.m_db_id);
+    Entity* tgt = getEntityByDBID(ent->m_client->m_current_map, casted_ev->m_info.m_db_id);
 
     if(tgt == nullptr)
         return nullptr;

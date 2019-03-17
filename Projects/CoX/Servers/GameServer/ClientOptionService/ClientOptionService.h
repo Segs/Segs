@@ -20,5 +20,6 @@ public:
     void on_remove_keybind(Entity* ent, SEGSEvents::Event *ev);
     void on_client_options(Entity* ent, SEGSEvents::Event *ev);
     void on_switch_viewpoint(Entity* ent, SEGSEvents::Event *ev);
+    void on_window_state(Entity* ent, SEGSEvents::Event *ev);
 protected:
 };

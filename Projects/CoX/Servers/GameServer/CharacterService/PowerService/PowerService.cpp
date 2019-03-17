@@ -106,3 +106,26 @@ void PowerService::on_recv_new_power(Entity* ent, Event* ev)
     RecvNewPower* casted_ev = static_cast<RecvNewPower *>(ev);
     addPower(ent->m_char->m_char_data, casted_ev->ppool);
 }
+
+void PowerService::on_change_stance(Entity* ent, Event* ev)
+{
+    ChangeStance* casted_ev = static_cast<ChangeStance*>(ev);
+
+    ent->m_stance = casted_ev->m_stance;
+    if(casted_ev->m_stance.has_stance)
+        qCDebug(logMapEvents) << "Change stance request" << ent->m_idx << casted_ev->m_stance.pset_idx << casted_ev->m_stance.pow_idx;
+    else
+        qCDebug(logMapEvents) << "Exit stance request" << ent->m_idx;
+}
+
+void PowerService::on_unqueue_all(Entity* ent, Event */*ev*/)
+{
+    // unused event, another case of the event simply used to find the session
+
+    // What else could go here?
+    ent->m_target_idx = -1;
+    ent->m_assist_target_idx = -1;
+    ent->m_queued_powers.clear();
+
+    qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
+}

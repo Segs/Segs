@@ -67,4 +67,3 @@ void CharacterService::on_recv_selected_titles(Entity* ent, Event *ev)
     qCDebug(logMapEvents) << "Entity sending titles: " << ent->m_idx << casted_ev->m_has_prefix << generic << origin << special;
 }
 
-

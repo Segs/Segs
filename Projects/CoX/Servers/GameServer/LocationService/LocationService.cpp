@@ -7,6 +7,7 @@
 
 #include "LocationService.h"
 #include "GameData/Entity.h"
+#include "GameData/EntityHelpers.h"
 #include "Messages/Map/MapEvents.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include <QtCore/QDebug>
@@ -49,4 +50,23 @@ ServiceToClientData* LocationService::on_plaque_visited(Entity* ent, Event* ev)
     scriptData->locArg = casted_ev->m_pos;
 
     return new ServiceToClientData(ent, {scriptData}, QString());
+}
+
+ServiceToClientData* LocationService::on_set_destination(Entity* ent, Event* ev)
+{
+    SetDestination* casted_ev = static_cast<SetDestination*>(ev);
+
+    qCWarning(logMapEvents) << QString("SetDestination request: %1 <%2, %3, %4>")
+                                .arg(casted_ev->point_index)
+                                .arg(casted_ev->destination.x, 0, 'f', 1)
+                                .arg(casted_ev->destination.y, 0, 'f', 1)
+                                .arg(casted_ev->destination.z, 0, 'f', 1);
+
+    // store destination, confirm accuracy and send back to client as waypoint.
+    setCurrentDestination(*ent, casted_ev->point_index, casted_ev->destination);
+
+    // this one should return a GameCommandEvent
+    sendWaypoint(*ent->m_client, casted_ev->point_index, casted_ev->destination);
+
+    return nullptr;
 }

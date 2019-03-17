@@ -67,22 +67,12 @@ class ConnectRequest;
 class ChatDividerMoved;
 class MiniMapState;
 class ClientResumedRendering;
-class EnterDoor;
-class ChangeStance;
-class SetDestination;
-class HasEnteredDoor;
 class DescriptionAndBattleCry;
 class EntityInfoRequest;
 class ChatReconfigure;
-class UnqueueAll;
 class TargetChatChannelSelected;
-class SwitchTray;
 class InteractWithEntity;
 class DialogButton;
-class MapXferComplete;
-class InitiateMapXfer;
-struct ClientMapXferMessage;
-struct MapSwapCollisionMessage;
 class AwaitingDeadNoGurney;
 class BrowserClose;
 class DeadNoGurneyOK;
@@ -220,21 +210,16 @@ protected:
         void send_character_update(Entity *e);
 
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
-        void on_window_state(SEGSEvents::WindowState *ev);
         void on_console_command(SEGSEvents::ConsoleCommand *ev);
         void on_command_chat_divider_moved(SEGSEvents::ChatDividerMoved *ev);
         void on_minimap_state(SEGSEvents::MiniMapState *ev);
         void on_client_resumed(SEGSEvents::ClientResumedRendering *ev);
         void on_client_quit(SEGSEvents::ClientQuit *ev);
         void on_connection_request(SEGSEvents::ConnectRequest* ev);
-        void on_change_stance(SEGSEvents::ChangeStance *ev);
-        void on_set_destination(SEGSEvents::SetDestination *ev);
-        void on_has_entered_door(SEGSEvents::HasEnteredDoor *ev);
         void on_description_and_battlecry(SEGSEvents::DescriptionAndBattleCry *ev);
         void on_entity_info_request(SEGSEvents::EntityInfoRequest *ev);
         void on_chat_reconfigured(SEGSEvents::ChatReconfigure *ev);
 
-        void on_unqueue_all(SEGSEvents::UnqueueAll *ev);
         void on_target_chat_channel_selected(SEGSEvents::TargetChatChannelSelected *ev);
 
         void on_emote_command(const QString &command, Entity *ent);

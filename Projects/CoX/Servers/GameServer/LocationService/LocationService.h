@@ -16,6 +16,7 @@ private:
 public:
     SEGSEvents::ServiceToClientData* on_location_visited(Entity* ent, SEGSEvents::Event *ev);
     SEGSEvents::ServiceToClientData* on_plaque_visited(Entity* ent, SEGSEvents::Event *ev);
+    SEGSEvents::ServiceToClientData* on_set_destination(Entity* ent, SEGSEvents::Event *ev);
 
 protected:
 };

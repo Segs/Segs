@@ -23,6 +23,8 @@ public:
     void on_abort_queued_power(Entity* ent, SEGSEvents::Event* ev);
     void on_set_default_power(Entity* ent, SEGSEvents::Event* ev);
     void on_unset_default_power(Entity* ent, SEGSEvents::Event* ev);
+    void on_change_stance(Entity* ent, SEGSEvents::Event* ev);
+    void on_unqueue_all(Entity* ent, SEGSEvents::Event* ev);
 protected:
 };
 
