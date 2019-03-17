@@ -27,6 +27,7 @@
 #include "Common/GameData/Task.h"
 #include "TimeHelpers.h"
 
+#include <array>
 #include <lua/lua.hpp>
 #include <sol2/sol.hpp>
 #include <memory>
