@@ -14,6 +14,7 @@
 #include "GameData/EntityHelpers.h"
 #include "Messages/Map/MapEvents.h"
 #include "Messages/Map/StoresEvents.h"
+#include "MapServer/MapInstance.h"
 #include "MapServer/MapClientSession.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include <QtCore/QDebug>
