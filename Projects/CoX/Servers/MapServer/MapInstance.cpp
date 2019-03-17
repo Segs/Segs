@@ -3054,10 +3054,7 @@ void MapInstance::send_character_update(Entity *e)
                                         cerealizedPlayerData,
 
                                         // plain values
-                                        e->m_char->getCurrentCostume()->m_body_type,
-                                        e->m_char->getCurrentCostume()->m_height,
-                                        e->m_char->getCurrentCostume()->m_physique,
-                                        uint32_t(e->m_supergroup.m_SG_id),
+                                        e->m_char->m_char_data.m_supergroup.m_sg_db_id,
                                         e->m_char->m_db_id
         }), (uint64_t)1);
 

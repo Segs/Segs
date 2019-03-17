@@ -13,12 +13,13 @@
 #include "GameServer.h"
 #include "Messages/Game/GameEvents.h"
 
-#include "FriendshipService/FriendHandler.h"
 #include "ConfigExtension.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
 #include "Common/Servers/ServerEndpoint.h"
+#include "FriendshipService/FriendHandler.h"
 #include "EmailService/EmailHandler.h"
+#include "SuperGroupService/SuperGroupHandler.h"
 #include "Settings.h"
 
 #include <ace/Synch.h>
@@ -54,6 +55,7 @@ class GameServer::PrivateData
 public:
     std::unique_ptr<FriendHandler> m_friendship_service;
     std::unique_ptr<EmailHandler> m_email_service;
+    std::unique_ptr<SuperGroupHandler> m_supergroup_service;
     ACE_INET_Addr           m_location; // this value is sent to the clients
     ACE_INET_Addr           m_listen_point; // the server binds here
     GameLinkEndpoint *      m_endpoint=nullptr;

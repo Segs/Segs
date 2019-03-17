@@ -148,7 +148,7 @@ void storeServerControlState(BitStream &bs,Entity *self)
     }
 }
 
-void storeControlState(BitStream &bs,Entity *self)
+void storeControlState(BitStream &bs, Entity *self)
 {
     PUTDEBUG("before control state");
     storeServerControlState(bs,self);
@@ -165,19 +165,17 @@ namespace
 {
 
 
-void storeSuperStats(BitStream &bs)
+void storeSuperStats(BitStream &bs, CharacterData &self)
 {
-    Entity *e = src.m_client->m_ent;
-    assert(e);
     bool has_sg_stats = false;
 
-    if(!e->m_char->m_char_data.m_supergroup.m_has_supergroup)
+    if(!self.m_supergroup.m_has_supergroup)
     {
         bs.StorePackedBits(1, 0);
         return;
     }
 
-    SuperGroup * sg = getSuperGroupByIdx(e->m_char->m_char_data.m_supergroup.m_sg_db_id);
+    SuperGroup * sg = getSuperGroupByIdx(self.m_supergroup.m_sg_db_id);
     if(sg == nullptr)
     {
         qFatal("getSuperGroupByIdx returned nullptr in storeSuperStats");
@@ -679,7 +677,7 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
 
 } // end of anonymous namespace
 
-void storeClientData(BitStream &bs,Entity *ent,bool incremental)
+void storeClientData(BitStream &bs, Entity *ent, bool incremental)
 {
     PUTDEBUG("Before character data");
     if(!incremental)
@@ -687,7 +685,7 @@ void storeClientData(BitStream &bs,Entity *ent,bool incremental)
         //full_update - > receiveCharacterFromServer
         // initial character update = level/name/class/origin/map_name
         //m_client->char_entity()->m_char->m_ent=m_client->char_entity();
-        serialize_char_full_update(*ent,bs);
+        serialize_char_full_update(*ent, bs);
     }
     else
     {
@@ -695,13 +693,13 @@ void storeClientData(BitStream &bs,Entity *ent,bool incremental)
         player_char.sendFullStats(bs);
     }
     //qCDebug(logPowers) << "Before storePowerInfoUpdate";
-    storePowerInfoUpdate(bs,ent);
+    storePowerInfoUpdate(bs, ent);
     //qCDebug(logPowers) << "After storePowerInfoUpdate";
-    storeTeamList(bs,ent);
-    storeSuperStats(bs);
+    storeTeamList(bs, ent);
+    storeSuperStats(bs, ent->m_char->m_char_data);
     storeGroupDyn(bs);
 
-    bs.StoreBits(1,ent->m_force_camera_dir);
+    bs.StoreBits(1, ent->m_force_camera_dir);
     if(ent->m_force_camera_dir)
     {
         bs.StoreFloat(ent->m_states.current()->m_camera_pyr.p); // force camera_pitch
@@ -711,7 +709,7 @@ void storeClientData(BitStream &bs,Entity *ent,bool incremental)
     PUTDEBUG("After character data");
 }
 
-void storeFollowupCommands(BitStream &bs,MapClientSession *m_client)
+void storeFollowupCommands(BitStream &bs, MapClientSession *m_client)
 {
     // Server messages follow the entity update.
     auto v= std::move(m_client->m_contents);

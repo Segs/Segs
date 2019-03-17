@@ -26,8 +26,8 @@ target_link_libraries(GameServer PUBLIC Qt5::Core)
 target_link_libraries(GameServer INTERFACE SEGS_Components gameData )
 
 add_subdirectory(FriendshipService)
-add_subdirectory(SuperGroupService)
 add_subdirectory(EmailService)
+add_subdirectory(SuperGroupService)
 
 target_link_libraries(GameServer PUBLIC Qt5::Core FriendshipService EmailService SuperGroupService )
 target_link_libraries(GameServer INTERFACE SEGS_Components gameData)

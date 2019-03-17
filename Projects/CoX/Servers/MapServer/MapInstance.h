@@ -198,7 +198,6 @@ public:
         QHash<QString, MapXferData> get_map_zone_transfers();
         QString                 getNearestDoor(glm::vec3 location);
 
-        void send_player_update(Entity *e);
         void                    add_chat_message(Entity *sender, QString &msg_text);
         void                    startTimer(uint32_t entity_idx);
         void                    stopTimer(uint32_t entity_idx);
