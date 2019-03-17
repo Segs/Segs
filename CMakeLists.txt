@@ -195,7 +195,7 @@ endif()
 # If SEGS is not built from a Git repository, default the version info to
 # reasonable values.
 if(NOT SEGS_REVISION)
-  set(SEGS_DESCRIBE "${SEGS_VERSION_MAJOR}.${SEGS_VERSION_MINOR}")
+  set(SEGS_DESCRIPTION "${SEGS_VERSION_MAJOR}.${SEGS_VERSION_MINOR}")
   set(SEGS_REVISION "${SEGS_DESCRIPTION} (no further info)")
   set(SEGS_BRANCH "develop")
 endif()
