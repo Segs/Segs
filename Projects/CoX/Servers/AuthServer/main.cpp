@@ -312,8 +312,6 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     qInfo().noquote() << VersionInfo::getCopyright();
     qInfo().noquote() << VersionInfo::getAuthVersion();
 
-    qInfo().noquote() << "main";
-
     // Create jsonrpc admin interface
     startRPCServer();
 
