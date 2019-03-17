@@ -82,18 +82,10 @@ void SettingsDialog::auto_logout_checkbox_validator()
 
 void SettingsDialog::xp_mod_checkbox_validator()
 {
-    if(ui->xp_mod_check->isChecked())
-    {
-        ui->xp_mod_multiplier_spin->setEnabled(true);
-        ui->xp_mod_startdate_edit->setEnabled(true);
-        ui->xp_mod_enddate_edit->setEnabled(true);
-    }
-    else
-    {
-        ui->xp_mod_multiplier_spin->setEnabled(false);
-        ui->xp_mod_startdate_edit->setEnabled(false);
-        ui->xp_mod_enddate_edit->setEnabled(false);
-    }
+    bool is_checked = ui->xp_mod_check->isChecked();
+    ui->xp_mod_multiplier_spin->setEnabled(is_checked);
+    ui->xp_mod_startdate_edit->setEnabled(is_checked);
+    ui->xp_mod_enddate_edit->setEnabled(is_checked);
 }
 
 void SettingsDialog::open_settings_dialog()

@@ -103,27 +103,6 @@ void setXP(Character &c, uint32_t val)
     c.m_char_data.m_experience_points = val;
 }
 
-void grantXP(Character &c, uint32_t val) {
-    QSettings settings(Settings::getSettingsPath(),QSettings::IniFormat);
-
-    settings.beginGroup("Modifiers");
-    if (settings.value("uses_xp_mod").toBool())
-    {
-        QDateTime currentdate = QDateTime::currentDateTime();
-        QDateTime xp_mod_startdate = QDateTime::fromString(settings.value("xp_mod_startdate", "").toString(),
-            "M/d/yyyy h:mm AP");
-        QDateTime xp_mod_enddate = QDateTime::fromString(settings.value("xp_mod_enddate", "").toString(),
-            "M/d/yyyy h:mm AP");
-        if (xp_mod_startdate <= currentdate && xp_mod_enddate >= currentdate)
-        {
-            val *= settings.value("xp_mod_multiplier").toDouble();
-        }
-    }
-    settings.endGroup();
-
-    c.m_char_data.m_experience_points += val;
-}
-
 void setDebt(Character &c, uint32_t val)
 {
     c.m_char_data.m_experience_debt = val;

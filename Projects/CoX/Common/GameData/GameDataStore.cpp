@@ -463,15 +463,25 @@ bool GameDataStore::read_npcs(const QString &directory_path)
 
 bool GameDataStore::read_settings(const QString &/*directory_path*/)
 {
-    qInfo() << "Loading AFK settings...";
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
+    qInfo() << "Loading AFK settings...";
     config.beginGroup(QStringLiteral("AFK Settings"));
         m_time_to_afk = config.value(QStringLiteral("time_to_afk"), "300").toInt();
         m_time_to_logout_msg = config.value(QStringLiteral("time_to_logout_msg"), "1080").toInt();
         m_time_to_auto_logout = config.value(QStringLiteral("time_to_auto_logout"), "120").toInt();
         m_uses_auto_logout = config.value(QStringLiteral("uses_auto_logout"), "true").toBool();
     config.endGroup(); // AFK Settings
+
+    qInfo() << "Loading Modifier settings...";
+    config.beginGroup(QStringLiteral("Modifiers"));
+        m_uses_xp_mod = config.value(QStringLiteral("uses_xp_mod"), "").toBool();
+        m_xp_mod_multiplier = config.value(QStringLiteral("xp_mod_multiplier"), "").toDouble();
+        m_xp_mod_startdate = QDateTime::fromString(config.value(QStringLiteral("xp_mod_startdate"), "").toString(),
+             "M/d/yyyy h:mm AP");
+        m_xp_mod_enddate = QDateTime::fromString(config.value(QStringLiteral("xp_mod_enddate"), "").toString(),
+             "M/d/yyyy h:mm AP");
+    config.endGroup(); // Modifiers
 
     return true;
 }
