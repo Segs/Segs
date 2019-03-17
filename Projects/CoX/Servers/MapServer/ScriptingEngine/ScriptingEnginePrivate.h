@@ -10,6 +10,7 @@
 #include <QString>
 #include <QSet>
 #include <sol2/sol.hpp>
+#include <array>
 
 class ScriptingEnginePrivate
 {
