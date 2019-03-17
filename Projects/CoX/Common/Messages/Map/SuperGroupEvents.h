@@ -66,7 +66,7 @@ public:
         qCDebug(logSuperGroups) << "SuperGroupResponse" << m_success;
         // if successful, send SG costume
         if(m_success)
-            serializeCostume(m_costume, bs);
+            m_costume.serializeCostume(bs);
     }
 
     EVENT_IMPL(SuperGroupResponse)
@@ -88,7 +88,7 @@ public:
     {
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 31
         // send costume
-        serializeCostume(m_costume, bs);
+        m_costume.serializeCostume(bs);
         qCDebug(logSuperGroups) << "SuperGroupCostume";
     }
 

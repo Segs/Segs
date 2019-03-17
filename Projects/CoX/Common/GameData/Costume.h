@@ -68,6 +68,7 @@ public:
 
     void storeCharselParts(BitStream &bs) const;
     void storeCharsel(BitStream &bs) const;
+    void serializeCostume(BitStream bs) const;
     void serializeToDb(QString &tgt) const;
     void serializeFromDb(const QString &src);
     void dump() const;

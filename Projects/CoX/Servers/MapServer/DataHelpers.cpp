@@ -220,15 +220,6 @@ bool isFriendOnline(Entity &src, uint32_t db_id)
     return getEntityByDBID(src.m_client->m_current_map, db_id) != nullptr;
 }
 
-void serializeCostume(Costume costume, BitStream bs)
-{
-    GameDataStore &data(getGameData());
-    // This method must be here, because NetStructures can't access g_GlobalMapServer =(
-    static const ColorAndPartPacker *packer = data.getPacker();
-
-    serializeto(costume, bs, packer);
-}
-
 void setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits)
 {
     g_interpolating = active;

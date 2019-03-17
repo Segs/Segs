@@ -47,7 +47,6 @@ Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *sess);
 void    positionTest(MapClientSession *tgt);
 bool    isFriendOnline(Entity &sess, uint32_t db_id);
-void    serializeCostume(Costume costume, BitStream bs);
 void    setInterpolationSettings(MapClientSession *sess, const bool active, const uint8_t level, const uint8_t bits);
 QString createMapMenu();
 

@@ -107,9 +107,16 @@ void Costume::storeCharsel(BitStream &bs) const
     bs.StoreBits(32, m_skin_color); // rgb ?
 }
 
+void Costume::serializeCostume(BitStream bs) const
+{
+    GameDataStore &data(getGameData());
+    // This method must be here, because NetStructures can't access g_GlobalMapServer =(
+    static const ColorAndPartPacker *packer = data.getPacker();
+
+    serializeto(*this, bs, packer);
+}
 
 template<class Archive>
-
 void serialize(Archive &arc, CostumePart &cp, uint32_t const version)
 {
     if (version != cp.class_version)
