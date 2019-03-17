@@ -157,13 +157,11 @@ public:
         int32_t             m_target_idx            = -1;
         int32_t             m_assist_target_idx     = -1;
 
-
         std::vector<Buffs>          m_buffs;
         QQueue<QueuedPowers>        m_queued_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
         PowerStance                 m_stance;
         bool                        m_update_buffs  = false;
-
 
         // Animations: Sequencers, NetFx, and TriggeredMoves
         std::vector<NetFx>  m_net_fx;
