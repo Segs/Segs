@@ -1295,6 +1295,14 @@ void giveXp(MapClientSession &sess, int xp)
     uint32_t lvl = getLevel(*sess.m_ent->m_char);
     uint32_t current_xp = getXP(*sess.m_ent->m_char);
 
+    GameDataStore &data(getGameData());
+    if (data.m_uses_xp_mod && 
+        data.m_xp_mod_startdate <= QDateTime::currentDateTime() && 
+        data.m_xp_mod_enddate >= QDateTime::currentDateTime())
+    {
+        xp *= data.m_xp_mod_multiplier;
+    }
+
     // TODO: Calculate XP - Debt difference by server settings?
     uint32_t current_debt = getDebt(*sess.m_ent->m_char);
     if(current_debt > 0)
@@ -1320,7 +1328,6 @@ void giveXp(MapClientSession &sess, int xp)
     setXP(*sess.m_ent->m_char, xp_to_give);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("You were awarded %1 XP").arg(xp), sess);
 
-    GameDataStore &data(getGameData());
     if(xp_to_give >= data.expForLevel(lvl+1))
     {
         // If we've earned enough XP, give us Leveled Up floating text
