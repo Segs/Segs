@@ -85,7 +85,7 @@ struct QueuedPowers
     bool            m_active_state_change   = false;
     bool            m_activation_state      = false;
     bool            m_timer_updated         = false;
-    int32_t         m_tgt_idx               = -1;
+    uint32_t        m_tgt_idx               = 0;
 };
 
 class PowerPool_Info
@@ -110,7 +110,7 @@ struct Buffs
     float           m_duration              = 0.0f;
     std::vector<float>           m_value;
     std::vector<QString>         m_value_name;      //For buffs with multiple effects
-    int32_t         source_ent_idx          = -1;
+    uint32_t         source_ent_idx          = 0;
 };
 
 struct CharacterInspiration
@@ -155,7 +155,7 @@ struct vInspirations
             m_inspirations[i].resize(m_rows);
     }
 
-    int size()
+    uint32_t size()
     {
         return m_cols * m_rows;
     }

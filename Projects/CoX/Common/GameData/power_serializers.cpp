@@ -242,35 +242,33 @@ bool loadFrom(BinStore *s, AllPowerCategories &target)
 template<class Archive>
 static void serialize(Archive & archive, StoredAttribMod & src)
 {
-        archive(cereal::make_nvp("Name",src.name));
-        archive(cereal::make_nvp("Table",src.Table));
-        archive(cereal::make_nvp("Scale",src.Scale));
-        archive(cereal::make_nvp("Target",src.Target));
-        archive(cereal::make_nvp("StackType",src.StackType));
-        archive(cereal::make_nvp("Duration",src.Duration));
-        archive(cereal::make_nvp("Magnitude",src.Magnitude));
-        archive(cereal::make_nvp("Chance",src.Chance));
-        archive(cereal::make_nvp("DisplayAttackerHit",src.DisplayAttackerHit));
-        archive(cereal::make_nvp("DisplayVictimHit",src.DisplayVictimHit));
-        archive(cereal::make_nvp("Attrib",src.Attrib));
-        archive(cereal::make_nvp("Aspect",src.Aspect));
+    archive(cereal::make_nvp("Name",src.name));
+    archive(cereal::make_nvp("DisplayAttackerHit",src.DisplayAttackerHit));
+    archive(cereal::make_nvp("DisplayVictimHit",src.DisplayVictimHit));
+    archive(cereal::make_nvp("Attrib",src.Attrib));
+    archive(cereal::make_nvp("Aspect",src.Aspect));
+    archive(cereal::make_nvp("Target",src.Target));
+    archive(cereal::make_nvp("Table",src.Table));archive(cereal::make_nvp("Scale",src.Scale));
+    archive(cereal::make_nvp("Type",src.Type));
+    archive(cereal::make_nvp("Delay",src.Delay));
+    archive(cereal::make_nvp("Period",src.Period));
+    archive(cereal::make_nvp("Chance",src.Chance));
 
-        archive(cereal::make_nvp("Type",src.Type));
-        archive(cereal::make_nvp("Delay",src.Delay));
-        archive(cereal::make_nvp("Period",src.Period));
-
-        archive(cereal::make_nvp("CancelOnMiss",src.CancelOnMiss));     // T/F
-        archive(cereal::make_nvp("NearGround",src.NearGround));       // T/F
-        archive(cereal::make_nvp("AllowStrength",src.AllowStrength));    // T/F
-        archive(cereal::make_nvp("AllowResistance",src.AllowResistance)); // T/F
-        archive(cereal::make_nvp("ContinuingBits",src.ContinuingBits));
-        archive(cereal::make_nvp("ContinuingFX",src.ContinuingFX));
-        archive(cereal::make_nvp("ConditionalBits",src.ConditionalBits));
-        archive(cereal::make_nvp("ConditionalFX",src.ConditionalFX));
-        archive(cereal::make_nvp("EntityDef",src.EntityDef));
-        archive(cereal::make_nvp("PriorityListDefense",src.PriorityListDefense));
-        archive(cereal::make_nvp("PriorityListOffense",src.PriorityListOffense));
-        archive(cereal::make_nvp("PriorityListPassive",src.PriorityListPassive));
+    archive(cereal::make_nvp("CancelOnMiss",src.CancelOnMiss));     // T/F
+    archive(cereal::make_nvp("NearGround",src.NearGround));       // T/F
+    archive(cereal::make_nvp("AllowStrength",src.AllowStrength));    // T/F
+    archive(cereal::make_nvp("AllowResistance",src.AllowResistance)); // T/F
+    archive(cereal::make_nvp("StackType",src.StackType));
+    archive(cereal::make_nvp("Duration",src.Duration));
+    archive(cereal::make_nvp("Magnitude",src.Magnitude));
+    archive(cereal::make_nvp("ContinuingBits",src.ContinuingBits));
+    archive(cereal::make_nvp("ContinuingFX",src.ContinuingFX));
+    archive(cereal::make_nvp("ConditionalBits",src.ConditionalBits));
+    archive(cereal::make_nvp("ConditionalFX",src.ConditionalFX));
+    archive(cereal::make_nvp("EntityDef",src.EntityDef));
+    archive(cereal::make_nvp("PriorityListDefense",src.PriorityListDefense));
+    archive(cereal::make_nvp("PriorityListOffense",src.PriorityListOffense));
+    archive(cereal::make_nvp("PriorityListPassive",src.PriorityListPassive));
 }
 template<class Archive>
 static void serialize(Archive & archive, SeqBitNames & src)
@@ -400,9 +398,5 @@ static void serialize(Archive & archive, AllPowerCategories & src)
 void saveTo(const AllPowerCategories & target, const QString & baseName, bool text_format)
 {
     commonSaveTo(target,"Powers",baseName,text_format);
-}
-bool loadFrom(const QString &filepath, AllPowerCategories &target)
-{
-    return commonReadFrom(filepath,"Powers",target);
 }
 //! @}

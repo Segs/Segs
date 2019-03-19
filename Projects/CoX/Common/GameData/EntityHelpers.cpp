@@ -179,10 +179,10 @@ bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum const &target)
 {
     // first check if the target needs to be dead, and isn't dead yet
     if (target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate || target == StoredEntEnum::DeadVillain)
-        if (target_ent.m_char->getHealth() != 0.0f)             // target.dead() maybe?
+        if (!target_ent.m_char->m_is_dead)
             return false;
     if (&ent == &target_ent)
-        return (target == StoredEntEnum::Caster || target == StoredEntEnum::Any || target ==StoredEntEnum::Location || target == StoredEntEnum::Teleport);
+        return (target == StoredEntEnum::Caster || target == StoredEntEnum::Any || target == StoredEntEnum::Location || target == StoredEntEnum::Teleport);
     switch(target)
     {
         case StoredEntEnum::Any:
@@ -244,12 +244,10 @@ void modifyAttrib(Entity &e, QString name, float value)
     else if (name == "jump_speed")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedJumping += value;
-        resetSpeed(e);
     }
     else if (name == "run_speed")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedRunning += value;
-        resetSpeed(e);
     }
     else if (name == "flight")
     {
@@ -262,18 +260,17 @@ void modifyAttrib(Entity &e, QString name, float value)
     else if (name == "flight_speed")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedFlying += value;
-        resetSpeed(e);
     }
     else if (name == "immobilized") //TODO: copy for hold, sleep,stun
     {
         e.m_char->m_char_data.m_current_attribs.m_Immobilized += value;
-        checkMovement(e);
     }
     else if (name == "onlyaffectsself")
     {
         e.m_char->m_char_data.m_current_attribs.m_OnlyAffectsSelf += value;
-        checkMovement(e);
     }
+    resetSpeed(e);
+    checkMovement(e);
 
 }
 
@@ -281,7 +278,7 @@ void modifyAttrib(Entity &e, QString name, float value)
 void checkMovement(Entity &e)
 {
     Parse_CharAttrib & temp = e.m_char->m_char_data.m_current_attribs;
-    if (temp.m_Immobilized > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1 || e.m_is_activating || e.m_state_mode == ClientStates::DEAD)
+    if (temp.m_Immobilized > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1 || e.m_is_activating || e.m_char->m_is_dead)
         e.m_motion_state.m_controls_disabled = true;
     else
         e.m_motion_state.m_controls_disabled = false;
@@ -291,9 +288,10 @@ void checkMovement(Entity &e)
 bool checkPowerBlock(Entity &e)
 {
     Parse_CharAttrib & temp = e.m_char->m_char_data.m_current_attribs;
-    return(temp.m_is_stunned > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1|| temp.m_OnlyAffectsSelf > 1);
+    return (temp.m_is_stunned > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1 || temp.m_OnlyAffectsSelf > 1);
 }
 //TODO on both of the above, check for the entity's protection against each status effect and use that value instead of 1
+
 
 // Misc Methods
 void abortLogout(Entity *e)
@@ -316,8 +314,8 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
-    e.m_target_idx                      = -1;
-    e.m_assist_target_idx               = -1;
+    e.m_target_idx                      = 0;
+    e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
     e.m_motion_state.m_is_falling       = true;
 
@@ -361,8 +359,8 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_pchar_things                    = false;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
-    e.m_target_idx                      = -1;
-    e.m_assist_target_idx               = -1;
+    e.m_target_idx                      = 0;
+    e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
     e.m_motion_state.m_is_falling       = true;
 
@@ -407,8 +405,8 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_pchar_things                    = true;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
-    e.m_target_idx                      = -1;
-    e.m_assist_target_idx               = -1;
+    e.m_target_idx                      = 0;
+    e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
     e.m_motion_state.m_is_falling       = true;
 
@@ -480,7 +478,6 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
 
 void revivePlayer(Entity &e, ReviveLevel lvl)
 {
-   // float cur_hp = getHP(*e.m_char);
     if(e.m_type != EntType::PLAYER && !e.m_char->m_is_dead)
         return;
 

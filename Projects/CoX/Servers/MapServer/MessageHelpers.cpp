@@ -536,8 +536,8 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
     storePowerRanges(*cd, bs); // sending state of all current powers.
 
     qCDebug(logPowers) << "NumQueuedPowers:" << e->m_queued_powers.size();
-    bs.StorePackedBits(4, uint( uint(e->m_queued_powers.size()) + e->m_auto_powers.size())); // Count all active powers
-    for(auto rpow_idx = e->m_queued_powers.begin(); rpow_idx != e->m_queued_powers.end();)//(const QueuedPowers &qpow : e->m_queued_powers)
+    bs.StorePackedBits(4, uint32_t(e->m_queued_powers.size())); // Count all active powers
+    for(auto rpow_idx = e->m_queued_powers.begin(); rpow_idx != e->m_queued_powers.end();)
     {
         qCDebug(logPowers) << "  QueuedPower:"
                            << rpow_idx->m_pow_idxs.m_pset_vec_idx
@@ -550,26 +550,14 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
             bs.StorePackedBits(1, rpow_idx->m_activation_state);
             if (rpow_idx->m_activation_state == false)
                 rpow_idx = e->m_queued_powers.erase(rpow_idx);
-            else {
-                rpow_idx++;
-            }        }
-    }
-    for(auto rpow_idx = e->m_auto_powers.begin(); rpow_idx != e->m_auto_powers.end();)//for(const QueuedPowers &qpow : e->m_auto_powers)
-    {
-        qCDebug(logPowers) << "  Toggle or AutoPower:"
-                           << rpow_idx->m_pow_idxs.m_pset_vec_idx
-                           << rpow_idx->m_pow_idxs.m_pow_vec_idx;
-
-        bs.StoreBits(1, rpow_idx->m_active_state_change);
-        if(rpow_idx->m_active_state_change)
-        {
-            storePowerSpec(rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx, bs);
-            bs.StorePackedBits(1, rpow_idx->m_activation_state);
-            if (rpow_idx->m_activation_state == false)
-                rpow_idx = e->m_auto_powers.erase(rpow_idx);
             else
-                rpow_idx++;
+            {
+            rpow_idx->m_active_state_change = false;
+            rpow_idx++;
+            }
         }
+        else
+            rpow_idx++;
     }
     qCDebug(logPowers) << "NumRechargingTimers:" << e->m_recharging_powers.size();
     bs.StorePackedBits(1, e->m_recharging_powers.size());
@@ -585,15 +573,15 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
     }
 
     // All Owned Inspirations
-    uint max_cols = cd->m_max_insp_cols;
-    uint max_rows = cd->m_max_insp_rows;
-    uint max_insps = max_cols * max_rows;
+    uint32_t max_cols = cd->m_max_insp_cols;
+    uint32_t max_rows = cd->m_max_insp_rows;
+    uint32_t max_insps = max_cols * max_rows;
     qCDebug(logPowers) << "Max Insp Slots:" << max_insps;
 
     storePackedBitsConditional(bs, 4, max_insps);
-    for(uint col = 0; col < max_cols; ++col)
+    for(uint32_t col = 0; col < max_cols; ++col)
     {
-        for(uint row = 0; row < max_rows; ++row)
+        for(uint32_t row = 0; row < max_rows; ++row)
         {
             qCDebug(logPowers) << "  Inspiration:" << col << row << cd->m_inspirations.at(col, row).m_has_insp;
 
