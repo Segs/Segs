@@ -21,5 +21,7 @@ public:
     void on_client_options(Entity* ent, SEGSEvents::Event *ev);
     void on_switch_viewpoint(Entity* ent, SEGSEvents::Event *ev);
     void on_window_state(Entity* ent, SEGSEvents::Event *ev);
+    void on_command_chat_divider_moved(Entity* ent, SEGSEvents::Event *ev);
+    void on_browser_close(Entity* ent, SEGSEvents::Event *ev);
 protected:
 };

@@ -32,9 +32,10 @@ add_subdirectory(LocationService)
 add_subdirectory(CharacterService)
 add_subdirectory(TransactionService)
 add_subdirectory(ZoneTransferService)
+add_subdirectory(InteractionService)
 
 target_link_libraries(GameServer PUBLIC Qt5::Core FriendshipService EmailService ClientOptionService LocationService)
-target_link_libraries(GameServer PUBLIC Qt5::Core CharacterService TransactionService ZoneTransferService)
+target_link_libraries(GameServer PUBLIC Qt5::Core CharacterService TransactionService ZoneTransferService InteractionService)
 target_link_libraries(GameServer INTERFACE SEGS_Components gameData)
 
 if(ENABLE_TESTS)

@@ -18,6 +18,7 @@ public:
     void on_levelup_response(Entity* ent, SEGSEvents::Event* ev);
     void on_recv_costume_change(Entity* ent, SEGSEvents::Event* ev);
     void on_recv_selected_titles(Entity* ent, SEGSEvents::Event* ev);
+    void on_description_and_battlecry(Entity* ent, SEGSEvents::Event* ev);
 protected:
 };
 

@@ -260,8 +260,11 @@ struct ScriptingServiceToClientData
     uint32_t flags;
     QString funcName;
     QString charArg;
-    glm::vec3 locArg;
+    uint32_t intArg;
+    glm::vec3 locArg = glm::vec3(999, 999, 999);
     QString message;
+    std::function<void(Entity&)> on_val_empty;
+    std::function<void(Entity&)> on_val_not_empty;
 };
 
 struct ServiceToClientData

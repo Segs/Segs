@@ -67,3 +67,12 @@ void CharacterService::on_recv_selected_titles(Entity* ent, Event *ev)
     qCDebug(logMapEvents) << "Entity sending titles: " << ent->m_idx << casted_ev->m_has_prefix << generic << origin << special;
 }
 
+void CharacterService::on_description_and_battlecry(Entity* ent, Event* ev)
+{
+    DescriptionAndBattleCry* casted_ev = static_cast<DescriptionAndBattleCry *>(ev);
+    Character &c(*ent->m_char);
+
+    setBattleCry(c,casted_ev->battlecry);
+    setDescription(c,casted_ev->description);
+    qCDebug(logDescription) << "Saving description and battlecry:" << casted_ev->description << casted_ev->battlecry;
+}

@@ -22,6 +22,8 @@ public:
     SEGSEvents::ServiceToClientData* on_map_swap_collision(MapLink* link, Entity* ent, SEGSEvents::Event *ev);
     SEGSEvents::ServiceToClientData* on_enter_door(MapServer* map_server, MapLink* link, Entity* ent, uint32_t map_index, SEGSEvents::Event* ev);
     SEGSEvents::ServiceToClientData* on_has_entered_door(Entity* ent, SEGSEvents::Event* ev);
+    SEGSEvents::ServiceToClientData* on_awaiting_dead_no_gurney(Entity* ent, SEGSEvents::Event* ev);
+    SEGSEvents::ServiceToClientData* on_dead_no_gurney_ok(Entity* ent, SEGSEvents::Event* ev);
     void on_map_xfer_complete(Entity* ent, glm::vec3 closest_safe_location, SEGSEvents::Event *ev);
 
 protected:

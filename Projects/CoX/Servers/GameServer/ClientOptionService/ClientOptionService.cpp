@@ -33,7 +33,7 @@ void ClientOptionService::on_remove_keybind(Entity* ent, Event *ev)
     //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
-void ClientOptionService::on_reset_keybinds(Entity* ent, Event *ev)
+void ClientOptionService::on_reset_keybinds(Entity* ent, Event */*ev*/)
 {
     // the event is used to merely get the session and then the kbSettings, which we already found in MapInstance
     const GameDataStore &data(getGameData());
@@ -77,4 +77,19 @@ void ClientOptionService::on_window_state(Entity* ent, Event* ev)
     if(logGUI().isDebugEnabled())
         ent->m_player->m_gui.m_wnds.at(casted_ev->wnd.m_idx).guiWindowDump();
 }
+
+void ClientOptionService::on_command_chat_divider_moved(Entity* ent, Event *ev)
+{
+    ChatDividerMoved* casted_ev = static_cast<ChatDividerMoved* >(ev);
+
+    ent->m_player->m_gui.m_chat_divider_pos = casted_ev->m_position;
+    qCDebug(logMapEvents) << "Chat divider moved to " << casted_ev->m_position << " for player" << ent->name();
+}
+
+void ClientOptionService::on_browser_close(Entity* ent, Event */*ev*/)
+{
+    //BrowserClose* casted_ev = static_cast<BrowserClose *>(ev);
+    qCDebug(logMapEvents) << "Entity: " << ent->m_idx << "has received BrowserClose";
+}
+
 

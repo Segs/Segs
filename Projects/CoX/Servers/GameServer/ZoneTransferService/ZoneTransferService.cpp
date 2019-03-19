@@ -166,3 +166,44 @@ ServiceToClientData* ZoneTransferService::on_has_entered_door(Entity* ent, Event
     // should return a data with DoorAnimExit GameCommand
     return nullptr;
 }
+
+ServiceToClientData* ZoneTransferService::on_awaiting_dead_no_gurney(Entity* ent, Event */*ev*/)
+{
+    // AwaitingDeadNoGurney* casted_ev = static_cast<AwaitingDeadNoGurney *>(ev);
+    qCDebug(logMapEvents) << "Entity: " << ent->m_idx << "has received AwaitingDeadNoGurney";
+
+    // TODO: Check if disablegurney
+    /*
+    setStateMode(*session.m_ent, ClientStates::AWAITING_GURNEY_XFER);
+    sendClientState(session, ClientStates::AWAITING_GURNEY_XFER);
+    sendDeadNoGurney(session);
+    */
+    // otherwise
+
+    ScriptingServiceToClientData* scriptData = new ScriptingServiceToClientData();
+    scriptData->flags |= uint32_t(ScriptingServiceFlags::CallFuncWithClientContext);
+    scriptData->funcName = "revive_ok";
+    scriptData->intArg = ent->m_idx;
+    scriptData->on_val_empty = [](Entity& ent)
+    {
+        // Set statemode to Resurrect
+        setStateMode(ent, ClientStates::RESURRECT);
+        // TODO: spawn in hospital, resurrect animations, "summoning sickness"
+        revivePlayer(ent, ReviveLevel::FULL);
+    };
+
+    return nullptr;
+}
+
+ServiceToClientData* ZoneTransferService::on_dead_no_gurney_ok(Entity* ent, Event */*ev*/)
+{
+    //DeadNoGurneyOK* casted_ev = static_cast<DeadNoGurneyOK *>(ev);
+    qCDebug(logMapEvents) << "Entity: " << ent->m_idx << "has received DeadNoGurneyOK";
+
+    // Set statemode to Ressurrect
+    setStateMode(*ent, ClientStates::RESURRECT);
+    revivePlayer(*ent, ReviveLevel::FULL);
+
+    // TODO: Spawn where you go with no gurneys (no hospitals)
+    return nullptr;
+}

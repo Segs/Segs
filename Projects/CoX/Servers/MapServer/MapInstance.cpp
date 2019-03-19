@@ -384,9 +384,6 @@ void MapInstance::dispatch( Event *ev )
         case evConsoleCommand:
             on_console_command(static_cast<ConsoleCommand *>(ev));
             break;
-        case evChatDividerMoved:
-            on_command_chat_divider_moved(static_cast<ChatDividerMoved *>(ev));
-            break;
         case evClientResumedRendering:
             on_client_resumed(static_cast<ClientResumedRendering *>(ev));
             break;
@@ -396,17 +393,8 @@ void MapInstance::dispatch( Event *ev )
         case evChatReconfigure:
             on_chat_reconfigured(static_cast<ChatReconfigure *>(ev));
             break;
-        case evDescriptionAndBattleCry:
-            on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
-            break;
-        case evInteractWithEntity:
-            on_interact_with(static_cast<InteractWithEntity *>(ev));
-            break;
         case evTargetChatChannelSelected:
             on_target_chat_channel_selected(static_cast<TargetChatChannelSelected *>(ev));
-            break;
-        case evEntityInfoRequest:
-            on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
             break;
             // --------------- Power Service ---------------
         case evActivatePower:
@@ -457,6 +445,12 @@ void MapInstance::dispatch( Event *ev )
             break;
         case evWindowState:
             m_client_option_service->on_window_state(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evBrowserClose:
+            m_client_option_service->on_browser_close(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evChatDividerMoved:
+            m_client_option_service->on_command_chat_divider_moved(m_session_store.session_from_event(ev).m_ent, ev);
             break;
             // ---------- Email Service ----------------
         case evEmailHeaderResponse:
@@ -519,6 +513,9 @@ void MapInstance::dispatch( Event *ev )
         case evRecvCostumeChange:
             m_character_service->on_levelup_response(m_session_store.session_from_event(ev).m_ent, ev);
             break;
+        case evDescriptionAndBattleCry:
+            m_character_service->on_description_and_battlecry(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
             // -------------------- Transaction Service ---------------
         case evTradeWasCancelledMessage:
             on_service_to_client_response(m_transaction_service->on_trade_cancelled(m_session_store.session_from_event(ev).m_ent, ev));
@@ -568,25 +565,29 @@ void MapInstance::dispatch( Event *ev )
             on_service_to_client_response(m_zone_transfer_service->on_has_entered_door(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evAwaitingDeadNoGurney:
-            on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
+            on_service_to_client_response(m_zone_transfer_service->on_awaiting_dead_no_gurney(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evDeadNoGurneyOK:
-            on_dead_no_gurney_ok(static_cast<DeadNoGurneyOK *>(ev));
+            on_service_to_client_response(m_zone_transfer_service->on_dead_no_gurney_ok(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+            // ------------------------- Interaction Service --------------------------
+        case evInteractWithEntity:
+            on_service_to_client_response(m_interaction_service->on_interact_with(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evEntityInfoRequest:
+            on_service_to_client_response(m_interaction_service->on_entity_info_request(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evDialogButton:
-            on_dialog_button(static_cast<DialogButton *>(ev));
-            break;
-        case evBrowserClose:
-            on_browser_close(static_cast<BrowserClose *>(ev));
+            on_service_to_client_response(m_interaction_service->on_dialog_button(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evReceiveContactStatus:
-            on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
+            on_service_to_client_response(m_interaction_service->on_receive_contact_status(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evReceiveTaskDetailRequest:
-            on_receive_task_detail_request(static_cast<ReceiveTaskDetailRequest *>(ev));
+            on_service_to_client_response(m_interaction_service->on_receive_task_detail_request(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evSouvenirDetailRequest:
-            on_souvenir_detail_request(static_cast<SouvenirDetailRequest *>(ev));
+            on_service_to_client_response(m_interaction_service->on_souvenir_detail_request(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
@@ -1998,15 +1999,6 @@ void MapInstance::on_emote_command(const QString &command, Entity *ent)
     }
 }
 
-void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_gui.m_chat_divider_pos = ev->m_position;
-    qCDebug(logMapEvents) << "Chat divider moved to " << ev->m_position << " for player" << ent->name();
-}
-
 void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2075,34 +2067,6 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
 
     // Call Lua Connected function.
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
-}
-
-void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-    Character &c(*ent->m_char);
-
-    setBattleCry(c,ev->battlecry);
-    setDescription(c,ev->description);
-    qCDebug(logDescription) << "Saving description and battlecry:" << ev->description << ev->battlecry;
-}
-
-void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    Entity *tgt = getEntity(&session,ev->entity_idx);
-    if(tgt == nullptr)
-    {
-        qCDebug(logMapEvents) << "No target active, doing nothing";
-        return;
-    }
-
-    QString description = getDescription(*tgt->m_char);
-
-    session.addCommandToSendNextUpdate(std::make_unique<EntityInfoResponse>(description));
-    qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
 }
 
 void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
@@ -2217,148 +2181,6 @@ void MapInstance::serialize_from(istream &/*is*/)
 void MapInstance::serialize_to(ostream &/*is*/)
 {
     assert(false);
-}
-
-void MapInstance::on_interact_with(InteractWithEntity *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *entity = getEntity(&session, ev->m_srv_idx);
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx, entity->m_entity_data.m_pos);
-}
-
-void MapInstance::on_receive_contact_status(ReceiveContactStatus *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    qCDebug(logMapEvents) << "ReceiveContactStatus Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"contact_call",ev->m_srv_idx);
-}
-
-void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    qCDebug(logMapEvents) << "ReceiveTaskDetailRequest Entity: " << session.m_ent->m_idx << "wants detail for task " << ev->m_task_idx;
-    QString detail = "Testind Task Detail Request";
-
-    TaskDetail test_task;
-    test_task.m_task_idx = ev->m_task_idx;
-    test_task.m_db_id = ev->m_db_id;
-
-    vTaskEntryList task_entry_list = session.m_ent->m_player->m_tasks_entry_list;
-    //find task
-    bool found = false;
-
-    for (uint32_t i = 0; i < task_entry_list.size(); ++i)
-    {
-       for(uint32_t t = 0; t < task_entry_list[i].m_task_list.size(); ++t)
-        if(task_entry_list[i].m_task_list[t].m_task_idx == ev->m_task_idx)
-        {
-            found = true;
-            //contact already in list, update task;
-            test_task.m_task_detail = task_entry_list[i].m_task_list[t].m_detail;
-            break;
-        }
-
-       if(found)
-           break;
-    }
-
-    if(!found)
-    {
-       qCDebug(logMapEvents) << "ReceiveTaskDetailRequest m_task_idx: " << ev->m_task_idx << " not found.";
-       test_task.m_task_detail = "Not found";
-    }
-
-    session.addCommandToSendNextUpdate(std::make_unique<TaskDetail>(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail));
-}
-
-void MapInstance::on_dialog_button(DialogButton *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    if(ev->success) // only sent by contactresponse
-        qCDebug(logMapEvents) << "Dialog success" << ev->success;
-
-    switch(ev->button_id)
-    {
-    case 0:
-        // cancel?
-        break;
-    case 1:
-        // accept?
-        if(session.m_ent->m_char->m_in_training) // if training, raise level
-            increaseLevel(*session.m_ent);
-
-        break;
-    case 2:
-        // no idea
-        break;
-    case 3:
-        sendContactDialogClose(session);
-        break;
-    default:
-        // close all windows?
-        break;
-    }
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
-
-    if(session.m_ent->m_active_dialog != NULL)
-    {
-        m_scripting_interface->updateClientContext(&session);
-        session.m_ent->m_active_dialog(ev->button_id);
-    }
-    else
-    {
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
-    }
-}
-
-void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received AwaitingDeadNoGurney";
-
-    // TODO: Check if disablegurney
-    /*
-    setStateMode(*session.m_ent, ClientStates::AWAITING_GURNEY_XFER);
-    sendClientState(session, ClientStates::AWAITING_GURNEY_XFER);
-    sendDeadNoGurney(session);
-    */
-    // otherwise
-
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"revive_ok", session.m_ent->m_idx);
-
-    if (val.empty())
-    {
-        // Set statemode to Resurrect
-        setStateMode(*session.m_ent, ClientStates::RESURRECT);
-        // TODO: spawn in hospital, resurrect animations, "summoning sickness"
-        revivePlayer(*session.m_ent, ReviveLevel::FULL);
-    }
-
-}
-
-void MapInstance::on_dead_no_gurney_ok(DeadNoGurneyOK *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DeadNoGurneyOK";
-
-    // Set statemode to Ressurrect
-    setStateMode(*session.m_ent, ClientStates::RESURRECT);
-    revivePlayer(*session.m_ent, ReviveLevel::FULL);
-
-    // TODO: Spawn where you go with no gurneys (no hospitals)
-}
-
-void MapInstance::on_browser_close(BrowserClose *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received BrowserClose";
 }
 
 void MapInstance::on_afk_update()
@@ -2531,34 +2353,6 @@ void MapInstance::send_player_update(Entity *e)
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
-void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
-{
-    MapClientSession& session = m_session_store.session_from_event(ev);
-    vSouvenirList sl = session.m_ent->m_player->m_souvenirs;
-
-    Souvenir souvenir_detail;
-    bool found = false;
-    for(const Souvenir &s: sl)
-    {
-        if(s.m_idx == ev->m_souvenir_idx)
-        {
-            souvenir_detail = s;
-            found = true;
-            qCDebug(logScripts) << "SouvenirDetail Souvenir " << ev->m_souvenir_idx << " found";
-            break;
-        }
-    }
-
-    if(!found)
-    {
-        qCDebug(logScripts) << "SouvenirDetail Souvenir " << ev->m_souvenir_idx << " not found";
-        souvenir_detail.m_idx = 0; // Should always be found?
-        souvenir_detail.m_description = "Data not found";
-
-    }
-    session.addCommand<SouvenirDetail>(souvenir_detail);
-}
-
 void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
 {
     process_chat(sender, msg_text);
@@ -2598,7 +2392,25 @@ void MapInstance::on_service_to_client_response(ServiceToClientData* data)
         for (auto &script : data->m_scripts)
         {
             if (script->flags & uint32_t(ScriptingServiceFlags::CallFuncWithClientContext))
-                m_scripting_interface->callFuncWithClientContext(&session, qPrintable(script->funcName), qPrintable(script->charArg), script->locArg);
+            {
+                string val;
+                if (!script->charArg.isEmpty())
+                    val = m_scripting_interface->callFuncWithClientContext(&session, qPrintable(script->funcName), qPrintable(script->charArg), script->locArg);
+                // uses intArg
+                else if (script->intArg != 0)
+                {
+                    if (script->locArg != glm::vec3(999, 999, 999))
+                        val = m_scripting_interface->callFuncWithClientContext(&session, qPrintable(script->funcName), script->intArg, script->locArg);
+                    else
+                        val = m_scripting_interface->callFuncWithClientContext(&session, qPrintable(script->funcName), script->intArg);
+                }
+
+                if (val.empty() && script->on_val_empty != nullptr)
+                    script->on_val_empty(*data->m_ent);
+
+                if (!val.empty() && script->on_val_not_empty != nullptr)
+                    script->on_val_not_empty(*data->m_ent);
+            }
 
             if (script->flags & uint32_t(ScriptingServiceFlags::UpdateClientContext))
                 m_scripting_interface->updateClientContext(&session);

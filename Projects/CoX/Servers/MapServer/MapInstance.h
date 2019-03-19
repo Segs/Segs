@@ -26,6 +26,7 @@
 #include "GameServer/CharacterService/PowerService/PowerService.h"
 #include "GameServer/TransactionService/TransactionService.h"
 #include "GameServer/ZoneTransferService/ZoneTransferService.h"
+#include "GameServer/InteractionService/InteractionService.h"
 
 #include <map>
 #include <memory>
@@ -60,25 +61,13 @@ class EntitiesRequest;
 class NewEntity;
 class ShortcutsRequest;
 class CookieRequest;
-class WindowState;
 class ConsoleCommand;
 class ClientQuit;
 class ConnectRequest;
-class ChatDividerMoved;
 class MiniMapState;
 class ClientResumedRendering;
-class DescriptionAndBattleCry;
-class EntityInfoRequest;
 class ChatReconfigure;
 class TargetChatChannelSelected;
-class InteractWithEntity;
-class DialogButton;
-class AwaitingDeadNoGurney;
-class BrowserClose;
-class DeadNoGurneyOK;
-class ReceiveContactStatus;
-class ReceiveTaskDetailRequest;
-class SouvenirDetailRequest;
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -114,6 +103,7 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<CharacterService>       m_character_service;
         std::unique_ptr<EnhancementService>     m_enhancement_service;
         std::unique_ptr<InspirationService>     m_inspiration_service;
+        std::unique_ptr<InteractionService>     m_interaction_service;
         std::unique_ptr<PowerService>           m_power_service;
         std::unique_ptr<LocationService>        m_location_service;
         std::unique_ptr<TransactionService>     m_transaction_service;
@@ -211,28 +201,15 @@ protected:
 
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
         void on_console_command(SEGSEvents::ConsoleCommand *ev);
-        void on_command_chat_divider_moved(SEGSEvents::ChatDividerMoved *ev);
         void on_minimap_state(SEGSEvents::MiniMapState *ev);
         void on_client_resumed(SEGSEvents::ClientResumedRendering *ev);
         void on_client_quit(SEGSEvents::ClientQuit *ev);
         void on_connection_request(SEGSEvents::ConnectRequest* ev);
-        void on_description_and_battlecry(SEGSEvents::DescriptionAndBattleCry *ev);
-        void on_entity_info_request(SEGSEvents::EntityInfoRequest *ev);
         void on_chat_reconfigured(SEGSEvents::ChatReconfigure *ev);
 
         void on_target_chat_channel_selected(SEGSEvents::TargetChatChannelSelected *ev);
 
         void on_emote_command(const QString &command, Entity *ent);
-        void on_interact_with(SEGSEvents::InteractWithEntity *ev);
-        void on_dialog_button(SEGSEvents::DialogButton *ev);
-
-        void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
-        void on_dead_no_gurney_ok(SEGSEvents::DeadNoGurneyOK *ev);
-        void on_browser_close(SEGSEvents::BrowserClose *ev);
-
-        void on_receive_contact_status(SEGSEvents::ReceiveContactStatus *ev);
-        void on_receive_task_detail_request(SEGSEvents::ReceiveTaskDetailRequest *ev);
-        void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
 
         // Service <--> MapInstance
         void on_service_to_client_response(SEGSEvents::ServiceToClientData* data);
