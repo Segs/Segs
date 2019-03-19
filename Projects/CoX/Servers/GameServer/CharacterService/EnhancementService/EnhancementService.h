@@ -10,6 +10,7 @@
 #include "Common/Servers/InternalEvents.h"
 #include "GameData/Entity.h"
 
+// The Enhancement Service deals with enhancement-related things
 class EnhancementService
 {
 private:

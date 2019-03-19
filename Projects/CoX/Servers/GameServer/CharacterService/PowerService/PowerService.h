@@ -12,6 +12,7 @@
 
 #include <QVector>
 
+// The Enhancement Service deals with power-related things
 class PowerService
 {
 private:

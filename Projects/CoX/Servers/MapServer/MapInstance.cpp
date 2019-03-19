@@ -189,15 +189,15 @@ void MapInstance::init_services()
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
-    m_email_service = std::make_unique<EmailService>();
-    m_client_option_service = std::make_unique<ClientOptionService>();
-    m_character_service = std::make_unique<CharacterService>();
-    m_enhancement_service = std::make_unique<EnhancementService>();
-    m_inspiration_service = std::make_unique<InspirationService>();
-    m_power_service = std::make_unique<PowerService>();
-    m_location_service = std::make_unique<LocationService>();
-    m_transaction_service = std::make_unique<TransactionService>();
-    m_zone_transfer_service = std::make_unique<ZoneTransferService>(this);
+    m_email_service = EmailService();
+    m_client_option_service = ClientOptionService();
+    m_character_service = CharacterService();
+    m_enhancement_service = EnhancementService();
+    m_inspiration_service = InspirationService();
+    m_power_service = PowerService();
+    m_location_service = LocationService();
+    m_trading_service = TradingService();
+    m_zone_transfer_service = ZoneTransferService(this);
 }
 
 ///
@@ -264,7 +264,6 @@ MapInstance::~MapInstance()
     on_update_entities();
 
     m_sync_service.reset();
-    m_email_service.reset();
 }
 
 void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*ev*/)
@@ -398,196 +397,196 @@ void MapInstance::dispatch( Event *ev )
             break;
             // --------------- Power Service ---------------
         case evActivatePower:
-            m_power_service->on_activate_power(m_session_store.session_from_event(ev).m_ent, ev);
+            m_power_service.on_activate_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evActivatePowerAtLocation:
-            m_power_service->on_activate_power_at_location(m_session_store.session_from_event(ev).m_ent, ev);
+            m_power_service.on_activate_power_at_location(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evSetDefaultPower:
-            m_power_service->on_set_default_power(m_session_store.session_from_event(ev).m_ent, ev);
+            m_power_service.on_set_default_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evUnsetDefaultPower:
-            m_power_service->on_unset_default_power(m_session_store.session_from_event(ev).m_ent, ev);
+            m_power_service.on_unset_default_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evPowersDockMode:
-            m_power_service->on_powers_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
+            m_power_service.on_powers_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evAbortQueuedPower:
-            m_power_service->on_abort_queued_power(m_session_store.session_from_event(ev).m_ent, ev);
+            m_power_service.on_abort_queued_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evRecvNewPower:
-            m_power_service->on_recv_new_power(m_session_store.session_from_event(ev).m_ent, ev);
+            m_power_service.on_recv_new_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evChangeStance:
-            m_power_service->on_change_stance(m_session_store.session_from_event(ev).m_ent, ev);
+            m_power_service.on_change_stance(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evUnqueueAll:
-            m_power_service->on_unqueue_all(m_session_store.session_from_event(ev).m_ent, ev);
+            m_power_service.on_unqueue_all(m_session_store.session_from_event(ev).m_ent, ev);
             break;
             // ---------- Client Option Service ------------
         case evSelectKeybindProfile:
-            m_client_option_service->on_select_keybind_profile(m_session_store.session_from_event(ev).m_ent, ev);
+            m_client_option_service.on_select_keybind_profile(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evSetKeybind:
-            m_client_option_service->on_set_keybind(m_session_store.session_from_event(ev).m_ent, ev);
+            m_client_option_service.on_set_keybind(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evRemoveKeybind:
-            m_client_option_service->on_remove_keybind(m_session_store.session_from_event(ev).m_ent, ev);
+            m_client_option_service.on_remove_keybind(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evResetKeybinds:
-            m_client_option_service->on_reset_keybinds(m_session_store.session_from_event(ev).m_ent, ev);
+            m_client_option_service.on_reset_keybinds(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evSwitchViewPoint:
-            m_client_option_service->on_switch_viewpoint(m_session_store.session_from_event(ev).m_ent, ev);
+            m_client_option_service.on_switch_viewpoint(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evSaveClientOptions:
-            m_client_option_service->on_client_options(m_session_store.session_from_event(ev).m_ent, ev);
+            m_client_option_service.on_client_options(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evWindowState:
-            m_client_option_service->on_window_state(m_session_store.session_from_event(ev).m_ent, ev);
+            m_client_option_service.on_window_state(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evBrowserClose:
-            m_client_option_service->on_browser_close(m_session_store.session_from_event(ev).m_ent, ev);
+            m_client_option_service.on_browser_close(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evChatDividerMoved:
-            m_client_option_service->on_command_chat_divider_moved(m_session_store.session_from_event(ev).m_ent, ev);
+            m_client_option_service.on_command_chat_divider_moved(m_session_store.session_from_event(ev).m_ent, ev);
             break;
             // ---------- Email Service ----------------
         case evEmailHeaderResponse:
-            on_service_to_client_response(m_email_service->on_email_header_response(ev));
+            on_service_to_client_response(m_email_service.on_email_header_response(ev));
             break;
         case evEmailHeaderToClientMessage:
-            on_service_to_client_response(m_email_service->on_email_header_to_client(ev));
+            on_service_to_client_response(m_email_service.on_email_header_to_client(ev));
             break;
         case evEmailHeadersToClientMessage:
-            on_service_to_client_response(m_email_service->on_email_headers_to_client(ev));
+            on_service_to_client_response(m_email_service.on_email_headers_to_client(ev));
             break;
         case evEmailReadResponse:
-            on_service_to_client_response(m_email_service->on_email_read_response(ev));
+            on_service_to_client_response(m_email_service.on_email_read_response(ev));
             break;
         case evEmailWasReadByRecipientMessage:
-            on_service_to_client_response(m_email_service->on_email_read_by_recipient(ev));
+            on_service_to_client_response(m_email_service.on_email_read_by_recipient(ev));
             break;
         case evEmailCreateStatusMessage:
-            on_service_to_client_response(m_email_service->on_email_create_status(ev));
+            on_service_to_client_response(m_email_service.on_email_create_status(ev));
             break;
             // --------------- Inspiration Service -----------------
         case evMoveInspiration:
-            m_inspiration_service->on_move_inspiration(m_session_store.session_from_event(ev).m_ent, ev);
+            m_inspiration_service.on_move_inspiration(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evInspirationDockMode:
-            m_inspiration_service->on_inspiration_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
+            m_inspiration_service.on_inspiration_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evActivateInspiration:
-            on_service_to_client_response(m_inspiration_service->on_activate_inspiration(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_inspiration_service.on_activate_inspiration(m_session_store.session_from_event(ev).m_ent, ev));
             break;
             // ------------- Enhancement Service --------------------
         case evCombineEnhancementsReq:
-            m_enhancement_service->on_combine_enhancements(m_session_store.session_from_event(ev).m_ent, ev);
+            m_enhancement_service.on_combine_enhancements(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evMoveEnhancement:
-            m_enhancement_service->on_move_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
+            m_enhancement_service.on_move_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evSetEnhancement:
-            m_enhancement_service->on_set_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
+            m_enhancement_service.on_set_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evTrashEnhancement:
-            m_enhancement_service->on_trash_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
+            m_enhancement_service.on_trash_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evTrashEnhancementInPower:
-            m_enhancement_service->on_trash_enhancement_in_power(m_session_store.session_from_event(ev).m_ent, ev);
+            m_enhancement_service.on_trash_enhancement_in_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evBuyEnhancementSlot:
-            m_enhancement_service->on_buy_enhancement_slot(m_session_store.session_from_event(ev).m_ent, ev);
+            m_enhancement_service.on_buy_enhancement_slot(m_session_store.session_from_event(ev).m_ent, ev);
             break;
             // ------------------ Character Service ---------------
         case evLevelUpResponse:
-            m_character_service->on_levelup_response(m_session_store.session_from_event(ev).m_ent, ev);
+            m_character_service.on_levelup_response(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evSwitchTray:
-            m_character_service->on_switch_tray(m_session_store.session_from_event(ev).m_ent, ev);
+            m_character_service.on_switch_tray(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evRecvSelectedTitles:
-            m_character_service->on_recv_selected_titles(m_session_store.session_from_event(ev).m_ent, ev);
+            m_character_service.on_recv_selected_titles(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evRecvCostumeChange:
-            m_character_service->on_levelup_response(m_session_store.session_from_event(ev).m_ent, ev);
+            m_character_service.on_levelup_response(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evDescriptionAndBattleCry:
-            m_character_service->on_description_and_battlecry(m_session_store.session_from_event(ev).m_ent, ev);
+            m_character_service.on_description_and_battlecry(m_session_store.session_from_event(ev).m_ent, ev);
             break;
             // -------------------- Transaction Service ---------------
         case evTradeWasCancelledMessage:
-            on_service_to_client_response(m_transaction_service->on_trade_cancelled(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_trading_service.on_trade_cancelled(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evTradeWasUpdatedMessage:
-            on_service_to_client_response(m_transaction_service->on_trade_updated(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_trading_service.on_trade_updated(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evStoreSellItem:
-            on_service_to_client_response(m_transaction_service->on_store_sell_item(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_trading_service.on_store_sell_item(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evStoreBuyItem:
-            on_service_to_client_response(m_transaction_service->on_store_buy_item(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_trading_service.on_store_buy_item(m_session_store.session_from_event(ev).m_ent, ev));
             break;
             // ------------------------- Location Service --------------------
         case evLocationVisited:
-            on_service_to_client_response(m_location_service->on_location_visited(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_location_service.on_location_visited(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evPlaqueVisited:
-            on_service_to_client_response(m_location_service->on_plaque_visited(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_location_service.on_plaque_visited(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evSetDestination:
-            on_service_to_client_response(m_location_service->on_set_destination(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_location_service.on_set_destination(m_session_store.session_from_event(ev).m_ent, ev));
             break;
             // ----------------------- Zone Transfer Service -----------------
         case evInitiateMapXfer:
-            on_service_to_client_response(m_zone_transfer_service->on_initiate_map_transfer(
+            on_service_to_client_response(m_zone_transfer_service.on_initiate_map_transfer(
                                               (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id),
                                               m_session_store.session_from_event(ev).link(),
                                               m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evMapXferComplete:
-            m_zone_transfer_service->on_map_xfer_complete(m_session_store.session_from_event(ev).m_ent, closest_safe_location(m_session_store.session_from_event(ev).m_ent->m_entity_data.m_pos), ev);
+            m_zone_transfer_service.on_map_xfer_complete(m_session_store.session_from_event(ev).m_ent, closest_safe_location(m_session_store.session_from_event(ev).m_ent->m_entity_data.m_pos), ev);
             break;
         case evMapSwapCollisionMessage:
-            on_service_to_client_response(m_zone_transfer_service->on_map_swap_collision(
+            on_service_to_client_response(m_zone_transfer_service.on_map_swap_collision(
                                               m_session_store.session_from_event(ev).link(),
                                               m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evEnterDoor:
-            on_service_to_client_response(m_zone_transfer_service->on_enter_door(
+            on_service_to_client_response(m_zone_transfer_service.on_enter_door(
                                               (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id),
                                               m_session_store.session_from_event(ev).link(),
                                               m_session_store.session_from_event(ev).m_ent,
                                               m_index, ev));
             break;
         case evHasEnteredDoor:
-            on_service_to_client_response(m_zone_transfer_service->on_has_entered_door(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_zone_transfer_service.on_has_entered_door(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evAwaitingDeadNoGurney:
-            on_service_to_client_response(m_zone_transfer_service->on_awaiting_dead_no_gurney(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_zone_transfer_service.on_awaiting_dead_no_gurney(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evDeadNoGurneyOK:
-            on_service_to_client_response(m_zone_transfer_service->on_dead_no_gurney_ok(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_zone_transfer_service.on_dead_no_gurney_ok(m_session_store.session_from_event(ev).m_ent, ev));
             break;
             // ------------------------- Interaction Service --------------------------
         case evInteractWithEntity:
-            on_service_to_client_response(m_interaction_service->on_interact_with(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_interaction_service.on_interact_with(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evEntityInfoRequest:
-            on_service_to_client_response(m_interaction_service->on_entity_info_request(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_interaction_service.on_entity_info_request(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evDialogButton:
-            on_service_to_client_response(m_interaction_service->on_dialog_button(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_interaction_service.on_dialog_button(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evReceiveContactStatus:
-            on_service_to_client_response(m_interaction_service->on_receive_contact_status(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_interaction_service.on_receive_contact_status(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evReceiveTaskDetailRequest:
-            on_service_to_client_response(m_interaction_service->on_receive_task_detail_request(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_interaction_service.on_receive_task_detail_request(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evSouvenirDetailRequest:
-            on_service_to_client_response(m_interaction_service->on_souvenir_detail_request(m_session_store.session_from_event(ev).m_ent, ev));
+            on_service_to_client_response(m_interaction_service.on_souvenir_detail_request(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
@@ -2358,7 +2357,7 @@ void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
     process_chat(sender, msg_text);
 }
 
-void MapInstance::on_service_to_client_response(ServiceToClientData* data)
+void MapInstance::on_service_to_client_response(std::unique_ptr<ServiceToClientData> data)
 {
     if (data == nullptr)
         return;
@@ -2380,12 +2379,12 @@ void MapInstance::on_service_to_client_response(ServiceToClientData* data)
 
         MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
-        for (auto &internal_event : data->m_internal_events)
+        for (auto &mapServerEvent : data->m_map_server_events)
         {
             // it's a nullptr when initialized in the service
-            EventSrc* src = internal_event->src();
+            EventSrc* src = mapServerEvent->src();
             src = this;
-            map_server->putq(internal_event);
+            map_server->putq(mapServerEvent);
         }
 
 

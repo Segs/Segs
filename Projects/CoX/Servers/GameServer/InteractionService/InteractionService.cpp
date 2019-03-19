@@ -20,7 +20,7 @@
 
 using namespace SEGSEvents;
 
-ServiceToClientData* InteractionService::on_entity_info_request(Entity* ent, Event* ev)
+std::unique_ptr<ServiceToClientData> InteractionService::on_entity_info_request(Entity* ent, Event* ev)
 {
     EntityInfoRequest* casted_ev = static_cast<EntityInfoRequest *>(ev);
     Entity *tgt = getEntity(ent->m_client, casted_ev->entity_idx);
@@ -37,13 +37,13 @@ ServiceToClientData* InteractionService::on_entity_info_request(Entity* ent, Eve
     commands.emplace_back(std::make_unique<EntityInfoResponse>(description));
 
     qCDebug(logDescription) << "Entity info requested" << casted_ev->entity_idx << description;
-    return new ServiceToClientData(ent, std::move(commands), QString());
+    return std::make_unique<ServiceToClientData>(ent, std::move(commands), QString());
 }
 
-ServiceToClientData* InteractionService::on_interact_with(Entity* ent, Event *ev)
+std::unique_ptr<ServiceToClientData> InteractionService::on_interact_with(Entity* ent, Event *ev)
 {
     InteractWithEntity* casted_ev = static_cast<InteractWithEntity *>(ev);
-    Entity *entity = getEntity(ent->m_client, casted_ev->m_srv_idx);
+    // Entity *entity = getEntity(ent->m_client, casted_ev->m_srv_idx);
 
     qCDebug(logMapEvents) << "Entity: " << ent->m_idx << "wants to interact with" << casted_ev->m_srv_idx;
     ScriptingServiceToClientData* scriptData = new ScriptingServiceToClientData();
@@ -52,10 +52,11 @@ ServiceToClientData* InteractionService::on_interact_with(Entity* ent, Event *ev
     scriptData->intArg = casted_ev->m_srv_idx;
     scriptData->locArg = ent->m_entity_data.m_pos;
 
-    return new ServiceToClientData(ent, {scriptData}, QString());
+    ScriptVector scripts {scriptData};
+    return std::make_unique<ServiceToClientData>(ent, scripts, QString());
 }
 
-ServiceToClientData* InteractionService::on_receive_contact_status(Entity* ent, Event* ev)
+std::unique_ptr<ServiceToClientData> InteractionService::on_receive_contact_status(Entity* ent, Event* ev)
 {
     ReceiveContactStatus* casted_ev = static_cast<ReceiveContactStatus* >(ev);
 
@@ -65,15 +66,16 @@ ServiceToClientData* InteractionService::on_receive_contact_status(Entity* ent, 
     scriptData->funcName = "contact_call";
     scriptData->intArg = casted_ev->m_srv_idx;
 
-    return new ServiceToClientData(ent, {scriptData}, QString());
+    ScriptVector scripts {scriptData};
+    return std::make_unique<ServiceToClientData>(ent, scripts, QString());
 }
 
-ServiceToClientData* InteractionService::on_receive_task_detail_request(Entity* ent, Event *ev)
+std::unique_ptr<ServiceToClientData> InteractionService::on_receive_task_detail_request(Entity* ent, Event *ev)
 {
     ReceiveTaskDetailRequest* casted_ev = static_cast<ReceiveTaskDetailRequest *>(ev);
 
     qCDebug(logMapEvents) << "ReceiveTaskDetailRequest Entity: " << ent->m_idx << "wants detail for task " << casted_ev->m_task_idx;
-    QString detail = "Testind Task Detail Request";
+    QString detail = "Testing Task Detail Request";
 
     TaskDetail test_task;
     test_task.m_task_idx = casted_ev->m_task_idx;
@@ -110,10 +112,10 @@ ServiceToClientData* InteractionService::on_receive_task_detail_request(Entity* 
     GameCommandVector commands;
     commands.emplace_back(std::make_unique<TaskDetail>(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail));
 
-    return new ServiceToClientData(ent, std::move(commands), QString());
+    return std::make_unique<ServiceToClientData>(ent, std::move(commands), QString());
 }
 
-ServiceToClientData* InteractionService::on_dialog_button(Entity* ent, Event *ev)
+std::unique_ptr<ServiceToClientData> InteractionService::on_dialog_button(Entity* ent, Event *ev)
 {
     DialogButton* casted_ev = static_cast<DialogButton *>(ev);
 
@@ -152,16 +154,16 @@ ServiceToClientData* InteractionService::on_dialog_button(Entity* ent, Event *ev
     }
     else
     {
-        ScriptingServiceToClientData* scriptData = new ScriptingServiceToClientData();
         scriptData->flags |= uint32_t(ScriptingServiceFlags::CallFuncWithClientContext);
         scriptData->funcName = "dialog_button";
         scriptData->intArg = casted_ev->button_id;
     }
 
-    return new ServiceToClientData(ent, {scriptData}, QString());
+    ScriptVector scripts {scriptData};
+    return std::make_unique<ServiceToClientData>(ent, scripts, QString());
 }
 
-ServiceToClientData* InteractionService::on_souvenir_detail_request(Entity* ent, Event* ev)
+std::unique_ptr<ServiceToClientData> InteractionService::on_souvenir_detail_request(Entity* ent, Event* ev)
 {
     SouvenirDetailRequest* casted_ev = static_cast<SouvenirDetailRequest* >(ev);
     vSouvenirList sl = ent->m_player->m_souvenirs;
@@ -170,7 +172,7 @@ ServiceToClientData* InteractionService::on_souvenir_detail_request(Entity* ent,
     bool found = false;
     for(const Souvenir &s: sl)
     {
-        if(s.m_idx != casted_ev->m_souvenir_idx)
+        if(s.m_idx != (uint32_t)casted_ev->m_souvenir_idx)
             continue;
 \
         souvenir_detail = s;
@@ -189,5 +191,5 @@ ServiceToClientData* InteractionService::on_souvenir_detail_request(Entity* ent,
     GameCommandVector commands;
     commands.emplace_back(std::make_unique<SouvenirDetail>(souvenir_detail));
 
-    return new ServiceToClientData(ent, std::move(commands), QString());
+    return std::make_unique<ServiceToClientData>(ent, std::move(commands), QString());
 }

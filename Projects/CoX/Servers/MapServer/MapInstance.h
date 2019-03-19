@@ -24,7 +24,7 @@
 #include "GameServer/CharacterService/EnhancementService/EnhancementService.h"
 #include "GameServer/CharacterService/InspirationService/InspirationService.h"
 #include "GameServer/CharacterService/PowerService/PowerService.h"
-#include "GameServer/TransactionService/TransactionService.h"
+#include "GameServer/TradingService/TradingService.h"
 #include "GameServer/ZoneTransferService/ZoneTransferService.h"
 #include "GameServer/InteractionService/InteractionService.h"
 
@@ -98,16 +98,17 @@ class MapInstance final : public EventProcessor
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
 
         std::unique_ptr<GameDBSyncService>      m_sync_service;
-        std::unique_ptr<EmailService>           m_email_service;
-        std::unique_ptr<ClientOptionService>    m_client_option_service;
-        std::unique_ptr<CharacterService>       m_character_service;
-        std::unique_ptr<EnhancementService>     m_enhancement_service;
-        std::unique_ptr<InspirationService>     m_inspiration_service;
-        std::unique_ptr<InteractionService>     m_interaction_service;
-        std::unique_ptr<PowerService>           m_power_service;
-        std::unique_ptr<LocationService>        m_location_service;
-        std::unique_ptr<TransactionService>     m_transaction_service;
-        std::unique_ptr<ZoneTransferService>    m_zone_transfer_service;
+
+        EmailService                            m_email_service;
+        ClientOptionService                     m_client_option_service;
+        CharacterService                        m_character_service;
+        EnhancementService                      m_enhancement_service;
+        InspirationService                      m_inspiration_service;
+        InteractionService                      m_interaction_service;
+        PowerService                            m_power_service;
+        LocationService                         m_location_service;
+        TradingService                          m_trading_service;
+        ZoneTransferService                     m_zone_transfer_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -212,5 +213,5 @@ protected:
         void on_emote_command(const QString &command, Entity *ent);
 
         // Service <--> MapInstance
-        void on_service_to_client_response(SEGSEvents::ServiceToClientData* data);
+        void on_service_to_client_response(std::unique_ptr<SEGSEvents::ServiceToClientData> data);
 };

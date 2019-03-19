@@ -5,7 +5,7 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#include "TransactionService.h"
+#include "TradingService.h"
 #include "GameData/Powers.h"
 #include "GameData/Entity.h"
 #include "GameData/playerdata_definitions.h"
@@ -21,7 +21,7 @@
 
 using namespace SEGSEvents;
 
-ServiceToClientData* TransactionService::on_store_sell_item(Entity* playerEnt, Event* ev)
+std::unique_ptr<ServiceToClientData> TradingService::on_store_sell_item(Entity* playerEnt, Event* ev)
 {
     StoreSellItem* casted_ev = static_cast<StoreSellItem*>(ev);
     qCDebug(logStores) << "on_store_sell_item. NpcId: " << casted_ev->m_npc_idx << " isEnhancement: " << casted_ev->m_is_enhancement << " TrayNumber: " << casted_ev->m_tray_number << " enhancement_idx: " << casted_ev->m_enhancement_idx;
@@ -46,7 +46,7 @@ ServiceToClientData* TransactionService::on_store_sell_item(Entity* playerEnt, E
         {
             modifyInf(*playerEnt->m_client, result.m_inf_amount);
             trashEnhancement(playerEnt->m_char->m_char_data, casted_ev->m_enhancement_idx);
-            return new ServiceToClientData(playerEnt, result.m_message, MessageChannel::SERVER);
+            return std::make_unique<ServiceToClientData>(playerEnt, result.m_message, MessageChannel::SERVER);
         }
         else
             qCDebug(logStores) << "Error processing sellItem";
@@ -57,7 +57,7 @@ ServiceToClientData* TransactionService::on_store_sell_item(Entity* playerEnt, E
     return nullptr;
 }
 
-ServiceToClientData* TransactionService::on_store_buy_item(Entity* playerEnt, Event* ev)
+std::unique_ptr<ServiceToClientData> TradingService::on_store_buy_item(Entity* playerEnt, Event* ev)
 {
     StoreBuyItem* casted_ev = static_cast<StoreBuyItem *>(ev);
     qCDebug(logMapEvents) << "on_store_buy_item. NpcId: " << casted_ev->m_npc_idx << " ItemName: " << casted_ev->m_item_name;
@@ -73,7 +73,7 @@ ServiceToClientData* TransactionService::on_store_buy_item(Entity* playerEnt, Ev
             giveEnhancement(*playerEnt->m_client, result.m_item_name, result.m_enhancement_lvl);
 
         // sendChatMessage(MessageChannel::SERVER,result.m_message,session.m_ent,session);
-        return new ServiceToClientData(playerEnt, result.m_message, MessageChannel::SERVER);
+        return std::make_unique<ServiceToClientData>(playerEnt, result.m_message, MessageChannel::SERVER);
     }
     else
         qCDebug(logStores) << "Error processing buyItem";
@@ -81,7 +81,7 @@ ServiceToClientData* TransactionService::on_store_buy_item(Entity* playerEnt, Ev
     return nullptr;
 }
 
-ServiceToClientData* TransactionService::on_trade_cancelled(Entity* ent, Event* /*ev*/)
+std::unique_ptr<ServiceToClientData> TradingService::on_trade_cancelled(Entity* ent, Event* /*ev*/)
 {
     // unused event
     //TradeWasCancelledMessage* casted_ev = static_cast<TradeWasCancelledMessage *>(ev);
@@ -121,7 +121,7 @@ ServiceToClientData* TransactionService::on_trade_cancelled(Entity* ent, Event* 
     return nullptr;
 }
 
-ServiceToClientData* TransactionService::on_trade_updated(Entity* ent, Event* ev)
+std::unique_ptr<ServiceToClientData> TradingService::on_trade_updated(Entity* ent, Event* ev)
 {
     TradeWasUpdatedMessage* casted_ev = static_cast<TradeWasUpdatedMessage *>(ev);
 
@@ -163,7 +163,7 @@ ServiceToClientData* TransactionService::on_trade_updated(Entity* ent, Event* ev
         msg = "Something went wrong with trade update!"; // this should never happen
     }
 
-    return new ServiceToClientData(ent, msg, MessageChannel::SERVER);
+    return std::make_unique<ServiceToClientData>(ent, msg, MessageChannel::SERVER);
 }
 
 

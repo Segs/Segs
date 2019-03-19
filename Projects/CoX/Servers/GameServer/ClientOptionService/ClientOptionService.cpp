@@ -71,6 +71,10 @@ void ClientOptionService::on_window_state(Entity* ent, Event* ev)
     WindowState* casted_ev = static_cast<WindowState* >(ev);
     // Save GUISettings to character entity and entry in the database.
 
+    // possibly out of bounds
+    if (casted_ev->wnd.m_idx <= 0 || casted_ev->wnd.m_idx >= ent->m_player->m_gui.m_wnds.size())
+        return;
+
     ent->m_player->m_gui.m_wnds.at(casted_ev->wnd.m_idx) = casted_ev->wnd;
 
     qCDebug(logGUI) << "Received window state" << casted_ev->wnd.m_idx << "-" << casted_ev->wnd.m_mode;

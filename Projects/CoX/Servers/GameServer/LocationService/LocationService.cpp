@@ -14,7 +14,7 @@
 
 using namespace SEGSEvents;
 
-ServiceToClientData* LocationService::on_location_visited(Entity* ent, Event *ev)
+std::unique_ptr<ServiceToClientData> LocationService::on_location_visited(Entity* ent, Event *ev)
 {
     LocationVisited* casted_ev = static_cast<LocationVisited *>(ev);
     qCDebug(logMapEvents()) << "Attempting a call to script location_visited with:"<<casted_ev->m_name<<qHash(casted_ev->m_name);
@@ -31,10 +31,11 @@ ServiceToClientData* LocationService::on_location_visited(Entity* ent, Event *ev
     scriptData->charArg = casted_ev->m_name;
     scriptData->locArg = casted_ev->m_pos;
 
-    return new ServiceToClientData(ent, {scriptData}, casted_ev->m_name);
+    ScriptVector scripts {scriptData};
+    return std::make_unique<ServiceToClientData>(ent, scripts, casted_ev->m_name);
 }
 
-ServiceToClientData* LocationService::on_plaque_visited(Entity* ent, Event* ev)
+std::unique_ptr<ServiceToClientData> LocationService::on_plaque_visited(Entity* ent, Event* ev)
 {
     PlaqueVisited* casted_ev = static_cast<PlaqueVisited *>(ev);
     qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<casted_ev->m_name<<qHash(casted_ev->m_name);
@@ -49,10 +50,11 @@ ServiceToClientData* LocationService::on_plaque_visited(Entity* ent, Event* ev)
     scriptData->charArg = casted_ev->m_name;
     scriptData->locArg = casted_ev->m_pos;
 
-    return new ServiceToClientData(ent, {scriptData}, QString());
+    ScriptVector scripts {scriptData};
+    return std::make_unique<ServiceToClientData>(ent, scripts, casted_ev->m_name);
 }
 
-ServiceToClientData* LocationService::on_set_destination(Entity* ent, Event* ev)
+std::unique_ptr<ServiceToClientData> LocationService::on_set_destination(Entity* ent, Event* ev)
 {
     SetDestination* casted_ev = static_cast<SetDestination*>(ev);
 

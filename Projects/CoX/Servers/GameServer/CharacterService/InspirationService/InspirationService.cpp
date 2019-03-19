@@ -31,8 +31,9 @@ void InspirationService::on_inspiration_dockmode(Entity* ent, Event* ev)
     qCDebug(logMapEvents) << "Saving inspirations dock mode to GUISettings:" << casted_ev->dock_mode;
 }
 
-ServiceToClientData* InspirationService::on_activate_inspiration(Entity* ent, Event* ev)
+std::unique_ptr<ServiceToClientData> InspirationService::on_activate_inspiration(Entity* ent, Event* ev)
 {
+    const float ACTIVATE_INSPIRATION_DELAY = 4.0;
     ActivateInspiration* casted_ev = static_cast<ActivateInspiration *>(ev);
 
     ent->m_has_input_on_timeframe = true;
@@ -41,12 +42,9 @@ ServiceToClientData* InspirationService::on_activate_inspiration(Entity* ent, Ev
     if(!success)
         return nullptr;
 
-    std::unique_ptr<FloatingInfo> cmd = std::make_unique<FloatingInfo>(
-                ent->m_idx, "Inspired!", FloatingInfoStyle::FloatingInfo_Attention, ACTIVATE_INSPIRATION_DELAY);
+    GameCommandVector commands;
+    commands.emplace_back(std::make_unique<FloatingInfo>(ent->m_idx, "Inspired!", FloatingInfoStyle::FloatingInfo_Attention, ACTIVATE_INSPIRATION_DELAY));
 
-    std::vector<std::unique_ptr<GameCommandEvent>> cmds;
-    cmds.push_back(std::move(cmd));
-
-    return new ServiceToClientData(ent, {std::move(cmds)}, QString());
+    return std::make_unique<ServiceToClientData>(ent, std::move(commands), QString());
     // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
 }

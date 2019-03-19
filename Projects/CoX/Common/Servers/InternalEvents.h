@@ -270,25 +270,25 @@ struct ScriptingServiceToClientData
 struct ServiceToClientData
 {
     using GameCommandVector = std::vector<std::unique_ptr<GameCommandEvent>>;
-    using InternalEventVector = std::vector<InternalEvent*>;
+    using MapServerEventVector = std::vector<InternalEvent*>;           // might need another vector of InternalEvents if sending to something like game_db
     using ScriptVector = std::vector<ScriptingServiceToClientData*>;
 
     uint64_t m_token = 0;
     Entity* m_ent = nullptr;
     GameCommandVector m_commands;
-    InternalEventVector m_internal_events;               // currently for mapserver
+    MapServerEventVector m_map_server_events;
     ScriptVector m_scripts;          // lua stuff
     QString m_message;
     MessageChannel m_message_channel;
 
     ServiceToClientData(){};
     // the most complete constructor, but generally advised against using everything unless you actually do
-    ServiceToClientData(uint64_t token, Entity* ent, GameCommandVector cmds, InternalEventVector internal_evs, ScriptVector scripts, QString message, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    ServiceToClientData(uint64_t token, Entity* ent, GameCommandVector cmds, MapServerEventVector mapServerEvents, ScriptVector scripts, QString message, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
     {
         m_token = token;
         m_ent = ent;
         m_commands = std::move(cmds);
-        m_internal_events = internal_evs;
+        m_map_server_events = mapServerEvents;
         m_scripts = scripts;
         m_message = message;
         m_message_channel = messageChannel;
@@ -322,10 +322,10 @@ struct ServiceToClientData
     }
 
     // use this if you are using internal events (stuff->putq())
-    ServiceToClientData(Entity* ent, InternalEventVector internalEvents, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    ServiceToClientData(Entity* ent, MapServerEventVector mapServerEvents, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
     {
         m_ent = ent;
-        m_internal_events = internalEvents;
+        m_map_server_events = mapServerEvents;
         m_message = msg;
         m_message_channel = messageChannel;
     }
@@ -334,6 +334,14 @@ struct ServiceToClientData
     ServiceToClientData(Entity* ent, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
     {
         m_ent = ent;
+        m_message = msg;
+        m_message_channel = messageChannel;
+    }
+
+    // same as above, but with tokens
+    ServiceToClientData(uint64_t token, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_token = token;
         m_message = msg;
         m_message_channel = messageChannel;
     }

@@ -23,7 +23,7 @@
 
 using namespace SEGSEvents;
 
-ServiceToClientData* ZoneTransferService::on_initiate_map_transfer(MapServer* map_server, MapLink* link, Entity* ent, Event *ev)
+std::unique_ptr<ServiceToClientData> ZoneTransferService::on_initiate_map_transfer(MapServer* map_server, MapLink* link, Entity* ent, Event *ev)
 {
     InitiateMapXfer* casted_ev = static_cast<InitiateMapXfer *>(ev);
     // MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
@@ -47,7 +47,8 @@ ServiceToClientData* ZoneTransferService::on_initiate_map_transfer(MapServer* ma
                                     ent->m_client->m_max_slots},
                                     link->session_token());
 
-    return new ServiceToClientData(ent, {map_req}, QString());
+    MapServerEventVector mapServerEvents {map_req};
+    return std::make_unique<ServiceToClientData>(ent, mapServerEvents, QString());
 }
 
 void ZoneTransferService::on_map_xfer_complete(Entity* ent, glm::vec3 closest_safe_location, Event* /*ev*/)
@@ -59,7 +60,7 @@ void ZoneTransferService::on_map_xfer_complete(Entity* ent, glm::vec3 closest_sa
     ent->m_map_swap_collided = false;
 }
 
-ServiceToClientData* ZoneTransferService::on_map_swap_collision(MapLink* link, Entity* ent, Event *ev)
+std::unique_ptr<ServiceToClientData> ZoneTransferService::on_map_swap_collision(MapLink* link, Entity* ent, Event *ev)
 {
     MapSwapCollisionMessage* casted_ev = static_cast<MapSwapCollisionMessage* >(ev);
 
@@ -76,10 +77,11 @@ ServiceToClientData* ZoneTransferService::on_map_swap_collision(MapLink* link, E
     link->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name)));
 
     ClientMapXferMessage* clientMapXferMessage = new ClientMapXferMessage({link->session_token(), map_transfer_data}, 0);
-    return new ServiceToClientData(ent, {clientMapXferMessage}, QString());
+    MapServerEventVector mapServerEvents {clientMapXferMessage};
+    return std::make_unique<ServiceToClientData>(ent, mapServerEvents, QString());
 }
 
-ServiceToClientData* ZoneTransferService::on_enter_door(MapServer* map_server, MapLink* link, Entity* ent, uint32_t map_index, Event *ev)
+std::unique_ptr<ServiceToClientData> ZoneTransferService::on_enter_door(MapServer* map_server, MapLink* link, Entity* ent, uint32_t map_index, Event *ev)
 {
     EnterDoor* casted_ev = static_cast<EnterDoor* >(ev);
 
@@ -145,13 +147,14 @@ ServiceToClientData* ZoneTransferService::on_enter_door(MapServer* map_server, M
     }
 
     // should return a GameCommandVector because sendDoorAnimStart and sendDoorAnimStart do them at this point in time
-    if (clientMapXferMessage != nullptr)
-        return new ServiceToClientData(ent, {clientMapXferMessage}, QString());
-    else
+    if (clientMapXferMessage == nullptr)
         return nullptr;
+
+    MapServerEventVector mapServerEvents {clientMapXferMessage};
+    return std::make_unique<ServiceToClientData>(ent, mapServerEvents, QString());
 }
 
-ServiceToClientData* ZoneTransferService::on_has_entered_door(Entity* ent, Event */*ev*/)
+std::unique_ptr<ServiceToClientData> ZoneTransferService::on_has_entered_door(Entity* ent, Event */*ev*/)
 {
     // unused event
     // HasEnteredDoor* casted_ev = static_cast<HasEnteredDoor*>(ev);
@@ -167,7 +170,7 @@ ServiceToClientData* ZoneTransferService::on_has_entered_door(Entity* ent, Event
     return nullptr;
 }
 
-ServiceToClientData* ZoneTransferService::on_awaiting_dead_no_gurney(Entity* ent, Event */*ev*/)
+std::unique_ptr<ServiceToClientData> ZoneTransferService::on_awaiting_dead_no_gurney(Entity* ent, Event */*ev*/)
 {
     // AwaitingDeadNoGurney* casted_ev = static_cast<AwaitingDeadNoGurney *>(ev);
     qCDebug(logMapEvents) << "Entity: " << ent->m_idx << "has received AwaitingDeadNoGurney";
@@ -192,10 +195,11 @@ ServiceToClientData* ZoneTransferService::on_awaiting_dead_no_gurney(Entity* ent
         revivePlayer(ent, ReviveLevel::FULL);
     };
 
-    return nullptr;
+    ScriptVector scripts {scriptData};
+    return std::make_unique<ServiceToClientData>(ent, scripts, QString());
 }
 
-ServiceToClientData* ZoneTransferService::on_dead_no_gurney_ok(Entity* ent, Event */*ev*/)
+std::unique_ptr<ServiceToClientData> ZoneTransferService::on_dead_no_gurney_ok(Entity* ent, Event */*ev*/)
 {
     //DeadNoGurneyOK* casted_ev = static_cast<DeadNoGurneyOK *>(ev);
     qCDebug(logMapEvents) << "Entity: " << ent->m_idx << "has received DeadNoGurneyOK";

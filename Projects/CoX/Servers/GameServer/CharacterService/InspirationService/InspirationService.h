@@ -10,14 +10,16 @@
 #include "Common/Servers/InternalEvents.h"
 #include "GameData/Entity.h"
 
+// InspirationService handles inspiration-related stuff that happens on entities in a MapInstance
 class InspirationService
 {
 private:
-    const float ACTIVATE_INSPIRATION_DELAY = 4.0;
+    using GameCommandVector = std::vector<std::unique_ptr<SEGSEvents::GameCommandEvent>>;
+    // const float ACTIVATE_INSPIRATION_DELAY = 4.0;
 public:
     void on_move_inspiration(Entity* ent, SEGSEvents::Event* ev);
     void on_inspiration_dockmode(Entity* ent, SEGSEvents::Event* ev);
-    SEGSEvents::ServiceToClientData* on_activate_inspiration(Entity* ent, SEGSEvents::Event* ev);
+    std::unique_ptr<SEGSEvents::ServiceToClientData> on_activate_inspiration(Entity* ent, SEGSEvents::Event* ev);
 protected:
 };
 

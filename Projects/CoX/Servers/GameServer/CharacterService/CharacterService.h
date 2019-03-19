@@ -10,6 +10,8 @@
 #include "Common/Servers/InternalEvents.h"
 #include "GameData/Entity.h"
 
+// The CharacterService deals with character-related things that is NOT about Enhancement, Inspiration or Power
+// Notice that those three services are located inside CharacterService folder
 class CharacterService
 {
 private:
