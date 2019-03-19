@@ -39,6 +39,7 @@ void serialize(Archive &archive, PlayerData &pd, uint32_t const version)
     archive(cereal::make_nvp("Clue", pd.m_clues));
     archive(cereal::make_nvp("Souvenirs", pd.m_souvenirs));
     archive(cereal::make_nvp("Statistics", pd.m_player_statistics));
+    archive(cereal::make_nvp("Progress", pd.m_player_progress));
 }
 
 SPECIALIZE_VERSIONED_SERIALIZATIONS(PlayerData)

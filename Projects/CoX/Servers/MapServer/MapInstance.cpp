@@ -66,6 +66,7 @@
 #include <QtCore/QDir>
 #include <random>
 #include <stdlib.h>
+#include <bitset>
 
 using namespace SEGSEvents;
 struct EntityIdxCompare;
@@ -2089,6 +2090,22 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
+    std::string map_idx_key = QString(session.m_current_map->m_index).toStdString();
+    ent->m_player->m_player_progress.m_visible_map_tiles[map_idx_key][ev->tile_idx] = true;
+
+    // QString msg = "";
+
+    // qCDebug(logMiniMap) << "count: " << ent->m_player->m_visible_map_tiles[map_idx].count() << ".";
+    
+    // for (uint32_t i = 0; i < ent->m_player->m_visible_map_tiles[map_idx].size(); ++i)
+    // {
+    //     if (ent->m_player->m_visible_map_tiles[map_idx][i] == 1)
+    //     {
+    //         msg += QStringLiteral("%1,").arg(i);
+    //     }
+    // }
+
+    // qCDebug(logMiniMap) << "Visible tiles are " << msg;
 
     qCDebug(logMiniMap) << "MiniMapState tile "<< ev->tile_idx << " for player" << ent->name();
     // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
