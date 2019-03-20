@@ -138,8 +138,11 @@ EncounterManager.Spawn = function (self)
 
         local Encounter = self.EncounterName
 
+        --Handle nil and 0 probability encounters
         if Encounter == nil then
                 print("Invalid encounter detected. Exiting.")
+                return ""
+        elseif (self.SpawnProbabilityBase + self.SpawnProbabilityAdj) <= 0 then
                 return ""
         end
 
@@ -147,9 +150,9 @@ EncounterManager.Spawn = function (self)
         if validateSpawnDef ~= nil and validateSpawnDef == true then
                 local BaseType = GetBaseType(Encounter)
                 --"Ambush" are for missions or special encounters only; exit.
-                --"Encounter" types are for monsters and most/all(?) drones; exit.
+                --"Encounter" types are for monsters and most/all(?) drones;
                 if BaseType == nil or BaseType == "Ambush" then
-                        print("Ambush, Special or NIL detected. Exiting.")
+                        print(tostring(Encounter) .. " Ambush, Special or NIL detected. Exiting.")
                         return ""  
                 end
                 --For now, get a random SpawnDef from those available
@@ -165,7 +168,7 @@ EncounterManager.Spawn = function (self)
                         
                         --this EM is improperly initiatlized or is broken, exit
                         if count == 0 or count == nil then
-                                print("EM has no markers. Exiting.")
+                                print(tostring(Encounter) .. " EM has no markers. Exiting.")
                                 return ""
                         end
 
@@ -179,14 +182,10 @@ EncounterManager.Spawn = function (self)
 
                         --no marker found, or location data is bad.
                         if EncPos == nil then
-                                print("EM LOC: " .. self.Position.x .. " " .. self.Position.y .. " " .. self.Position.z)
-                                print("data: " .. tostring(EncPos.x) .. " " .. tostring(EncPos.y) .. " " .. tostring(EncPos.z))
-                                print("EM has bad position data. Exiting.")
+                                print(tostring(Encounter) .. " EM has bad position data. Exiting.")
                                 return ""                        
                         elseif EncRot == nil then
-                                print("EM LOC: " .. self.Position.x .. " " .. self.Position.y .. " " .. self.Position.z)
-                                print("data: " .. tostring(EncRot.y))
-                                print("EM has bad rotation data. Exiting.")
+                                print(tostring(Encounter) .. " EM has bad rotation data. Exiting.")
                                 return ""
                         end
 
@@ -199,7 +198,7 @@ EncounterManager.Spawn = function (self)
                         end
 
                         if SpawnEntity == nil then
-                                print("Invalid spawn entity detected. Exiting.")
+                                print(tostring(Encounter) .. " Invalid spawn entity detected. Exiting.")
                                 return ""
                         end
 
