@@ -324,6 +324,7 @@ local All_Persistents = {
         ["Harvey_Maylor"] = "Model_HarveyMaylor",
         ["Crimson"] = "Model_Crimson",
         ["Ghost_Falcon"] = "Model_GhostFalcon",
+        ["Computer"] = "Sewer_Access_Computer",       --found in the abandoned sewers
         ["Magic_City_02_01"] = MagicStore,
         ["Magic_City_02_01b"] = MagicStore,
         ["Magic_City_02_01c"] = MagicStore,
@@ -356,7 +357,6 @@ function GetPersistentModel(npc)
 
         --handle variable model instances
         if type(Model) == "table" then
-
                 Model = Model[math.random(1, #Model)]
         end
 

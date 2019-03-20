@@ -1,13 +1,10 @@
---include_lua('Mock_ES.lua')
 include_lua('ES_Library_Objects.lua')
-
 
 --Sends a server message
 function CallOut(message)
         MapClientSession.SendInfoMessage(13, tostring(message))
         return ""
 end
-
 
 --Prototype
 --TODO: Polling Routine
@@ -22,22 +19,9 @@ local STATUS_RUNNING_PANIC = 4
 local STATUS_RUNNING_DESPAWN = 5
 local STATUS_INVALID = 1000
 
---[[
-SpawnerData is a single encounter spawner group with this structure:
-<<Spawner Name>>
-  <<Makers>>
-    <<Pos, Rot>>
-<<Properties>>
-
-Anything with a SpawnProbability of 100% should always used that value
-and ignore an adjustment if sent, as they were intended to appear in the
-world without variance.
-]]
-
 --Several of these values should be drawn from a config file.
 EncounterManager = {
-        ["SpawnerData"] = {},
-        ["Critters"] = {},
+        ["Critters"] = {},                      --list of spawned critters
         ["Position"] = vec3.new(0, 0, 0),
         ["StatusCurrent"] = STATUS_SLEEPING,
         ["StatusPrevious"] = STATUS_SLEEPING,
@@ -45,7 +29,7 @@ EncounterManager = {
         ["PollingIntervalBase"] = 60.0,
         ["PollingIntervalAdj"] = 0,
         ["PanicDuration"] = 90.0,
-        ["PanicInitiators"] = {},
+        ["PanicInitiators"] = {},               --player or team|players
         ["SpawnProbabilityBase"] = 80,
         ["SpawnProbabilityAdj"] = 0,
         ["EncounterName"] = "",
@@ -80,8 +64,8 @@ end
         and other activities.
 ]]
 EncounterManager.CountCritters = function (self)
-        local counter = #self.Critters or 0
-        return #self.Critters
+        local Counter = #self.Critters or 0
+        return Counter
 end
 
 --Handles state changes for the EM
@@ -128,12 +112,22 @@ EncounterManager.GetState = function (self)
         return "STATUS_INVALID" --Something is wrong if we end up here.
 end
 
+-- returns both Spawn Probability values: base and adjustment
+EncounterManager.GetSpawnProbability = function (self)
+        local Base = self.SpawnProbabilityBase
+        local Adj = self.SpawnProbabilityAdj
+        if Base < 0 then Base = 0 end   -- Base shouldn't be below 0 or above 100
+        if Base > 100 then Base = 100 end 
+
+        return Base, Adj
+end
+
 --Used for manual human interactions
 EncounterManager.ReportStatus = function (self)
         local Pos = self.Position
-        local alert = "I am at (" .. tostring(Pos.x) .. ", " .. tostring(Pos.y) .. ", " .. tostring(Pos.z) .. ")"
-        alert = alert .. "\nMy status is: " .. self:GetState()
-        CallOut(alert)
+        local Alert = "I am at (" .. tostring(Pos.x) .. ", " .. tostring(Pos.y) .. ", " .. tostring(Pos.z) .. ")"
+        Alert = Alert .. "\nMy status is: " .. self:GetState()
+        CallOut(Alert)
         return ""
 end
 
@@ -143,42 +137,27 @@ EncounterManager.Spawn = function (self)
         math.randomseed(DateTime.SecsSince2000Epoch() * self.Position.x)
 
         local Encounter = self.EncounterName
-        --print("Validating " .. tostring(Encounter))
-        --print("EM LOC: " .. self.Position.x .. " " .. self.Position.y .. " " .. self.Position.z)
 
         if Encounter == nil then
                 print("Invalid encounter detected. Exiting.")
                 return ""
         end
 
-        --IGNORE FOR NOW
-        if Encounter == "_ES_PoliceDrone" then
-                print("Not handling drones currently. Exiting.")
-                return ""
-        end
-
         local validateSpawnDef = IsSpawnDef(Encounter)
-
         if validateSpawnDef ~= nil and validateSpawnDef == true then
                 local BaseType = GetBaseType(Encounter)
-                --Ambush are for missions or special encounters only; exit.
-                --Encounter types are for monsters or special encounters; exit.
-                if BaseType == nil or 
-                BaseType == "Ambush" or
-                BaseType == "Encounter" then
+                --"Ambush" are for missions or special encounters only; exit.
+                --"Encounter" types are for monsters and most/all(?) drones; exit.
+                if BaseType == nil or BaseType == "Ambush" then
                         print("Ambush, Special or NIL detected. Exiting.")
                         return ""  
                 end
                 --For now, get a random SpawnDef from those available
                 local SquadCount = math.random(1, GetCanSpawnCount(Encounter))
                 local Variant = {}
-                --print("Squad Count: " .. SquadCount)
-
                 Variant = GetVariant(Encounter, SquadCount)
-                --print("Variant: " .. tostring(Variant))
-
                 --Step through the template's markers and critters
-                for Tmarker, Tcritter in pairs(Variant[BaseType]) do
+                for Tmarker, Tcritter in pairs(Variant["Markers"]) do
                         --try to find a marker to match the Tmarker
                         local count = #self.Markers
                         local EncPos
@@ -225,8 +204,7 @@ EncounterManager.Spawn = function (self)
                         end
 
                         --We'll need this to return the spawned critter's ID
-                        --to store in Critters{}
-                        --so that it can be properly despawned later as needed.
+                        --to store in Critters{} so it/they can be properly despawned later as needed.
                         spawnCritter(SpawnEntity, EncPos, EncRot)
                 end
                 self:SetState(STATUS_RUNNING_ACTIVE)    --This encounter is now alive
@@ -235,25 +213,29 @@ EncounterManager.Spawn = function (self)
         return ""
 end
 
+--Removes owned encounter from the world
+EncounterManager.Despawn = function (self)
+        --nothing yet!
+end
+
 --[[
         ESSENTIALS
         NOTE: Some may be better placed in a Global script,
-        CreateEncounterManager will probably disappear or become some part
-        of the Zone manager instead.
+        CreateEncounterManager will become part of a Zone manager instead.
 ]]
 
 --Guess!!
 function spawnCritter(critter, position, rotation, level, rank, costume)
-        local costume_variation = costume or 1
-        local security_level = level or 0
-        local critter_rank = rank or 0
-        MapInstance.AddEnemy(critter, position, rotation, costume_variation, tostring(critter), security_level, tostring(critter), critter_rank)
+        local Costume_variation = costume or 1
+        local Security_level = level or 0
+        local Critter_rank = rank or 0
+        MapInstance.AddEnemy(critter, position, rotation, Costume_variation, tostring(critter), Security_level, tostring(critter), Critter_rank)
         return ""
 end
 
 function spawnCivilian(critter, position, rotation, costume)
-        local costume_variation = costume or 1
-        MapInstance.AddNpc(critter, position, rotation, costume_variation, tostring(critter))
+        local Costume_variation = costume or 1
+        MapInstance.AddNpc(critter, position, rotation, Costume_variation, tostring(critter))
         return ""
 end
 
@@ -279,22 +261,12 @@ function GetGroupContainersCount(Container)
         return Count
 end
 
---[[
-        Creates a new Encounter Generator and adds it to the provided table
-        Later, a zone manager should be the source of spawning all encounter managers
-        for it's map or zone, inherently storing them in the process.
-]]
+--Creates a new Encounter Generator and adds it to the provided table
 function CreateEncounterManager(pool, position)
         if type(pool) ~= "table" then
                 print("Invalid pool. Exiting.")
                 return ""
         end
-
-        --[[ May want to re-enable this again?
-        if spawner == nil then
-                print("Spawner group required. Exiting.")
-        end
-        ]]
 
         if position == nil then
                 position = vec3.new(0, 0, 0)

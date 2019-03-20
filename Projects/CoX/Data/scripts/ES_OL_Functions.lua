@@ -7,8 +7,9 @@
 
 --Returns true if a Spawn Definition is found in the library
 function IsSpawnDef(definition)
-        if definition == nil then
-              return false
+        if definition == nil or ES_Library_Objects == nil then
+                printDebug("IsSpawnDef: definition or ES_LO invalid. Exiting.")
+                return false
         end
 
         local validate = ES_Library_Objects[definition]
@@ -30,16 +31,25 @@ end
 
 --Returns the encounter's base type (i.e., its template)
 function GetBaseType(definition)
-        local validator = ES_Library_Objects[tostring(definition)]["EncounterSpawn"]
+        local validator = ES_Library_Objects[definition]["EncounterSpawn"]
 
         if validator == nil then
                 print("Invalid defintion or base type. Exiting.")
                 return ""
         end
-        return ES_Library_Objects[tostring(definition)]["EncounterSpawn"]
+        return ES_Library_Objects[definition]["EncounterSpawn"]
 end
 
 --Returns the appropriate Variant Table
 function GetVariant(definition, SpawnIndex)
         return ES_Library_Objects[definition].CanSpawnDefs[SpawnIndex]
+end
+
+function GetLOSpawnProbability(definition)
+        local validator = ES_Library_Objects[definition]["SpawnProbability"]
+        if validator == nil then
+                return 80
+        else
+                return ES_Library_Objects[definition]["SpawnProbability"]
+        end
 end

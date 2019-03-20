@@ -190,6 +190,7 @@ void MapInstance::load_map_lua()
 
     QStringList script_paths = {
         "scripts/global.lua",                   // global helper script
+        "scripts/Universal_Spawns.lua",         // Spawndef and functionality for universal critters
         "scripts/Encounter_Manager.lua",        // used by all maps for encounter generation
         "scripts/ES_OL_Functions.lua",          // used by all maps for object library reference functionality
         "scripts/Global_NPC_Extras.lua",        // universal "faction table" for civilian NPCs, vehicles and later police drones

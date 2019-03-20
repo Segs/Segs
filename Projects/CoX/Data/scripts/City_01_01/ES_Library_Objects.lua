@@ -1,19 +1,7 @@
---REQUIRED INCLUDE
-include_lua('../ES_OL_Functions.lua')
-
 --Provide spawndefs tables for relevant CanSpawnDefs here
 include_lua('../spawndefs/Hellions.spawndef.lua')
 include_lua('../spawndefs/Clockwork.spawndef.lua')
 include_lua('../spawndefs/Vahzilok.spawndef.lua')
---include_lua('../spawndefs/Police_Robots.spawndef.lua')
-
-
---[[
-  NOTE: Each listing can have multiple CanSpawn properties but they must be
-  sequential and there must always be a CanSpawn1 at minimum.
-  They can be non-unique. (e.g., 2, CanSpawn1 entries)
-]]
-
 
 ES_Library_Objects = {
   ["_ES_L1_3_Around_City_01_01"] = {
@@ -243,3 +231,6 @@ ES_Library_Objects = {
     ["CanSpawnDefs"] = {Loiter_Vahzilok_D10_V0, Loiter_Vahzilok_D10_V1, Loiter_Vahzilok_D10_V2,},
   },
 }
+
+--REQUIRED: This inserts universal into this map's OL
+InsertUniversals()

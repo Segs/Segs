@@ -41,7 +41,7 @@ local Clockwork_Ranks_01  = {
 
 
 Scavenge_Clockwork_L4_7_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_02"] = Clockwork_Ranks_01.Minions,
                 ["Encounter_E_05"] = Clockwork_Ranks_01.Minions,
                 ["Encounter_E_07"] = Clockwork_Ranks_01.Minions,
@@ -50,7 +50,7 @@ Scavenge_Clockwork_L4_7_V0 = {
 }
 
 Scavenge_Clockwork_L4_7_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Clockwork_Ranks_01.Minions,
                 ["Encounter_E_07"] = Clockwork_Ranks_01.Minions,
                 ["Encounter_E_02"] = Clockwork_Ranks_01.Minions,
@@ -59,7 +59,7 @@ Scavenge_Clockwork_L4_7_V1 = {
 }
 
 Scavenge_Clockwork_L8_10_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_05"] = Clockwork_Ranks_01.Minions,
             ["Encounter_E_07"] = Clockwork_Ranks_01.Minions,
             ["Encounter_E_01"] = Clockwork_Ranks_01.Minions,
@@ -70,7 +70,7 @@ Scavenge_Clockwork_L8_10_V0 = {
 }
 
 Scavenge_Clockwork_L8_10_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Clockwork_Ranks_01.Minions,
             ["Encounter_E_03"] = Clockwork_Ranks_01.Minions,
             ["Encounter_E_04"] = Clockwork_Ranks_01.Minions,
@@ -81,7 +81,7 @@ Scavenge_Clockwork_L8_10_V1 = {
 }
 
 Flying_Clockwork_L5_9_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Clockwork_Ranks_01.Flying,
             ["Encounter_E_03"] = Clockwork_Ranks_01.Flying,
             ["Encounter_E_04"] = Clockwork_Ranks_01.Flying,

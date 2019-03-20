@@ -32,14 +32,14 @@ local Hydra_Ranks_01  = {
 
 
 Loiter_HydraMan_L7_9_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_07"] = Hydra_Ranks_01.Lieutenants,
         },
 }
 
 Loiter_HydraMan_L7_9_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Hydra_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Hydra_Ranks_01.Underlings,
                 ["Encounter_E_07"] = Hydra_Ranks_01.Minions,
@@ -48,7 +48,7 @@ Loiter_HydraMan_L7_9_V1 = {
 }
 
 Loiter_HydraMan_L7_9_V2 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_02"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_03"] = Hydra_Ranks_01.Minions,
@@ -59,14 +59,14 @@ Loiter_HydraMan_L7_9_V2 = {
 }
 
 Loiter_HydraMan_L7_9_V3 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_07"] = Hydra_Ranks_01.Lieutenants,
         },
 }
 
 Loiter_HydraMan_L7_9_V4 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Hydra_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_07"] = Hydra_Ranks_01.Minions,
@@ -75,7 +75,7 @@ Loiter_HydraMan_L7_9_V4 = {
 }
 
 Loiter_HydraMan_L7_9_V5 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_02"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_05"] = Hydra_Ranks_01.Minions,
@@ -86,14 +86,14 @@ Loiter_HydraMan_L7_9_V5 = {
 }
 
 Loiter_HydraMan_L7_9_V6 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_07"] = Hydra_Ranks_01.Lieutenants,
         },
 }
 
 Loiter_HydraMan_L7_9_V7 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Hydra_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_07"] = Hydra_Ranks_01.Minions,
@@ -102,7 +102,7 @@ Loiter_HydraMan_L7_9_V7 = {
 }
 
 Loiter_HydraMan_L7_9_V8 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_02"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_05"] = Hydra_Ranks_01.Minions,
@@ -113,7 +113,7 @@ Loiter_HydraMan_L7_9_V8 = {
 }
 
 Loiter_HydraMan_L7_9_V9 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Hydra_Ranks_01.Minions,
                 ["Encounter_E_07"] = Hydra_Ranks_01.Lieutenants,
                 ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
@@ -126,7 +126,7 @@ Loiter_HydraMan_L7_9_V9 = {
 }
 
 Loiter_HydraMan_L7_9_V10 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_02"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_03"] = Hydra_Ranks_01.Minions,
@@ -142,7 +142,7 @@ Loiter_HydraMan_L7_9_V10 = {
 }
 
 Loiter_HydraMan_L7_9_V11 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_02"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_03"] = Hydra_Ranks_01.Minions,
@@ -157,7 +157,7 @@ Loiter_HydraMan_L7_9_V11 = {
         },
 }
 Loiter_HydraMan_L7_9_V12 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_02"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_03"] = Hydra_Ranks_01.Minions,
@@ -172,7 +172,7 @@ Loiter_HydraMan_L7_9_V12 = {
         },
 }
 Loiter_HydraMan_L7_9_V13 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_02"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_03"] = Hydra_Ranks_01.Minions,
@@ -187,7 +187,7 @@ Loiter_HydraMan_L7_9_V13 = {
         },
 }
 Loiter_HydraMan_L7_9_V14 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_02"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_03"] = Hydra_Ranks_01.Minions,
@@ -202,7 +202,7 @@ Loiter_HydraMan_L7_9_V14 = {
         },
 }
 Loiter_HydraMan_L7_9_V15 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_02"] = Hydra_Ranks_01.Minions,
             ["Encounter_E_03"] = Hydra_Ranks_01.Minions,

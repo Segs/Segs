@@ -37,14 +37,14 @@ local Rikti_Ranks_01  = {
 
 
 Preaching_RiktiBeggar_L8_10_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Rikti_Ranks_01.Minions,
                 ["Encounter_E_07"] = Rikti_Ranks_01.Lieutenants,
         },
 }
 
 Preaching_RiktiBeggar_L8_10_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Rikti_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Rikti_Ranks_01.Minions,
                 ["Encounter_E_07"] = Rikti_Ranks_01.Minions,
@@ -53,7 +53,7 @@ Preaching_RiktiBeggar_L8_10_V1 = {
 }
 
 Preaching_RiktiBeggar_L8_10_V2 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Rikti_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Rikti_Ranks_01.Minions,
                 ["Encounter_E_07"] = Rikti_Ranks_01.Minions,

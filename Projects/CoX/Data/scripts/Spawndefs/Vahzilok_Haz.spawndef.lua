@@ -41,14 +41,14 @@ local Vahzilok_Ranks_01  = {
 
 
 Loiter_Vahzilok_L2_5_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_07"] = Vahzilok_Ranks_01.Lieutenants,
         },
 }
 
 Loiter_Vahzilok_L2_5_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Vahzilok_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_07"] = Vahzilok_Ranks_01.Minions,
@@ -57,7 +57,7 @@ Loiter_Vahzilok_L2_5_V1 = {
 }
 
 Loiter_Vahzilok_L2_5_V2 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_02"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
@@ -68,21 +68,21 @@ Loiter_Vahzilok_L2_5_V2 = {
 }
 
 Loiter_Vahzilok_L5_9_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_04"] = Vahzilok_Ranks_01.Lieutenants,
         },
 }
 
 Loiter_Vahzilok_L5_9_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_02"] = Vahzilok_Ranks_01.Minions,
         },
 }
 
 Loiter_Vahzilok_L5_9_V2 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_03"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_06"] = Vahzilok_Ranks_01.Minions,

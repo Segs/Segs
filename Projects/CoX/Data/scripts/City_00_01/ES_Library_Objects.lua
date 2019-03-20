@@ -1,6 +1,3 @@
---REQUIRED INCLUDE
-include_lua('../ES_OL_Functions.lua')
-
 --These contain tables for relevant, spawnable NPCs
 include_lua('../spawndefs/Contaminated.spawndef.lua')
 include_lua('../spawndefs/Police_Robots.spawndef.lua')
@@ -53,19 +50,25 @@ ES_Library_Objects = {
     "Encounter_E_08", "Encounter_S_32", "Encounter_E_07",
     "Encounter_E_03", "Encounter_E_04",
     ["EncounterSpawn"] = "CenteredAround",
+    ["SpawnProbability"] = 100,    
     ["CanSpawn"] = {"CanSpawn1",},
     ["CanSpawnDefs"] = {Robot1_D1_V0,},
   },
   ["ES_Robot2_City_00_01"] = {
     "Encounter_E_01",
     ["EncounterSpawn"] = "Encounter",
+    ["SpawnProbability"] = 100,        
     ["CanSpawn"] = {"CanSpawn1",},
     ["CanSpawnDefs"] = {Robot2_D10_V0,},
   },
   ["ES_Robot3_City_00_01"] = {
     "Encounter_E_01",
     ["EncounterSpawn"] = "Encounter",
+    ["SpawnProbability"] = 100,        
     ["CanSpawn"] = {"CanSpawn1",},
     ["CanSpawnDefs"] = {Robot3_D5_V0,},
   },
 }
+
+--REQUIRED: This inserts universal into this map's OL
+InsertUniversals()

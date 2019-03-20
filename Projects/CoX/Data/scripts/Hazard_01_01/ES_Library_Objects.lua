@@ -3,7 +3,6 @@ include_lua('../ES_OL_Functions.lua')
 
 --These contain tables for relevant, spawnable NPCs
 include_lua('../spawndefs/Hellions_Haz.spawndef.lua')
---include_lua('../spawndefs/Police_Robots.spawndef.lua')
 include_lua('../spawndefs/Skulls_Haz.spawndef.lua')
 include_lua('../spawndefs/Clockwork_Haz.spawndef.lua')
 include_lua('../spawndefs/Vahzilok_Haz.spawndef.lua')
@@ -307,3 +306,6 @@ ES_Library_Objects = {
     ["CanSpawnDefs"] = {Flying_Clockwork_L5_9_V0},
   },        
 }
+
+--REQUIRED to append Universal LO data into this map's OL
+InsertUniversals()

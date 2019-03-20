@@ -39,14 +39,14 @@ local Circle_Ranks_01  = {
 ]]
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Minions,
@@ -55,7 +55,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V1 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V2 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_02"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
@@ -66,14 +66,14 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V2 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V3 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V4 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Minions,
@@ -82,7 +82,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V4 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V5 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_02"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
@@ -93,14 +93,14 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V5 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V6 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V7 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Minions,
@@ -109,7 +109,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V7 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V8 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_02"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
@@ -120,7 +120,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V8 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V9 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_E_01"] = Circle_Ranks_01.Minions,
@@ -133,7 +133,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V9 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V10 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -149,7 +149,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V10 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V11 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -164,7 +164,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V11 = {
         },
 }
 Sacrifice_CircleOfThornsFollowe_L5_9_V12 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -179,7 +179,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V12 = {
         },
 }
 Sacrifice_CircleOfThornsFollowe_L5_9_V13 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -194,7 +194,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V13 = {
         },
 }
 Sacrifice_CircleOfThornsFollowe_L5_9_V14 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -209,7 +209,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V14 = {
         },
 }
 Sacrifice_CircleOfThornsFollowe_L5_9_V15 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -224,18 +224,15 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V15 = {
         },
 }
 
-
--- =======================================================
-
 Sacrifice_CircleOfThornsFollowe_L2_5_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Minions,
@@ -244,7 +241,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V1 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V2 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_02"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
@@ -255,14 +252,14 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V2 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V3 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V4 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Minions,
@@ -271,7 +268,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V4 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V5 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_02"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
@@ -282,14 +279,14 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V5 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V6 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V7 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Minions,
@@ -298,7 +295,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V7 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V8 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_01"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_02"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
@@ -309,7 +306,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V8 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V9 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_E_01"] = Circle_Ranks_01.Minions,
@@ -322,7 +319,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V9 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V10 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -338,7 +335,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V10 = {
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V11 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -353,7 +350,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V11 = {
         },
 }
 Sacrifice_CircleOfThornsFollowe_L2_5_V12 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -368,7 +365,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V12 = {
         },
 }
 Sacrifice_CircleOfThornsFollowe_L2_5_V13 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -383,7 +380,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V13 = {
         },
 }
 Sacrifice_CircleOfThornsFollowe_L2_5_V14 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,
@@ -398,7 +395,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V14 = {
         },
 }
 Sacrifice_CircleOfThornsFollowe_L2_5_V15 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Circle_Ranks_01.Minions,
             ["Encounter_E_02"] = Circle_Ranks_01.Minions,
             ["Encounter_E_03"] = Circle_Ranks_01.Minions,

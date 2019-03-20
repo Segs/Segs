@@ -36,7 +36,7 @@ local Hellions_Ranks_01  = {
 
 
 Loiter_Hellions_L1_3_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellions_Ranks_01.Lieutenants,
             ["Encounter_E_02"] = Hellions_Ranks_01.Minions,
             ["Encounter_E_03"] = Hellions_Ranks_01.Minions,
@@ -51,7 +51,7 @@ Loiter_Hellions_L1_3_V3 = Loiter_Hellions_L1_3_V0
 Loiter_Hellions_L1_3_V4 = Loiter_Hellions_L1_3_V0
 
 Loiter_Hellions_L4_7_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellions_Ranks_01.Lieutenants,
             ["Encounter_S_32"] = Hellions_Ranks_01.Lieutenants,
             ["Encounter_E_01"] = Hellions_Ranks_01.Minions,            
@@ -67,7 +67,7 @@ Loiter_Hellions_L4_7_V3 = Loiter_Hellions_L4_7_V0
 Loiter_Hellions_L4_7_V4 = Loiter_Hellions_L4_7_V0
 
 Loiter_Hellions_L8_10_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellions_Ranks_01.Lieutenants,
             ["Encounter_S_31"] = Hellions_Ranks_01.Boss,            
             ["Encounter_S_32"] = Hellions_Ranks_01.Lieutenants,
@@ -84,7 +84,7 @@ Loiter_Hellions_L8_10_V0 = {
 
 
 Rumble_HellionsSkulls_L4_7_V0 = {
-        ["Rumble"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellions_Ranks_01.Lieutenants,
             ["Encounter_S_32"] = Hellions_Ranks_01.Lieutenants,
             ["Encounter_E_01"] = Hellions_Ranks_01.Minions,            

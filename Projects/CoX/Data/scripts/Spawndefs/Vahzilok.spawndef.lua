@@ -38,20 +38,20 @@ local Vahzilok_Ranks_01  = {
 
 
 Loiter_Vahzilok_D1_V0 = {
-        ["CenteredAround"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
         },
 }
 
 Loiter_Vahzilok_D1_V1 = {
-        ["CenteredAround"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_07"] = Vahzilok_Ranks_01.Minions,                
         },
 }
 
 Loiter_Vahzilok_D1_V2 = {
-        ["CenteredAround"] = {
+        ["Markers"] = {
             ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
             ["Encounter_E_07"] = Vahzilok_Ranks_01.Minions,
             ["Encounter_E_01"] = Vahzilok_Ranks_01.Minions,
@@ -60,20 +60,20 @@ Loiter_Vahzilok_D1_V2 = {
 }
 
 Loiter_Vahzilok_D5_V0 = {
-        ["CenteredAround"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
         },
 }
 
 Loiter_Vahzilok_D5_V1 = {
-        ["CenteredAround"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_07"] = Vahzilok_Ranks_01.Minions,                
         },
 }
 
 Loiter_Vahzilok_D5_V2 = {
-        ["CenteredAround"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Vahzilok_Ranks_01.Minions,
             ["Encounter_E_03"] = Vahzilok_Ranks_01.Minions,
             ["Encounter_E_04"] = Vahzilok_Ranks_01.Minions,
@@ -84,20 +84,20 @@ Loiter_Vahzilok_D5_V2 = {
 }
 
 Loiter_Vahzilok_D10_V0 = {
-        ["CenteredAround"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
         },
 }
 
 Loiter_Vahzilok_D10_V1 = {
-        ["CenteredAround"] = {
+        ["Markers"] = {
                 ["Encounter_E_05"] = Vahzilok_Ranks_01.Minions,
                 ["Encounter_E_07"] = Vahzilok_Ranks_01.Minions,                
         },
 }
 
 Loiter_Vahzilok_D10_V2 = {
-        ["CenteredAround"] = {
+        ["Markers"] = {
             ["Encounter_E_01"] = Vahzilok_Ranks_01.Minions,
             ["Encounter_E_03"] = Vahzilok_Ranks_01.Minions,
             ["Encounter_E_04"] = Vahzilok_Ranks_01.Minions,

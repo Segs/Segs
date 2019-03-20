@@ -36,7 +36,7 @@ local Skulls_Ranks_01  = {
 
 
 Loiter_Skulls_L1_3_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Skulls_Ranks_01.Lieutenants,
             ["Encounter_E_02"] = Skulls_Ranks_01.Minions,
             ["Encounter_E_03"] = Skulls_Ranks_01.Minions,
@@ -51,7 +51,7 @@ Loiter_Skulls_L1_3_V3 = Loiter_Skulls_L1_3_V0
 Loiter_Skulls_L1_3_V4 = Loiter_Skulls_L1_3_V0
 
 Loiter_Skulls_L4_7_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Skulls_Ranks_01.Lieutenants,
             ["Encounter_S_32"] = Skulls_Ranks_01.Lieutenants,
             ["Encounter_E_01"] = Skulls_Ranks_01.Minions,            
@@ -67,7 +67,7 @@ Loiter_Skulls_L4_7_V3 = Loiter_Skulls_L4_7_V0
 Loiter_Skulls_L4_7_V4 = Loiter_Skulls_L4_7_V0
 
 Loiter_Skulls_L8_10_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Skulls_Ranks_01.Lieutenants,
             ["Encounter_S_31"] = Skulls_Ranks_01.Boss,            
             ["Encounter_S_32"] = Skulls_Ranks_01.Lieutenants,

@@ -38,14 +38,14 @@ local Hellion_Ranks_01  = {
 
 
 Mugging_Thugs_L1_3_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_V_40"] = Hellion_Ranks_01.Victims,
             ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
         },
 }
 
 Mugging_Thugs_L1_3_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_V_40"] = Hellion_Ranks_01.Victims,
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_07"] = Hellion_Ranks_01.Minions,
@@ -53,7 +53,7 @@ Mugging_Thugs_L1_3_V1 = {
 }
 
 Mugging_Thugs_L4_7_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_V_40"] = Hellion_Ranks_01.Victims,
             ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
             ["Encounter_E_07"] = Hellion_Ranks_01.Minions,           
@@ -61,7 +61,7 @@ Mugging_Thugs_L4_7_V0 = {
 }
 
 Mugging_Thugs_L4_7_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_V_40"] = Hellion_Ranks_01.Victims,
             ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
             ["Encounter_E_01"] = Hellion_Ranks_01.Minions,
@@ -70,7 +70,7 @@ Mugging_Thugs_L4_7_V1 = {
 }
 
 Mugging_Thugs_L8_10_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_V_40"] = Hellion_Ranks_01.Victims,
             ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
             ["Encounter_E_06"] = Hellion_Ranks_01.Minions,
@@ -80,7 +80,7 @@ Mugging_Thugs_L8_10_V0 = {
 }
 
 Mugging_Thugs_L8_10_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_V_40"] = Hellion_Ranks_01.Victims,
             ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
             ["Encounter_E_02"] = Hellion_Ranks_01.Minions,
@@ -91,21 +91,21 @@ Mugging_Thugs_L8_10_V1 = {
 }
 
 ShadyDeal_Thugs_L1_3_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
             ["Encounter_V_40"] = Hellion_Ranks_01.Minions,
         },
 }
 
 ShadyDeal_Thugs_L1_3_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
                 ["Encounter_V_40"] = Hellion_Ranks_01.Minions,
         },
 }
 
 ShadyDeal_Thugs_L4_7_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
                 ["Encounter_V_40"] = Hellion_Ranks_01.Minions,
                 ["Encounter_E_01"] = Hellion_Ranks_01.Minions,            
@@ -114,7 +114,7 @@ ShadyDeal_Thugs_L4_7_V0 = {
 }
 
 ShadyDeal_Thugs_L4_7_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
                 ["Encounter_V_40"] = Hellion_Ranks_01.Boss,
                 ["Encounter_E_01"] = Hellion_Ranks_01.Minions,            
@@ -125,7 +125,7 @@ ShadyDeal_Thugs_L4_7_V1 = {
 }
 
 ShadyDeal_Thugs_L8_10_V0 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
                 ["Encounter_S_31"] = Hellion_Ranks_01.Boss,
                 ["Encounter_V_40"] = Hellion_Ranks_01.Minions,
@@ -135,7 +135,7 @@ ShadyDeal_Thugs_L8_10_V0 = {
 }
 
 ShadyDeal_Thugs_L8_10_V1 = {
-        ["Around"] = {
+        ["Markers"] = {
                 ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
                 ["Encounter_S_31"] = Hellion_Ranks_01.Boss,
                 ["Encounter_V_40"] = Hellion_Ranks_01.Minions,
@@ -147,34 +147,34 @@ ShadyDeal_Thugs_L8_10_V1 = {
 }
 
 Vandalism_Thugs_L1_3_V0 = {
-        ["AroundVandalism"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
         },
 }
 
 Vandalism_Thugs_L1_3_V1 = {
-        ["AroundVandalism"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_01"] = Hellion_Ranks_01.Minions,             
         },
 }
 
 Vandalism_Thugs_L4_7_V0 = {
-        ["AroundVandalism"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_04"] = Hellion_Ranks_01.Boss,            
         },
 }
 
 Vandalism_Thugs_L4_7_V1 = {
-        ["AroundVandalism"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_02"] = Hellion_Ranks_01.Boss,
         },
 }
 
 Vandalism_Thugs_L8_10_V0 = {
-        ["AroundVandalism"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_02"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_05"] = Hellion_Ranks_01.Minions,
@@ -183,7 +183,7 @@ Vandalism_Thugs_L8_10_V0 = {
 }
 
 Vandalism_Thugs_L8_10_V1 = {
-        ["AroundVandalism"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_02"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_05"] = Hellion_Ranks_01.Minions,
@@ -192,7 +192,7 @@ Vandalism_Thugs_L8_10_V1 = {
 }
 
 Vandalism_Thugs_L8_10_V1 = {
-        ["AroundVandalism"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_01"] = Hellion_Ranks_01.Minions,             
             ["Encounter_E_02"] = Hellion_Ranks_01.Minions,
@@ -201,13 +201,13 @@ Vandalism_Thugs_L8_10_V1 = {
 }
 
 BreakingIn_Thugs_L2_5_V0 = {
-        ["AroundDoor"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
         },
 }
 
 BreakingIn_Thugs_L2_5_V1 = {
-        ["AroundDoor"] = {
+        ["Markers"] = {
             ["Encounter_S_31"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_05"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_06"] = Hellion_Ranks_01.Minions,
@@ -215,7 +215,7 @@ BreakingIn_Thugs_L2_5_V1 = {
 }
 
 BreakingIn_Thugs_L6_9_V0 = {
-        ["AroundDoor"] = {
+        ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_01"] = Hellion_Ranks_01.Boss,            
             ["Encounter_E_02"] = Hellion_Ranks_01.Boss,            
@@ -223,7 +223,7 @@ BreakingIn_Thugs_L6_9_V0 = {
 }
 
 BreakingIn_Thugs_L6_9_V1 = {
-        ["AroundDoor"] = {
+        ["Markers"] = {
             ["Encounter_S_31"] = Hellion_Ranks_01.Minions,
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,            
             ["Encounter_E_01"] = Hellion_Ranks_01.Boss,
@@ -232,7 +232,7 @@ BreakingIn_Thugs_L6_9_V1 = {
 }
 
 PurseSnatch_Thugs_L1_3_V0 = {
-        ["Snatch"] = {
+        ["Markers"] = {
             ["Encounter_V_40"] = Hellion_Ranks_01.Victims,
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
             ["Encounter_E_05"] = Hellion_Ranks_01.Minions,
@@ -240,7 +240,7 @@ PurseSnatch_Thugs_L1_3_V0 = {
 }
 
 PurseSnatch_Thugs_L4_7_V0 = {
-        ["Snatch"] = {
+        ["Markers"] = {
             ["Encounter_V_40"] = Hellion_Ranks_01.Victims,
             ["Encounter_S_30"] = Hellion_Ranks_01.Boss,
             ["Encounter_E_03"] = Hellion_Ranks_01.Minions,
@@ -249,7 +249,7 @@ PurseSnatch_Thugs_L4_7_V0 = {
 }
 
 PurseSnatch_Thugs_L8_10_V0 = {
-        ["Snatch"] = {
+        ["Markers"] = {
             ["Encounter_V_40"] = Hellion_Ranks_01.Victims,
             ["Encounter_V_41"] = Hellion_Ranks_01.Victims,            
             ["Encounter_S_30"] = Hellion_Ranks_01.Boss,

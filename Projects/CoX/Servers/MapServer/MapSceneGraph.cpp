@@ -124,20 +124,11 @@ QString getCostumeFromName(const QString &n)
     if(checkCostumeExists(n))
         return n;
 
-    // Special cases will go here
-    // General
-    /*
-    if(n.contains("CarGenerator", Qt::CaseInsensitive)) // must include underscore
-        return getRandCostumeFromName("Car_");
-    if(n.contains("NPCGenerator", Qt::CaseInsensitive))
-        return getRandCostumeFromName("maleNPC"); // will include females
+    /* Special cases will go here
+        For now, only monorail and blimp generation remains here
+        This will be moved into the vehicle-related Lua framework when managers
+        are later created to deal with them.
     */
-    if(n.contains("DoctorNPC", Qt::CaseInsensitive))
-        return getRandCostumeFromName("maleNPC"); // will include females
-    if(n.contains("BusinessNPC", Qt::CaseInsensitive))
-        return getRandCostumeFromName("maleNPC"); // will include females
-    if(n.contains("NPCDrones", Qt::CaseInsensitive))
-        return "Police_Drone";
     if(n.contains("MonorailGenerator", Qt::CaseInsensitive))
         return "Car_Monorail";
     if(n.contains("BlimpGenerator", Qt::CaseInsensitive))
