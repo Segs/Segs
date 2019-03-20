@@ -552,8 +552,8 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
                 rpow_idx = e->m_queued_powers.erase(rpow_idx);
             else
             {
-            rpow_idx->m_active_state_change = false;
-            rpow_idx++;
+                rpow_idx->m_active_state_change = false;
+                rpow_idx++;
             }
         }
         else

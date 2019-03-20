@@ -2392,7 +2392,6 @@ void MapInstance::on_unqueue_all(UnqueueAll *ev)
     // What else could go here?
     ent->m_target_idx = 0;
     ent->m_assist_target_idx = 0;
-    ent->m_queued_powers.clear();
 
     qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }

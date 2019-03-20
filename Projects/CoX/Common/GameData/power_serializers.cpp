@@ -248,7 +248,8 @@ static void serialize(Archive & archive, StoredAttribMod & src)
     archive(cereal::make_nvp("Attrib",src.Attrib));
     archive(cereal::make_nvp("Aspect",src.Aspect));
     archive(cereal::make_nvp("Target",src.Target));
-    archive(cereal::make_nvp("Table",src.Table));archive(cereal::make_nvp("Scale",src.Scale));
+    archive(cereal::make_nvp("Table",src.Table));
+    archive(cereal::make_nvp("Scale",src.Scale));
     archive(cereal::make_nvp("Type",src.Type));
     archive(cereal::make_nvp("Delay",src.Delay));
     archive(cereal::make_nvp("Period",src.Period));

@@ -103,7 +103,13 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         {
             if (!e->m_is_activating)
             {
-                if (checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx)
+                if (checkPowerBlock(*e))
+                {
+                    qpow.m_activation_state = false;                //this will turn off the activation ring and then dequeue
+                    qpow.m_active_state_change = true;
+                    e->m_char->m_char_data.m_has_updated_powers = true;
+                }
+                else if (checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx)
                         && checkPowerRange(*e, qpow.m_tgt_idx, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx))
                 {
                     e->m_is_activating = true;       //queued power can move forward to an active power

@@ -789,7 +789,6 @@ void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_i
 {
     CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
     const Power_Data powtpl = ppower->getPowerTemplate();
-
     QueuedPowers qpowers;
     qpowers.m_pow_idxs = {pset_idx, pow_idx};
     qpowers.m_active_state_change   = true;
@@ -832,7 +831,6 @@ void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_i
 
 void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time)
 {
-
     QueuedPowers qpowers;
     qpowers.m_pow_idxs = {pset_idx, pow_idx};
     qpowers.m_active_state_change   = true;
@@ -843,7 +841,6 @@ void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time)
     qpowers.m_activate_period       = 0;
     ent.m_recharging_powers.push_back(qpowers);         // put this into recharge Queue
     ent.m_char->m_char_data.m_has_updated_powers = true;
-
 }
 /*
  * doPower is called after the power has passed the activation queue
