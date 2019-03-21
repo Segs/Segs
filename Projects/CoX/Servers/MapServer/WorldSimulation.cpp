@@ -165,16 +165,29 @@ void World::regenHealthEnd(Entity *e, uint32_t msec)
     // for now on Players only
     if(e->m_type == EntType::PLAYER)
     {
-        float hp = getHP(*e->m_char);
-        float end = getEnd(*e->m_char);
+		float maxHP = getMaxHP(*e->m_char);
+		float maxEnd = getMaxEnd(*e->m_char);
 
-        float regeneration = hp * (1.0f/20.0f) * float(msec)/1000/12;
-        float recovery = end * (1.0f/15.0f) * float(msec)/1000/12;
+		//float regeneration = hp * (1.0f/20.0f) * float(msec)/1000/12;
+		//float recovery = end * (1.0f/15.0f) * float(msec)/1000/12;
+		// at 0 end, will never recover
 
-        if(hp < getMaxHP(*e->m_char))
-            setHP(*e->m_char, hp + regeneration);
-        if(end < getMaxEnd(*e->m_char))
-            setEnd(*e->m_char, end + recovery);
+		float regeneration = maxHP * (1.0f / 20.0f) * float(msec) / 1000 / 12;
+		float recovery = maxEnd * (1.0f / 4.9f) * float(msec) / 1000 / 12;      // 60 sec for 100 end
+		float hp = getHP(*e->m_char);
+		float end = getEnd(*e->m_char);
+
+		hp += regeneration;
+		end += recovery;
+		if (hp > maxHP)
+			hp = maxHP;
+		if (end > maxEnd)
+			end = maxEnd;
+
+		// if(hp < getMaxHP(*e->m_char))     setHP(*e->m_char, hp + regeneration);
+		// if(end < getMaxEnd(*e->m_char))     setEnd(*e->m_char, end + recovery);
+		setHP(*e->m_char, hp);
+		setEnd(*e->m_char, end);
     }
 }
 
