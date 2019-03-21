@@ -1,6 +1,3 @@
---REQUIRED INCLUDE
-include_lua('../ES_OL_Functions.lua')
-
 --These contain tables for relevant, spawnable NPCs
 include_lua('../spawndefs/Hellions_Haz.spawndef.lua')
 include_lua('../spawndefs/Skulls_Haz.spawndef.lua')
@@ -307,5 +304,9 @@ ES_Library_Objects = {
   },        
 }
 
---REQUIRED to append Universal LO data into this map's OL
-InsertUniversals()
+--REQUIRED: This inserts universal into this map's OL
+local UniOnce
+if UniOnce == false or UniOnce == nil then
+    InsertUniversals()
+    UniOnce = true
+end

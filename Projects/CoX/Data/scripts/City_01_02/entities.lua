@@ -13,7 +13,7 @@ function player_connected(id)
         spinPersists()
         spinCivilians()
         spinCars()
-        --RandomSpawn(65)       --There are no SpawnDefs set up here yet
+        RandomSpawn(0)
         RandomSpawn(300, "Civilians")
         RandomSpawn(65, "Cars")
         spawnOnce = true
