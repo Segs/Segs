@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -13,8 +13,9 @@
 #include "Buffer.h"
 #include <cassert>
 #include <string>
+#include <algorithm> // for std::min/max
 
-GrowingBuffer::GrowingBuffer(uint8_t *buf, size_t size, bool take_ownership)
+GrowingBuffer::GrowingBuffer(uint8_t *buf, uint32_t size, bool take_ownership)
 {
     m_buf       = nullptr;
     m_size      = 0;
@@ -36,7 +37,7 @@ GrowingBuffer::GrowingBuffer(uint8_t *buf, size_t size, bool take_ownership)
     }
 }
 
-GrowingBuffer::GrowingBuffer(size_t max_size,uint8_t safe_area,size_t pre_alloc_size)
+GrowingBuffer::GrowingBuffer(uint32_t max_size,uint8_t safe_area, uint32_t pre_alloc_size)
 {
     m_buf = nullptr;
     m_safe_area = safe_area;
@@ -63,7 +64,18 @@ GrowingBuffer::GrowingBuffer(const GrowingBuffer &from)
     m_max_size  = from.m_max_size;
     if(m_buf&&from.m_buf)
         memcpy(m_buf,from.m_buf,m_write_off); // copy up to write point
+    
+}
 
+GrowingBuffer::GrowingBuffer(GrowingBuffer &&from) noexcept
+{
+    std::swap(m_size,from.m_size);
+    std::swap(m_buf,from.m_buf);
+    std::swap(m_last_err,from.m_last_err);
+    std::swap(m_write_off,from.m_write_off);
+    std::swap(m_safe_area,from.m_safe_area);
+    std::swap(m_read_off,from.m_read_off);
+    std::swap(m_max_size,from.m_max_size);
 }
 GrowingBuffer::~GrowingBuffer()
 {
@@ -73,16 +85,16 @@ GrowingBuffer::~GrowingBuffer()
 }
 void GrowingBuffer::PutString(const char *t)
 {
-    size_t len = strlen(t)+1;
+    uint32_t len = uint32_t(strlen(t)+1);
     PutBytes(reinterpret_cast<const uint8_t *>(t),len);
 }
 void GrowingBuffer::uPutString(const char *t)
 {
-    size_t len = strlen(t);
+    uint32_t len = uint32_t(strlen(t));
     uPutBytes(reinterpret_cast<const uint8_t *>(t),len);
 }
 
-void GrowingBuffer::PutBytes(const uint8_t *t, size_t len)
+void GrowingBuffer::PutBytes(const uint8_t *t, uint32_t len)
 {
     if(m_write_off+len>m_size) {
         if(resize(m_write_off+len)==-1) // space exhausted
@@ -93,7 +105,7 @@ void GrowingBuffer::PutBytes(const uint8_t *t, size_t len)
     }
     uPutBytes(t,len);
 }
-void GrowingBuffer::uPutBytes(const uint8_t *t, size_t len)
+void GrowingBuffer::uPutBytes(const uint8_t *t, uint32_t len)
 {
     if(!(m_buf&&t))
         return;
@@ -103,13 +115,12 @@ void GrowingBuffer::uPutBytes(const uint8_t *t, size_t len)
 
 void GrowingBuffer::GetString(char *t)
 {
-    size_t len = 0;
     if(GetReadableDataSize()==0)
     {
         m_last_err = 1;
         return;
     }
-    len = strlen((char *)&m_buf[m_read_off]);
+    uint32_t len = uint32_t(strlen((char *)&m_buf[m_read_off]));
     if((0==len) || len>GetReadableDataSize())
     {
         m_last_err = 1;
@@ -119,23 +130,23 @@ void GrowingBuffer::GetString(char *t)
 }
 void GrowingBuffer::uGetString(char *t)
 {
-    size_t len(strlen((char *)&m_buf[m_read_off]));
+    uint32_t len= uint32_t(strlen((char *)&m_buf[m_read_off]));
     uGetBytes(reinterpret_cast<uint8_t *>(t),len);
 }
 
-bool GrowingBuffer::GetBytes(uint8_t *t, size_t len)
+bool GrowingBuffer::GetBytes(uint8_t *t, uint32_t len)
 {
     if(len>GetReadableDataSize())
         return false;
     uGetBytes(t,len);
     return true;
 }
-void GrowingBuffer::uGetBytes(uint8_t *t, size_t len)
+void GrowingBuffer::uGetBytes(uint8_t *t, uint32_t len)
 {
     memcpy(t,&m_buf[m_read_off],len);
     m_read_off += len;
 }
-void GrowingBuffer::PopFront(size_t pop_count)
+void GrowingBuffer::PopFront(uint32_t pop_count)
 {
     if(pop_count>m_size)
     {
@@ -143,20 +154,18 @@ void GrowingBuffer::PopFront(size_t pop_count)
         m_read_off=0;
         return;
     }
-    if(m_write_off>=pop_count) // if there is any reason to memmove
+    if(m_write_off < pop_count) // if there is any reason to memmove
     {
-        memmove(m_buf,&m_buf[pop_count],m_write_off-pop_count); // shift buffer contents to the left
-        m_write_off-=pop_count;
-        if(m_read_off<pop_count)
-            m_read_off=0;
-        else
-            m_read_off-=pop_count;
-
+        m_write_off = m_read_off = 0;
+        return;
     }
+    memmove(m_buf,&m_buf[pop_count],m_write_off-pop_count); // shift buffer contents to the left
+    m_write_off-=pop_count;
+    if(m_read_off<pop_count)
+        m_read_off=0;
     else
-    {
-        m_write_off=m_read_off=0;
-    }
+        m_read_off-=pop_count;
+
 }
 
 /** this method will try to resize GrowingBuffer to accommodate_size elements (in reality it preallocates a 'few' more )
@@ -166,15 +175,15 @@ void GrowingBuffer::PopFront(size_t pop_count)
  returns -1 if new size exceeds maximum size allowed for this buffer
  returns 0 if everything went ok
 */
-int GrowingBuffer::resize(size_t accommodate_size)
+int GrowingBuffer::resize(uint32_t accommodate_size)
 {
-    size_t new_size = accommodate_size ? 2*accommodate_size+1 : 0;
+    uint32_t new_size = accommodate_size ? 2*accommodate_size+1 : 0;
     if(accommodate_size>m_max_size)
         return -1;
     if(accommodate_size<m_size)
         return 0;
     assert(accommodate_size<0x100000);
-    new_size = new_size>m_max_size ? m_max_size : new_size;
+    new_size = std::min<uint32_t>(new_size,m_max_size);
     // fix read/write indexers ( it'll happen only if new size is less then current size)
     if(m_read_off>new_size)
         m_read_off  = new_size;

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -13,8 +13,10 @@
 #include "SlashCommand.h"
 
 #include "DataHelpers.h"
-#include "Events/GameCommandList.h"
-#include "Events/MapXferWait.h"
+#include "MessageHelpers.h"
+#include "Messages/Map/ForceLogout.h"
+#include "Messages/Map/GameCommandList.h"
+#include "Messages/Map/MapXferWait.h"
 #include "GameData/ClientStates.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/playerdata_definitions.h"
@@ -22,11 +24,13 @@
 #include "Logging.h"
 #include "MapLink.h"
 #include "MapInstance.h"
-#include "NetStructures/Character.h"
-#include "NetStructures/CharacterHelpers.h"
-#include "NetStructures/Entity.h"
-#include "NetStructures/LFG.h"
-#include "NetStructures/Trade.h"
+#include "GameData/Character.h"
+#include "GameData/CharacterHelpers.h"
+#include "GameData/Entity.h"
+#include "GameData/EntityHelpers.h"
+#include "GameData/VisitLocation.h"
+#include "GameData/LFG.h"
+#include "GameData/Trade.h"
 #include "Settings.h"
 
 #include <QtCore/QString>
@@ -70,6 +74,7 @@ void cmdHandler_SetJumpHeight(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetEnd(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetXP(const QString &cmd, MapClientSession &sess);
+void cmdHandler_GiveXP(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetDebt(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetInf(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess);
@@ -115,7 +120,19 @@ void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &s
 void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetStateMode(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Revive(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddCostumeSlot(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ContactStatusList(const QString &cmd, MapClientSession &sess);
+void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess);
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendLocations(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess);
+void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess);
+void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess);
 
+// For live value-testing
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
 // Access Level 2[GM] Commands
@@ -130,6 +147,7 @@ void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetSpecialTitle(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess);
+void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess);
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MOTD(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Invite(const QString &cmd, MapClientSession &sess);
@@ -147,7 +165,10 @@ void cmdHandler_FriendList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MapXferList(const QString &cmd, MapClientSession &sess);
 void cmdHandler_ReSpec(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Trade(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Tailor(const QString &cmd, MapClientSession &sess);
+void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Train(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Kiosk(const QString &cmd, MapClientSession &sess);
 
 // Access Level 0 Commands
 void cmdHandler_TeamAccept(const QString &cmd, MapClientSession &sess);
@@ -179,6 +200,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setHP"},"Set the HP value of your character", cmdHandler_SetHP, 9},
     {{"setEnd"},"Set your Endurance", cmdHandler_SetEnd, 9},
     {{"setXP"},"Set your XP", cmdHandler_SetXP, 9},
+    {{"giveXP"},"Give yourself XP", cmdHandler_GiveXP, 9},
     {{"setDebt"},"Set your Debt", cmdHandler_SetDebt, 9},
     {{"setInf"},"Set your Influence", cmdHandler_SetInf, 9},
     {{"setLevel"},"Set your Level", cmdHandler_SetLevel, 9},
@@ -214,7 +236,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"levelupxp"},"Level Up Character to Level Provided", &cmdHandler_LevelUpXp, 9},
     {{"face"}, "Face a target", cmdHandler_FaceEntity, 9},
     {{"faceLocation"}, "Face a location", cmdHandler_FaceLocation, 9},
-    {{"movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
+    {{"mapmove", "movezone", "mz"}, "Move to a map id", cmdHandler_MoveZone, 9},
     {{"deadnogurney"}, "Test Dead No Gurney. Fakes sending the client packet.", cmdHandler_TestDeadNoGurney, 9},
     {{"doormsg"}, "Test Door Message. Fakes sending the client packet.", cmdHandler_DoorMessage, 9},
     {{"browser"}, "Test Browser. Sends content to a browser window", cmdHandler_Browser, 9},
@@ -224,12 +246,24 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setwaypoint"}, "Test SendWaypoint. Send waypoint to client", cmdHandler_SendWaypoint, 9},
     {{"setstatemode"}, "Send StateMode. Send StateMode to client", cmdHandler_SetStateMode, 9},
     {{"revive"}, "Revive Self or Target Player", cmdHandler_Revive, 9},
+    {{"addcostumeslot"}, "Add a new costume slot to Character", cmdHandler_AddCostumeSlot, 9},
+    {{"contactList"}, "Update Contact List", cmdHandler_ContactStatusList, 9},
+    {{"testTask"}, "Test Task", cmdHandler_AddTestTask, 9},
+    {{"reloadLua"}, "Reload all Lua scripts", cmdHandler_ReloadScripts, 9},
+    {{"openStore"}, "Open store Window", cmdHandler_OpenStore, 9},
+    {{"forceLogout"}, "Logout player", cmdHandler_ForceLogout, 9},
+    {{"sendLocation"}, "Send Location Test", cmdHandler_SendLocations, 9},
+    {{"developerConsoleOutput"}, "Send message to -console window", cmdHandler_SendConsoleOutput, 9},
+    {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
+    {{"clearTarget"}, "Clear current target", cmdHandler_ClearTarget, 9},
+    {{"startTimer"}, "Create a small timer", cmdHandler_StartTimer, 9},
 
+    // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
 
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", cmdHandler_AddNPC, 2},
-    {{"moveTo", "setpospyr"},"set the gm's position to <x> <y> <z>", cmdHandler_MoveTo, 2},
+    {{"moveTo", "setpos", "setpospyr"},"set the gm's position to <x> <y> <z>", cmdHandler_MoveTo, 2},
 
     /* Access Level 1 Commands */
     {{"cmdlist","commandlist"},"List all accessible commands", cmdHandler_CmdList, 1},
@@ -239,6 +273,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setCustomTitles"},"Set your titles manually", cmdHandler_SetCustomTitles, 1},
     {{"setSpecialTitle"},"Set your Special title", cmdHandler_SetSpecialTitle, 1},
     {{"stuck"},"Free yourself if your character gets stuck", cmdHandler_Stuck, 1},
+    {{"gotospawn"},"Teleport to a SpawnLocation", cmdHandler_SetSpawnLocation, 1},
     {{"lfg"},"Toggle looking for group status ", cmdHandler_LFG, 1},
     {{"motd"},"View the server MOTD", cmdHandler_MOTD, 1},
     {{"i","invite"}, "Invite player to team", cmdHandler_Invite, 1},
@@ -256,7 +291,10 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"MapXferList", "mapmenu"}, "Show MapXferList", cmdHandler_MapXferList, 1},
     {{"respec"}, "Start ReSpec", cmdHandler_ReSpec, 1},
     {{"trade"}, "Trade with player", cmdHandler_Trade, 1},
+    {{"tailor"}, "Open Tailor Window", cmdHandler_Tailor, 1},
+    {{"cc"}, "Costume Change", cmdHandler_CostumeChange, 1},
     {{"train"}, "Train Up Level", cmdHandler_Train, 1},
+    {{"kiosk"}, "Event kiosk", cmdHandler_Kiosk, 1},
 
     /* Access Level 0 Commands :: These are "behind the scenes" and sent by the client */
     {{"team_accept"}, "Accept Team invite", cmdHandler_TeamAccept, 0},
@@ -277,7 +315,7 @@ static const SlashCommand g_defined_slash_commands[] = {
 static QString getCommandParameter(const QString& cmd)
 {
     const int space = cmd.indexOf(' ');
-    if (space == -1)
+    if(space == -1)
     {
         return "";
     }
@@ -287,13 +325,13 @@ static QString getCommandParameter(const QString& cmd)
 
 static Entity* getTargetEntity(MapClientSession& sess)
 {
-    if (sess.m_ent == nullptr)
+    if(sess.m_ent == nullptr)
     {
         return nullptr;
     }
 
     const uint32_t idx = getTargetIdx(*sess.m_ent);
-    if (idx == 0)
+    if(idx == 0)
     {
         return nullptr;
     }
@@ -304,7 +342,7 @@ static Entity* getTargetEntity(MapClientSession& sess)
 static Entity* getEntityFromCommand(const QString &cmd, MapClientSession& sess)
 {
     const QString name = getCommandParameter(cmd);
-    if (name.isEmpty())
+    if(name.isEmpty())
     {
         return getTargetEntity(sess);
     }
@@ -318,14 +356,15 @@ static Entity* getEntityFromCommand(const QString &cmd, MapClientSession& sess)
 
 void cmdHandler_MoveZone(const QString &cmd, MapClientSession &sess)
 {
-    uint8_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
-    if (map_idx == getMapIndex(sess.m_current_map->name()))
+    uint32_t map_idx = cmd.midRef(cmd.indexOf(' ') + 1).toInt();
+    if(map_idx == getMapIndex(sess.m_current_map->name()))
         map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
-    QString map_path = getMapPath(map_idx);
-    sess.link()->putq(new MapXferWait(map_path));
+    MapXferData map_data = MapXferData();
+    map_data.m_target_map_name = getMapName(map_idx);
+    sess.link()->putq(new MapXferWait(getMapPath(map_idx)));
 
     HandlerLocator::getMap_Handler(sess.is_connected_to_game_server_id)
-        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_idx}, 0));
+        ->putq(new ClientMapXferMessage({sess.link()->session_token(), map_data}, 0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -338,8 +377,7 @@ void cmdHandler_Script(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_Dialog(const QString &cmd, MapClientSession &sess)
 {
-    StandardDialogCmd *dlg = new StandardDialogCmd(cmd.mid(4));
-    sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+    sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(cmd.mid(4)));
 }
 
 void cmdHandler_InfoMessage(const QString &cmd, MapClientSession &sess)
@@ -376,8 +414,7 @@ void cmdHandler_SmileX(const QString &cmd, MapClientSession &sess)
     if(file.exists() && file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QString contents(file.readAll());
-        StandardDialogCmd *dlg = new StandardDialogCmd(contents);
-        sess.addCommandToSendNextUpdate(std::unique_ptr<StandardDialogCmd>(dlg));
+        sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(contents));
     }
     else {
         QString errormsg = "Failed to load smilex file. \'" + file.fileName() + "\' not found.";
@@ -517,6 +554,22 @@ void cmdHandler_SetXP(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
+void cmdHandler_GiveXP(const QString &cmd, MapClientSession &sess)
+{
+    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t lvl = getLevel(*sess.m_ent->m_char);
+
+    giveXp(sess, attrib);
+    QString msg = "Giving " + QString::number(attrib) + " XP";
+
+    uint32_t newlvl = getLevel(*sess.m_ent->m_char);
+    if(lvl != newlvl)
+        msg += " and setting LVL to " + QString::number(newlvl);
+
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
 void cmdHandler_SetDebt(const QString &cmd, MapClientSession &sess)
 {
     uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
@@ -566,7 +619,7 @@ void cmdHandler_SetCombatLevel(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_UpdateChar(const QString &cmd, MapClientSession &sess)
 {
-    charUpdateDB(sess.m_ent);
+    markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
 
     QString msg = "Updating Character in Database: " + sess.m_ent->name();
     qCDebug(logSlashCommand) << cmd << ":" << msg;
@@ -857,7 +910,7 @@ void cmdHandler_SetSequence(const QString &cmd, MapClientSession &sess)
     sess.m_ent->m_seq_move_change_time = time;
 }
 
- void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
+void cmdHandler_AddTriggeredMove(const QString &cmd, MapClientSession &sess)
 {
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
@@ -912,6 +965,7 @@ void cmdHandler_AddEntirePowerSet(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:" << cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation: " + cmd, sess);
+        return;
     }
 
     QString msg = QString("Granting Entire PowerSet <%1, %2> to %3").arg(v1).arg(v2).arg(sess.m_ent->name());
@@ -961,51 +1015,23 @@ void cmdHandler_AddPower(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_AddInspiration(const QString &cmd, MapClientSession &sess)
 {
-    CharacterData &cd = sess.m_ent->m_char->m_char_data;
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
-    QString msg = "You do not have room for any more inspirations!";
-
-    if(getNumberInspirations(cd) < getMaxNumberInspirations(cd))
-    {
-        msg = "Awarding Inspiration '" + val + "' to " + sess.m_ent->name();
-
-        addInspirationByName(cd, val);
-
-        // NOTE: floating message shows no message here, but plays the awarding insp sound!
-        QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundInspiration).value();
-        sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    }
-
-    qCDebug(logSlashCommand).noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+    giveInsp(sess, val);
 }
 
 void cmdHandler_AddEnhancement(const QString &cmd, MapClientSession &sess)
 {
-    CharacterData &cd = sess.m_ent->m_char->m_char_data;
     QVector<QStringRef> args(cmd.splitRef(' '));
     QString name = args.value(1).toString();
     uint32_t level = args.value(2).toUInt() -1;
-    QString msg = "You do not have room for any more enhancements!";
 
     if(args.size() < 3)
     {
-        level = cd.m_level;
+        level = getLevel(*sess.m_ent->m_char);
     }
 
-    if(getNumberEnhancements(cd) < 10)
-    {
-        msg = "Awarding Enhancement '" + name + "' to " + sess.m_ent->name();
-
-        addEnhancementByName(cd, name, level);
-
-        QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundEnhancement).value();
-        sendFloatingInfo(sess, floating_msg, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    }
-
-    qCDebug(logSlashCommand).noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+    giveEnhancement(sess, name, level);
 }
 
 void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
@@ -1040,7 +1066,7 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
 
-    if (parts.size() < 2)
+    if(parts.size() < 2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
@@ -1049,14 +1075,14 @@ void cmdHandler_FaceEntity(const QString &cmd, MapClientSession &sess)
 
     QString name = parts[1].toString();
     tgt = getEntity(&sess, name); // get Entity by name
-    if (tgt == nullptr)
+    if(tgt == nullptr)
     {
         QString msg = QString("FaceEntity target %1 cannot be found.").arg(name);
         qCDebug(logSlashCommand) << msg;
         sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
         return;
     }
-    sendFaceEntity(*sess.m_ent, tgt->m_idx);
+    sendFaceEntity(sess, tgt->m_idx);
 }
 
 void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
@@ -1064,7 +1090,7 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
 
-    if (parts.size() < 4)
+    if(parts.size() < 4)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
@@ -1077,7 +1103,7 @@ void cmdHandler_FaceLocation(const QString &cmd, MapClientSession &sess)
       parts[3].toFloat()
     };
 
-    sendFaceLocation(*sess.m_ent, loc);
+    sendFaceLocation(sess, loc);
 }
 
 void cmdHandler_TestDeadNoGurney(const QString &cmd, MapClientSession &sess)
@@ -1092,7 +1118,7 @@ void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess)
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
     args.removeFirst(); // remove cmdstring
 
-    if (args.size() < 2)
+    if(args.size() < 2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:" << cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + cmd, sess);
@@ -1104,7 +1130,7 @@ void cmdHandler_DoorMessage(const QString &cmd, MapClientSession &sess)
     args.removeFirst(); // remove integer
     QString msg = args.join(" ");
 
-    if(!ok || delay_status < 0 || delay_status > 2)
+    if(!ok || delay_status > 2)
     {
         qCDebug(logSlashCommand) << "First argument must be 0, 1, or 2;" << cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "First argument must be 0, 1, or 2;" + cmd, sess);
@@ -1153,7 +1179,7 @@ void cmdHandler_SendContactDialogYesNoOk(const QString &cmd, MapClientSession &s
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
     args.removeFirst(); // remove cmdstring
 
-    if (args.size() < 2)
+    if(args.size() < 2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:" << cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + cmd, sess);
@@ -1180,7 +1206,7 @@ void cmdHandler_SendWaypoint(const QString &cmd, MapClientSession &sess)
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
 
-    if (parts.size() < 4)
+    if(parts.size() < 4)
     {
         qCDebug(logSlashCommand) << "Bad invocation: " << cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + cmd, sess);
@@ -1228,7 +1254,7 @@ void cmdHandler_Revive(const QString &cmd, MapClientSession &sess)
     QVector<QStringRef> parts;
     parts = cmd.splitRef(' ');
 
-    if (parts.size() < 2)
+    if(parts.size() < 2)
     {
         qCDebug(logSlashCommand) << msg;
         sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
@@ -1240,7 +1266,7 @@ void cmdHandler_Revive(const QString &cmd, MapClientSession &sess)
     {
         QString name = parts[2].toString();
         tgt = getEntity(&sess, name); // get Entity by name
-        if (tgt == nullptr)
+        if(tgt == nullptr)
         {
             msg = QString("Revive target %1 cannot be found. Targeting Self.").arg(name);
             qCDebug(logSlashCommand) << msg;
@@ -1257,6 +1283,117 @@ void cmdHandler_Revive(const QString &cmd, MapClientSession &sess)
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
+void cmdHandler_AddCostumeSlot(const QString &/*cmd*/, MapClientSession &sess)
+{
+    sess.m_ent->m_char->addCostumeSlot();
+    markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
+
+    QString msg = "Adding Costume Slot to " + sess.m_ent->name();
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_ContactStatusList(const QString &/*cmd*/, MapClientSession &sess)
+{
+    Contact startingContact;
+    startingContact.setName("Officer Flint"); // "OfficerFlint
+    startingContact.m_current_standing = 0;
+    startingContact.m_notify_player = true;
+    startingContact.m_task_index = 1;
+    startingContact.m_npc_id = 1939; // Npc Id
+    startingContact.m_has_location = true;
+    startingContact.m_task_index = 0;
+    startingContact.m_location_description = "Outbreak";
+    startingContact.m_location.location.x = -62.0;
+    startingContact.m_location.location.y = 0.0;
+    startingContact.m_location.location.z = 182.0;
+    startingContact.m_location.m_location_name = "Outbreak Starting";
+    startingContact.m_location.m_location_map_name = "City_00_01"; //folder name?
+    startingContact.m_confidant_threshold = 3;
+    startingContact.m_friend_threshold = 2;
+    startingContact.m_complete_threshold = 4;
+    startingContact.m_can_use_cell = false;
+
+    updateContactStatusList(sess, startingContact);
+    QString msg = "Sending OfficerFlint to contactList";
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_SendLocations(const QString &/*cmd*/, MapClientSession &sess)
+{
+    VisitLocation visitlocation;
+    visitlocation.m_location_name = "Test1";
+    visitlocation.m_pos = glm::vec3(-44, 0, 261);
+
+    sendLocation(sess, visitlocation);
+}
+
+void cmdHandler_SendConsoleOutput(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2 )
+    {
+        qCDebug(logSlashCommand) << "SendConsoleOutput. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsoleOutput format is '/consoleOutput <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendDeveloperConsoleOutput(sess, msg);
+}
+
+void cmdHandler_SendConsolePrint(const QString &cmd, MapClientSession &sess)
+{
+    QString msg;
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size() != 2)
+    {
+        qCDebug(logSlashCommand) << "SendConsolePrintF. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ConsolePrintF format is '/consolePrintF <Message>'", sess);
+        return;
+    }
+
+    msg = parts[1].toString();
+    sendClientConsoleOutput(sess, msg);
+}
+
+void cmdHandler_ClearTarget(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size () != 2)
+    {
+        qCDebug(logSlashCommand) << "ClearTarget. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "ClearTarget '/clearTarget <targetIdx>'", sess);
+        return;
+    }
+
+    int idx = parts[1].toInt();
+    setTarget(*sess.m_ent, idx);
+}
+void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+
+    if(parts.size () != 3)
+    {
+        qCDebug(logSlashCommand) << "StartTimer. Bad invocation:  " << cmd;
+        sendInfoMessage(MessageChannel::USER_ERROR, "StartTimer '/StartTimer <timerName> <seconds>'", sess);
+        return;
+    }
+    QString message = parts[1].toString();
+    float time = parts[2].toFloat();
+
+    sendMissionObjectiveTimer(sess, message, time);
+
+}
 
 // Slash commands for setting bit values
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
@@ -1277,11 +1414,13 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     int variation = 0;
+
     if(cmd.contains('"')) // assume /addNpc "A guy in a hat" 1
     {
         int start_idx = cmd.indexOf('"');
         int end_idx = cmd.indexOf('"',start_idx+1);
         parts.push_back(cmd.midRef(0,start_idx-1));
+
         if(end_idx!=-1)
             parts.push_back(cmd.midRef(start_idx+1,end_idx-start_idx-2));
         if(cmd.midRef(end_idx+1).size()>0)
@@ -1289,29 +1428,21 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     }
     else
         parts = cmd.splitRef(' ');
+
     if(parts.size()>2) // assume /addNpc Monsterifier 1
         variation = parts[2].toInt();
+
     if(parts.size()<2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
         return;
     }
-    glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos;
-    const NPCStorage & npc_store(getGameData().getNPCDefinitions());
-    const Parse_NPC * npc_def = npc_store.npc_by_name(parts[1]);
-    if(!npc_def)
-    {
-        sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for:"+parts[1], sess);
-        return;
-    }
-    glm::vec3 offset = glm::vec3 {2,0,1};
-    int idx = npc_store.npc_idx(npc_def);
 
-    Entity *e = sess.m_current_map->m_entities.CreateNpc(getGameData(),*npc_def,idx,variation);
-    forcePosition(*e,gm_loc + offset);
-    e->m_velocity = {0,0,0};
-    sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1").arg(e->m_idx), sess);
+    QString name = parts[1].toString();
+    glm::vec3 offset = glm::vec3 {2,0,1};
+    glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos + offset;
+    addNpc(sess, name, gm_loc, variation, name);
 }
 
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
@@ -1322,6 +1453,7 @@ void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+        return;
     }
 
     glm::vec3 new_pos {
@@ -1345,11 +1477,11 @@ void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess)
     for (const auto &sc : g_defined_slash_commands)
     {
         uint32_t alvl = getAccessLevel(*sess.m_ent);
-        if (alvl < sc.m_required_access_level)
+        if(alvl < sc.m_required_access_level)
             continue;
 
         // We don't want to show acess_level 0 (Under the Hood commands)
-        if (sc.m_required_access_level == 0)
+        if(sc.m_required_access_level == 0)
             continue;
 
         // Use msg for std out, msg_dlg for ingame dialog box
@@ -1409,14 +1541,10 @@ void cmdHandler_WhoAll(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_SetTitles(const QString &cmd, MapClientSession &sess)
 {
-    bool        select_origin = false;
     int space = cmd.indexOf(' ');
     QString val = cmd.mid(space+1);
 
-    if(!val.isEmpty())
-        select_origin = true;
-
-    sendChangeTitle(sess.m_ent, select_origin);
+    setTitle(sess, val);
 }
 
 void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess)
@@ -1426,7 +1554,7 @@ void cmdHandler_SetCustomTitles(const QString &cmd, MapClientSession &sess)
     QStringList args;
     args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
 
-    if (cmd.toLower() == "settitles")
+    if(cmd.toLower() == "settitles")
     {
         setTitles(*sess.m_ent->m_char);
         msg = "Titles reset to nothing";
@@ -1464,7 +1592,8 @@ void cmdHandler_SetSpecialTitle(const QString &cmd, MapClientSession &sess)
 void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 {
     // TODO: Implement true move-to-safe-location-nearby logic
-    forcePosition(*sess.m_ent, sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
+    //forcePosition(*sess.m_ent, sess.m_current_map->closest_safe_location(sess.m_ent->m_entity_data.m_pos));
+    sess.m_current_map->setPlayerSpawn(*sess.m_ent);
 
     QString msg = QString("Resetting location to default spawn <%1, %2, %3>")
             .arg(sess.m_ent->m_entity_data.m_pos.x, 0, 'f', 1)
@@ -1473,6 +1602,17 @@ void cmdHandler_Stuck(const QString &cmd, MapClientSession &sess)
 
     qCDebug(logSlashCommand) << cmd << ":" << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
+}
+
+void cmdHandler_SetSpawnLocation(const QString &cmd, MapClientSession &sess)
+{
+    const QString spawnLocation = getCommandParameter(cmd);
+    if(spawnLocation.isEmpty())
+    {
+        // No SpawnLocation given, bail.
+        return;
+    }
+    sess.m_current_map->setSpawnLocation(*sess.m_ent, spawnLocation);
 }
 
 void cmdHandler_LFG(const QString &cmd, MapClientSession &sess)
@@ -1494,12 +1634,12 @@ void cmdHandler_MOTD(const QString &/*cmd*/, MapClientSession &sess)
 void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
 {
     Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if (tgt == nullptr)
+    if(tgt == nullptr)
     {
         return;
     }
 
-    if (tgt->m_has_team)
+    if(tgt->m_has_team)
     {
         const QString msg = tgt->name() + " is already on a team.";
         qCDebug(logTeams) << msg;
@@ -1507,7 +1647,7 @@ void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    if (tgt->name() == sess.m_name)
+    if(tgt->name() == sess.m_name)
     {
         const QString msg = "You cannot invite yourself to a team.";
         qCDebug(logTeams) << msg;
@@ -1515,9 +1655,9 @@ void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
         return;
     }
 
-    if (sess.m_ent->m_has_team && sess.m_ent->m_team != nullptr)
+    if(sess.m_ent->m_has_team && sess.m_ent->m_team != nullptr)
     {
-        if (!sess.m_ent->m_team->isTeamLeader(sess.m_ent))
+        if(!sess.m_ent->m_team->isTeamLeader(sess.m_ent))
         {
             const QString msg = "Only the team leader can invite players to the team.";
             qCDebug(logTeams) << sess.m_ent->name() << msg;
@@ -1526,20 +1666,20 @@ void cmdHandler_Invite(const QString &cmd, MapClientSession &sess)
         }
     }
 
-    sendTeamOffer(sess.m_ent, tgt);
+    sendTeamOffer(sess, *tgt->m_client);
 }
 
 void cmdHandler_Kick(const QString &cmd, MapClientSession &sess)
 {
     Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if (tgt == nullptr)
+    if(tgt == nullptr)
     {
         return;
     }
 
     const QString name = tgt->name();
     QString msg;
-    if (kickTeam(*tgt))
+    if(kickTeam(*tgt))
         msg = "Kicking " + name + " from team.";
     else
         msg = "Failed to kick " + name;
@@ -1558,7 +1698,7 @@ void cmdHandler_LeaveTeam(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
 {
-    findTeamMember(*sess.m_ent);
+    sendTeamLooking(sess);
     QString msg = "Finding Team Member";
     qCDebug(logSlashCommand).noquote() << msg;
     sendInfoMessage(MessageChannel::CHAT_TEXT, msg, sess);
@@ -1568,14 +1708,14 @@ void cmdHandler_FindMember(const QString &/*cmd*/, MapClientSession &sess)
 void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
 {
     Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if (tgt == nullptr)
+    if(tgt == nullptr)
     {
         return;
     }
 
     const QString name = tgt->name();
     QString msg;
-    if (makeTeamLeader(*sess.m_ent,*tgt))
+    if(makeTeamLeader(*sess.m_ent,*tgt))
         msg = "Making " + name + " team leader.";
     else
         msg = "Failed to make " + name + " team leader.";
@@ -1586,6 +1726,11 @@ void cmdHandler_MakeLeader(const QString &cmd, MapClientSession &sess)
 
 void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
 {
+    // it appears that `/assist` should target the target of your current target
+    // but it also seems that what we call m_assist_target_idx is actually
+    // the last friendly target you selected. We need to check target type
+    // and set m_target_idx or m_assist_target_idx depending on result.
+
     Entity *target_ent = getEntity(&sess, getTargetIdx(*sess.m_ent));
     if(target_ent == nullptr)
         return;
@@ -1594,7 +1739,10 @@ void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
     if(new_target == 0)
         return;
 
-    setTarget(*sess.m_ent, new_target);
+    if(target_ent->m_is_villian)
+        setTarget(*sess.m_ent, new_target);
+    else
+        setAssistTarget(*sess.m_ent, new_target);
 
     QString msg = "Now targeting " + target_ent->name() + "'s target";
     sendInfoMessage(MessageChannel::TEAM, msg, sess);
@@ -1604,7 +1752,7 @@ void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
 void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)
 {
     Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if (tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
+    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
         return;
     }
@@ -1621,12 +1769,12 @@ void cmdHandler_Sidekick(const QString &cmd, MapClientSession &sess)
     if(res==SidekickChangeStatus::SUCCESS)
     {
         // sendSidekickOffer
-        sendSidekickOffer(tgt, sess.m_ent->m_db_id); // tgt gets dialog, src.db_id is named.
+        sendSidekickOffer(*tgt->m_client, sess.m_ent->m_db_id); // tgt gets dialog, src.db_id is named.
     }
     else
     {
         qCDebug(logTeams).noquote() << possible_messages[int(res)-1];
-        messageOutput(MessageChannel::USER_ERROR, possible_messages[int(res)-1], *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, possible_messages[int(res)-1], sess);
     }
 }
 
@@ -1637,26 +1785,26 @@ void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
     QString msg;
 
     uint32_t sidekick_id = getSidekickId(*sess.m_ent->m_char);
-    Entity *tgt = getEntityByDBID(sess.m_current_map,sidekick_id);
-    auto res = removeSidekick(*sess.m_ent,tgt);
+    auto res = removeSidekick(*sess.m_ent, sidekick_id);
     if(res==SidekickChangeStatus::GENERIC_FAILURE)
     {
         msg = "You are not sidekicked with anyone.";
         qCDebug(logTeams).noquote() << msg;
-        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
     }
     else if(res==SidekickChangeStatus::SUCCESS)
     {
+        Entity *tgt = getEntityByDBID(sess.m_current_map, sidekick_id);
         QString tgt_name = tgt ? tgt->name() : "Unknown Player";
         if(isSidekickMentor(*sess.m_ent))
         {
             // src is mentor, tgt is sidekick
             msg = QString("You are no longer mentoring %1.").arg(tgt_name);
-            messageOutput(MessageChannel::TEAM, msg, *sess.m_ent);
+            sendInfoMessage(MessageChannel::TEAM, msg, sess);
             if(tgt)
             {
                 msg = QString("%1 is no longer mentoring you.").arg(sess.m_ent->name());
-                messageOutput(MessageChannel::TEAM, msg, *tgt);
+                sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
             }
         }
         else
@@ -1665,16 +1813,16 @@ void cmdHandler_UnSidekick(const QString &/*cmd*/, MapClientSession &sess)
             if(tgt)
             {
                 msg = QString("You are no longer mentoring %1.").arg(sess.m_ent->name());
-                messageOutput(MessageChannel::TEAM, msg, *tgt);
+                sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
             }
             msg = QString("%1 is no longer mentoring you.").arg(tgt_name);
-            messageOutput(MessageChannel::TEAM, msg, *sess.m_ent);
+            sendInfoMessage(MessageChannel::TEAM, msg, sess);
         }
     }
     else if(res==SidekickChangeStatus::NOT_SIDEKICKED_CURRENTLY)
     {
         msg = QString("You are no longer sidekicked with anyone.");
-        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
     }
 }
 
@@ -1689,25 +1837,25 @@ void cmdHandler_TeamBuffs(const QString & /*cmd*/, MapClientSession &sess)
 void cmdHandler_Friend(const QString &cmd, MapClientSession &sess)
 {
     const Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if (tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
+    if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
         return;
     }
 
-    FriendListChangeStatus status = addFriend(*sess.m_ent, *tgt);
+    FriendListChangeStatus status = addFriend(*sess.m_ent, *tgt,getEntityDisplayMapName(tgt->m_entity_data));
     if(status==FriendListChangeStatus::MAX_FRIENDS_REACHED)
     {
         QString msg = "You cannot have more than " + QString::number(g_max_friends) + " friends.";
         qCDebug(logFriends).noquote() << msg;
-        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
     }
     else
     {
         QString msg = "Adding " + tgt->name() + " to your friendlist.";
         qCDebug(logFriends).noquote() << msg;
-        messageOutput(MessageChannel::FRIENDS, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::FRIENDS, msg, sess);
         // Send FriendsListUpdate
-        sendFriendsListUpdate(sess.m_ent, sess.m_ent->m_char->m_char_data.m_friendlist);
+        sendFriendsListUpdate(sess, sess.m_ent->m_char->m_char_data.m_friendlist);
     }
 }
 
@@ -1715,12 +1863,11 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
 {
     // Cannot use getEntityFromCommand as we need to be able to unfriend logged out characters.
     QString name = getCommandParameter(cmd);
-    if (name.isEmpty()) {
+    if(name.isEmpty())
+    {
         const Entity* const tgt = getTargetEntity(sess);
-        if (tgt == nullptr)
-        {
+        if(tgt == nullptr)
             return;
-        }
 
         name = tgt->name();
     }
@@ -1729,15 +1876,15 @@ void cmdHandler_Unfriend(const QString &cmd, MapClientSession &sess)
     if(status==FriendListChangeStatus::FRIEND_REMOVED)
     {
         QString msg = "Removing " + name + " from your friends list.";
-        messageOutput(MessageChannel::FRIENDS, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::FRIENDS, msg, sess);
 
         // Send FriendsListUpdate
-        sendFriendsListUpdate(sess.m_ent, sess.m_ent->m_char->m_char_data.m_friendlist);
+        sendFriendsListUpdate(sess, sess.m_ent->m_char->m_char_data.m_friendlist);
     }
     else
     {
         QString msg = name + " is not on your friends list.";
-        messageOutput(MessageChannel::USER_ERROR, msg, *sess.m_ent);
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
     }
 }
 
@@ -1751,16 +1898,7 @@ void cmdHandler_FriendList(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_MapXferList(const QString &/*cmd*/, MapClientSession &sess)
 {
-    bool has_location = true;
-    glm::vec3 location = sess.m_ent->m_entity_data.m_pos;
-    QString msg_body = "<linkhoverbg #118866aa><link white><linkhover white><table>";
-    for (auto &map_data : getAllMapData())
-    {
-        msg_body.append(QString("<a href=\"cmd:enterdoorvolume %1\"><tr><td>%2</td></tr></a>").arg(map_data.m_map_idx).arg(map_data.m_display_map_name));
-    }
-    msg_body.append("</table>");
-
-    showMapXferList(sess, has_location, location, msg_body);
+    showMapMenu(sess);
 }
 
 void cmdHandler_ReSpec(const QString &/*cmd*/, MapClientSession &sess)
@@ -1786,35 +1924,63 @@ void cmdHandler_ReSpec(const QString &/*cmd*/, MapClientSession &sess)
 void cmdHandler_Trade(const QString &cmd, MapClientSession &sess)
 {
     Entity* const tgt = getEntityFromCommand(cmd, sess);
-    if (tgt == nullptr || sess.m_ent == nullptr)
-    {
+    if(tgt == nullptr || sess.m_ent == nullptr)
         return;
+
+    QString msg, tgt_msg;
+    TradeSystemMessages result;
+    result = requestTrade(*sess.m_ent, *tgt);
+
+    switch(result)
+    {
+    case TradeSystemMessages::SRC_ALREADY_IN_TRADE:
+        msg = "You are already in a trade.";
+        break;
+    case TradeSystemMessages::SRC_CONSIDERING_ANOTHER_TRADE:
+        msg = "You are already considering a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_ALREADY_IN_TRADE:
+        msg = tgt->name() + " is already in a trade.";
+        break;
+    case TradeSystemMessages::TGT_CONSIDERING_ANOTHER_TRADE:
+        msg = tgt->name() + " is already considering a trade offer.";
+        break;
+    case TradeSystemMessages::SEND_TRADE_OFFER:
+        sendTradeOffer(*tgt->m_client, sess.m_ent->name()); // send tradeOffer
+        msg = QString("You sent a trade request to %1.").arg(tgt->name());
+        tgt_msg = sess.m_ent->name() + " sent a trade request.";
+        sendInfoMessage(MessageChannel::SERVER, tgt_msg, *tgt->m_client);
+        break;
+    default:
+        msg = "Something went wrong with trade request!"; // this should never happen
     }
 
-    requestTrade(*sess.m_ent, *tgt);
+    sendInfoMessage(MessageChannel::SERVER, msg, *sess.m_ent->m_client);
+}
+
+void cmdHandler_Tailor(const QString &/*cmd*/, MapClientSession &sess)
+{
+    sendTailorOpen(sess);
+}
+
+void cmdHandler_CostumeChange(const QString &cmd, MapClientSession &sess)
+{
+    uint32_t costume_idx = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+
+    setCurrentCostumeIdx(*sess.m_ent->m_char, costume_idx);
+
+    QString msg = "Changing costume to: " + QString::number(costume_idx);
+    qCDebug(logTailor) << msg;
 }
 
 void cmdHandler_Train(const QString &/*cmd*/, MapClientSession &sess)
 {
-    int level = getLevel(*sess.m_ent->m_char)+1;
+    playerTrain(sess);
+}
 
-    // XP must be high enough for the level you're advancing to
-    GameDataStore &data(getGameData());
-    if(getXP(*sess.m_ent->m_char) < data.expForLevel(level))
-    {
-        QString msg = "You do not have enough Experience Points to train to the next level!";
-        qCDebug(logSlashCommand) << msg;
-        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
-        return;
-    }
-
-    qCDebug(logPowers) << "LEVELUP" << sess.m_ent->name() << "to" << level+1
-                       << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data, false) // no temps
-                       << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
-
-    // send levelup pkt to client
-    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
-    sendLevelUp(sess);
+void cmdHandler_Kiosk(const QString &/*cmd*/, MapClientSession &sess)
+{
+    sendKiosk(sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1891,9 +2057,9 @@ void cmdHandler_SidekickAccept(const QString &/*cmd*/, MapClientSession &sess)
     addSidekick(*sess.m_ent,*tgt);
     // Send message to each player
     QString msg = QString("You are now Mentoring %1.").arg(tgt->name()); // Customize for src.
-    messageOutput(MessageChannel::TEAM, msg, *sess.m_ent);
+    sendInfoMessage(MessageChannel::TEAM, msg, sess);
     msg = QString("%1 is now Mentoring you.").arg(sess.m_ent->name()); // Customize for src.
-    messageOutput(MessageChannel::TEAM, msg, *tgt);
+    sendInfoMessage(MessageChannel::TEAM, msg, *tgt->m_client);
 }
 
 void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
@@ -1903,7 +2069,7 @@ void cmdHandler_SidekickDecline(const QString &/*cmd*/, MapClientSession &sess)
 
 void cmdHandler_EmailHeaders(const QString & /*cmd*/, MapClientSession &sess)
 {
-    sendEmailHeaders(sess);
+    getEmailHeaders(sess);
 }
 
 void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
@@ -1911,42 +2077,48 @@ void cmdHandler_EmailRead(const QString &cmd, MapClientSession &sess)
     uint32_t id = cmd.midRef(cmd.indexOf(' ')+1).toInt();
 
     readEmailMessage(sess, id);
-
-    QString msg = "Opening Email ID: " + QString::number(id);
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 void cmdHandler_EmailSend(const QString &cmd, MapClientSession &sess)
 {
     QStringList parts = cmd.split("\"");
     QStringList result;
-    for(int i = 0; i < parts.size(); i++)
+
+    for (const auto &part : parts)
     {
-        if(parts[i].endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
-            result.back() += parts[i]+"\"";
+        if(part.endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
+            result.back() += part+"\"";
         else
-            result.push_back(parts[i]);
+            result.push_back(part);
     }
 
-    assert(result.size() >= 5);
-    result[1].replace("\\q ", "");
+    if (result.size() != 5)
+    {
+        sendInfoMessage(MessageChannel::SERVER, "Argument count for sending email is not correct! Please send emails from the email window instead.", sess);
+        return;
+    }
+
+    result[1].replace("\\q ", ";");
     result[1].replace("\\q", "");
 
-    // 1 -> recipient name, 3 -> email subject, 4 -> email message
+    // result[1] -> recipient name, 3 -> email subject, 4 -> email message
+    // attempt to parse names if sending to multiple recipients
+    QStringList recipients = result[1].split(";");
+
+    // the last element will be empty in all cases (if sent through email window), so remove it
+    recipients.pop_back();
+
+    // first, check if your own character is one of the recipients in the email
     // cannot send email to self as that will trigger /emailRead without the data in db nor EmailHandler
     // and that will segfault the server :)
-    if (result[1] == sess.m_ent->m_char->getName())
+    if (recipients.contains(sess.m_ent->m_char->getName()))
     {
         sendInfoMessage(MessageChannel::SERVER, "You cannot send an email to yourself!", sess);
         return;
     }
 
-    sendEmail(sess, result[1], result[3], result[4]);
-
-    QString msg = "Email Sent to recipient: " + result[1];
-    qDebug().noquote() << msg;
-    sendInfoMessage(MessageChannel::SERVER, msg, sess);
+    for (const auto &recipient : recipients)
+        sendEmail(sess, recipient, result[3], result[4]);
 }
 
 void cmdHandler_EmailDelete(const QString &cmd, MapClientSession &sess)
@@ -1964,7 +2136,7 @@ void cmdHandler_TradeAccept(const QString &cmd, MapClientSession &sess)
 {
     // Game command: "trade_accept \"From\" to_db_id to_db_id \"To\""
     const QStringList args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
-    if (args.size() < 4)
+    if(args.size() < 4)
     {
         qWarning() << "Wrong number of arguments for TradeAccept:" << cmd;
         discardTrade(*sess.m_ent);
@@ -1974,22 +2146,47 @@ void cmdHandler_TradeAccept(const QString &cmd, MapClientSession &sess)
     // We need only the "from" name.
     const QString from_name = args.value(1);
     Entity* const from_ent = getEntity(&sess, from_name);
-    if (from_ent == nullptr)
+    if(from_ent == nullptr)
     {
         discardTrade(*sess.m_ent);
         return;
     }
 
-    acceptTrade(*sess.m_ent, *from_ent);
+    QString msg, tgt_msg;
+    TradeSystemMessages result;
+    result = acceptTrade(*sess.m_ent, *from_ent);
+
+    switch(result)
+    {
+    case TradeSystemMessages::HAS_SENT_NO_TRADE:
+        msg = "You have not sent a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_RECV_NO_TRADE:
+        msg = QString("%1 has not received a trade offer.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::SRC_RECV_NO_TRADE:
+        msg = QString("You are not considering a trade offer from %1.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::ACCEPTED_TRADE:
+        sendTradeInit(*sess.m_ent->m_client, *from_ent->m_client); // Initiate trade
+        msg = QString("You accepted the trade invite from %1.").arg(from_ent->name());
+        tgt_msg = sess.m_ent->name() + " accepted your trade invite.";
+        sendInfoMessage(MessageChannel::SERVER, tgt_msg, *from_ent->m_client);
+        break;
+    default:
+        msg = "Something went wrong with trade accept!"; // this should never happen
+    }
+
+    sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
 {
     // Game command: "trade_decline \"From\" to_db_id \"To\""
     const QStringList args = cmd.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?")); // regex wizardry
-    if (args.size() < 4)
+    if(args.size() < 4)
     {
-        qWarning() << "Wrong number of arguments for TradeAccept:" << cmd;
+        qWarning() << "Wrong number of arguments for TradeDecline:" << cmd;
         discardTrade(*sess.m_ent);
         return;
     }
@@ -1997,13 +2194,37 @@ void cmdHandler_TradeDecline(const QString &cmd, MapClientSession &sess)
     // We need only the "from" name.
     const QString from_name  = args.value(1);
     Entity* const from_ent = getEntity(&sess, from_name);
-    if (from_ent == nullptr)
+    if(from_ent == nullptr)
     {
         discardTrade(*sess.m_ent);
         return;
     }
 
-    declineTrade(*sess.m_ent, *from_ent);
+    QString msg, tgt_msg;
+    TradeSystemMessages result;
+    result = declineTrade(*sess.m_ent, *from_ent);
+
+    switch(result)
+    {
+    case TradeSystemMessages::HAS_SENT_NO_TRADE:
+        msg = "You have not sent a trade offer.";
+        break;
+    case TradeSystemMessages::TGT_RECV_NO_TRADE:
+        msg = QString("%1 has not received a trade offer.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::SRC_RECV_NO_TRADE:
+        msg = QString("You are not considering a trade offer from %1.").arg(from_ent->name());
+        break;
+    case TradeSystemMessages::DECLINED_TRADE:
+        msg = QString("You declined the trade invite from %1.").arg(from_ent->name());
+        tgt_msg = sess.m_ent->name() + " declined your trade invite.";
+        sendInfoMessage(MessageChannel::SERVER, tgt_msg, *from_ent->m_client);
+        break;
+    default:
+        msg = "Something went wrong with trade decline!"; // this should never happen
+    }
+
+    sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
 
 bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src)
@@ -2017,6 +2238,80 @@ bool canAccessCommand(const SlashCommand &cmd, MapClientSession &src)
     sendInfoMessage(MessageChannel::USER_ERROR, msg, src);
     return false;
 }
+
+void cmdHandler_AddTestTask(const QString &/*cmd*/, MapClientSession &sess)
+{
+    Task tk;
+    tk.m_db_id = 1;
+    tk.setDescription("Task Description Goes Here");
+    tk.setOwner("OfficerFlint");
+    tk.setState("In Progress");
+    tk.setDetail("Task detail goes here");
+    tk.m_is_complete = false;
+    tk.m_in_progress_maybe = true;
+    tk.m_is_abandoned = false;
+    tk.m_has_location = false;
+    tk.m_detail_invalid = true; // aka "needs update"
+    tk.m_board_train = false;
+    tk.m_location.location = glm::vec3(-83.0, 0.0, 1334.0);
+    tk.m_location.setLocationMapName("Outbreak");
+    tk.m_location.setLocationName("Outbreak");
+    tk.m_finish_time = 0;
+    tk.m_unknown_1 = 0;
+    tk.m_unknown_2 = 0;
+    tk.m_task_idx = 0;
+
+    sendUpdateTaskStatusList(sess, tk);
+    QString msg = "Sending Test Task to client";
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_ReloadScripts(const QString &/*cmd*/, MapClientSession &sess)
+{
+    qCDebug(logSlashCommand) << "Reloading all Lua scripts in" << sess.m_current_map->name();
+
+    // Reset script engine
+    sess.m_current_map->m_scripting_interface.reset(new ScriptingEngine);
+    sess.m_current_map->m_scripting_interface->setIncludeDir(sess.m_current_map->name());
+    sess.m_current_map->m_scripting_interface->registerTypes();
+
+    // load all scripts again
+    // TODO: this will regenerate any NPCs (luabot) that exist
+    sess.m_current_map->load_map_lua();
+}
+
+
+void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess)
+{
+    qCDebug(logSlashCommand) << "OpenStore...";
+    openStore(sess, 0); // Default entity_idx as it doesn't change anything currently
+}
+  
+void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+    QString message;
+    QString name = parts[1].toString();
+    int first_space = cmd.indexOf(' ');
+    int second_space = cmd.indexOf(' ',first_space+1);
+
+    if(second_space == -1)
+    {
+        message = "ForceLogout requires a logout message. /forceLogout <HeroName> <Message!>";
+        qCDebug(logSlashCommand) << message;
+        sendInfoMessage(MessageChannel::USER_ERROR, message, sess);
+        return;
+    }
+    else
+    {
+        message = cmd.mid(second_space + 1);
+    }
+
+    sendForceLogout(sess, name, message);
+}
+
+
 } // end of anonymous namespace
 
 /*
@@ -2026,9 +2321,9 @@ void runCommand(const QString &str, MapClientSession &e)
 {
     for (const auto &cmd : g_defined_slash_commands)
     {
-        if (cmd.m_valid_prefixes.contains(str.split(' ').front(), Qt::CaseInsensitive))
+        if(cmd.m_valid_prefixes.contains(str.split(' ').front(), Qt::CaseInsensitive))
         {
-            if (!canAccessCommand(cmd, e))
+            if(!canAccessCommand(cmd, e))
                 return; // no access, so return early
             cmd.m_handler(str, e);
             return; // return here to avoid unknown command msg
@@ -2036,6 +2331,8 @@ void runCommand(const QString &str, MapClientSession &e)
     }
     qCDebug(logSlashCommand) << "Unknown game command:" << str;
 }
+
+
 
 //! @}
 

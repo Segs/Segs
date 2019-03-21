@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -14,6 +14,7 @@
 
 #include "CRUD_Events.h"
 #include "PacketCodec.h"
+#include "BitStream.h"
 
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>
@@ -79,7 +80,7 @@ void CRUDLink::packets_for_event(Event *ev)
     // create one or more properly formated CrudP_Packets in the protocol object
     // qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);
-    if (false == m_protocol.batchSend(packets_to_send))
+    if(!m_protocol.batchSend(packets_to_send))
     {
         // link is unresponsive, tell our target object
         target()->putq(new Disconnect(this));
@@ -110,7 +111,7 @@ void CRUDLink::connection_sent_packet()
 //! when queue() is not empty.
 int CRUDLink::open (void *p)
 {
-    if (super::open (p) == -1)
+    if(super::open (p) == -1)
         return -1;
     m_notifier.reactor(reactor());  // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue()
@@ -139,7 +140,6 @@ int CRUDLink::handle_output( ACE_HANDLE )
                 break;
             case evPacket: // CRUDP_Protocol has posted a pre-parsed packet to us
                 event_for_packet(static_cast<Packet *>(ev));
-                connection_update(); // we've received some bytes -> connection update
                 break;
             default:
                 packets_for_event(static_cast<CRUDLink_Event *>(ev));
@@ -151,7 +151,7 @@ int CRUDLink::handle_output( ACE_HANDLE )
         //TODO: consider breaking out of this loop after processing N messages ?
     }
     // Now if our message queue is empty, we will wait unitl m_notifier awakens us.
-    if (msg_queue()->is_empty ()) // we don't want to be woken up
+    if(msg_queue()->is_empty ()) // we don't want to be woken up
         reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
     else // unless there is something to send still
         reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);

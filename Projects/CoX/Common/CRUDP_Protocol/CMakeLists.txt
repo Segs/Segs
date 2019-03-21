@@ -1,6 +1,7 @@
 SET(target_CPP
     CRUDP_Packet.cpp
     CRUDP_Protocol.cpp
+    CRUD_Events.cpp
     CRUD_Link.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/GameProtocol.cpp
     #${CMAKE_CURRENT_SOURCE_DIR}/GameProtocolHandler.cpp
@@ -43,3 +44,11 @@ add_dependencies(CRUDP_Protocol ace_IMP)
 if(ENABLE_TESTS)
     add_subdirectory(UnitTests)
 endif()
+
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES CRUDP_Protocol SOURCES) 
+list(REMOVE_ITEM TARGET_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/CRUDPEvents.gen.cpp)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (CRUDP_Protocol PROPERTIES
+    FOLDER Projects/CoX/Common
+)

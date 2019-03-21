@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -33,9 +33,9 @@ uint32_t CoXHashMap<VALUE>::find_index(const QString &key, uint32_t &index_tgt, 
     QString tmp_key;
     HashValue = 0;
     tmp_key = key;
-    if ( (this->m_flags & SINGLE_BYTE) )
+    if( (this->m_flags & SINGLE_BYTE) )
     {
-        if ( key.size() >= 0x1000 )
+        if( key.size() >= 0x1000 )
             return 0;
         tmp_key=tmp_key.toUpper();
     }
@@ -43,21 +43,21 @@ uint32_t CoXHashMap<VALUE>::find_index(const QString &key, uint32_t &index_tgt, 
     {
         HashValue = this->hash(tmp_key,HashValue);
         hash_index = HashValue & (int(this->m_storage.size()) - 1);
-        if ( !HashValue )
+        if( !HashValue )
         {
             //("Invalid HashValue %i generated while looking for index of key \"%s\"\n", 0, key);
             res = 2;
             break;
         }
         const typename super::HashEntry &entry(this->m_storage[hash_index]);
-        if ( !entry.key_hash || (a5 && (entry.entry_flags & 1)) )
+        if( !entry.key_hash || (a5 && (entry.entry_flags & 1)) )
         {
             res = 0;
             break;
         }
-        if ( HashValue != entry.key_hash && !(entry.entry_flags & 1) )
+        if( HashValue != entry.key_hash && !(entry.entry_flags & 1) )
             continue;
-        if ( !(this->m_flags & HAS_KEY_NAMES) || !(this->m_flags & CHECK_COLLISIONS) )
+        if( !(this->m_flags & HAS_KEY_NAMES) || !(this->m_flags & CHECK_COLLISIONS) )
         {
             res = 1;
             break;
@@ -67,7 +67,7 @@ uint32_t CoXHashMap<VALUE>::find_index(const QString &key, uint32_t &index_tgt, 
             res = 1;
             break;
         }
-        if ( !(this->m_flags & SKIP_CLASHES) )
+        if( !(this->m_flags & SKIP_CLASHES) )
         {
             //("Hash value conflict!  Both \"%s\" and \"%s\" produced a hash value of %i\n");
             res = 2;

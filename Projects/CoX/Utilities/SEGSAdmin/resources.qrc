@@ -17,7 +17,14 @@
         <file>Resources/play.svg</file>
         <file>Resources/square.svg</file>
         <file>Resources/alert-triangle.svg</file>
+        <file>Resources/bold.svg</file>
+        <file>Resources/corner-down-left.svg</file>
+        <file>Resources/italic.svg</file>
+        <file>Resources/corner-down-right.svg</file>
+        <file>Resources/edit.svg</file>
+        <file>Resources/terminal.svg</file>
         <file>Resources/app-icon.svg</file>
+        <file>Resources/link.svg</file>
     </qresource>
     <qresource prefix="/fonts">
         <file>dejavusanscondensed.ttf</file>

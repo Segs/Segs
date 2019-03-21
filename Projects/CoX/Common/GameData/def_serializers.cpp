@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -181,11 +181,11 @@ bool loadFrom(BinStore * s, Parse_AllOrigins &target)
     assert(ok);
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Origin")==0) {
+        if("Origin"==_name) {
             target.emplace_back();
             ok &= loadFrom(s,&target.back());
         } else

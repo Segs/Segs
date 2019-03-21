@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -16,7 +16,7 @@
 struct Texture;
 struct ParticleTextureData
 {
-    QString   m_TextureName;
+    QByteArray m_TextureName;
     glm::vec3 m_TexScroll;
     glm::vec3 m_TexScrollJitter;
     float     m_AnimFrames;
@@ -79,8 +79,8 @@ struct ParticleSystemInfo
     uint32_t                          m_StreakDirection;
     float                             m_StreakScale;
     std::array<ParticleTextureData, 2> particleTexture;
-    QString                           m_Name;
-    QString                           m_DieLikeThis;
+    QByteArray                        m_Name;
+    QByteArray                        m_DieLikeThis;
     uint32_t                          m_DeathAgeToZero;
     uint32_t                          m_Flags;
     float                             m_VisRadius;

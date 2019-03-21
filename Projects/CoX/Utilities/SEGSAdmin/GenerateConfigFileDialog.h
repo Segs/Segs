@@ -22,7 +22,7 @@ public slots:
     void auto_populate_ip_gen_config(QString local_ip);
 
 signals:
-    void sendInputConfigFile(QString server_name, QString ip);
+    void sendInputConfigFile(QString ip);
 
 private:
     Ui::GenerateConfigFileDialog *ui;

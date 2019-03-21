@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1041</width>
-    <height>595</height>
+    <height>632</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -593,8 +593,8 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>226</width>
-        <height>73</height>
+        <width>500</width>
+        <height>500</height>
        </size>
       </property>
       <property name="font">
@@ -605,7 +605,7 @@
       <property name="title">
        <string>Server Configuration</string>
       </property>
-      <layout class="QGridLayout" name="gridLayout_4">
+      <layout class="QFormLayout" name="formLayout">
        <item row="0" column="0">
         <widget class="QPushButton" name="settings_button">
          <property name="minimumSize">
@@ -648,6 +648,59 @@
        </item>
        <item row="0" column="1">
         <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>26</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="motd_editor">
+         <property name="minimumSize">
+          <size>
+           <width>167</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>167</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>9</pointsize>
+          </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit scripts&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>   Script Editor</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/icons/Resources/edit.svg</normaloff>:/icons/Resources/edit.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>18</width>
+           <height>18</height>
+          </size>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <spacer name="horizontalSpacer_4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>

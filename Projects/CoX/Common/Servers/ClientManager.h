@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -141,7 +141,7 @@ public:
             for (ExpectClientInfo sess : m_session_expecting_clients)
             {
                 // if we already expect this client
-                if (sess.m_cookie == cook)
+                if(sess.m_cookie == cook)
                 {
                     // return pregenerated cookie
                     return cook;
@@ -166,7 +166,7 @@ public:
             remove_from_active_sessions(&session);
             for (size_t idx = 0, total = m_session_expecting_clients.size(); idx < total; ++idx)
             {
-                if (m_session_expecting_clients[idx].m_session_token == token)
+                if(m_session_expecting_clients[idx].m_session_token == token)
                 {
                     std::swap(m_session_expecting_clients[idx], m_session_expecting_clients.back());
                     m_session_expecting_clients.pop_back();
@@ -184,7 +184,7 @@ public:
         {
             for (size_t idx = 0, total = m_session_expecting_clients.size(); idx < total; ++idx)
             {
-                if (m_session_expecting_clients[idx].m_cookie == cookie)
+                if(m_session_expecting_clients[idx].m_cookie == cookie)
                 {
                     uint64_t expected_in_session = m_session_expecting_clients[idx].m_session_token;
                     std::swap(m_session_expecting_clients[idx], m_session_expecting_clients.back());
@@ -242,7 +242,7 @@ public:
         {
             for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
             {
-                if (m_session_ready_for_reaping[idx].m_session == sess)
+                if(m_session_ready_for_reaping[idx].m_session == sess)
                 {
                     std::swap(m_session_ready_for_reaping[idx], m_session_ready_for_reaping.back());
                     m_session_ready_for_reaping.pop_back();
@@ -262,9 +262,9 @@ public:
             for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
             {
                 WaitingSession &waiting_session(m_session_ready_for_reaping[idx]);
-                if (time_now - waiting_session.m_waiting_since < link_is_stale_if_disconnected_for)
+                if(time_now - waiting_session.m_waiting_since < link_is_stale_if_disconnected_for)
                     continue;
-                if (waiting_session.m_session->link() == nullptr || waiting_session.m_session->is_temporary() ) // trully disconnected
+                if(waiting_session.m_session->link() == nullptr || waiting_session.m_session->is_temporary() ) // trully disconnected
                 {
                     qDebug() << name << "Reaping stale link" << intptr_t(waiting_session.m_session);
                     reap_callback(waiting_session.m_session_token);
@@ -292,7 +292,7 @@ public:
             MTGuard             guard(reap_lock());
 
             auto iter = m_token_to_session.find(token);
-            if (iter != m_token_to_session.end())
+            if(iter != m_token_to_session.end())
             {
                 sess = &iter->second;
                 unmark_session_for_reaping(sess);

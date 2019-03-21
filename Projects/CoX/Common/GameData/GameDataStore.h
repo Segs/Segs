@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -10,21 +10,25 @@
 #include "Common/GameData/CoXHash.h"
 #include "Common/GameData/costume_definitions.h"
 #include "Common/GameData/origin_definitions.h"
-#include "Common/GameData/charclass_definitions.h"
+#include "Common/GameData/CharacterClass.h"
 #include "Common/GameData/keybind_definitions.h"
 #include "Common/GameData/other_definitions.h"
 #include "Common/GameData/npc_definitions.h"
 #include "Common/GameData/power_definitions.h"
+#include "Common/GameData/seq_definitions.h"
+#include "Common/GameData/shop_definitions.h"
 
 #include "NpcStore.h"
+#include <QDate>
 
 class ColorAndPartPacker;
+class IndexedStringPacker;
 class QString;
-
 class GameDataStore
 {
-        ColorAndPartPacker *packer_instance;
-        LevelExpAndDebt     m_experience_and_debt_per_level;
+        ColorAndPartPacker * packer_instance      = nullptr;
+        IndexedStringPacker *m_index_based_packer = nullptr;
+        LevelExpAndDebt      m_experience_and_debt_per_level;
 
         bool            read_costumes(const QString &directory_path);
         bool            read_colors(const QString &src_filename);
@@ -39,10 +43,15 @@ class GameDataStore
         bool            read_combine_chances(const QString &directory_path);
         bool            read_effectiveness(const QString &directory_path);
         bool            read_pi_schedule(const QString &directory_path);
+        bool            read_fx(const QString &directory_path);
+        bool            read_sequencer_definitions(const QString &directory_path);
+        bool            read_store_data(const QString &directory_path);
+        bool            read_store_items_data(const QString &directory_path);
+        bool            read_store_depts_data(const QString &directory_path);
 public:
                         GameDataStore();
                         ~GameDataStore();
-        bool            read_runtime_data(const QString &directory_path);
+        bool            read_game_data(const QString &directory_path);
         const ColorAndPartPacker *getPacker() const { return packer_instance; }
         uint32_t        expForLevel(uint32_t lev) const;
         uint32_t        expDebtForLevel(uint32_t lev) const;
@@ -67,7 +76,14 @@ public:
         Parse_Effectiveness         m_effectiveness_above;
         Parse_Effectiveness         m_effectiveness_below;
         Parse_PI_Schedule           m_pi_schedule;
+        std::vector<struct FxInfo>  m_fx_infos;
+        AllShops_Data               m_shops_data;
+        AllShopItems_Data           m_shop_items_data;
+        AllShopDepts_Data           m_shop_depts_data;
         float                       m_player_fade_in;
+        float                       m_motd_timer = 60 * 60; // default 1 hr
+        QStringList                 m_costume_slot_unlocks; // used in finalizeLevel() to award costume slots
+        SequencerList               m_seq_definitions; // animation sequencer definitions
 
         // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)
         const StoredPowerCategory&  get_power_category(uint32_t pcat_idx);
@@ -83,6 +99,12 @@ public:
         float                       m_time_to_logout_msg = 18 * 60;
         float                       m_time_to_auto_logout = 2 * 60;
         bool                        m_uses_auto_logout = true;
+
+        // experience modifier settings
+        bool                        m_uses_xp_mod;
+        double                      m_xp_mod_multiplier;
+        QDateTime                   m_xp_mod_startdate;
+        QDateTime                   m_xp_mod_enddate;
 };
 int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
 int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);
