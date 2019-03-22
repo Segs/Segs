@@ -1,11 +1,13 @@
+--Perez Park
+
 --These contain tables for relevant, spawnable NPCs
-include_lua('../spawndefs/Hellions_Haz.spawndef.lua')
-include_lua('../spawndefs/Skulls_Haz.spawndef.lua')
-include_lua('../spawndefs/Clockwork_Haz.spawndef.lua')
-include_lua('../spawndefs/Vahzilok_Haz.spawndef.lua')
-include_lua('../spawndefs/Rikti_Haz.spawndef.lua')
-include_lua('../spawndefs/Hydramen.spawndef.lua')
-include_lua('../spawndefs/CircleOfThorns_Haz.spawndef.lua')
+include_lua('../spawndefs/Hellions_Perez.spawndef.lua')
+include_lua('../spawndefs/Skulls_Perez.spawndef.lua')
+include_lua('../spawndefs/Clockwork_Perez.spawndef.lua')
+include_lua('../spawndefs/Vahzilok_Perez.spawndef.lua')
+include_lua('../spawndefs/Rikti_Perez.spawndef.lua')
+include_lua('../spawndefs/Hydramen_Perez.spawndef.lua')
+include_lua('../spawndefs/CircleOfThorns_Perez.spawndef.lua')
 
 ES_Library_Objects = {
   ["ES_Hellions_L1_3_Around_Haz_01_01"] = {
@@ -15,7 +17,7 @@ ES_Library_Objects = {
     "Encounter_E_08", "Encounter_S_32", "Encounter_E_07",
     "Encounter_E_03", "Encounter_E_04",
     ["EncounterSpawn"] = "Around",
-    ["CanSpawn"] = {"CanSpawn1", "CanSpawn1","CanSpawn3","CanSpawn4","CanSpawn5"},
+    ["CanSpawn"] = {"CanSpawn1", "CanSpawn2","CanSpawn3","CanSpawn4","CanSpawn5"},
     ["CanSpawnDefs"] = {Loiter_Hellions_L1_3_V0, Loiter_Hellions_L1_3_V1, Loiter_Hellions_L1_3_V2, Loiter_Hellions_L1_3_V3, Loiter_Hellions_L1_3_V4},
   },
   ["ES_Hellions_L4_7_Around_Haz_01_01"] = {
@@ -25,7 +27,7 @@ ES_Library_Objects = {
     "Encounter_E_08", "Encounter_S_32", "Encounter_E_07",
     "Encounter_E_03", "Encounter_E_04",
     ["EncounterSpawn"] = "Around",
-    ["CanSpawn"] = {"CanSpawn1", "CanSpawn1","CanSpawn3","CanSpawn4","CanSpawn5"},
+    ["CanSpawn"] = {"CanSpawn1", "CanSpawn2","CanSpawn3","CanSpawn4","CanSpawn5"},
     ["CanSpawnDefs"] = {Loiter_Hellions_L4_7_V0, Loiter_Hellions_L4_7_V1, Loiter_Hellions_L4_7_V2, Loiter_Hellions_L4_7_V3, Loiter_Hellions_L4_7_V4},
   },
   ["ES_Hellions_L8_10_Around_Haz_01_01"] = {
@@ -35,7 +37,7 @@ ES_Library_Objects = {
     "Encounter_E_08", "Encounter_S_32", "Encounter_E_07",
     "Encounter_E_03", "Encounter_E_04",
     ["EncounterSpawn"] = "Around",
-    ["CanSpawn"] = {"CanSpawn1", "CanSpawn1","CanSpawn3","CanSpawn4","CanSpawn5"},
+    ["CanSpawn"] = {"CanSpawn1", "CanSpawn2","CanSpawn3","CanSpawn4","CanSpawn5"},
     ["CanSpawnDefs"] = {Loiter_Hellions_L8_10_V0, Loiter_Hellions_L8_10_V1, Loiter_Hellions_L8_10_V2, Loiter_Hellions_L8_10_V3, Loiter_Hellions_L8_10_V4},
   },
   ["ES_Skulls_L1_3_Around_Haz_01_01"] = {
@@ -45,7 +47,7 @@ ES_Library_Objects = {
     "Encounter_E_08", "Encounter_S_32", "Encounter_E_07",
     "Encounter_E_03", "Encounter_E_04",
     ["EncounterSpawn"] = "Around",
-    ["CanSpawn"] = {"CanSpawn1", "CanSpawn1","CanSpawn3","CanSpawn4","CanSpawn5"},
+    ["CanSpawn"] = {"CanSpawn1", "CanSpawn2","CanSpawn3","CanSpawn4","CanSpawn5"},
     ["CanSpawnDefs"] = {Loiter_Skulls_L1_3_V0, Loiter_Skulls_L1_3_V1, Loiter_Skulls_L1_3_V2, Loiter_Skulls_L1_3_V3, Loiter_Skulls_L1_3_V4},
   }, 
   ["ES_Skulls_L4_7_Around_Haz_01_01"] = {
@@ -55,7 +57,7 @@ ES_Library_Objects = {
     "Encounter_E_08", "Encounter_S_32", "Encounter_E_07",
     "Encounter_E_03", "Encounter_E_04",
     ["EncounterSpawn"] = "Around",
-    ["CanSpawn"] = {"CanSpawn1", "CanSpawn1","CanSpawn3","CanSpawn4","CanSpawn5"},
+    ["CanSpawn"] = {"CanSpawn1", "CanSpawn2","CanSpawn3","CanSpawn4","CanSpawn5"},
     ["CanSpawnDefs"] = {Loiter_Skulls_L4_7_V0, Loiter_Skulls_L4_7_V1, Loiter_Skulls_L4_7_V2, Loiter_Skulls_L4_7_V3, Loiter_Skulls_L4_7_V4},
   },
   ["ES_Skulls_L8_10_Around_Haz_01_01"] = {
@@ -65,7 +67,7 @@ ES_Library_Objects = {
     "Encounter_E_08", "Encounter_S_32", "Encounter_E_07",
     "Encounter_E_03", "Encounter_E_04",
     ["EncounterSpawn"] = "Around",
-    ["CanSpawn"] = {"CanSpawn1", "CanSpawn1","CanSpawn3","CanSpawn4","CanSpawn5"},
+    ["CanSpawn"] = {"CanSpawn1", "CanSpawn2","CanSpawn3","CanSpawn4","CanSpawn5"},
     ["CanSpawnDefs"] = {Loiter_Skulls_L8_10_V0, Loiter_Skulls_L8_10_V1, Loiter_Skulls_L8_10_V2, Loiter_Skulls_L8_10_V3, Loiter_Skulls_L8_10_V4},
   },
   ["ES_Clockwork_L1_3_Around_Haz_01_01"] = {
@@ -229,21 +231,23 @@ ES_Library_Objects = {
                         Loiter_HydraMan_L7_9_V14, Loiter_HydraMan_L7_9_V15,},
   },
   ["ES_HellionSkull_L4_7_Rumble_Haz_01_01"] = {
-    "Encounter_V_40", "Encounter_V_42", "Encounter_V_41",
-    "Encounter_E_06", "Encounter_E_05", "Encounter_S_31",
-    "Encounter_S_30", "Encounter_E_02", "Encounter_E_01",
-    "Encounter_E_08", "Encounter_S_32", "Encounter_E_07",
-    "Encounter_E_03", "Encounter_E_04",
+    "Encounter_E_08", "Encounter_E_02", "Encounter_S_34",
+    "Encounter_E_06", "Encounter_E_10", "Encounter_E_12",
+    "Encounter_E_04", "Encounter_E_09", "Encounter_S_32",
+    "Encounter_S_33", "Encounter_E_03", "Encounter_E_11",
+    "Encounter_S_35", "Encounter_S_31", "Encounter_E_05", 
+    "Encounter_E_01", "Encounter_E_07", "Encounter_S_30", 
     ["EncounterSpawn"] = "Rumble",
     ["CanSpawn"] = {"CanSpawn1", "CanSpawn2","CanSpawn3",},
     ["CanSpawnDefs"] = {Rumble_HellionsSkulls_L4_7_V0, Rumble_HellionsSkulls_L4_7_V1, Rumble_HellionsSkulls_L4_7_V2},
   },        
   ["ES_HellionSkull_L8_10_Rumble_Haz_01_01"] = {
-    "Encounter_V_40", "Encounter_V_42", "Encounter_V_41",
-    "Encounter_E_06", "Encounter_E_05", "Encounter_S_31",
-    "Encounter_S_30", "Encounter_E_02", "Encounter_E_01",
-    "Encounter_E_08", "Encounter_S_32", "Encounter_E_07",
-    "Encounter_E_03", "Encounter_E_04",
+    "Encounter_E_08", "Encounter_E_02", "Encounter_S_34",
+    "Encounter_E_06", "Encounter_E_10", "Encounter_E_12",
+    "Encounter_E_04", "Encounter_E_09", "Encounter_S_32",
+    "Encounter_S_33", "Encounter_E_03", "Encounter_E_11",
+    "Encounter_S_35", "Encounter_S_31", "Encounter_E_05", 
+    "Encounter_E_01", "Encounter_E_07", "Encounter_S_30",
     ["EncounterSpawn"] = "Rumble",
     ["CanSpawn"] = {"CanSpawn1", "CanSpawn2","CanSpawn3",},
     ["CanSpawnDefs"] = {Rumble_HellionsSkulls_L8_10_V0, Rumble_HellionsSkulls_L8_10_V1, Rumble_HellionsSkulls_L8_10_V2},

@@ -13,9 +13,9 @@ function player_connected(id)
         spinPersists()
         spinCivilians()
         spinCars()
-        RandomSpawn(0)
-        RandomSpawn(300, "Civilians")
-        RandomSpawn(65, "Cars")
+        RandomSpawn(65)
+        RandomSpawn(85, "Civilians")
+        RandomSpawn(50, "Cars")
         spawnOnce = true
     end
 

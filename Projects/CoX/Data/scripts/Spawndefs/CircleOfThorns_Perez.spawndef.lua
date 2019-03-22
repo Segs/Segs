@@ -226,54 +226,64 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V15 = {
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V0 = {
         ["Markers"] = {
-                ["Encounter_E_05"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
+                ["Encounter_E_06"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_08"] = Circle_Ranks_01.Lieutenants,
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V1 = {
         ["Markers"] = {
-                ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
-                ["Encounter_E_05"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_07"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_01"] = Circle_Ranks_01.Lieutenants,                
+                ["Encounter_S_31"] = Circle_Ranks_01.Lieutenants,
+                ["Encounter_E_06"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_08"] = Circle_Ranks_01.Minions,
+                ["Encounter_S_32"] = Circle_Ranks_01.Lieutenants,                
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V2 = {
         ["Markers"] = {
-                ["Encounter_E_01"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_02"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_05"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_07"] = Circle_Ranks_01.Minions,
-                ["Encounter_S_30"] = Circle_Ranks_01.Minions,
-                ["Encounter_S_32"] = Circle_Ranks_01.Minions,                
+                ["Encounter_S_31"] = Circle_Ranks_01.Lieutenants,
+                ["Encounter_E_06"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_08"] = Circle_Ranks_01.Minions,
+                ["Encounter_S_32"] = Circle_Ranks_01.Lieutenants,
+                ["Encounter_E_04"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_03"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_01"] = Circle_Ranks_01.Minions,                                                                
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V3 = {
         ["Markers"] = {
-                ["Encounter_E_05"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_07"] = Circle_Ranks_01.Lieutenants,
+                ["Encounter_S_31"] = Circle_Ranks_01.Lieutenants,
+                ["Encounter_E_06"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_08"] = Circle_Ranks_01.Minions,
+                ["Encounter_S_32"] = Circle_Ranks_01.Lieutenants,
+                ["Encounter_E_04"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_03"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_01"] = Circle_Ranks_01.Minions,
+                ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
+                ["Encounter_E_02"] = Circle_Ranks_01.Minions,
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V4 = {
         ["Markers"] = {
+                ["Encounter_S_32"] = Circle_Ranks_01.Lieutenants,
+                ["Encounter_E_04"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_03"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_01"] = Circle_Ranks_01.Minions,
                 ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
-                ["Encounter_E_05"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_07"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_01"] = Circle_Ranks_01.Lieutenants,                
+                ["Encounter_E_02"] = Circle_Ranks_01.Minions,                
         },
 }
 
 Sacrifice_CircleOfThornsFollowe_L2_5_V5 = {
         ["Markers"] = {
-                ["Encounter_E_01"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_02"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_05"] = Circle_Ranks_01.Minions,
-                ["Encounter_E_07"] = Circle_Ranks_01.Minions,
-                ["Encounter_S_30"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_03"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_04"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_06"] = Circle_Ranks_01.Minions,
+                ["Encounter_E_08"] = Circle_Ranks_01.Minions,
+                ["Encounter_S_31"] = Circle_Ranks_01.Minions,
                 ["Encounter_S_32"] = Circle_Ranks_01.Minions,                
         },
 }
