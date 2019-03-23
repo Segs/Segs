@@ -231,7 +231,7 @@ void World::regenHealthEnd(Entity *e, uint32_t msec)
     float end = getEnd(*e->m_char);
 
     float regeneration = getMaxHP(*e->m_char) * (e->m_char->m_char_data.m_current_attribs.m_Regeneration/20.0f * float(msec)/1000/12);
-    float recovery = getMaxEnd(*e->m_char) * (e->m_char->m_char_data.m_current_attribs.m_Recovery/15.0f * float(msec)/1000/12);
+    float recovery = getMaxEnd(*e->m_char) * (e->m_char->m_char_data.m_current_attribs.m_Recovery/4.9f * float(msec)/1000/12);
 
     if(hp < getMaxHP(*e->m_char))
         setHP(*e->m_char, hp + regeneration);
