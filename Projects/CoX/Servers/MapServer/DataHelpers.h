@@ -119,12 +119,12 @@ void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time)
 void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower);
 void doEffect(Entity &ent, Entity *target_ent, QString lower_name, float scale);
 void sendResult(Entity &src,Entity &tgt, QString name, float value);
-void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const &attrib, uint entidx);
+void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const &mod, uint32_t entidx);
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void grantRewards(class EntityManager &em, Entity &e);
 void increaseLevel(Entity &ent);
-bool checkPowerTarget(Entity &ent, Entity *target_ent, uint32_t tgt_idx, Power_Data powtpl);
+bool checkPowerTarget(Entity &ent, Entity *target_ent, uint32_t &tgt_idx, Power_Data powtpl);
 bool checkPowerRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx);
 bool checkPowerRange(Entity &ent, Entity &target_ent, float range);
 bool checkPowerRange(Entity &ent, uint32_t tgt_idx, uint32_t pset_idx, uint32_t pow_idx);

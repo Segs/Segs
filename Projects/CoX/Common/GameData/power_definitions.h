@@ -159,9 +159,9 @@ public:
     QByteArray         DisplayVictimHit = "";
     struct Power_Data *parent_StoredPower;
     AttribModTarget    Target           = AttribModTarget::Target;
-    QByteArray         Table            = "";
+    QByteArray         Table            = "43"; //would be easier as int, since the tables are stored in an array
     float              Scale            = 1.0;
-    int                Attrib; //
+    int                Attrib           = 0; //
     AttribMod_Aspect   Aspect;
     AttribModType      Type             = AttribModType::Magnitude;
     float              Duration         = 0.0; // Special values in DurationEnum

@@ -61,7 +61,7 @@ void    setCurrentDestination(Entity &e, int point_idx, glm::vec3 location);
 void    setStateMode(Entity &e, ClientStates state);
 bool    validTarget(Entity &target_ent, Entity &ent, StoredEntEnum const &target);
 bool    validTargets(Entity &target_ent, Entity &ent, std::vector<StoredEntEnum> const &targets);
-void    modifyAttrib(Entity &e, QString name, float value);
+void    modifyAttrib(Entity &e, buffset change);
 void    checkMovement(Entity &e);
 bool    checkPowerBlock(Entity &e);
 

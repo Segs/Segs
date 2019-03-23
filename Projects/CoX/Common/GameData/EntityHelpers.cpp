@@ -222,52 +222,102 @@ bool validTargets(Entity &target_ent, Entity &ent, std::vector<StoredEntEnum> co
     return false;
 }
 
-void modifyAttrib(Entity &e, QString name, float value)
+void modifyAttrib(Entity &e, buffset change)
 {
-    if (name == "regeneration")
-        e.m_char->m_char_data.m_current_attribs.m_Regeneration += value;
-    else if (name == "recovery")
-        e.m_char->m_char_data.m_current_attribs.m_Recovery += value;
-    else if (name == "accuracy")
-        e.m_char->m_char_data.m_current_attribs.m_Accuracy += value;
-    else if (name == "tohit")
-        e.m_char->m_char_data.m_current_attribs.m_ToHit += value;
-    else if (name == "defense")
-        e.m_char->m_char_data.m_current_attribs.m_Defense += value;         //general defense, added to specific def type
-    else if (name == "damage_boost")
-        e.m_char->m_char_data.m_current_attribs.m_DamageTypes[0] += value;  //dmg type 0 applies to all damage
-    else if (name == "jump_height")
+    if (change.m_value_name == "regeneration")
+        e.m_char->m_char_data.m_current_attribs.m_Regeneration += change.m_value;
+    else if (change.m_value_name == "recovery")
+        e.m_char->m_char_data.m_current_attribs.m_Recovery += change.m_value;
+    else if (change.m_value_name == "accuracy")
+        e.m_char->m_char_data.m_current_attribs.m_Accuracy += change.m_value;
+    else if (change.m_value_name == "tohit")
+        e.m_char->m_char_data.m_current_attribs.m_ToHit += change.m_value;
+    else if (change.m_value_name == "defense")
+        e.m_char->m_char_data.m_current_attribs.m_Defense += change.m_value;         //for now everything is general defense
+    else if (change.m_value_name == "damagebuff")
     {
-        e.m_char->m_char_data.m_current_attribs.m_jump_height += value;
+        e.m_char->m_char_data.m_current_attribs.m_DamageTypes[change.m_attrib] += change.m_value;  //for now dmg type 0 applies to all damage
+    }
+    else if (change.m_value_name == "mezresist" || change.m_value_name == "reseffect" || change.m_value_name == "resistance")
+    {
+       ;// e.m_char->m_char_data.m_current_attribs.m_ResistTypes[change.attrib] += change.m_value;  //we don't store resists?
+    }
+    else if (change.m_value_name == "jumpheight")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_jump_height += change.m_value;
         e.m_motion_state.m_jump_height = e.m_char->m_char_data.m_current_attribs.m_jump_height;
     }
-    else if (name == "jump_speed")
+    else if (change.m_value_name == "jump_speed")
     {
-        e.m_char->m_char_data.m_current_attribs.m_SpeedJumping += value;
+        e.m_char->m_char_data.m_current_attribs.m_SpeedJumping += change.m_value;
     }
-    else if (name == "run_speed")
+    else if (change.m_value_name == "speedrunning")
     {
-        e.m_char->m_char_data.m_current_attribs.m_SpeedRunning += value;
+        e.m_char->m_char_data.m_current_attribs.m_SpeedRunning += change.m_value;
     }
-    else if (name == "flight")
+    else if (change.m_value_name == "fly")
     {
-        e.m_char->m_char_data.m_current_attribs.m_is_flying += value;
+        e.m_char->m_char_data.m_current_attribs.m_is_flying += change.m_value;
         if (e.m_char->m_char_data.m_current_attribs.m_is_flying > 0)
             e.m_motion_state.m_is_flying = true;
         else
             e.m_motion_state.m_is_flying = false;
     }
-    else if (name == "flight_speed")
+    else if (change.m_value_name == "speedflying")
     {
-        e.m_char->m_char_data.m_current_attribs.m_SpeedFlying += value;
+        e.m_char->m_char_data.m_current_attribs.m_SpeedFlying += change.m_value;
     }
-    else if (name == "immobilized") //TODO: copy for hold, sleep,stun
+    else if (change.m_value_name == "movementfriction")
     {
-        e.m_char->m_char_data.m_current_attribs.m_Immobilized += value;
+        e.m_char->m_char_data.m_current_attribs.m_MovementFriction += change.m_value;
     }
-    else if (name == "onlyaffectsself")
+    else if (change.m_value_name == "movementcontrol")
     {
-        e.m_char->m_char_data.m_current_attribs.m_OnlyAffectsSelf += value;
+        e.m_char->m_char_data.m_current_attribs.m_MovementControl += change.m_value;
+    }
+    else if (change.m_value_name == "immobilized")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Immobilized += change.m_value;
+    }
+    else if (change.m_value_name == "sleep")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Sleep += change.m_value;
+    }
+    else if (change.m_value_name == "stunned")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_is_stunned += change.m_value;
+        if (e.m_char->m_char_data.m_current_attribs.m_is_stunned > 0)
+            e.m_motion_state.m_is_stunned = true;
+        else
+            e.m_motion_state.m_is_stunned = false;
+    }
+    else if (change.m_value_name == "held")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Held += change.m_value;
+    }
+    else if (change.m_value_name == "confused")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Confused += change.m_value;
+    }
+    else if (change.m_value_name == "onlyaffectsself")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_OnlyAffectsSelf += change.m_value;
+    }
+    else if (change.m_value_name == "perceptionradius")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_PerceptionRadius += change.m_value;
+    }
+    else if (change.m_value_name == "xpdebtprotection")
+    {
+        ;//not actually stored?
+    }
+    else if (change.m_value_name == "translucency")
+    {
+        ;//an FX or stance?
+    }
+    else
+    {
+        qDebug() << change.m_value_name << "not found";
     }
     resetSpeed(e);
     checkMovement(e);

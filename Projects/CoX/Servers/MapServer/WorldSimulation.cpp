@@ -195,6 +195,7 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         {
             rpow_idx->m_active_state_change = true;
             e->m_queued_powers.push_back(*rpow_idx);            //this sends the deactivation state to the client
+            e->m_recharging_powers.push_back(*rpow_idx);
             e->m_auto_powers.erase(rpow_idx);
             e->m_char->m_char_data.m_has_updated_powers = true;
         }
@@ -209,9 +210,10 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     {
         if(thisbuff->m_duration <= 0 || e->m_char->m_is_dead)
         {
-            for (uint i =0; i<thisbuff->m_value_name.size();i++)        //there can be multiple values for one buff
+            for (auto thisbuffset: thisbuff->m_buffs)       //there can be multiple values for one buff
             {
-                modifyAttrib(*e, thisbuff->m_value_name[i], -thisbuff->m_value[i]);
+                thisbuffset.m_value = -thisbuffset.m_value;
+                modifyAttrib(*e, thisbuffset);
             }
             thisbuff = e->m_buffs.erase(thisbuff);
         }
