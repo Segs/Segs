@@ -44,39 +44,9 @@ local Vahzilok_Ranks_01  = {
     },
 }
 
---== HARVEST ==--
-
-Vahzilok_Harvest_D3_V0 = {
-    ["Markers"] = {
-            ["Encounter_V_42"] = Vahzilok_Ranks_01.Victims,
-            ["Encounter_S_32"] = Vahzilok_Ranks_01.Lieutenants,
-            ["Encounter_E_03"] = Vahzilok_Ranks_01.Minions,
-            ["Encounter_E_07"] = Vahzilok_Ranks_01.Minions,            
-   },
-}
-
-Vahzilok_Harvest_D3_V1 = Vahzilok_Harvest_D3_V0
-Vahzilok_Harvest_D3_V2 = Vahzilok_Harvest_D3_V0
-
-Vahzilok_Harvest_D8_V0 = {
-    ["Markers"] = {
-            ["Encounter_V_42"] = Vahzilok_Ranks_01.Victims,
-            ["Encounter_V_40"] = Vahzilok_Ranks_01.Victims,
-            ["Encounter_S_32"] = Vahzilok_Ranks_01.Lieutenants,
-            ["Encounter_E_03"] = Vahzilok_Ranks_01.Minions,
-            ["Encounter_E_07"] = Vahzilok_Ranks_01.Minions,
-            ["Encounter_E_01"] = Vahzilok_Ranks_01.Minions,
-            ["Encounter_S_31"] = Vahzilok_Ranks_01.Lieutenants,            
-   },
-}
-
-Vahzilok_Harvest_D8_V1 = Vahzilok_Harvest_D8_V0
-Vahzilok_Harvest_D8_V2 = Vahzilok_Harvest_D8_V0
-
-
 --== HUNTING ==--
 
-Vahzilok_Hunting_D3_V0 = {
+Hunting_Vahzilok_D3_V0 = {
     ["Markers"] = {
             ["Encounter_V_42"] = Vahzilok_Ranks_01.Victims,        
             ["Encounter_S_32"] = Vahzilok_Ranks_01.Lieutenants,
@@ -85,10 +55,16 @@ Vahzilok_Hunting_D3_V0 = {
    },
 }
 
-Vahzilok_Hunting_D3_V1 = Vahzilok_Hunting_D3_V0
-Vahzilok_Hunting_D3_V2 = Vahzilok_Hunting_D3_V0
+Hunting_Vahzilok_D3_V1 = {
+    ["Markers"] = {
+            ["Encounter_V_42"] = Vahzilok_Ranks_01.Victims,        
+            ["Encounter_S_32"] = Vahzilok_Ranks_01.Minions,
+            ["Encounter_S_30"] = Vahzilok_Ranks_01.Minions,
+            ["Encounter_S_31"] = Vahzilok_Ranks_01.Lieutenants,            
+   },
+}
 
-Vahzilok_Hunting_D8_V0 = {
+Hunting_Vahzilok_D3_V2 = {
     ["Markers"] = {
             ["Encounter_V_42"] = Vahzilok_Ranks_01.Victims,
             ["Encounter_V_40"] = Vahzilok_Ranks_01.Victims,
@@ -99,5 +75,6 @@ Vahzilok_Hunting_D8_V0 = {
    },
 }
 
-Vahzilok_Hunting_D8_V1 = Vahzilok_Hunting_D8_V0
-Vahzilok_Hunting_D8_V2 = Vahzilok_Hunting_D8_V0
+Hunting_Vahzilok_D8_V0 = Hunting_Vahzilok_D3_V0
+Hunting_Vahzilok_D8_V1 = Hunting_Vahzilok_D3_V1
+Hunting_Vahzilok_D8_V2 = Hunting_Vahzilok_D3_V2

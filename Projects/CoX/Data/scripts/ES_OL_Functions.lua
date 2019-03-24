@@ -2,7 +2,6 @@
     ES_OL_Functions.lua
     *********************
     Contains utility functions for Encounter Object Library data and access.
-    All ES_Library_Objects.lua files require this as an include.
 ]]
 
 --Returns true if a Spawn Definition is found in the library
@@ -45,6 +44,7 @@ function GetVariant(definition, SpawnIndex)
         return ES_Library_Objects[definition].CanSpawnDefs[SpawnIndex]
 end
 
+--Returns the encounter's spawn probability, or 80% if one isn't found.
 function GetLOSpawnProbability(definition)
         local validator = ES_Library_Objects[definition]["SpawnProbability"]
         if validator == nil then

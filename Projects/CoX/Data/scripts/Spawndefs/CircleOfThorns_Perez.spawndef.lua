@@ -15,13 +15,11 @@ local Circle_Ranks_01  = {
         },
         ["Lieutenants"] = {
             "Daemon", "Knight", "Spectre",
-            "Daemon_Lord", "Behemoth_Minion",
         },
         ["Sniper"] = {
           --NA
         },
         ["Boss"] = {
-            "Behemoth_Lord", "Behemoth_Envoy"
         },
         ["Elite Boss"] = {
             "CoTUniqueThreatLevel1", "CoTUniqueThreatLevel2"
@@ -37,6 +35,13 @@ local Circle_Ranks_01  = {
 --[[
         These are the spawndefs.
 ]]
+
+Baphomet_D10_V0 = {
+        ["Markers"] = {
+                ["Encounter_E_01"] = "Behemoth_Lord",
+        },
+}
+
 
 Sacrifice_CircleOfThornsFollowe_L5_9_V0 = {
         ["Markers"] = {
@@ -127,7 +132,7 @@ Sacrifice_CircleOfThornsFollowe_L5_9_V9 = {
                 ["Encounter_E_02"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_04"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_08"] = Circle_Ranks_01.Minions,
-                ["Encounter_S_30"] = Circle_Ranks_01.Boss,
+                ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_S_32"] = Circle_Ranks_01.Lieutenants,                  
         },
 }
@@ -323,7 +328,7 @@ Sacrifice_CircleOfThornsFollowe_L2_5_V9 = {
                 ["Encounter_E_02"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_04"] = Circle_Ranks_01.Minions,
                 ["Encounter_E_08"] = Circle_Ranks_01.Minions,
-                ["Encounter_S_30"] = Circle_Ranks_01.Boss,
+                ["Encounter_S_30"] = Circle_Ranks_01.Lieutenants,
                 ["Encounter_S_32"] = Circle_Ranks_01.Lieutenants,                  
         },
 }

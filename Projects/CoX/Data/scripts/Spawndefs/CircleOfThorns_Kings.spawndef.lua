@@ -15,13 +15,11 @@ local Circle_Ranks_01  = {
     },
     ["Lieutenants"] = {
         "Daemon", "Knight", "Spectre",
-        "Daemon_Lord", "Behemoth_Minion",
     },
     ["Sniper"] = {
       --NA
     },
     ["Boss"] = {
-        "Behemoth_Lord", "Behemoth_Envoy"
     },
     ["Elite Boss"] = {
         "CoTUniqueThreatLevel1", "CoTUniqueThreatLevel2"

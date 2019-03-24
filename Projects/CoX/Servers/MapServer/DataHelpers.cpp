@@ -1727,6 +1727,7 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
 
 }
 
+// Probably obselete?
 std::vector<CritterSpawnLocations> getMapEncounters(MapInstance *mi)
 {
     std::vector<CritterSpawnLocations> encounters;

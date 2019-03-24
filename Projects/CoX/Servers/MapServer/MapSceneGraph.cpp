@@ -60,7 +60,7 @@ bool MapSceneGraph::loadFromFile(const QString &filename)
 
 glm::vec3 FindOrientation(glm::mat4 v)
 {
-    auto valquat = glm::quat_cast(v); //glm::quat_cast(v);
+    auto valquat = glm::quat_cast(v);
     glm::vec3 angles = glm::eulerAngles(valquat);
     angles.y += glm::pi<float>();
 
@@ -81,6 +81,8 @@ void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function
     }
 }
 
+// Should be safe to remove this?
+/*
 static QString getRandCostumeFromName(const QString &n)
 {
     QStringList matching_costumes;
@@ -105,6 +107,7 @@ static QString getRandCostumeFromName(const QString &n)
     int rand_idx = rand() % matching_costumes.size();
     return matching_costumes[rand_idx];
 }
+*/
 
 static bool checkCostumeExists(const QString &n)
 {
@@ -282,7 +285,7 @@ struct NpcCreator
             return true;
 
         checkPersistent(n,v);           // locates persistent NPCs; exposes to Lua
-        checkCanSpawns(n,v);            // locates encounters with CanSpawn/Spawndef; exposed to Lua
+        checkCanSpawns(n,v);            // locates encounters with CanSpawn/Spawndef; exposes to Lua
         checkGenerators(n,v);           // locates and spawns doors, monos, trains; exposes cars, npcs to Lua
         return true;
     }

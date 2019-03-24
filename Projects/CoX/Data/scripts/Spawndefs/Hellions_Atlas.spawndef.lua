@@ -191,15 +191,6 @@ Vandalism_Thugs_L8_10_V1 = {
         },
 }
 
-Vandalism_Thugs_L8_10_V1 = {
-        ["Markers"] = {
-            ["Encounter_S_30"] = Hellion_Ranks_01.Minions,
-            ["Encounter_E_01"] = Hellion_Ranks_01.Minions,             
-            ["Encounter_E_02"] = Hellion_Ranks_01.Minions,
-            ["Encounter_E_05"] = Hellion_Ranks_01.Minions,                        
-        },
-}
-
 BreakingIn_Thugs_L2_5_V0 = {
         ["Markers"] = {
             ["Encounter_S_30"] = Hellion_Ranks_01.Minions,

@@ -12,6 +12,8 @@
 #include <QtCore/QHash>
 #include <vector>
 
+// Move SpawnerNode to MapSceneGraph and remove spawn_definitions.cpp/.h?
+// CritterGenerator.cpp/.h now also obselete?
 class SpawnerNode
 {
     public:
