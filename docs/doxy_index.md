@@ -14,4 +14,4 @@ physics, and more.
 - [IRC](irc://irc.segs.io/segs)
 - [Main](http://www.segs.io/)
 - [Twitter](https://twitter.com/segscode)
-- [Wiki](https://github.com/Segs/Segs/wiki
+- [Wiki](https://github.com/Segs/Segs/wiki)
