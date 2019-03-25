@@ -25,7 +25,8 @@ function spinPersists()
         PersModel = GetPersistentModel(PersName)
         PersPos = MapInstance.GetPersistentPosition(i-1)
         PersRot = MapInstance.GetPersistentRotation(i-1)
-        spawnCivilian(PersModel, PersPos, PersRot)
+        local newID = spawnCivilian(PersModel, PersPos, PersRot)
+        --print("Persistent ID: " .. tostring(newID))
         --print("PERS: " .. tostring(PersName) .. " at " .. round(PersPos.x) .. " " .. round(PersPos.y) .. " " .. round(PersPos.z))
         ::done::
     end  
@@ -73,6 +74,8 @@ function spinSpawners()
         local EncName = MapInstance.GetSpawnerName(i-1)
         MapEncPool[i].EncounterName = EncName
         MapEncPool[i].Markers = {}
+        MapEncPool[i].MyCritters = {}           --must initialize this here
+        MapEncPool[i].PanicInitiators = {}      --must initialize this here
 
         local validateSpawnDef = IsSpawnDef(EncName)
         if validateSpawnDef ~= nil and validateSpawnDef == true then        
@@ -112,7 +115,7 @@ function InitiateKillPersists()
         local curState = MapEncPool[i]:GetState()
 
         if (Base + Adj) >= 100 
-        and (curState == "STATUS_RUNING_IDLE" or curState == "STATUS_SLEEPING") then
+        and (curState == "STATUS_RUNNING_IDLE" or curState == "STATUS_SLEEPING") then
             MapEncPool[i]:Spawn()
         end
     end
@@ -140,7 +143,7 @@ function RandomSpawn(total, type)
 
             local currentEnc = math.random(1, count)
             local curState = MapEncPool[currentEnc]:GetState()
-            if curState == "STATUS_RUNING_IDLE" or curState == "STATUS_SLEEPING" then
+            if curState == "STATUS_RUNNING_IDLE" or curState == "STATUS_SLEEPING" then
                 MapEncPool[currentEnc]:Spawn()
                 spawned = spawned + 1
             end
@@ -197,6 +200,15 @@ function RandomSpawn(total, type)
     end
 
     return spawned
+end
+
+--use override to also despawn 100% spawn probability critters
+function DespawnMapEncounters(override)
+
+    for i = 1, #MapEncPool do
+        MapEncPool[i]:Despawn(override)
+    end
+
 end
 
 --Returns the distance between supplied vectors; floor, ceil and unaltered distance

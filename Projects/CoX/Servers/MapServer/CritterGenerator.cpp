@@ -39,7 +39,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
             glm::vec3 rotation = encounter_location.m_rotation;
 
             //spawn enemy
-            addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
+            //addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
             ++count;
         }
         else if(encounter_location.m_name.contains("encounter_v_", Qt::CaseInsensitive) && !m_victim_spawned)
@@ -70,7 +70,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
             glm::vec3 pos = encounter_location.m_relative_position;
             glm::vec3 rotation = encounter_location.m_rotation;
             //spawn enemy
-            addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
+            //addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
             ++count;
         }
 

@@ -135,7 +135,7 @@ void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
 // Access Level 2[GM] Commands
-void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess);
+uint cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess);
 
 // Access Level 1 Commands
@@ -1392,7 +1392,7 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 2 Commands
-void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
+uint cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     int variation = 0;
@@ -1418,13 +1418,13 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
-        return;
+        return 0;
     }
 
     QString name = parts[1].toString();
     glm::vec3 offset = glm::vec3 {2,0,1};
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos + offset;
-    addNpc(sess, name, gm_loc, variation, name);
+    return addNpc(sess, name, gm_loc, variation, name);
 }
 
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)

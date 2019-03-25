@@ -117,9 +117,9 @@ void increaseLevel(Entity &ent);
 /*
  * Lua Functions
  */
-void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name);
-void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
-void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+uint addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name);
+uint addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+uint addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
 void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);
 void giveEnd(MapClientSession &sess, float end);
@@ -151,5 +151,5 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment);
 void addHideAndSeekResult(MapClientSession &cl, int points);
 
 // Spawning related
-void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
-void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+uint addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
+uint addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);

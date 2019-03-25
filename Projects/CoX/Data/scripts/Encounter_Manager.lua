@@ -21,19 +21,19 @@ local STATUS_INVALID = 1000
 
 --Several of these values should be drawn from a config file.
 EncounterManager = {
-        ["Critters"] = {},                      --list of spawned critters
+        ["MyCritters"] = {},                    --list of spawned critters; initiatlize at EM creation
         ["Position"] = vec3.new(0, 0, 0),
-        ["StatusCurrent"] = STATUS_SLEEPING,
-        ["StatusPrevious"] = STATUS_SLEEPING,
+        ["StatusCurrent"] = STATUS_RUNNING_IDLE,
+        ["StatusPrevious"] = STATUS_RUNNING_IDLE,
         ["EncounterIsActive"] = false,
         ["PollingIntervalBase"] = 60.0,
         ["PollingIntervalAdj"] = 0,
         ["PanicDuration"] = 90.0,
-        ["PanicInitiators"] = {},               --player or team|players
+        ["PanicInitiators"] = {},               --player or team|players inciting panic (encounter aggrolist)
         ["SpawnProbabilityBase"] = 80,
         ["SpawnProbabilityAdj"] = 0,
-        ["EncounterName"] = "",
-        ["Markers"] = {}
+        ["EncounterName"] = "",                 --encounter spawner name; used for OL lookups
+        ["Markers"] = {}                        --spawnable markers for this encounter
 }
 
 function EncounterManager:new (o)
@@ -64,8 +64,13 @@ end
         and other activities.
 ]]
 EncounterManager.CountCritters = function (self)
-        local Counter = #self.Critters or 0
+        local Counter = #self.MyCritters or 0
         return Counter
+end
+
+EncounterManager.AddCritterID = function (self, critterID)
+        table.insert(self.MyCritters, critterID)
+        return self:CountCritters()
 end
 
 --Handles state changes for the EM
@@ -77,7 +82,7 @@ EncounterManager.SetState = function (self, status)
         self.StatusCurrent = status
 
         if status == STATUS_SLEEPING then
-              --Do nothing for now
+              self.EncounterIsActive = false
         elseif status == STATUS_RUNNING_IDLE then
               self.EncounterIsActive = false
         elseif status == STATUS_RUNNING_ACTIVE then
@@ -87,8 +92,8 @@ EncounterManager.SetState = function (self, status)
               --Panic Initiators need to be handled somewhere but likely not here.
               --Probably withhin whatever called this status change
         elseif status == STATUS_RUNNING_DESPAWN then
-              --Start despawn sequence
-              --That sequence should set status to idle or sleep when complete
+              --Indicates despawn has begun
+              --Nothing else required at the moment
         end
 end
 
@@ -99,8 +104,8 @@ EncounterManager.GetState = function (self)
 
         if status == STATUS_SLEEPING then
                 return "STATUS_SLEEPING"
-        elseif status == STATUS_RUNING_IDLE then
-                return "STATUS_RUNING_IDLE"
+        elseif status == STATUS_RUNNING_IDLE then
+                return "STATUS_RUNNING_IDLE"
         elseif status == STATUS_RUNNING_ACTIVE then
                 return "STATUS_RUNNING_ACTIVE"
         elseif status == STATUS_RUNNING_PANIC then
@@ -160,7 +165,9 @@ EncounterManager.Spawn = function (self)
                 local Variant = {}
                 Variant = GetVariant(Encounter, SquadCount)
                 --Step through the template's markers and critters
+                local Counter = 0
                 for Tmarker, Tcritter in pairs(Variant["Markers"]) do
+                        Counter = Counter + 1
                         --try to find a marker to match the Tmarker
                         local count = #self.Markers
                         local EncPos
@@ -201,10 +208,10 @@ EncounterManager.Spawn = function (self)
                                 print(tostring(Encounter) .. " Invalid spawn entity detected. Exiting.")
                                 return ""
                         end
-
-                        --We'll need this to return the spawned critter's ID
-                        --to store in Critters{} so it/they can be properly despawned later as needed.
-                        spawnCritter(SpawnEntity, EncPos, EncRot)
+                        --Store in Critters{} so it/they can be properly despawned later as needed.
+                        local newID = spawnCritter(SpawnEntity, EncPos, EncRot)
+                        self.MyCritters[Counter] = newID
+                        --print("My critter count (" .. self.EncounterName .. ") " .. self:AddCritter(newID))
                 end
                 self:SetState(STATUS_RUNNING_ACTIVE)    --This encounter is now alive
         end
@@ -213,8 +220,27 @@ EncounterManager.Spawn = function (self)
 end
 
 --Removes owned encounter from the world
-EncounterManager.Despawn = function (self)
-        --nothing yet!
+--If override is true, even a 100% SP critter will despawn
+EncounterManager.Despawn = function (self, override)
+        local base, adj = self:GetSpawnProbability()
+
+        if override == true or (base + adj) < 100 then
+                self:SetState(STATUS_RUNNING_DESPAWN)
+                local totCritters = #self.MyCritters
+                
+                if totCritters <= 0 then
+                        self:SetState(STATUS_RUNNING_IDLE)
+                        return ""       -- nothing to despawn
+                end
+
+                for i = 1, totCritters do
+                        MapInstance.RemoveNpc(self.MyCritters[i])
+                end
+                --reset the table
+                self.MyCritters = nil --Make sure we're cleared
+                self.MyCritters = {} --and ready for a new batch
+                self:SetState(STATUS_RUNNING_IDLE)
+        end        
 end
 
 --[[
@@ -228,14 +254,13 @@ function spawnCritter(critter, position, rotation, level, rank, costume)
         local Costume_variation = costume or 1
         local Security_level = level or 0
         local Critter_rank = rank or 0
-        MapInstance.AddEnemy(critter, position, rotation, Costume_variation, tostring(critter), Security_level, tostring(critter), Critter_rank)
-        return ""
+        return MapInstance.AddEnemy(critter, position, rotation, Costume_variation, tostring(critter), Security_level, tostring(critter), Critter_rank)
 end
 
 function spawnCivilian(critter, position, rotation, costume)
         local Costume_variation = costume or 1
         MapInstance.AddNpc(critter, position, rotation, Costume_variation, tostring(critter))
-        return ""
+        --return MapInstance.AddNpc(critter, position, rotation, Costume_variation, tostring(critter))
 end
 
 --Returns a table of subgroups found in supplied container group.
