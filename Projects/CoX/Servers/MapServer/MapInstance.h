@@ -27,6 +27,7 @@
 #include "GameServer/TradingService/TradingService.h"
 #include "GameServer/ZoneTransferService/ZoneTransferService.h"
 #include "GameServer/InteractionService/InteractionService.h"
+#include "GameServer/ChatService/ChatService.h"
 
 #include <map>
 #include <memory>
@@ -109,6 +110,7 @@ class MapInstance final : public EventProcessor
         LocationService                         m_location_service;
         TradingService                          m_trading_service;
         ZoneTransferService                     m_zone_transfer_service;
+        ChatService*                            m_chat_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -172,7 +174,6 @@ protected:
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
         void                    on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
-        void                    process_chat(Entity *sender, QString &msg_text);
 
         // DB -> Server messages
         void                    on_name_clash_check_result(SEGSEvents::WouldNameDuplicateResponse *ev);
@@ -210,8 +211,7 @@ protected:
 
         void on_target_chat_channel_selected(SEGSEvents::TargetChatChannelSelected *ev);
 
-        void on_emote_command(const QString &command, Entity *ent);
-
         // Service <--> MapInstance
         void on_service_to_client_response(std::unique_ptr<SEGSEvents::ServiceToClientData> data);
+        void on_chat_service_to_client_response(std::unique_ptr<SEGSEvents::ChatServiceToClientData> data);
 };

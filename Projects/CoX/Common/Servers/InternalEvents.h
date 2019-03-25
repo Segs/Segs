@@ -267,6 +267,49 @@ struct ScriptingServiceToClientData
     std::function<void(Entity&)> on_val_not_empty;
 };
 
+struct ChatServiceToClientData
+{
+    Entity* m_source;
+    std::vector<Entity*> m_targets;
+    QString m_message;
+    MessageChannel m_message_channel;
+
+    bool m_send_info_msg_to_self = false;
+    QString m_message_to_self = QString();
+    MessageChannel m_channel_for_self = MessageChannel::USER_ERROR;
+
+    // for sending to others, but not self
+    ChatServiceToClientData(Entity* source, std::vector<Entity*> targets, QString message, MessageChannel channel)
+    {
+        m_source = source;
+        m_targets = targets;
+        m_message = message;
+        m_message_channel = channel;
+    }
+
+    // for sending to self, but not others
+    ChatServiceToClientData(Entity* source, QString message, MessageChannel channel)
+    {
+        m_source = source;
+        m_send_info_msg_to_self = true;
+        m_message_to_self = message;
+        m_channel_for_self = channel;
+    }
+
+    // for sending to both self and others
+    ChatServiceToClientData(Entity* source, std::vector<Entity*> targets, QString message, MessageChannel channel, QString messageToSelf, MessageChannel channelForSelf)
+    {
+        m_source = source;
+        m_targets = targets;
+        m_message = message;
+        m_message_channel = channel;
+
+        m_send_info_msg_to_self = true;
+        m_message_to_self = messageToSelf;
+        m_channel_for_self = channelForSelf;
+    }
+};
+
 struct ServiceToClientData
 {
     using GameCommandVector = std::vector<std::unique_ptr<GameCommandEvent>>;
