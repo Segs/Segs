@@ -15,6 +15,7 @@
 #include "Common/GameData/CharacterAttributes.h"
 #include "Common/GameData/PlayerStatistics.h"
 #include "Common/GameData/Task.h"
+#include "Common/GameData/PlayerProgress.h"
 
 #include "cereal/types/map.hpp"
 #include "cereal/types/string.hpp"
@@ -22,24 +23,7 @@
 #include "cereal/types/array.hpp"
 #include "cereal/types/bitset.hpp"
 
-
 #include <stdint.h>
-#include <bitset>
-
-struct PlayerProgress
-{
-    std::map<std::string, std::bitset<1024>>   m_visible_map_tiles;
-    std::bitset<1024> m_test;
-
-    template<class Archive>
-    void serialize(Archive &archive, uint32_t const version);
-};
-
-template<class Archive>
-void PlayerProgress::serialize(Archive &archive, uint32_t const version)
- {
-     archive(cereal::make_nvp("VisibleMapTiles", m_test));
- };
 
 // this part of the Entity is for Players only info
 struct PlayerData
