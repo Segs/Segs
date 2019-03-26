@@ -917,6 +917,24 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
     sendFloatingNumbers(*ent.m_client, tgt_idx, damage);
     setHP(*target_ent->m_char, getHP(*target_ent->m_char)-damage);
 
+
+    if(target_ent->m_type == EntType::CRITTER)
+    {
+        Aggro temp;
+        for (auto tempent = target_ent->m_aggro_list.begin();tempent != target_ent->m_aggro_list.end();)
+            if (tempent->name == ent.name())
+            {
+                temp = *tempent;
+                target_ent->m_aggro_list.erase(tempent);
+            }
+            else tempent++;
+
+        temp.name = ent.name();
+        temp.idx = ent.m_idx;
+        temp.damage += damage;
+        target_ent->m_aggro_list.push_front(temp);
+    }
+
     // If not a player, skip the rest
     if(target_ent->m_type != EntType::PLAYER)
         return;

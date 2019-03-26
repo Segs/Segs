@@ -88,6 +88,32 @@ void World::effectsStep(Entity *e,uint32_t msec)
 
 void World::checkPowerTimers(Entity *e, uint32_t msec)
 {
+    if(e->m_type == EntType::CRITTER)
+    {
+        if (rand() % 100 == 0)
+        {
+            if (e->m_aggro_list.size() > 0)
+            {
+                QString msg = " I'm harmless!";
+                if (e->m_npc->src_data->m_Powers.size() > 0)
+                {
+                    if (e->m_aggro_list[0].damage > 0)
+                    {
+                        msg = " I would attack " + e->m_aggro_list[0].name + " with "
+                                +e->m_npc->src_data->m_Powers[rand()%e->m_npc->src_data->m_Powers.size()].Power + " if I could!";
+                        e->m_aggro_list[0].damage -= 3;
+                    }
+                    else
+                    {
+                        msg = " I don't care about "+ e->m_aggro_list[0].name +" anymore.";
+                        e->m_aggro_list.pop_front();
+                    }
+                }
+                m_owner_instance->add_chat_message(e, msg);
+            }
+        }
+    }
+
     // for now we only run this on players
     if(e->m_type != EntType::PLAYER)
         return;

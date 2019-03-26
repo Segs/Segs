@@ -106,6 +106,14 @@ struct NPCData
     int costume_variant=0;
 };
 
+struct Aggro
+{
+    QString name;
+    uint32_t idx;
+    float damage    = 0.0;
+    bool    taunted = false;
+};
+
 struct NetFxTarget
 {
     bool        type_is_location = false;
@@ -171,6 +179,7 @@ public:
         int32_t             m_target_idx            = -1;
         int32_t             m_assist_target_idx     = -1;
 
+        std::deque<Aggro>           m_aggro_list;
         std::vector<Buffs>          m_buffs;
         QQueue<QueuedPowers>        m_queued_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
