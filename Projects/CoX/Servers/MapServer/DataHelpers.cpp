@@ -907,7 +907,7 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx,
         return;
 
     // calculate damage
-    float damage = 1.0f;
+    float damage = 9.1f;
 
     // Send message to source
     console_msg = floating_msg + " You hit " + target_ent->name() + " for " + QString::number(damage) + " damage!";
