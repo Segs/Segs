@@ -17,12 +17,6 @@
 #include "Common/GameData/Task.h"
 #include "Common/GameData/PlayerProgress.h"
 
-#include "cereal/types/map.hpp"
-#include "cereal/types/string.hpp"
-#include "cereal/types/vector.hpp"
-#include "cereal/types/array.hpp"
-#include "cereal/types/bitset.hpp"
-
 #include <stdint.h>
 
 // this part of the Entity is for Players only info

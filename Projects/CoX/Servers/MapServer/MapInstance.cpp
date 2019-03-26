@@ -66,7 +66,6 @@
 #include <QtCore/QDir>
 #include <random>
 #include <stdlib.h>
-#include <bitset>
 
 using namespace SEGSEvents;
 struct EntityIdxCompare;
