@@ -1,4 +1,4 @@
---This script is primarily used to load scenegraph data into EMs and handle mass spawning events
+--This script is primarily used to load scenegraph data into EMs and handle mass spawning/despawning events
 
 MapEncPool = {}         -- used in place of a currently non-existent zone manager
 
@@ -202,7 +202,9 @@ function RandomSpawn(total, type)
     return spawned
 end
 
---use override to also despawn 100% spawn probability critters
+--Use "override" to also despawn 100% spawn probability critters
+--This could be streamlined some to issue fewer despawn calls,
+--but for now it ensures the map is truly clean
 function DespawnMapEncounters(override)
 
     for i = 1, #MapEncPool do

@@ -121,6 +121,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Trial_05_01/entities.lua DEST
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Trial_05_01/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Trial_05_01)
 
 #Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/5th_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/5th_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/CircleOfThorns_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/CircleOfThorns_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
@@ -130,6 +131,8 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Clockwork_Kings.spa
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Clockwork_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Clockwork_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Contaminated_Outbreak.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Devouring_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Family_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Hellions_Atlas.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Hellions_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Hydramen_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
@@ -140,6 +143,7 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Rikti_Perez.spawnde
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Shady_Deal_Cop_Outbreak.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Skulls_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Skulls_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Tsoo_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Tsoo_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Vahzilok_Atlas.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Vahzilok_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)

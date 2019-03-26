@@ -1,3 +1,4 @@
+--REQUIRED INCLUDE--
 include_lua('ES_Library_Objects.lua')
 
 --Sends a server message
