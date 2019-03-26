@@ -14,7 +14,7 @@
 template <class T>
 struct HandleBasedStorage
 {
-    using HType          = HandleT<20, 12, T>;
+    using HType          = HandleT<T>;
     using InternalHandle = Handle<20, 12>;
     using container_type = std::vector<T>;
     using iterator       = typename container_type::iterator;
@@ -61,7 +61,7 @@ struct HandleBasedStorage
         static HandleBasedStorage instance;
         return instance;
     }
-    
+
 private:
     HandleBasedStorage()
     {
@@ -99,11 +99,11 @@ private:
     }
 };
 
-template <int idx_bits, int gen_bits, typename T>
-struct SingularStoreHandleT : public HandleT<idx_bits, gen_bits,T>
+template <typename T,int idx_bits=20, int gen_bits=12>
+struct SingularStoreHandleT : public HandleT<T,idx_bits, gen_bits>
 {
     using Type = T;
-    using super = HandleT<idx_bits, gen_bits,T>;
+    using super = HandleT<T,idx_bits, gen_bits>;
     using super::super;
     // allow initializing SingularStorage handles from underlying type
     constexpr SingularStoreHandleT(super from) : super(from) {}

@@ -19,6 +19,7 @@
 #include "MapServer.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/CoHMath.h"
+#include "NetFxHelpers.h"
 #include "DataHelpers.h"
 #include "Logging.h"
 
@@ -207,8 +208,9 @@ void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 void sendNetFx(const Entity &src, BitStream &bs)
 {
     bs.StorePackedBits(1, src.m_net_fx.size()); // num fx
-    for(const NetFx &fx : src.m_net_fx)
+    for(NetFxHandle fxh : src.m_net_fx)
     {
+        const NetFx &fx(lookup(fxh));
         // refactor as fx.serializeto() ?
         bs.StoreBits(8, fx.command); // command
         bs.StoreBits(32, fx.net_id); // NetID
@@ -224,9 +226,9 @@ void sendNetFx(const Entity &src, BitStream &bs)
         storeBitsConditional(bs, 2, fx.origin.type_is_location); // origiType
         if(fx.origin.type_is_location)
         {
-            bs.StoreFloat(fx.target.pos.x); // origin Pos
-            bs.StoreFloat(fx.target.pos.y);
-            bs.StoreFloat(fx.target.pos.z);
+            bs.StoreFloat(fx.origin.pos.x); // origin Pos
+            bs.StoreFloat(fx.origin.pos.y);
+            bs.StoreFloat(fx.origin.pos.z);
         }
         else
         {

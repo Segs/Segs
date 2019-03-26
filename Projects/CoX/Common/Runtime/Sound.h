@@ -25,7 +25,7 @@ struct SoundInfo
     uint16_t flags;
     uint8_t vol=0; // sound source volume 0-255
 };
-using HSound = SingularStoreHandleT<20,12,SoundInfo>;
+using HSound = SingularStoreHandleT<SoundInfo>;
 using SoundStorage = HandleBasedStorage<SoundInfo>;
 
 }

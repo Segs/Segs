@@ -477,7 +477,7 @@ struct SeqMoveRawData
 struct SeqTypeAnimation
 {
     SeqMoveTypeData *m_template;
-    HandleT<20,12,struct AnimTrack>  m_anm_track;
+    HandleT<struct AnimTrack>  m_anm_track;
 };
 
 struct SeqMoveData

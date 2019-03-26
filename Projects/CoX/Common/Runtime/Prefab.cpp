@@ -175,3 +175,4 @@ void PrefabStore::sceneGraphWasReset()
     for(auto & v : m_dir_to_geoset)
         v.loaded = false;
 }
+

@@ -129,6 +129,7 @@ struct NetFx
     NetFxTarget target;
     NetFxTarget origin;
 };
+using NetFxHandle = HandleT<struct NetFx>;
 
 
 class Entity
@@ -179,7 +180,7 @@ public:
 
 
         // Animations: Sequencers, NetFx, and TriggeredMoves
-        std::vector<NetFx>  m_net_fx;
+        std::vector<NetFxHandle>  m_net_fx;
         std::vector<TriggeredMove> m_triggered_moves;
         SeqBitSet           m_seq_state;                    // Should be part of SeqState
         ClientStates        m_state_mode            = ClientStates::SIMPLE;

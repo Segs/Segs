@@ -24,7 +24,7 @@ struct Handle
     operator bool() const { return gen != 0; }
 };
 
-template <int idx_bits, int gen_bits, typename T>
+template <typename T,int idx_bits=20, int gen_bits=12>
 struct HandleT : public Handle<idx_bits, gen_bits>
 {
     using Type = T;

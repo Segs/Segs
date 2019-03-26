@@ -90,6 +90,7 @@ public:
         const Parse_PowerSet&       get_powerset(uint32_t pcat_idx, uint32_t pset_idx);
         const Power_Data&           get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
         Power_Data*                 editable_power_tpl(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
+        int                         net_fx_handle(const QString &name);
 
         // auto-AFK and logout settings, auto-AFK is mandatory, server can choose between auto-logout or not
         float                       m_time_to_afk = 5 * 60;     // default afk time is 5 mins (300 secs)
