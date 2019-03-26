@@ -16,7 +16,7 @@ class Entity;
 
 using NetFxHandle = HandleT<NetFx>;
 
-NetFxHandle create(const QString &fx_name);
+NetFxHandle createNetFx(const QString &fx_name);
 void release(NetFxHandle handle);
 NetFx &lookup(NetFxHandle handle);
 void setSourceLocation(NetFxHandle h,glm::vec3 loc);
