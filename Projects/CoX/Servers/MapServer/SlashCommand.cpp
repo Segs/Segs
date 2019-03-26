@@ -74,6 +74,7 @@ void cmdHandler_SetJumpHeight(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetEnd(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetXP(const QString &cmd, MapClientSession &sess);
+void cmdHandler_GiveXP(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetDebt(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetInf(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess);
@@ -199,6 +200,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setHP"},"Set the HP value of your character", cmdHandler_SetHP, 9},
     {{"setEnd"},"Set your Endurance", cmdHandler_SetEnd, 9},
     {{"setXP"},"Set your XP", cmdHandler_SetXP, 9},
+    {{"giveXP"},"Give yourself XP", cmdHandler_GiveXP, 9},
     {{"setDebt"},"Set your Debt", cmdHandler_SetDebt, 9},
     {{"setInf"},"Set your Influence", cmdHandler_SetInf, 9},
     {{"setLevel"},"Set your Level", cmdHandler_SetLevel, 9},
@@ -547,6 +549,22 @@ void cmdHandler_SetXP(const QString &cmd, MapClientSession &sess)
     uint32_t newlvl = getLevel(*sess.m_ent->m_char);
     if(lvl != newlvl)
         msg += " and LVL to " + QString::number(newlvl);
+
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_GiveXP(const QString &cmd, MapClientSession &sess)
+{
+    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t lvl = getLevel(*sess.m_ent->m_char);
+
+    giveXp(sess, attrib);
+    QString msg = "Giving " + QString::number(attrib) + " XP";
+
+    uint32_t newlvl = getLevel(*sess.m_ent->m_char);
+    if(lvl != newlvl)
+        msg += " and setting LVL to " + QString::number(newlvl);
 
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);

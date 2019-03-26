@@ -9,7 +9,6 @@
  * @addtogroup GameData Projects/CoX/Common/GameData
  * @{
  */
-#pragma once
 
 #include "shop_serializers.h"
 #include "serialization_common.h"
