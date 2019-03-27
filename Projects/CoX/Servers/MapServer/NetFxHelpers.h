@@ -23,4 +23,4 @@ void setSourceLocation(NetFxHandle h,glm::vec3 loc);
 void setSourceEntityAndBone(NetFxHandle h,int entidx,uint8_t boneidx);
 void setTargetLocation(NetFxHandle h,glm::vec3 loc);
 
-void attachToEntity(Entity *tgt,NetFxHandle h);
+void attachToEntity(NetFxHandle h, Entity *tgt);

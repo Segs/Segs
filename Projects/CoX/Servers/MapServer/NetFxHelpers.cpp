@@ -8,7 +8,7 @@ using NetFxStore = HandleBasedStorage<NetFx>;
 //TODO: for now we assume that attached NetFx has been sent
 
 //"FX/WORLD/CITY/STREETSTEAM01.FX"
-NetFxHandle create(const QString &fx_name)
+NetFxHandle createNetFx(const QString &fx_name)
 {
     GameDataStore &gd(getGameData());
 
@@ -25,7 +25,7 @@ NetFxHandle create(const QString &fx_name)
 
     return res;
 }
-void attachToEntity(Entity *tgt, NetFxHandle h)
+void attachToEntity(NetFxHandle h,Entity *tgt)
 {
     NetFx &fx(lookup(h));
     fx.net_id = h.idx;
