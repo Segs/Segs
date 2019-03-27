@@ -379,7 +379,6 @@ void sendFloatingNumbers(MapClientSession &sess, uint32_t tgt_idx, int32_t amoun
 
 void sendVisitMapCells(MapClientSession &sess, bool is_opaque, std::array<bool, 1024> visible_map_cells)
 {
-    // qCDebug();
     sess.addCommand<VisitMapCells>(is_opaque, visible_map_cells);
 }
 

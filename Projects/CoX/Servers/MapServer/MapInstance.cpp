@@ -2155,6 +2155,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         map_server->session_xfer_complete(session.link()->session_token());
     }
 
+    // TODO: Check map type to determine if is_opaque is true / false
     sendVisitMapCells(session, false, session.m_ent->m_player->m_player_progress.m_visible_map_cells[session.m_current_map->m_index]);
 
     // Call Lua Connected function.
