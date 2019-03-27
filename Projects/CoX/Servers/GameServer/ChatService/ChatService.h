@@ -8,15 +8,12 @@
 #pragma once
 
 #include "Common/Servers/InternalEvents.h"
-#include "Servers/MapServer/ScriptingEngine.h"
 #include "Servers/MapServer/EntityStorage.h"
 
 // The ChatService handles chats, emotes...
 class ChatService
 {
 private:
-    using GameCommandVector = std::vector<std::unique_ptr<SEGSEvents::GameCommandEvent>>;
-    using ScriptVector = std::vector<SEGSEvents::ScriptingServiceToClientData*>;
     EntityManager& ref_entity_mgr;
 
     QString process_random_boombox_emote();

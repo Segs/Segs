@@ -19,9 +19,6 @@ std::unique_ptr<ServiceToClientData> LocationService::on_location_visited(Entity
     LocationVisited* casted_ev = static_cast<LocationVisited *>(ev);
     qCDebug(logMapEvents()) << "Attempting a call to script location_visited with:"<<casted_ev->m_name<<qHash(casted_ev->m_name);
 
-    //auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited", qPrintable(casted_ev->m_name), casted_ev->m_pos);
-    // sendInfoMessage(MessageChannel::DEBUG_INFO,qPrintable(casted_ev->m_name),session);
-
     qCWarning(logMapEvents) << "Unhandled location visited casted_event:" << casted_ev->m_name <<
                   QString("(%1,%2,%3)").arg(casted_ev->m_pos.x).arg(casted_ev->m_pos.y).arg(casted_ev->m_pos.z);
 
@@ -40,7 +37,6 @@ std::unique_ptr<ServiceToClientData> LocationService::on_plaque_visited(Entity* 
     PlaqueVisited* casted_ev = static_cast<PlaqueVisited *>(ev);
     qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<casted_ev->m_name<<qHash(casted_ev->m_name);
 
-    //auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited", qPrintable(casted_ev->m_name), casted_ev->m_pos);
     qCWarning(logMapEvents) << "Unhandled plaque visited casted_event:" << casted_ev->m_name <<
                   QString("(%1,%2,%3)").arg(casted_ev->m_pos.x).arg(casted_ev->m_pos.y).arg(casted_ev->m_pos.z);
 

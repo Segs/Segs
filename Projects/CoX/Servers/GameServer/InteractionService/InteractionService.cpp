@@ -43,7 +43,6 @@ std::unique_ptr<ServiceToClientData> InteractionService::on_entity_info_request(
 std::unique_ptr<ServiceToClientData> InteractionService::on_interact_with(Entity* ent, Event *ev)
 {
     InteractWithEntity* casted_ev = static_cast<InteractWithEntity *>(ev);
-    // Entity *entity = getEntity(ent->m_client, casted_ev->m_srv_idx);
 
     qCDebug(logMapEvents) << "Entity: " << ent->m_idx << "wants to interact with" << casted_ev->m_srv_idx;
     ScriptingServiceToClientData* scriptData = new ScriptingServiceToClientData();
@@ -174,7 +173,7 @@ std::unique_ptr<ServiceToClientData> InteractionService::on_souvenir_detail_requ
     {
         if(s.m_idx != (uint32_t)casted_ev->m_souvenir_idx)
             continue;
-\
+
         souvenir_detail = s;
         found = true;
         qCDebug(logScripts) << "SouvenirDetail Souvenir " << casted_ev->m_souvenir_idx << " found";

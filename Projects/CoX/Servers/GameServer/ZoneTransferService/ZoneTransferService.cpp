@@ -71,9 +71,6 @@ std::unique_ptr<ServiceToClientData> ZoneTransferService::on_map_swap_collision(
     }
 
     MapXferData map_transfer_data = m_owner_instance->get_map_transfers()[casted_ev->m_data.m_node_name];
-    //doesn't seem like we are using it atm
-    //Entity *e = getEntityByDBID(ent->m_client->m_current_map, casted_ev->m_data.m_ent_db_id);
-
     link->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name)));
 
     ClientMapXferMessage* clientMapXferMessage = new ClientMapXferMessage({link->session_token(), map_transfer_data}, 0);
@@ -142,7 +139,7 @@ std::unique_ptr<ServiceToClientData> ZoneTransferService::on_enter_door(MapServe
             QString anim_name = "RUNIN";
             glm::vec3 offset = casted_ev->location + glm::vec3 {0,0,2};
             sendDoorAnimStart(*ent->m_client, casted_ev->location, offset, true, anim_name);
-            // ent->m_client->m_current_map->setSpawnLocation(*session.m_ent, gotoSpawn);
+            ent->m_client->m_current_map->setSpawnLocation(*ent, gotoSpawn);
         }
     }
 

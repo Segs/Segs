@@ -22,7 +22,8 @@ void ClientOptionService::on_set_keybind(Entity* ent, Event *ev)
     ModKeys mod = static_cast<ModKeys>(casted_ev->mods);
 
     ent->m_player->m_keybinds.setKeybind(casted_ev->profile, key, mod, casted_ev->command, casted_ev->is_secondary);
-    //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
+    qCDebug(logMapEvents) << "Setting keybind: " << casted_ev->profile << QString::number(casted_ev->key)
+                          << QString::number(casted_ev->mods) << casted_ev->command << casted_ev->is_secondary;
 }
 
 
@@ -30,7 +31,7 @@ void ClientOptionService::on_remove_keybind(Entity* ent, Event *ev)
 {
     RemoveKeybind* casted_ev = static_cast<RemoveKeybind *>(ev);
     ent->m_player->m_keybinds.removeKeybind(casted_ev->profile,(KeyName &)casted_ev->key,(ModKeys &)casted_ev->mods);
-    //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
+    qCDebug(logMapEvents) << "Clearing Keybind: " << casted_ev->profile << QString::number(casted_ev->key) << QString::number(casted_ev->mods);
 }
 
 void ClientOptionService::on_reset_keybinds(Entity* ent, Event */*ev*/)
@@ -40,14 +41,14 @@ void ClientOptionService::on_reset_keybinds(Entity* ent, Event */*ev*/)
     const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
 
     ent->m_player->m_keybinds.resetKeybinds(default_profiles);
-    //qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
+    qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
 }
 
 void ClientOptionService::on_select_keybind_profile(Entity* ent, Event *ev)
 {
     SelectKeybindProfile* casted_ev = static_cast<SelectKeybindProfile *>(ev);
     ent->m_player->m_keybinds.setKeybindProfile(casted_ev->profile);
-    //qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
+    qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << casted_ev->profile;
 }
 
 void ClientOptionService::on_client_options(Entity* ent, Event* ev)
