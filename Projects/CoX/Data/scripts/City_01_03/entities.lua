@@ -7,6 +7,8 @@ function player_connected(id)
     --Id is player entity Id
     printDebug('player_connected Id: ' .. tostring(id))
 
+    Contacts.SpawnContacts('Galaxy City')
+
     if spawnOnce == false then
         --spinners gather location data
         spinSpawners()
@@ -14,7 +16,7 @@ function player_connected(id)
         spinCivilians()
         spinCars()
         RandomSpawn(0)       --There are no SpawnDefs set up here yet
-        RandomSpawn(325, "Civilians")
+        RandomSpawn(300, "Civilians")
         RandomSpawn(0, "Cars")
         spawnOnce = true
     end
@@ -26,7 +28,7 @@ function npc_added(id)
     printDebug('npc_added Id: ' .. tostring(id))
     Contacts.SpawnedContact(id)
     -- Spawn next contact
-    Contacts.SpawnContacts('Atlas Park')
+    Contacts.SpawnContacts('Galaxy City')
 
     return ''
 end

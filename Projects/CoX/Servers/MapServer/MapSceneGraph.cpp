@@ -81,34 +81,6 @@ void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function
     }
 }
 
-// Should be safe to remove this?
-/*
-static QString getRandCostumeFromName(const QString &n)
-{
-    QStringList matching_costumes;
-    const NPCStorage &npc_store(getGameData().getNPCDefinitions());
-    for(const Parse_NPC &npc : npc_store.m_all_npcs)
-    {
-        QString name(npc.m_Name);
-
-        // skip some odd cases
-        if(name.contains("blimp", Qt::CaseInsensitive))
-            continue;
-        if(name.contains("monorail", Qt::CaseInsensitive))
-            continue;
-
-        if(name.contains(n, Qt::CaseInsensitive))
-            matching_costumes.push_back(QString(npc.m_Name));
-    }
-
-    if(matching_costumes.isEmpty())
-        return "ChessKing";
-
-    int rand_idx = rand() % matching_costumes.size();
-    return matching_costumes[rand_idx];
-}
-*/
-
 static bool checkCostumeExists(const QString &n)
 {
     const NPCStorage &npc_store(getGameData().getNPCDefinitions());
@@ -132,6 +104,8 @@ QString getCostumeFromName(const QString &n)
         This will be moved into the vehicle-related Lua framework when managers
         are later created to deal with them.
     */
+    if(n.contains("NPCDrones", Qt::CaseInsensitive))
+            return "Police_Drone";  // Only handling drones lining sidewalk in Outbreak; will become obsolete.
     if(n.contains("MonorailGenerator", Qt::CaseInsensitive))
         return "Car_Monorail";
     if(n.contains("BlimpGenerator", Qt::CaseInsensitive))

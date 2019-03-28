@@ -7,16 +7,22 @@ function player_connected(id)
     --Id is player entity Id
     printDebug('player_connected Id: ' .. tostring(id))
 
+    Contacts.SpawnContacts('Kings Row')
+
     if spawnOnce == false then
         --spinners gather location data
         spinSpawners()
         spinPersists()
         spinCivilians()
         spinCars()
-        RandomSpawn(60)
-        RandomSpawn(65, "Civilians")
+        RandomSpawn(45)
+        RandomSpawn(80, "Civilians")
         RandomSpawn(35, "Cars")
         spawnOnce = true
+
+        print("Initiating map auto-refresh")
+        MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
+        TimeCopMode(true, 45, 90)
     end
 
     return  ''
@@ -26,7 +32,7 @@ function npc_added(id)
     printDebug('npc_added Id: ' .. tostring(id))
     Contacts.SpawnedContact(id)
     -- Spawn next contact
-    Contacts.SpawnContacts('Atlas Park')
+    Contacts.SpawnContacts('Kings Row')
 
     return ''
 end

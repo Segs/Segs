@@ -1,4 +1,4 @@
---- Dark Astoria
+--- King's Row
 
 local spawnOnce = false
 
@@ -7,11 +7,17 @@ function player_connected(id)
     --Id is player entity Id
     printDebug('player_connected Id: ' .. tostring(id))
 
+    Contacts.SpawnContacts('Dark Astoria')
+
     if spawnOnce == false then
+        --spinners gather location data
         spinSpawners()
-        spinPersists()
-        RandomSpawn(0)       --There are no SpawnDefs set up here yet
+        RandomSpawn(65)
         spawnOnce = true
+
+        print("Initiating map auto-refresh")
+        MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
+        TimeCopMode(true, 65, 90)
     end
 
     return  ''
@@ -21,7 +27,7 @@ function npc_added(id)
     printDebug('npc_added Id: ' .. tostring(id))
     Contacts.SpawnedContact(id)
     -- Spawn next contact
-    Contacts.SpawnContacts('Atlas Park')
+    Contacts.SpawnContacts('Dark Astoria')
 
     return ''
 end

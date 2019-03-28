@@ -3,7 +3,7 @@
 local spawnOnce = false
 
 entity_interact = function(id, location)
-
+    print("My ID is " .. id)
   return ""
 end
 
@@ -18,11 +18,14 @@ function player_connected(id)
     if spawnOnce == false then
         spinSpawners()
         spinPersists()
-        --Civilians and cars don't spawn in Outbreak, though they could ...
-        --spinCivilians()
-        --spinCars()
-        RandomSpawn(65)
+        --spinCivilians()       --This should load "walking" police drones for Outbreak instead of civies.
+        --spinCars()            --Cars shouldn't appear in Outbreak, but they could.
+        RandomSpawn(75)
         spawnOnce = true
+
+        print("Initiating map auto-refresh")
+        MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
+        TimeCopMode(true, 75, 90)        
     end
 
     return  ''
@@ -62,6 +65,4 @@ revive_ok = function(id)
 
     return "ok"
 end
-
-
 

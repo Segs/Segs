@@ -1,7 +1,4 @@
---REQUIRED INCLUDE--
-include_lua('ES_Library_Objects.lua')
-
---Sends a server message
+--Sends a server message; used for manual/human reporting
 function CallOut(message)
         MapClientSession.SendInfoMessage(13, tostring(message))
         return ""

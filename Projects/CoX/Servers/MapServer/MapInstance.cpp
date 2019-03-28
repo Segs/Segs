@@ -148,7 +148,7 @@ void MapInstance::start(const QString &scenegraph_path)
 
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);         // handles persistents, Spawndef, npc/vehicle encounters
-            m_npc_generators.generate(this);            // handles doors, monorails (?), trains(?)
+            m_npc_generators.generate(this);            // handles doors, monorails, trains
             m_all_spawners = m_map_scenegraph->getSpawnPoints();    // used for locating player spawn points
             }, "Spawning npcs");
 
@@ -198,6 +198,7 @@ void MapInstance::load_map_lua()
         "scripts/spawners.lua",                 // handles exposed Scenegraph data for all Lua-side managed spawning activity
 
         // per zone scripts
+        m_data_path+'/'+"ES_Library_Objects.lua",
         m_data_path+'/'+"contacts.lua",
         m_data_path+'/'+"locations.lua",
         m_data_path+'/'+"plaques.lua",

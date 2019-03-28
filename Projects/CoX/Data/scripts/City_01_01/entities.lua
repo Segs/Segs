@@ -17,11 +17,15 @@ function player_connected(id)
         spinCivilians()
         spinCars()
         --RandomSpawns attempt #x creations of the type (encounter is default)
-        RandomSpawn(55)
-        RandomSpawn(110, "Civilians")
-        RandomSpawn(20, "Cars")
-        spawnOnce = true        
-    end
+        RandomSpawn(45)
+        RandomSpawn(80, "Civilians")
+        RandomSpawn(30, "Cars")
+        spawnOnce = true
+
+        print("Initiating map auto-refresh")
+        MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
+        TimeCopMode(true, 45, 90)
+end
 
     return  ''
 end

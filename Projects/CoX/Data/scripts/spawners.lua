@@ -148,7 +148,7 @@ function RandomSpawn(total, type)
                 spawned = spawned + 1
             end
         end
-        print("Random Spawn generated " .. spawned .. " encounters.")        
+        --print("Random Spawn generated " .. spawned .. " encounters.")        
     
     elseif type == "Civilians" then
         spawned = 0
@@ -176,7 +176,7 @@ function RandomSpawn(total, type)
             spawned = spawned + 1
         end
 
-        print("Random Spawn generated " .. spawned .. " civilians.") 
+        --print("Random Spawn generated " .. spawned .. " civilians.") 
     elseif type == "Cars" then
         spawned = 0
         --Note: This may currently cause more than one civilian to spawn at the same location
@@ -196,7 +196,7 @@ function RandomSpawn(total, type)
             local CarToSpawn = math.random(1, #All_Cars)
             spawnCivilian(All_Cars[CarToSpawn], CurPos, CurRot)
         end        
-        print("Car Spawn generated " .. spawned .. " cars.") 
+        --print("Car Spawn generated " .. spawned .. " cars.") 
     end
 
     return spawned
@@ -211,26 +211,4 @@ function DespawnMapEncounters(override)
         MapEncPool[i]:Despawn(override)
     end
 
-end
-
---Returns the distance between supplied vectors; floor, ceil and unaltered distance
-function VectorDistance(v1, v2, type)
-    local calcX = v1.x - v2.x
-    local calcY = v1.y - v2.y
-    local calcZ = v1.z - v2.z
-
-    calcX = calcX * calcX
-    calcY = calcY * calcY
-    calcZ = calcZ * calcZ
-
-    local calcFinal = calcX + calcY + calcZ
-    calcFinal = math.sqrt(calcFinal)
-
-    if type == "floor" then
-        return math.floor(calcFinal)
-    elseif type == "ceil" or type == "ceiling" then
-        return math.ceil(calcFinal)
-    else 
-        return calcFinal
-    end
 end

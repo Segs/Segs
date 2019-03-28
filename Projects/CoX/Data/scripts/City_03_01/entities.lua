@@ -7,16 +7,22 @@ function player_connected(id)
     --Id is player entity Id
     printDebug('player_connected Id: ' .. tostring(id))
 
+    Contacts.SpawnContacts('Talos Island')
+
     if spawnOnce == false then
         --spinners gather location data
         spinSpawners()
         spinPersists()
         spinCivilians()
         spinCars()
-        --RandomSpawn(65)       --There are no SpawnDefs set up here yet
-        RandomSpawn(325, "Civilians")
-        RandomSpawn(65, "Cars")
+        RandomSpawn(55)
+        RandomSpawn(50, "Civilians")
+        RandomSpawn(20, "Cars")
         spawnOnce = true
+
+        print("Initiating map auto-refresh")
+        MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
+        TimeCopMode(true, 55, 120)  
     end
 
     return  ''
@@ -26,7 +32,7 @@ function npc_added(id)
     printDebug('npc_added Id: ' .. tostring(id))
     Contacts.SpawnedContact(id)
     -- Spawn next contact
-    Contacts.SpawnContacts('Atlas Park')
+    Contacts.SpawnContacts('Talos Island')
 
     return ''
 end
