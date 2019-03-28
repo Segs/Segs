@@ -10,6 +10,7 @@
 #include "Servers/InternalEvents.h"
 #include "Common/GameData/SuperGroup.h"
 #include "GameData/chardata_serializers.h"
+
 namespace SEGSEvents
 {
 

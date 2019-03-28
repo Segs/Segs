@@ -190,6 +190,8 @@ void GameDBSyncHandler::on_create_new_supergroup(CreateNewSuperGroupRequest * ev
     GameDbSyncContext &db_ctx(m_db_context.localData());
     CreateNewSuperGroupResponseData resp;
 
+    qDebug() << "GameDB on_create_new_supergroup" << ev->session_token();
+
     if(db_ctx.createNewSuperGroup(ev->m_data,resp))
         ev->src()->putq(new CreateNewSuperGroupResponse(std::move(resp),ev->session_token()));
     else

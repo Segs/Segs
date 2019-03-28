@@ -5,9 +5,7 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#ifndef EMAILHANDLER_H
-#define EMAILHANDLER_H
-
+#pragma once
 #include "EventProcessor.h"
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
@@ -83,5 +81,3 @@ public:
     void set_db_handler(uint8_t id);
     IMPL_ID(EmailHandler)
 };
-
-#endif // EMAILHANDLER_H

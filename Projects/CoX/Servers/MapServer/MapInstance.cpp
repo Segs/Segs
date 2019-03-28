@@ -384,18 +384,6 @@ void MapInstance::dispatch( Event *ev )
         case evGetEntityByNameResponse:
             on_entity_by_name_response(static_cast<GetEntityByNameResponse *>(ev));
             break;
-        case evCreateNewSuperGroupResponse:
-            on_supergroup_created(static_cast<CreateNewSuperGroupResponse *>(ev));
-            break;
-        case evGetSuperGroupResponse:
-            on_get_supergroup(static_cast<GetSuperGroupResponse *>(ev));
-            break;
-        case evSuperGroupNameDuplicateResponse:
-            on_supergroup_name_clash(static_cast<SuperGroupNameDuplicateResponse *>(ev));
-            break;
-        case evRemoveSuperGroupResponse:
-            on_remove_supergroup(static_cast<RemoveSuperGroupResponse *>(ev));
-            break;
         case evIdle:
             on_idle(static_cast<Idle *>(ev));
             break;
@@ -624,11 +612,11 @@ void MapInstance::dispatch( Event *ev )
         case evStoreSellItem:
             on_store_sell_item(static_cast<StoreSellItem *>(ev));
             break;
-    case evStoreBuyItem:
+        case evStoreBuyItem:
             on_store_buy_item(static_cast<StoreBuyItem *>(ev));
             break;
         default:
-            qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
+            qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes-1);
     }
 }
 
@@ -657,6 +645,7 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
                                     serialized_data, session.m_requested_slot_idx, session.m_name, getMapPath(map_xfer.m_target_map_name),
                                     session.m_max_slots},
                                     lnk->session_token(),this);
+
     map_server->putq(map_req);
 }
 
@@ -2138,7 +2127,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
 
         char buf[256];
-        std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
+        std::string welcome_msg = std::string("Welcome to ") + VersionInfo::getAuthVersion()+"\n";
         std::snprintf(buf, 256, "There are %zu active entities and %zu clients", m_entities.active_entities(),
                     m_session_store.num_sessions());
         welcome_msg += buf;
@@ -2926,6 +2915,14 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
                           << ev->data.m_sg_colors[1];
 
     Costume costume = *session.m_ent->m_char->getCurrentCostume();
+
+    // hacky way to test part numbers for sg costumes
+    //costume.m_num_parts = 15;
+    //for(int i = 0; i < 15; ++i)
+        //costume.m_parts.pop_back();
+
+    qCDebug(logSuperGroups) << "SG Costume Parts" << costume.m_parts.size();
+
     // Check to ensure name isn't already in use or restricted
     // Check to ensure titles aren't restricted (foul language, etc)
     // verifySuperGroupData();
@@ -2934,11 +2931,15 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
     if(ev->data.m_sg_name.contains("Success", Qt::CaseInsensitive))
         success = true;
 
-    session.m_ent->m_client->addCommand<SuperGroupResponse>(success, costume);
-    //session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
+    qDebug() << "Before: MapInstance on_create_supergroup" << session.m_session_token;
 
-    // Finalize adding SG to sg storage and entity to memberlist
-    addSuperGroup(*session.m_ent, ev->data);
+    session.m_ent->m_client->addCommand<SuperGroupResponse>(success, costume);
+    if(!success)
+        return;
+
+    //session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
+    addSuperGroup(*session.m_ent, ev->data); // Finalize adding SG to sg storage and entity to memberlist
+    qDebug() << "After: MapInstance on_create_supergroup" << session.m_session_token;
 
     // Finally, create SG in Database
     QString serialized_sg_data, serialized_sg_members;
@@ -2971,10 +2972,7 @@ void MapInstance::on_supergroup_mode(SuperGroupMode *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received SuperGroup Mode";
 
-    if(toggleSGMode(*session.m_ent))
-        qCDebug(logSuperGroups) << "Entering SG Mode";
-
-    qCDebug(logSuperGroups) << "Leaving SG Mode";
+    toggleSGMode(*session.m_ent);
 }
 
 void MapInstance::on_lua_update()
@@ -3113,6 +3111,8 @@ void MapInstance::on_supergroup_created(CreateNewSuperGroupResponse *ev)
     MapClientSession &sess(m_session_store.session_from_event(ev));
     Entity *ent = sess.m_ent;
 
+    qDebug() << "MapInstance on_supergroup_created" << sess.m_session_token;
+
     SuperGroup *sg = &g_all_supergroups.at(ev->m_data.m_sg_db_id);
     sg->m_sg_db_id = ev->m_data.m_sg_db_id;
     ent->m_char->m_char_data.m_supergroup.m_sg_db_id = ev->m_data.m_sg_db_id;
@@ -3121,7 +3121,7 @@ void MapInstance::on_supergroup_created(CreateNewSuperGroupResponse *ev)
 void MapInstance::on_get_supergroup(GetSuperGroupResponse *ev)
 {
     MapClientSession &sess(m_session_store.session_from_event(ev));
-    Entity *ent = sess.m_ent;
+    //Entity *ent = sess.m_ent;
 
     SuperGroup sg;
     sg.m_sg_db_id = ev->m_data.m_sg_id;

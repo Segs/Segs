@@ -27,7 +27,7 @@ namespace SEGSEvents
         {}
         void serializeto(BitStream &bs) const override
         {
-            bs.StorePackedBits(1,type()-evFirstServerToClient);
+            bs.StorePackedBits(1,type()-evFirstServerToClient); // pkt 55
             bs.StoreFloat(m_loc.x);
             bs.StoreFloat(m_loc.y);
             bs.StoreFloat(m_loc.z);

@@ -19,6 +19,9 @@
 #include "Logging.h"
 #include "TimeHelpers.h"
 
+#include "serialization_common.h"
+#include "serialization_types.h"
+
 
 // global variable -- a supergroup service is probably better
 std::vector<SuperGroup> g_all_supergroups;
@@ -26,12 +29,64 @@ std::vector<SuperGroup> g_all_supergroups;
 static const uint32_t s_max_sg_size = 75;  // max is 75 in I1 client, later raised to 150
 
 
+template<class Archive>
+void SuperGroupData::serialize(Archive &archive, uint32_t const version)
+{
+    if(version != SuperGroupData::class_version)
+    {
+        qCritical() << "Failed to serialize SuperGroupData, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("SgDbId", m_sg_db_id));
+    archive(cereal::make_nvp("SgName", m_sg_name));
+    archive(cereal::make_nvp("SgCreatedDate", m_sg_created_date));
+    archive(cereal::make_nvp("SgMotto", m_sg_motto));
+    archive(cereal::make_nvp("SgMotd", m_sg_motd));
+    archive(cereal::make_nvp("SgEmblem", m_sg_emblem));
+    archive(cereal::make_nvp("SgColors", m_sg_colors));
+    archive(cereal::make_nvp("SgTitles", m_sg_titles));
+    archive(cereal::make_nvp("SgLeaderID", m_sg_leader_db_id));
+}
+
+CEREAL_CLASS_VERSION(SuperGroupData, SuperGroupData::class_version) // register SuperGroupData class version
+SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(SuperGroupData)
+
+template<class Archive>
+void SuperGroupStats::serialize(Archive &archive, uint32_t const version)
+{
+    if(version != SuperGroupStats::class_version)
+    {
+        qCritical() << "Failed to serialize SuperGroupStats, incompatible serialization format version " << version;
+        return;
+    }
+
+    archive(cereal::make_nvp("SgHasSuperGroup", m_has_supergroup));
+    archive(cereal::make_nvp("SgDbId", m_sg_db_id));
+    archive(cereal::make_nvp("SgRank", m_rank));
+    archive(cereal::make_nvp("SgHasCostume", m_has_sg_costume));
+    archive(cereal::make_nvp("SgMode", m_sg_mode));
+    archive(cereal::make_nvp("SgCostume", m_sg_costume));
+    archive(cereal::make_nvp("SgMemberDbId", m_member_db_id));
+    archive(cereal::make_nvp("SgDateJoined", m_date_joined));
+    archive(cereal::make_nvp("SgHoursLogged", m_hours_logged));
+    archive(cereal::make_nvp("SgLastOnline", m_last_online));
+    archive(cereal::make_nvp("SgIsOnline", m_is_online));
+    archive(cereal::make_nvp("SgMemberName", m_name));
+    archive(cereal::make_nvp("SgName", m_sg_name));
+    archive(cereal::make_nvp("SgOriginIcon", m_origin_icon));
+    archive(cereal::make_nvp("SgClassIcon", m_class_icon));
+}
+
+CEREAL_CLASS_VERSION(SuperGroupStats, SuperGroupStats::class_version) // register SuperGroupData class version
+SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(SuperGroupStats)
+
 /*
  * SG Methods
  */
 uint32_t SuperGroup::m_sg_idx_counter = 0;
 
-void SuperGroup::addSGMember(Entity *e, int rank)
+void SuperGroup::addSGMember(Entity *e, SGRanks rank)
 {
     CharacterData *cd = &e->m_char->m_char_data;
 
@@ -141,7 +196,7 @@ bool SuperGroup::makeSGLeader(Entity &tgt)
         return false;
 
     m_data.m_sg_leader_db_id = tgt.m_db_id;
-    tgt_cd->m_supergroup.m_rank = 2;
+    tgt_cd->m_supergroup.m_rank = SGRanks::Leader;
 
     return true;
 }
@@ -167,7 +222,7 @@ SGResponse inviteSG(Entity &src, Entity &tgt)
         return response;
     }
 
-    if(src_sg->m_has_supergroup && src_sg->m_rank < 1)
+    if(src_sg->m_has_supergroup && src_sg->m_rank < SGRanks::Captain)
     {
         response.msgfrom = "You do not have high enough rank to invite players to the SuperGroup.";
         return response;
@@ -181,7 +236,7 @@ SGResponse inviteSG(Entity &src, Entity &tgt)
     response.msgfrom = "Inviting " + tgt.name() + " to SuperGroup.";
     response.msgtgt = src.name() + " has invited you to join their SuperGroup.";
 
-    sg->addSGMember(&tgt, 0);
+    sg->addSGMember(&tgt, SGRanks::Member);
     markSuperGroupForDbStore(sg, SuperGroupDbStoreFlags::Full);
     return response;
 }
@@ -196,7 +251,7 @@ QString kickSG(Entity &src, Entity &tgt)
     if(!tgt_sg->m_has_supergroup || !sameSG(src, tgt))
         return msg = tgt.name() + " is not in your SuperGroup.";
 
-    if(src_sg->m_rank < 1)
+    if(src_sg->m_rank < SGRanks::Captain)
         return msg = src.name() + " does not have authority to kick SuperGroup members.";
 
     SuperGroup * sg = getSuperGroupByIdx(tgt_sg->m_sg_db_id);
@@ -243,6 +298,7 @@ bool toggleSGMode(Entity &e)
         return false;
     }
 
+    qCDebug(logSuperGroups) << "Toggling SG Mode to" << cd->m_supergroup.m_sg_mode;
     cd->m_supergroup.m_sg_mode = !cd->m_supergroup.m_sg_mode;
 
     return cd->m_supergroup.m_sg_mode;
@@ -256,7 +312,7 @@ QString setSGMOTD(Entity &e, QString &motd)
     if(!sgs->m_has_supergroup)
         return msg = "You are not in a SuperGroup.";
 
-    if(sgs->m_rank < 1)
+    if(sgs->m_rank < SGRanks::Captain)
         return msg = "You do not have the authority to set the SuperGroup MOTD.";
 
     if(motd.isEmpty())
@@ -279,7 +335,7 @@ QString setSGMotto(Entity &e, QString &motto)
     if(!sgs->m_has_supergroup)
         return msg = "You are not in a SuperGroup.";
 
-    if(sgs->m_rank < 1)
+    if(sgs->m_rank < SGRanks::Captain)
         return msg = "You do not have the authority to set the SuperGroup Motto.";
 
     if(motto.isEmpty())
@@ -334,23 +390,23 @@ QString modifySGRank(Entity &src, Entity &tgt, int rank_mod)
     if(!tgt_sg->m_has_supergroup || !sameSG(src, tgt))
         return msg = tgt.name() + " is not in your SuperGroup.";
 
-    if(src_sg->m_rank < 2)
+    if(src_sg->m_rank < SGRanks::Leader)
         return msg = src.name() + " does not have authority to promote/demote SuperGroup members.";
 
     if(rank_mod == 0)
         return msg = "SuperGroup rank unmodified.";
 
-    if((tgt_sg->m_rank == 2 && rank_mod > 0) || (tgt_sg->m_rank == 0 && rank_mod < 0))
+    if((tgt_sg->m_rank == SGRanks::Leader && rank_mod > 0) || (tgt_sg->m_rank == SGRanks::Member && rank_mod < 0))
         return msg = tgt.name() + " cannot modify range outside of range 1 to 3.";
 
     SuperGroupStats *tgt_revised = getSGMember(tgt, src_sg->m_sg_db_id);
     if(tgt_revised == nullptr)
         return msg = "getSGMember returned nullptr for promoteSG";
 
-    uint32_t new_rank = tgt_sg->m_rank + rank_mod;
+    uint32_t new_rank = static_cast<uint32_t>(tgt_sg->m_rank) + rank_mod;
     new_rank = std::min(std::max(rank_mod,0),2); // if somehow we messed up, limit range from 1 to 3.
 
-    tgt_sg->m_rank = tgt_revised->m_rank = new_rank;
+    tgt_sg->m_rank = tgt_revised->m_rank = SGRanks(new_rank);
 
     SuperGroup * sg = getSuperGroupByIdx(tgt_sg->m_sg_db_id);
     if(sg == nullptr)
@@ -403,7 +459,7 @@ void addSuperGroup(Entity &e, SuperGroupData data)
     SuperGroup sg;
 
     sg.m_data = data;
-    sg.addSGMember(&e, 2);
+    sg.addSGMember(&e, SGRanks::Leader);
     g_all_supergroups.push_back(sg);
 
     if(logSuperGroups().isDebugEnabled())
@@ -411,7 +467,7 @@ void addSuperGroup(Entity &e, SuperGroupData data)
 
     cd->m_supergroup.m_sg_db_id         = sg.m_sg_db_id;
     cd->m_supergroup.m_has_supergroup   = true;
-    cd->m_supergroup.m_rank             = 2; // first member should be leader
+    cd->m_supergroup.m_rank             = SGRanks::Leader; // first member should be leader
     cd->m_supergroup.m_has_sg_costume   = true;
     cd->m_supergroup.m_sg_mode          = true;
     cd->m_supergroup.m_sg_costume       = *e.m_char->getCurrentCostume();
@@ -440,7 +496,7 @@ void SuperGroupStats::dump()
     QString msg = QString("SuperGroup Info\n  has_supergroup: %1 \n  db_id: %2 \n  rank: %3 ")
             .arg(m_has_supergroup)
             .arg(m_sg_db_id)
-            .arg(m_rank);
+            .arg(static_cast<uint32_t>(m_rank));
 
     qDebug().noquote() << msg;
 }

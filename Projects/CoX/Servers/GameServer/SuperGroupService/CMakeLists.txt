@@ -3,6 +3,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/SuperGroupHandler.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/SuperGroupHandler.h
+${CMAKE_CURRENT_SOURCE_DIR}/SuperGroupHandlerEvents.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

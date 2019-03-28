@@ -8,6 +8,7 @@
 #pragma once
 #include "GameCommand.h"
 #include "MapEventTypes.h"
+#include "Servers/InternalEvents.h"
 #include "Servers/MapServer/DataHelpers.h"
 #include "Logging.h"
 
@@ -33,7 +34,7 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 29
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 29
 
         bs.StoreBits(32,m_db_id);   // sg offeree db_id
         bs.StoreString(m_name);     // sg offerer name
@@ -60,7 +61,7 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 30
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 30
         bs.StoreBits(1, m_success);
 
         qCDebug(logSuperGroups) << "SuperGroupResponse" << m_success;
@@ -86,7 +87,7 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 31
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 31
         // send costume
         m_costume.serializeCostume(bs);
         qCDebug(logSuperGroups) << "SuperGroupCostume";
@@ -109,8 +110,8 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 31
-        bs.StoreString(m_unknown); // unknown
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 74
+        bs.StoreString(m_unknown); // unknown, possibly unused
         qCDebug(logSuperGroups) << "RegisterSuperGroup:" << m_unknown;
     }
 
@@ -126,7 +127,7 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 53
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 53
     }
     void    serializefrom(BitStream &bs)
     {
@@ -148,7 +149,7 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 57
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 57
     }
     void    serializefrom(BitStream &bs)
     {
@@ -177,7 +178,7 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 58
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 58
     }
     void    serializefrom(BitStream &bs)
     {
@@ -198,7 +199,7 @@ public:
     }
     void    serializeto(BitStream &bs) const override
     {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 59
+        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 59
     }
     void    serializefrom(BitStream &bs)
     {

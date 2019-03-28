@@ -46,6 +46,7 @@ enum GameDBEventTypes : uint32_t
     // select by name for char id
     evGetEntityByNameRequest,
     evGetEntityByNameResponse,
+
     // Supergroups
     evCreateNewSuperGroupRequest,
     evCreateNewSuperGroupResponse,

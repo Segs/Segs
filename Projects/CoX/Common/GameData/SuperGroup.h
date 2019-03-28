@@ -12,6 +12,13 @@
 class Entity;
 class SuperGroup;
 
+enum class SGRanks : uint32_t
+{
+    Member  = 0,
+    Captain = 1,
+    Leader  = 2,
+};
+
 struct SGResponse
 {
     bool        is_success = false;
@@ -21,29 +28,19 @@ struct SGResponse
 
 struct SuperGroupData
 {
-    uint32_t    m_sg_db_id;
+    enum : uint32_t { class_version = 1 };  // v1: Creation
+    QString     m_sg_titles[3];             // Eventually we'll need to support additional titles (I6+)
     QString     m_sg_name;                  // 64 chars max. Here for quick lookup.
     QString     m_sg_created_date;
     QString     m_sg_motto;
     QString     m_sg_motd;
     QString     m_sg_emblem;                // 128 chars max -> Emblem hash table key from the CostumeString_HTable.
     uint32_t    m_sg_colors[2] = {0};
-    QString     m_sg_titles[3];             // Eventually we'll need to support additional titles (I6+)
+    uint32_t    m_sg_db_id;
     uint32_t    m_sg_leader_db_id = 0;
 
     template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar(m_sg_db_id);
-        ar(m_sg_name);
-        ar(m_sg_created_date);
-        ar(m_sg_motto);
-        ar(m_sg_motd);
-        ar(m_sg_emblem);
-        ar(m_sg_colors);
-        ar(m_sg_titles);
-        ar(m_sg_leader_db_id);
-    }
+    void serialize(Archive &archive, uint32_t const version);
 };
 
 
@@ -52,10 +49,10 @@ struct SuperGroupData
  */
 struct SuperGroupStats
 {
-    static const constexpr  uint32_t        class_version   = 1;
+    enum : uint32_t { class_version = 1 };  // v1: Creation
     bool        m_has_supergroup    = false;
     uint32_t    m_sg_db_id          = 0;
-    uint32_t    m_rank              = 0; // This character's rank in the SG
+    SGRanks     m_rank              = SGRanks::Member; // This character's rank in the SG
     bool        m_has_sg_costume    = false; // player has a sg costume
     bool        m_sg_mode           = false; // player uses sg costume currently
     Costume     m_sg_costume;
@@ -72,24 +69,7 @@ struct SuperGroupStats
     QString     m_class_icon;
 
     template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar(m_has_supergroup);
-        ar(m_sg_db_id);
-        ar(m_rank);
-        ar(m_has_sg_costume);
-        ar(m_sg_mode);
-        ar(m_sg_costume);
-        ar(m_member_db_id);
-        ar(m_date_joined);
-        ar(m_hours_logged);
-        ar(m_last_online);
-        ar(m_is_online);
-        ar(m_name);
-        ar(m_sg_name);
-        ar(m_origin_icon);
-        ar(m_class_icon);
-    }
+    void serialize(Archive &archive, uint32_t const version);
 
     SuperGroup *getSuperGroup();
     void        dump();
@@ -116,7 +96,7 @@ virtual ~SuperGroup() = default;
         // Methods
         void        dump();
         void        listSGMembers();
-        void        addSGMember(Entity *e, int rank = 0);
+        void        addSGMember(Entity *e, SGRanks rank);
         void        removeSGMember(Entity *e);
         uint32_t    getSGLeaderDBID();
         bool        makeSGLeader(Entity &tgt);

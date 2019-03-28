@@ -9,11 +9,12 @@
 #include "EventProcessor.h"
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
-#include "Common/Servers/ClientManager.h"
+#include "GameDatabase/GameDBSyncHandler.h"
+//#include "Common/Servers/ClientManager.h"
 #include "Common/GameData/SuperGroup.h"
-#include <unordered_map>
-#include <set>
-#include <vector>
+//#include <unordered_map>
+//#include <set>
+//#include <vector>
 
 namespace SEGSEvents
 {
@@ -22,13 +23,19 @@ struct RemoveSuperGroupMessage;
 struct SGMemberConnectedMessage;
 struct SGMemberAddedMessage;
 struct SGMemberRemovedMessage;
+struct CreateNewSuperGroupResponse;
+struct GetSuperGroupResponse;
+struct SuperGroupNameDuplicateResponse;
+struct RemoveSuperGroupResponse;
+struct ClientConnectedMessage;
+struct ClientDisconnectedMessage;
 } // end of namespace SEGSEvents
 
 struct SuperGroupSessionData
 {
-    uint64_t session_token;
-    uint32_t server_id; //this is the owner ID aka game server id
-    uint32_t instance_id; //this is the template ID aka map instance id
+    uint64_t m_session_token;
+    uint32_t m_server_id; //this is the owner ID aka game server id
+    uint32_t m_instance_id; //this is the template ID aka map instance id
 };
 
 struct SuperGroupInfo
@@ -56,20 +63,32 @@ struct SuperGroupHandlerState
 
 class SuperGroupHandler : public EventProcessor
 {
-public:
-    IMPL_ID(SuperGroupHandler)
-
-    SuperGroupHandler(int for_game_server_id);
-    ~SuperGroupHandler() override;
-    void dispatch(SEGSEvents::Event *ev) override;
-
-    SuperGroupHandlerState m_state;
+private:
+    GameDBSyncHandler* m_db_handler;
 
     // EventProcessor interface
+    void dispatch(SEGSEvents::Event *ev) override;
+
+    void on_create_supergroup(SEGSEvents::CreateSuperGroupMessage* msg);
+    void on_remove_supergroup(SEGSEvents::RemoveSuperGroupMessage* msg);
+    void send_update_sg_roster(uint32_t sg_db_id);
+    void update_sg_roster(uint32_t sg_db_id);
+    void refresh_sg_roster(uint32_t sg_db_id);
+    void on_sgmember_added(SEGSEvents::SGMemberAddedMessage* msg);
+    void on_sgmember_removed(SEGSEvents::SGMemberRemovedMessage* msg);
+    void on_supergroup_created(SEGSEvents::CreateNewSuperGroupResponse* msg);
+    void on_get_supergroup(SEGSEvents::GetSuperGroupResponse* msg);
+    void on_supergroup_name_clash(SEGSEvents::SuperGroupNameDuplicateResponse* msg);
+    void on_remove_supergroup(SEGSEvents::RemoveSuperGroupResponse* msg);
+    void on_client_connected(SEGSEvents::ClientConnectedMessage* msg);
+    void on_client_disconnected(SEGSEvents::ClientDisconnectedMessage *msg);
 protected:
+    MessageBusEndpoint m_message_bus_endpoint;
     void serialize_from(std::istream &is) override;
     void serialize_to(std::ostream &is) override;
-protected:
-    // transient value.
-    MessageBusEndpoint m_message_bus_endpoint;
+    SuperGroupHandlerState m_state;
+public:
+    SuperGroupHandler(int for_game_server_id);
+    void set_db_handler(uint8_t id);
+    IMPL_ID(SuperGroupHandler)
 };

@@ -71,7 +71,7 @@ void setSuperGroup(Entity &e, bool has_sg, QString &sg_name)
     {
         cd->m_supergroup.m_has_supergroup = false;
         cd->m_supergroup.m_sg_db_id = 0;
-        cd->m_supergroup.m_rank = 0;
+        cd->m_supergroup.m_rank = SGRanks::Member;
         cd->m_supergroup.m_has_sg_costume = false;
         return;
     }

@@ -195,7 +195,7 @@ void storeSuperStats(BitStream &bs, CharacterData &self)
     {
         bs.StoreString(m.m_name);
         bs.StorePackedBits(1, m.m_member_db_id);
-        bs.StorePackedBits(1, m.m_rank);
+        bs.StorePackedBits(1, static_cast<uint32_t>(m.m_rank));
         bs.StorePackedBits(1, m.m_hours_logged);
         bs.StoreBits(32, m.m_date_joined);
         bs.StoreBits(32, m.m_last_online);
