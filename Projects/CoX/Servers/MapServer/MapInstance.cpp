@@ -2915,30 +2915,37 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
                           << ev->data.m_sg_colors[1];
 
     Costume costume = *session.m_ent->m_char->getCurrentCostume();
+    // TODO: makeSGCostume()
+    SuperGroupStats *sgs = &session.m_ent->m_char->m_char_data.m_supergroup;
+    if(!sgs->m_has_supergroup && !sgs->m_has_sg_costume)
+        return;
 
-    // hacky way to test part numbers for sg costumes
-    //costume.m_num_parts = 15;
-    //for(int i = 0; i < 15; ++i)
-        //costume.m_parts.pop_back();
+    sgs->m_has_sg_costume = true;
 
     qCDebug(logSuperGroups) << "SG Costume Parts" << costume.m_parts.size();
 
     // Check to ensure name isn't already in use or restricted
     // Check to ensure titles aren't restricted (foul language, etc)
-    // verifySuperGroupData();
-    // If everything checks out, then give success
+    // if(!verifySuperGroupData())
+    //     return;
+
+    // For now let's provide a means for testing
     bool success = false;
     if(ev->data.m_sg_name.contains("Success", Qt::CaseInsensitive))
         success = true;
 
     qDebug() << "Before: MapInstance on_create_supergroup" << session.m_session_token;
+    // this order of operations is important
+    if(success)
+        addSuperGroup(*session.m_ent, ev->data); // Finalize adding SG to sg storage and entity to memberlist
 
     session.m_ent->m_client->addCommand<SuperGroupResponse>(success, costume);
+    //session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
+
+    // if no success, we sent our error message already, so do nothing.
     if(!success)
         return;
 
-    //session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
-    addSuperGroup(*session.m_ent, ev->data); // Finalize adding SG to sg storage and entity to memberlist
     qDebug() << "After: MapInstance on_create_supergroup" << session.m_session_token;
 
     // Finally, create SG in Database

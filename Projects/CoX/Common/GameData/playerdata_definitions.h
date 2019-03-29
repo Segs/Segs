@@ -16,13 +16,13 @@
 #include "Common/GameData/PlayerStatistics.h"
 #include "Common/GameData/Task.h"
 
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
 #include <stdint.h>
 
 // this part of the Entity is for Players only info
 struct PlayerData
 {
-    enum : uint32_t {class_version   = 3};
+    enum : uint32_t { class_version   = 3 };
     GUISettings         m_gui;
     KeybindSettings     m_keybinds;
     ClientOptions       m_options;
