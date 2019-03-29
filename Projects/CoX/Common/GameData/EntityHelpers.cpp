@@ -196,14 +196,14 @@ bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum const &target)
         case StoredEntEnum::Enemy:
         case StoredEntEnum::Foe:
         case StoredEntEnum::NPC:                    // powers never target npcs, but just in case...
-            return (ent.m_is_villian ? target_ent.m_is_hero : target_ent.m_is_villian);    // if both are heroes, or both villians, not a valid foe
+            return (ent.m_is_villain ? target_ent.m_is_hero : target_ent.m_is_villain);    // if both are heroes, or both villains, not a valid foe
         case StoredEntEnum::DeadTeammate:
         case StoredEntEnum::Teammate:
         case StoredEntEnum::DeadOrAliveTeammate:    // will need to do a check for teams
         case StoredEntEnum::Friend:
         case StoredEntEnum::Player:
         case StoredEntEnum::DeadPlayer:
-            return (ent.m_is_hero ? target_ent.m_is_hero : target_ent.m_is_villian);       // both have to be heroes, or both villians
+            return (ent.m_is_hero ? target_ent.m_is_hero : target_ent.m_is_villain);       // both have to be heroes, or both villains
     }
     return false;       //default incase anything slips through
 }
@@ -357,7 +357,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_type                            = EntType::PLAYER; // 2
     e.m_create_player                   = true;
     e.m_is_hero                         = true;
-    e.m_is_villian                      = false;
+    e.m_is_villain                      = false;
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = {0};
     e.m_hasname                         = true;
@@ -400,7 +400,7 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_type                            = EntType::NPC; // 2
     e.m_create_player                   = false;
     e.m_is_hero                         = false;
-    e.m_is_villian                      = false; // only Critters are Villains
+    e.m_is_villain                      = false; // only Critters are Villains
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
     e.m_hasname                         = true;
@@ -446,7 +446,7 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_type                            = EntType::CRITTER;
     e.m_create_player                   = false;
     e.m_is_hero                         = false;
-    e.m_is_villian                      = true;
+    e.m_is_villain                      = true;
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
     e.m_hasname                         = true;

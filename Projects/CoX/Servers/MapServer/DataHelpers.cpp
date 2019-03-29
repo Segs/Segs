@@ -928,7 +928,7 @@ void doPower(Entity &ent, QueuedPowers powerinput)
 }
 /*
  * findAttrib checks to see if the power hits, reads the "pAttribMod" of a power, checking to see if the power doesn't always fire,
- * starts to apply some of the properties before firing off doEffect on valid targets.
+ * starts to apply some of the properties before firing off doAttrib on valid targets.
  */
 void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
 {
@@ -938,23 +938,8 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
         return;
     }
     QString from_msg;
-    Power_Data const powtpl = ppower->getPowerTemplate();
+    Power_Data powtpl = ppower->getPowerTemplate();
 
-    if(powtpl.pAttribMod.empty())                               //give the power an effect to either heal or hurt
-    {
-        GameDataStore &data(getGameData());
-        StoredAttribMod temp;
-        temp.Scale = (powtpl.RechargeTime +  powtpl.TimeToActivate)/5;      //this is an aproximation of what the damage scales should be
-        if(validTarget(*target_ent, ent, StoredEntEnum::Enemy))     //assume it is a damaging power
-            temp.name = "damage";
-        else
-            temp.name = "heal";                                     //something nice for allies
-        temp.Table = "0";                                           //use the melee_damage scaling
-        Power_Data & temppower = data.m_all_powers.m_categories.at(ppower->m_power_info.m_pcat_idx).m_PowerSets.at(ppower->m_power_info.m_pset_idx).m_Powers.at(ppower->m_power_info.m_pow_idx);
-        temppower.pAttribMod.push_back(temp);
-
-        qCDebug(logPowers) << temppower.m_Name << "power data not found, adding" << temp.name << "with a scale of" << temp.Scale;
-    }
     if (!validTargets(*target_ent, ent, powtpl.EntsAutoHit))//
         {
         //roll to hit
@@ -980,6 +965,8 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
 
         }
     }
+
+
     for(uint32_t i = 0; i<powtpl.pAttribMod.size(); i++)
     {
         if (rand()%100 > powtpl.pAttribMod[i].Chance )
@@ -1007,72 +994,100 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
             }
             else
             {
-                QString lower_name = powtpl.pAttribMod[i].name.toLower();
-
-                if (lower_name == "damage")
-                {
-                    GameDataStore &data(getGameData());
-                                                                                                //ModTable[0] is melee_damage
-                    scale *= data.m_player_classes[uint32_t(getEntityClassIndex(data, true, ent.m_char->m_char_data.m_class_name))].m_ModTable[powtpl.pAttribMod[i].Table.toUInt()].Values[ent.m_char->m_char_data.m_combat_level];
-                    if (powtpl.pAttribMod[i].AllowStrength)
-                        scale *= (1 + ent.m_char->m_char_data.m_current_attribs.m_DamageTypes[0]);
-
-                    //  if (powtpl.pAttribMod[i].AllowResistance)
-                    //      scale *= (1 - target_ent->m_char->m_char_data.m_current_attribs.m_resistances[powtpl.pAttribMod[i].Attrib]);
-                    changeHP(*target_ent, getHP(*target_ent->m_char)+scale);       //the modtable is negative, so this subratacts hp
-
-                    if (ent.m_type == EntType::PLAYER)
-                    {
-                        sendFloatingNumbers(*ent.m_client, target_ent->m_idx, int(-scale));
-                        sendInfoMessage(MessageChannel::DAMAGE, QString("You deal %1 damage!") .arg(-scale) , *ent.m_client);
-                    }
-                    if (target_ent->m_type == EntType::PLAYER)
-                    {
-                        sendFloatingNumbers(*target_ent->m_client, target_ent->m_idx, int(-scale));
-                        sendInfoMessage(MessageChannel::DAMAGE, QString("%1 hits you for %2 damage!") .arg(ent.name()) .arg(-scale) , *target_ent->m_client);
-                    }
-                    //TODO: else critterdamage() which adds aggro and records damage for xp splitting
-                }
-                else if (lower_name == "heal")
-                {
-                    GameDataStore &data(getGameData());                                          //ModTable[3] is melee_healing
-                    scale *= data.m_player_classes[getEntityClassIndex(data, true, ent.m_char->m_char_data.m_class_name)].m_ModTable[powtpl.pAttribMod[i].Table.toUInt()].Values[ent.m_char->m_char_data.m_combat_level];
-
-                    changeHP(*target_ent, getHP(*target_ent->m_char)+scale);
-                    if (ent.m_type == EntType::PLAYER && ent.m_entity != target_ent->m_entity)
-                    {
-                        sendFloatingNumbers(*ent.m_client, target_ent->m_idx, -int(scale));
-                    }
-                    if (target_ent->m_type == EntType::PLAYER)
-                    {
-                        sendFloatingNumbers(*target_ent->m_client, target_ent->m_idx, -int(scale));
-                        sendInfoMessage(MessageChannel::DAMAGE, QString("You are healed for %1!") .arg(scale) , *target_ent->m_client);
-                    }
-                }
-                else if (lower_name == "endurance")  // Change endurance, can be positive or negative
-                {
-                    //TODO: sendFloatingNumbers but blue?
-                    setEnd(*target_ent->m_char, getEnd(*target_ent->m_char)+(scale));
-                }
-                else if (lower_name == "knockback") //   KB isn't a debuff like other crowd control effects
-                    qCDebug(logPowers) << powtpl.m_Name << ":Knockback not implimented yet";
-                else if (lower_name == "teleport")
-                {
-                   forcePosition(*target_ent, ent.m_target_loc);
-                }
-                else if (lower_name == "entcreate")
-                {
-                    qCDebug(logPowers) << powtpl.m_Name << ":Summoning of enities not implimented yet";
-                    sendInfoMessage(MessageChannel::COMBAT, QString("%1 would be summoned for %2 seconds")
-                                     .arg(QString(powtpl.pAttribMod[i].EntityDef))
-                                     .arg(powtpl.pAttribMod[i].Duration), *ent.m_client);
-                }
-                else
-                {
-                    qDebug() << "Power effect named:"<< lower_name << " has not been found!";
-                }
+                doAtrrib(ent, target_ent, powtpl.pAttribMod[i], duration, scale);
             }
         }
+    }
+
+    if(powtpl.pAttribMod.empty())                                       //give the power an effect to either heal or hurt
+    {
+        GameDataStore &data(getGameData());
+        StoredAttribMod temp;
+        temp.Scale = (powtpl.RechargeTime +  powtpl.TimeToActivate)/5;  //this is an aproximation of what the damage scales should be
+        if(validTarget(*target_ent, ent, StoredEntEnum::Enemy))         //assume it is a damaging power
+        {
+            temp.name = "damage";
+            temp.Table = "0";                                           //use the melee_damage scaling
+        }
+        else
+        {
+            temp.name = "heal";                                         //something nice for allies
+            temp.Table = "3";                                           //use the melee_healing scaling
+        }
+        temp.AllowStrength = 1;
+        if (powtpl.EffectArea != StoredAffectArea::Character)
+            temp.Scale = temp.Scale/4;                              //further reduce for aoe
+
+        powtpl.pAttribMod.push_back(temp);
+        doAtrrib(ent, target_ent, temp, 0.0, temp.Scale);
+        qCDebug(logPowers) << powtpl.m_Name << "power data not found, adding" << temp.name << "with a scale of" << temp.Scale;
+    }
+}
+
+void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float duration, float scale)
+{
+    QString lower_name = mod.name.toLower();
+    if (lower_name == "damage")
+    {
+        GameDataStore &data(getGameData());             //TODO: apply this to all power effects, once we have strengths for every stat
+        scale *= data.m_player_classes[uint32_t(getEntityClassIndex(data, true,
+            ent.m_char->m_char_data.m_class_name))].m_ModTable[mod.Table.toUInt()].Values[ent.m_char->m_char_data.m_combat_level];
+        if (mod.AllowStrength)
+            scale *= (1 + ent.m_char->m_char_data.m_current_attribs.m_DamageTypes[0]);
+
+        //  if (powtpl.pAttribMod[i].AllowResistance)
+        //      scale *= (1 - target_ent->m_char->m_char_data.m_current_attribs.m_resistances[powtpl.pAttribMod[i].Attrib]);
+        changeHP(*target_ent, getHP(*target_ent->m_char)+scale);       //the modtable is negative, so this subratacts hp
+
+        if (ent.m_type == EntType::PLAYER)
+        {
+            sendFloatingNumbers(*ent.m_client, target_ent->m_idx, int(-scale));
+            sendInfoMessage(MessageChannel::DAMAGE, QString("You deal %1 damage!") .arg(-scale) , *ent.m_client);
+        }
+        if (target_ent->m_type == EntType::PLAYER)
+        {
+            sendFloatingNumbers(*target_ent->m_client, target_ent->m_idx, int(-scale));
+            sendInfoMessage(MessageChannel::DAMAGE, QString("%1 hits you for %2 damage!") .arg(ent.name()) .arg(-scale) , *target_ent->m_client);
+        }
+        //TODO: else critterdamage() which adds aggro and records damage for xp splitting
+    }
+    else if (lower_name == "heal")
+    {
+        GameDataStore &data(getGameData());
+        scale *= data.m_player_classes[getEntityClassIndex(data, true,
+            ent.m_char->m_char_data.m_class_name)].m_ModTable[mod.Table.toUInt()].Values[ent.m_char->m_char_data.m_combat_level];
+
+        changeHP(*target_ent, getHP(*target_ent->m_char)+scale);
+        if (ent.m_type == EntType::PLAYER && ent.m_entity != target_ent->m_entity)
+        {
+            sendFloatingNumbers(*ent.m_client, target_ent->m_idx, -int(scale));
+        }
+        if (target_ent->m_type == EntType::PLAYER)
+        {
+            sendFloatingNumbers(*target_ent->m_client, target_ent->m_idx, -int(scale));
+            sendInfoMessage(MessageChannel::DAMAGE, QString("You are healed for %1!") .arg(scale) , *target_ent->m_client);
+        }
+    }
+    else if (lower_name == "endurance")  // Change endurance, can be positive or negative
+    {
+        //TODO: sendFloatingNumbers but blue?
+        setEnd(*target_ent->m_char, getEnd(*target_ent->m_char)+(scale));
+    }
+    else if (lower_name == "knockback") //   KB isn't a debuff like other crowd control effects
+        qCDebug(logPowers) << ":Knockback not implimented yet";
+    else if (lower_name == "teleport")
+    {
+       forcePosition(*target_ent, ent.m_target_loc);
+    }
+    else if (lower_name == "entcreate")
+    {
+        sendInfoMessage(MessageChannel::COMBAT, QString("%1 would be summoned for %2 seconds")
+                         .arg(QString( mod.EntityDef))
+                         .arg(duration), *ent.m_client);
+    }
+    else
+    {
+        qDebug() << "Power effect named:"<< lower_name << " has not been found!";
     }
 }
 
@@ -1167,10 +1182,10 @@ void grantRewards(EntityManager &em, Entity &e)
       {
            if (pEnt->m_type == EntType::PLAYER && glm::distance(e.m_entity_data.m_pos, pEnt->m_entity_data.m_pos) < 100)
            {
-                sendInfoMessage(MessageChannel::COMBAT, QString("%1 has been defeated!") .arg(e.m_char->getName()) , *pEnt->m_client);
-                sendInfoMessage(MessageChannel::COMBAT, QString("You gain %1 inf!") .arg(e.m_char->m_char_data.m_combat_level) , *pEnt->m_client);
-                pEnt->m_char->m_char_data.m_influence += e.m_char->m_char_data.m_combat_level;
-                giveXp(*pEnt->m_client,  e.m_char->m_char_data.m_combat_level);
+                sendInfoMessage(MessageChannel::COMBAT, QString("%1 has been defeated!") .arg(e.m_char->getName()), *pEnt->m_client);
+                sendInfoMessage(MessageChannel::COMBAT, QString("You gain %1 inf!") .arg(e.m_char->m_char_data.m_combat_level*10) , *pEnt->m_client);
+                pEnt->m_char->m_char_data.m_influence += e.m_char->m_char_data.m_combat_level*10;
+                giveXp(*pEnt->m_client,  e.m_char->m_char_data.m_combat_level*10);
            }
       }
       em.removeEntityFromActiveList(&e);         //todo: some sort of delay
@@ -1595,21 +1610,21 @@ void setAlignment(Entity &e, QString align)
     if (lower_align.compare("hero") == 0)
     {
         e.m_is_hero = true;
-        e.m_is_villian = false;
+        e.m_is_villain = false;
     }
-    else if (lower_align.compare("villian") == 0)
+    else if (lower_align.compare("villain") == 0)
     {
-        e.m_is_villian = true;
+        e.m_is_villain = true;
         e.m_is_hero = false;
     }
     else if (lower_align.compare("both") == 0)
     {
-        e.m_is_villian = true;
+        e.m_is_villain = true;
         e.m_is_hero = true;
     }
     else if (lower_align.compare("neither") == 0  || lower_align.compare("none") == 0)
     {
-        e.m_is_villian = false;
+        e.m_is_villain = false;
         e.m_is_hero = false;
     }
     else
@@ -2020,7 +2035,7 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
     Entity *e = mi.m_entities.CreateGeneric(getGameData(), *npc_def, idx, variation, EntType::CRITTER);
     e->m_char->setName(npc_name);
     e->m_is_hero = true;
-    e->m_is_villian = false;
+    e->m_is_villain = false;
 
     //Should these be predefined by DB/Json/Loaded by script or something else?
     e->m_char->m_char_data.m_combat_level = 1;

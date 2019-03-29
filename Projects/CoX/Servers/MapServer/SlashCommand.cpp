@@ -265,7 +265,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", cmdHandler_AddNPC, 2},
     {{"moveTo", "setpos", "setpospyr"},"set the gm's position to <x> <y> <z>", cmdHandler_MoveTo, 2},
-    {{"align", "alignment", "herostatus"},"set the gm's alignment to hero, villian, both, none/neither", cmdHandler_Alignment, 2},
+    {{"align", "alignment", "herostatus"},"set the gm's alignment to hero, villain, both, none/neither", cmdHandler_Alignment, 2},
 
     /* Access Level 1 Commands */
     {{"cmdlist","commandlist"},"List all accessible commands", cmdHandler_CmdList, 1},
@@ -1479,7 +1479,7 @@ void cmdHandler_Alignment(const QString &cmd, MapClientSession &sess)
         sendInfoMessage(MessageChannel::DEBUG_INFO, "New alignment: "+parts[1], sess);
         return;
     }
-    QString msg = "Choose from hero, villian, both or none/neither: ";
+    QString msg = "Choose from hero, villain, both or none/neither: ";
     qCDebug(logSlashCommand) << msg <<cmd;
     sendInfoMessage(MessageChannel::USER_ERROR, msg+cmd, sess);
 }
@@ -1757,7 +1757,7 @@ void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
     if(new_target == 0)
         return;
 
-    if(target_ent->m_is_villian)
+    if(target_ent->m_is_villain)
         setTarget(*sess.m_ent, new_target);
     else
         setAssistTarget(*sess.m_ent, new_target);

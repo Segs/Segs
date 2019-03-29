@@ -117,7 +117,7 @@ void doPower(Entity &ent, QueuedPowers powerinput);
 void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx);
 void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time);
 void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower);
-void doEffect(Entity &ent, Entity *target_ent, QString lower_name, float scale);
+void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float duration, float scale);
 void sendResult(Entity &src,Entity &tgt, QString name, float value);
 void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const &mod, uint32_t entidx);
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);

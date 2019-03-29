@@ -199,7 +199,7 @@ public:
         bool                m_no_draw_on_client     = false;
         bool                m_force_camera_dir      = false; // used to force the client camera direction in sendClientData()
         bool                m_is_hero               = false;
-        bool                m_is_villian            = false;
+        bool                m_is_villain            = false;
         bool                m_contact               = false;
         uint8_t             m_update_id             = 1;
         bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
