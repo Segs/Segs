@@ -22,7 +22,7 @@ void ClientOptionService::on_set_keybind(Entity* ent, Event *ev)
     ModKeys mod = static_cast<ModKeys>(casted_ev->mods);
 
     ent->m_player->m_keybinds.setKeybind(casted_ev->profile, key, mod, casted_ev->command, casted_ev->is_secondary);
-    qCDebug(logMapEvents) << "Setting keybind: " << casted_ev->profile << QString::number(casted_ev->key)
+    qCDebug(logKeybinds) << "Setting keybind: " << casted_ev->profile << QString::number(casted_ev->key)
                           << QString::number(casted_ev->mods) << casted_ev->command << casted_ev->is_secondary;
 }
 
@@ -31,7 +31,7 @@ void ClientOptionService::on_remove_keybind(Entity* ent, Event *ev)
 {
     RemoveKeybind* casted_ev = static_cast<RemoveKeybind *>(ev);
     ent->m_player->m_keybinds.removeKeybind(casted_ev->profile,(KeyName &)casted_ev->key,(ModKeys &)casted_ev->mods);
-    qCDebug(logMapEvents) << "Clearing Keybind: " << casted_ev->profile << QString::number(casted_ev->key) << QString::number(casted_ev->mods);
+    qCDebug(logKeybinds) << "Clearing Keybind: " << casted_ev->profile << QString::number(casted_ev->key) << QString::number(casted_ev->mods);
 }
 
 void ClientOptionService::on_reset_keybinds(Entity* ent, Event */*ev*/)
@@ -41,14 +41,14 @@ void ClientOptionService::on_reset_keybinds(Entity* ent, Event */*ev*/)
     const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
 
     ent->m_player->m_keybinds.resetKeybinds(default_profiles);
-    qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
+    qCDebug(logKeybinds) << "Resetting Keybinds to defaults.";
 }
 
 void ClientOptionService::on_select_keybind_profile(Entity* ent, Event *ev)
 {
     SelectKeybindProfile* casted_ev = static_cast<SelectKeybindProfile *>(ev);
     ent->m_player->m_keybinds.setKeybindProfile(casted_ev->profile);
-    qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << casted_ev->profile;
+    qCDebug(logKeybinds) << "Saving currently selected Keybind Profile. Profile name: " << casted_ev->profile;
 }
 
 void ClientOptionService::on_client_options(Entity* ent, Event* ev)
@@ -64,7 +64,7 @@ void ClientOptionService::on_switch_viewpoint(Entity* ent, Event *ev)
     SwitchViewPoint* casted_ev = static_cast<SwitchViewPoint *>(ev);
 
     ent->m_player->m_options.m_first_person_view = casted_ev->new_viewpoint_is_firstperson;
-    qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << casted_ev->new_viewpoint_is_firstperson;
+    qCDebug(logKeybinds) << "Saving viewpoint mode to ClientOptions" << casted_ev->new_viewpoint_is_firstperson;
 }
 
 void ClientOptionService::on_window_state(Entity* ent, Event* ev)
@@ -88,13 +88,13 @@ void ClientOptionService::on_command_chat_divider_moved(Entity* ent, Event *ev)
     ChatDividerMoved* casted_ev = static_cast<ChatDividerMoved* >(ev);
 
     ent->m_player->m_gui.m_chat_divider_pos = casted_ev->m_position;
-    qCDebug(logMapEvents) << "Chat divider moved to " << casted_ev->m_position << " for player" << ent->name();
+    qCDebug(logGUI) << "Chat divider moved to " << casted_ev->m_position << " for player" << ent->name();
 }
 
 void ClientOptionService::on_browser_close(Entity* ent, Event */*ev*/)
 {
     //BrowserClose* casted_ev = static_cast<BrowserClose *>(ev);
-    qCDebug(logMapEvents) << "Entity: " << ent->m_idx << "has received BrowserClose";
+    qCDebug(logGUI) << "Entity: " << ent->m_idx << "has received BrowserClose";
 }
 
 
