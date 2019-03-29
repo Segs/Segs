@@ -39,10 +39,10 @@ static const int s_reverse_control_dir[6] = {
 
 SurfaceParams g_world_surf_params[2] = {
     // traction, friction, bounce, gravity, max_speed
-    //{ 1.00f, 0.45f, 0.01f, 0.065f, 1.00f }, // ground; from client (base to be modified later)
-    //{ 0.02f, 0.01f, 0.00f, 0.065f, 1.00f },  // air; from client (base to be modified later)
-    { 1.00f, 1.00f, 0.01f, 3.00f, 1.00f }, // ground; test values
-    { 1.00f, 3.00f, 0.00f, 3.00f, 1.00f },  // air; test values
+    //{ 1.00f, 0.45f, 0.01f, 0.065f, 1.00f },    // ground; from client (base to be modified later)
+    //{ 0.02f, 0.01f, 0.00f, 0.065f, 1.00f },    // air; from client (base to be modified later)
+    { 1.00f, 1.00f, 0.01f, 3.00f, 1.00f },    // ground; test values
+    { 1.00f, 3.00f, 0.00f, 3.00f, 2.00f },    // air; test values
 };
 
 void roundVelocityToZero(glm::vec3 *vel)
