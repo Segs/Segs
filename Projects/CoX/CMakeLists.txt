@@ -29,6 +29,10 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_00_01/missions.lua DESTI
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_00_01/contacts.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_00_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_00_01/luaBot.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_00_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_00_01/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_00_01)
+#Outbreak Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_00_01/Spawndefs/Contaminated_Outbreak.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_00_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_00_01/Spawndefs/Police_Robots_Outbreak.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_00_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_00_01/Spawndefs/Shady_Deal_Cop_Outbreak.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_00_01/Spawndefs)
 
 #Atlas Park
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_01/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_01)
@@ -41,12 +45,22 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_01/luaBot.lua DESTINA
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_01/hideAndSeek.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_01/relayRace.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_01/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_01)
+#Atlas Park Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_01/Spawndefs/Clockwork_Atlas.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_01/Spawndefs/Hellions_Atlas.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_01/Spawndefs/Vahzilok_Atlas.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_01/Spawndefs)
 
 #King's Row
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_02/contacts.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_02)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_02/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_02)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_02/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_02)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_02/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_02)
+#King's Row Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_02/Spawndefs/CircleOfThorns_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_02/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_02/Spawndefs/Clockwork_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_02/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_02/Spawndefs/Rikti_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_02/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_02/Spawndefs/Skulls_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_02/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_02/Spawndefs/Vahzilok_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_02/Spawndefs)
 
 #Galaxy City
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_01_03/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_01_03)
@@ -57,24 +71,47 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/contacts.lua DESTI
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_01)
+#Steel Canyon Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/Spawndefs/5th_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/Spawndefs/CircleOfThorns_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/Spawndefs/Clockwork_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/Spawndefs/Outcasts_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/Spawndefs/Tsoo_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_01/Spawndefs/Vahzilok_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_01/Spawndefs)
 
 #Skyway City
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_02/contacts.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_02)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_02/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_02)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_02/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_02)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_02/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_02)
+#Skyway City Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_02/Spawndefs/Clockwork_Skyway.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_02/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_02/Spawndefs/Rikti_Skyway.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_02/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_02_02/Spawndefs/Trolls_Skyway.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_02_02/Spawndefs)
 
 #Talos Island
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/contacts.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01)
+#Talos Island Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/Spawndefs/Banished_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/Spawndefs/CircleOfThorns_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/Spawndefs/Devouring_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/Spawndefs/Freakshow_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/Spawndefs/Tsoo_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_01/Spawndefs/Warriors_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_01/Spawndefs)
 
 #Independence Port
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_02/contacts.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_02)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_02/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_02)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_02/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_02)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_02/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_02)
+#Independence Port Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_02/Spawndefs/5th_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_02/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_02/Spawndefs/Devouring_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_02/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_02/Spawndefs/Family_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_02/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_03_02/Spawndefs/Tsoo_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_03_02/Spawndefs)
 
 #Founders' Falls
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/City_04_01/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/City_04_01)
@@ -93,18 +130,39 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/contacts.lua DES
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01)
+#Perez Park Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/Spawndefs/CircleOfThorns_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/Spawndefs/Clockwork_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/Spawndefs/Hellions_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/Spawndefs/Hydramen_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/Spawndefs/Rikti_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/Spawndefs/Skulls_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_01_01/Spawndefs/Vahzilok_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_01_01/Spawndefs)
 
 #Boomtown
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/contacts.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01)
+#Boomtown Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/Spawndefs/5th_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/Spawndefs/Clockwork_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/Spawndefs/Outcasts_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/Spawndefs/Rikti_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/Spawndefs/Trolls_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_02_01/Spawndefs/Vahzilok_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_02_01/Spawndefs)
+
 
 #Dark Astoria
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_03_01/contacts.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_03_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_03_01/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_03_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_03_01/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_03_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_03_01/TimeCop.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_03_01)
+#Dark Astoria Spawndefs
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_03_01/Spawndefs/Banished_DarkAstoria.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_03_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_03_01/Spawndefs/CircleOfThorns_DarkAstoria.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_03_01/Spawndefs)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_03_01/Spawndefs/Tsoo_DarkAstoria.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_03_01/Spawndefs)
+
 
 #Crey's Folly
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Hazard_04_01/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Hazard_04_01)
@@ -138,53 +196,6 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Trial_04_02/ES_Library_Object
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Trial_05_01/entities.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Trial_05_01)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Trial_05_01/ES_Library_Objects.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Trial_05_01)
 
-#Spawndefs
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/5th_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/5th_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/5th_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Banished_DarkAstoria.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Banished_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/CircleOfThorns_DarkAstoria.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/CircleOfThorns_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/CircleOfThorns_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/CircleOfThorns_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/CircleOfThorns_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Clockwork_Atlas.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Clockwork_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Clockwork_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Clockwork_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Clockwork_Skyway.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Clockwork_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Contaminated_Outbreak.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Devouring_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Devouring_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Family_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Freakshow_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Hellions_Atlas.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Hellions_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Hydramen_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Outcasts_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Outcasts_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Police_Robots_Outbreak.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Rikti_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Rikti_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Rikti_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Rikti_Skyway.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Shady_Deal_Cop_Outbreak.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Skulls_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Skulls_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Trolls_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Trolls_Skyway.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Tsoo_DarkAstoria.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Tsoo_IndPort.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Tsoo_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Tsoo_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Vahzilok_Atlas.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Vahzilok_Boomtown.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Vahzilok_Kings.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Vahzilok_Perez.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Vahzilok_Steel.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Data/scripts/Spawndefs/Warriors_Talos.spawndef.lua DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/Spawndefs)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Data/settings_template.cfg ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/settings_template.cfg COPYONLY)
 

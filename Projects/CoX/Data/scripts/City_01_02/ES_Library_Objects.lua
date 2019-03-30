@@ -1,9 +1,9 @@
 --King's Row
-include_lua('../spawndefs/Skulls_Kings.spawndef.lua')
-include_lua('../spawndefs/Vahzilok_Kings.spawndef.lua')
-include_lua('../spawndefs/CircleOfThorns_Kings.spawndef.lua')
-include_lua('../spawndefs/Clockwork_Kings.spawndef.lua')
-include_lua('../spawndefs/Rikti_Kings.spawndef.lua')
+include_lua('./Spawndefs/Skulls_Kings.spawndef.lua')
+include_lua('./Spawndefs/Vahzilok_Kings.spawndef.lua')
+include_lua('./Spawndefs/CircleOfThorns_Kings.spawndef.lua')
+include_lua('./Spawndefs/Clockwork_Kings.spawndef.lua')
+include_lua('./Spawndefs/Rikti_Kings.spawndef.lua')
 
 ES_Library_Objects = {
     ["ES_Skulls_D01_Around_City_01_02"] = {

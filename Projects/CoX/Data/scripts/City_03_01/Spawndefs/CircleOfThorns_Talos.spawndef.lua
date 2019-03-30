@@ -15,7 +15,6 @@ local Circle_Ranks_01  = {
     },
     ["Lieutenants"] = {
         "Daemon", "Knight", "Spectre",
-        "Daemon_Lord", "Behemoth_Minion",
     },
     ["Sniper"] = {
       --NA
@@ -114,13 +113,13 @@ Rumble_CoTWarriors_D3_V0 = {
         ["Encounter_E_03"] = Circle_Ranks_01.Boss,
         ["Encounter_E_01"] = Circle_Ranks_01.Minions,
         ["Encounter_E_05"] = Circle_Ranks_01.Minions,
-        ["Encounter_S_33"] = Circle_Ranks_01.Minions,
+        ["Encounter_S_33"] = Circle_Ranks_01.Lieutenants,
         ["Encounter_S_31"] = Circle_Ranks_01.Minions,
         ["Encounter_E_02"] = Warriors_Rumble_01.Minions,
         ["Encounter_E_10"] = Warriors_Rumble_01.Minions,
         ["Encounter_E_04"] = Warriors_Rumble_01.Minions,
         ["Encounter_E_06"] = Warriors_Rumble_01.Boss,
-        ["Encounter_S_32"] = Warriors_Rumble_01.Minions,
+        ["Encounter_S_32"] = Warriors_Rumble_01.Lieutenants,
         ["Encounter_S_30"] = Warriors_Rumble_01.Minions,           
    },
 }

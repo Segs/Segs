@@ -1,8 +1,8 @@
 --Dark Astoria ELO
 
-include_lua('../spawndefs/Banished_DarkAstoria.spawndef.lua')
-include_lua('../spawndefs/CircleOfThorns_DarkAstoria.spawndef.lua')
-include_lua('../spawndefs/Tsoo_DarkAstoria.spawndef.lua')
+include_lua('./Spawndefs/Banished_DarkAstoria.spawndef.lua')
+include_lua('./Spawndefs/CircleOfThorns_DarkAstoria.spawndef.lua')
+include_lua('./Spawndefs/Tsoo_DarkAstoria.spawndef.lua')
 
 ES_Library_Objects = {
       ["ES_BP_ZombieLoiter_D1_Phalanx_Haz_03_01"] = {

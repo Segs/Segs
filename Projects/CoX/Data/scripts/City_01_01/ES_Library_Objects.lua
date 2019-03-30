@@ -1,7 +1,7 @@
 --Provide spawndefs tables for relevant CanSpawnDefs here
-include_lua('../spawndefs/Hellions_Atlas.spawndef.lua')
-include_lua('../spawndefs/Clockwork_Atlas.spawndef.lua')
-include_lua('../spawndefs/Vahzilok_Atlas.spawndef.lua')
+include_lua('./Spawndefs/Hellions_Atlas.spawndef.lua')
+include_lua('./Spawndefs/Clockwork_Atlas.spawndef.lua')
+include_lua('./Spawndefs/Vahzilok_Atlas.spawndef.lua')
 
 ES_Library_Objects = {
   ["_ES_L1_3_Around_City_01_01"] = {

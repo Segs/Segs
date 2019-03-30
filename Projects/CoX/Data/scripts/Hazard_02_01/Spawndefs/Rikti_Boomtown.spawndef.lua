@@ -27,4 +27,12 @@ Preaching_RiktiBeggars_L14_17_V0 = {
     },
 }
 
-Preaching_RiktiBeggars_L18_20_V0 = Preaching_RiktiBeggars_L14_17_V0
+Preaching_RiktiBeggars_L18_20_V0 = {
+    ["Markers"] = {
+            ["Encounter_V_40"] = Rikti_Ranks_01.Boss,
+            ["Encounter_E_02"] = Rikti_Ranks_01.Minions,
+            ["Encounter_E_07"] = Rikti_Ranks_01.Minions,
+            ["Encounter_E_04"] = Rikti_Ranks_01.Minions,
+            ["Encounter_E_07"] = Rikti_Ranks_01.Minions,             
+    },
+}

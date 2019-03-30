@@ -57,7 +57,6 @@ FightClub_Trolls_L12_15_V0 = {
         ["Encounter_E_05"] = Trolls_Ranks_01.Boss,
         ["Encounter_E_06"] = Trolls_Ranks_01.Boss,
         ["Encounter_E_07"] = Trolls_Ranks_01.Minions,
-        ["Encounter_E_08"] = Trolls_Ranks_01.Minions,
     },
 }
 
@@ -68,8 +67,5 @@ FightClub_Trolls_L16_19_V0 = {
         ["Encounter_E_01"] = Trolls_Ranks_01.Boss,
         ["Encounter_E_02"] = Trolls_Ranks_01.Minions,
         ["Encounter_E_03"] = Trolls_Ranks_01.Boss,
-        ["Encounter_E_04"] = Trolls_Ranks_01.Minions,
-        ["Encounter_E_05"] = Trolls_Ranks_01.Minions,
-        ["Encounter_E_08"] = Trolls_Ranks_01.Boss,
     },
 }

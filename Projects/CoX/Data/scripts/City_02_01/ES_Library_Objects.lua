@@ -1,10 +1,10 @@
 --Steel Canyon
-include_lua('../spawndefs/Outcasts_Steel.spawndef.lua')
-include_lua('../spawndefs/Clockwork_Steel.spawndef.lua')
-include_lua('../spawndefs/Tsoo_Steel.spawndef.lua')
-include_lua('../spawndefs/CircleOfThorns_Steel.spawndef.lua')
-include_lua('../spawndefs/5th_Steel.spawndef.lua')
-include_lua('../spawndefs/Vahzilok_Steel.spawndef.lua')
+include_lua('./Spawndefs/Outcasts_Steel.spawndef.lua')
+include_lua('./Spawndefs/Clockwork_Steel.spawndef.lua')
+include_lua('./Spawndefs/Tsoo_Steel.spawndef.lua')
+include_lua('./Spawndefs/CircleOfThorns_Steel.spawndef.lua')
+include_lua('./Spawndefs/5th_Steel.spawndef.lua')
+include_lua('./Spawndefs/Vahzilok_Steel.spawndef.lua')
 
 ES_Library_Objects = {
     ["ES_Outcasts_D1_Around_City_02_01"] = {

@@ -59,7 +59,6 @@ Harvest_Vahzilok_L18_20_V0 = {
         ["Encounter_V_40"] = Vahzilok_Ranks_01.Victims,
         ["Encounter_S_32"] = Vahzilok_Ranks_01.Lieutenants,
         ["Encounter_E_03"] = Vahzilok_Ranks_01.Minions,
-        ["Encounter_E_07"] = Vahzilok_Ranks_01.Minions,
         ["Encounter_E_01"] = Vahzilok_Ranks_01.Minions,
         ["Encounter_S_31"] = Vahzilok_Ranks_01.Lieutenants,            
  },

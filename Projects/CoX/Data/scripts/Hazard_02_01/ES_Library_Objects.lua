@@ -1,12 +1,12 @@
 --Boomtown
 
 --These contain tables for relevant, spawnable NPCs
-include_lua('../spawndefs/5th_Boomtown.spawndef.lua')
-include_lua('../spawndefs/Clockwork_Boomtown.spawndef.lua')
-include_lua('../spawndefs/Outcasts_Boomtown.spawndef.lua')
-include_lua('../spawndefs/Rikti_Boomtown.spawndef.lua')
-include_lua('../spawndefs/Trolls_Boomtown.spawndef.lua')
-include_lua('../spawndefs/Vahzilok_Boomtown.spawndef.lua')
+include_lua('./Spawndefs/5th_Boomtown.spawndef.lua')
+include_lua('./Spawndefs/Clockwork_Boomtown.spawndef.lua')
+include_lua('./Spawndefs/Outcasts_Boomtown.spawndef.lua')
+include_lua('./Spawndefs/Rikti_Boomtown.spawndef.lua')
+include_lua('./Spawndefs/Trolls_Boomtown.spawndef.lua')
+include_lua('./Spawndefs/Vahzilok_Boomtown.spawndef.lua')
 
 ES_Library_Objects = {
     ["ES_Trolls_L11_13_Around_Haz_02_01"] = {

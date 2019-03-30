@@ -15,14 +15,14 @@ function player_connected(id)
         spinPersists()
         spinCivilians()
         spinCars()
-        RandomSpawn(45)
-        RandomSpawn(100, "Civilians")
-        RandomSpawn(100, "Cars")
+        RandomSpawn(40)
+        RandomSpawn(50, "Civilians")
+        RandomSpawn(35, "Cars")
         spawnOnce = true
 
         print("Initiating map auto-refresh")
         MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
-        TimeCopMode(true, 45, 150)  
+        TimeCopMode(true, 40, 150)  
     end
 
     return  ''

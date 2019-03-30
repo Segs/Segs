@@ -198,12 +198,12 @@ void MapInstance::load_map_lua()
         "scripts/spawners.lua",                 // handles exposed Scenegraph data for all Lua-side managed spawning activity
 
         // per zone scripts
-        m_data_path+'/'+"ES_Library_Objects.lua",
-        m_data_path+'/'+"contacts.lua",
-        m_data_path+'/'+"locations.lua",
-        m_data_path+'/'+"plaques.lua",
-        m_data_path+'/'+"entities.lua",
-        m_data_path+'/'+"missions.lua"
+        m_data_path + '/'+"ES_Library_Objects.lua",
+        m_data_path + '/'+"contacts.lua",
+        m_data_path + '/'+"locations.lua",
+        m_data_path + '/'+"plaques.lua",
+        m_data_path + '/'+"entities.lua",
+        m_data_path + '/'+"missions.lua"
     };
 
     for(const QString &path : script_paths)

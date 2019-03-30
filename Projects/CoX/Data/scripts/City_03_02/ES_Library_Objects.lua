@@ -1,8 +1,8 @@
 --Independence Port
-include_lua('../spawndefs/Family_IndPort.spawndef.lua')
-include_lua('../spawndefs/Tsoo_IndPort.spawndef.lua')
-include_lua('../spawndefs/Devouring_IndPort.spawndef.lua')
-include_lua('../spawndefs/5th_IndPort.spawndef.lua')
+include_lua('./Spawndefs/Family_IndPort.spawndef.lua')
+include_lua('./Spawndefs/Tsoo_IndPort.spawndef.lua')
+include_lua('./Spawndefs/Devouring_IndPort.spawndef.lua')
+include_lua('./Spawndefs/5th_IndPort.spawndef.lua')
 
 ES_Library_Objects = {
     ["ES_Family_D1_Around_City_03_02"] = {

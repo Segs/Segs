@@ -52,19 +52,27 @@ Vandalism_Freakshow_D1_V0 = {
     },
 }
 
-Vandalism_Freakshow_D1_V1 = Vandalism_Freakshow_D1_V0
+Vandalism_Freakshow_D1_V1 = {
+    ["Markers"] = {
+        ["Encounter_S_30"] = Freakshow_Ranks_01.Minions,
+        ["Encounter_E_02"] = Freakshow_Ranks_01.Minions,
+        ["Encounter_E_05"] = Freakshow_Ranks_01.Boss,
+        ["Encounter_E_06"] = Freakshow_Ranks_01.Minions,            
+    },
+}
+
 Vandalism_Freakshow_D1_V2 = Vandalism_Freakshow_D1_V0
-Vandalism_Freakshow_D1_V3 = Vandalism_Freakshow_D1_V0
+Vandalism_Freakshow_D1_V3 = Vandalism_Freakshow_D1_V1
 
 Vandalism_Freakshow_D5_V0 = Vandalism_Freakshow_D1_V0
-Vandalism_Freakshow_D5_V1 = Vandalism_Freakshow_D1_V0
+Vandalism_Freakshow_D5_V1 = Vandalism_Freakshow_D1_V1
 Vandalism_Freakshow_D5_V2 = Vandalism_Freakshow_D1_V0
-Vandalism_Freakshow_D5_V3 = Vandalism_Freakshow_D1_V0
+Vandalism_Freakshow_D5_V3 = Vandalism_Freakshow_D1_V1
 
 Vandalism_Freakshow_D10_V0 = Vandalism_Freakshow_D1_V0
-Vandalism_Freakshow_D10_V1 = Vandalism_Freakshow_D1_V0
+Vandalism_Freakshow_D10_V1 = Vandalism_Freakshow_D1_V1
 Vandalism_Freakshow_D10_V2 = Vandalism_Freakshow_D1_V0
-Vandalism_Freakshow_D10_V3 = Vandalism_Freakshow_D1_V0
+Vandalism_Freakshow_D10_V3 = Vandalism_Freakshow_D1_V1
 
 Harrass_Freakshow_D1_V0 = {
     ["Markers"] = {

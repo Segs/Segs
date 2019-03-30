@@ -32,7 +32,9 @@ local BP_Ranks_01  = {
        "MaleNPC_01", "FemaleNPC_01",
     },
     ["GhostVictims"] = {
-        "MaleNPC_31", "FemaleNPC_31",
+        "Ghost_Female_NoFade_NPC1", "Ghost_Female_NoFade_NPC2",
+        "Ghost_Female_NoFade_NPC3", "Ghost_Male_NoFade_NPC1",
+        "Ghost_Male_NoFade_NPC2", "Ghost_Male_NoFade_NPC3",
      },    
 }
 
@@ -130,7 +132,7 @@ Loiter_BansihedPantheon_D10_V2 = Loiter_BansihedPantheon_D1_V0
 
 Ceremony_BanishedPantheon_D3_V0 = {
     ["Markers"] = {
-        ["Encounter_V_40"] = BP_Ranks_01.Victims,
+        ["Encounter_V_40"] = BP_Ranks_01.GhostVictims,
         ["Encounter_S_31"] = BP_Ranks_01.Minions,
         ["Encounter_S_30"] = BP_Ranks_01.Minions,
         ["Encounter_E_04"] = BP_Ranks_01.Minions,
@@ -142,7 +144,7 @@ Ceremony_BanishedPantheon_D3_V0 = {
 
 Ceremony_BanishedPantheon_D3_V1 = {
     ["Markers"] = {
-        ["Encounter_V_42"] = BP_Ranks_01.Victims,
+        ["Encounter_V_42"] = BP_Ranks_01.GhostVictims,
         ["Encounter_S_31"] = BP_Ranks_01.Minions,
         ["Encounter_S_30"] = BP_Ranks_01.Boss,
         ["Encounter_E_04"] = BP_Ranks_01.Minions,
@@ -154,7 +156,7 @@ Ceremony_BanishedPantheon_D3_V1 = {
 
 Ceremony_BanishedPantheon_D3_V2 = {
     ["Markers"] = {
-        ["Encounter_V_41"] = BP_Ranks_01.Victims,
+        ["Encounter_V_41"] = BP_Ranks_01.GhostVictims,
         ["Encounter_S_31"] = BP_Ranks_01.Lieutenants,
         ["Encounter_S_30"] = BP_Ranks_01.Lieutenants,
         ["Encounter_E_04"] = BP_Ranks_01.Minions,

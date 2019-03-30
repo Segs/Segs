@@ -11,12 +11,12 @@ function player_connected(id)
 
     if spawnOnce == false then
         spinSpawners()
-        RandomSpawn(60)       
+        RandomSpawn(70)       
         spawnOnce = true
 
         print("Initiating map auto-refresh")
         MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
-        TimeCopMode(true, 60, 120)    
+        TimeCopMode(true, 70, 120)    
     end
 
     return  ''

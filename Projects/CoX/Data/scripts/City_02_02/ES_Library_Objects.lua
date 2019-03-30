@@ -2,9 +2,9 @@
 --Skyway City
 
 --These contain tables for relevant, spawnable NPCs
-include_lua('../spawndefs/Clockwork_Skyway.spawndef.lua')
-include_lua('../spawndefs/Rikti_Skyway.spawndef.lua')
-include_lua('../spawndefs/Trolls_Skyway.spawndef.lua')
+include_lua('./Spawndefs/Clockwork_Skyway.spawndef.lua')
+include_lua('./Spawndefs/Rikti_Skyway.spawndef.lua')
+include_lua('./Spawndefs/Trolls_Skyway.spawndef.lua')
 
 ES_Library_Objects = {
     ["ES_Trolls_L11_13_Around_City_02_02"] = {

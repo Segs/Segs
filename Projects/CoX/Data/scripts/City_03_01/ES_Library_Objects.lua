@@ -2,12 +2,12 @@
 --Talos Island
 
 --These contain tables for relevant, spawnable NPCs
-include_lua('../spawndefs/Banished_Talos.spawndef.lua')
-include_lua('../spawndefs/CircleOfThorns_Talos.spawndef.lua')
-include_lua('../spawndefs/Devouring_Talos.spawndef.lua')
-include_lua('../spawndefs/Freakshow_Talos.spawndef.lua')
-include_lua('../spawndefs/Tsoo_Talos.spawndef.lua')
-include_lua('../spawndefs/Warriors_Talos.spawndef.lua')
+include_lua('./Spawndefs/Banished_Talos.spawndef.lua')
+include_lua('./Spawndefs/CircleOfThorns_Talos.spawndef.lua')
+include_lua('./Spawndefs/Devouring_Talos.spawndef.lua')
+include_lua('./Spawndefs/Freakshow_Talos.spawndef.lua')
+include_lua('./Spawndefs/Tsoo_Talos.spawndef.lua')
+include_lua('./Spawndefs/Warriors_Talos.spawndef.lua')
 
 ES_Library_Objects = {
     ["ES_Warriors_D1_Around_City_03_01"] = {

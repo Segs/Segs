@@ -1,7 +1,7 @@
 --These contain tables for relevant, spawnable NPCs
-include_lua('../spawndefs/Contaminated_Outbreak.spawndef.lua')
-include_lua('../spawndefs/Police_Robots_Outbreak.spawndef.lua')
-include_lua('../spawndefs/Shady_Deal_Cop_Outbreak.spawndef.lua')
+include_lua('./Spawndefs/Contaminated_Outbreak.spawndef.lua')
+include_lua('./Spawndefs/Police_Robots_Outbreak.spawndef.lua')
+include_lua('./Spawndefs/Shady_Deal_Cop_Outbreak.spawndef.lua')
 
 --[[
   NOTE:  Neither the city cops or Robots (with no #) are used for some reason.

@@ -1,13 +1,13 @@
 --Perez Park
 
 --These contain tables for relevant, spawnable NPCs
-include_lua('../spawndefs/Hellions_Perez.spawndef.lua')
-include_lua('../spawndefs/Skulls_Perez.spawndef.lua')
-include_lua('../spawndefs/Clockwork_Perez.spawndef.lua')
-include_lua('../spawndefs/Vahzilok_Perez.spawndef.lua')
-include_lua('../spawndefs/Rikti_Perez.spawndef.lua')
-include_lua('../spawndefs/Hydramen_Perez.spawndef.lua')
-include_lua('../spawndefs/CircleOfThorns_Perez.spawndef.lua')
+include_lua('./Spawndefs/Hellions_Perez.spawndef.lua')
+include_lua('./Spawndefs/Skulls_Perez.spawndef.lua')
+include_lua('./Spawndefs/Clockwork_Perez.spawndef.lua')
+include_lua('./Spawndefs/Vahzilok_Perez.spawndef.lua')
+include_lua('./Spawndefs/Rikti_Perez.spawndef.lua')
+include_lua('./Spawndefs/Hydramen_Perez.spawndef.lua')
+include_lua('./Spawndefs/CircleOfThorns_Perez.spawndef.lua')
 
 ES_Library_Objects = {
   ["ES_Hellions_L1_3_Around_Haz_01_01"] = {

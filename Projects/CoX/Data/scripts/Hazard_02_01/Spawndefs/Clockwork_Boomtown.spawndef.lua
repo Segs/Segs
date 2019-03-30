@@ -48,7 +48,7 @@ Building_Clockwork_L12_15_V0 = {
     ["Markers"] = {
             ["Encounter_E_02"] = Clockwork_Ranks_01.Minions,
             ["Encounter_E_05"] = Clockwork_Ranks_01.Minions,
-            ["Encounter_E_07"] = Clockwork_Ranks_01.Minions,
+            ["Encounter_E_07"] = Clockwork_Ranks_01.Lieutenants,
     },
 }
 
@@ -59,14 +59,34 @@ Building_Clockwork_L16_19_V0 = Building_Clockwork_L12_15_V0
 
 Scavenge_Clockwork_L11_13_V0 = {
     ["Markers"] = {
-            ["Encounter_E_03"] = Clockwork_Ranks_01.Minions,
-            ["Encounter_E_07"] = Clockwork_Ranks_01.Minions,
-            ["Encounter_E_08"] = Clockwork_Ranks_01.Minions,
+        ["Encounter_E_06"] = Clockwork_Ranks_01.Flying,
+        ["Encounter_E_05"] = Clockwork_Ranks_01.Flying,
+        ["Encounter_S_30"] = Clockwork_Ranks_01.Lieutenants,
+        ["Encounter_E_02"] = Clockwork_Ranks_01.Minions,
+        ["Encounter_E_04"] = Clockwork_Ranks_01.Minions,
     },
 }
 
-Scavenge_Clockwork_L14_17_V0 = Scavenge_Clockwork_L11_13_V0
-Scavenge_Clockwork_L18_20_V0 = Scavenge_Clockwork_L11_13_V0
+Scavenge_Clockwork_L14_17_V0 = {
+    ["Markers"] = {
+        ["Encounter_E_05"] = Clockwork_Ranks_01.Flying,
+        ["Encounter_S_31"] = Clockwork_Ranks_01.Lieutenants,
+        ["Encounter_S_32"] = Clockwork_Ranks_01.Lieutenants,
+        ["Encounter_E_07"] = Clockwork_Ranks_01.Minions,
+        ["Encounter_E_03"] = Clockwork_Ranks_01.Flying,
+        ["Encounter_E_04"] = Clockwork_Ranks_01.Minions,
+    },
+}
+Scavenge_Clockwork_L18_20_V0 = {
+    ["Markers"] = {
+        ["Encounter_S_31"] = Clockwork_Ranks_01.Lieutenants,
+        ["Encounter_S_30"] = Clockwork_Ranks_01.Lieutenants,
+        ["Encounter_E_02"] = Clockwork_Ranks_01.Minions,
+        ["Encounter_E_01"] = Clockwork_Ranks_01.Minions,
+        ["Encounter_E_08"] = Clockwork_Ranks_01.Minions,
+        ["Encounter_E_04"] = Clockwork_Ranks_01.Minions,
+    },
+}
 
 
 --== Babbage ==--
@@ -76,4 +96,3 @@ Babbage_D10_V0 = {
         ["Encounter_E_01"] = Clockwork_Ranks_01.Giant_Monster
     },
 }
-

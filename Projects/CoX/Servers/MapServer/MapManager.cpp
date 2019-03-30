@@ -44,7 +44,10 @@ bool MapManager::load_templates(const QString &template_directory, uint8_t game_
     QDirIterator map_dir_visitor(template_directory, QDir::Dirs|QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
     while (map_dir_visitor.hasNext())
     {
-        QString dirname = map_dir_visitor.next();
+        //QString dirname = map_dir_visitor.next();
+        map_dir_visitor.next();
+        QString dirname = map_dir_visitor.fileInfo().baseName();
+
         if(dirname.contains("City_",Qt::CaseInsensitive) ||
             dirname.contains("Hazard_",Qt::CaseInsensitive) ||
             dirname.contains("Trial_",Qt::CaseInsensitive))
