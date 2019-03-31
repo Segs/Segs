@@ -600,7 +600,7 @@ void MapInstance::dispatch( Event *ev )
         case evStoreSellItem:
             on_store_sell_item(static_cast<StoreSellItem *>(ev));
             break;
-    case evStoreBuyItem:
+        case evStoreBuyItem:
             on_store_buy_item(static_cast<StoreBuyItem *>(ev));
             break;
         default:
@@ -2089,6 +2089,10 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
+    uint32_t map_idx = session.m_current_map->m_index;
+
+    std::array<bool, 1024> * map_cells = &ent->m_player->m_player_progress.m_visible_map_cells[map_idx];
+    map_cells->at(ev->tile_idx) = true;
 
     qCDebug(logMiniMap) << "MiniMapState tile "<< ev->tile_idx << " for player" << ent->name();
     // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
@@ -2151,6 +2155,8 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         map_server->session_xfer_complete(session.link()->session_token());
     }
 
+    // TODO: Check map type to determine if is_opaque is true / false
+    sendVisitMapCells(session, false, session.m_ent->m_player->m_player_progress.m_visible_map_cells[session.m_current_map->m_index]);
     initializeCharacter(*session.m_ent->m_char);
 
     // Call Lua Connected function.
@@ -2961,7 +2967,8 @@ void MapInstance::send_character_update(Entity *e)
                 e->m_player->m_tasks_entry_list,
                 e->m_player->m_clues,
                 e->m_player->m_souvenirs,
-                e->m_player->m_player_statistics });
+                e->m_player->m_player_statistics,
+                e->m_player->m_player_progress });
 
     serializeToQString(*e->m_char->getAllCostumes(), cerealizedCostumeData);
     serializeToQString(e->m_char->m_char_data, cerealizedCharData);
@@ -2999,7 +3006,8 @@ void MapInstance::send_player_update(Entity *e)
                 e->m_player->m_tasks_entry_list,
                 e->m_player->m_clues,
                 e->m_player->m_souvenirs,
-                e->m_player->m_player_statistics });
+                e->m_player->m_player_statistics,
+                e->m_player->m_player_progress });
 
     serializeToQString(playerData, cerealizedPlayerData);
 
