@@ -85,6 +85,7 @@ struct QueuedPowers
     bool            m_active_state_change   = false;
     bool            m_activation_state      = false;
     bool            m_timer_updated         = false;
+    uint32_t        m_tgt_idx               = 0;
 };
 
 class PowerPool_Info
@@ -101,11 +102,21 @@ enum : uint32_t { class_version = 1 };
         void serialize(Archive &archive, uint32_t const version);
 };
 
+struct buffset
+{
+    float           m_value                 = 0.0;
+    QString         m_value_name            = "";
+    uint            m_attrib                = 0;       // for damage resistances or defenses or others
+};
+
 struct Buffs
 {
+    QString         m_name                  = "unknown";
     PowerPool_Info  m_buff_info;
     float           m_time_to_activate      = 0.0f;
-    float           m_activate_period       = 0.0f;
+    float           m_duration              = 0.0f;
+    std::vector<buffset>    m_buffs;                //For buffs with multiple effects
+    uint32_t         source_ent_idx          = 0;
 };
 
 struct CharacterInspiration
@@ -150,7 +161,7 @@ struct vInspirations
             m_inspirations[i].resize(m_rows);
     }
 
-    int size()
+    uint32_t size()
     {
         return m_cols * m_rows;
     }
@@ -348,7 +359,6 @@ void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
 void dumpOwnedPowers(CharacterData &cd);
 
-
 /*
  * Inspirations Methods
  */
@@ -358,9 +368,7 @@ void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp);
 int getNumberInspirations(const CharacterData &cd);
 int getMaxNumberInspirations(const CharacterData &cd);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
-bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
-void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 void dumpInspirations(CharacterData &cd);
 
 

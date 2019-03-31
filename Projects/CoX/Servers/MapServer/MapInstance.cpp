@@ -2157,6 +2157,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
 
     // TODO: Check map type to determine if is_opaque is true / false
     sendVisitMapCells(session, false, session.m_ent->m_player->m_player_progress.m_visible_map_cells[session.m_current_map->m_index]);
+    initializeCharacter(*session.m_ent->m_char);
 
     // Call Lua Connected function.
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
@@ -2297,11 +2298,11 @@ void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    if(session.m_ent->m_queued_powers.isEmpty())
+    if(session.m_ent->m_queued_powers.empty())
         return;
 
-    // remove first queued power
-    session.m_ent->m_queued_powers.dequeue();
+    // remove last queued power
+    session.m_ent->m_queued_powers.pop_back();
     session.m_ent->m_char->m_char_data.m_has_updated_powers = true; // this must be true, because we're updating queued powers
 
     qCWarning(logMapEvents) << "Aborting queued power";
@@ -2395,9 +2396,8 @@ void MapInstance::on_unqueue_all(UnqueueAll *ev)
     Entity *ent = session.m_ent;
 
     // What else could go here?
-    ent->m_target_idx = -1;
-    ent->m_assist_target_idx = -1;
-    ent->m_queued_powers.clear();
+    ent->m_target_idx = 0;
+    ent->m_assist_target_idx = 0;
 
     qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
@@ -2415,13 +2415,15 @@ void MapInstance::on_activate_power(ActivatePower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_has_input_on_timeframe = true;
-    uint32_t tgt_idx = ev->target_idx;
+    int tgt_idx = ev->target_idx;
 
-    if(ev->target_idx <= 0 || ev->target_idx == session.m_ent->m_idx)
-        tgt_idx = -1;
-
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
+    Entity *target_ent = getEntity(&session, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
+    checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
 }
 
 void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
@@ -2429,12 +2431,22 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_has_input_on_timeframe = true;
 
-    // TODO: Check that target is valid, then Do Power!
-    QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    sendFaceLocation(session, ev->location);
+    CharacterPower * ppower = nullptr;
+    ppower = getOwnedPowerByVecIdx(*session.m_ent, ev->pset_idx, ev->pow_idx);
+    const Power_Data powtpl = ppower->getPowerTemplate();
+    int tgt_idx = ev->target_idx;
 
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+    Entity *target_ent = getEntity(&session, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
+    if ((powtpl.EntsAffected[0] == StoredEntEnum::Caster ))
+        tgt_idx = session.m_ent->m_idx;
+    session.m_ent->m_target_loc = ev->location;
+    checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
+    sendFaceLocation(session, ev->location);
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
