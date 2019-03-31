@@ -153,27 +153,27 @@ struct StoredAttribMod
     // to members. Otherwise, moc files are not generated properly under certain conditions.
     Q_GADGET
 public:
-    QByteArray         name;
+    QByteArray         name             = "unknown";
     int                index_in_power;
-    QByteArray         DisplayAttackerHit;
-    QByteArray         DisplayVictimHit;
+    QByteArray         DisplayAttackerHit = "";
+    QByteArray         DisplayVictimHit = "";
     struct Power_Data *parent_StoredPower;
-    AttribModTarget    Target;
-    QByteArray         Table;
-    float              Scale;
-    int                Attrib; //
+    AttribModTarget    Target           = AttribModTarget::Target;
+    QByteArray         Table            = "43"; //would be easier as int, since the tables are stored in an array
+    float              Scale            = 1.0;
+    int                Attrib           = 0; //
     AttribMod_Aspect   Aspect;
-    AttribModType      Type;
-    float              Duration; // Special values in DurationEnum
-    float              Magnitude;
-    int                Delay;
-    int                Period;
-    int                Chance;
-    int                CancelOnMiss;
-    int                NearGround;
-    int                AllowStrength;
-    int                AllowResistance;
-    AttribStackType    StackType;
+    AttribModType      Type             = AttribModType::Magnitude;
+    float              Duration         = 0.0; // Special values in DurationEnum
+    float              Magnitude        = 1.0;
+    int                Delay            = 0;    //should be float, for now I'm just dividing by 1000
+    int                Period           = 0;    //same
+    int                Chance           = 100;  // are we sure this isn't a float?
+    int                CancelOnMiss;            // bool?
+    int                NearGround;              // bool?
+    int                AllowStrength;           // bool?
+    int                AllowResistance;         // bool?
+    AttribStackType    StackType     = AttribStackType::Replace;
     std::vector<int>   ContinuingBits;
     QByteArray         ContinuingFX;
     std::vector<int>   ConditionalBits; // 5c
