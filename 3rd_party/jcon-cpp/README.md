@@ -4,7 +4,7 @@ JCON-CPP is a portable C++ JSON RPC 2.0 library that depends on Qt.
 
 ## Introduction
 
-If you're using **C++ 11** and **Qt**, and want to create a **JSON RPC 2.0**
+If you're using **C++ 14** and **Qt**, and want to create a **JSON RPC 2.0**
 client or server, using either **TCP** or **WebSockets** as underlying transport
 layer, then **JCON-CPP** might prove useful.
 
@@ -21,8 +21,24 @@ Platforms supported are: Linux, Windows, Mac OS, and Android.
 4. `cmake ..`
 5. `make -j4`
 
-The build depends on the environment variable `QTDIR` to find the required Qt
-dependencies.
+The build depends on the build directive `CMAKE_PREFIX_PATH` to find the
+required Qt dependencies, so if your CMake doesn't pick up on where to find Qt,
+try adding `cmake -DCMAKE_PREFIX_PATH=<QTDIR> ..` in step 4 above.
+
+## Include Files
+
+Depending on if you're implementing a server or a client and whether you're
+using TCP or WebSockets, you need to include some of these files:
+```c++
+#include <jcon/json_rpc_tcp_client.h>
+#include <jcon/json_rpc_tcp_server.h>
+#include <jcon/json_rpc_websocket_client.h>
+#include <jcon/json_rpc_websocket_server.h>
+```
+
+## Example Code
+
+There's example code of both a server and a client in the file `src/main.cpp`.
 
 ## Creating a Server
 
@@ -60,6 +76,12 @@ Register your service with:
 ```c++
 rpc_server->registerServices({ new ExampleService() });
 ```
+
+Note that (as of 2018-11-21) there is also a variant of `registerServices` that
+takes a `QMap<QObject*, QString>`, where the keys are the services, and the
+values are strings that will need to be used as prefixes when calling the
+corresponding RPC methods. This can be used as a simple namespace mechanism.
+Please refer to the example code in `src/main.cpp`.
 
 The server will take over ownership of the service object, and the memory will
 be freed at shutdown. Note that the `registerServices` method changed its
@@ -145,6 +167,13 @@ single argument), use `callExpandArgs` and `callAsyncExpandArgs`.
 
 Bug reports and pull requests are welcome on GitHub at
 https://github.com/joncol/jcon-cpp.
+
+Please follow these
+[guidelines](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
+for creating commit messages.
+
+Also make sure to follow the existing code style. No lines with more than 80
+characters, spaces instead of tabs for instance.
 
 
 ## License

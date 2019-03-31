@@ -242,36 +242,78 @@ bool loadFrom(BinStore *s, AllPowerCategories &target)
 template<class Archive>
 static void serialize(Archive & archive, StoredAttribMod & src)
 {
+    QByteArray temp;
+    archive(cereal::make_nvp("EffectType",temp));
+    if (temp.toLower() == "mez")
+        archive(cereal::make_nvp("MezType",temp));
+    src.name = temp.toLower();
 
-    archive(cereal::make_nvp("Name",src.name));
+    archive(cereal::make_nvp("DamageType",temp));
+    if (temp.toLower() == "fire")
+        src.Attrib = 0;         //todo: turn all the damage types to numbers, for now we'll just use fire
+    else
+        src.Attrib = 1;
+
+    archive(cereal::make_nvp("Aspect",temp));
+    if(temp.toLower() == "cur")
+        src.Aspect = AttribMod_Aspect::Current;
+    else if(temp.toLower() == "res")
+        src.Aspect = AttribMod_Aspect::Resistance;
+    else if(temp.toLower() == "str")
+        src.Aspect = AttribMod_Aspect::Strength;
+    else
+        src.Aspect = AttribMod_Aspect::Absolute;
+
+    archive(cereal::make_nvp("ToWho",temp));
+    if (temp.toLower() == "self")
+        src.Target = SEGS_Enums_Power::AttribModTarget::Self;   //default is target
+
+    int table;
+    archive(cereal::make_nvp("nModifierTable",table));
+    if (table < 43)
+        src.Table = QByteArray::number(table);
+    archive(cereal::make_nvp("Scale",src.Scale));
+
+    archive(cereal::make_nvp("AttribType",temp));
+    if (temp.toLower() == "duration")
+        src.Type = AttribModType::Duration;                     //default is magnitude
+
+    float time;
+    archive(cereal::make_nvp("DelayedTime", time));
+    src.Delay = int(time * 1000);       // stored value is a float of seconds, we use it as an int of msecs
+    archive(cereal::make_nvp("Probability",time));
+    src.Chance = int(time * 100);
+
+    archive(cereal::make_nvp("Ticks",src.Period));
+
+    bool allow;     //load ints with 0 or 1 from a bool
+    archive(cereal::make_nvp("CancelOnMiss",allow));
+    src.CancelOnMiss = allow;
+    archive(cereal::make_nvp("NearGround",allow));
+    src.NearGround = allow;
+    archive(cereal::make_nvp("Buffable",allow));
+    src.AllowStrength = allow;
+    archive(cereal::make_nvp("Resistible",allow));
+    src.AllowResistance = allow;
+
+    archive(cereal::make_nvp("Stacking",temp));
+    if (temp.toLower() == "yes")
+        src.StackType = AttribStackType::Stack;                 //default replace
+    archive(cereal::make_nvp("Duration",src.Duration));
+    archive(cereal::make_nvp("Mag",src.Magnitude));
+    archive(cereal::make_nvp("Summon",src.EntityDef));
+
+    /* The following are not used yet
     archive(cereal::make_nvp("DisplayAttackerHit",src.DisplayAttackerHit));
     archive(cereal::make_nvp("DisplayVictimHit",src.DisplayVictimHit));
-    archive(cereal::make_nvp("Attrib",src.Attrib));
-    archive(cereal::make_nvp("Aspect",src.Aspect));
-    archive(cereal::make_nvp("Target",src.Target));
-    archive(cereal::make_nvp("Table",src.Table));
-
-    archive(cereal::make_nvp("Scale",src.Scale));
-    archive(cereal::make_nvp("Type",src.Type));
-    archive(cereal::make_nvp("Delay",src.Delay));
-    archive(cereal::make_nvp("Period",src.Period));
-    archive(cereal::make_nvp("Chance",src.Chance));
-
-    archive(cereal::make_nvp("CancelOnMiss",src.CancelOnMiss));     // T/F
-    archive(cereal::make_nvp("NearGround",src.NearGround));       // T/F
-    archive(cereal::make_nvp("AllowStrength",src.AllowStrength));    // T/F
-    archive(cereal::make_nvp("AllowResistance",src.AllowResistance)); // T/F
-    archive(cereal::make_nvp("StackType",src.StackType));
-    archive(cereal::make_nvp("Duration",src.Duration));
-    archive(cereal::make_nvp("Magnitude",src.Magnitude));
     archive(cereal::make_nvp("ContinuingBits",src.ContinuingBits));
     archive(cereal::make_nvp("ContinuingFX",src.ContinuingFX));
     archive(cereal::make_nvp("ConditionalBits",src.ConditionalBits));
     archive(cereal::make_nvp("ConditionalFX",src.ConditionalFX));
-    archive(cereal::make_nvp("EntityDef",src.EntityDef));
     archive(cereal::make_nvp("PriorityListDefense",src.PriorityListDefense));
     archive(cereal::make_nvp("PriorityListOffense",src.PriorityListOffense));
     archive(cereal::make_nvp("PriorityListPassive",src.PriorityListPassive));
+   */
 }
 template<class Archive>
 static void serialize(Archive & archive, SeqBitNames & src)
@@ -402,5 +444,8 @@ void saveTo(const AllPowerCategories & target, const QString & baseName, bool te
 {
     commonSaveTo(target,"Powers",baseName,text_format);
 }
-
+bool loadFrom(const QString &filepath, AllPowerCategories &target)
+{
+    return commonReadFrom(filepath,"Powers",target);
+}
 //! @}

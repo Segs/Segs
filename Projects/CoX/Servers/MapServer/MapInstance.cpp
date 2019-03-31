@@ -605,7 +605,7 @@ void MapInstance::dispatch( Event *ev )
         case evStoreSellItem:
             on_store_sell_item(static_cast<StoreSellItem *>(ev));
             break;
-    case evStoreBuyItem:
+        case evStoreBuyItem:
             on_store_buy_item(static_cast<StoreBuyItem *>(ev));
             break;
         default:
@@ -2094,6 +2094,10 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
+    uint32_t map_idx = session.m_current_map->m_index;
+
+    std::array<bool, 1024> * map_cells = &ent->m_player->m_player_progress.m_visible_map_cells[map_idx];
+    map_cells->at(ev->tile_idx) = true;
 
     qCDebug(logMiniMap) << "MiniMapState tile "<< ev->tile_idx << " for player" << ent->name();
     // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
@@ -2155,6 +2159,10 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         // TODO: check if there's a better place to complete the map transfer..
         map_server->session_xfer_complete(session.link()->session_token());
     }
+
+    // TODO: Check map type to determine if is_opaque is true / false
+    sendVisitMapCells(session, false, session.m_ent->m_player->m_player_progress.m_visible_map_cells[session.m_current_map->m_index]);
+    initializeCharacter(*session.m_ent->m_char);
 
     // Call Lua Connected function.
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
@@ -2295,11 +2303,11 @@ void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    if(session.m_ent->m_queued_powers.isEmpty())
+    if(session.m_ent->m_queued_powers.empty())
         return;
 
-    // remove first queued power
-    session.m_ent->m_queued_powers.dequeue();
+    // remove last queued power
+    session.m_ent->m_queued_powers.pop_back();
     session.m_ent->m_char->m_char_data.m_has_updated_powers = true; // this must be true, because we're updating queued powers
 
     qCWarning(logMapEvents) << "Aborting queued power";
@@ -2393,9 +2401,8 @@ void MapInstance::on_unqueue_all(UnqueueAll *ev)
     Entity *ent = session.m_ent;
 
     // What else could go here?
-    ent->m_target_idx = -1;
-    ent->m_assist_target_idx = -1;
-    ent->m_queued_powers.clear();
+    ent->m_target_idx = 0;
+    ent->m_assist_target_idx = 0;
 
     qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
@@ -2413,13 +2420,15 @@ void MapInstance::on_activate_power(ActivatePower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_has_input_on_timeframe = true;
-    uint32_t tgt_idx = ev->target_idx;
+    int tgt_idx = ev->target_idx;
 
-    if(ev->target_idx <= 0 || ev->target_idx == session.m_ent->m_idx)
-        tgt_idx = -1;
-
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
+    Entity *target_ent = getEntity(&session, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
+    checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
 }
 
 void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
@@ -2427,12 +2436,22 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_has_input_on_timeframe = true;
 
-    // TODO: Check that target is valid, then Do Power!
-    QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    sendFaceLocation(session, ev->location);
+    CharacterPower * ppower = nullptr;
+    ppower = getOwnedPowerByVecIdx(*session.m_ent, ev->pset_idx, ev->pow_idx);
+    const Power_Data powtpl = ppower->getPowerTemplate();
+    int tgt_idx = ev->target_idx;
 
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+    Entity *target_ent = getEntity(&session, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
+    if ((powtpl.EntsAffected[0] == StoredEntEnum::Caster ))
+        tgt_idx = session.m_ent->m_idx;
+    session.m_ent->m_target_loc = ev->location;
+    checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
+    sendFaceLocation(session, ev->location);
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
@@ -2953,7 +2972,8 @@ void MapInstance::send_character_update(Entity *e)
                 e->m_player->m_tasks_entry_list,
                 e->m_player->m_clues,
                 e->m_player->m_souvenirs,
-                e->m_player->m_player_statistics });
+                e->m_player->m_player_statistics,
+                e->m_player->m_player_progress });
 
     serializeToQString(*e->m_char->getAllCostumes(), cerealizedCostumeData);
     serializeToQString(e->m_char->m_char_data, cerealizedCharData);
@@ -2991,7 +3011,8 @@ void MapInstance::send_player_update(Entity *e)
                 e->m_player->m_tasks_entry_list,
                 e->m_player->m_clues,
                 e->m_player->m_souvenirs,
-                e->m_player->m_player_statistics });
+                e->m_player->m_player_statistics,
+                e->m_player->m_player_progress });
 
     serializeToQString(playerData, cerealizedPlayerData);
 
