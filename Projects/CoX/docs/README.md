@@ -61,6 +61,8 @@ INSTALL & CONFIGURE THE COX CLIENT
    > For Windows users, a guide to determining your IP can be found here: https://support.microsoft.com/en-us/help/15291/windows-find-pc-ip-address
    
    > ADVANCED: run `cmd` and type `ipconfig`. Your IP will probably start with `192.168.xxx.xxx` or `10.0.xx.xx`
+   
+If you have trouble running Cox-Auth.exe then you can do this step manually by opening regedit, and creating the registry key "Computer\HKEY_CURRENT_USER\Software\Cryptic\Segs" then create a string called "Auth" with the value as your server IP.
 
 
 3. **How to correctly run the CoX Client?**

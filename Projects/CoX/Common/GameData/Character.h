@@ -109,6 +109,7 @@ const   QString &       getName() const { return m_name; }
         uint32_t            m_db_id;
         bool                m_in_training   = false;
         bool                m_add_new_costume = true;
+        bool                m_is_dead = false;
 
 protected:
         QString         m_name;

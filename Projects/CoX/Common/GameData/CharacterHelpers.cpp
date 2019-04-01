@@ -141,6 +141,16 @@ void setBattleCry(Character &c, QString val)
     c.m_char_data.m_battle_cry = val;
 }
 
+void initializeCharacter(Character &c)
+{
+    GameDataStore &data(getGameData());
+    uint entclass = getEntityClassIndex(data, true, c.m_char_data.m_class_name);
+    c.m_char_data.m_current_attribs = data.m_player_classes[entclass].m_AttribBase[0];
+    c.m_char_data.m_current_attribs.m_HitPoints = c.m_max_attribs.m_HitPoints;
+    c.m_char_data.m_current_attribs.m_Endurance = c.m_max_attribs.m_Endurance;
+    c.m_char_data.m_current_attribs.m_Regeneration *=4;     //for some reason the base regen rate is .25
+}
+
 void updateLastOnline(Character &c)
 {
     c.m_char_data.m_last_online = QDateTime::currentDateTime().toString();

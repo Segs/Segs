@@ -74,6 +74,7 @@ void cmdHandler_SetJumpHeight(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetEnd(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetXP(const QString &cmd, MapClientSession &sess);
+void cmdHandler_GiveXP(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetDebt(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetInf(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetLevel(const QString &cmd, MapClientSession &sess);
@@ -137,6 +138,7 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 // Access Level 2[GM] Commands
 void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess);
+void cmdHandler_Alignment(const QString &cmd, MapClientSession &sess);
 
 // Access Level 1 Commands
 void cmdHandler_CmdList(const QString &cmd, MapClientSession &sess);
@@ -199,6 +201,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"setHP"},"Set the HP value of your character", cmdHandler_SetHP, 9},
     {{"setEnd"},"Set your Endurance", cmdHandler_SetEnd, 9},
     {{"setXP"},"Set your XP", cmdHandler_SetXP, 9},
+    {{"giveXP"},"Give yourself XP", cmdHandler_GiveXP, 9},
     {{"setDebt"},"Set your Debt", cmdHandler_SetDebt, 9},
     {{"setInf"},"Set your Influence", cmdHandler_SetInf, 9},
     {{"setLevel"},"Set your Level", cmdHandler_SetLevel, 9},
@@ -262,6 +265,7 @@ static const SlashCommand g_defined_slash_commands[] = {
     /* Access Level 2 Commands */
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", cmdHandler_AddNPC, 2},
     {{"moveTo", "setpos", "setpospyr"},"set the gm's position to <x> <y> <z>", cmdHandler_MoveTo, 2},
+    {{"align", "alignment", "herostatus"},"set the gm's alignment to hero, villain, both, none/neither", cmdHandler_Alignment, 2},
 
     /* Access Level 1 Commands */
     {{"cmdlist","commandlist"},"List all accessible commands", cmdHandler_CmdList, 1},
@@ -513,7 +517,7 @@ void cmdHandler_SetHP(const QString &cmd, MapClientSession &sess)
 {
     float attrib = cmd.midRef(cmd.indexOf(' ')+1).toFloat();
 
-    setHP(*sess.m_ent->m_char, attrib);
+    changeHP(*sess.m_ent, attrib);
 
     QString msg = QString("Setting HP to: %1 / %2")
             .arg(attrib).arg(getMaxHP(*sess.m_ent->m_char));
@@ -547,6 +551,22 @@ void cmdHandler_SetXP(const QString &cmd, MapClientSession &sess)
     uint32_t newlvl = getLevel(*sess.m_ent->m_char);
     if(lvl != newlvl)
         msg += " and LVL to " + QString::number(newlvl);
+
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_GiveXP(const QString &cmd, MapClientSession &sess)
+{
+    uint32_t attrib = cmd.midRef(cmd.indexOf(' ')+1).toUInt();
+    uint32_t lvl = getLevel(*sess.m_ent->m_char);
+
+    giveXp(sess, attrib);
+    QString msg = "Giving " + QString::number(attrib) + " XP";
+
+    uint32_t newlvl = getLevel(*sess.m_ent->m_char);
+    if(lvl != newlvl)
+        msg += " and setting LVL to " + QString::number(newlvl);
 
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
@@ -1417,14 +1437,16 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     if(parts.size()<2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
-        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+        sendInfoMessage(MessageChannel::USER_ERROR, "Addnpc requires a valid npc name"+cmd, sess);
         return;
     }
 
     QString name = parts[1].toString();
     glm::vec3 offset = glm::vec3 {2,0,1};
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos + offset;
+
     addNpc(sess, name, gm_loc, variation, name);
+
 }
 
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
@@ -1446,6 +1468,20 @@ void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
 
     forcePosition(*sess.m_ent,new_pos);
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("New position set"), sess);
+}
+void cmdHandler_Alignment(const QString &cmd, MapClientSession &sess)
+{
+    QVector<QStringRef> parts;
+    parts = cmd.splitRef(' ');
+    if(parts.size() == 2)
+    {
+        setAlignment(*sess.m_ent, parts[1].toString());
+        sendInfoMessage(MessageChannel::DEBUG_INFO, "New alignment: "+parts[1], sess);
+        return;
+    }
+    QString msg = "Choose from hero, villain, both or none/neither: ";
+    qCDebug(logSlashCommand) << msg <<cmd;
+    sendInfoMessage(MessageChannel::USER_ERROR, msg+cmd, sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1721,7 +1757,7 @@ void cmdHandler_SetAssistTarget(const QString &/*cmd*/, MapClientSession &sess)
     if(new_target == 0)
         return;
 
-    if(target_ent->m_is_villian)
+    if(target_ent->m_is_villain)
         setTarget(*sess.m_ent, new_target);
     else
         setAssistTarget(*sess.m_ent, new_target);
