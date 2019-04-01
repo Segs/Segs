@@ -32,7 +32,6 @@
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/InternalEvents.h"
-#include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/MessageBus.h"
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
@@ -126,6 +125,8 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_scripting_interface->setIncludeDir(mapdir_path);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
+
+    m_chat_service = new ChatService(m_entities);
 }
 
 void MapInstance::start(const QString &scenegraph_path)
@@ -144,7 +145,6 @@ void MapInstance::start(const QString &scenegraph_path)
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
                 m_all_spawners = m_map_scenegraph->getSpawnPoints();
-                m_map_transfers = m_map_scenegraph->get_map_transfers();
             }, "Loading original scene graph");
 
         TIMED_LOG({
@@ -163,11 +163,13 @@ void MapInstance::start(const QString &scenegraph_path)
         qWarning() << "FAILED to load map instance data. Check to see if file exists:" << m_data_path;
     }
 
-    // create a GameDbSyncService
-    m_sync_service = new GameDBSyncService();
-    m_sync_service->set_db_handler(m_game_server_id);
-    m_sync_service->activate();
+    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
+    init_timers();
+    init_services();
+}
 
+void MapInstance::init_timers()
+{
     // world simulation ticks
     m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, world_update_interval, false);
     // state broadcast ticks
@@ -179,8 +181,25 @@ void MapInstance::start(const QString &scenegraph_path)
 
     //Lua timer
     m_lua_timer = std::make_unique<SEGSTimer>(this, Lua_Timer, lua_timer_interval, false );
-
     m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
+}
+
+void MapInstance::init_services()
+{
+    // create a GameDbSyncService
+    m_sync_service = std::make_unique<GameDBSyncService>();
+    m_sync_service->set_db_handler(m_game_server_id);
+    m_sync_service->activate();
+
+    m_email_service = EmailService();
+    m_client_option_service = ClientOptionService();
+    m_character_service = CharacterService();
+    m_enhancement_service = EnhancementService();
+    m_inspiration_service = InspirationService();
+    m_power_service = PowerService();
+    m_location_service = LocationService();
+    m_trading_service = TradingService();
+    m_zone_transfer_service = ZoneTransferService(this);
 }
 
 ///
@@ -203,58 +222,6 @@ void MapInstance::load_map_lua()
 
     for(const QString &path : script_paths)
         loadAndRunLua(m_scripting_interface, path);
-}
-
-QHash<QString, MapXferData> MapInstance::get_map_door_transfers()
-{
-    if (!m_door_transfers_checked)
-    {
-        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
-        while (i != m_map_transfers.constEnd())
-        {
-            if (i.value().m_transfer_type == MapXferType::DOOR)
-            {
-                m_map_door_transfers.insert(i.key(), i.value());
-            }
-            i++;
-        }
-        m_door_transfers_checked = true;
-    }
-
-    return m_map_door_transfers;
-}
-
-QHash<QString, MapXferData> MapInstance::get_map_zone_transfers()
-{
-    if (!m_zone_transfers_checked)
-    {
-        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
-        while (i != m_map_transfers.constEnd())
-        {
-            if (i.value().m_transfer_type == MapXferType::ZONE)
-            {
-                m_map_zone_transfers.insert(i.key(), i.value());
-            }
-            i++;
-        }
-        m_zone_transfers_checked = true;
-    }
-    return m_map_zone_transfers;
-}
-
-QString MapInstance::getNearestDoor(glm::vec3 location)
-{
-    float door_distance_check = 15.f;
-    QHash<QString, MapXferData>::const_iterator i = get_map_door_transfers().constBegin();
-    while (i != get_map_door_transfers().constEnd())
-    {
-        if (glm::distance(location, i.value().m_position) < door_distance_check)
-        {
-            return i.value().m_target_spawn_name;
-        }
-        i++;
-    }
-    return QString();
 }
 
 ///
@@ -297,7 +264,8 @@ MapInstance::~MapInstance()
 
     // one last update on entities before termination of MapInstance, and in turn the SyncService as well
     on_update_entities();
-    delete m_sync_service;
+
+    m_sync_service.reset();
 }
 
 void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*ev*/)
@@ -414,35 +382,8 @@ void MapInstance::dispatch( Event *ev )
         case evCookieRequest:
             on_cookie_confirm(static_cast<CookieRequest *>(ev));
             break;
-        case evEnterDoor:
-            on_enter_door(static_cast<EnterDoor *>(ev));
-            break;
-        case evChangeStance:
-            on_change_stance(static_cast<ChangeStance *>(ev));
-            break;
-        case evSetDestination:
-            on_set_destination(static_cast<SetDestination *>(ev));
-            break;
-        case evHasEnteredDoor:
-            on_has_entered_door(static_cast<HasEnteredDoor *>(ev));
-            break;
-        case evWindowState:
-            on_window_state(static_cast<WindowState *>(ev));
-            break;
-        case evInspirationDockMode:
-            on_inspiration_dockmode(static_cast<InspirationDockMode *>(ev));
-            break;
-        case evPowersDockMode:
-            on_powers_dockmode(static_cast<PowersDockMode *>(ev));
-            break;
-        case evAbortQueuedPower:
-            on_abort_queued_power(static_cast<AbortQueuedPower *>(ev));
-            break;
         case evConsoleCommand:
             on_console_command(static_cast<ConsoleCommand *>(ev));
-            break;
-        case evChatDividerMoved:
-            on_command_chat_divider_moved(static_cast<ChatDividerMoved *>(ev));
             break;
         case evClientResumedRendering:
             on_client_resumed(static_cast<ClientResumedRendering *>(ev));
@@ -450,198 +391,208 @@ void MapInstance::dispatch( Event *ev )
         case evMiniMapState:
             on_minimap_state(static_cast<MiniMapState *>(ev));
             break;
-        case evLocationVisited:
-            on_location_visited(static_cast<LocationVisited *>(ev));
-            break;
         case evChatReconfigure:
             on_chat_reconfigured(static_cast<ChatReconfigure *>(ev));
-            break;
-        case evPlaqueVisited:
-            on_plaque_visited(static_cast<PlaqueVisited *>(ev));
-            break;
-        case evSwitchViewPoint:
-            on_switch_viewpoint(static_cast<SwitchViewPoint *>(ev));
-            break;
-        case evSaveClientOptions:
-            on_client_options(static_cast<SaveClientOptions *>(ev));
-            break;
-        case evDescriptionAndBattleCry:
-            on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
-            break;
-        case evSetDefaultPower:
-            on_set_default_power(static_cast<SetDefaultPower *>(ev));
-            break;
-        case evUnsetDefaultPower:
-            on_unset_default_power(static_cast<UnsetDefaultPower *>(ev));
-            break;
-        case evUnqueueAll:
-            on_unqueue_all(static_cast<UnqueueAll *>(ev));
-            break;
-        case evActivatePower:
-            on_activate_power(static_cast<ActivatePower *>(ev));
-            break;
-        case evActivatePowerAtLocation:
-            on_activate_power_at_location(static_cast<ActivatePowerAtLocation *>(ev));
-            break;
-        case evActivateInspiration:
-            on_activate_inspiration(static_cast<ActivateInspiration *>(ev));
-            break;
-        case evInteractWithEntity:
-            on_interact_with(static_cast<InteractWithEntity *>(ev));
-            break;
-        case evSwitchTray:
-            on_switch_tray(static_cast<SwitchTray *>(ev));
             break;
         case evTargetChatChannelSelected:
             on_target_chat_channel_selected(static_cast<TargetChatChannelSelected *>(ev));
             break;
-        case evEntityInfoRequest:
-            on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
+            // --------------- Power Service ---------------
+        case evActivatePower:
+            m_power_service.on_activate_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evSelectKeybindProfile:
-            on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
+        case evActivatePowerAtLocation:
+            m_power_service.on_activate_power_at_location(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evSetKeybind:
-            on_set_keybind(static_cast<SetKeybind *>(ev));
+        case evSetDefaultPower:
+            m_power_service.on_set_default_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evRemoveKeybind:
-            on_remove_keybind(static_cast<RemoveKeybind *>(ev));
+        case evUnsetDefaultPower:
+            m_power_service.on_unset_default_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evResetKeybinds:
-            on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
+        case evPowersDockMode:
+            m_power_service.on_powers_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evEmailHeaderResponse:
-            on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
-            break;
-        case evEmailHeaderToClientMessage:
-            on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev));
-            break;
-        case evEmailHeadersToClientMessage:
-            on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev));
-            break;
-        case evEmailReadResponse:
-            on_email_read_response(static_cast<EmailReadResponse *>(ev));
-            break;
-        case evEmailWasReadByRecipientMessage:
-            on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
-            break;
-        case evEmailCreateStatusMessage:
-            on_email_create_status(static_cast<EmailCreateStatusMessage *>(ev));
-            break;
-        case evMoveInspiration:
-            on_move_inspiration(static_cast<MoveInspiration *>(ev));
-            break;
-        case evRecvSelectedTitles:
-            on_recv_selected_titles(static_cast<RecvSelectedTitles *>(ev));
-            break;
-        case evDialogButton:
-            on_dialog_button(static_cast<DialogButton *>(ev));
-            break;
-        case evCombineEnhancementsReq:
-            on_combine_enhancements(static_cast<CombineEnhancementsReq *>(ev));
-            break;
-        case evMoveEnhancement:
-            on_move_enhancement(static_cast<MoveEnhancement *>(ev));
-            break;
-        case evSetEnhancement:
-            on_set_enhancement(static_cast<SetEnhancement *>(ev));
-            break;
-        case evTrashEnhancement:
-            on_trash_enhancement(static_cast<TrashEnhancement *>(ev));
-            break;
-        case evTrashEnhancementInPower:
-            on_trash_enhancement_in_power(static_cast<TrashEnhancementInPower *>(ev));
-            break;
-        case evBuyEnhancementSlot:
-            on_buy_enhancement_slot(static_cast<BuyEnhancementSlot *>(ev));
+        case evAbortQueuedPower:
+            m_power_service.on_abort_queued_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evRecvNewPower:
-            on_recv_new_power(static_cast<RecvNewPower *>(ev));
+            m_power_service.on_recv_new_power(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evTradeWasCancelledMessage:
-            on_trade_cancelled(static_cast<TradeWasCancelledMessage *>(ev));
+        case evChangeStance:
+            m_power_service.on_change_stance(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evTradeWasUpdatedMessage:
-            on_trade_updated(static_cast<TradeWasUpdatedMessage *>(ev));
+        case evUnqueueAll:
+            m_power_service.on_unqueue_all(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evInitiateMapXfer:
-            on_initiate_map_transfer(static_cast<InitiateMapXfer *>(ev));
+            // ---------- Client Option Service ------------
+        case evSelectKeybindProfile:
+            m_client_option_service.on_select_keybind_profile(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evMapXferComplete:
-            on_map_xfer_complete(static_cast<MapXferComplete *>(ev));
+        case evSetKeybind:
+            m_client_option_service.on_set_keybind(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evMapSwapCollisionMessage:
-            on_map_swap_collision(static_cast<MapSwapCollisionMessage *>(ev));
+        case evRemoveKeybind:
+            m_client_option_service.on_remove_keybind(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evAwaitingDeadNoGurney:
-            on_awaiting_dead_no_gurney(static_cast<AwaitingDeadNoGurney *>(ev));
+        case evResetKeybinds:
+            m_client_option_service.on_reset_keybinds(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evDeadNoGurneyOK:
-            on_dead_no_gurney_ok(static_cast<DeadNoGurneyOK *>(ev));
+        case evSwitchViewPoint:
+            m_client_option_service.on_switch_viewpoint(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evSaveClientOptions:
+            m_client_option_service.on_client_options(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evWindowState:
+            m_client_option_service.on_window_state(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evBrowserClose:
-            on_browser_close(static_cast<BrowserClose *>(ev));
+            m_client_option_service.on_browser_close(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evChatDividerMoved:
+            m_client_option_service.on_command_chat_divider_moved(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+            // ---------- Email Service ----------------
+        case evEmailHeaderResponse:
+            on_service_to_client_response(m_email_service.on_email_header_response(ev));
+            break;
+        case evEmailHeaderToClientMessage:
+            on_service_to_client_response(m_email_service.on_email_header_to_client(ev));
+            break;
+        case evEmailHeadersToClientMessage:
+            on_service_to_client_response(m_email_service.on_email_headers_to_client(ev));
+            break;
+        case evEmailReadResponse:
+            on_service_to_client_response(m_email_service.on_email_read_response(ev));
+            break;
+        case evEmailWasReadByRecipientMessage:
+            on_service_to_client_response(m_email_service.on_email_read_by_recipient(ev));
+            break;
+        case evEmailCreateStatusMessage:
+            on_service_to_client_response(m_email_service.on_email_create_status(ev));
+            break;
+            // --------------- Inspiration Service -----------------
+        case evMoveInspiration:
+            m_inspiration_service.on_move_inspiration(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evInspirationDockMode:
+            m_inspiration_service.on_inspiration_dockmode(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evActivateInspiration:
+            on_service_to_client_response(m_inspiration_service.on_activate_inspiration(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+            // ------------- Enhancement Service --------------------
+        case evCombineEnhancementsReq:
+            m_enhancement_service.on_combine_enhancements(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evMoveEnhancement:
+            m_enhancement_service.on_move_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evSetEnhancement:
+            m_enhancement_service.on_set_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evTrashEnhancement:
+            m_enhancement_service.on_trash_enhancement(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evTrashEnhancementInPower:
+            m_enhancement_service.on_trash_enhancement_in_power(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evBuyEnhancementSlot:
+            m_enhancement_service.on_buy_enhancement_slot(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+            // ------------------ Character Service ---------------
+        case evLevelUpResponse:
+            m_character_service.on_levelup_response(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evSwitchTray:
+            m_character_service.on_switch_tray(m_session_store.session_from_event(ev).m_ent, ev);
+            break;
+        case evRecvSelectedTitles:
+            m_character_service.on_recv_selected_titles(m_session_store.session_from_event(ev).m_ent, ev);
             break;
         case evRecvCostumeChange:
-            on_recv_costume_change(static_cast<RecvCostumeChange *>(ev));
+            m_character_service.on_levelup_response(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evLevelUpResponse:
-            on_levelup_response(static_cast<LevelUpResponse *>(ev));
+        case evDescriptionAndBattleCry:
+            m_character_service.on_description_and_battlecry(m_session_store.session_from_event(ev).m_ent, ev);
             break;
-        case evReceiveContactStatus:
-            on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
+            // -------------------- Transaction Service ---------------
+        case evTradeWasCancelledMessage:
+            on_service_to_client_response(m_trading_service.on_trade_cancelled(m_session_store.session_from_event(ev).m_ent, ev));
             break;
-        case evReceiveTaskDetailRequest:
-            on_receive_task_detail_request(static_cast<ReceiveTaskDetailRequest *>(ev));
-            break;
-        case evSouvenirDetailRequest:
-            on_souvenir_detail_request(static_cast<SouvenirDetailRequest *>(ev));
+        case evTradeWasUpdatedMessage:
+            on_service_to_client_response(m_trading_service.on_trade_updated(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         case evStoreSellItem:
-            on_store_sell_item(static_cast<StoreSellItem *>(ev));
+            on_service_to_client_response(m_trading_service.on_store_sell_item(m_session_store.session_from_event(ev).m_ent, ev));
             break;
-    case evStoreBuyItem:
-            on_store_buy_item(static_cast<StoreBuyItem *>(ev));
+        case evStoreBuyItem:
+            on_service_to_client_response(m_trading_service.on_store_buy_item(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+            // ------------------------- Location Service --------------------
+        case evLocationVisited:
+            on_service_to_client_response(m_location_service.on_location_visited(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evPlaqueVisited:
+            on_service_to_client_response(m_location_service.on_plaque_visited(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evSetDestination:
+            on_service_to_client_response(m_location_service.on_set_destination(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+            // ----------------------- Zone Transfer Service -----------------
+        case evInitiateMapXfer:
+            on_service_to_client_response(m_zone_transfer_service.on_initiate_map_transfer(
+                                              (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id),
+                                              m_session_store.session_from_event(ev).link(),
+                                              m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evMapXferComplete:
+            m_zone_transfer_service.on_map_xfer_complete(m_session_store.session_from_event(ev).m_ent, closest_safe_location(m_session_store.session_from_event(ev).m_ent->m_entity_data.m_pos), ev);
+            break;
+        case evMapSwapCollisionMessage:
+            on_service_to_client_response(m_zone_transfer_service.on_map_swap_collision(
+                                              m_session_store.session_from_event(ev).link(),
+                                              m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evEnterDoor:
+            on_service_to_client_response(m_zone_transfer_service.on_enter_door(
+                                              (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id),
+                                              m_session_store.session_from_event(ev).link(),
+                                              m_session_store.session_from_event(ev).m_ent,
+                                              m_index, ev));
+            break;
+        case evHasEnteredDoor:
+            on_service_to_client_response(m_zone_transfer_service.on_has_entered_door(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evAwaitingDeadNoGurney:
+            on_service_to_client_response(m_zone_transfer_service.on_awaiting_dead_no_gurney(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evDeadNoGurneyOK:
+            on_service_to_client_response(m_zone_transfer_service.on_dead_no_gurney_ok(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+            // ------------------------- Interaction Service --------------------------
+        case evInteractWithEntity:
+            on_service_to_client_response(m_interaction_service.on_interact_with(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evEntityInfoRequest:
+            on_service_to_client_response(m_interaction_service.on_entity_info_request(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evDialogButton:
+            on_service_to_client_response(m_interaction_service.on_dialog_button(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evReceiveContactStatus:
+            on_service_to_client_response(m_interaction_service.on_receive_contact_status(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evReceiveTaskDetailRequest:
+            on_service_to_client_response(m_interaction_service.on_receive_task_detail_request(m_session_store.session_from_event(ev).m_ent, ev));
+            break;
+        case evSouvenirDetailRequest:
+            on_service_to_client_response(m_interaction_service.on_souvenir_detail_request(m_session_store.session_from_event(ev).m_ent, ev));
             break;
         default:
             qCWarning(logMapEvents, "Unhandled MapEventTypes %u\n", ev->type()-MapEventTypes::base_MapEventTypes);
     }
-}
-
-void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
-{
-
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    MapLink *lnk = session.link();
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    if(!map_server->session_has_xfer_in_progress(lnk->session_token()))
-    {
-         qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
-         return;
-    }
-
-    // This is used here to get the map idx to send to the client for the transfer, but we
-    // remove it from the std::map after the client has sent us the ClientRenderingResumed event so we
-    // can prevent motd showing every time.
-    MapXferData &map_xfer = map_server->session_map_xfer_idx(lnk->session_token());
-    GameAccountResponseCharacterData c_data;
-    QString serialized_data;
-
-    fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
-    serializeToQString(c_data, serialized_data);
-    ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
-                                    serialized_data, session.m_requested_slot_idx, session.m_name, getMapPath(map_xfer.m_target_map_name),
-                                    session.m_max_slots},
-                                    lnk->session_token(),this);
-    map_server->putq(map_req);
-}
-
-void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
-{
-    // TODO: Do anything necessary after connecting to new map instance here.
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    forcePosition(*session.m_ent, session.m_current_map->closest_safe_location(session.m_ent->m_entity_data.m_pos));
-    session.m_ent->m_map_swap_collided = false;
 }
 
 void MapInstance::on_idle(Idle *ev)
@@ -1074,16 +1025,6 @@ void MapInstance::sendState()
 
 }
 
-void MapInstance::on_combine_enhancements(CombineEnhancementsReq *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    CombineResult res=combineEnhancements(*session.m_ent, ev->first_power, ev->second_power);
-    sendEnhanceCombineResponse(session, res.success, res.destroyed);
-    session.m_ent->m_char->m_char_data.m_has_updated_powers = res.success || res.destroyed;
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to merge enhancements" /*<< ev->first_power << ev->second_power*/;
-}
-
 void MapInstance::on_input_state(RecvInputState *st)
 {
     MapClientSession &session(m_session_store.session_from_event(st));
@@ -1163,332 +1104,6 @@ void MapInstance::on_cookie_confirm(CookieRequest * ev)
     session.link()->putq(res);
 }
 
-void MapInstance::on_window_state(WindowState * ev)
-{
-    // Save GUISettings to character entity and entry in the database.
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *e = session.m_ent;
-
-    int idx = ev->wnd.m_idx;
-    e->m_player->m_gui.m_wnds.at(idx) = ev->wnd;
-
-    qCDebug(logGUI) << "Received window state" << ev->wnd.m_idx << "-" << ev->wnd.m_mode;
-    if(logGUI().isDebugEnabled())
-        e->m_player->m_gui.m_wnds.at(idx).guiWindowDump();
-}
-
-QString process_replacement_strings(MapClientSession *sender,const QString &msg_text)
-{
-    /*
-    // $$           - newline
-    // $archetype   - the archetype of your character
-    // $battlecry   - your character's battlecry, as entered on your character ID screen
-    // $level       - your character's current level
-    // $name        - your character's name
-    // $origin      - your character's origin
-    // $target      - your currently selected target's name
-
-    msg_text = msg_text.replace("$target",sender->m_ent->target->name());
-    */
-
-    QString new_msg = msg_text;
-    static const QStringList replacements = {
-        "\\$\\$",
-        "\\$archetype",
-        "\\$battlecry",
-        "\\$level",
-        "\\$name",
-        "\\$origin",
-        "\\$target"
-    };
-
-    const Character &c(*sender->m_ent->m_char);
-
-    QString  sender_class       = QString(getClass(c)).remove("Class_");
-    QString  sender_battlecry   = getBattleCry(c);
-    uint32_t sender_level       = getLevel(c);
-    QString  sender_char_name   = c.getName();
-    QString  sender_origin      = getOrigin(c);
-    uint32_t target_idx         = getTargetIdx(*sender->m_ent);
-    QString  target_char_name   = c.getName();
-
-    qCDebug(logChat) << "src -> tgt: " << sender->m_ent->m_idx  << "->" << target_idx;
-
-    if(target_idx > 0)
-    {
-        Entity   *tgt    = getEntity(sender,target_idx);
-        target_char_name = tgt->name(); // change name
-    }
-
-    foreach (const QString &str, replacements)
-    {
-        if(str == "\\$archetype")
-            new_msg.replace(QRegularExpression(str), sender_class);
-        else if(str == "\\$battlecry")
-            new_msg.replace(QRegularExpression(str), sender_battlecry);
-        else if(str == "\\$level")
-            new_msg.replace(QRegularExpression(str), QString::number(sender_level));
-        else if(str == "\\$name")
-            new_msg.replace(QRegularExpression(str), sender_char_name);
-        else if(str == "\\$origin")
-            new_msg.replace(QRegularExpression(str), sender_origin);
-        else if(str == "\\$target")
-            new_msg.replace(QRegularExpression(str), target_char_name);
-        else if(str == "\\$\\$")
-        {
-            if(new_msg.contains(str))
-                qCDebug(logChat) << "need to send newline for" << str; // This apparently works client-side.
-        }
-    }
-    return new_msg;
-}
-
-static bool isChatMessage(const QString &msg)
-{
-    static const QStringList chat_prefixes = {
-            "l", "local",
-            "b", "broadcast", "y", "yell",
-            "g", "group", "sg", "supergroup",
-            "req", "request",
-            "f",
-            "t", "tell", "w", "whisper", "p", "private"
-    };
-    QString space(msg.mid(0,msg.indexOf(' ')));
-    return chat_prefixes.contains(space);
-}
-
-static MessageChannel getKindOfChatMessage(const QStringRef &msg)
-{
-    if(msg=="l" || msg=="local")                                                            // Aliases: local, l
-        return MessageChannel::LOCAL;
-    if(msg=="b" || msg=="broadcast" || msg=="y" || msg=="yell")                             // Aliases: broadcast, yell, b, y
-        return MessageChannel::BROADCAST;
-    if(msg=="g" || msg=="group" || msg=="team")                                             // Aliases: team, g, group
-        return MessageChannel::TEAM;
-    if(msg=="sg" || msg=="supergroup")                                                      // Aliases: sg, supergroup
-        return MessageChannel::SUPERGROUP;
-    if(msg=="req" || msg=="request" || msg=="auction" || msg=="sell")                       // Aliases: request, req, auction, sell
-        return MessageChannel::REQUEST;
-    if(msg=="f")                                                                            // Aliases: f
-        return MessageChannel::FRIENDS;
-    if(msg=="t" || msg=="tell" || msg=="w" || msg=="whisper" || msg=="p" || msg=="private") // Aliases: t, tell, whisper, w, private, p
-        return MessageChannel::PRIVATE;
-    // unknown chat types are processed as local chat
-    return MessageChannel::LOCAL;
-}
-
-
-
-
-void MapInstance::process_chat(Entity *sender, QString &msg_text)
-{
-    int first_space = msg_text.indexOf(QRegularExpression("\\s"), 0); // first whitespace, as the client sometimes sends tabs
-    QString sender_char_name;
-    QString prepared_chat_message;
-
-    QStringRef cmd_str(msg_text.midRef(0,first_space));
-    QStringRef msg_content(msg_text.midRef(first_space+1,msg_text.lastIndexOf("\n")));
-    MessageChannel kind = getKindOfChatMessage(cmd_str);
-    std::vector<MapClientSession *> recipients;
-
-    MapClientSession *sender_sess;
-
-    if(!sender)
-      return;
-
-
-    sender_char_name = sender->name();
-
-     for(MapClientSession *cl : m_session_store)
-     {
-         if(cl->m_ent->m_db_id == sender->m_db_id)
-         {
-             sender_sess = cl;
-             break;
-         }
-     }
-
-    switch(kind)
-    {
-        case MessageChannel::LOCAL:
-        {
-            // send only to clients within range
-            glm::vec3 senderpos = sender->m_entity_data.m_pos;
-            for(MapClientSession *cl : m_session_store)
-            {
-                glm::vec3 recpos = cl->m_ent->m_entity_data.m_pos;
-                float range = 50.0f; // range of "hearing". I assume this is in yards
-                float dist = glm::distance(senderpos,recpos);
-
-                qCDebug(logChat, "senderpos: %f %f %f", senderpos.x, senderpos.y, senderpos.z);
-                qCDebug(logChat, "recpos: %f %f %f", recpos.x, recpos.y, recpos.z);
-                qCDebug(logChat, "sphere: %f", range);
-                qCDebug(logChat, "dist: %f", dist);
-
-                if(dist<=range)
-                    recipients.push_back(cl);
-            }
-            prepared_chat_message = QString("[Local] %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClientSession * cl : recipients)
-            {
-                sendChatMessage(MessageChannel::LOCAL,prepared_chat_message,sender,*cl);
-            }
-            break;
-        }
-        case MessageChannel::BROADCAST:
-        {
-            // send the message to everyone on this map
-            std::copy(m_session_store.begin(),m_session_store.end(),std::back_insert_iterator<std::vector<MapClientSession *>>(recipients));
-            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString()); // where does [Broadcast] come from? The client?
-            for(MapClientSession * cl : recipients)
-            {
-                sendChatMessage(MessageChannel::BROADCAST,prepared_chat_message,sender,*cl);
-            }
-            break;
-        }
-        case MessageChannel::REQUEST:
-        {
-            // send the message to everyone on this map
-            std::copy(m_session_store.begin(),m_session_store.end(),std::back_insert_iterator<std::vector<MapClientSession *>>(recipients));
-            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClientSession * cl : recipients)
-            {
-                sendChatMessage(MessageChannel::REQUEST,prepared_chat_message,sender,*cl);
-            }
-            break;
-        }
-        case MessageChannel::PRIVATE:
-        {
-            int first_comma = msg_text.indexOf(',');
-            QStringRef target_name_ref(msg_text.midRef(first_space+1,(first_comma - first_space-1)));
-            msg_content = msg_text.midRef(first_comma+1,msg_text.lastIndexOf("\n"));
-
-            QString target_name = target_name_ref.toString();
-            qCDebug(logChat) << "Private Chat:"
-                             << "\n\t" << "target_name:" << target_name
-                             << "\n\t" << "msg_text:" << msg_text;
-
-            Entity *tgt;
-            for(MapClientSession *cl : m_session_store)
-            {
-                if(cl->m_ent->name() == target_name)
-                {
-                    tgt = cl->m_ent;
-                    break;
-                }
-            }
-
-            qWarning() << "Private chat: this only work for players on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
-
-            if(tgt == nullptr)
-            {
-                prepared_chat_message = QString("No player named \"%1\" currently online.").arg(target_name);
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message, *sender_sess);
-                break;
-            }
-            else
-            {
-                prepared_chat_message = QString(" --> %1: %2").arg(target_name,msg_content.toString());
-                sendInfoMessage(MessageChannel::PRIVATE, prepared_chat_message, *sender_sess); // in this case, sender is target
-
-                prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
-                sendChatMessage(MessageChannel::PRIVATE, prepared_chat_message, sender, *tgt->m_client);
-            }
-
-            break;
-        }
-        case MessageChannel::TEAM:
-        {
-            if(!sender->m_has_team)
-            {
-                prepared_chat_message = "You are not a member of a Team.";
-                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender_sess);
-                break;
-            }
-
-            qWarning() << "Team chat: this only work for members on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
-
-            // Only send the message to characters on sender's team
-            for(MapClientSession *cl : m_session_store)
-            {
-                if(sender->m_team->m_team_idx == cl->m_ent->m_team->m_team_idx)
-                    recipients.push_back(cl);
-            }
-            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClientSession * cl : recipients)
-            {
-                sendChatMessage(MessageChannel::TEAM, prepared_chat_message, sender, *cl);
-            }
-            break;
-        }
-        case MessageChannel::SUPERGROUP:
-        {
-            if(!sender->m_has_supergroup)
-            {
-                prepared_chat_message = "You are not a member of a SuperGroup.";
-                sendInfoMessage(MessageChannel::USER_ERROR, prepared_chat_message, *sender_sess);
-                break;
-            }
-
-            qWarning() << "SuperGroup chat: this only work for members on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
-
-            // Only send the message to characters in sender's supergroup
-            for(MapClientSession *cl : m_session_store)
-            {
-                if(sender->m_supergroup.m_SG_id == cl->m_ent->m_supergroup.m_SG_id)
-                    recipients.push_back(cl);
-            }
-            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
-            for(MapClientSession * cl : recipients)
-            {
-                sendChatMessage(MessageChannel::SUPERGROUP,prepared_chat_message,sender,*cl);
-            }
-            break;
-        }
-        case MessageChannel::FRIENDS:
-        {
-            FriendsList * fl = &sender->m_char->m_char_data.m_friendlist;
-            if(!fl->m_has_friends || fl->m_friends_count == 0)
-            {
-                prepared_chat_message = "You don't have any friends to message.";
-                sendInfoMessage(MessageChannel::USER_ERROR,prepared_chat_message,*sender_sess);
-                break;
-            }
-
-            qWarning() << "Friend chat: this only work for friends on local server. We should introduce a message router, and send messages to EntityIDs instead of directly using sessions.";
-
-            // Only send the message to characters in sender's friendslist
-            prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());
-            for(Friend &f : fl->m_friends)
-            {
-                if(f.m_online_status != true)
-                    continue;
-
-                //TODO: this only work for friends on local server
-                // introduce a message router, and send messages to EntityIDs instead of directly using sessions.
-                Entity *tgt = getEntityByDBID(sender_sess->m_current_map, f.m_db_id);
-                if(tgt == nullptr) // In case we didn't toggle online_status.
-                    continue;
-
-                sendChatMessage(MessageChannel::FRIENDS, prepared_chat_message, sender, *tgt->m_client);
-            }
-            sendChatMessage(MessageChannel::FRIENDS, prepared_chat_message, sender, *sender_sess);
-            break;
-        }
-        default:
-        {
-            qCDebug(logChat) << "Unhandled MessageChannel type" << int(kind);
-            break;
-        }
-    }
-}
-
-static bool has_emote_prefix(const QString &cmd) // ERICEDIT: This encompasses all emotes.
-{
-    return cmd.startsWith("em ",Qt::CaseInsensitive) || cmd.startsWith("e ",Qt::CaseInsensitive)
-                || cmd.startsWith("me ",Qt::CaseInsensitive) || cmd.startsWith("emote ",Qt::CaseInsensitive);
-}
-
 void MapInstance::on_console_command(ConsoleCommand * ev)
 {
     QString contents = ev->contents.simplified();
@@ -1496,593 +1111,24 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     Entity *ent = session.m_ent;
 
     if(contents.contains("$")) // does it contain replacement strings?
-        contents = process_replacement_strings(&session, contents);
+        contents = m_chat_service->process_replacement_strings(ent, contents);
 
     //printf("Console command received %s\n",qPrintable(ev->contents));
 
     ent->m_has_input_on_timeframe = true;
 
-    if(isChatMessage(contents))
+    if(m_chat_service->isChatMessage(contents))
     {
-        process_chat(ent,contents);
+        on_chat_service_to_client_response(m_chat_service->process_chat(ent,contents));
     }
-    else if(has_emote_prefix(contents))
+    else if(m_chat_service->has_emote_prefix(contents))
     {
-        on_emote_command(contents, ent);
+        on_chat_service_to_client_response(m_chat_service->on_emote_command(ent, contents));
     }
     else
     {
         runCommand(contents,session);
     }
-}
-
-void MapInstance::on_emote_command(const QString &command, Entity *ent)
-{
-    QString msg;                                                                // Initialize the variable to hold the debug message.
-    MapClientSession *src = ent->m_client;
-    std::vector<MapClientSession *> recipients;
-
-    QString cmd_str = command.section(QRegularExpression("\\s+"), 0, 0);
-    QString original_emote = command.section(QRegularExpression("\\s+"), 1, -1);
-    QString lowerContents = original_emote.toLower();
-                                                                             // Normal Emotes
-    static const QStringList afraidCommands = {"afraid", "cower", "fear", "scared"};
-    static const QStringList akimboCommands = {"akimbo", "wings"};
-    static const QStringList bigWaveCommands = {"bigwave", "overhere"};
-    static const QStringList boomBoxCommands = {"boombox", "bb", "dropboombox"};
-    static const QStringList bowCommands = {"bow", "sorry"};
-    static const QStringList bowDownCommands = {"bowdown", "down"};
-    static const QStringList coinCommands = {"coin", "cointoss", "flipcoin"};
-    static const QStringList diceCommands = {"dice", "rolldice"};
-    static const QStringList evilLaughCommands = {"evillaugh", "elaugh", "muahahaha", "villainlaugh", "villainouslaugh"};
-    static const QStringList fancyBowCommands = {"fancybow", "elegantbow"};
-    static const QStringList flex1Commands = {"flex1", "flexa"};
-    static const QStringList flex2Commands = {"flex2", "flex", "flexb"};
-    static const QStringList flex3Commands = {"flex3", "flexc"};
-    static const QStringList hiCommands = {"hi", "wave"};
-    static const QStringList hmmCommands = {"hmmm", "plotting"};
-    static const QStringList laugh2Commands = {"laugh2", "biglaugh", "laughtoo"};
-    static const QStringList martialArtsCommands = {"martialarts", "kata"};
-    static const QStringList newspaperCommands = {"newspaper"};
-    static const QStringList noCommands = {"no", "dontattack"};
-    static const QStringList plotCommands = {"plot", "scheme"};
-    static const QStringList stopCommands = {"stop", "raisehand"};
-    static const QStringList tarzanCommands = {"tarzan", "beatchest"};
-    static const QStringList taunt1Commands = {"taunt1", "taunta"};
-    static const QStringList taunt2Commands = {"taunt2", "taunt", "tauntb"};
-    static const QStringList thanksCommands = {"thanks", "thankyou"};
-    static const QStringList waveFistCommands = {"wavefist", "rooting"};
-    static const QStringList winnerCommands = {"winner", "champion"};
-    static const QStringList yesCommands = {"yes", "thumbsup"};
-    static const QStringList yogaCommands = {"yoga", "lotus"};
-    static const QStringList snowflakesCommands = {"snowflakes", "throwsnowflakes"};
-
-    if(afraidCommands.contains(lowerContents))                                  // Afraid: Cower in fear, hold stance.
-    {
-        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
-            msg = "Unhandled flying Afraid emote";
-        else
-            msg = "Unhandled ground Afraid emote";
-    }
-    else if(akimboCommands.contains(lowerContents) && !ent->m_motion_state.m_is_flying)        // Akimbo: Stands with fists on hips looking forward, hold stance.
-        msg = "Unhandled Akimbo emote";                                         // Not allowed when flying.
-    else if(lowerContents == "angry")                                           // Angry: Fists on hips and slouches forward, as if glaring or grumbling, hold stance.
-        msg = "Unhandled Angry emote";
-    else if(lowerContents == "atease")                                          // AtEase: Stands in the 'at ease' military position (legs spread out slightly, hands behind back) stance, hold stance.
-        msg = "Unhandled AtEase emote";
-    else if(lowerContents == "attack")                                          // Attack: Gives a charge! type point, fists on hips stance.
-        msg = "Unhandled Attack emote";
-    else if(lowerContents == "batsmash")                                        // BatSmash: Hit someone or something with a bat, repeat.
-        msg = "Unhandled BatSmash emote";
-    else if(lowerContents == "batsmashreact")                                   // BatSmashReact: React as if getting hit with a bat, often used in duo with BatSmash.
-        msg = "Unhandled BatSmashReact emote";
-    else if(bigWaveCommands.contains(lowerContents))                            // BigWave: Waves over the head, fists on hips stance.
-        msg = "Unhandled BigWave emote";
-    else if(boomBoxCommands.contains(lowerContents) && !ent->m_motion_state.m_is_flying)       // BoomBox (has sound): Summons forth a boombox (it just appears) and leans over to turn it on, stands up and does a sort of dance. A random track will play.
-    {                                                                           // Not allowed when flying.
-        int rSong = rand() % 25 + 1;                                            // Randomly pick a song.
-        switch(rSong)
-        {
-            case 1:                                                             // 1: BBAltitude
-            {
-                msg = "1: Unhandled \"BBAltitude\" BoomBox emote";
-                break;
-            }
-            case 2:                                                             // 2: BBBeat
-            {
-                msg = "2: Unhandled \"BBBeat\" BoomBox emote";
-                break;
-            }
-            case 3:                                                             // 3: BBCatchMe
-            {
-                msg = "3: Unhandled \"BBCatchMe\" BoomBox emote";
-                break;
-            }
-            case 4:                                                             // 4: BBDance
-            {
-                msg = "4: Unhandled \"BBDance\" BoomBox emote";
-                break;
-            }
-            case 5:                                                             // 5: BBDiscoFreak
-            {
-                msg = "5: Unhandled \"BBDiscoFreak\" BoomBox emote";
-                break;
-            }
-            case 6:                                                             // 6: BBDogWalk
-            {
-                msg = "6: Unhandled \"BBDogWalk\" BoomBox emote";
-                break;
-            }
-            case 7:                                                             // 7: BBElectroVibe
-            {
-                msg = "7: Unhandled \"BBElectroVibe\" BoomBox emote";
-                break;
-            }
-            case 8:                                                             // 8: BBHeavyDude
-            {
-                msg = "8: Unhandled \"BBHeavyDude\" BoomBox emote";
-                break;
-            }
-            case 9:                                                             // 9: BBInfoOverload
-            {
-                msg = "9: Unhandled \"BBInfoOverload\" BoomBox emote";
-                break;
-            }
-            case 10:                                                            // 10: BBJumpy
-            {
-                msg = "10: Unhandled \"BBJumpy\" BoomBox emote";
-                break;
-            }
-            case 11:                                                            // 11: BBKickIt
-            {
-                msg = "11: Unhandled \"BBKickIt\" BoomBox emote";
-                break;
-            }
-            case 12:                                                            // 12: BBLooker
-            {
-                msg = "12: Unhandled \"BBLooker\" BoomBox emote";
-                break;
-            }
-            case 13:                                                            // 13: BBMeaty
-            {
-                msg = "13: Unhandled \"BBMeaty\" BoomBox emote";
-                break;
-            }
-            case 14:                                                            // 14: BBMoveOn
-            {
-                msg = "14: Unhandled \"BBMoveOn\" BoomBox emote";
-                break;
-            }
-            case 15:                                                            // 15: BBNotorious
-            {
-                msg = "15: Unhandled \"BBNotorious\" BoomBox emote";
-                break;
-            }
-            case 16:                                                            // 16: BBPeace
-            {
-                msg = "16: Unhandled \"BBPeace\" BoomBox emote";
-                break;
-            }
-            case 17:                                                            // 17: BBQuickie
-            {
-                msg = "17: Unhandled \"BBQuickie\" BoomBox emote";
-                break;
-            }
-            case 18:                                                            // 18: BBRaver
-            {
-                msg = "18: Unhandled \"BBRaver\" BoomBox emote";
-                break;
-            }
-            case 19:                                                            // 19: BBShuffle
-            {
-                msg = "19: Unhandled \"BBShuffle\" BoomBox emote";
-                break;
-            }
-            case 20:                                                            // 20: BBSpaz
-            {
-                msg = "20: Unhandled \"BBSpaz\" BoomBox emote";
-                break;
-            }
-            case 21:                                                            // 21: BBTechnoid
-            {
-                msg = "21: Unhandled \"BBTechnoid\" BoomBox emote";
-                break;
-            }
-            case 22:                                                            // 22: BBVenus
-            {
-                msg = "22: Unhandled \"BBVenus\" BoomBox emote";
-                break;
-            }
-            case 23:                                                            // 23: BBWindItUp
-            {
-                msg = "23: Unhandled \"BBWindItUp\" BoomBox emote";
-                break;
-            }
-            case 24:                                                            // 24: BBWahWah
-            {
-                msg = "24: Unhandled \"BBWahWah\" BoomBox emote";
-                break;
-            }
-            case 25:                                                            // 25: BBYellow
-            {
-                msg = "25: Unhandled \"BBYellow\" BoomBox emote";
-            }
-        }
-    }
-    else if(bowCommands.contains(lowerContents) && !ent->m_motion_state.m_is_flying)           // Bow: Chinese/Japanese style bow with palms together, returns to normal stance.
-        msg = "Unhandled Bow emote";                                            // Not allowed when flying.
-    else if(bowDownCommands.contains(lowerContents))                            // BowDown: Thrusts hands forward, then points down, as if ordering someone else to bow before you.
-        msg = "Unhandled BowDown emote";
-    else if(lowerContents == "burp" && !ent->m_motion_state.m_is_flying)                       // Burp (has sound): A raunchy belch, wipes mouth with arm afterward, ape-like stance.
-        msg = "Unhandled Burp emote";                                           // Not allowed when flying.
-    else if(lowerContents == "cheer")                                           // Cheer: Randomly does one of 3 cheers, 1 fist raised, 2 fists raised or 2 fists lowered, repeats.
-    {
-        int rNum = rand() % 3 + 1;                                              // Randomly pick the cheer.
-        switch(rNum)
-        {
-            case 1:                                                             // 1: 1 fist raised
-            {
-                msg = "1: Unhandled \"1 fist raised\" Cheer emote";
-                break;
-            }
-            case 2:                                                             // 2: 2 fists raised
-            {
-                msg = "2: Unhandled \"2 fists raised\" Cheer emote";
-                break;
-            }
-            case 3:                                                             // 3: 2 fists lowered
-            {
-                msg = "3: Unhandled \"2 fists lowered\" Cheer emote";
-            }
-        }
-    }
-    else if(lowerContents == "clap")                                            // Clap (has sound): Claps hands several times, crossed arms stance.
-        msg = "Unhandled Clap emote";
-    else if(coinCommands.contains(lowerContents))                               // Coin: Flips a coin, randomly displays heads or tails, and hold stance. Coin image remains until stance broken.
-    {
-        int rFlip = rand() % 2 + 1;                                             // Randomly pick heads or tails.
-        switch(rFlip)
-        {
-            case 1:                                                             // 1: Heads
-            {
-                msg = "1: Unhandled heads Coin emote";
-                break;
-            }
-            case 2:                                                             // 2: Tails
-            {
-                msg = "2: Unhandled tails Coin emote";
-            }
-        }
-    }
-    else if(lowerContents == "crossarms" && !ent->m_motion_state.m_is_flying)                  // CrossArms: Crosses arms, stance (slightly different from most other crossed arm stances).
-        msg = "Unhandled CrossArms emote";                                      // Not allowed when flying.
-    else if(lowerContents == "dance")                                           // Dance: Randomly performs one of six dances.
-    {
-        int rDance = rand() % 6 + 1;                                            // Randomly pick the dance.
-        switch(rDance)
-        {
-            case 1:                                                             // 1: Dances with elbows by hips.
-            {
-                msg = "1: Unhandled \"Dances with elbows by hips\" Dance emote";
-                break;
-            }
-            case 2:                                                             // 2: Dances with fists raised.
-            {
-                msg = "2: Unhandled \"Dances with fists raised\" Dance emote";
-                break;
-            }
-            case 3:                                                             // 3: Swaying hands by hips, aka "Really Bad" dancing.
-            {
-                msg = "3: Unhandled \"Swaying hands by hips, aka 'Really Bad' dancing\" Dance emote";
-                break;
-            }
-            case 4:                                                             // 4: Swaying hands up in the air, like in a breeze.
-            {
-                msg = "4: Unhandled \"Swaying hands up in the air, like in a breeze\" Dance emote";
-                break;
-            }
-            case 5:                                                             // 5: As Dance4, but jumping as well.
-            {
-                msg = "5: Unhandled \"As Dance4, but jumping as well\" Dance emote";
-                break;
-            }
-            case 6:                                                             // 6: The monkey.
-            {
-                msg = "6: Unhandled \"The monkey\" Dance emote";
-            }
-        }
-    }
-    else if(diceCommands.contains(lowerContents))                               // Dice: Picks up, shakes and rolls a die, randomly displays the results (1-6), default stance. Die image quickly fades.
-    {
-        int rDice = rand() % 6 + 1;                                             // Randomly pick a die result.
-        switch(rDice)
-        {
-            case 1:                                                             // 1: 1
-            {
-                msg = "1: Unhandled \"1\" Dice emote";
-                break;
-            }
-            case 2:                                                             // 2: 2
-            {
-                msg = "2: Unhandled \"2\" Dice emote";
-                break;
-            }
-            case 3:                                                             // 3: 3
-            {
-                msg = "3: Unhandled \"3\" Dice emote";
-                break;
-            }
-            case 4:                                                             // 4: 4
-            {
-                msg = "4: Unhandled \"4\" Dice emote";
-                break;
-            }
-            case 5:                                                             // 5: 5
-            {
-                msg = "5: Unhandled \"5\" Dice emote";
-                break;
-            }
-            case 6:                                                             // 6: 6
-            {
-                msg = "6: Unhandled \"6\" Dice emote";
-            }
-        }
-    }
-    else if(lowerContents == "dice1")                                           // Dice1: Picks up, shakes and rolls a die, displays a 1, default stance.
-        msg = "Unhandled Dice1 emote";
-    else if(lowerContents == "dice2")                                           // Dice2: Picks up, shakes and rolls a die, displays a 2, default stance.
-        msg = "Unhandled Dice2 emote";
-    else if(lowerContents == "dice3")                                           // Dice3: Picks up, shakes and rolls a die, displays a 3, default stance.
-        msg = "Unhandled Dice3 emote";
-    else if(lowerContents == "dice4")                                           // Dice4: Picks up, shakes and rolls a die, displays a 4, default stance.
-        msg = "Unhandled Dice4 emote";
-    else if(lowerContents == "dice5")                                           // Dice5: Picks up, shakes and rolls a die, displays a 5, default stance.
-        msg = "Unhandled Dice5 emote";
-    else if(lowerContents == "dice6")                                           // Dice6: Picks up, shakes and rolls a die, displays a 6, default stance.
-        msg = "Unhandled Dice6 emote";
-    else if(lowerContents == "disagree")                                        // Disagree: Shakes head, crosses hand in front, then offers an alternative, crossed arms stance.
-        msg = "Unhandled Disagree emote";
-    else if(lowerContents == "drat")                                            // Drat: Raises fists up, then down, stomping at the same time, same ending stance as Frustrated.
-        msg = "Unhandled Drat emote";
-    else if(lowerContents == "explain")                                         // Explain: Hold arms out in a "wait a minute" gesture, motion alternatives, then shrug.
-        msg = "Unhandled Explain emote";
-    else if(evilLaughCommands.contains(lowerContents))                          // EvilLaugh: Extremely melodramatic, overacted evil laugh.
-        msg = "Unhandled EvilLaugh emote";
-    else if(fancyBowCommands.contains(lowerContents))                           // FancyBow: A much more elegant, ball-room style bow, falls into neutral forward facing stance.
-        msg = "Unhandled FancyBow emote";
-    else if(flex1Commands.contains(lowerContents))                              // Flex1: Fists raised, flexing arms stance, hold stance. This is called a "double biceps" pose.
-        msg = "Unhandled Flex1 emote";
-    else if(flex2Commands.contains(lowerContents))                              // Flex2: A side-stance flexing arms, hold stance. This is a sideways variation on the "most muscular" pose.
-        msg = "Unhandled Flex2 emote";
-    else if(flex3Commands.contains(lowerContents))                              // Flex3: Another side-stance, flexing arms, hold stance. This is an open variation on the "side chest" pose.
-        msg = "Unhandled Flex3 emote";
-    else if(lowerContents == "frustrated")                                      // Frustrated: Raises both fists and leans backwards, shaking fists and head, leads into a quick-breathing angry-looking stance.
-        msg = "Unhandled Frustrated emote";
-    else if(lowerContents == "grief")                                           // Grief: Falls to knees, hands on forehead, looks up and gestures a sort of "why me?" look with hands, goes into a sort of depressed slump while on knees, holds stance.
-        msg = "Unhandled Grief emote";
-    else if(hiCommands.contains(lowerContents))                                 // Hi: Simple greeting wave, fists on hips stance.
-        msg = "Unhandled Hi emote";
-    else if(hmmCommands.contains(lowerContents))                                // Hmmm: Stare into the sky, rubbing chin, thinking.
-        msg = "Unhandled Hmmm emote";
-    else if(lowerContents == "jumpingjacks")                                    // JumpingJacks (has sound): Does jumping jacks, repeats.
-        msg = "Unhandled JumpingJacks emote";
-    else if(lowerContents == "kneel")                                           // Kneel: Quickly kneels on both knees with hands on thighs (looks insanely uncomfortable), holds stance.
-        msg = "Unhandled Kneel emote";
-    else if(lowerContents == "laugh")                                           // Laugh: Fists on hips, tosses head back and laughs.
-        msg = "Unhandled Laugh emote";
-    else if(laugh2Commands.contains(lowerContents))                             // Laugh2: Another style of laugh.
-        msg = "Unhandled Laugh2 emote";
-    else if(lowerContents == "lecture")                                         // Lecture: Waves/shakes hands in different motions in a lengthy lecture, fists on hips stance.
-        msg = "Unhandled Lecture emote";
-    else if(martialArtsCommands.contains(lowerContents))                        // MartialArts (has sound): Warm up/practice punches and blocks.
-        msg = "Unhandled MartialArts emote";
-    else if(lowerContents == "militarysalute")                                  // MilitarySalute: Stands in the military-style heads-high hand on forehead salute stance.
-        msg = "Unhandled MilitarySalute emote";
-    else if(newspaperCommands.contains(lowerContents))                          // Newspaper: Materializes a newspaper and reads it.
-        msg = "Unhandled Newspaper emote";
-    else if(noCommands.contains(lowerContents))                                 // No: Shakes head and waves hands in front of character, crossed arms stance.
-        msg = "Unhandled No emote";
-    else if(lowerContents == "nod")                                             // Nod: Fists on hips, nod yes, hold stance.
-        msg = "Unhandled Nod emote";
-    else if(lowerContents == "none")                                            // None: Cancels the current emote, if any, and resumes default standing animation cycle.
-        msg = "Unhandled None emote";
-    else if(lowerContents == "paper")                                           // Paper: Plays rock/paper/scissors, picking paper (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
-        msg = "Unhandled Paper emote";
-    else if(plotCommands.contains(lowerContents))                               // Plot: Rubs hands together while hunched over.
-        msg = "Unhandled Plot emote";
-    else if(lowerContents == "point")                                           // Point: Extends left arm and points in direction character is facing, hold stance.
-        msg = "Unhandled Point emote";
-    else if(lowerContents == "praise")                                          // Praise: Kneel prostrate and repeatedly bow in adoration.
-        msg = "Unhandled Praise emote";
-    else if(lowerContents == "protest")                                         // Protest: Hold hold up one of several randomly selected mostly unreadable protest signs.
-        msg = "Unhandled Protest emote";
-    else if(lowerContents == "roar" && !ent->m_motion_state.m_is_flying)                       // Roar: Claws air, roaring, ape-like stance.
-        msg = "Unhandled Roar emote";                                           // Not allowed when flying.
-    else if(lowerContents == "rock")                                            // Rock: Plays rock/paper/scissors, picking rock (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
-        msg = "Unhandled Rock emote";
-    else if(lowerContents == "salute")                                          // Salute: A hand-on-forehead salute, fists on hips stance.
-        msg = "Unhandled Salute emote";
-    else if(lowerContents == "scissors")                                        // Scissors: Plays rock/paper/scissors, picking scissors (displays all three symbols for about 6 seconds, then displays and holds your choice until stance is broken).
-        msg = "Unhandled Scissors emote";
-    else if(lowerContents == "score1")                                          // Score1: Holds a black on white scorecard up, displaying a 1, holds stance.
-        msg = "Unhandled Score1 emote";
-    else if(lowerContents == "score2")                                          // Score2: Holds a black on white scorecard up, displaying a 2, holds stance.
-        msg = "Unhandled Score2 emote";
-    else if(lowerContents == "score3")                                          // Score3: Holds a black on white scorecard up, displaying a 3, holds stance.
-        msg = "Unhandled Score3 emote";
-    else if(lowerContents == "score4")                                          // Score4: Holds a black on white scorecard up, displaying a 4, holds stance.
-        msg = "Unhandled Score4 emote";
-    else if(lowerContents == "score5")                                          // Score5: Holds a black on white scorecard up, displaying a 5, holds stance.
-        msg = "Unhandled Score5 emote";
-    else if(lowerContents == "score6")                                          // Score6: Holds a black on white scorecard up, displaying a 6, holds stance.
-        msg = "Unhandled Score6 emote";
-    else if(lowerContents == "score7")                                          // Score7: Holds a black on white scorecard up, displaying a 7, holds stance.
-        msg = "Unhandled Score7 emote";
-    else if(lowerContents == "score8")                                          // Score8: Holds a black on white scorecard up, displaying a 8, holds stance.
-        msg = "Unhandled Score8 emote";
-    else if(lowerContents == "score9")                                          // Score9: Holds a black on white scorecard up, displaying a 9, holds stance.
-        msg = "Unhandled Score9 emote";
-    else if(lowerContents == "score10")                                         // Score10: Holds a black on white scorecard up, displaying a 10, holds stance.
-        msg = "Unhandled Score10 emote";
-    else if(lowerContents == "shucks")                                          // Shucks: Swings fist and head dejectedly, neutral forward facing stance (not the default stance, same as huh/shrug).
-        msg = "Unhandled Shucks emote";
-    else if(lowerContents == "sit")                                             // Sit: Sits down, legs forward, with knees bent, elbows on knees, and slightly slumped over, stance.
-        msg = "Unhandled Sit emote";
-    else if(lowerContents == "smack")                                           // Smack: Backhand slap.
-        msg = "Unhandled Smack emote";
-    else if(stopCommands.contains(lowerContents))                               // Stop: Raises your right hand above your head, hold stance.
-        msg = "Unhandled Stop emote";
-    else if(tarzanCommands.contains(lowerContents))                             // Tarzan: Beats chest and howls, angry-looking stance.
-    {
-        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
-            msg = "Unhandled flying Tarzan emote";
-        else
-            msg = "Unhandled ground Tarzan emote";
-    }
-    else if(taunt1Commands.contains(lowerContents))                             // Taunt1: Taunts, beckoning with one hand, then slaps fist into palm, repeating stance.
-
-    {
-        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
-            msg = "Unhandled flying Taunt1 emote";
-        else
-            msg = "Unhandled ground Taunt1 emote";
-    }
-    else if(taunt2Commands.contains(lowerContents))                             // Taunt2: Taunts, beckoning with both hands, combat stance.
-    {
-        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
-            msg = "Unhandled flying Taunt2 emote";
-        else
-            msg = "Unhandled ground Taunt2 emote";
-    }
-    else if(thanksCommands.contains(lowerContents))                             // Thanks: Gestures with hand, neutral forward facing stance.
-        msg = "Unhandled Thanks emote";
-    else if(lowerContents == "thewave")                                         // Thewave: Does the wave (as seen in stadiums at sporting events), neutral facing forward stance.
-        msg = "Unhandled Thewave emote";
-    else if(lowerContents == "victory")                                         // Victory: Raises hands excitedly, and then again less excitedly, and then a third time almost non-chalantly, falls into neutral forward facing stance.
-        msg = "Unhandled Victory emote";
-    else if(waveFistCommands.contains(lowerContents))                           // WaveFist (has sound): Waves fist, hoots and then claps (its a cheer), crossed arms stance.
-        msg = "Unhandled WaveFist emote";
-    else if(lowerContents == "welcome")                                         // Welcome: Open arms welcoming, fists on hips stance.
-        msg = "Unhandled Welcome emote";
-    else if(lowerContents == "whistle")                                         // Whistle (has sound): Whistles (sounds like a police whistle), ready-stance.
-        msg = "Unhandled Whistle emote";
-    else if(winnerCommands.contains(lowerContents))                             // Winner: Fist in fist cheer, right, and then left, neutral forward facing stance.
-        msg = "Unhandled Winner emote";
-    else if(lowerContents == "yourewelcome")                                    // YoureWelcome: Bows head and gestures with hand, neutral forward facing stance.
-        msg = "Unhandled YoureWelcome emote";
-    else if(yesCommands.contains(lowerContents))                                // Yes: Big (literally) thumbs up and an affirmative nod, fists on hips stance.
-        msg = "Unhandled Yes emote";
-    else if(yogaCommands.contains(lowerContents))                               // Yoga: Sits down cross legged with hands on knees/legs, holds stance.
-    {
-        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
-            msg = "Unhandled flying Yoga emote";
-        else
-            msg = "Unhandled ground Yoga emote";
-    }
-                                                                                // Boombox Emotes
-    else if(lowerContents.startsWith("bb") && !ent->m_motion_state.m_is_flying)                // Check if Boombox Emote.
-    {                                                                           // Not allowed when flying.
-        lowerContents.replace(0, 2, "");                                        // Remove the "BB" prefix for conciseness.
-        if(lowerContents == "altitude")                                         // BBAltitude
-            msg = "Unhandled BBAltitude emote";
-        else if(lowerContents == "beat")                                        // BBBeat
-            msg = "Unhandled BBBeat emote";
-        else if(lowerContents == "catchme")                                     // BBCatchMe
-            msg = "Unhandled BBCatchMe emote";
-        else if(lowerContents == "dance")                                       // BBDance
-            msg = "Unhandled BBDance emote";
-        else if(lowerContents == "discofreak")                                  // BBDiscoFreak
-            msg = "Unhandled BBDiscoFreak emote";
-        else if(lowerContents == "dogwalk")                                     // BBDogWalk
-            msg = "Unhandled BBDogWalk emote";
-        else if(lowerContents == "electrovibe")                                 // BBElectroVibe
-            msg = "Unhandled BBElectroVibe emote";
-        else if(lowerContents == "heavydude")                                   // BBHeavyDude
-            msg = "Unhandled BBHeavyDude emote";
-        else if(lowerContents == "infooverload")                                // BBInfoOverload
-            msg = "Unhandled BBInfoOverload emote";
-        else if(lowerContents == "jumpy")                                       // BBJumpy
-            msg = "Unhandled BBJumpy emote";
-        else if(lowerContents == "kickit")                                      // BBKickIt
-            msg = "Unhandled BBKickIt emote";
-        else if(lowerContents == "looker")                                      // BBLooker
-            msg = "Unhandled BBLooker emote";
-        else if(lowerContents == "meaty")                                       // BBMeaty
-            msg = "Unhandled BBMeaty emote";
-        else if(lowerContents == "moveon")                                      // BBMoveOn
-            msg = "Unhandled BBMoveOn emote";
-        else if(lowerContents == "notorious")                                   // BBNotorious
-            msg = "Unhandled BBNotorious emote";
-        else if(lowerContents == "peace")                                       // BBPeace
-            msg = "Unhandled BBPeace emote";
-        else if(lowerContents == "quickie")                                     // BBQuickie
-            msg = "Unhandled BBQuickie emote";
-        else if(lowerContents == "raver")                                       // BBRaver
-            msg = "Unhandled BBRaver emote";
-        else if(lowerContents == "shuffle")                                     // BBShuffle
-            msg = "Unhandled BBShuffle emote";
-        else if(lowerContents == "spaz")                                        // BBSpaz
-            msg = "Unhandled BBSpaz emote";
-        else if(lowerContents == "technoid")                                    // BBTechnoid
-            msg = "Unhandled BBTechnoid emote";
-        else if(lowerContents == "venus")                                       // BBVenus
-            msg = "Unhandled BBVenus emote";
-        else if(lowerContents == "winditup")                                    // BBWindItUp
-            msg = "Unhandled BBWindItUp emote";
-        else if(lowerContents == "wahwah")                                      // BBWahWah
-            msg = "Unhandled BBWahWah emote";
-        else if(lowerContents == "yellow")                                      // BBYellow
-            msg = "Unhandled BBYellow emote";
-    }
-                                                                                // Unlockable Emotes
-                                                                                // TODO: Implement logic and variables for unlocking these emotes.
-    else if(lowerContents == "dice7")                                           // Dice7: Picks up, shakes and rolls a die, displays a 7, default stance.
-        msg = "Unhandled Dice7 emote";                                          // Unlocked by earning the Burkholder's Bane Badge (from the Ernesto Hess Task Force).
-    else if(lowerContents == "listenpoliceband")                                // ListenPoliceBand: Listens in on the heroes' PPD police band radio.
-        msg = "Unhandled ListenPoliceBand emote";                               // Heroes can use this without any unlock requirement. For villains, ListenStolenPoliceBand unlocks by earning the Outlaw Badge.
-    else if(snowflakesCommands.contains(lowerContents))                         // Snowflakes: Throws snowflakes.
-    {
-        if(ent->m_motion_state.m_is_flying)                                                    // Different versions when flying and on the ground.
-            msg = "Unhandled flying Snowflakes emote";                          // Unlocked by purchasing from the Candy Keeper during the Winter Event.
-        else
-            msg = "Unhandled ground Snowflakes emote";
-    }
-    else                                                                        // If not specific command, output EMOTE message.
-    {
-        // "CharacterName {emote message}"
-        msg = QString("%1 %2").arg(ent->name(),original_emote);
-    }
-
-    // send only to clients within range
-    glm::vec3 senderpos = src->m_ent->m_entity_data.m_pos;
-    for(MapClientSession *cl : m_session_store)
-    {
-        glm::vec3 recpos = cl->m_ent->m_entity_data.m_pos;
-        float range = 50.0f; // range of "hearing". I assume this is in yards
-        float dist = glm::distance(senderpos,recpos);
-
-        qCDebug(logEmotes, "senderpos: %f %f %f", senderpos.x, senderpos.y, senderpos.z);
-        qCDebug(logEmotes, "recpos: %f %f %f", recpos.x, recpos.y, recpos.z);
-        qCDebug(logEmotes, "sphere: %f", range);
-        qCDebug(logEmotes, "dist: %f", dist);
-
-        if(dist<=range)
-            recipients.push_back(cl);
-    }
-    for(MapClientSession * cl : recipients)
-    {
-        sendChatMessage(MessageChannel::EMOTE,msg,src->m_ent,*cl);
-        qCDebug(logEmotes) << msg;
-    }
-}
-
-void MapInstance::on_command_chat_divider_moved(ChatDividerMoved *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_gui.m_chat_divider_pos = ev->m_position;
-    qCDebug(logMapEvents) << "Chat divider moved to " << ev->m_position << " for player" << ent->name();
 }
 
 void MapInstance::on_minimap_state(MiniMapState *ev)
@@ -2155,198 +1201,6 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
 }
 
-void MapInstance::on_location_visited(LocationVisited *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logMapEvents) << "Attempting a call to script location_visited with:"<<ev->m_name<<qHash(ev->m_name);
-
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"location_visited", qPrintable(ev->m_name), ev->m_pos);
-    sendInfoMessage(MessageChannel::DEBUG_INFO,qPrintable(ev->m_name),session);
-
-    qCWarning(logMapEvents) << "Unhandled location visited event:" << ev->m_name <<
-                  QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
-}
-
-void MapInstance::on_plaque_visited(PlaqueVisited * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logMapEvents) << "Attempting a call to script plaque_visited with:"<<ev->m_name<<qHash(ev->m_name);
-
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"plaque_visited", qPrintable(ev->m_name), ev->m_pos);
-    qCWarning(logMapEvents) << "Unhandled plaque visited event:" << ev->m_name <<
-                  QString("(%1,%2,%3)").arg(ev->m_pos.x).arg(ev->m_pos.y).arg(ev->m_pos.z);
-}
-
-void MapInstance::on_inspiration_dockmode(InspirationDockMode *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_gui.m_insps_tray_mode = ev->dock_mode;
-    qCDebug(logMapEvents) << "Saving inspirations dock mode to GUISettings:" << ev->dock_mode;
-}
-
-void MapInstance::on_enter_door(EnterDoor *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-
-    QString output_msg = "Door entry request to: " + ev->name;
-    if(ev->no_location)
-    {
-        qCDebug(logMapXfers).noquote() << output_msg << " No location provided";
-
-        // Doors with no location may be a /mapmenu call.
-        if(session.m_ent->m_is_using_mapmenu)
-        {
-            // ev->name is the map_idx when using /mapmenu
-            if(!map_server->session_has_xfer_in_progress(session.link()->session_token()))
-            {
-                uint32_t map_idx = ev->name.toInt();
-                if (map_idx == m_index)
-                {
-                    QString door_msg = "You're already here!";
-                    sendDoorMessage(session, 2, door_msg);
-                }
-                else
-                {
-                    MapXferData map_data = MapXferData();
-                    map_data.m_target_map_name = getMapName(map_idx);
-                    map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_data},0));
-                    session.link()->putq(new MapXferWait(getMapPath(map_idx)));
-                }
-            }
-            session.m_ent->m_is_using_mapmenu = false;
-        }
-        else
-        {
-            QString door_msg = "Door coordinates unavailable.";
-            sendDoorMessage(session, 2, door_msg);
-        }
-    }
-    else
-    {
-        qCDebug(logMapXfers).noquote() << output_msg << " loc:" << ev->location.x << ev->location.y << ev->location.z;
-
-        // Check if any doors in range have the GotoSpawn property.
-        // TODO: if the node also has a GotoMap property, start a map transfer
-        //       and put them in the given SpawnLocation in the target map.
-        QString gotoSpawn = getNearestDoor(ev->location);
-
-        if (gotoSpawn.isEmpty())
-        {
-            QString door_msg = "You cannot enter.";
-            sendDoorMessage(session, 2, door_msg);
-        }
-        else
-        {
-            // Attempt to send the player to that SpawnLocation in the current map.
-            QString anim_name = "RUNIN";
-            glm::vec3 offset = ev->location + glm::vec3 {0,0,2};
-            sendDoorAnimStart(session, ev->location, offset, true, anim_name);
-            session.m_current_map->setSpawnLocation(*session.m_ent, gotoSpawn);
-        }
-    }
-}
-
-void MapInstance::on_change_stance(ChangeStance * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    session.m_ent->m_stance = ev->m_stance;
-    if(ev->m_stance.has_stance)
-        qCDebug(logMapEvents) << "Change stance request" << session.m_ent->m_idx << ev->m_stance.pset_idx << ev->m_stance.pow_idx;
-    else
-        qCDebug(logMapEvents) << "Exit stance request" << session.m_ent->m_idx;
-}
-
-void MapInstance::on_set_destination(SetDestination * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    qCWarning(logMapEvents) << QString("SetDestination request: %1 <%2, %3, %4>")
-                                .arg(ev->point_index)
-                                .arg(ev->destination.x, 0, 'f', 1)
-                                .arg(ev->destination.y, 0, 'f', 1)
-                                .arg(ev->destination.z, 0, 'f', 1);
-
-    // store destination, confirm accuracy and send back to client as waypoint.
-    setCurrentDestination(*session.m_ent, ev->point_index, ev->destination);
-    sendWaypoint(session, ev->point_index, ev->destination);
-}
-
-void MapInstance::on_has_entered_door(HasEnteredDoor *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-
-    sendDoorAnimExit(session, false);
-
-    QString output_msg = "Enter door animation has finished.";
-    qCDebug(logAnimations).noquote() << output_msg;
-}
-
-void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    if(session.m_ent->m_queued_powers.isEmpty())
-        return;
-
-    // remove first queued power
-    session.m_ent->m_queued_powers.dequeue();
-    session.m_ent->m_char->m_char_data.m_has_updated_powers = true; // this must be true, because we're updating queued powers
-
-    qCWarning(logMapEvents) << "Aborting queued power";
-}
-
-void MapInstance::on_description_and_battlecry(DescriptionAndBattleCry * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-    Character &c(*ent->m_char);
-
-    setBattleCry(c,ev->battlecry);
-    setDescription(c,ev->description);
-    qCDebug(logDescription) << "Saving description and battlecry:" << ev->description << ev->battlecry;
-}
-
-void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    Entity *tgt = getEntity(&session,ev->entity_idx);
-    if(tgt == nullptr)
-    {
-        qCDebug(logMapEvents) << "No target active, doing nothing";
-        return;
-    }
-
-    QString description = getDescription(*tgt->m_char);
-
-    session.addCommandToSendNextUpdate(std::make_unique<EntityInfoResponse>(description));
-    qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
-}
-
-void MapInstance::on_client_options(SaveClientOptions * ev)
-{
-    // Save options/keybinds to character entity and entry in the database.
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    Entity *ent = session.m_ent;
-    markEntityForDbStore(ent,DbStoreFlags::PlayerData);
-    ent->m_player->m_options = ev->data;
-}
-
-void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
-    qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
-}
-
 void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2358,43 +1212,6 @@ void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
     qCDebug(logMapEvents) << "Saving chat channel mask settings to GUISettings" << ev->m_chat_top_flags << ev->m_chat_bottom_flags;
 }
 
-void MapInstance::on_set_default_power(SetDefaultPower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    PowerTrayGroup *ptray = &session.m_ent->m_char->m_char_data.m_trays;
-
-    ptray->m_has_default_power = true;
-    ptray->m_default_pset_idx = ev->powerset_idx;
-    ptray->m_default_pow_idx = ev->power_idx;
-
-    qCDebug(logMapEvents) << "Set Default Power:" << ev->powerset_idx << ev->power_idx;
-}
-
-void MapInstance::on_unset_default_power(UnsetDefaultPower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    PowerTrayGroup *ptray = &session.m_ent->m_char->m_char_data.m_trays;
-
-    ptray->m_has_default_power = false;
-    ptray->m_default_pset_idx = 0;
-    ptray->m_default_pow_idx = 0;
-
-    qCDebug(logMapEvents) << "Unset Default Power.";
-}
-
-void MapInstance::on_unqueue_all(UnqueueAll *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    // What else could go here?
-    ent->m_target_idx = -1;
-    ent->m_assist_target_idx = -1;
-    ent->m_queued_powers.clear();
-
-    qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
-}
-
 void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2402,90 +1219,6 @@ void MapInstance::on_target_chat_channel_selected(TargetChatChannelSelected *ev)
 
     ent->m_player->m_gui.m_cur_chat_channel = ev->m_chat_type;
     qCDebug(logMapEvents) << "Saving chat channel type to GUISettings:" << ev->m_chat_type;
-}
-
-void MapInstance::on_activate_power(ActivatePower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    session.m_ent->m_has_input_on_timeframe = true;
-    uint32_t tgt_idx = ev->target_idx;
-
-    if(ev->target_idx <= 0 || ev->target_idx == session.m_ent->m_idx)
-        tgt_idx = -1;
-
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
-}
-
-void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    session.m_ent->m_has_input_on_timeframe = true;
-
-    // TODO: Check that target is valid, then Do Power!
-    QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    sendFaceLocation(session, ev->location);
-
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
-}
-
-void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    session.m_ent->m_has_input_on_timeframe = true;
-    bool success = useInspiration(*session.m_ent, ev->slot_idx, ev->row_idx);
-
-    if(!success)
-        return;
-
-    QString contents = "Inspired!";
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    // qCWarning(logPowers) << "Unhandled use inspiration request." << ev->row_idx << ev->slot_idx;
-}
-
-void MapInstance::on_powers_dockmode(PowersDockMode *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_gui.m_powers_tray_mode = ev->toggle_secondary_tray;
-    //qCDebug(logMapEvents) << "Saving powers tray dock mode to GUISettings:" << ev->toggle_secondary_tray;
-}
-
-void MapInstance::on_switch_tray(SwitchTray *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_gui.m_tray1_number = ev->tray_group.m_primary_tray_idx;
-    ent->m_player->m_gui.m_tray2_number = ev->tray_group.m_second_tray_idx;
-    ent->m_char->m_char_data.m_trays = ev->tray_group;
-    markEntityForDbStore(ent, DbStoreFlags::PlayerData);
-
-   //qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray_group.m_primary_tray_idx+1 << "Tray2:" << ev->tray_group.m_second_tray_idx+1;
-}
-
-void MapInstance::on_set_keybind(SetKeybind *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    KeyName key = static_cast<KeyName>(ev->key);
-    ModKeys mod = static_cast<ModKeys>(ev->mods);
-
-    ent->m_player->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
-    //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
-}
-
-void MapInstance::on_remove_keybind(RemoveKeybind *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
-    //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
 }
 
 void MapInstance::setPlayerSpawn(Entity &e)
@@ -2580,254 +1313,6 @@ void MapInstance::serialize_from(istream &/*is*/)
 void MapInstance::serialize_to(ostream &/*is*/)
 {
     assert(false);
-}
-void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
-{
-    const GameDataStore &data(getGameData());
-    const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.resetKeybinds(default_profiles);
-    //qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
-}
-
-void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.setKeybindProfile(ev->profile);
-    //qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
-}
-
-void MapInstance::on_interact_with(InteractWithEntity *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *entity = getEntity(&session, ev->m_srv_idx);
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx, entity->m_entity_data.m_pos);
-}
-
-void MapInstance::on_receive_contact_status(ReceiveContactStatus *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    qCDebug(logMapEvents) << "ReceiveContactStatus Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"contact_call",ev->m_srv_idx);
-}
-
-void MapInstance::on_receive_task_detail_request(ReceiveTaskDetailRequest *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    qCDebug(logMapEvents) << "ReceiveTaskDetailRequest Entity: " << session.m_ent->m_idx << "wants detail for task " << ev->m_task_idx;
-    QString detail = "Testind Task Detail Request";
-
-    TaskDetail test_task;
-    test_task.m_task_idx = ev->m_task_idx;
-    test_task.m_db_id = ev->m_db_id;
-
-    vTaskEntryList task_entry_list = session.m_ent->m_player->m_tasks_entry_list;
-    //find task
-    bool found = false;
-
-    for (uint32_t i = 0; i < task_entry_list.size(); ++i)
-    {
-       for(uint32_t t = 0; t < task_entry_list[i].m_task_list.size(); ++t)
-        if(task_entry_list[i].m_task_list[t].m_task_idx == ev->m_task_idx)
-        {
-            found = true;
-            //contact already in list, update task;
-            test_task.m_task_detail = task_entry_list[i].m_task_list[t].m_detail;
-            break;
-        }
-
-       if(found)
-           break;
-    }
-
-    if(!found)
-    {
-       qCDebug(logMapEvents) << "ReceiveTaskDetailRequest m_task_idx: " << ev->m_task_idx << " not found.";
-       test_task.m_task_detail = "Not found";
-    }
-
-    session.addCommandToSendNextUpdate(std::make_unique<TaskDetail>(test_task.m_db_id, test_task.m_task_idx, test_task.m_task_detail));
-}
-
-
-void MapInstance::on_move_inspiration(MoveInspiration *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    moveInspiration(session.m_ent->m_char->m_char_data, ev->src_col, ev->src_row, ev->dest_col, ev->dest_row);
-}
-
-void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    sendContactDialogClose(session); // must do this here, due to I1 client bug
-
-    QString generic, origin, special;
-    generic = getGenericTitle(ev->m_generic);
-    origin  = getOriginTitle(ev->m_origin);
-    special = getSpecialTitle(*session.m_ent->m_char);
-
-    setTitles(*session.m_ent->m_char, ev->m_has_prefix, generic, origin, special);
-    qCDebug(logMapEvents) << "Entity sending titles: " << session.m_ent->m_idx << ev->m_has_prefix << generic << origin << special;
-}
-
-void MapInstance::on_dialog_button(DialogButton *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    if(ev->success) // only sent by contactresponse
-        qCDebug(logMapEvents) << "Dialog success" << ev->success;
-
-    switch(ev->button_id)
-    {
-    case 0:
-        // cancel?
-        break;
-    case 1:
-        // accept?
-        if(session.m_ent->m_char->m_in_training) // if training, raise level
-            increaseLevel(*session.m_ent);
-
-        break;
-    case 2:
-        // no idea
-        break;
-    case 3:
-        sendContactDialogClose(session);
-        break;
-    default:
-        // close all windows?
-        break;
-    }
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
-
-    if(session.m_ent->m_active_dialog != NULL)
-    {
-        m_scripting_interface->updateClientContext(&session);
-        session.m_ent->m_active_dialog(ev->button_id);
-    }
-    else
-    {
-        auto val = m_scripting_interface->callFuncWithClientContext(&session,"dialog_button", ev->button_id);
-    }
-}
-
-void MapInstance::on_move_enhancement(MoveEnhancement *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    moveEnhancement(session.m_ent->m_char->m_char_data, ev->m_src_idx, ev->m_dest_idx);
-}
-
-void MapInstance::on_set_enhancement(SetEnhancement *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    setEnhancement(*session.m_ent, ev->m_pset_idx, ev->m_pow_idx, ev->m_src_idx, ev->m_dest_idx);
-}
-
-void MapInstance::on_trash_enhancement(TrashEnhancement *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_idx);
-}
-
-void MapInstance::on_trash_enhancement_in_power(TrashEnhancementInPower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    trashEnhancementInPower(session.m_ent->m_char->m_char_data, ev->m_pset_idx, ev->m_pow_idx, ev->m_eh_idx);
-}
-
-void MapInstance::on_buy_enhancement_slot(BuyEnhancementSlot *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    buyEnhancementSlots(*session.m_ent, ev->m_available_slots, ev->m_pset_idx, ev->m_pow_idx);
-}
-
-void MapInstance::on_recv_new_power(RecvNewPower *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    addPower(session.m_ent->m_char->m_char_data, ev->ppool);
-}
-
-void MapInstance::on_awaiting_dead_no_gurney(AwaitingDeadNoGurney *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received AwaitingDeadNoGurney";
-
-    // TODO: Check if disablegurney
-    /*
-    setStateMode(*session.m_ent, ClientStates::AWAITING_GURNEY_XFER);
-    sendClientState(session, ClientStates::AWAITING_GURNEY_XFER);
-    sendDeadNoGurney(session);
-    */
-    // otherwise
-
-    auto val = m_scripting_interface->callFuncWithClientContext(&session,"revive_ok", session.m_ent->m_idx);
-
-    if (val.empty())
-    {
-        // Set statemode to Resurrect
-        setStateMode(*session.m_ent, ClientStates::RESURRECT);
-        // TODO: spawn in hospital, resurrect animations, "summoning sickness"
-        revivePlayer(*session.m_ent, ReviveLevel::FULL);
-    }
-
-}
-
-void MapInstance::on_dead_no_gurney_ok(DeadNoGurneyOK *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DeadNoGurneyOK";
-
-    // Set statemode to Ressurrect
-    setStateMode(*session.m_ent, ClientStates::RESURRECT);
-    revivePlayer(*session.m_ent, ReviveLevel::FULL);
-
-    // TODO: Spawn where you go with no gurneys (no hospitals)
-}
-
-void MapInstance::on_browser_close(BrowserClose *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received BrowserClose";
-}
-
-void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
-{
-    // has changed costume in tailor
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    qCDebug(logTailor) << "Entity: " << session.m_ent->m_idx << "has received CostumeChange";
-
-    uint32_t idx = getCurrentCostumeIdx(*session.m_ent->m_char);
-    session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
-    session.m_ent->m_rare_update = true; // re-send costumes, they've changed.
-    markEntityForDbStore(session.m_ent, DbStoreFlags::Full);
-}
-
-void MapInstance::on_levelup_response(LevelUpResponse *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    // if successful, set level
-    if(session.m_ent->m_char->m_in_training) // if training, raise level
-        increaseLevel(*session.m_ent);
-
-    qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received LevelUpResponse" << ev->button_id << ev->result;
 }
 
 void MapInstance::on_afk_update()
@@ -3000,272 +1485,157 @@ void MapInstance::send_player_update(Entity *e)
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
-void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
+void MapInstance::on_service_to_client_response(std::unique_ptr<ServiceToClientData> data)
 {
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-
-    std::vector<EmailHeaders::EmailHeader> email_headers;
-    for (const auto &data : ev->m_data.m_email_headers)
-    {
-        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
-                                                          data.m_sender_name,
-                                                          data.m_subject,
-                                                          data.m_timestamp});
-    }
-
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
-}
-
-// EmailHandler will send this event here
-void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
-{
-    EmailHeaders *header = new EmailHeaders(
-                    ev->m_data.m_email_id,
-                    ev->m_data.m_sender_name,
-                    ev->m_data.m_subject,
-                    ev->m_data.m_timestamp);
-
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
-                                                                          ev->m_data.m_sender_name,
-                                                                          ev->m_data.m_subject,
-                                                                          ev->m_data.m_timestamp));
-}
-
-void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-
-    std::vector<EmailHeaders::EmailHeader> email_headers;
-    for (const auto &data : ev->m_data.m_email_headers)
-    {
-        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
-                                                          data.m_sender_name,
-                                                          data.m_subject,
-                                                          data.m_timestamp});
-    }
-
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
-
-    QString message = QString("You have %1 unread emails.").arg(ev->m_data.m_unread_emails_count);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, message, map_session);
-}
-
-void MapInstance::on_email_read_response(EmailReadResponse *ev)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailRead>(ev->m_data.m_email_id,
-                                                                       ev->m_data.m_message,
-                                                                       ev->m_data.m_sender_name));
-}
-
-void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_message, map_session);
-
-    // this is sent from the reader back to the sender via EmailHandler
-    // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
-}
-
-void MapInstance::on_email_create_status(EmailCreateStatusMessage *msg)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
-    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(
-                new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name)));
-
-
-    /*
-    else
-    {
-        QString successMsg = QString("Successfully sent email to %1!").arg(msg->m_data.m_recipient_name);
-        sendInfoMessage(MessageChannel::DEBUG_INFO, successMsg, map_session);
-    }*/
-}
-
-void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
-{
-    MapClientSession& session = m_session_store.session_from_event(ev);
-
-    if(session.m_ent->m_trade == nullptr)
-    {
-        // Trade already cancelled.
-        // The client sends this many times while closing the trade window for some reason.
-        return;
-    }
-
-    const uint32_t tgt_db_id = session.m_ent->m_trade->getOtherMember(*session.m_ent).m_db_id;
-    Entity* const tgt = getEntityByDBID(session.m_ent->m_client->m_current_map, tgt_db_id);
-    if(tgt == nullptr)
-    {
-        // Only one side left in the game.
-        discardTrade(*session.m_ent);
-
-        const QString msg = "Trade cancelled because the other player left.";
-        sendTradeCancel(session, msg);
-
-        qCDebug(logTrades) << session.m_ent->name() << "cancelled a trade where target has disappeared";
-        return;
-    }
-
-    discardTrade(*session.m_ent);
-    discardTrade(*tgt);
-
-    const QString msg_src = "You cancelled the trade with " + tgt->name() + ".";
-    const QString msg_tgt = session.m_ent->name() + " canceled the trade.";
-    sendTradeCancel(session, msg_src);
-    sendTradeCancel(*tgt->m_client, msg_tgt);
-
-    qCDebug(logTrades) << session.m_ent->name() << "cancelled a trade with" << tgt->name();
-}
-
-void MapInstance::on_trade_updated(TradeWasUpdatedMessage* ev)
-{
-    MapClientSession& session = m_session_store.session_from_event(ev);
-
-    Entity* const tgt = getEntityByDBID(session.m_current_map, ev->m_info.m_db_id);
-    if(tgt == nullptr)
+    if (data == nullptr)
         return;
 
-    QString msg;
-    TradeSystemMessages result;
-    result = updateTrade(*session.m_ent, *tgt, ev->m_info);
-    switch(result)
-    {
-    case TradeSystemMessages::HAS_SENT_NO_TRADE:
-        msg = "You have not sent a trade offer.";
-        break;
-    case TradeSystemMessages::TGT_RECV_NO_TRADE:
-        msg = QString("%1 has not received a trade offer.").arg(tgt->name());
-        break;
-    case TradeSystemMessages::SRC_RECV_NO_TRADE:
-        msg = QString("You are not considering a trade offer from %1.").arg(tgt->name());
-        break;
-    case TradeSystemMessages::SUCCESS:
-    {
-        // send tradeUpdate pkt to client
-        Trade& trade = *session.m_ent->m_trade;
-        TradeMember& trade_src = trade.getMember(*session.m_ent);
-        TradeMember& trade_tgt = trade.getMember(*tgt);
-        sendTradeUpdate(session, *tgt->m_client, trade_src, trade_tgt);
+    // generally only ONE of these is filled
+    // if both of them are not filled, we'd be in trouble
+    if (data->m_token == 0 && data->m_ent == nullptr)
+        return;
 
-        if(session.m_ent->m_trade->isAccepted())
+    try
+    {
+        // if token is empty, get it from the entity
+        MapClientSession& session = data->m_token != 0
+                ? m_session_store.session_from_token(data->m_token)
+                : *data->m_ent->m_client;
+
+        for (auto &command : data->m_commands)
+            session.addCommandToSendNextUpdate(std::move(command));
+
+        MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+
+        for (auto &mapServerEvent : data->m_map_server_events)
         {
-            finishTrade(*session.m_ent, *tgt); // finish handling trade
-            sendTradeSuccess(session, *tgt->m_client); // send tradeSuccess pkt to client
+            // it's a nullptr when initialized in the service
+            EventSrc* src = mapServerEvent->src();
+            src = this;
+            map_server->putq(mapServerEvent);
         }
-        break;
-    }
-    default:
-        msg = "Something went wrong with trade update!"; // this should never happen
-    }
 
-    sendInfoMessage(MessageChannel::SERVER, msg, session);
-}
 
-void MapInstance::on_souvenir_detail_request(SouvenirDetailRequest* ev)
-{
-    MapClientSession& session = m_session_store.session_from_event(ev);
-    vSouvenirList sl = session.m_ent->m_player->m_souvenirs;
-
-    Souvenir souvenir_detail;
-    bool found = false;
-    for(const Souvenir &s: sl)
-    {
-        if(s.m_idx == ev->m_souvenir_idx)
+        for (auto &script : data->m_scripts)
         {
-            souvenir_detail = s;
-            found = true;
-            qCDebug(logScripts) << "SouvenirDetail Souvenir " << ev->m_souvenir_idx << " found";
-            break;
+            if (script->flags & uint32_t(ScriptingServiceFlags::CallFuncWithClientContext))
+            {
+                string val;
+                if (!script->charArg.isEmpty())
+                    val = m_scripting_interface->callFuncWithClientContext(&session, qPrintable(script->funcName), qPrintable(script->charArg), script->locArg);
+                // uses intArg
+                else if (script->intArg != 0)
+                {
+                    if (script->locArg != glm::vec3(999, 999, 999))
+                        val = m_scripting_interface->callFuncWithClientContext(&session, qPrintable(script->funcName), script->intArg, script->locArg);
+                    else
+                        val = m_scripting_interface->callFuncWithClientContext(&session, qPrintable(script->funcName), script->intArg);
+                }
+
+                if (val.empty() && script->on_val_empty != nullptr)
+                    script->on_val_empty(*data->m_ent);
+
+                if (!val.empty() && script->on_val_not_empty != nullptr)
+                    script->on_val_not_empty(*data->m_ent);
+            }
+
+            if (script->flags & uint32_t(ScriptingServiceFlags::UpdateClientContext))
+                m_scripting_interface->updateClientContext(&session);
+
+            if (script->flags & uint32_t(ScriptingServiceFlags::UpdateMapInstance))
+                m_scripting_interface->updateMapInstance(this);
         }
-    }
 
-    if(!found)
+        // is not null and is not empty
+        if (data->m_message.isEmpty() && data->m_message.isNull())
+            sendInfoMessage(MessageChannel::DEBUG_INFO, data->m_message, session);
+    }
+    catch(std::exception &e)
     {
-        qCDebug(logScripts) << "SouvenirDetail Souvenir " << ev->m_souvenir_idx << " not found";
-        souvenir_detail.m_idx = 0; // Should always be found?
-        souvenir_detail.m_description = "Data not found";
-
+        qCritical() << e.what();
     }
-    session.addCommand<SouvenirDetail>(souvenir_detail);
 }
 
-void MapInstance::on_store_sell_item(StoreSellItem* ev)
+void MapInstance::on_chat_service_to_client_response(std::unique_ptr<ChatServiceToClientData> data)
 {
-    qCDebug(logStores) << "on_store_sell_item. NpcId: " << ev->m_npc_idx << " isEnhancement: " << ev->m_is_enhancement << " TrayNumber: " << ev->m_tray_number << " enhancement_idx: " << ev->m_enhancement_idx;
-    MapClientSession& session = m_session_store.session_from_event(ev);
-    Entity *e = getEntity(&session, ev->m_npc_idx);
-
-    QString enhancement_name;
-    CharacterEnhancement enhancement = session.m_ent->m_char->m_char_data.m_enhancements[ev->m_enhancement_idx];
-    enhancement_name = enhancement.m_name + "_" + QString::number(enhancement.m_level);
-
-    if(enhancement_name.isEmpty())
-    {
-        qCDebug(logStores) << "on_store_sell_item. EnhancementId " << ev->m_enhancement_idx << " not found";
+    if (data == nullptr)
         return;
+
+    assert(data->m_source != nullptr);
+    assert(data->m_source->m_client != nullptr);
+
+    for (Entity* ent : data->m_targets)
+    {
+        assert(ent->m_client != nullptr);
+        sendChatMessage(data->m_message_channel, data->m_message, data->m_source, *ent->m_client);
     }
 
-    if(e->m_is_store && !e->m_store_items.empty())
-    {
-        //Find store in entity store list
-        StoreTransactionResult result = Store::sellItem(e, enhancement_name);
+    if (!data->m_send_info_msg_to_self)
+        return;
 
-        if(result.m_is_success)
+    sendInfoMessage(data->m_channel_for_self, data->m_message_to_self, *data->m_source->m_client);
+}
+
+void MapInstance::add_chat_message(Entity *sender, QString &msg_text)
+{
+    on_chat_service_to_client_response(m_chat_service->process_chat(sender, msg_text));
+}
+
+QHash<QString, MapXferData> MapInstance::get_map_transfers()
+{
+    return m_map_transfers;
+}
+
+QHash<QString, MapXferData> MapInstance::get_map_door_transfers()
+{
+    if (!m_door_transfers_checked)
+    {
+        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
+        while (i != m_map_transfers.constEnd())
         {
-            modifyInf(session, result.m_inf_amount);
-            trashEnhancement(session.m_ent->m_char->m_char_data, ev->m_enhancement_idx);
-            sendChatMessage(MessageChannel::SERVER,result.m_message,session.m_ent,session);
+            if (i.value().m_transfer_type == MapXferType::DOOR)
+            {
+                m_map_door_transfers.insert(i.key(), i.value());
+            }
+            i++;
         }
-        else
-            qCDebug(logStores) << "Error processing sellItem";
+        m_door_transfers_checked = true;
     }
-    else
-        qCDebug(logStores) << "Entity is not a store or has no items";
+
+    return m_map_door_transfers;
 }
 
-void MapInstance::on_store_buy_item(StoreBuyItem* ev)
+QHash<QString, MapXferData> MapInstance::get_map_zone_transfers()
 {
-    qCDebug(logMapEvents) << "on_store_buy_item. NpcId: " <<ev->m_npc_idx << " ItemName: " << ev->m_item_name;
-    MapClientSession& session = m_session_store.session_from_event(ev);
-    Entity *e = getEntity(&session, ev->m_npc_idx);
-
-    StoreTransactionResult result = Store::buyItem(e, ev->m_item_name);
-    if(result.m_is_success)
+    if (!m_zone_transfers_checked)
     {
-        modifyInf(session, result.m_inf_amount);
-        if(result.m_is_insp)
-            giveInsp(session, result.m_item_name);
-        else
-            giveEnhancement(session, result.m_item_name, result.m_enhancement_lvl);
-
-        sendChatMessage(MessageChannel::SERVER,result.m_message,session.m_ent,session);
+        QHash<QString, MapXferData>::const_iterator i = m_map_transfers.constBegin();
+        while (i != m_map_transfers.constEnd())
+        {
+            if (i.value().m_transfer_type == MapXferType::ZONE)
+            {
+                m_map_zone_transfers.insert(i.key(), i.value());
+            }
+            i++;
+        }
+        m_zone_transfers_checked = true;
     }
-    else
-        qCDebug(logStores) << "Error processing buyItem";
+    return m_map_zone_transfers;
 }
 
-void MapInstance::on_map_swap_collision(MapSwapCollisionMessage *ev)
+QString MapInstance::getNearestDoor(glm::vec3 location)
 {
-    if (!m_map_transfers.contains(ev->m_data.m_node_name))
+    float door_distance_check = 15.f;
+    QHash<QString, MapXferData>::const_iterator i = get_map_door_transfers().constBegin();
+    while (i != get_map_door_transfers().constEnd())
     {
-        qCDebug(logMapXfers) << QString("Map swap collision triggered on node_name %1, but that node_name doesn't exist in the list of map_transfers.");
-        return;
+        if (glm::distance(location, i.value().m_position) < door_distance_check)
+        {
+            return i.value().m_target_spawn_name;
+        }
+        i++;
     }
-
-    MapXferData map_transfer_data = m_map_transfers[ev->m_data.m_node_name];
-    Entity *e = getEntityByDBID(this, ev->m_data.m_ent_db_id);
-    MapClientSession &sess = *e->m_client;
-
-    sess.link()->putq(new MapXferWait(getMapPath(map_transfer_data.m_target_map_name)));
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    map_server->putq(new ClientMapXferMessage({ sess.link()->session_token(), map_transfer_data}, 0));
-}
-
-void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
-{
-    process_chat(sender, msg_text);
+    return QString();
 }
 
 void MapInstance::startTimer(uint32_t entity_idx)

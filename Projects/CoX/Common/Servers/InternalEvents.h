@@ -14,6 +14,9 @@
 #include <QtCore/QDateTime>
 #include <glm/vec3.hpp>
 #include <Common/GameData/map_definitions.h>
+#include <Common/Messages/Map/GameCommand.h>
+#include <Common/Messages/Map/MessageChannels.h>
+#include "GameData/Entity.h"
 
 namespace SEGSEvents
 {
@@ -33,6 +36,7 @@ enum Internal_EventTypes
     evMapSwapCollisionMessage, //,8)
     evGameServerStatusMessage = evReloadConfigMessage+4, //10)
     evMapServerStatusMessage,                     //11)
+    evServiceToClientMessage,
     // Message bus events
     evServiceStatusMessage = evExpectClientRequest+101,
     evClientConnectedMessage, // 102
@@ -244,5 +248,148 @@ struct MapSwapCollisionData
 };
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
+
+enum class ScriptingServiceFlags : uint32_t
+{
+    UpdateMapInstance,
+    CallFuncWithClientContext,
+    CallFunc,
+    UpdateClientContext
+};
+
+struct ScriptingServiceToClientData
+{
+    uint32_t flags;
+    QString funcName;
+    QString charArg;
+    uint32_t intArg;
+    glm::vec3 locArg = glm::vec3(999, 999, 999);
+    QString message;
+    std::function<void(Entity&)> on_val_empty;
+    std::function<void(Entity&)> on_val_not_empty;
+};
+
+struct ChatServiceToClientData
+{
+    Entity* m_source;
+    std::vector<Entity*> m_targets;
+    QString m_message;
+    MessageChannel m_message_channel;
+
+    bool m_send_info_msg_to_self = false;
+    QString m_message_to_self = QString();
+    MessageChannel m_channel_for_self = MessageChannel::USER_ERROR;
+
+    // for sending to others, but not self
+    ChatServiceToClientData(Entity* source, std::vector<Entity*> targets, QString message, MessageChannel channel)
+    {
+        m_source = source;
+        m_targets = targets;
+        m_message = message;
+        m_message_channel = channel;
+    }
+
+    // for sending to self, but not others
+    ChatServiceToClientData(Entity* source, QString message, MessageChannel channel)
+    {
+        m_source = source;
+        m_send_info_msg_to_self = true;
+        m_message_to_self = message;
+        m_channel_for_self = channel;
+    }
+
+    // for sending to both self and others
+    ChatServiceToClientData(Entity* source, std::vector<Entity*> targets, QString message, MessageChannel channel, QString messageToSelf, MessageChannel channelForSelf)
+    {
+        m_source = source;
+        m_targets = targets;
+        m_message = message;
+        m_message_channel = channel;
+
+        m_send_info_msg_to_self = true;
+        m_message_to_self = messageToSelf;
+        m_channel_for_self = channelForSelf;
+    }
+};
+
+struct ServiceToClientData
+{
+    using GameCommandVector = std::vector<std::unique_ptr<GameCommandEvent>>;
+    using MapServerEventVector = std::vector<InternalEvent*>;           // might need another vector of InternalEvents if sending to something like game_db
+    using ScriptVector = std::vector<ScriptingServiceToClientData*>;
+
+    uint64_t m_token = 0;
+    Entity* m_ent = nullptr;
+    GameCommandVector m_commands;
+    MapServerEventVector m_map_server_events;
+    ScriptVector m_scripts;          // lua stuff
+    QString m_message;
+    MessageChannel m_message_channel;
+
+    ServiceToClientData(){};
+    // the most complete constructor, but generally advised against using everything unless you actually do
+    ServiceToClientData(uint64_t token, Entity* ent, GameCommandVector cmds, MapServerEventVector mapServerEvents, ScriptVector scripts, QString message, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_token = token;
+        m_ent = ent;
+        m_commands = std::move(cmds);
+        m_map_server_events = mapServerEvents;
+        m_scripts = scripts;
+        m_message = message;
+        m_message_channel = messageChannel;
+    }
+
+    // use this if you are sending GameCommands and find your session from event (most of them?)
+    ServiceToClientData(Entity* ent, GameCommandVector commands, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_ent = ent;
+        m_commands = std::move(commands);
+        m_message = msg;
+        m_message_channel = messageChannel;
+    }
+
+    // use this if you are sending GameCommands and find your session from token (eg EmailService)
+    ServiceToClientData(uint64_t token, GameCommandVector commands, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_token = token;
+        m_commands = std::move(commands);
+        m_message = msg;
+        m_message_channel = messageChannel;
+    }
+
+    // use this if you are using lua scripts and nothing else
+    ServiceToClientData(Entity* ent, ScriptVector scripts, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_ent = ent;
+        m_scripts = scripts;
+        m_message = msg;
+        m_message_channel = messageChannel;
+    }
+
+    // use this if you are using internal events (stuff->putq())
+    ServiceToClientData(Entity* ent, MapServerEventVector mapServerEvents, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_ent = ent;
+        m_map_server_events = mapServerEvents;
+        m_message = msg;
+        m_message_channel = messageChannel;
+    }
+
+    // use this when you are not sending actually sending anything to the client other than a message
+    ServiceToClientData(Entity* ent, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_ent = ent;
+        m_message = msg;
+        m_message_channel = messageChannel;
+    }
+
+    // same as above, but with tokens
+    ServiceToClientData(uint64_t token, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_token = token;
+        m_message = msg;
+        m_message_channel = messageChannel;
+    }
+};
 
 } // end of SEGSEvents namespace

@@ -17,6 +17,18 @@
 #include "NpcGenerator.h"
 #include "CritterGenerator.h"
 
+#include "GameServer/EmailService/EmailService.h"
+#include "GameServer/ClientOptionService/ClientOptionService.h"
+#include "GameServer/LocationService/LocationService.h"
+#include "GameServer/CharacterService/CharacterService.h"
+#include "GameServer/CharacterService/EnhancementService/EnhancementService.h"
+#include "GameServer/CharacterService/InspirationService/InspirationService.h"
+#include "GameServer/CharacterService/PowerService/PowerService.h"
+#include "GameServer/TradingService/TradingService.h"
+#include "GameServer/ZoneTransferService/ZoneTransferService.h"
+#include "GameServer/InteractionService/InteractionService.h"
+#include "GameServer/ChatService/ChatService.h"
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -50,74 +62,13 @@ class EntitiesRequest;
 class NewEntity;
 class ShortcutsRequest;
 class CookieRequest;
-class WindowState;
 class ConsoleCommand;
 class ClientQuit;
 class ConnectRequest;
-class ChatDividerMoved;
 class MiniMapState;
 class ClientResumedRendering;
-class LocationVisited;
-class PlaqueVisited;
-class InspirationDockMode;
-class EnterDoor;
-class ChangeStance;
-class SetDestination;
-class HasEnteredDoor;
-class AbortQueuedPower;
-class DescriptionAndBattleCry;
-class EntityInfoRequest;
 class ChatReconfigure;
-class SwitchViewPoint;
-class SaveClientOptions;
-class SetDefaultPower;
-class UnsetDefaultPower;
-class UnqueueAll;
 class TargetChatChannelSelected;
-class ActivatePower;
-class ActivatePowerAtLocation;
-class ActivateInspiration;
-class PowersDockMode;
-class SwitchTray;
-class SelectKeybindProfile;
-class ResetKeybinds;
-class SetKeybind;
-class RemoveKeybind;
-class InteractWithEntity;
-class MoveInspiration;
-class RecvSelectedTitles;
-class DialogButton;
-class CombineEnhancementsReq;
-class MoveEnhancement;
-class SetEnhancement;
-class TrashEnhancement;
-class TrashEnhancementInPower;
-class BuyEnhancementSlot;
-class RecvNewPower;
-class EmailHeaderResponse;
-class EmailReadResponse;
-class EmailWasReadByRecipientMessage;
-class EmailHeadersToClientMessage;
-class EmailHeaderToClientMessage;
-class EmailCreateStatusMessage;
-class MapXferComplete;
-class InitiateMapXfer;
-struct ClientMapXferMessage;
-struct MapSwapCollisionMessage;
-class AwaitingDeadNoGurney;
-class BrowserClose;
-class LevelUpResponse;
-class TradeWasCancelledMessage;
-class TradeWasUpdatedMessage;
-class RecvCostumeChange;
-class DeadNoGurneyOK;
-class ReceiveContactStatus;
-class ReceiveTaskDetailRequest;
-class SouvenirDetailRequest;
-class StoreSellItem;
-class StoreBuyItem;
-
-
 
 // server<-> server event types
 struct ExpectMapClientRequest;
@@ -142,11 +93,24 @@ class MapInstance final : public EventProcessor
         std::unique_ptr<SEGSTimer> m_afk_update_timer;
         std::unique_ptr<SEGSTimer> m_lua_timer;
         World *                 m_world;
-        GameDBSyncService*      m_sync_service;
         uint32_t                m_owner_id;
         uint32_t                m_instance_id;
         uint32_t                m_index = 1; // what does client expect this to store, and where do we send it?
         uint8_t                 m_game_server_id=255; // 255 is `invalid` id
+
+        std::unique_ptr<GameDBSyncService>      m_sync_service;
+
+        EmailService                            m_email_service;
+        ClientOptionService                     m_client_option_service;
+        CharacterService                        m_character_service;
+        EnhancementService                      m_enhancement_service;
+        InspirationService                      m_inspiration_service;
+        InteractionService                      m_interaction_service;
+        PowerService                            m_power_service;
+        LocationService                         m_location_service;
+        TradingService                          m_trading_service;
+        ZoneTransferService                     m_zone_transfer_service;
+        ChatService*                            m_chat_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -185,11 +149,13 @@ public:
         void                    setSpawnLocation(Entity &e, const QString &spawnLocation);
         glm::vec3               closest_safe_location(glm::vec3 v) const;
         QMultiHash<QString, glm::mat4> getSpawners() const { return m_all_spawners; }
-        QHash<QString, MapXferData> get_map_door_transfers();
-        QHash<QString, MapXferData> get_map_zone_transfers();
-        QString                 getNearestDoor(glm::vec3 location);
 
-        void send_player_update(Entity *e);
+        QHash<QString, MapXferData> get_map_transfers();
+        QHash<QString, MapXferData> get_map_zone_transfers();
+        QHash<QString, MapXferData> get_map_door_transfers();
+        QString getNearestDoor(glm::vec3 location);
+
+        void                    send_player_update(Entity *e);
         void                    add_chat_message(Entity *sender, QString &msg_text);
         void                    startTimer(uint32_t entity_idx);
         void                    stopTimer(uint32_t entity_idx);
@@ -202,11 +168,12 @@ protected:
 
         void                    enqueue_client(MapClientSession *clnt);
         void                    spin_down();
+        void                    init_timers();
+        void                    init_services();
         uint32_t                index() const { return m_index; }
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
         void                    on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
-        void                    process_chat(Entity *sender, QString &msg_text);
 
         // DB -> Server messages
         void                    on_name_clash_check_result(SEGSEvents::WouldNameDuplicateResponse *ev);
@@ -216,10 +183,6 @@ protected:
         // Server->Server messages
         void on_expect_client(SEGSEvents::ExpectMapClientRequest *ev);
         void on_expect_client_response(SEGSEvents::ExpectMapClientResponse *ev);
-
-        void on_initiate_map_transfer(SEGSEvents::InitiateMapXfer *ev);
-        void on_map_xfer_complete(SEGSEvents::MapXferComplete *ev);
-        void on_map_swap_collision(SEGSEvents::MapSwapCollisionMessage *ev);
 
         void on_link_lost(SEGSEvents::Event *ev);
         void on_disconnect(SEGSEvents::DisconnectRequest *ev);
@@ -238,69 +201,17 @@ protected:
         void on_lua_update();
         void send_character_update(Entity *e);
 
-
         void on_cookie_confirm(SEGSEvents::CookieRequest *ev);
-        void on_window_state(SEGSEvents::WindowState *ev);
         void on_console_command(SEGSEvents::ConsoleCommand *ev);
-        void on_client_quit(SEGSEvents::ClientQuit *ev);
-        void on_connection_request(SEGSEvents::ConnectRequest *ev);
-        void on_command_chat_divider_moved(SEGSEvents::ChatDividerMoved *ev);
         void on_minimap_state(SEGSEvents::MiniMapState *ev);
         void on_client_resumed(SEGSEvents::ClientResumedRendering *ev);
-        void on_location_visited(SEGSEvents::LocationVisited *ev);
-        void on_plaque_visited(SEGSEvents::PlaqueVisited *ev);
-        void on_inspiration_dockmode(SEGSEvents::InspirationDockMode *ev);
-        void on_enter_door(SEGSEvents::EnterDoor *ev);
-        void on_change_stance(SEGSEvents::ChangeStance *ev);
-        void on_set_destination(SEGSEvents::SetDestination *ev);
-        void on_has_entered_door(SEGSEvents::HasEnteredDoor *ev);
-        void on_abort_queued_power(SEGSEvents::AbortQueuedPower *ev);
-        void on_description_and_battlecry(SEGSEvents::DescriptionAndBattleCry *ev);
-        void on_entity_info_request(SEGSEvents::EntityInfoRequest *ev);
+        void on_client_quit(SEGSEvents::ClientQuit *ev);
+        void on_connection_request(SEGSEvents::ConnectRequest* ev);
         void on_chat_reconfigured(SEGSEvents::ChatReconfigure *ev);
-        void on_switch_viewpoint(SEGSEvents::SwitchViewPoint *ev);
-        void on_client_options(SEGSEvents::SaveClientOptions *ev);
-        void on_set_default_power(SEGSEvents::SetDefaultPower *ev);
-        void on_unset_default_power(SEGSEvents::UnsetDefaultPower *ev);
-        void on_unqueue_all(SEGSEvents::UnqueueAll *ev);
+
         void on_target_chat_channel_selected(SEGSEvents::TargetChatChannelSelected *ev);
-        void on_activate_power(SEGSEvents::ActivatePower *ev);
-        void on_activate_power_at_location(SEGSEvents::ActivatePowerAtLocation *ev);
-        void on_activate_inspiration(SEGSEvents::ActivateInspiration *ev);
-        void on_powers_dockmode(SEGSEvents::PowersDockMode *ev);
-        void on_switch_tray(SEGSEvents::SwitchTray *ev);
-        void on_select_keybind_profile(SEGSEvents::SelectKeybindProfile *ev);
-        void on_reset_keybinds(SEGSEvents::ResetKeybinds *ev);
-        void on_set_keybind(SEGSEvents::SetKeybind *ev);
-        void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
-        void on_emote_command(const QString &command, Entity *ent);
-        void on_interact_with(SEGSEvents::InteractWithEntity *ev);
-        void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
-        void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
-        void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
-        void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
-        void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
-        void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
-        void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
-        void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
-        void on_dialog_button(SEGSEvents::DialogButton *ev);
-        void on_combine_enhancements(SEGSEvents::CombineEnhancementsReq *ev);
-        void on_move_enhancement(SEGSEvents::MoveEnhancement *ev);
-        void on_set_enhancement(SEGSEvents::SetEnhancement *ev);
-        void on_trash_enhancement(SEGSEvents::TrashEnhancement *ev);
-        void on_trash_enhancement_in_power(SEGSEvents::TrashEnhancementInPower *ev);
-        void on_buy_enhancement_slot(SEGSEvents::BuyEnhancementSlot *ev);
-        void on_recv_new_power(SEGSEvents::RecvNewPower *ev);
-        void on_awaiting_dead_no_gurney(SEGSEvents::AwaitingDeadNoGurney *ev);
-        void on_dead_no_gurney_ok(SEGSEvents::DeadNoGurneyOK *ev);
-        void on_browser_close(SEGSEvents::BrowserClose *ev);
-        void on_recv_costume_change(SEGSEvents::RecvCostumeChange *ev);
-        void on_levelup_response(SEGSEvents::LevelUpResponse *ev);
-        void on_trade_cancelled(SEGSEvents::TradeWasCancelledMessage* ev);
-        void on_trade_updated(SEGSEvents::TradeWasUpdatedMessage* ev);
-        void on_receive_contact_status(SEGSEvents::ReceiveContactStatus *ev);
-        void on_receive_task_detail_request(SEGSEvents::ReceiveTaskDetailRequest *ev);
-        void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
-        void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
-        void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
+
+        // Service <--> MapInstance
+        void on_service_to_client_response(std::unique_ptr<SEGSEvents::ServiceToClientData> data);
+        void on_chat_service_to_client_response(std::unique_ptr<SEGSEvents::ChatServiceToClientData> data);
 };
