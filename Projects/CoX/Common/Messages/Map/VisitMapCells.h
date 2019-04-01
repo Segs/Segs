@@ -16,9 +16,10 @@ namespace SEGSEvents
     {
     public:
         explicit VisitMapCells() : GameCommandEvent(evVisitMapCells) {}
-        VisitMapCells(bool is_opaque, std::array<bool, 1024> visible_map_cells) : 
+        VisitMapCells(bool is_opaque, int32_t num_cells, std::vector<bool> visible_map_cells) : 
             GameCommandEvent(evVisitMapCells),
             m_is_opaque(is_opaque),
+            m_num_cells(num_cells),
             m_visible_map_cells(visible_map_cells)
         {}
 
@@ -30,31 +31,34 @@ namespace SEGSEvents
             bs.StorePackedBits(1, type() - evFirstServerToClient); // Packet 22
             bs.StorePackedBits(1, 1);
             bs.StoreBits(1, m_is_opaque);
-            bs.StorePackedBits(1, 1024); // 1024 possible map cells to reveal
-            std::array<uint8_t, 128> cells_arr;
+            bs.StorePackedBits(1, m_num_cells);
+            std::vector<uint8_t> cells_arr;
+            cells_arr.resize((m_num_cells + 7) / 8);
             std::fill(std::begin(cells_arr), std::end(cells_arr), 0);
 
-            for (uint16_t i = 0; i < 128; i++)
+            for (uint16_t i = 0; i < cells_arr.size(); i++)
             {
                 int32_t byte_sum = 0;
                 for (uint16_t j = 0; j < 8; j++)
                 {
                     if (m_visible_map_cells[i * 8 + j])
                     {
-                        byte_sum += std::pow(2,j);
+                        byte_sum += std::pow(2, j);
                     }
                 }
                 cells_arr[i] =  byte_sum;
             }
 
-            bs.StoreBitArray(cells_arr.data(), 1024);
+            bs.StoreBitArray(cells_arr.data(), m_num_cells);
         }
 
         EVENT_IMPL(VisitMapCells)
     protected:
         // [[ev_def:field]]
-        bool                    m_is_opaque = false;
+        bool                m_is_opaque = false;
         // [[ev_def:field]]
-        std::array<bool,1024>   m_visible_map_cells;
+        int32_t             m_num_cells = 1024;
+        // [[ev_def:field]]
+        std::vector<bool>   m_visible_map_cells;
     };
 };
