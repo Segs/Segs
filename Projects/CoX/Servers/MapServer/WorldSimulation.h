@@ -29,7 +29,6 @@ protected:
         void            physicsStep(Entity *e, uint32_t msec);
         void            effectsStep(Entity *e, uint32_t msec);
         void            checkPowerTimers(Entity *e, uint32_t msec);
-        bool            isPlayerDead(Entity *e);
         void            regenHealthEnd(Entity *e, uint32_t msec);
         void            updateEntity(Entity *e, const ACE_Time_Value &dT);
         void            collisionStep(Entity *e, uint32_t msec);

@@ -619,12 +619,12 @@ void ScriptingEngine::registerTypes()
         QString e_name = QString::fromUtf8(name);
         giveInsp(*cl, e_name);
     };
-    m_private->m_lua["Player"]["SetXp"] = [this](const int xp)
+    m_private->m_lua["Player"]["SetXp"] = [this](const uint32_t xp)
     {
         MapClientSession *cl = m_private->m_lua["client"];
         setXP(*cl->m_ent->m_char, xp);
     };
-    m_private->m_lua["Player"]["GiveXp"] = [this](const int xp)
+    m_private->m_lua["Player"]["GiveXp"] = [this](const uint32_t xp)
     {
         MapClientSession *cl = m_private->m_lua["client"];
         giveXp(*cl, xp);
@@ -634,7 +634,7 @@ void ScriptingEngine::registerTypes()
         MapClientSession *cl = m_private->m_lua["client"];
         sendFloatingNumbers(*cl, tgt_idx, amount);
     };
-    m_private->m_lua["Player"]["FaceEntity"] = [this](const int tgt_idx)
+    m_private->m_lua["Player"]["FaceEntity"] = [this](const uint32_t tgt_idx)
     {
         MapClientSession *cl = m_private->m_lua["client"];
         sendFaceEntity(*cl, tgt_idx);

@@ -181,6 +181,12 @@ void Settings::setDefaultSettings()
         config.setValue("log_scenegraph","false");
         config.setValue("log_tasks","false");
     config.endGroup();
+    config.beginGroup("Modifiers");
+        config.setValue("uses_xp_mod", "false");
+        config.setValue("xp_mod_multiplier", "2.00");
+        config.setValue("xp_mod_startdate", "1/1/2000 12:00 AM");
+        config.setValue("xp_mod_enddate", "1/1/2000 12:00 AM");
+    config.endGroup();
 
     config.sync(); // sync changes or they wont be saved to file.
 }

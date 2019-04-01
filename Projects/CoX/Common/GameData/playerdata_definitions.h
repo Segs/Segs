@@ -15,22 +15,23 @@
 #include "Common/GameData/CharacterAttributes.h"
 #include "Common/GameData/PlayerStatistics.h"
 #include "Common/GameData/Task.h"
-
+#include "Common/GameData/PlayerProgress.h"
 
 #include <stdint.h>
 
 // this part of the Entity is for Players only info
 struct PlayerData
 {
-    enum : uint32_t {class_version   = 3};
-    GUISettings         m_gui;
-    KeybindSettings     m_keybinds;
-    ClientOptions       m_options;
-    vContactList        m_contacts;
-    vTaskEntryList      m_tasks_entry_list;
-    vClueList           m_clues;
-    vSouvenirList       m_souvenirs;
-    PlayerStatistics    m_player_statistics;
+    enum : uint32_t {class_version   = 4};
+    GUISettings      m_gui;
+    KeybindSettings  m_keybinds;
+    ClientOptions    m_options;
+    vContactList     m_contacts;
+    vTaskEntryList   m_tasks_entry_list;
+    vClueList        m_clues;
+    vSouvenirList    m_souvenirs;
+    PlayerStatistics m_player_statistics;
+    PlayerProgress   m_player_progress;
 
     uint8_t             m_auth_data[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}; // preorder rewards and things
 
