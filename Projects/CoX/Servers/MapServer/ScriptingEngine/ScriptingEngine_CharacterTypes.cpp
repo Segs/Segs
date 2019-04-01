@@ -5,6 +5,13 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
+#include "DataHelpers.h"
+#include "Common/GameData/Character.h"
+#include "Common/GameData/CharacterHelpers.h"
+#include "Common/GameData/Contact.h"
+#include "Common/GameData/Entity.h"
+#include "Common/GameData/Contact.h"
+#include "Common/GameData/Task.h"
 #include "ScriptingEngine.h"
 #include "MapInstance.h"
 

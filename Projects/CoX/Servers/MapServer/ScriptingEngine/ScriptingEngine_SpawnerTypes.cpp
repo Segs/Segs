@@ -5,8 +5,9 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#include "ScriptingEngine.h"
+#include "DataHelpers.h"
 #include "MapInstance.h"
+#include "ScriptingEngine.h"
 
 using namespace SEGSEvents;
 

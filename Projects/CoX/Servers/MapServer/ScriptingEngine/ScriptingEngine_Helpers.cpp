@@ -5,6 +5,9 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
+#include "GameData/playerdata_definitions.h"
+#include "Messages/Map/ChatMessage.h"
+#include "DataHelpers.h"
 #include "ScriptingEngine.h"
 #include "MapInstance.h"
 

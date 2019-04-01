@@ -5,8 +5,18 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#include "ScriptingEngine.h"
+#include "Messages/Map/ChatMessage.h"
+#include "Messages/Map/Browser.h"
+#include "Messages/Map/FloatingDamage.h"
+#include "Messages/Map/InfoMessageCmd.h"
+#include "Messages/Map/StandardDialogCmd.h"
+#include "Messages/Map/StoresEvents.h"
+#include "DataHelpers.h"
+#include "MapSceneGraph.h"
 #include "MapInstance.h"
+#include "MessageHelpers.h"
+#include "ScriptingEngine.h"
+#include "TimeHelpers.h"
 
 using namespace SEGSEvents;
 
