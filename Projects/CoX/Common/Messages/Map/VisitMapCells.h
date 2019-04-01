@@ -16,10 +16,9 @@ namespace SEGSEvents
     {
     public:
         explicit VisitMapCells() : GameCommandEvent(evVisitMapCells) {}
-        VisitMapCells(bool is_opaque, int32_t num_cells, std::vector<bool> visible_map_cells) : 
+        VisitMapCells(bool is_opaque, std::vector<bool> visible_map_cells) : 
             GameCommandEvent(evVisitMapCells),
             m_is_opaque(is_opaque),
-            m_num_cells(num_cells),
             m_visible_map_cells(visible_map_cells)
         {}
 
@@ -31,9 +30,10 @@ namespace SEGSEvents
             bs.StorePackedBits(1, type() - evFirstServerToClient); // Packet 22
             bs.StorePackedBits(1, 1);
             bs.StoreBits(1, m_is_opaque);
-            bs.StorePackedBits(1, m_num_cells);
+            uint32_t num_cells = m_visible_map_cells.size();
+            bs.StorePackedBits(1, num_cells);
             std::vector<uint8_t> cells_arr;
-            cells_arr.resize((m_num_cells + 7) / 8);
+            cells_arr.resize((num_cells + 7) / 8);
             std::fill(std::begin(cells_arr), std::end(cells_arr), 0);
 
             for (uint16_t i = 0; i < cells_arr.size(); i++)
@@ -49,15 +49,13 @@ namespace SEGSEvents
                 cells_arr[i] =  byte_sum;
             }
 
-            bs.StoreBitArray(cells_arr.data(), m_num_cells);
+            bs.StoreBitArray(cells_arr.data(), num_cells);
         }
 
         EVENT_IMPL(VisitMapCells)
     protected:
         // [[ev_def:field]]
         bool                m_is_opaque = false;
-        // [[ev_def:field]]
-        int32_t             m_num_cells = 1024;
         // [[ev_def:field]]
         std::vector<bool>   m_visible_map_cells;
     };

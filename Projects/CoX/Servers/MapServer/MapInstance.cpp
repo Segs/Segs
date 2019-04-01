@@ -2173,7 +2173,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     if (!visible_map_cells->empty())
     {
         // TODO: Check map type to determine if is_opaque is true / false
-        sendVisitMapCells(session, false, visible_map_cells->size(), *visible_map_cells);
+        sendVisitMapCells(session, false, *visible_map_cells);
     }
     
     initializeCharacter(*session.m_ent->m_char);
