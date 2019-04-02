@@ -20,14 +20,11 @@ struct ModelModifiers;
 struct TextureModifiers;
 class QFile;
 
-template <int idx_bits, int gen_bits, typename T>
-struct SingularStoreHandleT;
-
 namespace SEGS
 {
 struct GeoSet;
 enum class CoHBlendMode : uint8_t;
-using HTexture = SingularStoreHandleT<20,12,struct TextureWrapper>;
+using HTexture = SingularStoreHandleT<struct TextureWrapper>;
 
 struct VBOPointers
 {

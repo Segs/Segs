@@ -15,6 +15,7 @@ SET(target_CPP
     MapTemplate.cpp
     MessageHelpers.cpp
     NetCommandManager.cpp
+    NetFxHelpers.cpp
     SlashCommand.cpp
     WorldSimulation.cpp
 )
@@ -33,6 +34,7 @@ SET(target_INCLUDE
     MapTemplate.h
     MessageHelpers.h
     NetCommandManager.h
+    NetFxHelpers.h
     SlashCommand.h
     WorldSimulation.h
 )
@@ -59,7 +61,7 @@ if(ENABLE_TESTS)
 endif()
 # Retain directory structure in visual studio
 get_target_property(TARGET_SOURCES MapServer SOURCES)
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${target_CPP} ${target_INCLUDE}) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${target_CPP} ${target_INCLUDE})
 set_target_properties (MapServer PROPERTIES
     FOLDER Projects/CoX/Servers
 )

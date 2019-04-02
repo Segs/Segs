@@ -7,7 +7,7 @@ struct SceneModifiers;
 
 namespace SEGS
 {
-using HTexture = SingularStoreHandleT<20,12,struct TextureWrapper>;
+using HTexture = SingularStoreHandleT<struct TextureWrapper>;
 struct PrefabStore;
 
 struct RuntimeData
@@ -18,7 +18,7 @@ struct RuntimeData
     QHash<QString, QString> m_texture_paths;
     PrefabStore *           m_prefab_mapping = nullptr; //!< maps directories and model names to geosets
     SceneModifiers *        m_modifiers      = nullptr;
-    
+
     bool prepare(const QString &directory_path);
 
     bool read_prefab_definitions(const QString &directory_path);

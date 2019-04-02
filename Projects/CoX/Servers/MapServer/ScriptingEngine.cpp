@@ -15,6 +15,7 @@
 #include "MessageHelpers.h"
 #include "MapInstance.h"
 #include "MapSceneGraph.h"
+#include "NetFxHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "Messages/Map/Browser.h"
 #include "Messages/Map/ChatMessage.h"
@@ -121,6 +122,26 @@ static void destruction_is_an_error(T &/*v*/)
     assert(false);
 }
 
+static void registerNetFx(sol::state &lua) {
+    lua.new_usertype<NetFx>( "NetFx",
+        "new", sol::no_constructor, // The client links are not constructible from the script side.
+         sol::meta_function::garbage_collect, sol::destructor( destruction_is_an_error<NetFx> ),
+        "command",&NetFx::command,
+        "pitch_to_target",&NetFx::pitch_to_target,
+        "client_trigger_fx",&NetFx::client_trigger_fx,
+        "radius",&NetFx::radius,
+        "duration",&NetFx::duration
+    );
+    lua.new_usertype<NetFxHandle>( "NetFxHandle",
+        "new", sol::no_constructor, // The client links are not constructible from the script side.
+        sol::meta_function::garbage_collect, sol::destructor( destruction_is_an_error<NetFxHandle> ),
+        "create",createNetFx, // constructible from the script side.
+        "set_source_location",  setSourceLocation,
+        "set_target_location",  setTargetLocation,
+        "attach_to_entity",  attachToEntity,
+        "lookup", lookup
+    );
+}
 
 void ScriptingEngine::registerTypes()
 {
@@ -751,9 +772,8 @@ void ScriptingEngine::registerTypes()
         MapClientSession *cl = m_private->m_lua["client"];
         return getRelayRaceResult(*cl, segment);
     };
-
+    registerNetFx(m_private->m_lua);
 }
-
 int ScriptingEngine::loadAndRunFile(const QString &filename)
 {
     sol::load_result load_res = m_private->m_lua.load_file(filename.toStdString());

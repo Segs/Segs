@@ -53,7 +53,7 @@ struct TextureWrapper
     CoHBlendMode BlendType = CoHBlendMode(0);
     TextureModifiers *info {nullptr};
 };
-using HTexture = SingularStoreHandleT<20,12,TextureWrapper>;
+using HTexture = SingularStoreHandleT<TextureWrapper>;
 using TextureStorage = HandleBasedStorage<TextureWrapper>;
 void loadTexHeader(const QString &fname);
 } // end of SEGS namespace

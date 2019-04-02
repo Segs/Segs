@@ -11,6 +11,8 @@ set(COMMON_RUNTIME_SRC
     SceneGraph.cpp
     Texture.cpp
     Texture.h
+    Systems/FXSystem.cpp
+    Systems/FXSystem.h
 )
 add_library(common_runtime STATIC ${COMMON_RUNTIME_SRC})
 add_dependencies(common_runtime gameData)

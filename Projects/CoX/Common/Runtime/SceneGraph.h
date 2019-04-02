@@ -67,7 +67,7 @@ struct SceneNode
     float                         lod_far_fade  = 0;
     float                         lod_scale     = 0;
     float                         shadow_dist   = 0;
-    HandleT<20,12,struct SoundInfo> sound_info;
+    HandleT<struct SoundInfo>     sound_info;
     bool                          lod_fromtrick = false;
     // Start of bit flags
     uint32_t is_LOD_fade_node : 1;

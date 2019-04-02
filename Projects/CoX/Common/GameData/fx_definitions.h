@@ -163,11 +163,8 @@ struct FxInfo
     QByteArray fxname;
     int m_LifeSpan;
     int m_Lighting;
-    int m_Flags; //FxInfo_Flags
+    FxInfo_Flags m_Flags; //FxInfo_Flags
     float m_PerformanceRadius;
     int hasEventsOnDeath;
-    int m_initialized;
-    uint8_t initialized() const { return m_initialized &0xFF;}
-    int last_change_date;
 };
 using Fx_AllInfos = std::vector<FxInfo>;

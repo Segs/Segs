@@ -14,7 +14,7 @@
 template <class T>
 struct HandleBasedStorage
 {
-    using HType          = HandleT<20, 12, T>;
+    using HType          = HandleT<T>;
     using InternalHandle = Handle<20, 12>;
     using container_type = std::vector<T>;
     using iterator       = typename container_type::iterator;
@@ -55,13 +55,25 @@ struct HandleBasedStorage
     }
     iterator begin() { return m_nodes.begin(); }
     iterator end() { return m_nodes.end(); }
-
+    // given an internal iterator, returns it's Handle
+    HType handleFromIterator(iterator iter)
+    {
+        HType res={};
+        if(iter!=m_nodes.end())
+        {
+            int dense_idx=std::distance(m_nodes.begin(),m_nodes.end());
+            int spares_idx = m_dense_to_sparse[dense_idx];
+            res.idx=spares_idx;
+            res.gen=m_sparse_array[spares_idx].gen;
+        }
+        return res;
+    }
     static HandleBasedStorage &instance()
     {
         static HandleBasedStorage instance;
         return instance;
     }
-    
+
 private:
     HandleBasedStorage()
     {
@@ -99,11 +111,11 @@ private:
     }
 };
 
-template <int idx_bits, int gen_bits, typename T>
-struct SingularStoreHandleT : public HandleT<idx_bits, gen_bits,T>
+template <typename T,int idx_bits=20, int gen_bits=12>
+struct SingularStoreHandleT : public HandleT<T,idx_bits, gen_bits>
 {
     using Type = T;
-    using super = HandleT<idx_bits, gen_bits,T>;
+    using super = HandleT<T,idx_bits, gen_bits>;
     using super::super;
     // allow initializing SingularStorage handles from underlying type
     constexpr SingularStoreHandleT(super from) : super(from) {}
