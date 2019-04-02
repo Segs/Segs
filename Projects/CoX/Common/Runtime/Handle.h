@@ -30,3 +30,43 @@ struct HandleT : public Handle<idx_bits, gen_bits>
     using Type = T;
     using Handle<idx_bits, gen_bits>::Handle;
 };
+#if 0
+template <typename T>
+struct RefCountedHandle;
+template<class T>
+void addRef(RefCountedHandle<T> h);
+template<class T>
+void decRef(RefCountedHandle<T> h);
+
+template <typename T>
+struct RefCountedHandle : public HandleT<T>
+{
+    using super = HandleT<T>;
+
+    constexpr RefCountedHandle() : super() {}
+    constexpr RefCountedHandle(uint32_t idx_, uint16_t gen_) : super(idx_,gen_) {}
+    RefCountedHandle(const RefCountedHandle &from) : super(from) {addRef(*this);}
+    RefCountedHandle(const super &from) : super(from) {addRef(*this);}
+    RefCountedHandle &operator=(const RefCountedHandle &from)
+    {
+        if(*this==from)
+            return *this;
+        addRef(from);
+        decRef(*this);
+        this->idx = from.idx;
+        this->gen = from.gen;
+        return *this;
+    }
+    RefCountedHandle &operator=(RefCountedHandle &&from)
+    {
+        if(*this==from)
+            return *this;
+        decRef(*this);
+        this->idx = from.idx;
+        this->gen = from.gen;
+        from.idx = from.gen = 0;
+        return *this;
+    }
+    ~RefCountedHandle() { decRef(*this); }
+};
+#endif

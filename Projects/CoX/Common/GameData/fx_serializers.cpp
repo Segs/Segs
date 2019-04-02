@@ -208,15 +208,17 @@ bool loadFrom(BinStore * s, FxInfo_Condition & target)
 }
 bool loadFrom(BinStore * s, FxInfo & target)
 {
+    int flags=0;
     s->prepare();
     bool ok = true;
     // Unused/Undef tokens: FxInfo
     ok &= s->read(target.fxname);
     ok &= s->read(target.m_LifeSpan);
     ok &= s->read(target.m_Lighting);
-    ok &= s->read(target.m_Flags);
+    ok &= s->read(flags);
     ok &= s->read(target.m_PerformanceRadius);
     ok &= s->prepare_nested(); // will update the file size left
+    target.m_Flags = FxInfo_Flags(flags);
     if(s->end_encountered())
         return ok;
     QByteArray _name;

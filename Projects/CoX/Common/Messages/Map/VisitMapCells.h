@@ -16,7 +16,7 @@ namespace SEGSEvents
     {
     public:
         explicit VisitMapCells() : GameCommandEvent(evVisitMapCells) {}
-        VisitMapCells(bool is_opaque, std::vector<bool> visible_map_cells) : 
+        VisitMapCells(bool is_opaque, std::vector<bool> visible_map_cells) :
             GameCommandEvent(evVisitMapCells),
             m_is_opaque(is_opaque),
             m_visible_map_cells(visible_map_cells)
@@ -59,4 +59,4 @@ namespace SEGSEvents
         // [[ev_def:field]]
         std::vector<bool>   m_visible_map_cells;
     };
-};
+}

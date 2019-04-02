@@ -13,14 +13,17 @@
 struct NetFx;
 class QString;
 class Entity;
+namespace FXSystem
+{
+struct Data;
+}
 
 using NetFxHandle = HandleT<NetFx>;
+using FxHandle = HandleT<FXSystem::Data>;
 
-NetFxHandle createNetFx(const QString &fx_name);
+NetFxHandle createNetFx(FxHandle from_fx);
 void release(NetFxHandle handle);
 NetFx &lookup(NetFxHandle handle);
-void setSourceLocation(NetFxHandle h,glm::vec3 loc);
-void setSourceEntityAndBone(NetFxHandle h,int entidx,uint8_t boneidx);
-void setTargetLocation(NetFxHandle h,glm::vec3 loc);
-
 void attachToEntity(NetFxHandle h, Entity *tgt);
+void updateNetFx();
+bool updateNetFxFromParent(NetFxHandle h);

@@ -108,24 +108,37 @@ struct NPCData
 
 struct NetFxTarget
 {
-    bool        type_is_location = false;
-    uint32_t    ent_idx = 0;
     glm::vec3   pos;
+    uint32_t    ent_idx = 0;
+    uint8_t     bone_idx = 2;
+    bool        type_is_location = false;
 };
-
+enum class NetFxFlag : uint8_t
+{
+    ONESHOT    = 2,
+    MAINTAINED = 4,
+    DESTROY    = 8
+};
+namespace FXSystem
+{
+struct Data;
+}
+using FxHandle = HandleT<FXSystem::Data>;
 struct NetFx
 {
-    uint8_t     command;
+    int         m_ref_count = 0;
+    FxHandle    m_parent;
     uint32_t    net_id;
     uint32_t    handle;
+    uint8_t     command;
     bool        pitch_to_target     = false;
-    uint8_t     bone_id;
+    bool        destroy_next_update = false;
     float       client_timer        = 0;
     int         client_trigger_fx   = 0;
     float       duration            = 0;
     float       radius              = 0;
     int         power               = 0; // char.toInt()
-    int         debris              = 0;
+    int         debris              = 0; // this is index to a dynamic scene node
     NetFxTarget target;
     NetFxTarget origin;
 };
@@ -242,7 +255,7 @@ public:
         bool                m_is_store                  = false;
         vStoreItems         m_store_items;
 
-        std::function<void(int)>  m_active_dialog       = NULL;
+        std::function<void(int)>  m_active_dialog       = nullptr;
 
         void                dump();
 

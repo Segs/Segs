@@ -61,18 +61,19 @@ public:
     }
 
     // IndexedStringPacker interface
-    void addString(const QString &str)
+    int addString(const QString &str) override
     {
         int idx = m_string_to_index.value(str.toLower(),0);
         if(idx)
         {
             assert(0==m_known_strings[idx-1].compare(str,Qt::CaseInsensitive));
-            return;
+            return idx;;
         }
         m_known_strings.push_back(str.toLower());
         m_string_to_index[str.toLower()] = m_known_strings.size();
+        return m_known_strings.size();
     }
-    int getIndex(const QString &str) const
+    int getIndex(const QString &str) const override
     {
         return m_string_to_index.value(str.toLower(),0);
     }
@@ -222,7 +223,7 @@ template<class TARGET,unsigned int CRC>
 bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
 {
     QElapsedTimer timer;
-    
+
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading "<<directory_path<<storage<<" ... ";
     timer.start();
@@ -316,9 +317,11 @@ bool GameDataStore::read_game_data(const QString &directory_path)
                       static_cast<HashBasedPacker *>(packer_instance)->fill_hashes(*this);
                       m_npc_store.prepare_dictionaries();
                       auto packer = static_cast<IndexedPacker *>(m_index_based_packer);
+                      int idx=0;
                       for(const FxInfo &fx : m_fx_infos)
                       {
                           packer->addString(fx.fxname);
+                          m_name_to_fx_index[fx.fxname.toLower()] = idx++;
                       }
                       packer->sortEntries();
                   },"Postprocessing runtime data .. ");
@@ -356,6 +359,14 @@ int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &sche
     }
 
     return i;
+}
+
+FxInfo *GameDataStore::getFxInfoByName(const QByteArray &name)
+{
+    int idx = m_name_to_fx_index.value(name.toLower(),-1);
+    if(idx==-1)
+        return nullptr;
+    return m_fx_infos.data()+idx;
 }
 
 bool GameDataStore::read_costumes(const QString &directory_path)
@@ -580,7 +591,7 @@ Power_Data * GameDataStore::editable_power_tpl(uint32_t pcat_idx, uint32_t pset_
     return &m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
 }
 
-int GameDataStore::net_fx_handle(const QString &name)
+int GameDataStore::getFxNamePackId(const QString &name)
 {
     return m_index_based_packer->getIndex(name);
 }

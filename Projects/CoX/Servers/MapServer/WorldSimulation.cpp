@@ -14,9 +14,11 @@
 
 #include "Common/Servers/Database.h"
 #include "DataHelpers.h"
+#include "NetFxHelpers.h"
 #include "Messages/Map/GameCommandList.h"
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
+#include "Runtime/Systems/FXSystem.h"
 #include <glm/gtx/vector_query.hpp>
 #include "MapInstance.h"
 #include "Common/Servers/InternalEvents.h"
@@ -40,12 +42,21 @@ void World::update(const ACE_Time_Value &tick_timer)
     prev_tick_time = tick_timer;
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_ent_mager.getEntitiesMutex());
 
+    updateNetFx(); // cleans up the global netfx storage
     for(Entity * e : ref_ent_mager.m_live_entlist)
     {
         updateEntity(e,delta);
         if(e->m_destroyed)
             break;
     }
+    // Note the fx system runs AFTER the entities are updated
+    // this MUST happen in order for NetFx processing logic to work
+    // Right now we assume:
+    //  Effects with duration==0 and age ==0 are triggered one shot effects
+    //  Effects with duration==0 and age !=0 are fx 'finishers' when sent will ask the client to 'delete' the one shot effect
+    // the fx system update always increments the age, thus we have to create NetFx instances before
+    FXSystem::update(sim_frame_time);
+
 }
 
 void World::physicsStep(Entity *e,uint32_t msec)
@@ -241,25 +252,25 @@ void World::regenHealthEnd(Entity *e, uint32_t msec)
 
 void World::collisionStep(Entity *e, uint32_t /*msec*/)
 {
-    if (e->m_player != nullptr && !e->m_map_swap_collided)
-    {
-        // Range-For only uses the values, so you can't get the keys unless you use toStdMap() or iterate keys().
-        // Both are less efficient than just using an iterator.
-        QHash<QString, MapXferData>::const_iterator i = m_owner_instance->get_map_zone_transfers().constBegin();
-        while (i != m_owner_instance->get_map_zone_transfers().constEnd())
-        {
-            // TODO: This needs to check against the trigger plane for transfers. This should be part of the wall objects geobin. Also need to make sure that this doesn't cause players to immediately zone after being spawned in a spawnLocation near a zoneline.            
-            if ((e->m_entity_data.m_pos.x >= i.value().m_position.x - 20 && e->m_entity_data.m_pos.x <= i.value().m_position.x + 20) &&
-                (e->m_entity_data.m_pos.y >= i.value().m_position.y - 20 && e->m_entity_data.m_pos.y <= i.value().m_position.y + 20) &&
-                (e->m_entity_data.m_pos.z >= i.value().m_position.z - 20 && e->m_entity_data.m_pos.z <= i.value().m_position.z + 20))
-            {
-                e->m_map_swap_collided = true;  // So we don't send repeated events for the same entity
-                m_owner_instance->putq(new MapSwapCollisionMessage({e->m_db_id, e->m_entity_data.m_pos, i.key()}, 0));
-                return; // don't want to keep checking for other maps for this entity
-            }
-            i++;
+    if (e->m_player == nullptr || e->m_map_swap_collided)
+        return;
 
+    // Range-For only uses the values, so you can't get the keys unless you use toStdMap() or iterate keys().
+    // Both are less efficient than just using an iterator.
+    QHash<QString, MapXferData>::const_iterator i = m_owner_instance->get_map_zone_transfers().constBegin();
+    while (i != m_owner_instance->get_map_zone_transfers().constEnd())
+    {
+        // TODO: This needs to check against the trigger plane for transfers. This should be part of the wall objects geobin. Also need to make sure that this doesn't cause players to immediately zone after being spawned in a spawnLocation near a zoneline.
+        if ((e->m_entity_data.m_pos.x >= i.value().m_position.x - 20 && e->m_entity_data.m_pos.x <= i.value().m_position.x + 20) &&
+            (e->m_entity_data.m_pos.y >= i.value().m_position.y - 20 && e->m_entity_data.m_pos.y <= i.value().m_position.y + 20) &&
+            (e->m_entity_data.m_pos.z >= i.value().m_position.z - 20 && e->m_entity_data.m_pos.z <= i.value().m_position.z + 20))
+        {
+            e->m_map_swap_collided = true;  // So we don't send repeated events for the same entity
+            m_owner_instance->putq(new MapSwapCollisionMessage({e->m_db_id, e->m_entity_data.m_pos, i.key()}, 0));
+            return; // don't want to keep checking for other maps for this entity
         }
+        i++;
+
     }
 }
 
@@ -296,6 +307,15 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
         if(e->m_time_till_logout<0)
             e->m_time_till_logout=0;
     }
+    for(auto iter=e->m_net_fx.begin(); iter!=e->m_net_fx.end(); ++iter)
+    {
+        auto handle = *iter;
+        if(updateNetFxFromParent(handle))
+        {
+            iter = e->m_net_fx.erase(iter);
+        }
+    }
+
 }
 
 //! @}

@@ -52,7 +52,8 @@ public:
 class IndexedStringPacker
 {
 public:
-    virtual void addString(const QString &) = 0;
+    /// add a string to packer and return it's index
+    virtual int addString(const QString &) = 0;
     /// return index of a string, or 0 if the string has not been added yet.
     virtual int getIndex(const QString &) const =0;
 };

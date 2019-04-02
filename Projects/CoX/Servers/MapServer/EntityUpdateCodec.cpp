@@ -233,7 +233,7 @@ void sendNetFx(const Entity &src, BitStream &bs)
         else
         {
             storePackedBitsConditional(bs, 8, fx.origin.ent_idx); // origin entity
-            bs.StorePackedBits(2,fx.bone_id); // bone id
+            bs.StorePackedBits(2,fx.origin.bone_idx); // bone id
         }
 
         storeBitsConditional(bs, 2, fx.target.type_is_location); // target type

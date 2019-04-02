@@ -55,7 +55,19 @@ struct HandleBasedStorage
     }
     iterator begin() { return m_nodes.begin(); }
     iterator end() { return m_nodes.end(); }
-
+    // given an internal iterator, returns it's Handle
+    HType handleFromIterator(iterator iter)
+    {
+        HType res={};
+        if(iter!=m_nodes.end())
+        {
+            int dense_idx=std::distance(m_nodes.begin(),m_nodes.end());
+            int spares_idx = m_dense_to_sparse[dense_idx];
+            res.idx=spares_idx;
+            res.gen=m_sparse_array[spares_idx].gen;
+        }
+        return res;
+    }
     static HandleBasedStorage &instance()
     {
         static HandleBasedStorage instance;
