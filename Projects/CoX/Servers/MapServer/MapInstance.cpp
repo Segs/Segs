@@ -154,6 +154,8 @@ void MapInstance::start(const QString &scenegraph_path)
             m_critter_generators.generate(this);
             }, "Spawning npcs");
 
+        // Set correct MapInstance in scripting engine
+        m_scripting_interface->updateMapInstance(this);
         // Load Lua Scripts for this Map Instance
         load_map_lua();
     }

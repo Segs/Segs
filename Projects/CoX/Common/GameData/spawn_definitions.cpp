@@ -6,6 +6,9 @@
 void SpawnDefinitions::buildList()
 {
     CritterSpawnDef* list = new CritterSpawnDef();
+    //Empty
+    list->m_spawn_group =  "None";
+    m_critter_spawn_list.push_back(*list);
 
     //Outbreak
     list->m_spawn_group =  "ES_Contaminated_City_00_01";
@@ -106,8 +109,8 @@ CritterSpawnDef SpawnDefinitions::getSpawnGroup(const QString &spawn_group_name)
         if(spawn_group.m_spawn_group.contains(spawn_group_name, Qt::CaseInsensitive))
             return spawn_group;
     }
-    qWarning() << "No matching \"" << spawn_group_name << "\" in g_defined_enemy_spawn_groups to sent group name."
-               << "Returning ES_Contaminated_City_00_01 group as default...";
+    qCDebug(logNpcSpawn) << "No matching \"" << spawn_group_name << "\" in g_defined_enemy_spawn_groups to sent group name."
+               << "Returning Empty group...";
 
     return m_critter_spawn_list[0];
 }

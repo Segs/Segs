@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "CritterGenerator.h"
 #include "Messages/Map/MessageChannels.h"
 #include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
@@ -23,7 +24,7 @@ class Character;
 struct Friend;
 struct FriendsList;
 struct MapClientSession;
-struct MapInstance;
+class MapInstance;
 struct CharacterPowerSet;
 struct CharacterPower;
 struct PowerStance;
@@ -170,3 +171,4 @@ void addHideAndSeekResult(MapClientSession &cl, int points);
 
 void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
 void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+std::vector<CritterSpawnLocations> getMapEncounters(MapInstance *mi);
