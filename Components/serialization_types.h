@@ -106,6 +106,39 @@ inline void CEREAL_LOAD_FUNCTION_NAME(Archive & ar, ::QByteArray & str)
     ar( rd );
     str = QByteArray::fromStdString(rd);
 }
+//! Serialization for std::map<uint32_t,std::vector<bool> >
+template<class Archive, class C, class A,
+    traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae>
+inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, std::map<uint32_t, std::vector<bool>, C, A> map) // trying without &
+{
+    for (const auto & pair : map)
+    {
+        ar(cereal::make_nvp(QVariant(pair.first).toString().toStdString(), pair.second));
+    }
+}
+//! Serialization for std::map<uint32_t,std::vector<bool> >
+template<class Archive, class C, class A,
+    traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae>
+inline void CEREAL_LOAD_FUNCTION_NAME(Archive & ar, std::map<uint32_t, std::vector<bool>, C, A> & map)
+{
+    map.clear();
+    auto hint = map.begin();
+
+    while (true)
+    {
+        const auto node_name_pointer = ar.getNodeName();
+
+        if (!node_name_pointer)
+        {
+            break;
+        }
+        
+        uint32_t key = QVariant(node_name_pointer).toUInt();
+        std::vector<bool> values;
+        ar(values);
+        hint = map.emplace_hint(hint, std::move(key), std::move(values));
+    }
+}
 template<class Archive>
 void serialize(Archive & archive, glm::vec3 & m)
 {

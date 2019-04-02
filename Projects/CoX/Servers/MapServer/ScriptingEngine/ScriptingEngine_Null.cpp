@@ -17,6 +17,9 @@
 ScriptingEngine::ScriptingEngine() {}
 ScriptingEngine::~ScriptingEngine() {}
 void ScriptingEngine::registerTypes() {}
+void ScriptingEngine::register_GenericTypes() {}
+void ScriptingEngine::register_CharacterTypes() {}
+void ScriptingEngine::register_SpawnerTypes() {}
 
 void updateClientContext(MapClientSession * client)
 {

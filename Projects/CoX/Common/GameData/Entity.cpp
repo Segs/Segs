@@ -43,7 +43,6 @@ void Entity::sendPvP(BitStream &bs)
     bs.StorePackedBits(5,0);
     bs.StoreBits(1,0);
 }
-
 void Entity::fillFromCharacter(const GameDataStore &data)
 {
     m_hasname = !m_char->getName().isEmpty();

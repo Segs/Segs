@@ -23,7 +23,7 @@
 #include "Common/GameData/Store.h"
 
 #include <glm/gtc/constants.hpp>
-#include <QQueue>
+#include <deque>
 #include <array>
 #include <memory>
 
@@ -159,6 +159,7 @@ public:
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_supergroup        = true;
         bool                m_has_team              = false;
+        bool                m_is_activating         = false;
         Team *              m_team                  = nullptr;  // we might want t move this to Character class, but maybe Baddies use teams?
         TradePtr            m_trade;
         EntityData          m_entity_data;
@@ -168,15 +169,16 @@ public:
         uint32_t            m_db_id                 = {0};
         EntType             m_type                  = {EntType::Invalid};
         glm::quat           m_direction;
-        int32_t             m_target_idx            = -1;
-        int32_t             m_assist_target_idx     = -1;
+        uint32_t            m_target_idx            = 0;
+        uint32_t            m_assist_target_idx     = 0;
+        glm::vec3           m_target_loc;
 
         std::vector<Buffs>          m_buffs;
-        QQueue<QueuedPowers>        m_queued_powers;
+        std::deque<QueuedPowers>    m_queued_powers;
+        std::vector<QueuedPowers>   m_auto_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
         PowerStance                 m_stance;
         bool                        m_update_buffs  = false;
-
 
         // Animations: Sequencers, NetFx, and TriggeredMoves
         std::vector<NetFx>  m_net_fx;
@@ -197,10 +199,10 @@ public:
         bool                m_no_draw_on_client     = false;
         bool                m_force_camera_dir      = false; // used to force the client camera direction in sendClientData()
         bool                m_is_hero               = false;
-        bool                m_is_villian            = false;
+        bool                m_is_villain            = false;
         bool                m_contact               = false;
         uint8_t             m_update_id             = 1;
-         bool               m_update_part_1         = true;     // EntityResponse sendServerControlState
+        bool                m_update_part_1         = true;     // EntityResponse sendServerControlState
         bool                m_force_pos_and_cam     = true;     // EntityResponse sendServerControlState
         bool                m_full_update           = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions

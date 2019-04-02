@@ -75,9 +75,10 @@ void setLoggingFilter()
     filter_rules += "\nlog.infomsg="        + config.value("log_infomsg","false").toString();
     filter_rules += "\nlog.emotes="         + config.value("log_emotes","true").toString();
     filter_rules += "\nlog.target="         + config.value("log_target","false").toString();
-    filter_rules += "\nlog.spawn="          + config.value("log_spawn","false").toString();
+    filter_rules += "\nlog.playerspawn="    + config.value("log_playerspawn","false").toString();
+    filter_rules += "\nlog.npcspawn="       + config.value("log_npcspawn","false").toString();
     filter_rules += "\nlog.mapevents="      + config.value("log_mapevents","true").toString();
-    filter_rules += "\nlog.mapxfers="       + config.value("log.mapxfers", "true").toString();
+    filter_rules += "\nlog.mapxfers="       + config.value("log_mapxfers", "true").toString();
     filter_rules += "\nlog.slashcommand="   + config.value("log_slashcommand","true").toString();
     filter_rules += "\nlog.description="    + config.value("log_description","false").toString();
     filter_rules += "\nlog.friends="        + config.value("log_friends","false").toString();
@@ -138,7 +139,7 @@ void toggleLogging(QString &category)
         cat = &logEmotes();
     else if(category.contains("target",Qt::CaseInsensitive))
         cat = &logTarget();
-    else if(category.contains("spawn",Qt::CaseInsensitive))
+    else if(category.contains("playerspawn",Qt::CaseInsensitive))
         cat = &logPlayerSpawn();
     else if(category.contains("npcspawn",Qt::CaseInsensitive))
         cat = &logNpcSpawn();
@@ -208,6 +209,7 @@ void dumpLogging()
     output += "\n\t playerspawn: "  + QString::number(logPlayerSpawn().isDebugEnabled());
     output += "\n\t npcspawn: "     + QString::number(logNpcSpawn().isDebugEnabled());
     output += "\n\t mapevents: "    + QString::number(logMapEvents().isDebugEnabled());
+    output += "\n\t mapxfers: "     + QString::number(logMapXfers().isDebugEnabled());
     output += "\n\t slashcommand: " + QString::number(logSlashCommand().isDebugEnabled());
     output += "\n\t description: "  + QString::number(logDescription().isDebugEnabled());
     output += "\n\t friends: "      + QString::number(logFriends().isDebugEnabled());

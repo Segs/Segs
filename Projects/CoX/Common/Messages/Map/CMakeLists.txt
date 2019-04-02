@@ -78,6 +78,7 @@ set(SOURCES
     TradeWasUpdatedMessage.cpp
     TradeWasUpdatedMessage.h
     TrayAdd.h
+    VisitMapCells.h
     Waypoints.h
     WindowState.cpp
     WindowState.h

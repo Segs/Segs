@@ -11,6 +11,7 @@
 #include "glm/vec3.hpp"
 #include <stdint.h>
 #include <QString>
+#include "Powers.h"
 
 class Entity;
 struct PlayerData;
@@ -51,12 +52,18 @@ void    setSpeed(Entity &e, float v1, float v2, float v3);
 void    setBackupSpd(Entity &e, float val);
 void    setJumpHeight(Entity &e, float val);
 void    setUpdateID(Entity &e, uint8_t val);
+void    resetSpeed(Entity &e);
 void    setTeamID(Entity &e, uint8_t team_id);
 void    setSuperGroup(Entity &e, int sg_id = 0, QString sg_name = "", uint32_t sg_rank = 3);
 void    setTarget(Entity &e, uint32_t target_idx);
 void    setAssistTarget(Entity &e, uint32_t target_idx);
 void    setCurrentDestination(Entity &e, int point_idx, glm::vec3 location);
 void    setStateMode(Entity &e, ClientStates state);
+bool    validTarget(Entity &target_ent, Entity &ent, StoredEntEnum const &target);
+bool    validTargets(Entity &target_ent, Entity &ent, std::vector<StoredEntEnum> const &targets);
+void    modifyAttrib(Entity &e, buffset change);
+void    checkMovement(Entity &e);
+bool    checkPowerBlock(Entity &e);
 
 // For live debugging
 void    setu1(Entity &e, int val);
