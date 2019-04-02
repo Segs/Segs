@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "CritterGenerator.h"
 #include "Messages/Map/MessageChannels.h"
 #include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
@@ -23,7 +24,7 @@ class Character;
 struct Friend;
 struct FriendsList;
 struct MapClientSession;
-struct MapInstance;
+class MapInstance;
 struct CharacterPowerSet;
 struct CharacterPower;
 struct PowerStance;
@@ -68,7 +69,7 @@ void sendClientState(MapClientSession &sess, ClientStates client_state);
 void showMapXferList(MapClientSession &sess, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &sess, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(MapClientSession &sess, uint32_t tgt_idx, int32_t amount);
-void sendVisitMapCells(MapClientSession &sess, bool is_opaque, std::array<bool, 1024> visible_map_cells);
+void sendVisitMapCells(MapClientSession &sess, bool is_opaque, std::vector<bool> visible_map_cells);
 void sendLevelUp(MapClientSession &sess);
 void sendEnhanceCombineResponse(MapClientSession &sess, bool success, bool destroy);
 void sendChangeTitle(MapClientSession &sess, bool select_origin);
@@ -170,3 +171,4 @@ void addHideAndSeekResult(MapClientSession &cl, int points);
 
 void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
 void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+std::vector<CritterSpawnLocations> getMapEncounters(MapInstance *mi);
