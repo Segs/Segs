@@ -19,6 +19,7 @@
 #include "Common/GameData/shop_definitions.h"
 
 #include "NpcStore.h"
+#include <QDate>
 
 class ColorAndPartPacker;
 class IndexedStringPacker;
@@ -98,6 +99,12 @@ public:
         float                       m_time_to_logout_msg = 18 * 60;
         float                       m_time_to_auto_logout = 2 * 60;
         bool                        m_uses_auto_logout = true;
+
+        // experience modifier settings
+        bool                        m_uses_xp_mod;
+        double                      m_xp_mod_multiplier;
+        QDateTime                   m_xp_mod_startdate;
+        QDateTime                   m_xp_mod_enddate;
 };
 int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
 int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);

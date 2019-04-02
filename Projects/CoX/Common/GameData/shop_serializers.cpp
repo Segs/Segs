@@ -9,6 +9,7 @@
  * @addtogroup GameData Projects/CoX/Common/GameData
  * @{
  */
+
 #include "shop_serializers.h"
 #include "serialization_common.h"
 #include "serialization_types.h"

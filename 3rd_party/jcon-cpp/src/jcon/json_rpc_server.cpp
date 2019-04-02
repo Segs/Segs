@@ -37,7 +37,18 @@ JsonRpcServer::~JsonRpcServer()
 
 void JsonRpcServer::registerServices(const QObjectList& services)
 {
+    m_services.clear();
+    for (auto s : services) {
+        m_services[s] = "";
+    }
+    m_ns_separator = "";
+}
+
+void JsonRpcServer::registerServices(const ServiceMap& services,
+                                     const QString& ns_separator)
+{
     m_services = services;
+    m_ns_separator = ns_separator;
 }
 
 void JsonRpcServer::jsonRequestReceived(const QJsonObject& request,
@@ -103,11 +114,28 @@ bool JsonRpcServer::dispatch(const QString& method_name,
                              const QString& request_id,
                              QVariant& return_value)
 {
-    for (auto& s : m_services) {
+    QString method_ns;
+    QString method_name_without_ns;
+    std::tie(method_ns, method_name_without_ns) =
+        namespaceAndMethodName(method_name);
+
+    QObjectList services;
+    for (auto it = m_services.begin(); it != m_services.end(); ++it) {
+        QObject* s = it.key();
+        QString ns = it.value();
+        if (ns.isEmpty() || ns == method_ns) {
+            services.push_back(s);
+        }
+    }
+
+    for (auto s : services) {
         const QMetaObject* meta_obj = s->metaObject();
-        for (int i = 0; i < meta_obj->methodCount(); ++i) {
+        for (int i = meta_obj->methodOffset();
+             i < meta_obj->methodCount();
+             ++i)
+        {
             auto meta_method = meta_obj->method(i);
-            if (meta_method.name() == method_name) {
+            if (meta_method.name() == method_name_without_ns) {
                 if (params.type() == QVariant::List ||
                     params.type() == QVariant::StringList)
                 {
@@ -118,11 +146,33 @@ bool JsonRpcServer::dispatch(const QString& method_name,
                     if (call(s, meta_method, params.toMap(), return_value)) {
                         return true;
                     }
+                } else if (params.type() == QVariant::Invalid) {
+                    if (call(s, meta_method, QVariantList(), return_value)) {
+                        return true;
+                    }
                 }
             }
         }
     }
     return false;
+}
+
+std::pair<QString, QString>
+JsonRpcServer::namespaceAndMethodName(const QString& full_name)
+{
+    if (m_ns_separator.isEmpty()) {
+        return {"", full_name};
+    }
+    QString ns;
+    QString method_name;
+    int li = full_name.lastIndexOf(m_ns_separator);
+    if (li > 0) {
+        ns = full_name.left(li);
+        method_name = full_name.mid(li + m_ns_separator.length());
+    } else {
+        return {"", full_name};
+    }
+    return {ns, method_name};
 }
 
 bool JsonRpcServer::call(QObject* object,

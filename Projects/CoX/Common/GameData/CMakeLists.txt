@@ -17,6 +17,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PlayerStatistics.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PlayerProgress.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StateStorage.cpp
@@ -81,6 +82,7 @@ SET(target_INCLUDE
     ${CMAKE_CURRENT_SOURCE_DIR}/VisitLocation.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement.h
     ${CMAKE_CURRENT_SOURCE_DIR}/PlayerStatistics.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/PlayerProgress.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Powers.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Sidekick.h
     ${CMAKE_CURRENT_SOURCE_DIR}/StateInterpolator.h

@@ -42,6 +42,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     connect(ui->map_player_fade_in,&QSlider::valueChanged,this,&SettingsDialog::text_edit_updater);
     connect(ui->map_player_fade_in_value,&QLineEdit::textChanged,this,&SettingsDialog::slider_updater);
     connect(ui->auto_logout_check,&QCheckBox::clicked,this,&SettingsDialog::auto_logout_checkbox_validator);
+    connect(ui->xp_mod_check,&QCheckBox::clicked,this,&SettingsDialog::xp_mod_checkbox_validator);
     connect(ui->purge_logs,&QPushButton::clicked,this,&SettingsDialog::purge_logs);
 
     // GetIP Signals
@@ -79,6 +80,14 @@ void SettingsDialog::auto_logout_checkbox_validator()
     }
 }
 
+void SettingsDialog::xp_mod_checkbox_validator()
+{
+    bool is_checked = ui->xp_mod_check->isChecked();
+    ui->xp_mod_multiplier_spin->setEnabled(is_checked);
+    ui->xp_mod_startdate_edit->setEnabled(is_checked);
+    ui->xp_mod_enddate_edit->setEnabled(is_checked);
+}
+
 void SettingsDialog::open_settings_dialog()
 {
     QFileInfo config_file("settings.cfg");
@@ -93,6 +102,7 @@ void SettingsDialog::open_settings_dialog()
     ui->map_player_fade_in_value->setText(fade_in_value);
     show();
     auto_logout_checkbox_validator();
+    xp_mod_checkbox_validator();
 }
 
 void SettingsDialog::read_config_file(QString filePath)
@@ -205,6 +215,15 @@ void SettingsDialog::read_config_file(QString filePath)
         }
     }
     config_file.endGroup(); // Logging
+
+    config_file.beginGroup("Modifiers");
+    ui->xp_mod_check->setChecked(config_file.value("uses_xp_mod", "").toBool());
+    ui->xp_mod_multiplier_spin->setValue(config_file.value("xp_mod_multiplier", "").toDouble());
+    ui->xp_mod_startdate_edit->setDateTime(QDateTime::fromString(config_file.value("xp_mod_startdate", "").toString(),
+        "M/d/yyyy h:mm AP"));
+    ui->xp_mod_enddate_edit->setDateTime(QDateTime::fromString(config_file.value("xp_mod_enddate", "").toString(),
+        "M/d/yyyy h:mm AP"));
+    config_file.endGroup(); // Modifiers
 }
 
 void SettingsDialog::generate_default_config_file(QString ip)
@@ -278,6 +297,16 @@ void SettingsDialog::generate_default_config_file(QString ip)
         config_file_write.setValue(key, false);
     }
     config_file_write.endGroup(); // Logging
+
+    config_file_write.beginGroup("Modifiers");
+    settings_template.beginGroup("Modifiers");
+    config_file_write.setValue("uses_xp_mod", settings_template.value("uses_xp_mod").toBool());
+    config_file_write.setValue("xp_mod_multiplier", settings_template.value("xp_mod_multiplier").toDouble());
+    config_file_write.setValue("xp_mod_startdate", settings_template.value("xp_mod_startdate").toString());
+    config_file_write.setValue("xp_mod_enddate", settings_template.value("xp_mod_enddate").toString());
+    settings_template.endGroup(); // settings_template Modifiers
+    config_file_write.endGroup(); // Modifiers
+
     config_file_write.sync();
     emit checkForConfigFile();
     emit check_data_and_dir(ui->map_location->text());
@@ -347,6 +376,14 @@ void SettingsDialog::save_changes_config_file()
             config_file_write.setValue(check_boxes.at(i)->text(), check_boxes.at(i)->isChecked());
     }
     config_file_write.endGroup(); // Logging
+
+    config_file_write.beginGroup("Modifiers");
+    config_file_write.setValue("uses_xp_mod", ui->xp_mod_check->isChecked());
+    config_file_write.setValue("xp_mod_multiplier", ui->xp_mod_multiplier_spin->value());
+    config_file_write.setValue("xp_mod_startdate", ui->xp_mod_startdate_edit->dateTime().toString("M/d/yyyy h:mm AP"));
+    config_file_write.setValue("xp_mod_enddate", ui->xp_mod_enddate_edit->dateTime().toString("M/d/yyyy h:mm AP"));
+    config_file_write.endGroup(); // Modifiers
+
     config_file_write.sync();
 
     QMessageBox settings_saved;
@@ -396,28 +433,44 @@ void SettingsDialog::set_default_values()
     ui->starting_insp_edit->setText("Resurgence,Phenomenal_Luck");
     ui->starting_level_spin->setValue(1);
     ui->starting_inf_spin->setValue(0);
+    ui->xp_mod_check->setChecked(false);
+    ui->xp_mod_multiplier_spin->setValue(2.00);
+    QDateTime default_datetime = QDateTime::fromString("1/1/2000 12:00 AM", "M/d/yyyy h:mm AP");
+    ui->xp_mod_startdate_edit->setDateTime(default_datetime);
+    ui->xp_mod_enddate_edit->setDateTime(default_datetime);
+    xp_mod_checkbox_validator();
 }
 
 void SettingsDialog::field_validator()
 {
+    QString validation_error_text = "";
+    QString error_style_sheet = "background-color: rgb(252, 175, 62)";
 
     QList<QLineEdit *> all_line_edits = ui->tabWidget->findChildren<QLineEdit *>();
-    bool all_fields_validated = true;
     foreach(QLineEdit* le, all_line_edits)
     {
         if(le->text().isEmpty()) // Checks for empty fields, if found highlight fields
         {
-            le->setStyleSheet("background-color: rgb(252, 175, 62)");
-            all_fields_validated = false;
-
+            le->setStyleSheet(error_style_sheet);
+            validation_error_text = "The highlighted fields can not be blank";
         }
     }
 
-    if(all_fields_validated == false) // Field validation failed, stop save
+    if (validation_error_text.isEmpty() && ui->xp_mod_check->isChecked()) 
+    {
+        qint64 xp_mod_date_diff = ui->xp_mod_startdate_edit->dateTime().msecsTo(ui->xp_mod_enddate_edit->dateTime());
+        if (xp_mod_date_diff < 0) 
+        {
+            ui->xp_mod_startdate_edit->setStyleSheet(error_style_sheet);
+            ui->xp_mod_enddate_edit->setStyleSheet(error_style_sheet);
+            validation_error_text = "The end date can not be before the start date";
+        }
+    }
+
+    if(validation_error_text.isEmpty() == false) // Field validation failed, stop save
     {
         QMessageBox validation_error;
-        validation_error.setText("The highlighted fields can not be blank");
-        //validation_error.setText()
+        validation_error.setText(validation_error_text);
         validation_error.setStandardButtons(QMessageBox::Ok);
         validation_error.setDefaultButton(QMessageBox::Ok);
         validation_error.setIcon(QMessageBox::Warning);

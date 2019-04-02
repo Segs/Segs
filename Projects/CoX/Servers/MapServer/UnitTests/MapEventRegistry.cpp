@@ -98,7 +98,8 @@ namespace
     };
 }
 
-class MapEventRegistry : public QObject {
+class MapEventRegistry : public QObject
+{
     Q_OBJECT
 private slots:
     void creationByName()
