@@ -13,7 +13,7 @@
 struct PlayerProgress
 {
     enum : uint32_t {class_version = 1};
-    std::map<uint32_t, std::array<bool, 1024> > m_visible_map_cells;
+    std::map<uint32_t, std::vector<bool> > m_visible_map_cells;
 
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version);
