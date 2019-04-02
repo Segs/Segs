@@ -427,6 +427,7 @@ struct CritterSpawnLocator
 
                 if(gp.propName == "EncounterSpawn" || gp.propName == "EncounterGroup")
                 {
+
                     for(auto &child : n->m_children)
                     {
                         if(child.node->m_name.contains("EG_L", Qt::CaseInsensitive)) //Atlas & Galaxy
@@ -435,6 +436,8 @@ struct CritterSpawnLocator
                             glm::mat4 encounter_location(child.m_matrix2);
                             encounter_location[3] = glm::vec4(child.m_translation,1);
                             encounter_location = v * encounter_location;
+
+                            spawnDef.m_location = encounter_location[3];
 
                             for(auto &c : child.node->m_children) // _ES_L  EncounterSpawn
                             {
@@ -447,7 +450,13 @@ struct CritterSpawnLocator
                                     spawn_location[3] = glm::vec4(s.m_translation,1);
                                     spawn_location = v * spawn_location;
                                     glm::vec4 tpos4 {0,0,0,1};
-                                    spawn_point->m_relative_position = encounter_location;
+                                    spawn_point->m_relative_position = spawn_location[3];
+
+                                    auto valquat = glm::quat_cast(spawn_location);
+                                    glm::vec3 angles = glm::eulerAngles(valquat);
+                                    angles.y += glm::pi<float>();
+
+                                    spawn_point->m_rotation = angles;
 
                                     if(spawn_point->m_name.contains("_V_", Qt::CaseSensitive))
                                         spawn_point->m_is_victim = true;
@@ -475,6 +484,8 @@ struct CritterSpawnLocator
                                     encounter_location[3] = glm::vec4(child.m_translation,1);
                                     encounter_location = v * encounter_location;
 
+                                    spawnDef.m_location = encounter_location[3];
+
                                     for(auto &c_node : child.node->m_children) // Encounter_
                                     {
                                         CritterSpawnPoint *spawn_point = new CritterSpawnPoint();
@@ -484,7 +495,13 @@ struct CritterSpawnLocator
                                         spawn_location[3] = glm::vec4(c_node.m_translation,1);
                                         spawn_location = encounter_location * spawn_location;
 
-                                        spawn_point->m_relative_position = spawn_location;
+                                        spawn_point->m_relative_position = spawn_location[3];
+
+                                        auto valquat = glm::quat_cast(spawn_location);
+                                        glm::vec3 angles = glm::eulerAngles(valquat);
+                                        angles.y += glm::pi<float>();
+
+                                        spawn_point->m_rotation = angles;
 
                                         if(spawn_point->m_name.contains("_V_", Qt::CaseSensitive))
                                             spawn_point->m_is_victim = true;

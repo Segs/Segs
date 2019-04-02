@@ -6,13 +6,23 @@
  */
 
 #pragma once
+
+#include "ScriptingEnginePrivate.h"
+#include "Common/GameData/Contact.h"
+#include "Common/GameData/Entity.h"
+#include <array>
+#include <lua/lua.hpp>
+#include <sol2/sol.hpp>
 #include <memory>
 #include <string>
-#include "Common/GameData/Contact.h"
+#include <QtCore/QFileInfo> // for include support
+#include <QtCore/QDir>
+#include <QtCore/QDebug>
 
 class QString;
 struct MapClientSession;
-struct MapInstance;
+class MapInstance;
+
 
 class ScriptingEngine
 {
@@ -20,6 +30,9 @@ public:
     ScriptingEngine();
     ~ScriptingEngine();
     void registerTypes();
+    void register_GenericTypes();
+    void register_CharacterTypes();
+    void register_SpawnerTypes();
     int loadAndRunFile(const QString &path);
     void callFuncWithMapInstance(MapInstance *mi, const char *name, int arg1);
     std::string callFuncWithClientContext(MapClientSession *client,const char *name,int arg1);
@@ -35,8 +48,10 @@ public:
     int runScript(MapClientSession *client,const QString &script_contents,const char *script_name="unnamed script");
     bool setIncludeDir(const QString &path);
 private:
-#ifdef SCRIPTING_ENABLED
-    struct ScriptingEnginePrivate;
     std::unique_ptr<ScriptingEnginePrivate> m_private;
-#endif
+
+    MapInstance *mi;
+    MapClientSession *cl;
+    Entity *e;
+
 };
