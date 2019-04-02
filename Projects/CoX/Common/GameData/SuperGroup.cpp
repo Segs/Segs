@@ -211,7 +211,7 @@ SGResponse inviteSG(Entity &src, Entity &tgt)
 
     if(tgt_sg->m_has_supergroup)
     {
-        // NOTE: we should never get to this point
+        // NOTE: The client should never let us get to this point
         response.msgfrom = tgt.name() + " already has a SuperGroup.";
         return response;
     }
