@@ -377,7 +377,7 @@ void sendFloatingNumbers(MapClientSession &sess, uint32_t tgt_idx, int32_t amoun
     sess.addCommand<FloatingDamage>(sess.m_ent->m_idx, tgt_idx, amount);
 }
 
-void sendVisitMapCells(MapClientSession &sess, bool is_opaque, std::array<bool, 1024> visible_map_cells)
+void sendVisitMapCells(MapClientSession &sess, bool is_opaque, std::vector<bool> visible_map_cells)
 {
     sess.addCommand<VisitMapCells>(is_opaque, visible_map_cells);
 }
@@ -2071,6 +2071,18 @@ uint addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
 }
 
 // Probably obselete?
+std::vector<CritterSpawnLocations> getMapEncounters(MapInstance *mi)
+{
+    std::vector<CritterSpawnLocations> encounters;
+
+    for(const CritterGenerator &cg: mi->m_critter_generators.m_generators)
+    {
+        encounters.push_back(cg.m_critter_encounter);
+    }
+
+    return encounters;
+}
+
 std::vector<CritterSpawnLocations> getMapEncounters(MapInstance *mi)
 {
     std::vector<CritterSpawnLocations> encounters;

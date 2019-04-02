@@ -5,6 +5,7 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
+/*
 #include "CritterGenerator.h"
 #include "DataHelpers.h"
 #include "MapInstance.h"
@@ -29,7 +30,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
         if(spawn_def.m_possible_critters.size() > 1)
             cd = spawn_def.m_possible_critters.at(rand() % (spawn_def.m_possible_critters.size() - 1));
         else
-            cd = spawn_def.m_possible_critters.at(0);
+            break;
 
         spawn_all = cd.m_spawn_all;
 
@@ -92,3 +93,4 @@ void CritterGeneratorStore::generate(MapInstance *instance)
         total_spawned += 3; // Mock total spawn limit
     }
 }
+*/

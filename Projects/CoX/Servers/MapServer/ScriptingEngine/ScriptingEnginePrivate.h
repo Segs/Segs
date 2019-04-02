@@ -9,9 +9,7 @@
 
 #include <QString>
 #include <QSet>
-#include <memory>
-#include <string>
-#include <lua/lua.hpp>
+#include <array>
 #include <sol2/sol.hpp>
 
 class ScriptingEnginePrivate

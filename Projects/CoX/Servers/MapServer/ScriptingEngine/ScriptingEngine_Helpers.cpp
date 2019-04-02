@@ -5,23 +5,11 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-
-#include "ScriptingEngine.h"
-#include "MapInstance.h"
 #include "GameData/playerdata_definitions.h"
 #include "Messages/Map/ChatMessage.h"
 #include "DataHelpers.h"
-
-#define SOL_CHECK_ARGUMENTS 1
-#include <lua/lua.hpp>
-#include <sol2/sol.hpp>
-
-#include <QtCore/QFileInfo> // for include support
-#include <QtCore/QDir>
-#include <QtCore/QDebug>
-
-
-using namespace SEGSEvents;
+#include "ScriptingEngine.h"
+#include "MapInstance.h"
 
 int ScriptingEngine::loadAndRunFile(const QString &filename)
 {
@@ -46,7 +34,7 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
 
 void ScriptingEngine::callFuncWithMapInstance(MapInstance *mi, const char *name, int arg1)
 {
-    m_private->m_lua["map"] = mi;
+    this->mi = mi;
     m_private->m_lua["contactDialogButtons"] = contactLinkHash;
 
     callFunc(name,arg1);
@@ -54,8 +42,8 @@ void ScriptingEngine::callFuncWithMapInstance(MapInstance *mi, const char *name,
 
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1)
 {
-    m_private->m_lua["client"] = client;
-    m_private->m_lua["map"] = client->m_current_map;
+    this->cl = client;
+    this->mi = client->m_current_map;
     m_private->m_lua["contactDialogButtons"] = contactLinkHash;
 
     if (client->m_ent->m_type == EntType::PLAYER)
@@ -76,8 +64,8 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
 
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, int arg1, glm::vec3 loc)
 {
-    m_private->m_lua["client"] = client;
-    m_private->m_lua["map"] = client->m_current_map;
+    this->cl = client;
+    this->mi = client->m_current_map;
     m_private->m_lua["vContacts"] = client->m_ent->m_player->m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     m_private->m_lua["Player"]["entityId"] = client->m_ent->m_db_id;
@@ -90,8 +78,8 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
 
 std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client, const char *name, const char *arg1, glm::vec3 loc)
 {
-    m_private->m_lua["client"] = client;
-    m_private->m_lua["map"] = client->m_current_map;
+    this->cl = client;
+    this->mi = client->m_current_map;
     m_private->m_lua["vContacts"] = client->m_ent->m_player->m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     m_private->m_lua["Player"]["entityId"] = client->m_ent->m_db_id;
@@ -183,7 +171,8 @@ std::string ScriptingEngine::callFunc(const char *name, std::vector<Contact> con
 
 int ScriptingEngine::runScript(MapClientSession * client, const QString &script_contents, const char *script_name)
 {
-    m_private->m_lua["client"] = client;
+    this->cl = client;
+    this->mi = client->m_current_map;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     sol::load_result load_res=m_private->m_lua.load(script_contents.toStdString(),script_name);
     if(!load_res.valid())
@@ -234,12 +223,13 @@ bool ScriptingEngine::setIncludeDir(const QString &path)
 
 void ScriptingEngine::updateMapInstance(MapInstance * instance)
 {
-    m_private->m_lua["map"] = instance;
+    this->mi = instance;
 }
 
 void ScriptingEngine::updateClientContext(MapClientSession * client)
 {
-    m_private->m_lua["client"] = client;
+    this->cl = client;
+    this->mi = client->m_current_map;
     m_private->m_lua["vContacts"] = client->m_ent->m_player->m_contacts;
     m_private->m_lua["heroName"] = qPrintable(client->m_name);
     m_private->m_lua["m_db_id"] = client->m_ent->m_db_id;

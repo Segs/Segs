@@ -117,8 +117,6 @@ class SouvenirDetailRequest;
 class StoreSellItem;
 class StoreBuyItem;
 
-
-
 // server<-> server event types
 struct ExpectMapClientRequest;
 struct WouldNameDuplicateResponse;

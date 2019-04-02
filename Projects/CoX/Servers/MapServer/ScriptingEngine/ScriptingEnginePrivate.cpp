@@ -6,7 +6,6 @@
  */
 
 #include "ScriptingEnginePrivate.h"
-
 #include <QtCore/QFileInfo> // for include support
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
