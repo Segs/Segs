@@ -11,6 +11,8 @@
 #include "Messages/Map/InfoMessageCmd.h"
 #include "Messages/Map/StandardDialogCmd.h"
 #include "Messages/Map/StoresEvents.h"
+#include "NetFxHelpers.h"
+#include "Runtime/Systems/FXSystem.h"
 #include "DataHelpers.h"
 #include "MapSceneGraph.h"
 #include "MapInstance.h"
@@ -25,7 +27,33 @@ static void destruction_is_an_error(T &/*v*/)
 {
     assert(false);
 }
+static void registerFXSystem(sol::state &lua) {
+    sol::table fx_system_ns = lua.create_named_table("FXSystem");
 
+    fx_system_ns.new_usertype<FXSystem::LocusEntry>( "LocusEntry",
+        "offset",&FXSystem::LocusEntry::m_offset,
+        "entity_id",&FXSystem::LocusEntry::m_entity_id,
+        "bone_idx",&FXSystem::LocusEntry::m_bone_idx
+    );
+    fx_system_ns.new_usertype<FXSystem::CreationParams>("CreationParams",
+        "offset",&FXSystem::CreationParams::m_duration,
+        "radius",&FXSystem::CreationParams::m_radius,
+        "debris",&FXSystem::CreationParams::m_debris,
+        "power",&FXSystem::CreationParams::m_power,
+        "net_id",&FXSystem::CreationParams::m_net_id,
+        "loci",&FXSystem::CreationParams::m_loci
+    );
+    fx_system_ns.new_usertype<FXSystem::Handle>( "Handle",
+        "new", sol::no_constructor, // The client links are not constructible from the script side.
+        sol::meta_function::garbage_collect, sol::destructor( destruction_is_an_error<FXSystem::Handle> ),
+        "create",FXSystem::create, // 'static' construct from the script side.
+        "set_source_location",  FXSystem::setSourceLocation,
+        "set_source_entity_and_bone",  FXSystem::setSourceEntityAndBone,
+        "set_target_location",  FXSystem::setTargetLocation,
+        "set_target_entity",  FXSystem::setTargetEntity,
+        "get", FXSystem::get
+    );
+}
 void ScriptingEngine::register_GenericTypes()
 {
     m_private->m_lua.new_usertype<QString>( "QString",
@@ -291,4 +319,5 @@ void ScriptingEngine::register_GenericTypes()
            mi->m_lua_timers[count].m_is_enabled = true;
         }
     };
+    registerFXSystem(m_private->m_lua);
 }

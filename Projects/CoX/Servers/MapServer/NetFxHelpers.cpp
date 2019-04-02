@@ -41,7 +41,7 @@ NetFxHandle createNetFx(FxHandle from_fx)
     fx.power = data.m_power; // 10 is default, so we could probably send 0 here
     fx.debris = data.m_debris;
     // converting loci
-    assert(data.m_params.m_locus_count>=2);
+    assert(data.m_params.m_loci.size()>=2);
     const FXSystem::LocusEntry & entry(data.m_params.m_loci[0]);
     setupNetFxTarget(entry,fx.origin);
     const FXSystem::LocusEntry & entry2(data.m_params.m_loci[1]);

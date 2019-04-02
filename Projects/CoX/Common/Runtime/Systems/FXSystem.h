@@ -3,6 +3,7 @@
 
 #include <glm/vec3.hpp>
 #include <QString>
+#include <vector>
 
 struct FxInfo;
 
@@ -24,8 +25,7 @@ struct CreationParams
     int   m_debris   = 0;
     int   m_power    = 10;
     int   m_net_id   = 0;
-    int   m_locus_count=0;
-    LocusEntry m_loci[2];
+    std::vector<LocusEntry> m_loci; // this should be something like a eastl::fixed_vector<LocusEntry,4>
 };
 enum State
 {

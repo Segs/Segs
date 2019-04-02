@@ -97,8 +97,8 @@ Data &get(Handle h)
 void setSourceLocation(Handle h, glm::vec3 loc)
 {
     Data &fx(get(h));
-    if(fx.m_params.m_locus_count==0)
-        fx.m_params.m_locus_count++;
+    if(fx.m_params.m_loci.empty())
+        fx.m_params.m_loci.resize(1);
     fx.m_params.m_loci[0].m_entity_id=0;
     fx.m_params.m_loci[0].m_offset = loc;
 }
@@ -106,8 +106,8 @@ void setSourceLocation(Handle h, glm::vec3 loc)
 void setSourceEntityAndBone(Handle h, int entidx, uint8_t boneidx)
 {
     Data &fx(get(h));
-    if(fx.m_params.m_locus_count==0)
-        fx.m_params.m_locus_count++;
+    if(fx.m_params.m_loci.empty())
+        fx.m_params.m_loci.resize(1);
     fx.m_params.m_loci[0].m_entity_id=entidx;
     fx.m_params.m_loci[0].m_bone_idx=boneidx;
 }
@@ -115,12 +115,12 @@ void setSourceEntityAndBone(Handle h, int entidx, uint8_t boneidx)
 void setTargetLocation(Handle h, glm::vec3 loc)
 {
     Data &fx(get(h));
-    if(fx.m_params.m_locus_count==0)
+    if(fx.m_params.m_loci.empty())
     {
         qCritical("Possibly a wrong order of operations, initialized FX source locus to {0}");
     }
-    if(fx.m_params.m_locus_count<2)
-        fx.m_params.m_locus_count=2;
+    if(fx.m_params.m_loci.size()<2)
+        fx.m_params.m_loci.resize(2);
     //TODO: for now we assume that un-attached NetFx has not been sent
 
     fx.m_params.m_loci[1].m_entity_id=0;
@@ -129,12 +129,12 @@ void setTargetLocation(Handle h, glm::vec3 loc)
 void setTargetEntity(Handle h, int entidx)
 {
     Data &fx(get(h));
-    if(fx.m_params.m_locus_count==0)
+    if(fx.m_params.m_loci.empty())
     {
         qCritical("Possibly a wrong order of operations, initialized FX source locus to {0}");
     }
-    if(fx.m_params.m_locus_count<2)
-        fx.m_params.m_locus_count=2;
+    if(fx.m_params.m_loci.size()<2)
+        fx.m_params.m_loci.resize(2);
 
     fx.m_params.m_loci[1].m_entity_id=entidx;
     fx.m_params.m_loci[1].m_bone_idx=2; // default value on the client, not sent over the network
