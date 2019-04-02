@@ -2093,7 +2093,20 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
     Entity *ent = session.m_ent;
     uint32_t map_idx = session.m_current_map->m_index;
 
-    std::array<bool, 1024> * map_cells = &ent->m_player->m_player_progress.m_visible_map_cells[map_idx];
+    std::vector<bool> * map_cells = &ent->m_player->m_player_progress.m_visible_map_cells[map_idx];
+
+    if (map_cells->empty())
+    {
+        map_cells->resize(1024);
+    }
+
+    if (ev->tile_idx > map_cells->size())
+    {
+        map_cells->resize(map_cells->size() + (ev->tile_idx - map_cells->size() + 1023) / 1024 * 1024);
+    }
+
+    // #818 map_cells of type array with a size of 1024 threw 
+    // out of range exception on maps that had index tiles larger than 1024
     map_cells->at(ev->tile_idx) = true;
 
     qCDebug(logMiniMap) << "MiniMapState tile "<< ev->tile_idx << " for player" << ent->name();
@@ -2157,8 +2170,14 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         map_server->session_xfer_complete(session.link()->session_token());
     }
 
-    // TODO: Check map type to determine if is_opaque is true / false
-    sendVisitMapCells(session, false, session.m_ent->m_player->m_player_progress.m_visible_map_cells[session.m_current_map->m_index]);
+    std::vector<bool> * visible_map_cells = &session.m_ent->m_player->m_player_progress.m_visible_map_cells[session.m_current_map->m_index];
+
+    if (!visible_map_cells->empty())
+    {
+        // TODO: Check map type to determine if is_opaque is true / false
+        sendVisitMapCells(session, false, *visible_map_cells);
+    }
+    
     initializeCharacter(*session.m_ent->m_char);
 
     // Call Lua Connected function.
