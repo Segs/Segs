@@ -1544,8 +1544,8 @@ void cmdHandler_WhoAll(const QString &/*cmd*/, MapClientSession &sess)
     {
         Character &c(*cl->m_ent->m_char);
         QString    name      = cl->m_ent->name();
-        QString    lvl       = QString::number(getLevel(c));
-        QString    clvl      = QString::number(getCombatLevel(c));
+        QString    lvl       = QString::number(getLevel(c)+1);         //+1 as the server stores these values
+        QString    clvl      = QString::number(getCombatLevel(c)+1);  //with a 0 index, issue #831
         QString    origin    = getOrigin(c);
         QString    archetype = QString(getClass(c)).remove("Class_");
 
