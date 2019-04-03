@@ -427,6 +427,7 @@ struct CritterSpawnLocator
 
                 if(gp.propName == "EncounterSpawn" || gp.propName == "EncounterGroup")
                 {
+
                     for(auto &child : n->m_children)
                     {
                         if(child.node->m_name.contains("EG_L", Qt::CaseInsensitive)) //Atlas & Galaxy
@@ -435,6 +436,8 @@ struct CritterSpawnLocator
                             glm::mat4 encounter_location(child.m_matrix2);
                             encounter_location[3] = glm::vec4(child.m_translation,1);
                             encounter_location = v * encounter_location;
+
+                            spawnDef.m_location = encounter_location[3];
 
                             for(auto &c : child.node->m_children) // _ES_L  EncounterSpawn
                             {
@@ -480,6 +483,8 @@ struct CritterSpawnLocator
                                     glm::mat4 encounter_location(child.m_matrix2);
                                     encounter_location[3] = glm::vec4(child.m_translation,1);
                                     encounter_location = v * encounter_location;
+
+                                    spawnDef.m_location = encounter_location[3];
 
                                     for(auto &c_node : child.node->m_children) // Encounter_
                                     {

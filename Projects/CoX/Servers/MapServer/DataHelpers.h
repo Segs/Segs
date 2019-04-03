@@ -69,7 +69,7 @@ void sendClientState(MapClientSession &sess, ClientStates client_state);
 void showMapXferList(MapClientSession &sess, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &sess, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(MapClientSession &sess, uint32_t tgt_idx, int32_t amount);
-void sendVisitMapCells(MapClientSession &sess, bool is_opaque, std::array<bool, 1024> visible_map_cells);
+void sendVisitMapCells(MapClientSession &sess, bool is_opaque, std::vector<bool> visible_map_cells);
 void sendLevelUp(MapClientSession &sess);
 void sendEnhanceCombineResponse(MapClientSession &sess, bool success, bool destroy);
 void sendChangeTitle(MapClientSession &sess, bool select_origin);
