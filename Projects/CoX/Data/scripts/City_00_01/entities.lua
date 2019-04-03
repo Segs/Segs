@@ -3,8 +3,25 @@
 local spawnOnce = false
 
 entity_interact = function(id, location)
-    print("My ID is " .. id)
-  return ""
+    Contacts.SetContactDialogsWithHeroName(heroName)
+
+    if location ~= nil then
+        printDebug("entity id " .. tostring(id) .. " location info:  x: " .. tostring(location.x) .. " y: " .. tostring(location.y) .. " z: " .. tostring(location.z))
+    else
+        printDebug("entity id " .. tostring(id))
+    end
+    
+    if(Contacts.OpenContactDialog(id) ~= true) then
+        -- Generic NPC
+        -- Create generic NPC message script for zone?
+        
+    end
+  
+--[[ NPC chat message test
+    MapClientSession.npcMessage(client, 'Hello Hero!', id)
+    MapClientSession.npcMessage(client, 'What are you doing here?', id)
+    ]]
+    return ""
 end
 
 -- Called after MOTD for now.
