@@ -40,8 +40,7 @@ public:
             "FOREIGN KEY(`recipient_id`) REFERENCES characters ( id ) ON DELETE CASCADE"
             ")");
 
-        db->m_query->prepare(email_table);
-        if(!db->m_query->exec())
+        if(!db->runQuery(email_table))
             return false;
 
         return true;

@@ -11,6 +11,7 @@
 
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
+#include <QVariant>
 #include <vector>
 #include <memory>
 
@@ -18,6 +19,12 @@ class QFile;
 class QJsonObject;
 class DatabaseConfig;
 class DBMigrationStep;
+
+struct ColumnSchema
+{
+    QString m_name;
+    QVariant m_data_type;
+};
 
 struct TableSchema
 {
@@ -73,7 +80,11 @@ public:
 
     // DBConnection_Helpers.cpp
     bool isConnected();
-    bool runQuery(QString &q);
+    bool runQuery(const QString &q);
+    bool runQueries(const QStringList &qlist);
+    bool deleteColumn(const QString &tablename, const QString &col_to_remove);
+    bool deleteColumns(const QString &tablename, const QStringList &cols_to_remove);
+    bool getColumnsFromTable(const QString &tablename, std::vector<ColumnSchema> &old_cols);
     void loadBlob(QJsonObject &obj);
     void saveBlob(QJsonObject &obj);
 

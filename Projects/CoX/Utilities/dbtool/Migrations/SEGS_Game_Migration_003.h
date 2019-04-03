@@ -71,10 +71,10 @@ public:
         // finally: delete several columns from characters table
         // these are now stored in entitydata
         // posx, posy, posz, orientp, orienty, orientr
-        db->m_query->prepare("ALTER TABLE characters DROP COLUMN "
-                             "posx, posy, posz, orientp, orienty, orientr");
-        if(!db->m_query->exec())
-            return false;
+        QStringList cols_to_drop = {
+            "posx", "posy", "posz", "orientp", "orienty", "orientr"
+        };
+        db->deleteColumns(QStringLiteral("characters"), cols_to_drop);
 
         // we're done, return true
         return true;

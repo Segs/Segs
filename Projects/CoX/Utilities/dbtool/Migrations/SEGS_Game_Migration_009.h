@@ -31,18 +31,15 @@ public:
         QStringList queries = {
             "ALTER TABLE 'characters' ADD 'costume_data' BLOB", // add new costume_data blob to characters table
             "ALTER TABLE 'supergroups' ADD 'sg_data' BLOB",     // add new sg_data blob to supergroups table
-            // SQLite has limited ALTER TABLE support and cannot drop columns.
-            // the workaround is to duplicate the table without the "dropped" columns
-            // TODO: create dropColumn() method to obscure this from the user
-            //"ALTER TABLE 'supergroups' DROP COLUMN sg_motto, sg_motd, sg_rank_names, sg_rank_perms, sg_emblem, sg_colors",
         };
+        if(!db->runQueries(queries))
+            return false;
 
-        for(auto &q : queries)
-        {
-            db->m_query->prepare(q);
-            if(!db->m_query->exec())
-                return false;
-        }
+        QStringList cols_to_drop = {
+            "sg_motto", "sg_motd", "sg_rank_names", "sg_rank_perms",
+            "sg_emblem", "sg_colors"
+        };
+        db->deleteColumns(QStringLiteral("supergroups"), cols_to_drop);
 
         // select existing costumes from costume table
         // we only knew how to save one costume per character, so we
@@ -93,11 +90,7 @@ public:
                 return false;
         }
 
-        db->m_query->prepare("DROP TABLE costume");
-        if(!db->m_query->exec())
-            return false;
-
-        // we're done, return true
-        return true;
+        QString drop_qry = "DROP TABLE costume";
+        return db->runQuery(drop_qry);
     }
 };

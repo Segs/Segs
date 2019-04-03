@@ -29,8 +29,8 @@ public:
     bool execute(DBConnection *db) override
     {
         // first: select the data from characters table
-        db->m_query->prepare("SELECT * FROM 'characters'");
-        if(!db->m_query->exec())
+        QString select_qry = "SELECT * FROM 'characters'";
+        if(!db->runQuery(select_qry))
             return false;
 
         // second column copy data over to character data blob
@@ -106,7 +106,7 @@ public:
 
             QString querytext = QString("UPDATE characters SET chardata='%1'")
                     .arg(QString(chardoc.toJson()));
-            if(!db->m_query->exec(querytext))
+            if(!db->runQuery(querytext))
                 return false;
         }
 
@@ -114,17 +114,16 @@ public:
         QStringList queries = {
             "ALTER TABLE characters DROP FOREIGN KEY account_id",        // drop key because we're going to change it
             "ALTER TABLE characters ADD FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE",
-            "ALTER TABLE supergroups DROP COLUMN supergroup_id",        // drop column from supergroups table. this foreign key was never actually set
-            "ALTER TABLE accounts DROP COLUMN account_id",              // drop column from accounts table. this foreign key has been replaced
-            "ALTER TABLE characters DROP COLUMN hitpoints, endurance",  // drop columns from characters table
         };
 
-        for(auto &q : queries)
-        {
-            db->m_query->prepare(q);
-            if(!db->m_query->exec())
-                return false;
-        }
+        if(!db->runQueries(queries))
+            return false;
+
+        // delete columns from tables
+        db->deleteColumns(QStringLiteral("supergroups"), QStringList("supergroup_id"));
+        db->deleteColumns(QStringLiteral("accounts"), QStringList("account_id"));
+        QStringList cols_to_drop = { "char_level", "archetype" };
+        db->deleteColumns(QStringLiteral("characters"), cols_to_drop);
 
         // we're done, return true
         return true;

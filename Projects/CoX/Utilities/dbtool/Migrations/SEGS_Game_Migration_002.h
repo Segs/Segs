@@ -33,9 +33,7 @@ public:
             return false;
 
         // second: delete last_online column from characters table
-        db->m_query->prepare("ALTER TABLE characters DROP COLUMN last_online");
-        if(!db->m_query->exec())
-            return false;
+        db->deleteColumn(QStringLiteral("characters"), QStringLiteral("last_online"));
 
         // third: copy the values from columns we plan to delete
         db->m_query->prepare("SELECT * FROM 'characters'");

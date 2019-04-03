@@ -106,12 +106,12 @@ public:
         // 'char_level', `archetype`, `origin`, `current_map`, `last_costume_id`,
         // `inf`, `xp`, `xpdebt`, `xppatrol`, `alignment`, `title`,
         // `badgetitle`, `specialtitle`
-        db->m_query->prepare("ALTER TABLE characters DROP COLUMN "
-                            "char_level, archetype, origin, current_map, "
-                            "last_costume_id, inf, xp, xpdebt, xppatrol, "
-                            "alignment, title, badgetitle, specialtitle");
-        if(!db->m_query->exec())
-            return false;
+        QStringList cols_to_drop = {
+            "char_level", "archetype", "origin", "current_map",
+            "last_costume_id", "inf", "xp", "xpdebt", "xppatrol",
+            "alignment", "title", "badgetitle", "specialtitle"
+        };
+        db->deleteColumns(QStringLiteral("characters"), cols_to_drop);
 
         // we're done, return true
         return true;
