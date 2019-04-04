@@ -11,7 +11,7 @@
  */
 
 #include "GameDataStore.h"
-#include "trick_definitions.h"
+#include "Common/GameData/trick_definitions.h"
 
 #include "Common/GameData/DataStorage.h"
 #include "Common/GameData/costume_serializers.h"
@@ -222,7 +222,7 @@ template<class TARGET,unsigned int CRC>
 bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
 {
     QElapsedTimer timer;
-    
+
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading "<<directory_path<<storage<<" ... ";
     timer.start();
@@ -542,8 +542,10 @@ bool GameDataStore::read_fx(const QString &directory_path)
     return read_data_to<std::vector<struct FxInfo>, fxinfos_i0_requiredCrc>(directory_path, "bin/fxinfo.bin",
                                                                             m_fx_infos);
 }
+
 bool GameDataStore::read_sequencer_definitions(const QString &directory_path)
 {
+    qDebug() << "Loading Sequencer Information:";
     return read_data_to<SequencerList, seqencerlist_i0_requiredCrc>(directory_path, "bin/sequencers.bin",m_seq_definitions);
 }
 
@@ -620,4 +622,3 @@ GameDataStore &getGameData() {
 }
 
 //! @}
-

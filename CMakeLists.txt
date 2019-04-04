@@ -49,7 +49,7 @@ IF(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 ELSEIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14")
-   
+
    if(MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
    endif()
@@ -102,6 +102,10 @@ if(ENABLE_TESTS)
         target_link_libraries(${testname}
             Qt5::Test
             ${ARGN}
+        )
+        set_target_properties (${testname} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
         )
     endmacro()
 endif()
@@ -160,10 +164,12 @@ macro(add_messages_library name )
     target_link_libraries(${name}_interface PUBLIC Qt5::Core)
     # all interfaces use stuff from Common, so should depend/link to it
     target_link_libraries(${name}_interface PUBLIC SEGS_Components)
-	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN}) 
-	set_target_properties (${name}_interface PROPERTIES
-		FOLDER Projects/CoX/Common/Messages
-	)
+        source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN})
+        set_target_properties (${name}_interface PROPERTIES
+                FOLDER Projects/CoX/Common/Messages
+                RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+                RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+        )
 endmacro()
 
 macro(add_handler name)
@@ -198,6 +204,9 @@ set(MAPNAMES
   Trial_05_01
   )
 foreach(MAPDIR ${MAPNAMES})
-  file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/${MAPDIR})
+  file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/maps/${MAPDIR})
 endforeach(MAPDIR)
+
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default_setup)
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/logs)
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scripts)

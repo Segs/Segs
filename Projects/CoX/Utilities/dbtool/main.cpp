@@ -16,6 +16,8 @@
  */
 
 #include "PasswordHasher.h"
+#include "Settings.h"
+#include "Logging.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QString>
@@ -38,24 +40,20 @@ enum { SUCCESS, SETTINGS_MISSING, DBFOLDER_MISSING, NOT_FORCED,
        NOT_ENOUGH_PARAMS, SQLITE_DB_MISSING, DB_RM_FAILED, DB_CONN_FAILED,
        QUERY_FAILED, QUERY_PREP_FAILED, USERNAME_TAKEN };
 
-static bool fileExists(QString path)
-{
-    QFileInfo check_file("./" + path);
-    return check_file.exists() && check_file.isFile();
-}
-
 class ConfigStruct
 {
 private:
     bool putFilePath();
 public:
     QString m_driver;
-    QString m_dbname;
+    QString m_name;
+    QString m_filename;
+    QString m_db_path;
     QString m_host;
     QString m_port;
     QString m_user;
     QString m_pass;
-    QString m_file_path;
+    QString m_template_path;
     bool m_character_db = false;
 
     ConfigStruct() = default;
@@ -70,53 +68,80 @@ public:
 
 bool ConfigStruct::initialize_from_settings(const QString &settings_file_name, const QString &group_name)
 {
-    if(!fileExists(settings_file_name))
+    // Set settings file path, since we're in a different directory
+    Settings::setSettingsPath(settings_file_name);
+    QString settings_full_path = Settings::getSettingsPath();
+
+    if(!fileExists(settings_full_path))
+    {
+        qWarning() << "Cannot find settings template file" << settings_full_path;
         return false;
-    
-    QSettings config(settings_file_name,QSettings::IniFormat,nullptr);
-    
+    }
+
+    QSettings config(settings_full_path, QSettings::IniFormat, nullptr);
+
     config.beginGroup(QStringLiteral("AdminServer"));
-    config.beginGroup(group_name);
-    m_driver = config.value(QStringLiteral("db_driver"),"QSQLITE").toString();
-    m_dbname = config.value(QStringLiteral("db_name"),"segs").toString();
-    m_host = config.value(QStringLiteral("db_host"),"127.0.0.1").toString();
-    m_port = config.value(QStringLiteral("db_port"),"5432").toString();
-    m_user = config.value(QStringLiteral("db_user"),"segs").toString();
-    m_pass = config.value(QStringLiteral("db_pass"),"segs123").toString();
-    m_character_db = group_name.compare("AccountDatabase");
-    config.endGroup(); // group_name
+        config.beginGroup(group_name);
+            m_driver = config.value(QStringLiteral("db_driver"),"QSQLITE").toString();
+            m_filename = config.value(QStringLiteral("db_name"),"segs").toString();
+            m_db_path = Settings::getSEGSDir() + QDir::separator() + m_filename; // don't add suffix here, so that it can be optional for users
+            m_host = config.value(QStringLiteral("db_host"),"127.0.0.1").toString();
+            m_port = config.value(QStringLiteral("db_port"),"5432").toString();
+            m_user = config.value(QStringLiteral("db_user"),"segs").toString();
+            m_pass = config.value(QStringLiteral("db_pass"),"segs123").toString();
+            m_character_db = group_name.compare("AccountDatabase");
+        config.endGroup(); // group_name
     config.endGroup(); // AdminServer
+
+    // store database names so we can use them later in migrations
+    m_name = QFileInfo(m_db_path).completeBaseName();
+
+    qCDebug(logSettings) << m_db_path << "database settings loaded from" << settings_full_path;
+
     return putFilePath();
 }
 
 bool ConfigStruct::putFilePath()
 {
-    QDir db_dir(QDir::currentPath());
+    // Find database templates directory
+    QDir tpl_dir(Settings::getTemplateDirPath());
+    if(!tpl_dir.exists())
+    {
+        qWarning() << "SEGS dbtool cannot find the SEGS root folder "
+                   << "(where the default_setup directory resides)";
+        return false;
+    }
+
+    qCDebug(logSettings) << "Templates Dir" << Settings::getTemplateDirPath();
+
     if(isSqlite())
     {
         if(m_character_db)
-            m_file_path = db_dir.currentPath() + "/default_dbs/sqlite/segs_game_sqlite_create.sql";
+            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "sqlite/segs_game_sqlite_create.sql";
         else
-            m_file_path = db_dir.currentPath() + "/default_dbs/sqlite/segs_sqlite_create.sql";
+            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "sqlite/segs_sqlite_create.sql";
     }
     else if(isMysql())
     {
         if(m_character_db)
-            m_file_path = db_dir.currentPath() + "/default_dbs/mysql/segs_game_mysql_create.sql";
+            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "mysql/segs_game_mysql_create.sql";
         else
-            m_file_path = db_dir.currentPath() + "/default_dbs/mysql/segs_mysql_create.sql";
+            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "mysql/segs_mysql_create.sql";
     }
     else if(isPostgresql())
     {
         if(m_character_db)
-            m_file_path = db_dir.currentPath() + "/default_dbs/pgsql/segs_game_postgres_create.sql";
+            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "pgsql/segs_game_postgres_create.sql";
         else
-            m_file_path = db_dir.currentPath() + "/default_dbs/pgsql/segs_postgres_create.sql";
+            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "pgsql/segs_postgres_create.sql";
     }
-    else{
+    else
+    {
         qCritical("Unknown database driver.");
         return false;
     }
+
+    qCDebug(logSettings) << "m_file_path" << m_template_path;
     return true;
 }
 
@@ -129,9 +154,9 @@ bool dbExists(const ConfigStruct &database_to_look_for)
     else if(database_to_look_for.isMysql() || database_to_look_for.isPostgresql())
     {
         QSqlDatabase segs_db(QSqlDatabase::addDatabase(database_to_look_for.m_driver,
-                                                       database_to_look_for.m_dbname));
+                                                       database_to_look_for.m_db_path));
         QSqlQuery query(segs_db);
-        segs_db.setDatabaseName(database_to_look_for.m_dbname);
+        segs_db.setDatabaseName(database_to_look_for.m_db_path);
         segs_db.setHostName(database_to_look_for.m_host);
         segs_db.setPort(database_to_look_for.m_port.toInt());
         segs_db.setUserName(database_to_look_for.m_user);
@@ -143,7 +168,7 @@ bool dbExists(const ConfigStruct &database_to_look_for)
         {
             querytext = "SELECT table_schema || '.' || table_name FROM";
             querytext.append("information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema ='");
-            querytext.append(database_to_look_for.m_dbname);
+            querytext.append(database_to_look_for.m_db_path);
             querytext.append("';");
         }
         query.exec(querytext);
@@ -152,7 +177,7 @@ bool dbExists(const ConfigStruct &database_to_look_for)
         
         segs_db.close();
     }
-    QSqlDatabase::removeDatabase(database_to_look_for.m_dbname);
+    QSqlDatabase::removeDatabase(database_to_look_for.m_db_path);
     return ret;
 }
 
@@ -177,7 +202,7 @@ bool fileQueryDb(QFile &source_file, QSqlQuery &query)
     // Open file. If unsuccessful, return early.
     if(!source_file.open(QIODevice::ReadOnly))
     {
-        qWarning().noquote()<<"Query source file could not be opened.";
+        qWarning().noquote() << "Query source file could not be opened.";
         return false;
     }
     // The SQLite driver executes only a single (the first) query in the QSqlQuery.
@@ -199,6 +224,13 @@ bool fileQueryDb(QFile &source_file, QSqlQuery &query)
 
 void errorHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
+    static char log_buffer[4096]={0};
+    static char category_text[256];
+    log_buffer[0] = 0;
+    category_text[0] = 0;
+    if(strcmp(context.category,"default")!=0)
+        snprintf(category_text, sizeof(category_text), "[%s]", context.category);
+
     QByteArray localMsg = msg.toLocal8Bit();
 
     #ifdef Q_OS_WIN
@@ -213,23 +245,26 @@ void errorHandler(QtMsgType type, const QMessageLogContext &context, const QStri
     switch (type)
     {
         case QtDebugMsg:
-            fprintf(stderr, "%s\n", localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "%sDebug   : %s\n", category_text, localMsg.constData());
             break;
         case QtInfoMsg:
-            fprintf(stderr, "%s\n", localMsg.constData());
+            // no prefix or category for informational messages, as these are end-user facing
+            snprintf(log_buffer, sizeof(log_buffer), "%s\n", localMsg.constData());
             break;
         case QtWarningMsg:
-            fprintf(stderr, "%sWARNING!%s %s\n", colorTable[1], resetColor, localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "%s%sWARNING!%s %s\n", category_text, colorTable[1], resetColor, localMsg.constData());
             break;
         case QtCriticalMsg:
-            fprintf(stderr, "%sCRITICAL!%s %s (%s:%u, %s)\n", colorTable[2], resetColor, localMsg.constData(),
+            snprintf(log_buffer, sizeof(log_buffer), "%s%sCRITICAL!%s %s (%s:%u, %s)\n", category_text, colorTable[2], resetColor, localMsg.constData(),
                     context.file, context.line, context.function);
             break;
         case QtFatalMsg:
-            fprintf(stderr, "%sFATAL!%s %s (%s:%u, %s)\n", colorTable[3], resetColor, localMsg.constData(),
+            snprintf(log_buffer, sizeof(log_buffer), "%s%sFATAL!%s %s (%s:%u, %s)\n", category_text, colorTable[3], resetColor, localMsg.constData(),
                     context.file, context.line, context.function);
             abort();
     }
+    fprintf(stdout, "%s", log_buffer);
+    fflush(stdout);
 }
 
 int createDatabases(std::vector<ConfigStruct> const& configs)
@@ -245,24 +280,24 @@ int createDatabases(std::vector<ConfigStruct> const& configs)
     int returnvalue = SUCCESS;
     for(const ConfigStruct &cfg : configs)
     {
-        if(!QFileInfo(cfg.m_file_path).isReadable())
+        if(!QFileInfo(cfg.m_template_path).isReadable())
         {
-            qCritical() << cfg.m_file_path << "is not readable!"
+            qCritical() << cfg.m_template_path << "is not readable!"
                         << "Please check that the file is present and not corrupted.";
             returnvalue = SETTINGS_MISSING;
             break;
         }
-        QFile source_file(cfg.m_file_path);
-        QSqlDatabase segs_db(QSqlDatabase::addDatabase(cfg.m_driver, cfg.m_dbname));
+        QFile source_file(cfg.m_template_path);
+        QSqlDatabase segs_db(QSqlDatabase::addDatabase(cfg.m_driver, cfg.m_db_path));
         QSqlQuery query(segs_db);
-        segs_db.setDatabaseName(cfg.m_dbname);
+        segs_db.setDatabaseName(cfg.m_db_path);
         if(cfg.isSqlite())
         {
             // We have to remove the file if it already exists;
             // otherwise, many errors are thrown.
-            if(!deleteDb(cfg.m_dbname))
+            if(!deleteDb(cfg.m_db_path))
             {
-                qWarning(qPrintable(QString("FAILED to remove existing file: %1").arg(cfg.m_dbname)));
+                qWarning(qPrintable(QString("FAILED to remove existing file: %1").arg(cfg.m_db_path)));
                 qCritical("Ensure no processes are using it and you have permission to modify it.");
                 returnvalue = DB_RM_FAILED;
                 break;
@@ -294,34 +329,29 @@ int createDatabases(std::vector<ConfigStruct> const& configs)
         }
         source_file.close();
         segs_db.close();
-        qInfo() << "COMPLETED creating:" << cfg.m_dbname;
+        qInfo() << "COMPLETED creating:" << cfg.m_db_path;
     }
     for(auto opened: configs)
-        QSqlDatabase::removeDatabase(opened.m_dbname);
+        QSqlDatabase::removeDatabase(opened.m_db_path);
     return returnvalue;
 }
 
 int addAccount(const ConfigStruct &char_database, const QString & username,
                 const QString & password, uint16_t access_level)
 {
-    QDir db_dir(QDir::currentPath());
-    QString target_file_string("");
     if(char_database.isSqlite())
     {
-        target_file_string = db_dir.currentPath() + "/" + char_database.m_dbname ;
-        QFile target_file(target_file_string);
+        QFile target_file(char_database.m_db_path);
         if(!target_file.exists())
         {
             qCritical("Target file could not be found. Verify its existence and try again.");
             return SQLITE_DB_MISSING;
         }
     }
-    else
-        target_file_string = char_database.m_dbname;
-    
+
     QSqlDatabase segs_db(QSqlDatabase::addDatabase(char_database.m_driver,
-                                                   char_database.m_dbname));
-    segs_db.setDatabaseName(target_file_string);
+                                                   char_database.m_db_path));
+    segs_db.setDatabaseName(char_database.m_db_path);
     if(char_database.isMysql() || char_database.isPostgresql())
     {
         segs_db.setHostName(char_database.m_host);
@@ -354,7 +384,7 @@ int addAccount(const ConfigStruct &char_database, const QString & username,
             // SQLite:        19
             // MySQL:       1062
             // PostgreSQL: 23503
-            qDebug() << "Error: Username already taken. Please try another name.";
+            qWarning() << "Error: Username already taken. Please try another name.";
             return USERNAME_TAKEN;
         }
         qDebug() << "SQL_ERROR:" << query.lastError(); // Why the query failed
@@ -411,9 +441,10 @@ int main(int argc, char **argv)
     if(positionalArguments.size()<1 || !known_commands.contains(positionalArguments.first()))
     {
         if(positionalArguments.size()>=1)
-            qWarning()<<"Unkown command"<<positionalArguments.first();
+            qWarning()<<"Unknown command" << positionalArguments.first();
         else
-            qWarning()<<"Command is required";
+            qWarning() << "Please run dbTool with a command argument.";
+
         parser.showHelp(1);
     }
     
@@ -431,32 +462,32 @@ int main(int argc, char **argv)
         {
             bool forced = parser.isSet(forceOption);
             // Check if dbtool is being run from server directory
-            qInfo() << "Checking for default_dbs directory...";
-            QDir default_dbs_dir(QDir::currentPath() + "/default_dbs");
+            qInfo() << "Checking for template directory...";
+            QDir default_dbs_dir(Settings::getTemplateDirPath());
             if(!default_dbs_dir.exists())
             {
                 qWarning() << "SEGS dbtool must be run from the SEGS root folder "
-                           << "(where the default_dbs directory resides)";
+                           << "(where the default_setup directory resides)";
                 returnvalue = DBFOLDER_MISSING;
                 break;
             }
-            qInfo() << "default_dbs directory found!";
+            qInfo() << "DB Templates directory found!";
 
             // Check if database already exists
             qInfo() << "Checking for existing databases OR -f command...";
-            if((((configs[0].isSqlite() && fileExists(configs[0].m_dbname)) ||
-                 (configs[1].isSqlite() && fileExists(configs[1].m_dbname))) ||
+            if((((configs[0].isSqlite() && fileExists(configs[0].m_db_path)) ||
+                 (configs[1].isSqlite() && fileExists(configs[1].m_db_path))) ||
                 (((configs[0].isMysql() || configs[0].isPostgresql()) &&
                   dbExists(configs[0])) ||
                  ((configs[1].isMysql() || configs[1].isPostgresql()) &&
                   dbExists(configs[1]))))
                && !forced)
             {
-                if(fileExists(configs[0].m_dbname) || dbExists(configs[0]))
-                    qWarning() << "Database" << configs[0].m_dbname << "already exists.";
+                if(fileExists(configs[0].m_db_path) || dbExists(configs[0]))
+                    qWarning() << "Database" << configs[0].m_db_path << "already exists.";
                 
-                if(fileExists(configs[1].m_dbname) || dbExists(configs[1]))
-                    qWarning() << "Database" << configs[1].m_dbname << "already exists.";
+                if(fileExists(configs[1].m_db_path) || dbExists(configs[1]))
+                    qWarning() << "Database" << configs[1].m_db_path << "already exists.";
                 
                 qInfo() << "Run dbtool with -f option to overwrite existing databases. "
                         << "THIS CANNOT BE UNDONE.";
@@ -476,7 +507,7 @@ int main(int argc, char **argv)
 
             qInfo() << "\nNO ADMIN USER ACCOUNTS CREATED IN DATABASE!"
                     << "\nUse the following example to add an admin account to the database:"
-                    << "\ndbtool -l <username> -p <password> -a 9 adduser";
+                    << "\ndbtool adduser -l <username> -p <password> -a 9";
             break;
         }
         case 1:
@@ -486,7 +517,7 @@ int main(int argc, char **argv)
                 qCritical()<< "adduser operation requires login and password";
                 return NOT_ENOUGH_PARAMS;
             }
-            if(configs[0].isSqlite() && !fileExists(configs[0].m_dbname))
+            if(configs[0].isSqlite() && !fileExists(configs[0].m_db_path))
             {
                 qCritical() << "Cannot add account, the database does not exist";
                 return SQLITE_DB_MISSING;

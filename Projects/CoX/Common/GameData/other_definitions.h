@@ -9,11 +9,13 @@
 #include <vector>
 #include <stdint.h>
 
-struct Parse_Combining {
+struct Parse_Combining
+{
     std::vector<float> CombineChances;
 };
 
-struct Parse_Effectiveness {
+struct Parse_Effectiveness
+{
     std::vector<float> Effectiveness;
 };
 

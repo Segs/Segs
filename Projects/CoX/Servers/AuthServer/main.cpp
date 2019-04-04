@@ -204,7 +204,7 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     log_buffer[0] = 0;
     category_text[0] = 0;
     if(strcmp(context.category,"default")!=0)
-        snprintf(category_text,sizeof(category_text),"[%s]",context.category);
+        snprintf(category_text, sizeof(category_text), "[%s]", context.category);
 
     QFile segs_log_target;
     QDate todays_date(QDate::currentDate());
@@ -233,6 +233,7 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     {
         fprintf(stderr,"Failed to open log file in write mode, will procede with console only logging");
     }
+
     QByteArray localMsg = msg.toLocal8Bit();
     std::string timestamp  = QTime::currentTime().toString("hh:mm:ss").toStdString();
 

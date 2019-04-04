@@ -11,3 +11,8 @@ target_link_libraries(AuthDBEventRegistry
     Qt5::Test
     AuthDatabase
 )
+
+set_target_properties (AuthDBEventRegistry PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+)

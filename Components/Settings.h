@@ -9,22 +9,28 @@
 #include <QSettings>
 #include <QString>
 
-class Settings {
-
+class Settings
+{
 public:
     static void         setSettingsPath(const QString path);
     static QString      getSettingsPath();
-
-    void        createSettingsFile();
-    void        setDefaultSettings();
+    static void         setSEGSDir();
+    static QString      getSEGSDir();
+    static QString      getSettingsTplPath();
+    static QString      getTemplateDirPath();
+    void                createSettingsFile();
 
 private:
     Settings();
     Settings(Settings const&);
     Settings& operator=(Settings const&);
 
+    static QString      m_segs_dir;
     static QString      m_settings_path;
+    static QString      m_default_tpl_dir;
+    static QString      m_default_settings_path;
 };
 
 void settingsDump();
 void settingsDump(QSettings *s);
+bool fileExists(const QString &path);
