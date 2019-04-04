@@ -167,7 +167,6 @@ struct NpcCreator
                 //qCDebug(logNPCs) << " CanSpawn loc: " << v[3][0] << v[3][1] << v[3][2];
                 SpawnerNode snNode;
                 snNode.m_name = n->m_name;
-                qInfo() << "CanSpawn parsed: " << snNode.m_name;
                 snNode.m_position = glm::vec3(v[3]);
                 snNode.m_rotation = FindOrientation(v);
 
