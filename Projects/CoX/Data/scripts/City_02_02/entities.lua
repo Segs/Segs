@@ -22,7 +22,7 @@ function player_connected(id)
 
         print("Initiating map auto-refresh")
         MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
-        TimeCopMode(true, 40, 150)  
+        TimeCopMode(true, 40, 180)  
     end
 
     return  ''
