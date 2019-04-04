@@ -240,32 +240,33 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     switch (type)
     {
         case QtDebugMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sDebug   : %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sDebug   : %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtInfoMsg:
             // no prefix or category for informational messages, as these are end-user facing
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %s\n",
                      timestamp.c_str(), localMsg.constData());
             break;
         case QtWarningMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sWarning : %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sWarning : %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtCriticalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sCritical: %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sCritical: %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtFatalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sFatal: %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sFatal: %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
     }
+
     fprintf(stdout, "%s", log_buffer);
     fflush(stdout);
+
     if(segs_log_target.isOpen())
-    {
         segs_log_target.write(log_buffer);
-    }
+
     if(type == QtFatalMsg)
     {
         segs_log_target.close();
@@ -308,8 +309,8 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ServerStopper st(SIGINT); // it'll register itself with current reactor, and shut it down on sigint
     ACE_Reactor::instance()->register_handler(interesting_signals,&st);
 
-    // Print out startup copyright messages
-
+    // Print out today's date and startup copyright messages
+    qInfo().noquote() << QDateTime::currentDateTime().toString();
     qInfo().noquote() << VersionInfo::getCopyright();
     qInfo().noquote() << VersionInfo::getAuthVersion();
 
