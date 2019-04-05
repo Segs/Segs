@@ -46,6 +46,7 @@
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
+#include <QtCore/QDir>
 #include <QtCore/QElapsedTimer>
 #include <thread>
 #include <chrono>
@@ -208,7 +209,8 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
 
     QFile segs_log_target;
     QDate todays_date(QDate::currentDate());
-    QSettings settings("settings.cfg", QSettings::IniFormat);
+    QSettings settings(Settings::getSettingsPath(), QSettings::IniFormat);
+    QString log_path = Settings::getSEGSDir() + QDir::separator() + QString("logs");
     settings.beginGroup("Logging");
     if (settings.value("combine_logs", "").toBool() == false) // If combine_logs is off will split logs by logging category.
     {
@@ -219,12 +221,12 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
         if (file_name.isEmpty())
             file_name = "generic";
         file_name = todays_date.toString("yyyy-MM-dd") + "_" + file_name;
-        QString log_path = QString("logs/") + file_name + ".log";
+        log_path += file_name + ".log";
         segs_log_target.setFileName(log_path);
     }
     else // If combine_logs is on will log all to a single file.
     {
-        QString log_path = QString("logs/") + todays_date.toString("yyyy-MM-dd") + "_all.log";
+        log_path += todays_date.toString("yyyy-MM-dd") + "_all.log";
         segs_log_target.setFileName(log_path);
     }
     settings.endGroup();

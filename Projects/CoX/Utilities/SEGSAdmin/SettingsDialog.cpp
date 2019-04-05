@@ -14,6 +14,8 @@
 #include "ui_SettingsDialog.h"
 #include "GetIPDialog.h"
 #include "Globals.h"
+#include "Settings.h"
+
 #include <QSettings>
 #include <QMessageBox>
 #include <QFileInfo>
@@ -90,7 +92,7 @@ void SettingsDialog::xp_mod_checkbox_validator()
 
 void SettingsDialog::open_settings_dialog()
 {
-    QFileInfo config_file("settings.cfg");
+    QFileInfo config_file(Settings::getSettingsPath());
     QString config_file_path = config_file.absoluteFilePath();
     SettingsDialog::read_config_file(config_file_path);
     QList<QLineEdit *> all_line_edits = ui->tabWidget->findChildren<QLineEdit *>();
@@ -228,8 +230,8 @@ void SettingsDialog::read_config_file(QString filePath)
 
 void SettingsDialog::generate_default_config_file(QString ip)
 {
-    QSettings config_file_write("settings.cfg", QSettings::IniFormat);
-    QSettings settings_template("settings_template.cfg", QSettings::IniFormat);
+    QSettings config_file_write(Settings::getSettingsPath(), QSettings::IniFormat);
+    QSettings settings_template(Settings::getSettingsTplPath(), QSettings::IniFormat);
     config_file_write.beginGroup("MetaData");
     config_file_write.setValue("config_version", settings_template.value("MetaData/config_version","").toString());
     config_file_write.endGroup(); // MetaData
@@ -314,7 +316,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
 
 void SettingsDialog::save_changes_config_file()
 {
-    QSettings config_file_write("settings.cfg", QSettings::IniFormat);
+    QSettings config_file_write(Settings::getSettingsPath(), QSettings::IniFormat);
     config_file_write.beginGroup("AdminServer");
     config_file_write.beginGroup("AccountDatabase");
     config_file_write.setValue("db_driver",ui->acc_dbdriver->currentText());

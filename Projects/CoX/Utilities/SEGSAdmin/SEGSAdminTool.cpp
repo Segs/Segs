@@ -199,7 +199,7 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
 
-    QFileInfo config_file("settings.cfg");
+    QFileInfo config_file(Settings::getSettingsPath());
     QString config_file_path = config_file.absoluteFilePath();
     QSettings config(config_file_path, QSettings::IniFormat, nullptr);
 
@@ -428,7 +428,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     // Load settings.cfg if exists
     ui->output->appendPlainText("Checking for existing configuration file...");
-    QFileInfo config_file("settings.cfg");
+    QFileInfo config_file(Settings::getSettingsPath());
     if(config_file.exists())
     {
         QString config_file_path = config_file.absoluteFilePath();

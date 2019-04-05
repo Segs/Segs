@@ -455,6 +455,10 @@ int main(int argc, char **argv)
     }
     configs[1].initialize_from_settings(parser.value(configFileOption), "CharacterDatabase");
     
+    // Set QT Logging filters after we've initialized settings.cfg with the correct path
+    setLoggingFilter();
+
+    // Handle command argument
     int selected_operation = known_commands.indexOf(positionalArguments.first());
     switch (selected_operation)
     {
