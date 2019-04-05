@@ -47,7 +47,7 @@ set(SEGSADMIN_SOURCES
 
 )
 add_executable(SEGSAdmin WIN32 ${SEGSADMIN_SOURCES})
-target_link_libraries(SEGSAdmin PUBLIC Qt5::Core Qt5::Widgets Qt5::Network)
+target_link_libraries(SEGSAdmin PUBLIC SEGS_Components Qt5::Core Qt5::Widgets Qt5::Network)
 # Retain directory structure in visual studio
 get_target_property(TARGET_SOURCES SEGSAdmin SOURCES) 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
