@@ -28,7 +28,7 @@ class SEGSTimer;
 class World;
 class GameDataStore;
 class MapSceneGraph;
-class MapXferData;
+struct MapXferData;
 
 struct LuaTimer
 {
