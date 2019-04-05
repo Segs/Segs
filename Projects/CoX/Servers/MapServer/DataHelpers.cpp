@@ -169,7 +169,8 @@ void sendServerMOTD(MapClientSession *tgt)
         QString contents(file.readAll());
         tgt->addCommand<StandardDialogCmd>(contents);
     }
-    else {
+    else
+    {
         QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
         qDebug() << errormsg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, *tgt);
