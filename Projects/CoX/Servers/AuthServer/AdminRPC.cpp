@@ -39,12 +39,12 @@ void AdminRPC::dispatch( Event *ev )
     }
 }
 
-void AdminRPC::serialize_from(std::istream &is)
+void AdminRPC::serialize_from(std::istream &/*is*/)
 {
     assert(false);
 }
 
-void AdminRPC::serialize_to(std::ostream &is)
+void AdminRPC::serialize_to(std::ostream &/*is*/)
 {
     assert(false);
 }

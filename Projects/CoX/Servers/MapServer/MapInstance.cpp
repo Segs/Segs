@@ -646,9 +646,10 @@ void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
     session.m_ent->m_map_swap_collided = false;
 }
 
-void MapInstance::on_idle(Idle *ev)
+void MapInstance::on_idle(Idle */*ev*/)
 {
-    MapLink * lnk = (MapLink *)ev->src();
+    // MapLink * lnk = (MapLink *)ev->src();
+
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
     // we don't have to respond with an idle message here, check links will send idle events as needed.
     //lnk->putq(new Idle);
@@ -860,7 +861,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
     // make sure to 'off' the AFK from the character in db first
-    toggleAFK(*e->m_char, false);
+    setAFK(*e->m_char, false);
 
     if(logPlayerSpawn().isDebugEnabled())
     {
@@ -1105,7 +1106,10 @@ void MapInstance::on_input_state(RecvInputState *st)
 
     // Check for input
     if(st->m_next_state.m_input_received)
+    {
+        qCDebug(logAFK) << "Input Received:" << st->m_next_state.m_input_received;
         ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
+    }
 
     // Set Target
     if(st->m_next_state.m_has_target && (getTargetIdx(*ent) != st->m_next_state.m_target_idx))
@@ -2141,8 +2145,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         welcome_msg += buf;
         sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),session);
 
-        // Show MOTD only if it's been more than hour since last online
-        // TODO: Make length of motd suppression configurable in settings.cfg
+        // Show MOTD only if it's been more than X amount of time since last online
         QDateTime last_online = QDateTime::fromString(getLastOnline(*session.m_ent->m_char));
         QDateTime today = QDateTime::currentDateTime();
         const GameDataStore &data(getGameData()); // for motd timer
@@ -2307,7 +2310,7 @@ void MapInstance::on_set_destination(SetDestination * ev)
 void MapInstance::on_has_entered_door(HasEnteredDoor *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+    //MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
     sendDoorAnimExit(session, false);
 
@@ -2881,24 +2884,28 @@ void MapInstance::on_afk_update()
         Entity *e = sess->m_ent;
         CharacterData* cd = &e->m_char->m_char_data;
 
-        if(e->m_has_input_on_timeframe == false)
+        qCDebug(logAFK) << "Idle Time:" << cd->m_idle_time;
+
+        if(!e->m_has_input_on_timeframe)
             cd->m_idle_time += afk_update_interval.sec();
         else
         {
-            msg = QString("Receiving input from player: ") + &e->m_char->getName();
-            qCDebug(logInput) << msg;
+            msg = QString("Receiving input after %1 seconds of inactivity from player: %2")
+                    .arg(cd->m_idle_time)
+                    .arg(e->m_char->getName());
+            qCDebug(logAFK).noquote() << msg;
+
             cd->m_idle_time = 0;
+            cd->m_is_on_auto_logout = false;
+            e->m_has_input_on_timeframe = false;
 
             if(cd->m_afk)
-                toggleAFK(*e->m_char, false);
-            cd->m_is_on_auto_logout = false;
-
-            e->m_has_input_on_timeframe = false;
+                setAFK(*e->m_char, false);
         }
 
         if(cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
-            toggleAFK(* e->m_char, true, "Auto AFK");
+            setAFK(* e->m_char, true, "Auto AFK");
             msg = QString("You are AFKed after %1 seconds of inactivity.").arg(data.m_time_to_afk);
             sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *sess);
         }
@@ -3061,12 +3068,6 @@ void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
 // EmailHandler will send this event here
 void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
 {
-    EmailHeaders *header = new EmailHeaders(
-                    ev->m_data.m_email_id,
-                    ev->m_data.m_sender_name,
-                    ev->m_data.m_subject,
-                    ev->m_data.m_timestamp);
-
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
     map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
                                                                           ev->m_data.m_sender_name,

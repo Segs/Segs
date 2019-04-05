@@ -212,7 +212,7 @@ void setVelocity(Entity &e) // pmotionSetVel
         if(e.m_type == EntType::PLAYER)
             qCDebug(logMovement) << "Moving so turning off AFK";
 
-        toggleAFK(*e.m_char);
+        setAFK(*e.m_char, false);
     }
 
     // setPlayerVelQuat(&vel, vel_scale_copy); // we don't need this?
