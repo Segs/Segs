@@ -14,7 +14,7 @@ std::vector<glm::vec3> convertToVec3Vector(const std::vector<float>& src) {
     std::vector<glm::vec3> res;
     assert((src.size() % 3) == 0);
     res.reserve(src.size()/3);
-    for(int i=0; i<src.size(); i+=3) {
+    for(size_t i=0; i<src.size(); i+=3) {
         res.emplace_back(src[i],src[i+1],src[i+2]);
     }
     return res;

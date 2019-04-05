@@ -1007,7 +1007,7 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
 
     if(powtpl.pAttribMod.empty())                                       //give the power an effect to either heal or hurt
     {
-        GameDataStore &data(getGameData());
+        //GameDataStore &data(getGameData());
         StoredAttribMod temp;
         temp.Scale = (powtpl.RechargeTime +  powtpl.TimeToActivate)/5;  //this is an aproximation of what the damage scales should be
         if(validTarget(*target_ent, ent, StoredEntEnum::Enemy))         //assume it is a damaging power
@@ -2002,7 +2002,7 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
 }
 
 
-void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank)
+void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int /*f_rank*/)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);

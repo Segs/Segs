@@ -646,9 +646,10 @@ void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
     session.m_ent->m_map_swap_collided = false;
 }
 
-void MapInstance::on_idle(Idle *ev)
+void MapInstance::on_idle(Idle */*ev*/)
 {
-    MapLink * lnk = (MapLink *)ev->src();
+    // MapLink * lnk = (MapLink *)ev->src();
+
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
     // we don't have to respond with an idle message here, check links will send idle events as needed.
     //lnk->putq(new Idle);
@@ -2307,7 +2308,7 @@ void MapInstance::on_set_destination(SetDestination * ev)
 void MapInstance::on_has_entered_door(HasEnteredDoor *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+    //MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
     sendDoorAnimExit(session, false);
 
@@ -3061,12 +3062,6 @@ void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
 // EmailHandler will send this event here
 void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
 {
-    EmailHeaders *header = new EmailHeaders(
-                    ev->m_data.m_email_id,
-                    ev->m_data.m_sender_name,
-                    ev->m_data.m_subject,
-                    ev->m_data.m_timestamp);
-
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
     map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
                                                                           ev->m_data.m_sender_name,
