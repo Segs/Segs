@@ -104,6 +104,7 @@ void setTarget(Entity &e, uint32_t target_idx)
     e.m_target_idx = target_idx;
     // To trigger update to client
     e.m_pchar_things = true;
+    qCDebug(logTarget) << "Setting Target to" << target_idx;
 }
 
 void setAssistTarget(Entity &e, uint32_t target_idx)

@@ -18,7 +18,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
 
 
     uint32_t count = 0;
-    bool spawn_all = false;
+    //bool spawn_all = false;
     bool m_victim_spawned = false;
 
     CritterSpawnDef spawn_def = sp->getSpawnGroup(this->m_critter_encounter.m_node_name);
@@ -31,7 +31,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
         else
             break;
 
-        spawn_all = cd.m_spawn_all;
+        //spawn_all = cd.m_spawn_all;
 
         if(encounter_location.m_name.contains("encounter_e_", Qt::CaseInsensitive))
         {

@@ -418,7 +418,7 @@ void SettingsDialog::set_default_values()
     ui->map_location_port->setValue(7003);
     ui->map_location->setText("maps");
     ui->map_player_fade_in->setValue(380.0);
-    ui->map_motd_timer->setValue(120.0);
+    ui->map_motd_timer->setValue(3600.0);
     ui->time_to_afk_spin->setValue(300);
     ui->time_to_logout_msg_spin->setValue(1080);
     ui->time_to_auto_logout_spin->setValue(120);
