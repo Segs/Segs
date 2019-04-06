@@ -42,10 +42,16 @@ std::unique_ptr<ServiceToClientData> ZoneTransferService::on_initiate_map_transf
 
     fromActualCharacter(*ent->m_char, *ent->m_player, *ent->m_entity, c_data);
     serializeToQString(c_data, serialized_data);
-    ExpectMapClientRequest *map_req = new ExpectMapClientRequest({ent->m_client->auth_id(), ent->m_client->m_access_level, link->peer_addr(),
-                                    serialized_data, ent->m_client->m_requested_slot_idx, ent->m_client->m_name, getMapPath(map_xfer.m_target_map_name),
-                                    ent->m_client->m_max_slots},
-                                    link->session_token());
+
+    ExpectMapClientRequest *map_req = new ExpectMapClientRequest(
+        {ent->m_client->auth_id(),
+         ent->m_client->m_access_level,
+         link->peer_addr(),
+         serialized_data,
+         ent->m_client->m_requested_slot_idx,
+         ent->m_client->m_name,
+         getMapPath(map_xfer.m_target_map_name),
+         ent->m_client->m_max_slots}, link->session_token(), m_owner_instance);
 
     MapServerEventVector mapServerEvents {map_req};
     return std::make_unique<ServiceToClientData>(ent, mapServerEvents, QString());
