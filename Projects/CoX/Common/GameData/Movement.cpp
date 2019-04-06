@@ -219,6 +219,33 @@ void setVelocity(Entity &e) // pmotionSetVel
     motion->m_velocity = vel;
 }
 
+void processNewInputs(Entity &e)
+{
+    while (InputState* new_input = e.m_states.getOldestUnprocessedInput())
+    {
+        new_input->m_pos_start = e.m_entity_data.m_pos;
+
+        if(new_input->m_no_collision)
+            e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
+        else
+            e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
+
+        // todo(jbr) set rotation from input
+        /*
+        if(st->m_next_state.m_orientation_pyr.p || st->m_next_state.m_orientation_pyr.y || st->m_next_state.m_orientation_pyr.r)
+        {
+            ent->m_entity_data.m_orientation_pyr = st->m_next_state.m_orientation_pyr;
+            ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
+        }
+         */
+
+        for (int i = 0; i < 6; ++i)
+        {
+
+        }
+    }
+}
+
 void addPosUpdate(Entity &e, const PosUpdate &p)
 {
     e.m_update_idx = (e.m_update_idx+1) % 64;

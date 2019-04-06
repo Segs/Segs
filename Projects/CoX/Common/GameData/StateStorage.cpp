@@ -60,6 +60,18 @@ void TimeState::dump()
     qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
 }
 
+InputState* StateStorage::getOldestUnprocessedInput()
+{
+    if (m_oldest_unprocessed_input_index < m_inp_states.size())
+    {
+        InputState* input = &m_inp_states[m_oldest_unprocessed_input_index];
+        ++m_oldest_unprocessed_input_index;
+        return input;
+    }
+
+    return nullptr;
+}
+
 void StateStorage::addNewState(InputState &new_state)
 {
     if(m_inp_states.size() < 1)
@@ -87,7 +99,11 @@ void StateStorage::addNewState(InputState &new_state)
     // m_motion_states.push_back(new_motion_state);
 
     if(m_inp_states.size() > 30)
+    {
         m_inp_states.pop_front();
+
+        --m_oldest_unprocessed_input_index;
+    }
 }
 
 //! @}

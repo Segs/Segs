@@ -214,6 +214,18 @@ void RecvInputState::serializefrom(BitStream &bs)
         // all remaining bits were moved to m_user_commands.
         bs.SetReadPos(bs.GetWritePos());
     }
+
+    qCDebug(logInput, "%d[%d, %d, %d, %d, %d, %d](%d, %d)",
+            m_next_state.m_send_id,
+            m_next_state.m_control_bits[0],
+            m_next_state.m_control_bits[1],
+            m_next_state.m_control_bits[2],
+            m_next_state.m_control_bits[3],
+            m_next_state.m_control_bits[4],
+            m_next_state.m_control_bits[5],
+            m_next_state.m_time_diff1,
+            m_next_state.m_time_diff2
+            );
 }
 
 void RecvInputState::serializeto(BitStream &) const

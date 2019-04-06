@@ -120,6 +120,7 @@ class StateStorage
 {
 public:
     QVector<InputState> m_inp_states;
+    int m_oldest_unprocessed_input_index = 0;
     // TODO: maybe move these other states here and vectorize StateStorage?
     // std::vector<TimeState>  m_time_states;
     // std::vector<SpeedState>  m_speed_states;
@@ -148,6 +149,7 @@ public:
 
         return &m_inp_states.back()-1;
     }
+    InputState* getOldestUnprocessedInput();
 
     void addNewState(InputState &new_state);
 };
