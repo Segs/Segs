@@ -199,9 +199,7 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
 
-    QFileInfo config_file(Settings::getSettingsPath());
-    QString config_file_path = config_file.absoluteFilePath();
-    QSettings config(config_file_path, QSettings::IniFormat, nullptr);
+    QSettings config(Settings::getSettingsPath(), QSettings::IniFormat, nullptr);
 
     QFileInfo file1(config.value(QStringLiteral("AdminServer/AccountDatabase/db_name"), "segs.db").toString());
     QFileInfo file2(config.value(QStringLiteral("AdminServer/CharacterDatabase/db_name"), "segs_game.db").toString());
