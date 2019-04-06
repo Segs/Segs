@@ -2732,26 +2732,37 @@ void MapInstance::on_dialog_button(DialogButton *ev)
     switch(ev->button_id)
     {
     case 0:
-        // cancel?
+        callScriptingDialogButtonCallback(ev);
         break;
     case 1:
-        // accept?
-        if(session.m_ent->m_char->m_in_training) // if training, raise level
+        if(session.m_ent->m_char->m_client_window_state == ClientWindowState::Training) // if training, raise level
+        {
             increaseLevel(*session.m_ent);
-
+        }
+        else
+        {
+            callScriptingDialogButtonCallback(ev);
+        }
         break;
     case 2:
-        // no idea
+        callScriptingDialogButtonCallback(ev);
         break;
-    case 3:
+    case 3: // Close Dialog - CONTACTLINK_BYE
         sendContactDialogClose(session);
+        session.m_ent->m_active_dialog = NULL; // Clear scripting callback
         break;
     default:
-        // close all windows?
+        callScriptingDialogButtonCallback(ev);
         break;
     }
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received DialogButton" << ev->button_id << ev->success;
+
+}
+
+void MapInstance::callScriptingDialogButtonCallback(DialogButton *ev)
+{
+    MapClientSession &session(m_session_store.session_from_event(ev));
 
     if(session.m_ent->m_active_dialog != NULL)
     {
@@ -2867,7 +2878,7 @@ void MapInstance::on_levelup_response(LevelUpResponse *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
 
     // if successful, set level
-    if(session.m_ent->m_char->m_in_training) // if training, raise level
+    if(session.m_ent->m_char->m_client_window_state == ClientWindowState::Training) // if training, raise level
         increaseLevel(*session.m_ent);
 
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "has received LevelUpResponse" << ev->button_id << ev->result;
