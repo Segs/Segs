@@ -203,10 +203,11 @@ void SettingsDialog::read_config_file(QString filePath)
     logging_grid->setColumnStretch(2,1);
     for(int i = 0; i < config_file.childKeys().size(); ++i)
     {
+        if (config_file.childKeys().at(i) == "log_generic")
+            continue; // skip this one
+        
         if (config_file.childKeys().at(i) == "combine_logs")
             ui->combine_logs->setChecked(config_file.value("combine_logs", "").toBool());
-        else if(config_file.childKeys().at(i) == "log_generic")
-            continue; // just skip it
         else
         {
             QString temp_key = config_file.childKeys().at(i);
