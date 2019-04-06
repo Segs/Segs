@@ -205,6 +205,8 @@ void SettingsDialog::read_config_file(QString filePath)
     {
         if (config_file.childKeys().at(i) == "combine_logs")
             ui->combine_logs->setChecked(config_file.value("combine_logs", "").toBool());
+        else if(config_file.childKeys().at(i) == "log_generic")
+            continue; // just skip it
         else
         {
             QString temp_key = config_file.childKeys().at(i);
@@ -231,7 +233,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     QSettings config_file_write("settings.cfg", QSettings::IniFormat);
     QSettings settings_template("settings_template.cfg", QSettings::IniFormat);
     config_file_write.beginGroup("MetaData");
-    config_file_write.setValue("config_version", settings_template.value("MetaData/config_version","").toString());
+    config_file_write.setValue("config_version", settings_template.value("MetaData/config_version","1").toString());
     config_file_write.endGroup(); // MetaData
 
     config_file_write.beginGroup("AdminServer");
@@ -291,11 +293,11 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.beginGroup("Logging");
     settings_template.beginGroup("Logging");
     QStringList logging_keys = settings_template.childKeys();
-    settings_template.endGroup(); // settings_template Logging
     for (const QString &key : logging_keys)
     {
-        config_file_write.setValue(key, false);
+        config_file_write.setValue(key, settings_template.value(key, false));
     }
+    settings_template.endGroup(); // settings_template Logging
     config_file_write.endGroup(); // Logging
 
     config_file_write.beginGroup("Modifiers");
