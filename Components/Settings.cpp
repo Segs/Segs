@@ -21,7 +21,7 @@
 QString Settings::m_segs_dir;
 QString Settings::m_settings_path = QStringLiteral("settings.cfg"); // default path 'settings.cfg' from args
 QString Settings::m_default_tpl_dir = QStringLiteral("default_setup"); // default folder 'default_setup'
-QString Settings::m_default_settings_path = QStringLiteral("settings_template.cfg"); // default template from folder 'default_setup'
+QString Settings::m_default_settings_path = Settings::m_default_tpl_dir + QDir::separator() + QStringLiteral("settings_template.cfg"); // default template from folder 'default_setup'
 
 bool fileExists(const QString &path)
 {

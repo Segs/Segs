@@ -233,7 +233,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     QSettings config_file_write(Settings::getSettingsPath(), QSettings::IniFormat);
     QSettings settings_template(Settings::getSettingsTplPath(), QSettings::IniFormat);
     config_file_write.beginGroup("MetaData");
-    config_file_write.setValue("config_version", settings_template.value("MetaData/config_version","").toString());
+    config_file_write.setValue("config_version", settings_template.value("MetaData/config_version","1").toString());
     config_file_write.endGroup(); // MetaData
 
     config_file_write.beginGroup("AdminServer");

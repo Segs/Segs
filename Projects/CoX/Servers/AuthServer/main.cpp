@@ -221,12 +221,12 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
         if (file_name.isEmpty())
             file_name = "generic";
         file_name = todays_date.toString("yyyy-MM-dd") + "_" + file_name;
-        log_path += file_name + ".log";
+        log_path += QDir::separator() +file_name + ".log";
         segs_log_target.setFileName(log_path);
     }
     else // If combine_logs is on will log all to a single file.
     {
-        log_path += todays_date.toString("yyyy-MM-dd") + "_all.log";
+        log_path += QDir::separator() +todays_date.toString("yyyy-MM-dd") + "_all.log";
         segs_log_target.setFileName(log_path);
     }
     settings.endGroup();

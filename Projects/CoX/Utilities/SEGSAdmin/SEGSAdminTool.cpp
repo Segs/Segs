@@ -456,7 +456,6 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
 
 void SEGSAdminTool::check_config_version(QString filePath)
 {
-
     ui->output->appendPlainText("Checking configuration version...");
 
     QSettings config_file(filePath, QSettings::IniFormat);
