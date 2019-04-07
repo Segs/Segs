@@ -59,4 +59,4 @@ namespace SEGSEvents
         // [[ev_def:field]]
         std::vector<bool>   m_visible_map_cells;
     };
-};
+}
