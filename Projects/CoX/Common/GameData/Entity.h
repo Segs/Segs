@@ -208,7 +208,6 @@ public:
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_interp            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
-        bool                m_in_training           = false;
         bool                m_has_input_on_timeframe= false;
         bool                m_is_using_mapmenu      = false;
         bool                m_map_swap_collided     = false;
