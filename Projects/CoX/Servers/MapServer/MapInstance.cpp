@@ -2870,6 +2870,7 @@ void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
     uint32_t idx = getCurrentCostumeIdx(*session.m_ent->m_char);
     session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
     session.m_ent->m_rare_update = true; // re-send costumes, they've changed.
+    session.m_ent->m_char->m_client_window_state = ClientWindowState::None;
     markEntityForDbStore(session.m_ent, DbStoreFlags::Full);
 }
 
