@@ -19,6 +19,5 @@ target_link_libraries(MapEventRegistry
 set_property(TARGET MapEventRegistry PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 set_target_properties (MapEventRegistry PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
 )

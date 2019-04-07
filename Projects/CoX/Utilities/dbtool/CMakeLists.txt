@@ -34,8 +34,7 @@ get_target_property(TARGET_SOURCES dbtool SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
 set_target_properties (dbtool PROPERTIES
     FOLDER Projects/CoX/Utilities
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
 )
 
 # hack to prevent errors with FOLDER properties when using generated files

@@ -8,8 +8,7 @@ add_dependencies(AuthExerciser ace_IMP cereal_IMP) # used for Singleton stuff.
 target_link_libraries(AuthExerciser PUBLIC Qt5::Core)
 
 set_target_properties (AuthExerciser PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
 )
 
 TARGET_LINK_LIBRARIES(AuthExerciser PUBLIC
