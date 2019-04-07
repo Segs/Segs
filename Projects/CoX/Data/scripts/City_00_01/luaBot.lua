@@ -409,7 +409,8 @@ LuaBot.dialogPages[3].actions["CONTACTLINK_HELLO"] = function ()
 end
 
 LuaBot.dialogPages[3].actions["CONTACTLINK_MAIN"] = function ()
-    Player.GiveRandomEnhancement(1);
+    local level = Player.GetLevel();
+    Player.GiveRandomEnhancement(level);
 end
 
 LuaBot.dialogPages[3].actions["CONTACTLINK_MISSIONS"] = function ()
