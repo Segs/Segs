@@ -102,7 +102,10 @@ void StateStorage::addNewState(InputState &new_state)
     {
         m_inp_states.pop_front();
 
-        --m_oldest_unprocessed_input_index;
+        if (m_oldest_unprocessed_input_index > 0)
+        {
+            --m_oldest_unprocessed_input_index;
+        }
     }
 }
 

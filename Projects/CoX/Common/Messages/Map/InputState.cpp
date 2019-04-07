@@ -30,6 +30,8 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
     uint32_t    ms_since_prev = 0;
     float       angle = 0.0f;
 
+    qCDebug(logInput, "Begin ControlStateChange");
+
     do
     {
         if(bs.GetBits(1))
@@ -131,7 +133,18 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                 assert(!"Unknown control_id");
         }
 
+        qCDebug(logInput, "%hu:control_id=%d, state=%hu, %f %d %d",
+                m_next_state.m_send_id,
+                (int)control_id,
+                control_id < 6 ? m_next_state.m_control_bits[control_id] : 255,
+                (double)m_next_state.m_ms_since_prev,
+                m_next_state.m_time_diff1,
+                m_next_state.m_time_diff2
+                );
+
     } while(bs.GetBits(1));
+
+    qCDebug(logInput, "End ControlStateChange");
 
     //qCDebug(logInput, "recv control_id 9 %f", m_next_state.m_every_4_ticks);
 }
@@ -214,18 +227,6 @@ void RecvInputState::serializefrom(BitStream &bs)
         // all remaining bits were moved to m_user_commands.
         bs.SetReadPos(bs.GetWritePos());
     }
-
-    qCDebug(logInput, "%d[%d, %d, %d, %d, %d, %d](%d, %d)",
-            m_next_state.m_send_id,
-            m_next_state.m_control_bits[0],
-            m_next_state.m_control_bits[1],
-            m_next_state.m_control_bits[2],
-            m_next_state.m_control_bits[3],
-            m_next_state.m_control_bits[4],
-            m_next_state.m_control_bits[5],
-            m_next_state.m_time_diff1,
-            m_next_state.m_time_diff2
-            );
 }
 
 void RecvInputState::serializeto(BitStream &) const
