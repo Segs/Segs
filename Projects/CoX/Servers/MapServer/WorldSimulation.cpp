@@ -50,7 +50,7 @@ void World::update(const ACE_Time_Value &tick_timer)
 
 void World::physicsStep(Entity *e,uint32_t msec)
 {
-    if(glm::length2(e->m_states.current()->m_pos_delta))
+    //if(glm::length2(e->m_states.current()->m_pos_delta))
     {
         processNewInputs(*e);
         /*

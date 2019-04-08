@@ -25,6 +25,19 @@ const char *control_name[] = {
     "YAW",
 };
 
+bool isControlStateChangeIdNewer(uint16_t a, uint16_t b)
+{
+    // control state change id is a wrapping uint16
+    if (a > b)
+    {
+        return (a - b) <= 0x7fff;
+    }
+    else
+    {
+        return (b - a) > 0x7fff;
+    }
+}
+
 void TimeState::serializefrom_delta(BitStream &bs, const TimeState &/*prev*/)
 {
     m_client_timenow = bs.GetPackedBits(1); // field_0 diff next-current

@@ -274,6 +274,11 @@ void processNewInputs(Entity &e)
                 }
             }
 
+            if (input_state->m_keys_held_time_ms[0])
+            {
+                qCDebug(logMovement, "%sFORWARD (%dms)", input_state->m_keys[0] ? "+" : "-", input_state->m_keys_held_time_ms[0]);
+            }
+
             // todo(jbr) do the tick
 
             input_state->m_current_control_state_change_id = csc->last_id + 1;

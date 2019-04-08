@@ -41,6 +41,8 @@ struct ControlStateChange
     uint32_t tick_length_ms = 0;
     QVector<KeyChange> key_changes;
 };
+// is a newer than b?
+bool isControlStateChangeIdNewer(uint16_t a, uint16_t b);
 
 class TimeState
 {
