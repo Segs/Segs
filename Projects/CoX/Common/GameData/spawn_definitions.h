@@ -12,19 +12,29 @@
 #include <QtCore/QHash>
 #include <vector>
 
-struct CritterSpawnPoint
+class CritterSpawnPoint
 {
+public:
     QString         m_name;
     bool            m_is_victim;
-    glm::mat4       m_relative_position;
+    glm::vec3       m_relative_position;
+    glm::vec3       m_rotation;
+
+    std::string getName() const { return m_name.toStdString();}
+    void setName(const char *n) { m_name = n; }
 };
 
-struct CritterSpawnLocations
+class CritterSpawnLocations
 {
+public:
     QString                                     m_node_name;
     std::vector<CritterSpawnPoint>              m_all_spawn_points;
     uint8_t                                     m_spawn_probability;
     uint8_t                                     m_villain_radius; // Aggro range?
+    glm::vec3                                   m_location;
+
+    std::string getNodeName() const { return m_node_name.toStdString();}
+    void setNodeName(const char *n) { m_node_name = n; }
 };
 
 struct CritterDefinition

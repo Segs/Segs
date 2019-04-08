@@ -154,6 +154,8 @@ void MapInstance::start(const QString &scenegraph_path)
             m_critter_generators.generate(this);
             }, "Spawning npcs");
 
+        // Set correct MapInstance in scripting engine
+        m_scripting_interface->updateMapInstance(this);
         // Load Lua Scripts for this Map Instance
         load_map_lua();
     }
@@ -600,7 +602,7 @@ void MapInstance::dispatch( Event *ev )
         case evStoreSellItem:
             on_store_sell_item(static_cast<StoreSellItem *>(ev));
             break;
-    case evStoreBuyItem:
+        case evStoreBuyItem:
             on_store_buy_item(static_cast<StoreBuyItem *>(ev));
             break;
         default:
@@ -644,9 +646,10 @@ void MapInstance::on_map_xfer_complete(MapXferComplete *ev)
     session.m_ent->m_map_swap_collided = false;
 }
 
-void MapInstance::on_idle(Idle *ev)
+void MapInstance::on_idle(Idle */*ev*/)
 {
-    MapLink * lnk = (MapLink *)ev->src();
+    // MapLink * lnk = (MapLink *)ev->src();
+
     // TODO: put idle sending on timer, which is reset each time some other packet is sent ?
     // we don't have to respond with an idle message here, check links will send idle events as needed.
     //lnk->putq(new Idle);
@@ -858,7 +861,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
     // make sure to 'off' the AFK from the character in db first
-    toggleAFK(*e->m_char, false);
+    setAFK(*e->m_char, false);
 
     if(logPlayerSpawn().isDebugEnabled())
     {
@@ -1103,7 +1106,10 @@ void MapInstance::on_input_state(RecvInputState *st)
 
     // Check for input
     if(st->m_next_state.m_input_received)
+    {
+        qCDebug(logAFK) << "Input Received:" << st->m_next_state.m_input_received;
         ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
+    }
 
     // Set Target
     if(st->m_next_state.m_has_target && (getTargetIdx(*ent) != st->m_next_state.m_target_idx))
@@ -2089,6 +2095,23 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *ent = session.m_ent;
+    uint32_t map_idx = session.m_current_map->m_index;
+
+    std::vector<bool> * map_cells = &ent->m_player->m_player_progress.m_visible_map_cells[map_idx];
+
+    if (map_cells->empty())
+    {
+        map_cells->resize(1024);
+    }
+
+    if (ev->tile_idx > map_cells->size())
+    {
+        map_cells->resize(map_cells->size() + (ev->tile_idx - map_cells->size() + 1023) / 1024 * 1024);
+    }
+
+    // #818 map_cells of type array with a size of 1024 threw 
+    // out of range exception on maps that had index tiles larger than 1024
+    map_cells->at(ev->tile_idx) = true;
 
     qCDebug(logMiniMap) << "MiniMapState tile "<< ev->tile_idx << " for player" << ent->name();
     // TODO: Save these tile #s to dbase and (presumably) load upon entering map to remove fog-of-war from map
@@ -2122,8 +2145,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         welcome_msg += buf;
         sendInfoMessage(MessageChannel::SERVER,QString::fromStdString(welcome_msg),session);
 
-        // Show MOTD only if it's been more than hour since last online
-        // TODO: Make length of motd suppression configurable in settings.cfg
+        // Show MOTD only if it's been more than X amount of time since last online
         QDateTime last_online = QDateTime::fromString(getLastOnline(*session.m_ent->m_char));
         QDateTime today = QDateTime::currentDateTime();
         const GameDataStore &data(getGameData()); // for motd timer
@@ -2150,6 +2172,16 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         // TODO: check if there's a better place to complete the map transfer..
         map_server->session_xfer_complete(session.link()->session_token());
     }
+
+    std::vector<bool> * visible_map_cells = &session.m_ent->m_player->m_player_progress.m_visible_map_cells[session.m_current_map->m_index];
+
+    if (!visible_map_cells->empty())
+    {
+        // TODO: Check map type to determine if is_opaque is true / false
+        sendVisitMapCells(session, false, *visible_map_cells);
+    }
+    
+    initializeCharacter(*session.m_ent->m_char);
 
     // Call Lua Connected function.
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"player_connected", session.m_ent->m_idx);
@@ -2278,7 +2310,7 @@ void MapInstance::on_set_destination(SetDestination * ev)
 void MapInstance::on_has_entered_door(HasEnteredDoor *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
-    MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
+    //MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
 
     sendDoorAnimExit(session, false);
 
@@ -2290,11 +2322,11 @@ void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
 
-    if(session.m_ent->m_queued_powers.isEmpty())
+    if(session.m_ent->m_queued_powers.empty())
         return;
 
-    // remove first queued power
-    session.m_ent->m_queued_powers.dequeue();
+    // remove last queued power
+    session.m_ent->m_queued_powers.pop_back();
     session.m_ent->m_char->m_char_data.m_has_updated_powers = true; // this must be true, because we're updating queued powers
 
     qCWarning(logMapEvents) << "Aborting queued power";
@@ -2388,9 +2420,8 @@ void MapInstance::on_unqueue_all(UnqueueAll *ev)
     Entity *ent = session.m_ent;
 
     // What else could go here?
-    ent->m_target_idx = -1;
-    ent->m_assist_target_idx = -1;
-    ent->m_queued_powers.clear();
+    ent->m_target_idx = 0;
+    ent->m_assist_target_idx = 0;
 
     qCWarning(logMapEvents) << "Incomplete Unqueue all request. Setting Target and Assist Target to 0";
 }
@@ -2408,13 +2439,15 @@ void MapInstance::on_activate_power(ActivatePower *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_has_input_on_timeframe = true;
-    uint32_t tgt_idx = ev->target_idx;
+    int tgt_idx = ev->target_idx;
 
-    if(ev->target_idx <= 0 || ev->target_idx == session.m_ent->m_idx)
-        tgt_idx = -1;
-
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power" << ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
-    usePower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx, ev->target_db_id);
+    Entity *target_ent = getEntity(&session, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
+    checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
 }
 
 void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
@@ -2422,12 +2455,22 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     session.m_ent->m_has_input_on_timeframe = true;
 
-    // TODO: Check that target is valid, then Do Power!
-    QString contents = QString("To Location: <%1, %2, %3>").arg(ev->location.x).arg(ev->location.y).arg(ev->location.z);
-    sendFloatingInfo(session, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
-    sendFaceLocation(session, ev->location);
+    CharacterPower * ppower = nullptr;
+    ppower = getOwnedPowerByVecIdx(*session.m_ent, ev->pset_idx, ev->pow_idx);
+    const Power_Data powtpl = ppower->getPowerTemplate();
+    int tgt_idx = ev->target_idx;
 
-    qCDebug(logPowers) << "Entity: " << session.m_ent->m_idx << "has activated power"<< ev->pset_idx << ev->pow_idx << ev->target_idx << ev->target_db_id;
+    Entity *target_ent = getEntity(&session, tgt_idx);
+    if(target_ent == nullptr)
+    {
+        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
+        return;
+    }
+    if ((powtpl.EntsAffected[0] == StoredEntEnum::Caster ))
+        tgt_idx = session.m_ent->m_idx;
+    session.m_ent->m_target_loc = ev->location;
+    checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
+    sendFaceLocation(session, ev->location);
 }
 
 void MapInstance::on_activate_inspiration(ActivateInspiration *ev)
@@ -2841,24 +2884,28 @@ void MapInstance::on_afk_update()
         Entity *e = sess->m_ent;
         CharacterData* cd = &e->m_char->m_char_data;
 
-        if(e->m_has_input_on_timeframe == false)
+        qCDebug(logAFK) << "Idle Time:" << cd->m_idle_time;
+
+        if(!e->m_has_input_on_timeframe)
             cd->m_idle_time += afk_update_interval.sec();
         else
         {
-            msg = QString("Receiving input from player: ") + &e->m_char->getName();
-            qCDebug(logInput) << msg;
+            msg = QString("Receiving input after %1 seconds of inactivity from player: %2")
+                    .arg(cd->m_idle_time)
+                    .arg(e->m_char->getName());
+            qCDebug(logAFK).noquote() << msg;
+
             cd->m_idle_time = 0;
+            cd->m_is_on_auto_logout = false;
+            e->m_has_input_on_timeframe = false;
 
             if(cd->m_afk)
-                toggleAFK(*e->m_char, false);
-            cd->m_is_on_auto_logout = false;
-
-            e->m_has_input_on_timeframe = false;
+                setAFK(*e->m_char, false);
         }
 
         if(cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
-            toggleAFK(* e->m_char, true, "Auto AFK");
+            setAFK(* e->m_char, true, "Auto AFK");
             msg = QString("You are AFKed after %1 seconds of inactivity.").arg(data.m_time_to_afk);
             sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *sess);
         }
@@ -2948,7 +2995,8 @@ void MapInstance::send_character_update(Entity *e)
                 e->m_player->m_tasks_entry_list,
                 e->m_player->m_clues,
                 e->m_player->m_souvenirs,
-                e->m_player->m_player_statistics });
+                e->m_player->m_player_statistics,
+                e->m_player->m_player_progress });
 
     serializeToQString(*e->m_char->getAllCostumes(), cerealizedCostumeData);
     serializeToQString(e->m_char->m_char_data, cerealizedCharData);
@@ -2986,7 +3034,8 @@ void MapInstance::send_player_update(Entity *e)
                 e->m_player->m_tasks_entry_list,
                 e->m_player->m_clues,
                 e->m_player->m_souvenirs,
-                e->m_player->m_player_statistics });
+                e->m_player->m_player_statistics,
+                e->m_player->m_player_progress });
 
     serializeToQString(playerData, cerealizedPlayerData);
 
@@ -3019,12 +3068,6 @@ void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
 // EmailHandler will send this event here
 void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
 {
-    EmailHeaders *header = new EmailHeaders(
-                    ev->m_data.m_email_id,
-                    ev->m_data.m_sender_name,
-                    ev->m_data.m_subject,
-                    ev->m_data.m_timestamp);
-
     MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
     map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
                                                                           ev->m_data.m_sender_name,

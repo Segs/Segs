@@ -127,7 +127,7 @@ bool MapServer::ReadConfigAndRestart()
         return false;
     }
 
-    QVariant motd_timer = config.value("motd_timer","120.0");
+    QVariant motd_timer = config.value("motd_timer","3600.0");
     getGameData().m_motd_timer = motd_timer.toFloat(&ok);
     if(!ok)
     {

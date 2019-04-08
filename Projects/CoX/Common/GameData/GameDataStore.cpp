@@ -489,29 +489,18 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
 bool GameDataStore::read_powers(const QString &directory_path)
 {
     qDebug() << "Loading powers:";
-    if(!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "bin/powers.bin",
-                                                                   m_all_powers))
+    if(QFile(directory_path+"bin/powers.json").exists() && loadFrom(directory_path+"bin/powers.json", m_all_powers))
+    {
+        qDebug() << "Loaded power data from powers.json!";
+            return true;
+    }
+    else if(read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path,
+                                                                    "bin/powers.bin",m_all_powers))
+    {
+        qDebug() << "Loaded power data from powers.bin!";
+    }
+    else
         return false;
-
-    // Hardcoding of stats to test powers
-    StoredAttribMod temp;
-    Power_Data *temppower = nullptr;
-
-    temp.name = "Damage";
-    temp.Magnitude = 5;
-    temppower = editable_power_tpl(26,0,0);    // brawl
-    temppower->pAttribMod.push_back(temp);
-
-    temp.name = "Healing";
-    temppower = editable_power_tpl(26,0,7);    // rest
-    temppower->pAttribMod.push_back(temp);
-    temppower = editable_power_tpl(27,0,24);   // medkit
-    temppower->pAttribMod.push_back(temp);
-
-    temp.name = "Speed_Boost";
-    temp.Magnitude = 0.5;
-    temppower = editable_power_tpl(26,0,6);    // sprint
-    temppower->pAttribMod.push_back(temp);
 
     return true;
 }

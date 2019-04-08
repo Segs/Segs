@@ -12,7 +12,7 @@
 #include "Common/Servers/ClientManager.h"
 #include "Servers/ServerEndpoint.h"
 #include "Servers/GameDatabase/GameDBSyncService.h"
-#include "ScriptingEngine.h"
+#include "ScriptingEngine/ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "NpcGenerator.h"
 #include "CritterGenerator.h"
@@ -28,7 +28,7 @@ class SEGSTimer;
 class World;
 class GameDataStore;
 class MapSceneGraph;
-class MapXferData;
+struct MapXferData;
 
 struct LuaTimer
 {
@@ -116,8 +116,6 @@ class ReceiveTaskDetailRequest;
 class SouvenirDetailRequest;
 class StoreSellItem;
 class StoreBuyItem;
-
-
 
 // server<-> server event types
 struct ExpectMapClientRequest;

@@ -38,4 +38,4 @@
 #include "Messages/Map/TimeUpdate.h"
 #include "Messages/Map/TrayAdd.h"
 #include "Messages/Map/Waypoints.h"
-
+#include "Messages/Map/VisitMapCells.h"

@@ -141,23 +141,32 @@ void setBattleCry(Character &c, QString val)
     c.m_char_data.m_battle_cry = val;
 }
 
+void setAFK(Character &c, const bool is_afk, QString msg)
+{
+    c.m_char_data.m_afk = is_afk;
+    if(is_afk)
+        c.m_char_data.m_afk_msg = msg;
+}
+
+void initializeCharacter(Character &c)
+{
+    GameDataStore &data(getGameData());
+    uint entclass = getEntityClassIndex(data, true, c.m_char_data.m_class_name);
+    c.m_char_data.m_current_attribs = data.m_player_classes[entclass].m_AttribBase[0];
+    c.m_char_data.m_current_attribs.m_HitPoints = c.m_max_attribs.m_HitPoints;
+    c.m_char_data.m_current_attribs.m_Endurance = c.m_max_attribs.m_Endurance;
+    c.m_char_data.m_current_attribs.m_Regeneration *=4;     //for some reason the base regen rate is .25
+}
+
 void updateLastOnline(Character &c)
 {
     c.m_char_data.m_last_online = QDateTime::currentDateTime().toString();
 }
 
 // Toggles
-void toggleAFK(Character &c, const bool isTrue, QString msg)
-{
-    c.m_char_data.m_afk = isTrue;
-    //c.m_char_data.m_afk = !c.m_char_data.m_afk;
-    if(c.m_char_data.m_afk)
-        c.m_char_data.m_afk_msg = msg; 
-}
-
 void toggleAFK(Character &c, QString msg)
 {
-    toggleAFK(c, !c.m_char_data.m_afk, msg);
+    setAFK(c, !c.m_char_data.m_afk, msg);
 }
 
 

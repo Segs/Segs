@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "CritterGenerator.h"
 #include "Messages/Map/MessageChannels.h"
 #include "Common/GameData/Clue.h"
 #include "Common/GameData/Contact.h"
@@ -15,13 +16,15 @@
 #include "glm/vec3.hpp"
 #include <vector>
 
+#include "Common/GameData/Powers.h"
+
 class QString;
 class Entity;
 class Character;
 struct Friend;
 struct FriendsList;
 struct MapClientSession;
-struct MapInstance;
+class MapInstance;
 struct CharacterPowerSet;
 struct CharacterPower;
 struct PowerStance;
@@ -39,7 +42,7 @@ enum class ClientStates : uint8_t;
  */
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
-Entity * getEntity(MapInstance *mi, uint32_t idx);
+Entity * getEntity(class MapInstance *mi, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *sess);
 void    positionTest(MapClientSession *tgt);
@@ -66,6 +69,7 @@ void sendClientState(MapClientSession &sess, ClientStates client_state);
 void showMapXferList(MapClientSession &sess, bool has_location, glm::vec3 &location, QString &name);
 void sendFloatingInfo(MapClientSession &sess, QString &msg, FloatingInfoStyle style, float delay);
 void sendFloatingNumbers(MapClientSession &sess, uint32_t tgt_idx, int32_t amount);
+void sendVisitMapCells(MapClientSession &sess, bool is_opaque, std::vector<bool> visible_map_cells);
 void sendLevelUp(MapClientSession &sess);
 void sendEnhanceCombineResponse(MapClientSession &sess, bool success, bool destroy);
 void sendChangeTitle(MapClientSession &sess, bool select_origin);
@@ -74,7 +78,7 @@ void sendFriendsListUpdate(MapClientSession &sess, const FriendsList &friends_li
 void sendSidekickOffer(MapClientSession &sess, uint32_t src_db_id);
 void sendTeamLooking(MapClientSession &sess);
 void sendTeamOffer(MapClientSession &src, MapClientSession &tgt);
-void sendFaceEntity(MapClientSession &src, int32_t tgt_idx);
+void sendFaceEntity(MapClientSession &src, uint32_t tgt_idx);
 void sendFaceLocation(MapClientSession &sess, glm::vec3 &loc);
 void sendDoorMessage(MapClientSession &sess, uint32_t delay_status, QString &msg);
 void sendBrowser(MapClientSession &sess, QString &content);
@@ -109,10 +113,25 @@ void sendMissionObjectiveTimer(MapClientSession &sess, QString &message, float t
  * usePower and increaseLevel here to provide access to
  * both Entity and sendInfoMessage
  */
-void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, int32_t tgt_idx, int32_t tgt_id);
+void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx);
+void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx);
+void doPower(Entity &ent, QueuedPowers powerinput);
+void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx);
+void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time);
+void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower);
+void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float duration, float scale);
+void sendResult(Entity &src,Entity &tgt, QString name, float value);
+void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const &mod, uint32_t entidx);
+void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
+bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
+void grantRewards(class EntityManager &em, Entity &e);
 void increaseLevel(Entity &ent);
-
-
+bool checkPowerTarget(Entity &ent, Entity *target_ent, uint32_t &tgt_idx, Power_Data powtpl);
+bool checkPowerRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx);
+bool checkPowerRange(Entity &ent, Entity &target_ent, float range);
+bool checkPowerRange(Entity &ent, uint32_t tgt_idx, uint32_t pset_idx, uint32_t pow_idx);
+uint32_t toHitLimit(uint32_t value);
+void changeHP(Entity &e, float val);
 /*
  * Lua Functions
  */
@@ -124,7 +143,7 @@ void giveDebt(MapClientSession &sess, int debt);
 void giveEnd(MapClientSession &sess, float end);
 void giveHp(MapClientSession &sess, float hp);
 void giveInsp(MapClientSession &sess, QString &name);
-void giveXp(MapClientSession &sess, int xp);
+void giveXp(MapClientSession &sess, uint32_t xp);
 void giveTempPower(MapClientSession *cl, const char* power);
 void addListOfTasks(MapClientSession *cl, vTaskList task_list);
 void sendUpdateTaskStatusList(MapClientSession &src, Task task);
@@ -135,6 +154,7 @@ void removeTask(MapClientSession &src, Task task);
 void playerTrain (MapClientSession &sess);
 void setTitle (MapClientSession &sess, QString &title);
 void showMapMenu(MapClientSession &sess);
+void setAlignment(Entity &e, QString align);
 void addClue(MapClientSession &cl, Clue clue);
 void removeClue(MapClientSession &cl, Clue clue);
 void addSouvenir(MapClientSession &cl, Souvenir souvenir);
@@ -151,3 +171,4 @@ void addHideAndSeekResult(MapClientSession &cl, int points);
 
 void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
 void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+std::vector<CritterSpawnLocations> getMapEncounters(MapInstance *mi);

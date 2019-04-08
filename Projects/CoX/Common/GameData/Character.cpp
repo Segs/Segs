@@ -638,7 +638,6 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
     {
         qCritical() << e.what();
     }
-
     return true;
 }
 
