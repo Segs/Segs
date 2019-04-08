@@ -1058,7 +1058,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
                        << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
 
     // send levelup pkt to client
-    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
+    sess.m_ent->m_char->m_client_window_state = ClientWindowState::Training; // flag character so we can handle dialog response
     sendLevelUp(sess);
 }
 
