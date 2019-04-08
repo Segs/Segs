@@ -68,8 +68,8 @@ void Settings::setSEGSDir()
         qCDebug(logSettings) << "Root Dir" << curdir.absolutePath();
     }
 
-    if(!fileExists(curdir.absolutePath() + QDir::separator() + "segs_server"))
-        qWarning() << "Cannot find SEGS Server!";
+    if(!curdir.entryList().contains("segs_server", Qt::CaseInsensitive))
+        qWarning() << "Cannot find SEGS Server at" << curdir.absolutePath();
 
     m_segs_dir = curdir.absolutePath();
 }
