@@ -33,11 +33,11 @@ target_link_libraries(dbtool SEGS_Components)
 # dbtool relies on QT more now, so we need these for windows builds
 IF(WIN32)
     include(Windeployqt)
-    windeployqt(SEGSAdmin deploy)
+    windeployqt(dbtool deploy)
 ENDIF()
 if(APPLE)
     include(Macdeployqt)
-    macdeployqt(SEGSAdmin deploy)
+    macdeployqt(dbtool deploy)
 endif()
 
 # Retain directory structure in visual studio
