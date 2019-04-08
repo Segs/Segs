@@ -32,6 +32,10 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
 
     qCDebug(logInput, "Begin ControlStateChange");
 
+    uint16_t control_state_change_id = m_next_state.m_send_id;
+    ControlStateChange control_state_change;
+    control_state_change.first_id = control_state_change_id;
+
     do
     {
         if(bs.GetBits(1))
@@ -48,6 +52,8 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                     m_next_state.m_input_received = true;
 
         m_next_state.m_ms_since_prev = ms_since_prev;
+
+        control_state_change.tick_length_ms += ms_since_prev;
 
         switch(control_id)
         {
@@ -66,6 +72,13 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                 qCDebug(logInput, "svr vs client keypress time: %f %f : %f", 
                         m_next_state.m_svr_keypress_time[control_id].count(),
                         m_next_state.m_keypress_time[control_id], m_next_state.m_ms_since_prev);
+
+                ControlStateChange::KeyChange key_change;
+                key_change.key = control_id;
+                key_change.state = keypress_state;
+                key_change.offset_from_tick_start_ms = ms_since_prev;
+                control_state_change.key_changes.push_back(key_change);
+
                 break;
             }
             case PITCH: // camera pitch (Insert/Delete keybinds)
@@ -112,6 +125,15 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                 else
                     m_next_state.m_velocity_scale = 255;
 
+
+                // end of tick, finish collecting control changes and add to array
+                control_state_change.last_id = control_state_change_id;
+                m_next_state.m_control_state_changes.push_back(control_state_change);
+
+                // clear accumulated control changes ready for the next tick
+                control_state_change = ControlStateChange();
+                control_state_change.first_id = control_state_change_id + 1;
+
                 break;
             }
             case 9:
@@ -134,7 +156,7 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
         }
 
         qCDebug(logInput, "%hu:control_id=%d, state=%hu, %f %d %d",
-                m_next_state.m_send_id,
+                control_state_change_id,
                 (int)control_id,
                 control_id < 6 ? m_next_state.m_control_bits[control_id] : 255,
                 (double)m_next_state.m_ms_since_prev,
@@ -142,9 +164,13 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                 m_next_state.m_time_diff2
                 );
 
+        ++control_state_change_id;
+
     } while(bs.GetBits(1));
 
     qCDebug(logInput, "End ControlStateChange");
+
+    Q_ASSERT(control_id == 8); // I make some assumptions that these can't contain partial tick control state changes
 
     //qCDebug(logInput, "recv control_id 9 %f", m_next_state.m_every_4_ticks);
 }
@@ -175,6 +201,7 @@ void RecvInputState::extended_input(BitStream &bs)
             qCDebug(logInput, "keypress down %d", idx);
         }
     }
+    // todo(jbr) when processing these, just assert these match with what we've got
 
     if(m_next_state.m_control_bits != 0)
             m_next_state.m_input_received = true;

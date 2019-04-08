@@ -26,6 +26,22 @@ enum BinaryControl
 
 extern const char *control_name[];
 
+// todo(jbr) probably more accurate to say this is control state changes for a tick?
+struct ControlStateChange
+{
+    struct KeyChange
+    {
+        int key = 0;
+        int state = 0;
+        uint32_t offset_from_tick_start_ms = 0;
+    };
+
+    uint16_t first_id = 0xffff;
+    uint16_t last_id = 0xffff;
+    uint32_t tick_length_ms = 0;
+    QVector<KeyChange> key_changes;
+};
+
 class TimeState
 {
 public:
@@ -87,6 +103,8 @@ public:
     glm::vec3   m_pos_end               = {0.0f, 0.0f, 0.0f};
     int         m_landing_recovery_time = {0};
 
+    QVector<ControlStateChange> m_control_state_changes;
+
     // Targeting
     bool        m_has_target;
     uint32_t    m_target_idx;
@@ -120,11 +138,15 @@ class StateStorage
 {
 public:
     QVector<InputState> m_inp_states;
-    int m_oldest_unprocessed_input_index = 0;
     // TODO: maybe move these other states here and vectorize StateStorage?
     // std::vector<TimeState>  m_time_states;
     // std::vector<SpeedState>  m_speed_states;
     // std::vector<MotionState>  m_motion_states;
+
+    uint16_t m_current_control_state_change_id = 0;
+
+    bool m_keys[6] = {};
+    uint32_t m_keys_held_time_ms[6] = {};
 
     void init()
     {
@@ -133,6 +155,7 @@ public:
         addNewState(empty_state);
     }
 
+    // todo(jbr) get rid of these
     InputState* current() { return &m_inp_states.back(); }
     const InputState* current() const { return &m_inp_states.back(); }
     InputState* previous()
@@ -149,7 +172,6 @@ public:
 
         return &m_inp_states.back()-1;
     }
-    InputState* getOldestUnprocessedInput();
 
     void addNewState(InputState &new_state);
 };

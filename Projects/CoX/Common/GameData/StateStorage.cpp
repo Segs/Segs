@@ -60,27 +60,15 @@ void TimeState::dump()
     qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
 }
 
-InputState* StateStorage::getOldestUnprocessedInput()
-{
-    if (m_oldest_unprocessed_input_index < m_inp_states.size())
-    {
-        InputState* input = &m_inp_states[m_oldest_unprocessed_input_index];
-        ++m_oldest_unprocessed_input_index;
-        return input;
-    }
-
-    return nullptr;
-}
-
 void StateStorage::addNewState(InputState &new_state)
 {
-    if(m_inp_states.size() < 1)
-        m_inp_states.push_back(new_state);
+    /*if(m_inp_states.size() < 1)
+        m_inp_states.push_back(new_state);*/
 
     //new_state.m_pos_start = m_inp_states.back().m_pos_end;
     //new_state.m_pos_delta = m_inp_states.back().m_pos_end;
 
-    bool update_needed=false;
+    /*bool update_needed=false;
     for(int i=0; i<3; ++i)
     {
         if(!new_state.m_pyr_valid[i])
@@ -91,14 +79,14 @@ void StateStorage::addNewState(InputState &new_state)
     }
 
     if(update_needed)
-        new_state.m_direction = fromCoHYpr(new_state.m_orientation_pyr);
+        new_state.m_direction = fromCoHYpr(new_state.m_orientation_pyr);*/
 
     m_inp_states.push_back(new_state);
     // m_time_states.push_back(new_time_state);
     // m_speed_states.push_back(new_speed_state);
     // m_motion_states.push_back(new_motion_state);
 
-    if(m_inp_states.size() > 30)
+    /*if(m_inp_states.size() > 30)
     {
         m_inp_states.pop_front();
 
@@ -106,7 +94,7 @@ void StateStorage::addNewState(InputState &new_state)
         {
             --m_oldest_unprocessed_input_index;
         }
-    }
+    }*/
 }
 
 //! @}

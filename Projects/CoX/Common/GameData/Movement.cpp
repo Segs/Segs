@@ -221,14 +221,63 @@ void setVelocity(Entity &e) // pmotionSetVel
 
 void processNewInputs(Entity &e)
 {
-    while (InputState* new_input = e.m_states.getOldestUnprocessedInput())
+    StateStorage* input_state = &e.m_states;
+    for (InputState* new_input = input_state->m_inp_states.begin(); new_input != input_state->m_inp_states.end(); ++new_input)
     {
-        new_input->m_pos_start = e.m_entity_data.m_pos;
-
-        if(new_input->m_no_collision)
+        if(new_input->m_no_collision) // todo(jbr) this should be part of the control state change right?
             e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
         else
             e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
+
+        for (ControlStateChange* csc = new_input->m_control_state_changes.begin();
+             csc != new_input->m_control_state_changes.end();
+             ++csc)
+        {
+            if (isControlStateChangeIdNewer(input_state->m_current_control_state_change_id, csc->first_id))
+            {
+                continue;
+            }
+
+            Q_ASSERT(input_state->m_current_control_state_change_id == csc->first_id);
+
+            for (int i = 0; i < 6; ++i)
+            {
+                if (input_state->m_keys[i])
+                {
+                    input_state->m_keys_held_time_ms[i] += csc->tick_length_ms;
+                }
+                else
+                {
+                    input_state->m_keys_held_time_ms[i] = 0;
+                }
+            }
+
+            for (const ControlStateChange::KeyChange& key_change : csc->key_changes)
+            {
+                input_state->m_keys[key_change.key] = key_change.state;
+
+                if (key_change.state)
+                {
+                    // if key is newly down, need to add some key held time
+                    // e.g. if tick is 33 ms and key was pressed at 10ms, then
+                    // need to add 23ms
+                    input_state->m_keys_held_time_ms[key_change.key] += (csc->tick_length_ms - key_change.offset_from_tick_start_ms);
+                }
+                else
+                {
+                    // if key is newly up, it will have had an entire tick of
+                    // time added, so we need to cut some back.
+                    // e.g. if tick is 33 ms and key was released at 13ms, it
+                    // should only have had 13ms added but 33ms will have been
+                    // added, so need to subtract 20
+                    input_state->m_keys_held_time_ms[key_change.key] -= (csc->tick_length_ms - key_change.offset_from_tick_start_ms);
+                }
+            }
+
+            // todo(jbr) do the tick
+
+            input_state->m_current_control_state_change_id = csc->last_id + 1;
+        }
 
         // todo(jbr) set rotation from input
         /*
@@ -239,11 +288,10 @@ void processNewInputs(Entity &e)
         }
          */
 
-        for (int i = 0; i < 6; ++i)
-        {
-
-        }
+        // todo(jbr) check the keypress state at end of packet, make sure all matches up
     }
+
+    input_state->m_inp_states.clear();
 }
 
 void addPosUpdate(Entity &e, const PosUpdate &p)
