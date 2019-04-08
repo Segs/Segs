@@ -17,6 +17,11 @@ IF(WIN32)
     windeployqt(qml_dummy deploy)
 ENDIF()
 
+if(APPLE)
+    include(Macdeployqt)
+    macdeployqt(qml_dummy deploy)
+endif()
+
 # Retain directory structure in visual studio
 get_target_property(TARGET_SOURCES qml_dummy SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES})
