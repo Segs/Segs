@@ -105,21 +105,21 @@ void ScriptingEngine::register_GenericTypes()
     {
         e = getEntity(mi, entityIdx);
         if(e != nullptr)
-           mi->startTimer(entityIdx);
+           mi->startLuaTimer(entityIdx);
     };
 
     m_private->m_lua["MapInstance"]["StopTimer"] = [this](int entityIdx)
     {
         e = getEntity(mi, entityIdx);
         if(e != nullptr)
-            mi->stopTimer(entityIdx);
+            mi->stopLuaTimer(entityIdx);
     };
 
     m_private->m_lua["MapInstance"]["ClearTimer"] = [this](int entityIdx)
     {
         e = getEntity(mi, entityIdx);
         if(e != nullptr)
-            mi->clearTimer(entityIdx);
+            mi->clearLuaTimer(entityIdx);
     };
 
     //MapClientSession

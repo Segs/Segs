@@ -32,7 +32,7 @@ using   vClients = std::vector<SESSION_CLASS *>;
 using   ivClients = typename vClients::iterator;
 using   civClients = typename vClients::const_iterator;
 protected:
-        std::unique_ptr<SEGSTimer> m_session_reaper_timer;
+
 mutable std::mutex m_store_mutex;
         std::mutex m_reaping_mutex;
         struct ExpectClientInfo
@@ -223,10 +223,6 @@ public:
         size_t num_sessions() const
         {
             return m_token_to_session.size();
-        }
-        void create_reaping_timer(EventProcessor *tgt, uint32_t id, ACE_Time_Value interval)
-        {
-            m_session_reaper_timer.reset(new SEGSTimer(tgt, id, interval, false));
         }
         void mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token)
         {

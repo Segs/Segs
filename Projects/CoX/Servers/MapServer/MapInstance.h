@@ -131,20 +131,21 @@ class MapInstance final : public EventProcessor
 {
         using SessionStore = ClientSessionStore<MapClientSession>;
         using ScriptEnginePtr = std::unique_ptr<ScriptingEngine>;
-        QString                m_data_path;
-        QMultiHash<QString, glm::mat4>  m_all_spawners;
-        std::unique_ptr<SEGSTimer> m_world_update_timer;
-        std::unique_ptr<SEGSTimer> m_resend_timer;
-        std::unique_ptr<SEGSTimer> m_link_timer;
-        std::unique_ptr<SEGSTimer> m_sync_service_timer;
-        std::unique_ptr<SEGSTimer> m_afk_update_timer;
-        std::unique_ptr<SEGSTimer> m_lua_timer;
-        World *                 m_world;
-        GameDBSyncService*      m_sync_service;
-        uint32_t                m_owner_id;
-        uint32_t                m_instance_id;
-        uint32_t                m_index = 1; // what does client expect this to store, and where do we send it?
-        uint8_t                 m_game_server_id=255; // 255 is `invalid` id
+        QString                        m_data_path;
+        QMultiHash<QString, glm::mat4> m_all_spawners;
+        uint32_t                       m_world_update_timer;
+        uint32_t                       m_resend_timer;
+        uint32_t                       m_link_timer;
+        uint32_t                       m_sync_service_timer;
+        uint32_t                       m_afk_update_timer;
+        uint32_t                       m_session_reaping_timer;
+        uint32_t                       m_lua_timer_id;
+        World *                        m_world;
+        GameDBSyncService *            m_sync_service;
+        uint32_t                       m_owner_id;
+        uint32_t                       m_instance_id;
+        uint32_t                       m_index          = 1; // what does client expect this to store, and where do we send it?
+        uint8_t                        m_game_server_id = 255; // 255 is `invalid` id
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -189,11 +190,12 @@ public:
 
         void send_player_update(Entity *e);
         void                    add_chat_message(Entity *sender, QString &msg_text);
-        void                    startTimer(uint32_t entity_idx);
-        void                    stopTimer(uint32_t entity_idx);
-        void                    clearTimer(uint32_t entity_idx);
+        void                    startLuaTimer(uint32_t entity_idx);
+        void                    stopLuaTimer(uint32_t entity_idx);
+        void                    clearLuaTimer(uint32_t entity_idx);
 
 protected:
+        void                    startTimers();
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
         void                    serialize_to(std::ostream &is) override;
@@ -224,7 +226,7 @@ protected:
         void on_scene_request(SEGSEvents::SceneRequest *ev);
         void on_entities_request(SEGSEvents::EntitiesRequest *ev);
         void on_create_map_entity(SEGSEvents::NewEntity *ev);
-        void on_timeout(SEGSEvents::Timeout *ev);
+
         void on_input_state(SEGSEvents::RecvInputState *st);
         void on_idle(SEGSEvents::Idle *ev);
         void on_shortcuts_request(SEGSEvents::ShortcutsRequest *ev);

@@ -19,7 +19,7 @@
 #include <map>
 
 class AuthServer;
-class SEGSTimer;
+
 namespace SEGSEvents
 {
 struct RetrieveAccountResponse;
@@ -93,9 +93,6 @@ protected:
     void        serialize_from(std::istream &is) override;
     void        serialize_to(std::ostream &is) override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // internal events
-    void        on_timeout(SEGSEvents::Timeout *ev);
     //////////////////////////////////////////////////////////////////////////
     // Message bus subscriptions
     void        on_server_status_change(SEGSEvents::GameServerStatusMessage *ev);

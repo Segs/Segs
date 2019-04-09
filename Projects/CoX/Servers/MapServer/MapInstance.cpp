@@ -72,17 +72,6 @@ struct EntityIdxCompare;
 
 namespace
 {
-    enum
-    {
-        World_Update_Timer   = 1,
-        State_Transmit_Timer = 2,
-        Session_Reaper_Timer   = 3,
-        Link_Idle_Timer   = 4,
-        Sync_Service_Update_Timer = 5,
-        Afk_Update_Timer = 6,
-        Lua_Timer = 7
-    };
-
     const ACE_Time_Value reaping_interval(0,1000*1000);
     const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
     const ACE_Time_Value link_update_interval(0,500*1000);
@@ -127,11 +116,33 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
 }
+void MapInstance::startTimers()
+{
+    // world simulation ticks
+    m_world_update_timer = addTimer(world_update_interval); //World_Update_Timer
+    startTimer(m_world_update_timer,[this](const ACE_Time_Value &at) {m_world->update(at);});
+    // state broadcast ticks
+    m_resend_timer = addTimer(resend_interval);
+    startTimer(m_resend_timer,&MapInstance::sendState);
+    m_link_timer   = addTimer(link_update_interval);
+    startTimer(m_link_timer, &MapInstance::on_check_links);
+    m_sync_service_timer = addTimer(sync_service_update_interval);
+    startTimer(m_sync_service_timer,&MapInstance::on_update_entities);
+    m_afk_update_timer = addTimer(afk_update_interval);
+    startTimer(m_afk_update_timer,&MapInstance::on_afk_update);
 
+    //Lua timer
+    m_lua_timer_id = addTimer(lua_timer_interval);
+    startTimer(m_lua_timer_id,&MapInstance::on_lua_update);
+
+    // session cleaning
+    m_session_reaping_timer = addTimer(reaping_interval);
+    startTimer(m_session_reaping_timer,&MapInstance::reap_stale_links);
+}
 void MapInstance::start(const QString &scenegraph_path)
 {
-    assert(m_world_update_timer==nullptr);
     assert(m_game_server_id!=255);
+    m_registered_timers.clear();
     m_scripting_interface->registerTypes();
     QFileInfo mapDataDirInfo(m_data_path);
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
@@ -170,19 +181,7 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
-    // world simulation ticks
-    m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, world_update_interval, false);
-    // state broadcast ticks
-    m_resend_timer = std::make_unique<SEGSTimer>(this, State_Transmit_Timer, resend_interval, false);
-    m_link_timer   = std::make_unique<SEGSTimer>(this, Link_Idle_Timer, link_update_interval, false);
-    m_sync_service_timer =
-        std::make_unique<SEGSTimer>(this, Sync_Service_Update_Timer, sync_service_update_interval, false);
-    m_afk_update_timer = std::make_unique<SEGSTimer>(this, Afk_Update_Timer, afk_update_interval, false );
-
-    //Lua timer
-    m_lua_timer = std::make_unique<SEGSTimer>(this, Lua_Timer, lua_timer_interval, false );
-
-    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
+    startTimers();
 }
 
 ///
@@ -362,9 +361,6 @@ void MapInstance::dispatch( Event *ev )
     assert(ev);
     switch(ev->type())
     {
-        case evTimeout:
-            on_timeout(static_cast<Timeout *>(ev));
-            break;
         case evDisconnect:
             on_link_lost(ev);
             break;
@@ -1005,44 +1001,6 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     buildEntityResponse(res,session,EntityUpdateMode::FULL,false);
     session.link()->putq(res);
     m_session_store.add_to_active_sessions(&session);
-}
-
-//! Handle instance-wide timers
-void MapInstance::on_timeout(Timeout *ev)
-{
-    // TODO: This should send 'ping' packets on all client links to which we didn't send
-    // anything in the last time quantum
-    // 1. Find all links that have inactivity_time() > ping_time && <disconnect_time
-    // For each found link
-    //   If there is no ping_pending on this link, add a ping event to queue
-    // 2. Find all links with inactivity_time() >= disconnect_time
-    //   Disconnect given link.
-
-    auto timer_id = ev->timer_id();
-    switch (timer_id)
-    {
-        case World_Update_Timer:
-            m_world->update(ev->arrival_time());
-            break;
-        case State_Transmit_Timer:
-            sendState();
-            break;
-        case Link_Idle_Timer:
-            on_check_links();
-            break;
-        case Session_Reaper_Timer:
-            reap_stale_links();
-            break;
-        case Sync_Service_Update_Timer:
-            on_update_entities();
-            break;
-        case Afk_Update_Timer:
-            on_afk_update();
-            break;
-        case Lua_Timer:
-            on_lua_update();
-            break;
-    }
 }
 
 void MapInstance::sendState()
@@ -2109,7 +2067,7 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
         map_cells->resize(map_cells->size() + (ev->tile_idx - map_cells->size() + 1023) / 1024 * 1024);
     }
 
-    // #818 map_cells of type array with a size of 1024 threw 
+    // #818 map_cells of type array with a size of 1024 threw
     // out of range exception on maps that had index tiles larger than 1024
     map_cells->at(ev->tile_idx) = true;
 
@@ -2158,7 +2116,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     else
     {
         MapXferData &map_data = map_server->session_map_xfer_idx(session.link()->session_token());
-        
+
         if(!m_all_spawners.empty() && m_all_spawners.contains(map_data.m_target_spawn_name))
         {
             setSpawnLocation(*session.m_ent, map_data.m_target_spawn_name);
@@ -2166,7 +2124,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         else
         {
             setPlayerSpawn(*session.m_ent);
-        }        
+        }
 
         // else don't send motd, as this is from a map transfer
         // TODO: check if there's a better place to complete the map transfer..
@@ -2180,7 +2138,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         // TODO: Check map type to determine if is_opaque is true / false
         sendVisitMapCells(session, false, *visible_map_cells);
     }
-    
+
     initializeCharacter(*session.m_ent->m_char);
 
     // Call Lua Connected function.
@@ -2950,25 +2908,24 @@ void MapInstance::on_afk_update()
 
 void MapInstance::on_lua_update()
 {
-    int count = 0;
+    // move all to-remove timers to the end of the m_lua_timers
+    auto first_to_remove=std::partition(m_lua_timers.begin(),m_lua_timers.end(),[](const auto &t) {
+        return !t.m_remove;
+    });
+    // remove all dead timers first
+    if(first_to_remove!=m_lua_timers.end())
+        m_lua_timers.erase(first_to_remove,m_lua_timers.end());
     for(const auto &t: m_lua_timers)
     {
-        if(t.m_remove)
-        {
-            m_lua_timers.erase(m_lua_timers.begin() + count);
-            break;
-        }
-
-        if(t.m_is_enabled && t.m_on_tick_callback != NULL)
+        if(t.m_is_enabled && t.m_on_tick_callback != nullptr)
         {
             m_scripting_interface->updateMapInstance(this);
             int64_t time = getSecsSince2000Epoch();
             int64_t diff = time - t.m_start_time;
             t.m_on_tick_callback(t.m_start_time, diff, time);
         }
-
-        ++count;
     }
+
 }
 
 void MapInstance::on_update_entities()
@@ -3323,7 +3280,7 @@ void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
     process_chat(sender, msg_text);
 }
 
-void MapInstance::startTimer(uint32_t entity_idx)
+void MapInstance::startLuaTimer(uint32_t entity_idx)
 {
     int count = 0;
     bool found = false;
@@ -3343,7 +3300,7 @@ void MapInstance::startTimer(uint32_t entity_idx)
     }
 }
 
-void MapInstance::stopTimer(uint32_t entity_idx)
+void MapInstance::stopLuaTimer(uint32_t entity_idx)
 {
     int count = 0;
     bool found = false;
@@ -3360,7 +3317,7 @@ void MapInstance::stopTimer(uint32_t entity_idx)
         this->m_lua_timers[count].m_is_enabled = false;
 }
 
-void MapInstance::clearTimer(uint32_t entity_idx)
+void MapInstance::clearLuaTimer(uint32_t entity_idx)
 {
     int count = 0;
     bool found = false;

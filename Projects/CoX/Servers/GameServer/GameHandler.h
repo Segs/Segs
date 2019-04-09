@@ -65,10 +65,10 @@ class GameHandler final : public EventProcessor
     using sIds = std::unordered_set<uint32_t>;
     using SessionStore = ClientSessionStore<GameSession>;
 
-    SessionStore m_session_store;
-    std::unique_ptr<SEGSTimer> m_link_checker;
-    std::unique_ptr<SEGSTimer> m_service_status_timer;
-
+    SessionStore    m_session_store;
+    uint32_t        m_link_checker;
+    uint32_t        m_service_status_timer;
+    uint32_t        m_session_reaper_timer;
 public:
                     IMPL_ID(GameHandler)
                     GameHandler();
@@ -102,7 +102,6 @@ protected:
         void        on_check_links();
         void        reap_stale_links();
         void        report_service_status();
-        void        on_timeout(SEGSEvents::Timeout *ev);
 
         void        on_game_db_error(SEGSEvents::GameDbErrorMessage *ev);
         void        on_account_data(SEGSEvents::GameAccountResponse *ev);

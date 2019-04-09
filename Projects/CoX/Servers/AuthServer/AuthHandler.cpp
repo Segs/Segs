@@ -20,7 +20,7 @@
 #include "Servers/InternalEvents.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
-#include "SEGSTimer.h"
+
 #include "TimeEvent.h"
 
 #include <QDebug>
@@ -40,11 +40,6 @@ namespace
     AuthorizationError s_auth_error_locked_account(AUTH_ACCOUNT_BLOCKED);
     AuthorizationError s_auth_error_already_online(AUTH_ALREADY_LOGGEDIN);
 
-    enum
-    {
-        Session_Reaper_Timer   = 1
-    };
-
     const ACE_Time_Value session_reaping_interval(0,1000*1000);
     const ACE_Time_Value link_is_stale_if_disconnected_for(0,2*1000*1000);
 } // namespace
@@ -56,9 +51,6 @@ void AuthHandler::dispatch( Event *ev )
     {
         case evConnect:
             on_connect(static_cast<Connect *>(ev));
-            break;
-        case evTimeout:
-            on_timeout(static_cast<Timeout *>(ev));
             break;
         case evReconnectAttempt:
             qWarning() << "Unhandled reconnect packet??";
@@ -107,19 +99,9 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
 {
     assert(HandlerLocator::getAuth_Handler()==nullptr);
     HandlerLocator::setAuth_Handler(this);
-    m_sessions.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
+    // Note we do not store the created timer's ID anywhere, this is ok as long as we don't need to manipulate the timer
+    startTimer(addTimer(session_reaping_interval), &AuthHandler::reap_stale_links);
     m_message_bus_endpoint.subscribe(evGameServerStatusMessage);
-}
-
-void AuthHandler::on_timeout(Timeout *ev)
-{
-    uint64_t timer_id = ev->timer_id();
-    switch (timer_id)
-    {
-        case Session_Reaper_Timer:
-            reap_stale_links();
-        break;
-    }
 }
 
 void AuthHandler::on_connect( Connect *ev )

@@ -31,11 +31,6 @@ using namespace SEGSEvents;
 
 static const uint32_t supported_version=20040422;
 namespace {
-enum {
-    Link_Idle_Timer   = 1,
-    Session_Reaper_Timer   = 2,
-    Service_Status_Timer = 3,
-};
 const ACE_Time_Value link_update_interval(0,500*1000);
 const ACE_Time_Value service_update_interval(5,0);
 const ACE_Time_Value session_reaping_interval(1,0);
@@ -52,10 +47,24 @@ GameHandler::~GameHandler() = default;
 
 void GameHandler::start()
 {
-    ACE_ASSERT(m_link_checker==nullptr);
-    m_link_checker.reset(new SEGSTimer(this, Link_Idle_Timer,link_update_interval,false));
-    m_service_status_timer.reset(new SEGSTimer(this,Service_Status_Timer,service_update_interval,false));
-    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
+    m_registered_timers.clear(); // remove all timer instances
+
+    // TODO: This should send 'ping' packets on all client links to which we didn't send
+    // anything in the last time quantum
+    // 1. Find all links that have inactivity_time() > ping_time && <disconnect_time
+    // For each found link
+    //   If there is no ping_pending on this link, add a ping event to queue
+    // 2. Find all links with inactivity_time() >= disconnect_time
+    //   Disconnect given link.
+
+    m_link_checker = addTimer(link_update_interval);
+    m_service_status_timer = addTimer(service_update_interval);
+    m_session_reaper_timer = addTimer(session_reaping_interval);
+
+    startTimer(m_link_checker,[this](const ACE_Time_Value &) {on_check_links();});
+    startTimer(m_service_status_timer,[this](const ACE_Time_Value &) {report_service_status();});
+    startTimer(m_session_reaper_timer,[this](const ACE_Time_Value &) {reap_stale_links();});
+    startTimer(m_link_checker,&GameHandler::on_check_links);
 }
 
 void GameHandler::dispatch( Event *ev )
@@ -63,9 +72,6 @@ void GameHandler::dispatch( Event *ev )
     assert(ev);
     switch(ev->type())
     {
-    case evTimeout:
-        on_timeout(static_cast<Timeout *>(ev));
-        break;
     case evDisconnect: // link layer tells us that a link is not responsive/dead
         on_link_lost(ev);
         break;
@@ -233,31 +239,6 @@ void GameHandler::report_service_status()
     postGlobalEvent(new GameServerStatusMessage({m_server->getAddress(),QDateTime::currentDateTime(),
                                                  uint16_t(m_session_store.num_sessions()),
                                                  m_server->getMaxPlayers(),m_server->getId(),true},0));
-}
-
-void GameHandler::on_timeout(Timeout *ev)
-{
-    // TODO: This should send 'ping' packets on all client links to which we didn't send
-    // anything in the last time quantum
-    // 1. Find all links that have inactivity_time() > ping_time && <disconnect_time
-    // For each found link
-    //   If there is no ping_pending on this link, add a ping event to queue
-    // 2. Find all links with inactivity_time() >= disconnect_time
-    //   Disconnect given link.
-
-    intptr_t timer_id = ev->timer_id();
-    switch (timer_id)
-    {
-        case Link_Idle_Timer:
-            on_check_links();
-        break;
-        case Session_Reaper_Timer:
-            reap_stale_links();
-        break;
-        case Service_Status_Timer:
-            report_service_status();
-        break;
-    }
 }
 
 void GameHandler::on_disconnect(DisconnectRequest *ev)
