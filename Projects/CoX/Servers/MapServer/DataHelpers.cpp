@@ -169,7 +169,8 @@ void sendServerMOTD(MapClientSession *tgt)
         QString contents(file.readAll());
         tgt->addCommand<StandardDialogCmd>(contents);
     }
-    else {
+    else
+    {
         QString errormsg = "Failed to load MOTD file. \'" + file.fileName() + "\' not found.";
         qDebug() << errormsg;
         sendInfoMessage(MessageChannel::DEBUG_INFO, errormsg, *tgt);
@@ -471,6 +472,7 @@ void sendBrowser(MapClientSession &sess, QString &content)
 void sendTailorOpen(MapClientSession &sess)
 {
     sess.m_ent->m_rare_update = false;
+    sess.m_ent->m_char->m_client_window_state = ClientWindowState::Tailor;
     qCDebug(logTailor) << QString("Sending TailorOpen");
     sess.addCommand<TailorOpen>();
 }
@@ -1007,7 +1009,7 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
 
     if(powtpl.pAttribMod.empty())                                       //give the power an effect to either heal or hurt
     {
-        GameDataStore &data(getGameData());
+        //GameDataStore &data(getGameData());
         StoredAttribMod temp;
         temp.Scale = (powtpl.RechargeTime +  powtpl.TimeToActivate)/5;  //this is an aproximation of what the damage scales should be
         if(validTarget(*target_ent, ent, StoredEntEnum::Enemy))         //assume it is a damaging power
@@ -1203,7 +1205,7 @@ void increaseLevel(Entity &ent)
     setLevel(*ent.m_char, getLevel(*ent.m_char)+1);
     // increase security level every time we visit a trainer and level up
     ++ent.m_char->m_char_data.m_security_threat;
-    ent.m_char->m_in_training = false; // we're done training
+    ent.m_char->m_client_window_state = ClientWindowState::None; // we're done training
 
     QString contents = FloatingInfoMsg.find(FloatingMsg_Leveled).value();
     sendFloatingInfo(*ent.m_client, contents, FloatingInfoStyle::FloatingInfo_Attention, 4.0);
@@ -1578,7 +1580,7 @@ void playerTrain(MapClientSession &sess)
                        << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
 
     // send levelup pkt to client
-    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
+    sess.m_ent->m_char->m_client_window_state = ClientWindowState::Training; // flag character so we can handle dialog response
     sendContactDialogClose(sess);
     sendLevelUp(sess);
 }
@@ -2002,7 +2004,7 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
 }
 
 
-void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank)
+void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int /*f_rank*/)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);

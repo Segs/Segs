@@ -1058,7 +1058,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
                        << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
 
     // send levelup pkt to client
-    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
+    sess.m_ent->m_char->m_client_window_state = ClientWindowState::Training; // flag character so we can handle dialog response
     sendLevelUp(sess);
 }
 
@@ -1544,8 +1544,8 @@ void cmdHandler_WhoAll(const QString &/*cmd*/, MapClientSession &sess)
     {
         Character &c(*cl->m_ent->m_char);
         QString    name      = cl->m_ent->name();
-        QString    lvl       = QString::number(getLevel(c));
-        QString    clvl      = QString::number(getCombatLevel(c));
+        QString    lvl       = QString::number(getLevel(c)+1);         //+1 as the server stores these values
+        QString    clvl      = QString::number(getCombatLevel(c)+1);  //with a 0 index, issue #831
         QString    origin    = getOrigin(c);
         QString    archetype = QString(getClass(c)).remove("Class_");
 

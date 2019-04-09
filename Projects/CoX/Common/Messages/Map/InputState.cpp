@@ -43,7 +43,7 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
             ms_since_prev = bs.GetBits(m_next_state.m_csc_deltabits);
 
         if(control_id < 8)
-                    m_next_state.m_input_received = true;
+            m_next_state.m_input_received = true;
 
         m_next_state.m_ms_since_prev = ms_since_prev;
 
@@ -157,14 +157,12 @@ void RecvInputState::extended_input(BitStream &bs)
         m_next_state.m_control_bits[idx] = keypress_state;
         if(keypress_state==true)
         {
+            m_next_state.m_input_received = true; // set to true so autoafk doesn't toggle
             m_next_state.m_keypress_start[idx] = std::chrono::steady_clock::now();
             processDirectionControl(&m_next_state, idx, 0, keypress_state);
             qCDebug(logInput, "keypress down %d", idx);
         }
     }
-
-    if(m_next_state.m_control_bits != 0)
-            m_next_state.m_input_received = true;
 
     if(bs.GetBits(1)) //if( abs(s_prevTime - ms_time) < 1000 )
     {
