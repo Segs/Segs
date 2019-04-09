@@ -61,10 +61,9 @@ void GameHandler::start()
     m_service_status_timer = addTimer(service_update_interval);
     m_session_reaper_timer = addTimer(session_reaping_interval);
 
-    startTimer(m_link_checker,[this](const ACE_Time_Value &) {on_check_links();});
+    startTimer(m_link_checker,&GameHandler::on_check_links);
     startTimer(m_service_status_timer,[this](const ACE_Time_Value &) {report_service_status();});
     startTimer(m_session_reaper_timer,[this](const ACE_Time_Value &) {reap_stale_links();});
-    startTimer(m_link_checker,&GameHandler::on_check_links);
 }
 
 void GameHandler::dispatch( Event *ev )

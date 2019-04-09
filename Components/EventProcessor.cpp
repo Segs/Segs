@@ -125,7 +125,9 @@ uint32_t EventProcessor::addTimer(const ACE_Time_Value &fire_delta_time,bool one
 uint32_t EventProcessor::startTimer(uint32_t id, std::function<void (const ACE_Time_Value &)> cb)
 {
     assert(m_registered_timers.find(id)!=m_registered_timers.end());
-    m_registered_timers[id]->start(cb);
+    SEGSTimer &tmr(*m_registered_timers[id]);
+    tmr.setTarget(this);
+    tmr.start(cb);
     return id;
 }
 /**
