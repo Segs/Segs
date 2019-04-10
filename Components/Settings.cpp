@@ -19,10 +19,10 @@
 #include <QDir>
 #include <QRegularExpression>
 
-QString Settings::m_segs_dir;
-QString Settings::m_settings_path = QStringLiteral("settings.cfg"); // default path 'settings.cfg' from args
-QString Settings::m_default_tpl_dir = QStringLiteral("default_setup"); // default folder 'default_setup'
-QString Settings::m_default_settings_path = Settings::m_default_tpl_dir + QDir::separator() + QStringLiteral("settings_template.cfg"); // default template from folder 'default_setup'
+QString Settings::s_segs_dir;
+QString Settings::s_settings_path = QStringLiteral("settings.cfg"); // default path 'settings.cfg' from args
+QString Settings::s_default_tpl_dir = QStringLiteral("default_setup"); // default folder 'default_setup'
+QString Settings::s_default_settings_path = Settings::s_default_tpl_dir + QDir::separator() + QStringLiteral("settings_template.cfg"); // default template from folder 'default_setup'
 
 bool fileExists(const QString &path)
 {
@@ -37,21 +37,21 @@ Settings::Settings()
         createSettingsFile();
 }
 
-void Settings::setSettingsPath(const QString path)
+void Settings::setSettingsPath(const QString &path)
 {
     if(path.isEmpty())
         qCritical() << "Settings path not defined? This is unpossible!";
 
-    m_settings_path = getSEGSDir() + QDir::separator() + path;
-    qCDebug(logSettings) << "Settings Path" << m_settings_path;
+    s_settings_path = getSEGSDir() + QDir::separator() + path;
+    qCDebug(logSettings) << "Settings Path" << s_settings_path;
 }
 
 QString Settings::getSettingsPath()
 {
-    if(m_settings_path.isEmpty())
+    if(s_settings_path.isEmpty())
         setSettingsPath("settings.cfg"); // set default path to "settings.cfg"
 
-    return m_settings_path;
+    return s_settings_path;
 }
 
 void Settings::setSEGSDir()
@@ -72,34 +72,34 @@ void Settings::setSEGSDir()
     if(-1 == curdir.entryList().indexOf(QRegularExpression("segs_server.*")))
         qWarning() << "Cannot find SEGS Server at" << curdir.absolutePath();
 
-    m_segs_dir = curdir.absolutePath();
+    s_segs_dir = curdir.absolutePath();
 }
 
 QString Settings::getSEGSDir()
 {
     // if m_segs_dir is not empty, we've set it, return that instead
-    if(m_segs_dir.isEmpty())
+    if(s_segs_dir.isEmpty())
         setSEGSDir();
 
-    return m_segs_dir;
+    return s_segs_dir;
 }
 
 QString Settings::getSettingsTplPath()
 {
     QDir curdir(getSEGSDir()); // Get the SEGS working directory
-    if(!fileExists(curdir.absolutePath() + QDir::separator() + m_default_settings_path))
-        qWarning() << "Cannot find" << m_default_settings_path;
+    if(!fileExists(curdir.absolutePath() + QDir::separator() + s_default_settings_path))
+        qWarning() << "Cannot find" << s_default_settings_path;
 
-    return curdir.absolutePath() + QDir::separator() + m_default_settings_path;
+    return curdir.absolutePath() + QDir::separator() + s_default_settings_path;
 }
 
 QString Settings::getTemplateDirPath()
 {
     QDir curdir(getSEGSDir()); // Get the SEGS working directory
-    if(!QDir(curdir.absolutePath() + QDir::separator() + m_default_tpl_dir).exists())
-        qWarning() << "Cannot find directory" << m_default_tpl_dir;
+    if(!QDir(curdir.absolutePath() + QDir::separator() + s_default_tpl_dir).exists())
+        qWarning() << "Cannot find directory" << s_default_tpl_dir;
 
-    return curdir.absolutePath() + QDir::separator() + m_default_tpl_dir;
+    return curdir.absolutePath() + QDir::separator() + s_default_tpl_dir;
 }
 
 void Settings::createSettingsFile()

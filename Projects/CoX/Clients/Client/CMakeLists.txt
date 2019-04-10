@@ -15,12 +15,10 @@ install(TARGETS qml_dummy
 IF(WIN32)
     include(Windeployqt)
     windeployqt(qml_dummy deploy)
-ENDIF()
-
-if(APPLE)
+ELSEIF(APPLE)
     include(Macdeployqt)
     macdeployqt(qml_dummy deploy)
-endif()
+ENDIF()
 
 # Retain directory structure in visual studio
 get_target_property(TARGET_SOURCES qml_dummy SOURCES)

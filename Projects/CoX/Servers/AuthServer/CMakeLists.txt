@@ -59,11 +59,10 @@ ENDIF(BUILD_SEPARATE)
 IF(WIN32)
     include(Windeployqt)
     windeployqt(segs_server deploy)
-ENDIF()
-if(APPLE)
+ELSEIF(APPLE)
     include(Macdeployqt)
     macdeployqt(segs_server deploy)
-endif()
+ENDIF()
 
 # Retain directory structure in visual studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${target_CPP} ${target_INCLUDE} ${authserver_standaloneSRCS}) 

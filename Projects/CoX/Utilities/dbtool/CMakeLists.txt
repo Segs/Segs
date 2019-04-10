@@ -34,11 +34,10 @@ target_link_libraries(dbtool SEGS_Components)
 IF(WIN32)
     include(Windeployqt)
     windeployqt(dbtool deploy)
-ENDIF()
-if(APPLE)
+ELSEIF(APPLE)
     include(Macdeployqt)
     macdeployqt(dbtool deploy)
-endif()
+ENDIF()
 
 # Retain directory structure in visual studio
 get_target_property(TARGET_SOURCES dbtool SOURCES) 

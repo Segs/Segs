@@ -50,11 +50,10 @@ target_link_libraries(SEGSAdmin PUBLIC SEGS_Components Qt5::Core Qt5::Widgets Qt
 IF(WIN32)
     include(Windeployqt)
     windeployqt(SEGSAdmin deploy)
-ENDIF()
-if(APPLE)
+ELSEIF(APPLE)
     include(Macdeployqt)
     macdeployqt(SEGSAdmin deploy)
-endif()
+ENDIF()
 
 # Retain directory structure in visual studio
 get_target_property(TARGET_SOURCES SEGSAdmin SOURCES) 

@@ -12,7 +12,7 @@
 class Settings
 {
 public:
-    static void         setSettingsPath(const QString path);
+    static void         setSettingsPath(const QString &path);
     static QString      getSettingsPath();
     static void         setSEGSDir();
     static QString      getSEGSDir();
@@ -25,10 +25,10 @@ private:
     Settings(Settings const&);
     Settings& operator=(Settings const&);
 
-    static QString      m_segs_dir;
-    static QString      m_settings_path;
-    static QString      m_default_tpl_dir;
-    static QString      m_default_settings_path;
+    static QString      s_segs_dir;
+    static QString      s_settings_path;
+    static QString      s_default_tpl_dir;
+    static QString      s_default_settings_path;
 };
 
 void settingsDump();
