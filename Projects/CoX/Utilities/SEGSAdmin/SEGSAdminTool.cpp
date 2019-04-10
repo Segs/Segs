@@ -22,7 +22,10 @@
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
 #include "SelectScriptDialog.h"
+
+#include "Settings.h"
 #include "Version.h"
+
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -147,9 +150,9 @@ void SEGSAdminTool::commit_user(QString username, QString password, QString accl
     ui->createUser->setText("Please Wait...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
+    QString program = "utilities/dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
     #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
-    program.prepend("./");
+        program.prepend("./");
     #endif
     m_createUser = new QProcess(this);
     m_createUser->start(program);
@@ -195,8 +198,11 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
-    QFileInfo file1("segs");
-    QFileInfo file2("segs_game");
+
+    QSettings config(Settings::getSettingsPath(), QSettings::IniFormat, nullptr);
+
+    QFileInfo file1(config.value(QStringLiteral("AdminServer/AccountDatabase/db_name"), "segs.db").toString());
+    QFileInfo file2(config.value(QStringLiteral("AdminServer/CharacterDatabase/db_name"), "segs_game.db").toString());
     if(on_startup) // Runs this check on startup or for checking creation in other methods
     {
         if(file1.exists() && file2.exists())
@@ -226,7 +232,8 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
             db_overwrite_msgBox.setDefaultButton(QMessageBox::No);
             db_overwrite_msgBox.setIcon(QMessageBox::Warning);
             int confirm = db_overwrite_msgBox.exec();
-            switch (confirm) {
+            switch (confirm)
+            {
             case QMessageBox::Yes:
                 SEGSAdminTool::create_databases(true);
                 break;
@@ -252,7 +259,7 @@ void SEGSAdminTool::create_databases(bool overwrite)
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "dbtool create";
+    QString program = "utilities/dbtool create";
     if(overwrite)
     {
         program.append(" -f");
@@ -419,7 +426,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     // Load settings.cfg if exists
     ui->output->appendPlainText("Checking for existing configuration file...");
-    QFileInfo config_file("settings.cfg");
+    QFileInfo config_file(Settings::getSettingsPath());
     if(config_file.exists())
     {
         QString config_file_path = config_file.absoluteFilePath();
@@ -447,31 +454,30 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
 
 void SEGSAdminTool::check_config_version(QString filePath)
 {
-    
     ui->output->appendPlainText("Checking configuration version...");
-    
+
     QSettings config_file(filePath, QSettings::IniFormat);
     config_file.beginGroup("MetaData");
     int config_version = config_file.value("config_version","").toInt();
     config_file.endGroup();
-     
+
     if (config_version != VersionInfo::getConfigVersion())
     {
         ui->output->appendPlainText("WARNING: Configuration file version incorrect or missing. Prompting for recreation");
         QMessageBox::StandardButton ask_recreate_config = QMessageBox::warning(this,
-                    "Config File Version Incorrect", "Your settings.cfg may be out of date. Do you want to to recreate?" 
+                    "Config File Version Incorrect", "Your settings.cfg may be out of date. Do you want to to recreate?"
                     "\n\nWARNING: All settings will be overwritten",
                     QMessageBox::Yes | QMessageBox::No);
-        
-        if(ask_recreate_config == QMessageBox::Yes) 
+
+        if(ask_recreate_config == QMessageBox::Yes)
         {
             ui->output->appendPlainText("Recreating settings.cfg");
             emit recreateConfig();
         }
-        else 
+        else
         {
             ui->output->appendPlainText("Not Recreating settings.cfg");
-        }        
+        }
     }
     else
     {
@@ -519,5 +525,5 @@ void SEGSAdminTool::read_release_info(const QString &error)
     }
 
 }
-//!@}
 
+//!@}

@@ -14,6 +14,8 @@
 #include "ui_SettingsDialog.h"
 #include "GetIPDialog.h"
 #include "Globals.h"
+#include "Settings.h"
+
 #include <QSettings>
 #include <QMessageBox>
 #include <QFileInfo>
@@ -90,7 +92,7 @@ void SettingsDialog::xp_mod_checkbox_validator()
 
 void SettingsDialog::open_settings_dialog()
 {
-    QFileInfo config_file("settings.cfg");
+    QFileInfo config_file(Settings::getSettingsPath());
     QString config_file_path = config_file.absoluteFilePath();
     SettingsDialog::read_config_file(config_file_path);
     QList<QLineEdit *> all_line_edits = ui->tabWidget->findChildren<QLineEdit *>();
@@ -111,8 +113,8 @@ void SettingsDialog::read_config_file(QString filePath)
     config_file.beginGroup("MetaData");
     QString config_version = config_file.value("config_version","").toString();
     ui->config_version_data_label->setText(config_version);
-    config_file.endGroup(); // MetaData   
-    
+    config_file.endGroup(); // MetaData
+
     config_file.beginGroup("AdminServer");
     config_file.beginGroup("AccountDatabase");
     QString acc_db_driver = config_file.value("db_driver","").toString();
@@ -167,7 +169,7 @@ void SettingsDialog::read_config_file(QString filePath)
     QString map_loc_addr = config_file.value("location_addr","").toString();
     QStringList map_loc_addr_portip = map_loc_addr.split(':');
     int map_loc_addr_port = map_loc_addr_portip[1].toInt();
-    QString maps_loc = config_file.value("maps","DefaultMapInstances").toString();
+    QString maps_loc = config_file.value("maps","maps").toString();
     float player_fade_in = config_file.value("player_fade_in", "").toFloat();
     float motd_timer = config_file.value("motd_timer", "").toFloat();
     ui->map_listen_ip->setText(map_listen_addr_portip[0]);
@@ -177,7 +179,7 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->map_location->setText(maps_loc);
     ui->map_player_fade_in->setValue(player_fade_in);
     ui->map_motd_timer->setValue(motd_timer);
-    ui->costume_slot_unlocks_edit->setText(QString(config_file.value("costume_slot_unlocks", "").toString()));
+    ui->costume_slot_unlocks_edit->setText(config_file.value("costume_slot_unlocks", "").toString());
     config_file.endGroup(); // MapServer
 
     config_file.beginGroup("AFKSettings");
@@ -231,8 +233,8 @@ void SettingsDialog::read_config_file(QString filePath)
 
 void SettingsDialog::generate_default_config_file(QString ip)
 {
-    QSettings config_file_write("settings.cfg", QSettings::IniFormat);
-    QSettings settings_template("settings_template.cfg", QSettings::IniFormat);
+    QSettings config_file_write(Settings::getSettingsPath(), QSettings::IniFormat);
+    QSettings settings_template(Settings::getSettingsTplPath(), QSettings::IniFormat);
     config_file_write.beginGroup("MetaData");
     config_file_write.setValue("config_version", settings_template.value("MetaData/config_version","1").toString());
     config_file_write.endGroup(); // MetaData
@@ -242,7 +244,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.setValue("db_driver","QSQLITE");
     config_file_write.setValue("db_host","127.0.0.1");
     config_file_write.setValue("db_port","5432");
-    config_file_write.setValue("db_name","segs");
+    config_file_write.setValue("db_name","segs.db");
     config_file_write.setValue("db_user","segsadmin");
     config_file_write.setValue("db_pass","segs123");
     config_file_write.endGroup(); // AccountDatabase
@@ -251,7 +253,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.setValue("db_driver","QSQLITE");
     config_file_write.setValue("db_host","127.0.0.1");
     config_file_write.setValue("db_port","5432");
-    config_file_write.setValue("db_name","segs_game");
+    config_file_write.setValue("db_name","segs_game.db");
     config_file_write.setValue("db_user","segsadmin");
     config_file_write.setValue("db_pass","segs123");
     config_file_write.endGroup(); // CharacterDatabase
@@ -271,7 +273,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
     config_file_write.beginGroup("MapServer");
     config_file_write.setValue("listen_addr",ip+":7003");
     config_file_write.setValue("location_addr",ip+":7003");
-    config_file_write.setValue("maps","DefaultMapInstances");
+    config_file_write.setValue("maps","maps");
     config_file_write.setValue("player_fade_in", "380.0");
     config_file_write.setValue("costume_slot_unlocks", "19,29,39,49");
     config_file_write.endGroup(); // MapServer
@@ -317,7 +319,7 @@ void SettingsDialog::generate_default_config_file(QString ip)
 
 void SettingsDialog::save_changes_config_file()
 {
-    QSettings config_file_write("settings.cfg", QSettings::IniFormat);
+    QSettings config_file_write(Settings::getSettingsPath(), QSettings::IniFormat);
     config_file_write.beginGroup("AdminServer");
     config_file_write.beginGroup("AccountDatabase");
     config_file_write.setValue("db_driver",ui->acc_dbdriver->currentText());
@@ -419,7 +421,7 @@ void SettingsDialog::set_default_values()
     ui->map_listen_port->setValue(7003);
     ui->map_location_ip->setText("127.0.0.1");
     ui->map_location_port->setValue(7003);
-    ui->map_location->setText("DefaultMapInstances");
+    ui->map_location->setText("maps");
     ui->map_player_fade_in->setValue(380.0);
     ui->map_motd_timer->setValue(3600.0);
     ui->time_to_afk_spin->setValue(300);
@@ -459,10 +461,10 @@ void SettingsDialog::field_validator()
         }
     }
 
-    if (validation_error_text.isEmpty() && ui->xp_mod_check->isChecked()) 
+    if (validation_error_text.isEmpty() && ui->xp_mod_check->isChecked())
     {
         qint64 xp_mod_date_diff = ui->xp_mod_startdate_edit->dateTime().msecsTo(ui->xp_mod_enddate_edit->dateTime());
-        if (xp_mod_date_diff < 0) 
+        if (xp_mod_date_diff < 0)
         {
             ui->xp_mod_startdate_edit->setStyleSheet(error_style_sheet);
             ui->xp_mod_enddate_edit->setStyleSheet(error_style_sheet);
