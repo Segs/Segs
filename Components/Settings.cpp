@@ -180,6 +180,7 @@ void Settings::setDefaultSettings()
         config.setValue("log_scripts","false");
         config.setValue("log_scenegraph","false");
         config.setValue("log_tasks","false");
+        config.setValue("log_connection","false");
     config.endGroup();
     config.beginGroup("Modifiers");
         config.setValue("uses_xp_mod", "false");

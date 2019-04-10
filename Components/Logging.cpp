@@ -55,6 +55,7 @@ SEGS_LOGGING_CATEGORY(logStores,       "log.stores")
 SEGS_LOGGING_CATEGORY(logTasks,        "log.tasks")
 SEGS_LOGGING_CATEGORY(logRPC,          "log.rpc")
 SEGS_LOGGING_CATEGORY(logAFK,          "log.afk")
+SEGS_LOGGING_CATEGORY(logConnection,   "log.connection")
 
 void setLoggingFilter()
 {
@@ -97,6 +98,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.tasks="          + config.value("log_tasks","false").toString();
     filter_rules += "\nlog.rpc="            + config.value("log_rpc","false").toString();
     filter_rules += "\nlog.afk="            + config.value("log_afk","false").toString();
+    filter_rules += "\nlog.connection="     + config.value("log_connection","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -181,6 +183,8 @@ void toggleLogging(QString &category)
         cat = &logRPC();
     else if(category.contains("afk",Qt::CaseInsensitive))
         cat = &logAFK();
+    else if(category.contains("connection",Qt::CaseInsensitive))
+        cat = &logConnection();
     else
         return;
 
@@ -230,6 +234,7 @@ void dumpLogging()
     output += "\n\t tasks: "        + QString::number(logTasks().isDebugEnabled());
     output += "\n\t rpc: "          + QString::number(logRPC().isDebugEnabled());
     output += "\n\t afk: "          + QString::number(logAFK().isDebugEnabled());
+    output += "\n\t connection: "   + QString::number(logConnection().isDebugEnabled());
 
     qDebug().noquote() << output;
 }
