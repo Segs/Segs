@@ -154,7 +154,7 @@ public:
     {
         InputState empty_state;
         // Fill with empty state for previous()
-        addNewState(empty_state);
+        addNewState(empty_state); // todo(jbr)
     }
 
     // todo(jbr) get rid of these

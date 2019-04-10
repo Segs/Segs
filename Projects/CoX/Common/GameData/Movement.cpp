@@ -36,6 +36,15 @@ static const int s_reverse_control_dir[6] = {
     BinaryControl::DOWN,
     BinaryControl::UP,
 };
+static const char* s_key_name[6] =
+{
+    "BACKWARD",
+    "FORWARD",
+    "RIGHT",
+    "LEFT",
+    "DOWN",
+    "UP",
+};
 
 SurfaceParams g_world_surf_params[2] = {
     // traction, friction, bounce, gravity, max_speed
@@ -274,9 +283,12 @@ void processNewInputs(Entity &e)
                 }
             }
 
-            if (input_state->m_key_press_time_ms[0])
+            for (int i = 0; i < 6; ++i)
             {
-                qCDebug(logMovement, "%sFORWARD (%dms)", input_state->m_keys[0] ? "+" : "-", input_state->m_key_press_time_ms[0]);
+                if (input_state->m_key_press_time_ms[i])
+                {
+                    qCDebug(logMovement, "%s%s (%dms)", s_key_name[i], input_state->m_keys[i] ? "+" : "-", input_state->m_key_press_time_ms[i]);
+                }
             }
 
             // todo(jbr) do the tick
@@ -317,28 +329,59 @@ void processNewInputs(Entity &e)
                 }
             }
 
-            glm::vec3 vel(0.0f, 0.0f, 0.0f);
-            vel.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
+            qCDebug(logMovement, "pos: (%f, %f, %f)",
+                    e.m_entity_data.m_pos.x,
+                    e.m_entity_data.m_pos.y,
+                    e.m_entity_data.m_pos.z);
+
+            glm::vec3 local_input_velocity(0.0f, 0.0f, 0.0f);
+            local_input_velocity.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
             //vel.y = control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN];
-            vel.y = 0.0f;
-            vel.z = control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD];
+            local_input_velocity.y = 0.0f;
+            local_input_velocity.z = control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD];
             //vel.x = vel.x * optrel_speeds->speed.x;
             //vel.y = vel.y * optrel_speeds->speed.y;
-            glm::vec3 vel_xz = vel;
-            vel_xz.y = 0.0f;
+            glm::vec3 local_input_velocity_xz = local_input_velocity;
+            local_input_velocity_xz.y = 0.0f;
 
             //if (vel.z < 0.0f)
             //    vel_scale_copy = vel_scale_copy * optrel_speeds->speed_back;
             //if (optrel_speeds->stunned)
             //    vel_scale_copy = vel_scale_copy * 0.1f;
-            vel_xz = glm::normalize(vel_xz);
+            if (glm::length2(local_input_velocity_xz) > glm::epsilon<float>())
+            {
+                local_input_velocity_xz = glm::normalize(local_input_velocity_xz);
+            }
             //if (controls->speed_scale_F0 != 0.0f)
             //    vel_scale_copy = vel_scale_copy * controls->speed_scale_F0;
             //controls->field_100 = vel_scale_copy;
-            vel.x = vel_xz.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
-            vel.z = vel_xz.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
+            local_input_velocity.x = local_input_velocity_xz.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
+            local_input_velocity.z = local_input_velocity_xz.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
 
-            qCDebug(logMovement, "local_input_vel: (%f, %f, %f)", vel.x, vel.y, vel.z);
+            qCDebug(logMovement, "local_input_vel: (%f, %f, %f)", local_input_velocity.x, local_input_velocity.y, local_input_velocity.z);
+
+            glm::vec3 input_velocity = e.m_direction * local_input_velocity;
+
+            qCDebug(logMovement, "input_vel: (%f, %f, %f)", input_velocity.x, input_velocity.y, input_velocity.z);
+
+            float timestep = 1.0f; // todo(jbr) can this change?
+            e.m_motion_state.m_move_time += timestep;
+            float time_scale = (e.m_motion_state.m_move_time + 6.0f) / 6.0f;
+            time_scale = std::min(time_scale, 50.0f);
+
+            e.m_entity_data.m_pos += time_scale * timestep * input_velocity;
+
+            if (glm::length2(local_input_velocity) < glm::epsilon<float>())
+            {
+                e.m_motion_state.m_move_time = 0.0f;
+            }
+
+            qCDebug(logMovement, "move_time: %f", e.m_motion_state.m_move_time);
+
+            qCDebug(logMovement, "newpos: (%f, %f, %f)",
+                    e.m_entity_data.m_pos.x,
+                    e.m_entity_data.m_pos.y,
+                    e.m_entity_data.m_pos.z);
 
             input_state->m_current_control_state_change_id = csc->last_id + 1;
         }

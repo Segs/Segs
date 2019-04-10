@@ -424,7 +424,8 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 
     e.m_states.init(); // Initialize movement input state pointers
-    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
+    //e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
+    // todo(jbr)
 
     PosUpdate p;
     for(int i = 0; i<64; i++)
@@ -479,7 +480,8 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 
     e.m_states.init(); // Initialize movement input state pointers
-    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
+    //e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
+    // todo(jbr)
 
     PosUpdate p;
     for(int i = 0; i<64; i++)
