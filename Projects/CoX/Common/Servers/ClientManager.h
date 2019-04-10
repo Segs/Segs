@@ -10,6 +10,7 @@
 #include "InternalEvents.h"
 #include "SEGSEvent.h"
 #include "SEGSTimer.h"
+#include "Logging.h"
 
 #include <ace/OS_NS_time.h>
 
@@ -54,6 +55,7 @@ mutable std::mutex m_store_mutex;
         std::unordered_map<uint32_t,uint64_t> m_id_to_token;
         std::vector<ExpectClientInfo> m_session_expecting_clients;
         std::vector<WaitingSession> m_session_ready_for_reaping;
+        std::unordered_map<intptr_t,QString> reaped_link_reason;
         vClients m_active_sessions;
         uint32_t create_cookie(const ACE_INET_Addr &from,uint64_t id)
         {
@@ -266,7 +268,7 @@ public:
                     continue;
                 if(waiting_session.m_session->link() == nullptr || waiting_session.m_session->is_temporary() ) // trully disconnected
                 {
-                    qDebug() << name << "Reaping stale link" << intptr_t(waiting_session.m_session);
+                    qCDebug(logConnection) << name << "Reaping stale link" << intptr_t(waiting_session.m_session);
                     reap_callback(waiting_session.m_session_token);
                     if(waiting_session.m_session->link()) // it's a temporary session
                     {
