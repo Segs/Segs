@@ -17,6 +17,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QDir>
+#include <QRegularExpression>
 
 QString Settings::m_segs_dir;
 QString Settings::m_settings_path = QStringLiteral("settings.cfg"); // default path 'settings.cfg' from args
@@ -68,7 +69,7 @@ void Settings::setSEGSDir()
         qCDebug(logSettings) << "Root Dir" << curdir.absolutePath();
     }
 
-    if(!curdir.entryList().contains("segs_server", Qt::CaseInsensitive))
+    if(-1 == curdir.entryList().indexOf(QRegularExpression("segs_server.*")))
         qWarning() << "Cannot find SEGS Server at" << curdir.absolutePath();
 
     m_segs_dir = curdir.absolutePath();
