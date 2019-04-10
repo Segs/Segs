@@ -244,11 +244,11 @@ void processNewInputs(Entity &e)
             {
                 if (input_state->m_keys[i])
                 {
-                    input_state->m_keys_held_time_ms[i] += csc->tick_length_ms;
+                    input_state->m_key_press_time_ms[i] += csc->tick_length_ms;
                 }
                 else
                 {
-                    input_state->m_keys_held_time_ms[i] = 0;
+                    input_state->m_key_press_time_ms[i] = 0;
                 }
             }
 
@@ -261,7 +261,7 @@ void processNewInputs(Entity &e)
                     // if key is newly down, need to add some key held time
                     // e.g. if tick is 33 ms and key was pressed at 10ms, then
                     // need to add 23ms
-                    input_state->m_keys_held_time_ms[key_change.key] += (csc->tick_length_ms - key_change.offset_from_tick_start_ms);
+                    input_state->m_key_press_time_ms[key_change.key] += (csc->tick_length_ms - key_change.offset_from_tick_start_ms);
                 }
                 else
                 {
@@ -270,16 +270,75 @@ void processNewInputs(Entity &e)
                     // e.g. if tick is 33 ms and key was released at 13ms, it
                     // should only have had 13ms added but 33ms will have been
                     // added, so need to subtract 20
-                    input_state->m_keys_held_time_ms[key_change.key] -= (csc->tick_length_ms - key_change.offset_from_tick_start_ms);
+                    input_state->m_key_press_time_ms[key_change.key] -= (csc->tick_length_ms - key_change.offset_from_tick_start_ms);
                 }
             }
 
-            if (input_state->m_keys_held_time_ms[0])
+            if (input_state->m_key_press_time_ms[0])
             {
-                qCDebug(logMovement, "%sFORWARD (%dms)", input_state->m_keys[0] ? "+" : "-", input_state->m_keys_held_time_ms[0]);
+                qCDebug(logMovement, "%sFORWARD (%dms)", input_state->m_keys[0] ? "+" : "-", input_state->m_key_press_time_ms[0]);
             }
 
             // todo(jbr) do the tick
+
+            float control_amounts[6] = {};
+            uint32_t max_press_time = 0;
+            for (int i = 0; i < 6; ++i)
+            {
+                uint32_t press_time = input_state->m_key_press_time_ms[i];
+                max_press_time = std::max(max_press_time, press_time);
+
+                if (!press_time)
+                {
+                    control_amounts[i] = 0.0f;
+                }
+                else if (press_time >= 1000)
+                {
+                    control_amounts[i] = 1.0f;
+                }
+                else if (press_time <= 50 && input_state->m_keys[i])
+                {
+                    control_amounts[i] = 0.0;
+                }
+                else if (press_time >= 75)
+                {
+                    if (press_time >= 100)
+                    {
+                        control_amounts[i] = (float)(press_time - 100) * 0.004f / 9.0f + 0.6f;
+                    }
+                    else
+                    {
+                        control_amounts[i] = std::pow((float)(press_time  - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
+                    }
+                }
+                else
+                {
+                    control_amounts[i] = 0.2f;
+                }
+            }
+
+            glm::vec3 vel(0.0f, 0.0f, 0.0f);
+            vel.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
+            //vel.y = control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN];
+            vel.y = 0.0f;
+            vel.z = control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD];
+            //vel.x = vel.x * optrel_speeds->speed.x;
+            //vel.y = vel.y * optrel_speeds->speed.y;
+            glm::vec3 vel_xz = vel;
+            vel_xz.y = 0.0f;
+
+            //if (vel.z < 0.0f)
+            //    vel_scale_copy = vel_scale_copy * optrel_speeds->speed_back;
+            //if (optrel_speeds->stunned)
+            //    vel_scale_copy = vel_scale_copy * 0.1f;
+            vel_xz = glm::normalize(vel_xz);
+            //if (controls->speed_scale_F0 != 0.0f)
+            //    vel_scale_copy = vel_scale_copy * controls->speed_scale_F0;
+            //controls->field_100 = vel_scale_copy;
+            vel.x = vel_xz.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
+            vel.z = vel_xz.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
+
+            qCDebug(logMovement, "local_input_vel: (%f, %f, %f)", vel.x, vel.y, vel.z);
 
             input_state->m_current_control_state_change_id = csc->last_id + 1;
         }

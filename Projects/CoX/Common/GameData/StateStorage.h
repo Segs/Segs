@@ -148,7 +148,7 @@ public:
     uint16_t m_current_control_state_change_id = 0;
 
     bool m_keys[6] = {};
-    uint32_t m_keys_held_time_ms[6] = {};
+    uint32_t m_key_press_time_ms[6] = {};
 
     void init()
     {
