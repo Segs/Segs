@@ -77,24 +77,22 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                 key_change.key = control_id;
                 key_change.state = keypress_state;
                 key_change.offset_from_tick_start_ms = ms_since_prev;
-                control_state_change.key_changes.push_back(key_change);
+                control_state_change.key_changes.push_back(key_change);// todo(jbr) could we just have an array of 6? see if it's possible for down and up to both be present in 1 tick
 
                 break;
             }
             case PITCH: // camera pitch (Insert/Delete keybinds)
             {
-                angle = AngleDequantize(bs.GetBits(11),11); // pitch
-                m_next_state.m_pyr_valid[0] = true;
-                m_next_state.m_camera_pyr[0] = angle;
-                qCDebug(logInput, "Pitch (%f): %f", m_next_state.m_orientation_pyr[0], m_next_state.m_camera_pyr.x);
+                control_state_change.pitch_changed = true;
+                control_state_change.pitch = AngleDequantize(bs.GetBits(11),11);
+                qCDebug(logInput, "Pitch %f", control_state_change.pitch);
                 break;
             }
             case YAW: // camera yaw (Q or E keybinds)
             {
-                angle = AngleDequantize(bs.GetBits(11),11); // yaw
-                m_next_state.m_pyr_valid[1] = true;
-                m_next_state.m_camera_pyr[1] = angle;
-                qCDebug(logInput, "Yaw (%f): %f", m_next_state.m_orientation_pyr[1], m_next_state.m_camera_pyr.y);
+                control_state_change.yaw_changed = true;
+                control_state_change.yaw = AngleDequantize(bs.GetBits(11),11); // yaw
+                qCDebug(logInput, "Yaw %f", control_state_change.yaw);
                 break;
             }
             case 8:
@@ -147,8 +145,9 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
             }
             case 10:
             {
-                m_next_state.m_no_collision = bs.GetBits(1);
-                qCDebug(logInput, "Collision: %d", m_next_state.m_no_collision);
+                control_state_change.no_collision_changed = true;
+                control_state_change.no_collision = bs.GetBits(1);
+                qCDebug(logInput, "Collision: %d", control_state_change.no_collision);
                 break;
             }
             default:

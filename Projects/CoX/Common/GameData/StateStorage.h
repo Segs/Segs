@@ -36,10 +36,16 @@ struct ControlStateChange
         uint32_t offset_from_tick_start_ms = 0;
     };
 
-    uint16_t first_id = 0xffff;
-    uint16_t last_id = 0xffff;
-    uint32_t tick_length_ms = 0;
+    uint16_t first_id               = 0xffff;
+    uint16_t last_id                = 0xffff;
+    uint32_t tick_length_ms         = 0;
     QVector<KeyChange> key_changes;
+    bool pitch_changed              = false;
+    float pitch                     = 0.0f;
+    bool yaw_changed                = false;
+    float yaw                       = 0.0f;
+    bool no_collision_changed       = false;
+    bool no_collision               = false;
 };
 // is a newer than b?
 bool isControlStateChangeIdNewer(uint16_t a, uint16_t b);

@@ -38,12 +38,12 @@ static const int s_reverse_control_dir[6] = {
 };
 static const char* s_key_name[6] =
 {
-    "BACKWARD",
     "FORWARD",
-    "RIGHT",
+    "BACKWARD",
     "LEFT",
-    "DOWN",
+    "RIGHT",
     "UP",
+    "DOWN",
 };
 
 SurfaceParams g_world_surf_params[2] = {
@@ -233,11 +233,6 @@ void processNewInputs(Entity &e)
     StateStorage* input_state = &e.m_states;
     for (InputState* new_input = input_state->m_inp_states.begin(); new_input != input_state->m_inp_states.end(); ++new_input)
     {
-        if(new_input->m_no_collision) // todo(jbr) this should be part of the control state change right?
-            e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
-        else
-            e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
-
         for (ControlStateChange* csc = new_input->m_control_state_changes.begin();
              csc != new_input->m_control_state_changes.end();
              ++csc)
@@ -285,13 +280,13 @@ void processNewInputs(Entity &e)
 
             for (int i = 0; i < 6; ++i)
             {
+                input_state->m_key_press_time_ms[i] = std::min<uint32_t>(input_state->m_key_press_time_ms[i], 1000);
+
                 if (input_state->m_key_press_time_ms[i])
                 {
-                    qCDebug(logMovement, "%s%s (%dms)", s_key_name[i], input_state->m_keys[i] ? "+" : "-", input_state->m_key_press_time_ms[i]);
+                    qCDebug(logMovement, "%s%s (%dms)", input_state->m_keys[i] ? "+" : "-", s_key_name[i], input_state->m_key_press_time_ms[i]);
                 }
             }
-
-            // todo(jbr) do the tick
 
             float control_amounts[6] = {};
             uint32_t max_press_time = 0;
@@ -326,6 +321,36 @@ void processNewInputs(Entity &e)
                 else
                 {
                     control_amounts[i] = 0.2f;
+                }
+            }
+
+            glm::vec3 orientation_pyr = e.m_entity_data.m_orientation_pyr;
+            bool orientation_changed = false;
+            if (csc->pitch_changed)
+            {
+                orientation_pyr.p = csc->pitch;
+                orientation_changed = true;
+            }
+            if (csc->yaw_changed)
+            {
+                orientation_pyr.y = csc->yaw;
+                orientation_changed = true;
+            }
+            if (orientation_changed)
+            {
+                e.m_entity_data.m_orientation_pyr = orientation_pyr;
+                e.m_direction = fromCoHYpr(orientation_pyr);
+            }
+
+            if (csc->no_collision_changed)
+            {
+                if (csc->no_collision)
+                {
+                    e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
+                }
+                else
+                {
+                    e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
                 }
             }
 
@@ -385,15 +410,6 @@ void processNewInputs(Entity &e)
 
             input_state->m_current_control_state_change_id = csc->last_id + 1;
         }
-
-        // todo(jbr) set rotation from input
-        /*
-        if(st->m_next_state.m_orientation_pyr.p || st->m_next_state.m_orientation_pyr.y || st->m_next_state.m_orientation_pyr.r)
-        {
-            ent->m_entity_data.m_orientation_pyr = st->m_next_state.m_orientation_pyr;
-            ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
-        }
-         */
 
         // todo(jbr) check the keypress state at end of packet, make sure all matches up
     }
