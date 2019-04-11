@@ -141,12 +141,12 @@ void settingsDump()
 void settingsDump(QSettings *s)
 {
     QString output = "Settings File Dump\n";
-    foreach (const QString &group, s->childGroups())
+    for(const QString &group : s->childGroups())
     {
         QString groupString = QString("===== %1 =====\n").arg(group);
         s->beginGroup(group);
 
-        foreach (const QString &key, s->allKeys())
+        for(const QString &key : s->allKeys())
             groupString.append(QString("  %1\t\t %2\n").arg(key, s->value(key).toString()));
 
         s->endGroup();
