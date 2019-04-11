@@ -109,12 +109,12 @@ QString Settings::getTemplateDirPath()
 void Settings::createSettingsFile(const QString &new_file_path)
 {
     qCDebug(logSettings) << "Creating Settings file" << new_file_path;
-    QFile tpl(Settings::getSettingsTplPath());
-    QFile sfile(new_file_path);
+    QFile tpl_file(Settings::getSettingsTplPath());
+    QFile new_file(new_file_path);
 
-    if(!tpl.open(QIODevice::ReadOnly))
+    if(!tpl_file.open(QIODevice::ReadOnly))
     {
-        qWarning() << "Unable to read" << tpl.fileName() << "Check folder permissions.";
+        qWarning() << "Unable to read" << tpl_file.fileName() << "Check folder permissions.";
         return;
     }
 
@@ -122,14 +122,14 @@ void Settings::createSettingsFile(const QString &new_file_path)
     // simply copy the template over to our destination directory.
     // Unfortunately QFile::copy() has some sort of bug and doesn't work
     // so instead let's open the new file, and copy the contents from template
-    if(!sfile.open(QIODevice::WriteOnly) || !sfile.write(tpl.readAll()))
+    if(!new_file.open(QIODevice::WriteOnly) || !new_file.write(tpl_file.readAll()))
     {
         qWarning() << "Unable to create" << new_file_path << "Check folder permissions.";
         return;
     }
 
-    sfile.close();
-    tpl.close();
+    new_file.close();
+    tpl_file.close();
 }
 
 void settingsDump()
