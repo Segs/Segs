@@ -46,7 +46,7 @@ namespace
     };
 
     const ACE_Time_Value session_reaping_interval(0,1000*1000);
-    const ACE_Time_Value link_is_stale_if_disconnected_for(0,2*1000*1000);
+    const ACE_Time_Value link_is_stale_if_disconnected_for(5,0);
 } // namespace
 
 void AuthHandler::dispatch( Event *ev )
