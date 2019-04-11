@@ -81,7 +81,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.playerspawn="    + config.value("log_playerspawn","false").toString();
     filter_rules += "\nlog.npcspawn="       + config.value("log_npcspawn","false").toString();
     filter_rules += "\nlog.mapevents="      + config.value("log_mapevents","true").toString();
-    filter_rules += "\nlog.mapxfers="       + config.value("log_mapxfers", "true").toString();
+    filter_rules += "\nlog.mapxfers="       + config.value("log_mapxfers", "false").toString();
     filter_rules += "\nlog.slashcommand="   + config.value("log_slashcommand","true").toString();
     filter_rules += "\nlog.description="    + config.value("log_description","false").toString();
     filter_rules += "\nlog.friends="        + config.value("log_friends","false").toString();

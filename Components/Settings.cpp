@@ -34,7 +34,7 @@ bool fileExists(const QString &path)
 Settings::Settings()
 {
     if(!fileExists(getSettingsPath()))
-        createSettingsFile();
+        qCritical() << "Settings path not defined? This is unpossible!";
 }
 
 void Settings::setSettingsPath(const QString &path)
@@ -43,6 +43,10 @@ void Settings::setSettingsPath(const QString &path)
         qCritical() << "Settings path not defined? This is unpossible!";
 
     s_settings_path = getSEGSDir() + QDir::separator() + path;
+
+    if(!fileExists(s_settings_path))
+        createSettingsFile(s_settings_path);
+
     qCDebug(logSettings) << "Settings Path" << s_settings_path;
 }
 
@@ -102,29 +106,30 @@ QString Settings::getTemplateDirPath()
     return curdir.absolutePath() + QDir::separator() + s_default_tpl_dir;
 }
 
-void Settings::createSettingsFile()
+void Settings::createSettingsFile(const QString &new_file_path)
 {
-    if(!fileExists(Settings::getSettingsPath()))
+    qCDebug(logSettings) << "Creating Settings file" << new_file_path;
+    QFile tpl_file(Settings::getSettingsTplPath());
+    QFile new_file(new_file_path);
+
+    if(!tpl_file.open(QIODevice::ReadOnly))
     {
-        qCritical() << "Settings file" << Settings::getSettingsPath() <<"does not exist. Creating it now...";
-        QFile sfile(Settings::getSettingsPath());
-        if(!sfile.open(QIODevice::WriteOnly))
-        {
-            qDebug() << "Unable to create" << Settings::getSettingsPath() << "Check folder permissions.";
-            return;
-        }
-
-        // QSettings setValue() methods delete all file comments, it's better to
-        // simply copy the template over to our destination directory.
-        QFile::copy(Settings::getSettingsTplPath(), Settings::getSettingsPath());
-
+        qWarning() << "Unable to read" << tpl_file.fileName() << "Check folder permissions.";
         return;
     }
-    else
+
+    // QSettings setValue() methods delete all file comments, it's better to
+    // simply copy the template over to our destination directory.
+    // Unfortunately QFile::copy() has some sort of bug and doesn't work
+    // so instead let's open the new file, and copy the contents from template
+    if(!new_file.open(QIODevice::WriteOnly) || !new_file.write(tpl_file.readAll()))
     {
-        qDebug() << "Settings file already exists at" << Settings::getSettingsPath();
+        qWarning() << "Unable to create" << new_file_path << "Check folder permissions.";
         return;
     }
+
+    new_file.close();
+    tpl_file.close();
 }
 
 void settingsDump()
@@ -136,13 +141,13 @@ void settingsDump()
 void settingsDump(QSettings *s)
 {
     QString output = "Settings File Dump\n";
-    foreach (const QString &group, s->childGroups()) {
+    for(const QString &group : s->childGroups())
+    {
         QString groupString = QString("===== %1 =====\n").arg(group);
         s->beginGroup(group);
 
-        foreach (const QString &key, s->allKeys()) {
+        for(const QString &key : s->allKeys())
             groupString.append(QString("  %1\t\t %2\n").arg(key, s->value(key).toString()));
-        }
 
         s->endGroup();
         groupString.append("\n");
