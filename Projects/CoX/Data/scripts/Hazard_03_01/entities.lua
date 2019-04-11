@@ -1,4 +1,4 @@
---- King's Row
+--- Dark Astoria
 
 local spawnOnce = false
 
@@ -60,13 +60,11 @@ dialog_button = function(id) -- Will be called if no callback is set
     return ""
 end
 
-
 contact_call = function(contactIndex)
     printDebug("Contact Call. contactIndex: " .. tostring(contactIndex))
 
     return ""
 end
-
 
 revive_ok = function(id)
     printDebug("revive Ok. Entity: " .. tostring(id))

@@ -44,7 +44,7 @@ CREATE TABLE `table_versions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `table_versions` (`id`, `table_name`, `version`, `last_update`) VALUES
-(1, 'db_version', 0, '2018-01-06 16:27:58'),
+(1, 'db_version', 1, '2019-02-17 03:11:58'),
 (2, 'table_versions', 0, '2017-11-11 08:55:54'),
 (3, 'accounts', 1, '2018-01-06 11:18:01'),
 (4, 'game_servers', 0, '2017-11-11 09:12:37'),

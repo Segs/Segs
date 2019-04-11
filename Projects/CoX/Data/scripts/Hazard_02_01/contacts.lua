@@ -1,3 +1,4 @@
+--- Boomtown
 printDebug('Loading contacts.lua...')
 
 contactsForZone = {};

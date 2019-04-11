@@ -65,8 +65,7 @@ dialog_button = function(id) -- Will be called if no callback is set
     return ""
 end
 
-
-contact_call = function(contactIndex)
+function contact_call(contactIndex)
     printDebug("Contact Call. contactIndex: " .. tostring(contactIndex))
 
     return ""

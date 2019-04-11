@@ -1,3 +1,4 @@
+--- Dark Astoria
 printDebug('Loading contacts.lua...')
 
 contactsForZone = {};

@@ -28,7 +28,7 @@ class SEGSTimer;
 class World;
 class GameDataStore;
 class MapSceneGraph;
-class MapXferData;
+struct MapXferData;
 
 struct LuaTimer
 {
@@ -282,6 +282,7 @@ protected:
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);
+        void callScriptingDialogButtonCallback(SEGSEvents::DialogButton *ev);
         void on_combine_enhancements(SEGSEvents::CombineEnhancementsReq *ev);
         void on_move_enhancement(SEGSEvents::MoveEnhancement *ev);
         void on_set_enhancement(SEGSEvents::SetEnhancement *ev);

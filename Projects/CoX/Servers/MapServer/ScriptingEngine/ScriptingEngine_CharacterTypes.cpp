@@ -313,4 +313,9 @@ void ScriptingEngine::register_CharacterTypes()
       {
           return getRelayRaceResult(*cl, segment);
       };
+
+      m_private->m_lua["Player"]["GetLevel"] = [this]()
+      {
+        return getLevel(*cl->m_ent->m_char);
+      };
 }
