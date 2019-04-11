@@ -146,7 +146,7 @@ struct NpcCreator
                     persName.replace(" ", "_");
 
                 snNode.m_name = persName;         // Persistents use node name to store the NPC name instead
-                qInfo() << "Persistent parsed: " << persName;
+                qCDebug(logNpcSpawn) << "Persistent parsed: " << persName;
                 snNode.m_position = glm::vec3(v[3]);
                 snNode.m_rotation = FindOrientation(v);
                 map_instance->m_map_scenegraph->m_persNodes.push_back(snNode);

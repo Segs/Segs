@@ -21,7 +21,7 @@ TimeCop.onTickCallBack = function(startTime, diff, current)
 
     if(diff == stopTime) then
         MapInstance.StopTimer(contactsForZone.TimeCop.entityId); 
-        DespawnMapEncounters()
+        DespawnMapEncounters(true)
         RandomSpawn(TimeCop.NumEncounters)
         MapInstance.StartTimer(contactsForZone.TimeCop.entityId); 
     end
