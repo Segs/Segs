@@ -212,12 +212,12 @@ bool fileQueryDb(QFile &source_file, QSqlQuery &query)
     // If the script contains more queries, it needs to be split.
     QStringList scriptQueries = QTextStream(&source_file).readAll().split(';');
     
-    foreach(QString queryTxt, scriptQueries) // Execute each command in the source file.
+    for(QString query_text : scriptQueries) // Execute each command in the source file.
     {
-        if(queryTxt.trimmed().isEmpty())
+        if(query_text.trimmed().isEmpty())
             continue;
         
-        if(!query.exec(queryTxt))
+        if(!query.exec(query_text))
             return false;
         
         query.finish();
