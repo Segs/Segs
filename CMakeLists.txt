@@ -49,7 +49,7 @@ IF(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 ELSEIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14")
-   
+
    if(MINGW)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
    endif()
@@ -64,10 +64,8 @@ add_definitions(-D__STDC_FORMAT_MACROS)
 SET(MAIN_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/3rd_party/include CACHE PATH "Includes")
 SET(MAIN_LIB_PATH ${PROJECT_SOURCE_DIR}/3rd_party/lib CACHE PATH "Libraries")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/out)
 SET(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out)
 SET(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
@@ -104,8 +102,7 @@ if(ENABLE_TESTS)
             ${ARGN}
         )
         set_target_properties (${testname} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+            RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
         )
     endmacro()
 endif()
@@ -164,12 +161,11 @@ macro(add_messages_library name )
     target_link_libraries(${name}_interface PUBLIC Qt5::Core)
     # all interfaces use stuff from Common, so should depend/link to it
     target_link_libraries(${name}_interface PUBLIC SEGS_Components)
-	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN}) 
-	set_target_properties (${name}_interface PROPERTIES
-		FOLDER Projects/CoX/Common/Messages
-                RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
-                RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
-	)
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN})
+    set_target_properties (${name}_interface PROPERTIES
+            FOLDER Projects/CoX/Common/Messages
+            RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+    )
 endmacro()
 
 macro(add_handler name)

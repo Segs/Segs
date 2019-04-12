@@ -16,9 +16,9 @@ private:
     bool putFilePath();
 public:
     QString m_driver;
-    QString m_name;
+    QString m_short_name;
     QString m_filename;
-    QString m_db_path;
+    QString m_db_name;
     QString m_host;
     QString m_port;
     QString m_user;

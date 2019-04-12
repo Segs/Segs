@@ -44,7 +44,7 @@ bool DatabaseConfig::initialize_from_settings(const QString &settings_file_name,
         config.beginGroup(group_name);
             m_driver = config.value(QStringLiteral("db_driver"),"QSQLITE").toString();
             m_filename = config.value(QStringLiteral("db_name"),"segs").toString();
-            m_db_path = Settings::getSEGSDir() + QDir::separator() + m_filename; // don't add suffix here, so that it can be optional for users
+            m_db_name = Settings::getSEGSDir() + QDir::separator() + m_filename; // don't add suffix here, so that it can be optional for users
             m_host = config.value(QStringLiteral("db_host"),"127.0.0.1").toString();
             m_port = config.value(QStringLiteral("db_port"),"5432").toString();
             m_user = config.value(QStringLiteral("db_user"),"segs").toString();
@@ -54,9 +54,12 @@ bool DatabaseConfig::initialize_from_settings(const QString &settings_file_name,
     config.endGroup(); // AdminServer
 
     // store database names so we can use them later in migrations
-    m_name = QFileInfo(m_db_path).completeBaseName();
+    m_short_name = QFileInfo(m_db_name).completeBaseName();
 
-    qCDebug(logSettings) << m_db_path << "database settings loaded from" << settings_full_path;
+    if(!isSqlite())
+        m_db_name = m_short_name; // for client-server db systems, use name instead of path
+
+    qCDebug(logSettings) << m_db_name << "database settings loaded from" << settings_full_path;
 
     return putFilePath();
 }

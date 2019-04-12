@@ -199,9 +199,7 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
 
-    QFileInfo config_file("settings.cfg");
-    QString config_file_path = config_file.absoluteFilePath();
-    QSettings config(config_file_path, QSettings::IniFormat, nullptr);
+    QSettings config(Settings::getSettingsPath(), QSettings::IniFormat, nullptr);
 
     QFileInfo file1(config.value(QStringLiteral("AdminServer/AccountDatabase/db_name"), "segs.db").toString());
     QFileInfo file2(config.value(QStringLiteral("AdminServer/CharacterDatabase/db_name"), "segs_game.db").toString());
@@ -428,7 +426,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     // Load settings.cfg if exists
     ui->output->appendPlainText("Checking for existing configuration file...");
-    QFileInfo config_file("settings.cfg");
+    QFileInfo config_file(Settings::getSettingsPath());
     if(config_file.exists())
     {
         QString config_file_path = config_file.absoluteFilePath();
@@ -456,31 +454,30 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
 
 void SEGSAdminTool::check_config_version(QString filePath)
 {
-    
     ui->output->appendPlainText("Checking configuration version...");
-    
+
     QSettings config_file(filePath, QSettings::IniFormat);
     config_file.beginGroup("MetaData");
     int config_version = config_file.value("config_version","").toInt();
     config_file.endGroup();
-     
+
     if (config_version != VersionInfo::getConfigVersion())
     {
         ui->output->appendPlainText("WARNING: Configuration file version incorrect or missing. Prompting for recreation");
         QMessageBox::StandardButton ask_recreate_config = QMessageBox::warning(this,
-                    "Config File Version Incorrect", "Your settings.cfg may be out of date. Do you want to to recreate?" 
+                    "Config File Version Incorrect", "Your settings.cfg may be out of date. Do you want to to recreate?"
                     "\n\nWARNING: All settings will be overwritten",
                     QMessageBox::Yes | QMessageBox::No);
-        
-        if(ask_recreate_config == QMessageBox::Yes) 
+
+        if(ask_recreate_config == QMessageBox::Yes)
         {
             ui->output->appendPlainText("Recreating settings.cfg");
             emit recreateConfig();
         }
-        else 
+        else
         {
             ui->output->appendPlainText("Not Recreating settings.cfg");
-        }        
+        }
     }
     else
     {
@@ -528,5 +525,5 @@ void SEGSAdminTool::read_release_info(const QString &error)
     }
 
 }
-//!@}
 
+//!@}

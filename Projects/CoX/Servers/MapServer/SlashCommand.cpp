@@ -136,7 +136,7 @@ void cmdHandler_StartTimer(const QString &cmd, MapClientSession &sess);
 void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess);
 
 // Access Level 2[GM] Commands
-void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess);
+uint cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess);
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess);
 void cmdHandler_Alignment(const QString &cmd, MapClientSession &sess);
 
@@ -1058,7 +1058,7 @@ void cmdHandler_LevelUpXp(const QString &cmd, MapClientSession &sess)
                        << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
 
     // send levelup pkt to client
-    sess.m_ent->m_char->m_in_training = true; // flag character so we can handle dialog response
+    sess.m_ent->m_char->m_client_window_state = ClientWindowState::Training; // flag character so we can handle dialog response
     sendLevelUp(sess);
 }
 
@@ -1412,7 +1412,7 @@ void cmdHandler_SetU1(const QString &cmd, MapClientSession &sess)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Access Level 2 Commands
-void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
+uint cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
     int variation = 0;
@@ -1437,16 +1437,14 @@ void cmdHandler_AddNPC(const QString &cmd, MapClientSession &sess)
     if(parts.size()<2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:"<<cmd;
-        sendInfoMessage(MessageChannel::USER_ERROR, "Addnpc requires a valid npc name"+cmd, sess);
-        return;
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:"+cmd, sess);
+        return 0;
     }
 
     QString name = parts[1].toString();
     glm::vec3 offset = glm::vec3 {2,0,1};
     glm::vec3 gm_loc = sess.m_ent->m_entity_data.m_pos + offset;
-
-    addNpc(sess, name, gm_loc, variation, name);
-
+    return addNpc(sess, name, gm_loc, variation, name);
 }
 
 void cmdHandler_MoveTo(const QString &cmd, MapClientSession &sess)
@@ -1544,8 +1542,8 @@ void cmdHandler_WhoAll(const QString &/*cmd*/, MapClientSession &sess)
     {
         Character &c(*cl->m_ent->m_char);
         QString    name      = cl->m_ent->name();
-        QString    lvl       = QString::number(getLevel(c));
-        QString    clvl      = QString::number(getCombatLevel(c));
+        QString    lvl       = QString::number(getLevel(c)+1);         //+1 as the server stores these values
+        QString    clvl      = QString::number(getCombatLevel(c)+1);  //with a 0 index, issue #831
         QString    origin    = getOrigin(c);
         QString    archetype = QString(getClass(c)).remove("Class_");
 
@@ -2304,7 +2302,7 @@ void cmdHandler_OpenStore(const QString &/*cmd*/, MapClientSession &sess)
     qCDebug(logSlashCommand) << "OpenStore...";
     openStore(sess, 0); // Default entity_idx as it doesn't change anything currently
 }
-  
+
 void cmdHandler_ForceLogout(const QString &cmd, MapClientSession &sess)
 {
     QVector<QStringRef> parts;
@@ -2353,4 +2351,3 @@ void runCommand(const QString &str, MapClientSession &e)
 
 
 //! @}
-

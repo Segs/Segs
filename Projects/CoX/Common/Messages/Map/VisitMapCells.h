@@ -43,7 +43,7 @@ public:
             for (uint16_t j = 0; j < 8; j++)
             {
                 if (m_visible_map_cells[i * 8 + j])
-                    byte_sum += std::pow(2, j);
+                    byte_sum |= 1<<j;
             }
             cells_arr[i] =  byte_sum;
         }

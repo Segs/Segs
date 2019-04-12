@@ -14,6 +14,5 @@ target_link_libraries(GameDBEventRegistry
 )
 
 set_target_properties (GameDBEventRegistry PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
 )

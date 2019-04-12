@@ -29,7 +29,7 @@ bool DBConnection::isConnected()
     QString querytext;
     if(m_config.isSqlite())
     {
-        if(!fileExists(m_config.m_db_path))
+        if(!fileExists(m_config.m_db_name))
             return false;
 
         return true;
@@ -42,7 +42,7 @@ bool DBConnection::isConnected()
     {
         querytext = "SELECT table_schema || '.' || table_name FROM";
         querytext.append("information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema ='");
-        querytext.append(m_config.m_db_path);
+        querytext.append(m_config.m_db_name);
         querytext.append("';");
     }
     else

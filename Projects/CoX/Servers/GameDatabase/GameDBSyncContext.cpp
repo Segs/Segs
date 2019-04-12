@@ -131,7 +131,7 @@ bool GameDbSyncContext::loadAndConfigure()
 
     if(!m_db->open())
     {
-        qFatal("Failed to open database: %s", dbname.toStdString().c_str());
+        qCritical().noquote() << "Failed to open database:" << dbname;
         db2->setConnectOptions();
         return false;
     }

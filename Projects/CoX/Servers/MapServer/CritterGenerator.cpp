@@ -5,6 +5,7 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
+/*
 #include "CritterGenerator.h"
 #include "DataHelpers.h"
 #include "MapInstance.h"
@@ -18,7 +19,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
 
 
     uint32_t count = 0;
-    bool spawn_all = false;
+    //bool spawn_all = false;
     bool m_victim_spawned = false;
 
     CritterSpawnDef spawn_def = sp->getSpawnGroup(this->m_critter_encounter.m_node_name);
@@ -31,7 +32,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
         else
             break;
 
-        spawn_all = cd.m_spawn_all;
+        //spawn_all = cd.m_spawn_all;
 
         if(encounter_location.m_name.contains("encounter_e_", Qt::CaseInsensitive))
         {
@@ -39,7 +40,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
             glm::vec3 rotation = encounter_location.m_rotation;
 
             //spawn enemy
-            addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
+            //addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
             ++count;
         }
         else if(encounter_location.m_name.contains("encounter_v_", Qt::CaseInsensitive) && !m_victim_spawned)
@@ -70,7 +71,7 @@ void CritterGenerator::generate(MapInstance *map_instance)
             glm::vec3 pos = encounter_location.m_relative_position;
             glm::vec3 rotation = encounter_location.m_rotation;
             //spawn enemy
-            addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
+            //addEnemy(*map_instance, cd.m_model, pos, 1, rotation, cd.m_name, 2, cd.m_faction_name, 0);
             ++count;
         }
 
@@ -92,3 +93,4 @@ void CritterGeneratorStore::generate(MapInstance *instance)
         total_spawned += 3; // Mock total spawn limit
     }
 }
+*/

@@ -68,7 +68,7 @@ public:
 
     void open();
     void close();
-    QString getName() const { return m_config.m_name; } // "segs.db" or "segs_game.db"
+    QString getName() const { return m_config.m_short_name; } // "segs.db" or "segs_game.db"
 
     // DBConnection_AddUser.cpp
     dbToolResult    addAccount(const QString &username, const QString &password, uint16_t access_level);

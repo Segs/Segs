@@ -44,7 +44,7 @@ dbToolResult DBConnection::createDB()
     QFile source_file(m_config.m_template_path);
     if(!deleteDB()) // Delete the existing database
     {
-        qWarning(qPrintable(QString("FAILED to remove existing file: %1").arg(m_config.m_db_path)));
+        qWarning(qPrintable(QString("FAILED to remove existing file: %1").arg(m_config.m_db_name)));
         qCritical("Ensure no processes are using it and you have permission to modify it.");
         return dbToolResult::DB_RM_FAILED;
     }
@@ -53,7 +53,7 @@ dbToolResult DBConnection::createDB()
         return dbToolResult::QUERY_FAILED;
 
     source_file.close();
-    qInfo() << "COMPLETED creating:" << m_config.m_db_path;
+    qInfo() << "COMPLETED creating:" << m_config.m_db_name;
     return dbToolResult::SUCCESS;
 }
 
@@ -67,7 +67,7 @@ bool DBConnection::deleteDB()
     if(m_config.isSqlite())
     {
         // SQLite databases are just a file. Remove it
-        QFile target_file(m_config.m_db_path);
+        QFile target_file(m_config.m_db_name);
         if(target_file.exists() && !target_file.remove())
             return false;
 
@@ -76,7 +76,7 @@ bool DBConnection::deleteDB()
         close(); // yes, really
         delete m_db;
         // unload the database (this doesn't delete it)
-        QSqlDatabase::removeDatabase(m_config.m_db_path);
+        QSqlDatabase::removeDatabase(m_config.m_db_name);
         open();
     }
     else if(m_config.isMysql() || m_config.isPostgresql())
@@ -116,10 +116,7 @@ bool DBConnection::runQueryFromFile(QFile &source_file)
     for(QString &q : scriptQueries) // Execute each command in the source file.
     {
         q = q.simplified(); // remove newlines and excess whitespace
-        /*!
-         * @addtogroup dbtool Projects/CoX/Utilities/dbtool
-         * @{
-         */
+
         if(q.isEmpty())
             continue;
 

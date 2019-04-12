@@ -222,7 +222,7 @@ template<class TARGET,unsigned int CRC>
 bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
 {
     QElapsedTimer timer;
-    
+
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading "<<directory_path<<storage<<" ... ";
     timer.start();
@@ -598,8 +598,8 @@ int getEntityOriginIndex(const GameDataStore &data, bool is_player, const QStrin
             return idx;
         idx++;
     }
-    qWarning() << "Failed to locate origin index for"<<origin_name;
-    return 0;
+    qCDebug(logNpcSpawn) << "Failed to locate origin index for" << origin_name;
+    return -1;
 }
 int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString &class_name)
 {
@@ -612,8 +612,8 @@ int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString
             return idx;
         idx++;
     }
-    qWarning() << "Failed to locate class index for" << class_name;
-    return 0;
+    qCDebug(logNpcSpawn) << "Failed to locate class index for" << class_name;
+    return -1;
 }
 
 GameDataStore &getGameData() {
@@ -622,4 +622,3 @@ GameDataStore &getGameData() {
 }
 
 //! @}
-

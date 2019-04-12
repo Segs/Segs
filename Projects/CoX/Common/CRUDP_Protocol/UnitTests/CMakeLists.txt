@@ -15,6 +15,5 @@ target_link_libraries(CRUDPEventRegistry
 )
 
 set_target_properties (CRUDPEventRegistry PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
 )

@@ -10,8 +10,11 @@
 
 QString makeReadableName(QString &name)
 {
-    // remove filepaths and extensions then replace underscores with spaces
-    return name.remove(QRegularExpression(".*\\\\")).remove(QRegularExpression("\\..*")).replace("_"," ");
+    // remove filepaths and extensions then replace underscores with spaces; handles SG contacts
+    QString tempName = name.remove(QRegularExpression(".*\\\\")).remove(QRegularExpression("\\..*"));
+    if(tempName.contains("SuperGroupContacts"))
+        tempName.remove("SuperGroupContacts/");
+    return tempName;
 }
 
 void NpcGenerator::generate(MapInstance *map_instance)
@@ -23,8 +26,13 @@ void NpcGenerator::generate(MapInstance *map_instance)
         if(m_generator_name.contains("NPCGenerator", Qt::CaseInsensitive))
         {
             // too many pedestrians slows the client down, let's spawn a portion only
-            if(rand() % 2)
+            if(rand() % 7)
                 continue;
+        }
+        else if(m_generator_name.contains("CarGenerator", Qt::CaseInsensitive))
+        {
+           if(rand() % 3)
+               continue;
         }
 
         QString npc_costume_name = getCostumeFromName(m_generator_name);
@@ -43,6 +51,7 @@ void NpcGenerator::generate(MapInstance *map_instance)
         angles.y += glm::pi<float>();
         forceOrientation(*e, angles);
         e->m_motion_state.m_velocity = { 0,0,0 };
+
 
         if(m_generator_name.contains("door", Qt::CaseInsensitive))
         {

@@ -184,7 +184,7 @@ void SetUpData::pigg_dispatcher()
         //QString program = "piggtool -x data/bin.pigg";
         QString program = "utilities/piggtool -x " + fileInfo.absoluteFilePath();
         #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
-                program.prepend("./");
+            program.prepend("./");
         #endif
         emit callPiggWorker(program);
         QTimer timer;

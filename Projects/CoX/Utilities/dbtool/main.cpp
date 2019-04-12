@@ -62,7 +62,6 @@ bool setupConfigs(const QString &config_file, std::vector<DatabaseConfig> &confi
     }
     // we've just checked if settings exists, so we can safely assume it does here
     configs[1].initialize_from_settings(config_file, "CharacterDatabase");
-
     return true;
 }
 
@@ -76,7 +75,7 @@ bool createDBConns(std::vector<DatabaseConfig> &configs, std::vector< std::uniqu
 
         if(!segs_dbs.back()->isConnected())
         {
-            qWarning() << "Database" << cfg.m_db_path << "does not exist, or is an empty file!";
+            qWarning() << "Database" << cfg.m_db_name << "does not exist, or is an empty file!";
             if(!cfg.isSqlite()) // can't close a sqlite db that doesn't exist (has no data)
                 segs_dbs.back()->close();
 
@@ -211,14 +210,13 @@ int main(int argc, char **argv)
             // Check if database already exists
             qInfo() << "Checking for existing databases OR forced (-f) command...";
             bool forced = parser.isSet(forceOption);
-
             bool dbs_exist = false;
             for(const auto &db : segs_dbs)
             {
                 if(db->isConnected())
                 {
                     dbs_exist &= true; // dbs_exists must be true all times
-                    qWarning() << "Database" << db->m_config.m_db_path << "already exists.";
+                    qWarning() << "Database" << db->m_config.m_db_name << "already exists.";
                 }
             }
 
@@ -254,7 +252,7 @@ int main(int argc, char **argv)
                 qCritical()<< "adduser operation requires login and password";
                 return int(dbToolResult::NOT_ENOUGH_PARAMS);
             }
-            if(configs[0].isSqlite() && !fileExists(configs[0].m_db_path))
+            if(configs[0].isSqlite() && !fileExists(configs[0].m_db_name))
             {
                 qCritical() << "Cannot add account, the database does not exist";
                 return int(dbToolResult::SQLITE_DB_MISSING);

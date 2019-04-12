@@ -17,11 +17,12 @@
 #include <QDebug>
 #include <QFile>
 #include <QDir>
+#include <QRegularExpression>
 
-QString Settings::m_segs_dir;
-QString Settings::m_settings_path = QStringLiteral("settings.cfg"); // default path 'settings.cfg' from args
-QString Settings::m_default_tpl_dir = QStringLiteral("default_setup"); // default folder 'default_setup'
-QString Settings::m_default_settings_path = QStringLiteral("settings_template.cfg"); // default template from folder 'default_setup'
+QString Settings::s_segs_dir;
+QString Settings::s_settings_path = QStringLiteral("settings.cfg"); // default path 'settings.cfg' from args
+QString Settings::s_default_tpl_dir = QStringLiteral("default_setup"); // default folder 'default_setup'
+QString Settings::s_default_settings_path = Settings::s_default_tpl_dir + QDir::separator() + QStringLiteral("settings_template.cfg"); // default template from folder 'default_setup'
 
 bool fileExists(const QString &path)
 {
@@ -33,24 +34,28 @@ bool fileExists(const QString &path)
 Settings::Settings()
 {
     if(!fileExists(getSettingsPath()))
-        createSettingsFile();
+        qCritical() << "Settings path not defined? This is unpossible!";
 }
 
-void Settings::setSettingsPath(const QString path)
+void Settings::setSettingsPath(const QString &path)
 {
     if(path.isEmpty())
         qCritical() << "Settings path not defined? This is unpossible!";
 
-    m_settings_path = getSEGSDir() + QDir::separator() + path;
-    qCDebug(logSettings) << "Settings Path" << m_settings_path;
+    s_settings_path = getSEGSDir() + QDir::separator() + path;
+
+    if(!fileExists(s_settings_path))
+        createSettingsFile(s_settings_path);
+
+    qCDebug(logSettings) << "Settings Path" << s_settings_path;
 }
 
 QString Settings::getSettingsPath()
 {
-    if(m_settings_path.isEmpty())
+    if(s_settings_path.isEmpty())
         setSettingsPath("settings.cfg"); // set default path to "settings.cfg"
 
-    return m_settings_path;
+    return s_settings_path;
 }
 
 void Settings::setSEGSDir()
@@ -59,71 +64,72 @@ void Settings::setSEGSDir()
     // by dbtool and others, so make sure we're in the correct
     // working directory
     QDir curdir(QDir::current());
-    qCDebug(logSettings) << "Settings Dir" << curdir.absolutePath();
+    qCDebug(logSettings) << "Current Active Dir" << curdir.absolutePath();
 
     // if called from utilities, move up one directory
     if(curdir.absolutePath().endsWith("utilities", Qt::CaseInsensitive))
     {
         curdir.cdUp();
-        qCDebug(logSettings) << "Modified Dir" << curdir.absolutePath();
+        qCDebug(logSettings) << "Root Dir" << curdir.absolutePath();
     }
 
-    if(!fileExists(curdir.absolutePath() + QDir::separator() + "segs_server"))
-        qWarning() << "Cannot find SEGS Server!";
+    if(-1 == curdir.entryList().indexOf(QRegularExpression("segs_server.*")))
+        qWarning() << "Cannot find SEGS Server at" << curdir.absolutePath();
 
-    m_segs_dir = curdir.absolutePath();
+    s_segs_dir = curdir.absolutePath();
 }
 
 QString Settings::getSEGSDir()
 {
     // if m_segs_dir is not empty, we've set it, return that instead
-    if(m_segs_dir.isEmpty())
+    if(s_segs_dir.isEmpty())
         setSEGSDir();
 
-    return m_segs_dir;
+    return s_segs_dir;
 }
 
 QString Settings::getSettingsTplPath()
 {
     QDir curdir(getSEGSDir()); // Get the SEGS working directory
-    if(!fileExists(curdir.absolutePath() + QDir::separator() + m_default_settings_path))
-        qWarning() << "Cannot find" << m_default_settings_path;
+    if(!fileExists(curdir.absolutePath() + QDir::separator() + s_default_settings_path))
+        qWarning() << "Cannot find" << s_default_settings_path;
 
-    return curdir.absolutePath() + QDir::separator() + m_default_settings_path;
+    return curdir.absolutePath() + QDir::separator() + s_default_settings_path;
 }
 
 QString Settings::getTemplateDirPath()
 {
     QDir curdir(getSEGSDir()); // Get the SEGS working directory
-    if(!QDir(curdir.absolutePath() + QDir::separator() + m_default_tpl_dir).exists())
-        qWarning() << "Cannot find directory" << m_default_tpl_dir;
+    if(!QDir(curdir.absolutePath() + QDir::separator() + s_default_tpl_dir).exists())
+        qWarning() << "Cannot find directory" << s_default_tpl_dir;
 
-    return curdir.absolutePath() + QDir::separator() + m_default_tpl_dir;
+    return curdir.absolutePath() + QDir::separator() + s_default_tpl_dir;
 }
 
-void Settings::createSettingsFile()
+void Settings::createSettingsFile(const QString &new_file_path)
 {
-    if(!fileExists(Settings::getSettingsPath()))
+    qCDebug(logSettings) << "Creating Settings file" << new_file_path;
+    QFile tpl_file(Settings::getSettingsTplPath());
+    QFile new_file(new_file_path);
+
+    if(!tpl_file.open(QIODevice::ReadOnly))
     {
-        qCritical() << "Settings file" << Settings::getSettingsPath() <<"does not exist. Creating it now...";
-        QFile sfile(Settings::getSettingsPath());
-        if(!sfile.open(QIODevice::WriteOnly))
-        {
-            qDebug() << "Unable to create" << Settings::getSettingsPath() << "Check folder permissions.";
-            return;
-        }
-
-        // QSettings setValue() methods delete all file comments, it's better to
-        // simply copy the template over to our destination directory.
-        QFile::copy(Settings::getSettingsTplPath(), Settings::getSettingsPath());
-
+        qWarning() << "Unable to read" << tpl_file.fileName() << "Check folder permissions.";
         return;
     }
-    else
+
+    // QSettings setValue() methods delete all file comments, it's better to
+    // simply copy the template over to our destination directory.
+    // Unfortunately QFile::copy() has some sort of bug and doesn't work
+    // so instead let's open the new file, and copy the contents from template
+    if(!new_file.open(QIODevice::WriteOnly) || !new_file.write(tpl_file.readAll()))
     {
-        qDebug() << "Settings file already exists at" << Settings::getSettingsPath();
+        qWarning() << "Unable to create" << new_file_path << "Check folder permissions.";
         return;
     }
+
+    new_file.close();
+    tpl_file.close();
 }
 
 void settingsDump()
@@ -135,13 +141,13 @@ void settingsDump()
 void settingsDump(QSettings *s)
 {
     QString output = "Settings File Dump\n";
-    foreach (const QString &group, s->childGroups()) {
+    for(const QString &group : s->childGroups())
+    {
         QString groupString = QString("===== %1 =====\n").arg(group);
         s->beginGroup(group);
 
-        foreach (const QString &key, s->allKeys()) {
+        for(const QString &key : s->allKeys())
             groupString.append(QString("  %1\t\t %2\n").arg(key, s->value(key).toString()));
-        }
 
         s->endGroup();
         groupString.append("\n");

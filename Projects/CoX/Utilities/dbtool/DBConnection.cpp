@@ -23,15 +23,15 @@ DBConnection::~DBConnection()
     close();
     delete m_db;
     // unload the database (this doesn't delete it)
-    QSqlDatabase::removeDatabase(m_config.m_db_path);
+    QSqlDatabase::removeDatabase(m_config.m_db_name);
 }
 
 void DBConnection::open()
 {
-    qCDebug(logDB) << "Opening database connection at:" << m_config.m_db_path;
+    qCDebug(logDB) << "Opening database connection at:" << m_config.m_db_name;
 
-    m_db = new QSqlDatabase(QSqlDatabase::addDatabase(m_config.m_driver, m_config.m_db_path));
-    m_db->setDatabaseName(m_config.m_db_path); // must be path
+    m_db = new QSqlDatabase(QSqlDatabase::addDatabase(m_config.m_driver, m_config.m_db_name));
+    m_db->setDatabaseName(m_config.m_db_name); // must be path
     m_db->setHostName(m_config.m_host);
     m_db->setPort(m_config.m_port.toInt());
     m_db->setUserName(m_config.m_user);
@@ -39,7 +39,7 @@ void DBConnection::open()
 
     if(!m_db->open())
     {
-        qWarning() << "Failed to open database" << m_config.m_db_path;
+        qWarning() << "Failed to open database" << m_config.m_db_name;
         return;
     }
 
