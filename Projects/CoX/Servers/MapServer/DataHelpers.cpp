@@ -591,7 +591,7 @@ void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location)
 
 void sendStance(MapClientSession &sess, PowerStance &stance)
 {
-    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    qCDebug(logAnimations) << "Sending new PowerStance";
     sess.addCommand<SendStance>(stance);
 }
 
@@ -609,7 +609,7 @@ void sendSouvenirList(MapClientSession &sess)
 
 void sendDeadNoGurney(MapClientSession &sess)
 {
-    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    qCDebug(logSlashCommand) << "Sending DeadNoGurney message";
     sess.addCommand<DeadNoGurney>();
 }
 
