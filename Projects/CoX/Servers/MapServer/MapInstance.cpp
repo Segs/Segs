@@ -84,7 +84,7 @@ namespace
     };
 
     const ACE_Time_Value reaping_interval(0,1000*1000);
-    const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
+    const ACE_Time_Value link_is_stale_if_disconnected_for(5,0);
     const ACE_Time_Value link_update_interval(0,500*1000);
     const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
     const ACE_Time_Value sync_service_update_interval(0, 30000*1000);
