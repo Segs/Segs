@@ -6,7 +6,7 @@ HideAndSeek.spawned = false;
 HideAndSeek.name = "Ashley Adams";
 HideAndSeek.model = "model_pennyPreston";
 HideAndSeek.location = {};
-HideAndSeek.location.coordinates = vec3.new(63, 0, -119);
+HideAndSeek.location.coordinates = vec3.new(80, 16, -247);
 HideAndSeek.location.orientation = vec3.new(0, 0, 0);
 
 HideAndSeek.variation = 1;

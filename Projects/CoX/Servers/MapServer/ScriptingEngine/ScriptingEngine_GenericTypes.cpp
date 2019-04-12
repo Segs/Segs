@@ -90,7 +90,7 @@ void ScriptingEngine::register_GenericTypes()
         npcSendMessage(*mi, ch, entityIdx, msg);
     };
 
-    m_private->m_lua["MapInstance"]["SetOnTickCallback"] = [this](int entityIdx, std::function<void(int64_t,int64_t,int64_t)> callback)
+    m_private->m_lua["MapInstance"]["SetOnTickCallback"] = [this](uint32_t entityIdx, std::function<void(int64_t,int64_t,int64_t)> callback)
     {
         e = getEntity(mi, entityIdx);
         if(e != nullptr){
@@ -101,21 +101,21 @@ void ScriptingEngine::register_GenericTypes()
         }
     };
 
-    m_private->m_lua["MapInstance"]["StartTimer"] = [this](int entityIdx)
+    m_private->m_lua["MapInstance"]["StartTimer"] = [this](uint32_t entityIdx)
     {
         e = getEntity(mi, entityIdx);
         if(e != nullptr)
            mi->startTimer(entityIdx);
     };
 
-    m_private->m_lua["MapInstance"]["StopTimer"] = [this](int entityIdx)
+    m_private->m_lua["MapInstance"]["StopTimer"] = [this](uint32_t entityIdx)
     {
         e = getEntity(mi, entityIdx);
         if(e != nullptr)
             mi->stopTimer(entityIdx);
     };
 
-    m_private->m_lua["MapInstance"]["ClearTimer"] = [this](int entityIdx)
+    m_private->m_lua["MapInstance"]["ClearTimer"] = [this](uint32_t entityIdx)
     {
         e = getEntity(mi, entityIdx);
         if(e != nullptr)
@@ -158,7 +158,7 @@ void ScriptingEngine::register_GenericTypes()
                 if(count == 0)
                     con.m_response_text = QString::fromStdString(s);
                 else
-                    con.m_link = contactLinkHash.find(QString::fromStdString(s)).value();
+                    con.m_link = static_cast<uint32_t>(contactLinkHash.find(QString::fromStdString(s)).value());
 
                 count++;
             }
@@ -174,23 +174,23 @@ void ScriptingEngine::register_GenericTypes()
         cl->addCommand<FloatingInfo>(cl->m_ent->m_idx, message, FloatingInfo_Attention , 4.0);
     };
 
-    m_private->m_lua["MapClientSession"]["ForceEntityLocation"] = [this](int entity_idx, glm::vec3 loc, glm::vec3 ori)
+    m_private->m_lua["MapClientSession"]["ForceEntityLocation"] = [this](uint32_t entityidx, glm::vec3 loc, glm::vec3 ori)
     {
-        e = getEntity(cl, entity_idx);
+        e = getEntity(cl, entityidx);
         if(e != nullptr)
         {
             forcePosition(*e, loc);
             forceOrientation(*e, ori);
-            QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entity_idx).arg(ori.x).arg(ori.y).arg(ori.z);
+            QString msg = QString("Setting entiry %1 orientation to x: %2 y: %3 z: %4").arg(entityidx).arg(ori.x).arg(ori.y).arg(ori.z);
             qCDebug(logScripts) << msg;
         }
         else
-            qCDebug(logScripts) << "Entity "<< entity_idx << " not found";
+            qCDebug(logScripts) << "Entity "<< entityidx << " not found";
     };
 
-    m_private->m_lua["MapClientSession"]["SetNpcStore"] = [this](int entity_idx, const char* store_name, int item_count)
+    m_private->m_lua["MapClientSession"]["SetNpcStore"] = [this](uint32_t entityidx, const char* store_name, int item_count)
     {
-        e = getEntity(cl, entity_idx);
+        e = getEntity(cl, entityidx);
         e->m_is_store = true;
         QString stores = store_name;
 
@@ -213,11 +213,11 @@ void ScriptingEngine::register_GenericTypes()
         sendLocation(*cl, location);
     };
 
-    m_private->m_lua["MapClientSession"]["OpenStore"] = [this](int entity_idx)
+    m_private->m_lua["MapClientSession"]["OpenStore"] = [this](uint32_t entityidx)
     {
-         e = getEntity(cl, entity_idx);
+         e = getEntity(cl, entityidx);
          Store store;
-         store.m_npc_idx = entity_idx;
+         store.m_npc_idx = entityidx;
          store.m_store_Items = e->m_store_items;
          cl->addCommand<StoreOpen>(store);
     };
@@ -246,7 +246,7 @@ void ScriptingEngine::register_GenericTypes()
         npcSendMessage(*cl, ch, entityIdx, msg);
     };
 
-    m_private->m_lua["MapClientSession"]["SetOnTickCallback"] = [this](int entityIdx, std::function<void(int64_t,int64_t,int64_t)> callback)
+    m_private->m_lua["MapClientSession"]["SetOnTickCallback"] = [this](uint32_t entityIdx, std::function<void(int64_t,int64_t,int64_t)> callback)
     {
         e = getEntity(cl, entityIdx);
         if(e != nullptr)
@@ -258,7 +258,7 @@ void ScriptingEngine::register_GenericTypes()
         }
     };
 
-    m_private->m_lua["MapClientSession"]["StartTimer"] = [this](int entityIdx)
+    m_private->m_lua["MapClientSession"]["StartTimer"] = [this](uint32_t entityIdx)
     {
         e = getEntity(cl, entityIdx);
         if(e != nullptr)
@@ -275,7 +275,7 @@ void ScriptingEngine::register_GenericTypes()
         }
     };
 
-    m_private->m_lua["MapClientSession"]["StopTimer"] = [this](int entityIdx)
+    m_private->m_lua["MapClientSession"]["StopTimer"] = [this](uint32_t entityIdx)
     {
         e = getEntity(cl, entityIdx);
         if(e != nullptr)

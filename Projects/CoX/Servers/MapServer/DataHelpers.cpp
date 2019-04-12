@@ -1234,14 +1234,14 @@ void increaseLevel(Entity &ent)
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 */
-void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name)
+uint addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_name);
     if(!npc_def)
     {
         sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
-        return;
+        return 0;
     }
 
     int idx = npc_store.npc_idx(npc_def);
@@ -1253,14 +1253,15 @@ void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int varia
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
     auto val = sess.m_current_map->m_scripting_interface->callFuncWithClientContext(&sess, "npc_added", e->m_idx);
+    return e->m_idx;
 }
 
-void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
+uint addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
 {
-    addNpcWithOrientation(*sess.m_current_map, name, loc, variation, ori, npc_name);
+    return addNpcWithOrientation(*sess.m_current_map, name, loc, variation, ori, npc_name);
 }
 
-void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
+uint addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -1268,7 +1269,7 @@ void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int v
     {
         qCDebug(logScripts()) << "No NPC definition for: " + name;
         //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
-        return;
+        return 0;
     }
 
     int idx = npc_store.npc_idx(npc_def);
@@ -1281,6 +1282,7 @@ void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int v
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
     mi.m_scripting_interface->callFuncWithMapInstance(&mi, "npc_added", e->m_idx);
+    return e->m_idx;
 }
 
 void giveEnhancement(MapClientSession &sess, QString &name, int e_level)
@@ -2004,7 +2006,7 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
 }
 
 
-void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int /*f_rank*/)
+uint addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -2012,7 +2014,7 @@ void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm
     {
         qCDebug(logNpcSpawn) << "No NPC definition for: " + name;
         //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
-        return;
+        return 0;
     }
 
     int idx = npc_store.npc_idx(npc_def);
@@ -2024,11 +2026,13 @@ void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm
 
     forcePosition(*e, loc);
     forceOrientation(*e, ori);
-    qCDebug(logNpcSpawn) << QString("Created Enemy with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
+
+    return e->m_idx;
+    //qCDebug(logNpcSpawn) << QString("Created Enemy with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 
-void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
+uint addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -2036,7 +2040,7 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
     {
         qCDebug(logNpcSpawn) << "No NPC definition for: " + name;
         //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
-        return;
+        return 0;
     }
 
     int idx = npc_store.npc_idx(npc_def);
@@ -2063,22 +2067,11 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
 
     forcePosition(*e, loc);
     forceOrientation(*e, ori);
-    qCDebug(logNpcSpawn) << QString("Created Victim with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
+    //qCDebug(logNpcSpawn) << QString("Created Victim with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
-
+    return e->m_idx;
 }
 
-std::vector<CritterSpawnLocations> getMapEncounters(MapInstance *mi)
-{
-    std::vector<CritterSpawnLocations> encounters;
-
-    for(const CritterGenerator &cg: mi->m_critter_generators.m_generators)
-    {
-        encounters.push_back(cg.m_critter_encounter);
-    }
-
-    return encounters;
-}
 
 //! @}
 
