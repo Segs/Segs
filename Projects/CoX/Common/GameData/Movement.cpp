@@ -244,54 +244,64 @@ void processNewInputs(Entity &e)
 
             Q_ASSERT(input_state->m_current_control_state_change_id == csc->first_id);
 
-            uint32_t minimum_press_time = 0;
-            for (int i = 0; i < 6; ++i)
-            {
-                if (input_state->m_key_press_time_ms[i] >= 250)
-                {
-                    minimum_press_time = 250;
-                    break;
-                }
-            }
-
-            for (int i = 0; i < 6; ++i)
-            {
-                if (input_state->m_keys[i])
-                {
-                    input_state->m_key_press_time_ms[i] += csc->tick_length_ms;
-                }
-                else
-                {
-                    input_state->m_key_press_time_ms[i] = 0;
-                }
-            }
-
+            uint32_t key_press_start_ms[6] = {};
             for (const ControlStateChange::KeyChange& key_change : csc->key_changes)
             {
                 input_state->m_keys[key_change.key] = key_change.state;
 
                 if (key_change.state)
                 {
-                    // if key is newly down, need to add some key held time
-                    // e.g. if tick is 33 ms and key was pressed at 10ms, then
-                    // need to add 23ms
-                    input_state->m_key_press_time_ms[key_change.key] += (csc->tick_length_ms - key_change.offset_from_tick_start_ms);
+                    key_press_start_ms[key_change.key] = key_change.offset_from_tick_start_ms;
                 }
                 else
                 {
-                    // if key is newly up, it will have had an entire tick of
-                    // time added, so we need to cut some back.
-                    // e.g. if tick is 33 ms and key was released at 13ms, it
-                    // should only have had 13ms added but 33ms will have been
-                    // added, so need to subtract 20
-                    input_state->m_key_press_time_ms[key_change.key] -= (csc->tick_length_ms - key_change.offset_from_tick_start_ms);
+                    if (!input_state->m_keys[s_reverse_control_dir[key_change.key]])
+                    {
+                        uint32_t key_press_duration = key_change.offset_from_tick_start_ms;
+                        if (key_press_duration == 0)
+                        {
+                            if (input_state->m_key_press_time_ms[key_change.key] == 0)
+                            {
+                                input_state->m_key_press_time_ms[key_change.key] = 1;
+                            }
+                        }
+                        else
+                        {
+                            input_state->m_key_press_time_ms[key_change.key] = std::min<uint32_t>(input_state->m_key_press_time_ms[key_change.key] + key_press_duration, 1000);
+                        }
+                    }
+                }
+            }
+
+            // if any keys have been held for 250+ ms, then all keys
+            // are given a minumum of 250ms press time
+            uint32_t minimum_key_press_time = 0;
+            for (int i = 0; i < 6; ++i)
+            {
+                if (input_state->m_key_press_time_ms[i] >= 250)
+                {
+                    minimum_key_press_time = 250;
+                    break;
                 }
             }
 
             for (int i = 0; i < 6; ++i)
             {
-                input_state->m_key_press_time_ms[i] = std::min<uint32_t>(input_state->m_key_press_time_ms[i], 1000);
+                if (!input_state->m_keys[i] || input_state->m_keys[s_reverse_control_dir[i]])
+                {
+                    continue;
+                }
 
+                // update key press time, keeping within min/max range
+                input_state->m_key_press_time_ms[i] = std::max(
+                    std::min<uint32_t>(
+                        input_state->m_key_press_time_ms[i] + csc->tick_length_ms - key_press_start_ms[i],
+                        1000),
+                    minimum_key_press_time);
+            }
+
+            for (int i = 0; i < 6; ++i)
+            {
                 if (input_state->m_key_press_time_ms[i])
                 {
                     qCDebug(logMovement, "%s%s (%dms)", input_state->m_keys[i] ? "+" : "-", s_key_name[i], input_state->m_key_press_time_ms[i]);
@@ -364,7 +374,7 @@ void processNewInputs(Entity &e)
                 }
             }
 
-            qCDebug(logMovement, "pos: (%f, %f, %f)",
+            qCDebug(logMovement, "pos: (%1.8f, %1.8f, %1.8f)",
                     e.m_entity_data.m_pos.x,
                     e.m_entity_data.m_pos.y,
                     e.m_entity_data.m_pos.z);
@@ -393,11 +403,13 @@ void processNewInputs(Entity &e)
             local_input_velocity.x = local_input_velocity_xz.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
             local_input_velocity.z = local_input_velocity_xz.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
 
-            qCDebug(logMovement, "local_input_vel: (%f, %f, %f)", local_input_velocity.x, local_input_velocity.y, local_input_velocity.z);
+            qCDebug(logMovement, "local_inpvel: (%1.8f, %1.8f, %1.8f)", local_input_velocity.x, local_input_velocity.y, local_input_velocity.z);
 
             glm::vec3 input_velocity = e.m_direction * local_input_velocity;
 
-            qCDebug(logMovement, "input_vel: (%f, %f, %f)", input_velocity.x, input_velocity.y, input_velocity.z);
+            qCDebug(logMovement, "inpvel: (%1.8f, %1.8f, %1.8f)", input_velocity.x, input_velocity.y, input_velocity.z);
+
+            qCDebug(logMovement, "pyr: (%1.8f, %1.8f, %1.8f)", e.m_entity_data.m_orientation_pyr.p, e.m_entity_data.m_orientation_pyr.y, e.m_entity_data.m_orientation_pyr.r);
 
             float timestep = 1.0f; // todo(jbr) can this change?
             e.m_motion_state.m_move_time += timestep;
@@ -411,14 +423,25 @@ void processNewInputs(Entity &e)
                 e.m_motion_state.m_move_time = 0.0f;
             }
 
-            qCDebug(logMovement, "move_time: %f", e.m_motion_state.m_move_time);
+            qCDebug(logMovement, "move_time: %1.3f", e.m_motion_state.m_move_time);
 
-            qCDebug(logMovement, "newpos: (%f, %f, %f)",
+            qCDebug(logMovement, "newpos: (%1.8f, %1.8f, %1.8f)",
                     e.m_entity_data.m_pos.x,
                     e.m_entity_data.m_pos.y,
                     e.m_entity_data.m_pos.z);
 
             input_state->m_current_control_state_change_id = csc->last_id + 1;
+
+            for (int i = 0; i < 6; ++i)
+            {
+                // reset total time if button is released, or reverse button is pressed
+                if (!input_state->m_keys[i] || input_state->m_keys[s_reverse_control_dir[i]])
+                {
+                    input_state->m_key_press_time_ms[i] = 0;
+                }
+            }
+
+            qCDebug(logMovement, "");
         }
 
         // todo(jbr) check the keypress state at end of packet, make sure all matches up
