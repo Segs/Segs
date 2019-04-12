@@ -244,6 +244,16 @@ void processNewInputs(Entity &e)
 
             Q_ASSERT(input_state->m_current_control_state_change_id == csc->first_id);
 
+            uint32_t minimum_press_time = 0;
+            for (int i = 0; i < 6; ++i)
+            {
+                if (input_state->m_key_press_time_ms[i] >= 250)
+                {
+                    minimum_press_time = 250;
+                    break;
+                }
+            }
+
             for (int i = 0; i < 6; ++i)
             {
                 if (input_state->m_keys[i])

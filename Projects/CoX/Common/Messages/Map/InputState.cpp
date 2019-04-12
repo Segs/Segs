@@ -76,7 +76,7 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                 ControlStateChange::KeyChange key_change;
                 key_change.key = control_id;
                 key_change.state = keypress_state;
-                key_change.offset_from_tick_start_ms = ms_since_prev;
+                key_change.offset_from_tick_start_ms = control_state_change.tick_length_ms;
                 control_state_change.key_changes.push_back(key_change);// todo(jbr) could we just have an array of 6? see if it's possible for down and up to both be present in 1 tick
 
                 break;
