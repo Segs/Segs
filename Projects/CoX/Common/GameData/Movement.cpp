@@ -345,19 +345,23 @@ void processNewInputs(Entity &e)
             }
 
             glm::vec3 orientation_pyr = e.m_entity_data.m_orientation_pyr;
+            qCDebug(logMovement, "current pyr = (%f, %f, %f)", orientation_pyr.p, orientation_pyr.y, orientation_pyr.r);
             bool orientation_changed = false;
             if (csc->pitch_changed)
             {
-                orientation_pyr.p = csc->pitch;
+                qCDebug(logMovement, "pitch changed to %f", csc->pitch);
+                orientation_pyr.x = csc->pitch;
                 orientation_changed = true;
             }
             if (csc->yaw_changed)
             {
+                qCDebug(logMovement, "yaw changed to %f", csc->yaw);
                 orientation_pyr.y = csc->yaw;
                 orientation_changed = true;
             }
             if (orientation_changed)
             {
+                qCDebug(logMovement, "new pyr = (%f, %f, %f)", orientation_pyr.p, orientation_pyr.y, orientation_pyr.r);
                 e.m_entity_data.m_orientation_pyr = orientation_pyr;
                 e.m_direction = fromCoHYpr(orientation_pyr);
             }
