@@ -88,10 +88,36 @@ void World::effectsStep(Entity *e,uint32_t msec)
             e->m_is_fading = false;
     }
 }
+void World::checkDelayedEffects(Entity *e, uint32_t msec)
+{
+    for(auto dly_idx = e->m_delayed.begin(); dly_idx != e->m_delayed.end(); /*dly_idx updated inside loop*/ )
+    {
+        dly_idx->m_timer -= msec;
+        if(dly_idx->m_timer < 0)            // if delay is 0 this will happen right away
+        {
+            Entity *tgt = getEntity(m_owner_instance, dly_idx->src_ent);
+            if (tgt == nullptr)
+                dly_idx->ticks = -1;        // quit early if the source entity can't be found
+            else
+                doAtrrib( *tgt, e, dly_idx->mod, dly_idx->power);
 
+            if (dly_idx->ticks >1)
+            {
+                dly_idx->m_timer = int(dly_idx->mod.Duration*1000/dly_idx->mod.Period);
+                dly_idx->ticks--;
+            }
+            else
+                dly_idx->ticks = -1;
+        }
+
+        if(dly_idx->ticks < 0)
+            e->m_delayed.erase(dly_idx);
+        else
+            ++dly_idx;
+    }
+}
 void World::checkPowerTimers(Entity *e, uint32_t msec)
 {
-
     // for now we only run this on players
     if(e->m_type != EntType::PLAYER)
         return;
@@ -109,12 +135,18 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
                     qpow.m_active_state_change = true;
                     e->m_char->m_char_data.m_has_updated_powers = true;
                 }
-                else if (checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx)
-                        && checkPowerRange(*e, qpow.m_tgt_idx, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx))
+                else
                 {
-                    e->m_is_activating = true;       //queued power can move forward to an active power
-                    checkMovement(*e);               //stop movement while casting
-                    e->m_char->m_char_data.m_has_updated_powers = true;
+                    Entity *target_ent = getEntity(m_owner_instance,qpow.m_tgt_idx);
+                    CharacterPower * ppower =  getOwnedPowerByVecIdx(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx);
+
+                    if (target_ent != nullptr && checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx)
+                        && checkPowerRange(*e, *target_ent, ppower->getPowerTemplate().Range))
+                    {
+                        e->m_is_activating = true;       //queued power can move forward to an active power
+                        checkMovement(*e);               //stop movement while casting
+                        e->m_char->m_char_data.m_has_updated_powers = true;
+                    }
                 }
             }
             else
@@ -185,11 +217,18 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         {
             rpow_idx->m_time_to_activate   -= (float(msec)/1000);
         }
-        if ((powtpl.Type == PowerType::Toggle && ((getEnd(*e->m_char) < powtpl.EnduranceCost)
-            || (e->m_char->m_is_dead) || (getEntity(e->m_client, rpow_idx->m_tgt_idx)->m_char->m_is_dead)
-            || !checkPowerRange(*e, rpow_idx->m_tgt_idx, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx))))
+        if (powtpl.Type == PowerType::Toggle)
         {
-            rpow_idx->m_activation_state = false;
+                Entity *target_ent = getEntity(e->m_client, rpow_idx->m_tgt_idx);
+                CharacterPower * ppower =  getOwnedPowerByVecIdx(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx);
+
+                if((getEnd(*e->m_char) < powtpl.EnduranceCost)  || (e->m_char->m_is_dead)
+                        || (target_ent == nullptr) || (target_ent->m_char->m_is_dead)
+                    || !checkPowerRange(*e, *target_ent, ppower->getPowerTemplate().Range))
+
+                {
+                    rpow_idx->m_activation_state = false;
+                }
         }
         if ( rpow_idx->m_activation_state == false)
         {
@@ -271,6 +310,7 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
     physicsStep(e, uint32_t(dT.msec()));
     effectsStep(e, uint32_t(dT.msec()));
     checkPowerTimers(e, uint32_t(dT.msec()));
+    checkDelayedEffects(e, uint32_t(dT.msec()));
     collisionStep(e, uint32_t(dT.msec()));
     // TODO: Issue #555 needs to handle team cleanup properly
     // and we need to remove the following

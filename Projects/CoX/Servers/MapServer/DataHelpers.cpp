@@ -780,18 +780,7 @@ bool checkPowerRange(Entity &ent, Entity &target_ent, float range)
             return false;
     return true;
 }
-bool checkPowerRange(Entity &ent, uint32_t tgt_idx, uint32_t pset_idx, uint32_t pow_idx)
-{
-    CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
-    const Power_Data powtpl = ppower->getPowerTemplate();
-    if(powtpl.Range != 0.0f)
-    {
-        Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-        if(glm::distance(ent.m_entity_data.m_pos,target_ent->m_entity_data.m_pos) > powtpl.Range)
-            return false;
-    }
-    return true;
-}
+
 void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx)
 {
     CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
@@ -987,7 +976,14 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
             {
                 target_ent = &ent;
             }
-            doAtrrib(ent, target_ent, powtpl.pAttribMod[i], ppower);
+
+            if (powtpl.pAttribMod[i].Delay == 0 && powtpl.pAttribMod[i].Period == 0)
+                doAtrrib(ent, target_ent, powtpl.pAttribMod[i], ppower);
+            else
+            {           //queue the power up to fire later or multiple times
+                target_ent->m_delayed.push_back(
+                {powtpl.pAttribMod[i].Delay, powtpl.pAttribMod[i].Period,ent.m_idx, powtpl.pAttribMod[i], ppower});
+            }
         }
     }
 
