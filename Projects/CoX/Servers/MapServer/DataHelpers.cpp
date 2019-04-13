@@ -948,7 +948,7 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
     QString from_msg;
     Power_Data powtpl = ppower->getPowerTemplate();
 
-    if (!validTargets(*target_ent, ent, powtpl.EntsAutoHit))//
+    if (!validTargets(*target_ent, ent, powtpl.EntsAutoHit))
         {
         //roll to hit
         uint32_t roll = rand()%100;
@@ -987,29 +987,12 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
             {
                 target_ent = &ent;
             }
-            float scale = 0.0;
-
-            if (powtpl.pAttribMod[i].Aspect == AttribMod_Aspect::Absolute)
-                scale = powtpl.pAttribMod[i].Scale;
-            else
-                scale = powtpl.pAttribMod[i].Magnitude;
-
-            float duration = powtpl.pAttribMod[i].Duration;
-            //todo: delayed or repeated effects here, then remove this check for damamge
-            if (duration != 0.0f && !(powtpl.pAttribMod[i].name.toLower() == "damage" || powtpl.pAttribMod[i].name.toLower() == "entcreate"))
-            {
-                addBuff(*target_ent, ppower, powtpl.pAttribMod[i], ent.m_idx);
-            }
-            else
-            {
-                doAtrrib(ent, target_ent, powtpl.pAttribMod[i], duration, scale);
-            }
+            doAtrrib(ent, target_ent, powtpl.pAttribMod[i], ppower);
         }
     }
 
     if(powtpl.pAttribMod.empty())                                       //give the power an effect to either heal or hurt
     {
-        //GameDataStore &data(getGameData());
         StoredAttribMod temp;
         temp.Scale = (powtpl.RechargeTime +  powtpl.TimeToActivate)/5;  //this is an aproximation of what the damage scales should be
         if(validTarget(*target_ent, ent, StoredEntEnum::Enemy))         //assume it is a damaging power
@@ -1027,24 +1010,32 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
             temp.Scale = temp.Scale/4;                              //further reduce for aoe
 
         powtpl.pAttribMod.push_back(temp);
-        doAtrrib(ent, target_ent, temp, 0.0, temp.Scale);
+        doAtrrib(ent, target_ent, temp, ppower);
         qCDebug(logPowers) << powtpl.m_Name << "power data not found, adding" << temp.name << "with a scale of" << temp.Scale;
     }
 }
 
-void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float duration, float scale)
+void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, CharacterPower * ppower)
 {
     QString lower_name = mod.name.toLower();
+    float scale;
+
+    if (mod.Aspect == AttribMod_Aspect::Absolute)
+        scale = mod.Scale;
+    else
+        scale = mod.Magnitude;
+
+    float duration = mod.Duration;   //todo: multiply this if modtype=duration
+
     if (lower_name == "damage")
     {
         GameDataStore &data(getGameData());             //TODO: apply this to all power effects, once we have strengths for every stat
         scale *= data.m_player_classes[uint32_t(getEntityClassIndex(data, true,
             ent.m_char->m_char_data.m_class_name))].m_ModTable[mod.Table.toUInt()].Values[ent.m_char->m_char_data.m_combat_level];
         if (mod.AllowStrength)
-            scale *= (1 + ent.m_char->m_char_data.m_current_attribs.m_DamageTypes[0]);
-
-        //  if (powtpl.pAttribMod[i].AllowResistance)
-        //      scale *= (1 - target_ent->m_char->m_char_data.m_current_attribs.m_resistances[powtpl.pAttribMod[i].Attrib]);
+            scale *= (1 + ent.m_char->m_char_data.m_current_attribs.m_DamageTypes[mod.Attrib]);
+        //  if (mod.AllowResistance)
+        //      scale *= (1 - target_ent->m_char->m_char_data.m_current_attribs.m_resistances[mod.Attrib]);
         changeHP(*target_ent, getHP(*target_ent->m_char)+scale);       //the modtable is negative, so this subratacts hp
 
         if (ent.m_type == EntType::PLAYER)
@@ -1095,65 +1086,47 @@ void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float
     }
     else
     {
-        qDebug() << "Power effect named:"<< lower_name << " has not been found!";
+        buffset bufftemp;
+        bufftemp.m_value = scale;
+        bufftemp.m_value_name = lower_name;
+        bufftemp.m_attrib = mod.Attrib;
+        bufftemp.m_duration = duration;
+        addBuff(*target_ent, ppower, mod, ent.m_idx, bufftemp);
     }
 }
 
-void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const & mod, uint32_t entidx)
+void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const & mod, uint32_t entidx, buffset &srcbuff)
 {
     const Power_Data powtpl = ppower->getPowerTemplate();
-
     for (Buffs & temp : ent.m_buffs)
     {
         if ((temp.m_name == powtpl.m_Name) && (temp.source_ent_idx == entidx))
         {
-            if (mod.StackType == AttribStackType::Replace)           // most are replace
+            if (mod.StackType == AttribStackType::Replace)      //most are replace
             {
-                for (uint32_t i = 0; i<temp.m_buffs.size();i++)
+                for (buffset &bff :temp.m_buffs)
                 {
-                    if (temp.m_buffs[i].m_value_name == mod.name && mod.Attrib == temp.m_buffs[i].m_attrib)
+                    if (bff.m_value_name == srcbuff.m_value_name && srcbuff.m_attrib == bff.m_attrib)
                     {
-                        temp.m_duration = mod.Duration;      //if the same buff is there, refresh the duration and return
+                        bff.m_duration = srcbuff.m_duration;    //if the same buff is there, refresh the duration and return
                         return;
                     }
                 }
             }
-            buffset buftemp;
-            if (mod.Aspect == AttribMod_Aspect::Absolute)
-                buftemp.m_value = mod.Scale;
-            else
-            {
-                buftemp.m_value = mod.Magnitude;
-            }
-
-            buftemp.m_value_name = mod.name;
-            buftemp.m_attrib = mod.Attrib;
-            modifyAttrib(ent, buftemp);       //if the same power has buffed, but not this stat, add this stat
-            temp.m_buffs.push_back(buftemp);
+            modifyAttrib(ent, srcbuff);                         //if the same power has buffed, but not this stat, add this stat
+            temp.m_buffs.push_back(srcbuff);
             return;
         }
-
     }
-    buffset buftemp;
     Buffs buff;                                                 //otherewise, make a new buff
     buff.m_name = powtpl.m_Name;
     buff.m_buff_info = ppower->m_power_info;
-    buff.m_duration = mod.Duration;
     buff.source_ent_idx = entidx;
 
-    buftemp.m_value_name = mod.name;
-    if (mod.Aspect == AttribMod_Aspect::Absolute)
-        buftemp.m_value = mod.Scale;
-    else
-    {
-        buftemp.m_value = mod.Magnitude;
-    }
-    buftemp.m_attrib = mod.Attrib;
-    buff.m_buffs.push_back(buftemp);
-
+    modifyAttrib(ent, srcbuff);
+    buff.m_buffs.push_back(srcbuff);
     ent.m_buffs.push_back(buff);
     ent.m_update_buffs = true;
-    modifyAttrib(ent, buftemp);
 }
 
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
