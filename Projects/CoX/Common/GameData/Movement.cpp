@@ -300,13 +300,14 @@ void processNewInputs(Entity &e)
                     minimum_key_press_time);
             }
 
-            for (int i = 0; i < 6; ++i)
+            // todo(jbr) command to enable movement logging?
+            /*for (int i = 0; i < 6; ++i)
             {
                 if (input_state->m_key_press_time_ms[i])
                 {
                     qCDebug(logMovement, "%s%s (%dms)", input_state->m_keys[i] ? "+" : "-", s_key_name[i], input_state->m_key_press_time_ms[i]);
                 }
-            }
+            }*/
 
             float control_amounts[6] = {};
             uint32_t max_press_time = 0;
@@ -345,29 +346,28 @@ void processNewInputs(Entity &e)
             }
 
             glm::vec3 orientation_pyr = e.m_entity_data.m_orientation_pyr;
-            qCDebug(logMovement, "current pyr = (%f, %f, %f)", orientation_pyr.p, orientation_pyr.y, orientation_pyr.r);
             bool orientation_changed = false;
             if (csc->pitch_changed)
             {
-                qCDebug(logMovement, "pitch changed to %f", csc->pitch);
                 orientation_pyr.x = csc->pitch;
                 orientation_changed = true;
             }
             if (csc->yaw_changed)
             {
-                qCDebug(logMovement, "yaw changed to %f", csc->yaw);
                 orientation_pyr.y = csc->yaw;
                 orientation_changed = true;
             }
             if (orientation_changed)
             {
-                qCDebug(logMovement, "new pyr = (%f, %f, %f)", orientation_pyr.p, orientation_pyr.y, orientation_pyr.r);
+                // todo(jbr) command to enable movement logging?
+                //qCDebug(logMovement, "new pyr = (%f, %f, %f)", orientation_pyr.p, orientation_pyr.y, orientation_pyr.r);
                 e.m_entity_data.m_orientation_pyr = orientation_pyr;
                 e.m_direction = fromCoHYpr(orientation_pyr);
             }
 
             if (csc->no_collision_changed)
             {
+                // todo(jbr) command to enable movement logging?
                 if (csc->no_collision)
                 {
                     e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
@@ -378,10 +378,11 @@ void processNewInputs(Entity &e)
                 }
             }
 
-            qCDebug(logMovement, "pos: (%1.8f, %1.8f, %1.8f)",
+            // todo(jbr) command to enable movement logging?
+            /*qCDebug(logMovement, "pos: (%1.8f, %1.8f, %1.8f)",
                     e.m_entity_data.m_pos.x,
                     e.m_entity_data.m_pos.y,
-                    e.m_entity_data.m_pos.z);
+                    e.m_entity_data.m_pos.z);*/
 
             glm::vec3 local_input_velocity(0.0f, 0.0f, 0.0f);
             local_input_velocity.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
@@ -407,13 +408,14 @@ void processNewInputs(Entity &e)
             local_input_velocity.x = local_input_velocity_xz.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
             local_input_velocity.z = local_input_velocity_xz.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
 
-            qCDebug(logMovement, "local_inpvel: (%1.8f, %1.8f, %1.8f)", local_input_velocity.x, local_input_velocity.y, local_input_velocity.z);
+            // todo(jbr) command to enable movement logging?
+            //qCDebug(logMovement, "local_inpvel: (%1.8f, %1.8f, %1.8f)", local_input_velocity.x, local_input_velocity.y, local_input_velocity.z);
 
             glm::vec3 input_velocity = e.m_direction * local_input_velocity;
 
-            qCDebug(logMovement, "inpvel: (%1.8f, %1.8f, %1.8f)", input_velocity.x, input_velocity.y, input_velocity.z);
-
-            qCDebug(logMovement, "pyr: (%1.8f, %1.8f, %1.8f)", e.m_entity_data.m_orientation_pyr.p, e.m_entity_data.m_orientation_pyr.y, e.m_entity_data.m_orientation_pyr.r);
+            // todo(jbr) command to enable movement logging?
+            //qCDebug(logMovement, "inpvel: (%1.8f, %1.8f, %1.8f)", input_velocity.x, input_velocity.y, input_velocity.z);
+            //qCDebug(logMovement, "pyr: (%1.8f, %1.8f, %1.8f)", e.m_entity_data.m_orientation_pyr.p, e.m_entity_data.m_orientation_pyr.y, e.m_entity_data.m_orientation_pyr.r);
 
             float timestep = 1.0f; // todo(jbr) can this change?
             e.m_motion_state.m_move_time += timestep;
@@ -427,12 +429,13 @@ void processNewInputs(Entity &e)
                 e.m_motion_state.m_move_time = 0.0f;
             }
 
-            qCDebug(logMovement, "move_time: %1.3f", e.m_motion_state.m_move_time);
+            // todo(jbr) command to enable movement logging?
+            /*qCDebug(logMovement, "move_time: %1.3f", e.m_motion_state.m_move_time);
 
             qCDebug(logMovement, "newpos: (%1.8f, %1.8f, %1.8f)",
                     e.m_entity_data.m_pos.x,
                     e.m_entity_data.m_pos.y,
-                    e.m_entity_data.m_pos.z);
+                    e.m_entity_data.m_pos.z);*/
 
             input_state->m_current_control_state_change_id = csc->last_id + 1;
 
@@ -445,7 +448,8 @@ void processNewInputs(Entity &e)
                 }
             }
 
-            qCDebug(logMovement, "");
+            // todo(jbr) command to enable movement logging?
+            //qCDebug(logMovement, "");
         }
 
         // todo(jbr) check the keypress state at end of packet, make sure all matches up

@@ -1120,8 +1120,8 @@ void MapInstance::on_input_state(RecvInputState *st)
     // Set Orientation
     if(st->m_next_state.m_orientation_pyr.p || st->m_next_state.m_orientation_pyr.y || st->m_next_state.m_orientation_pyr.r)
     {
-        ent->m_entity_data.m_orientation_pyr = st->m_next_state.m_orientation_pyr;
-        ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
+        //ent->m_entity_data.m_orientation_pyr = st->m_next_state.m_orientation_pyr;
+        //ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
 
     // Input state messages can be followed by multiple commands.

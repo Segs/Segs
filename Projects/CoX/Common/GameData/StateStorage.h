@@ -163,7 +163,7 @@ public:
         addNewState(empty_state); // todo(jbr)
     }
 
-    // todo(jbr) get rid of these
+    // todo(jbr)
     InputState* current() { return &m_inp_states.back(); }
     const InputState* current() const { return &m_inp_states.back(); }
     InputState* previous()
