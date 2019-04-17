@@ -38,6 +38,8 @@ namespace
 {
 constexpr uint32_t    stringcachecount_bitlength=12;
 constexpr uint32_t    colorcachecount_bitlength =10;
+constexpr int    minimumTicksPerSecond = 1;
+constexpr int    maximumTicksPerSecond = 1000;
 
 uint32_t color_to_4ub(const glm::vec3 &rgb)
 {
@@ -485,7 +487,16 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
 
     qInfo() << "Loading Experimental settings...";
     config.beginGroup(QStringLiteral("Experimental"));
-        m_world_update_ticks_per_sec = config.value(QStringLiteral("world_update_ticks_per_sec"), "").toInt();
+    m_world_update_ticks_per_sec = config.value(QStringLiteral("world_update_ticks_per_sec"), "").toInt();
+    // constrain to a reasonable range
+    if (m_world_update_ticks_per_sec > maximumTicksPerSecond)
+    {
+        m_world_update_ticks_per_sec = maximumTicksPerSecond;
+    }
+    else if (m_world_update_ticks_per_sec < minimumTicksPerSecond)
+    {
+        m_world_update_ticks_per_sec = minimumTicksPerSecond;
+    }
     config.endGroup(); // Experiemental
 
     return true;
