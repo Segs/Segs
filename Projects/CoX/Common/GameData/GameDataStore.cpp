@@ -487,16 +487,11 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
 
     qInfo() << "Loading Experimental settings...";
     config.beginGroup(QStringLiteral("Experimental"));
-    m_world_update_ticks_per_sec = config.value(QStringLiteral("world_update_ticks_per_sec"), "").toInt();
+
     // constrain to a reasonable range
-    if (m_world_update_ticks_per_sec > maximumTicksPerSecond)
-    {
-        m_world_update_ticks_per_sec = maximumTicksPerSecond;
-    }
-    else if (m_world_update_ticks_per_sec < minimumTicksPerSecond)
-    {
-        m_world_update_ticks_per_sec = minimumTicksPerSecond;
-    }
+    int ticks = config.value(QStringLiteral("world_update_ticks_per_sec"), "").toInt();
+    m_world_update_ticks_per_sec = std::min(std::min(ticks, minimumTicksPerSecond), maximumTicksPerSecond);
+
     config.endGroup(); // Experiemental
 
     return true;
