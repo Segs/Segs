@@ -229,6 +229,10 @@ void SettingsDialog::read_config_file(QString filePath)
     ui->xp_mod_enddate_edit->setDateTime(QDateTime::fromString(config_file.value("xp_mod_enddate", "").toString(),
         "M/d/yyyy h:mm AP"));
     config_file.endGroup(); // Modifiers
+
+    config_file.beginGroup("Experimental");
+    ui->ticksPerSecond->setValue(config_file.value("world_update_ticks_per_sec", "").toInt());
+    config_file.endGroup(); // Experimental
 }
 
 void SettingsDialog::generate_default_config_file(QString ip)
@@ -312,6 +316,12 @@ void SettingsDialog::generate_default_config_file(QString ip)
     settings_template.endGroup(); // settings_template Modifiers
     config_file_write.endGroup(); // Modifiers
 
+    config_file_write.beginGroup("Experimental");
+    settings_template.beginGroup("Experimental");
+    config_file_write.setValue("world_update_ticks_per_sec", settings_template.value("world_update_ticks_per_sec").toInt());
+    settings_template.endGroup(); // settings_template Experimental
+    config_file_write.endGroup(); // Experimental
+
     config_file_write.sync();
     emit checkForConfigFile();
     emit check_data_and_dir(ui->map_location->text());
@@ -388,6 +398,10 @@ void SettingsDialog::save_changes_config_file()
     config_file_write.setValue("xp_mod_startdate", ui->xp_mod_startdate_edit->dateTime().toString("M/d/yyyy h:mm AP"));
     config_file_write.setValue("xp_mod_enddate", ui->xp_mod_enddate_edit->dateTime().toString("M/d/yyyy h:mm AP"));
     config_file_write.endGroup(); // Modifiers
+
+    config_file_write.beginGroup("Experimental");
+    config_file_write.setValue("world_update_ticks_per_sec", ui->ticksPerSecond->value());
+    config_file_write.endGroup(); // Experimental
 
     config_file_write.sync();
 
