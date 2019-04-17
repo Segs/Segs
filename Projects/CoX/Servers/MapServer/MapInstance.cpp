@@ -86,7 +86,6 @@ namespace
     const ACE_Time_Value reaping_interval(0,1000*1000);
     const ACE_Time_Value link_is_stale_if_disconnected_for(5,0);
     const ACE_Time_Value link_update_interval(0,500*1000);
-    const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
     const ACE_Time_Value sync_service_update_interval(0, 30000*1000);
     const ACE_Time_Value afk_update_interval(0, 1000 * 1000);
     const ACE_Time_Value lua_timer_interval(0, 1000 * 1000);
@@ -118,8 +117,10 @@ protected:
 
 using namespace std;
 MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
-  : m_data_path(mapdir_path), m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
-    m_addresses(listen_addr)
+  : m_data_path(mapdir_path),
+    m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
+    m_addresses(listen_addr),
+    m_world_update_interval(0, 1000*1000/getGameData().m_world_update_ticks_per_sec)
 {
     m_world = new World(m_entities, getGameData().m_player_fade_in, this);
     m_scripting_interface.reset(new ScriptingEngine);
@@ -169,7 +170,7 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service->activate();
 
     // world simulation ticks
-    m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, world_update_interval, false);
+    m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, m_world_update_interval, false);
     // state broadcast ticks
     m_resend_timer = std::make_unique<SEGSTimer>(this, State_Transmit_Timer, resend_interval, false);
     m_link_timer   = std::make_unique<SEGSTimer>(this, Link_Idle_Timer, link_update_interval, false);

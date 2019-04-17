@@ -483,6 +483,11 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
              "M/d/yyyy h:mm AP");
     config.endGroup(); // Modifiers
 
+    qInfo() << "Loading Experimental settings...";
+    config.beginGroup(QStringLiteral("Experimental"));
+        m_world_update_ticks_per_sec = config.value(QStringLiteral("world_update_ticks_per_sec"), "").toInt();
+    config.endGroup(); // Experiemental
+
     return true;
 }
 
