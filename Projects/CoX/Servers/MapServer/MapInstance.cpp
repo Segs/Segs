@@ -84,9 +84,8 @@ namespace
     };
 
     const ACE_Time_Value reaping_interval(0,1000*1000);
-    const ACE_Time_Value link_is_stale_if_disconnected_for(0,5*1000*1000);
+    const ACE_Time_Value link_is_stale_if_disconnected_for(5,0);
     const ACE_Time_Value link_update_interval(0,500*1000);
-    const ACE_Time_Value world_update_interval(0,1000*1000/WORLD_UPDATE_TICKS_PER_SECOND);
     const ACE_Time_Value sync_service_update_interval(0, 30000*1000);
     const ACE_Time_Value afk_update_interval(0, 1000 * 1000);
     const ACE_Time_Value lua_timer_interval(0, 1000 * 1000);
@@ -118,8 +117,10 @@ protected:
 
 using namespace std;
 MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
-  : m_data_path(mapdir_path), m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
-    m_addresses(listen_addr)
+  : m_data_path(mapdir_path),
+    m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
+    m_addresses(listen_addr),
+    m_world_update_interval(0, 1000*1000/getGameData().m_world_update_ticks_per_sec)
 {
     m_world = new World(m_entities, getGameData().m_player_fade_in, this);
     m_scripting_interface.reset(new ScriptingEngine);
@@ -143,15 +144,13 @@ void MapInstance::start(const QString &scenegraph_path)
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
-                m_all_spawners = m_map_scenegraph->getSpawnPoints();
                 m_map_transfers = m_map_scenegraph->get_map_transfers();
             }, "Loading original scene graph");
 
         TIMED_LOG({
-            m_map_scenegraph->spawn_npcs(this);
-            m_npc_generators.generate(this);
-            m_map_scenegraph->spawn_critters(this);
-            m_critter_generators.generate(this);
+            m_map_scenegraph->spawn_npcs(this);         // handles persistents, Spawndef, npc/vehicle encounters
+            m_npc_generators.generate(this);            // handles doors, monorails, trains
+            m_all_spawners = m_map_scenegraph->getSpawnPoints();    // used for locating player spawn points
             }, "Spawning npcs");
 
         // Set correct MapInstance in scripting engine
@@ -171,7 +170,7 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service->activate();
 
     // world simulation ticks
-    m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, world_update_interval, false);
+    m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, m_world_update_interval, false);
     // state broadcast ticks
     m_resend_timer = std::make_unique<SEGSTimer>(this, State_Transmit_Timer, resend_interval, false);
     m_link_timer   = std::make_unique<SEGSTimer>(this, Link_Idle_Timer, link_update_interval, false);
@@ -193,14 +192,21 @@ void MapInstance::load_map_lua()
     qInfo() << "Loading custom scripts";
 
     QStringList script_paths = {
-        "scripts/global.lua", // global helper script
-        // per zone scripts
-        m_data_path+'/'+"contacts.lua",
-        m_data_path+'/'+"locations.lua",
-        m_data_path+'/'+"plaques.lua",
-        m_data_path+'/'+"entities.lua",
-        m_data_path+'/'+"missions.lua"
+        "scripts/global.lua",                   // global helper script
+        "scripts/Universal_Spawns.lua",         // Spawndef and functionality for universal critters
+        "scripts/Encounter_Manager.lua",        // used by all maps for encounter generation
+        "scripts/ES_OL_Functions.lua",          // used by all maps for object library reference functionality
+        "scripts/Global_NPC_Extras.lua",        // universal "faction table" for civilian NPCs, vehicles and later police drones
+        "scripts/Global_Persistents.lua",       // universal file for referencing persistent NPCs/model lookup
+        "scripts/spawners.lua",                 // handles exposed Scenegraph data for all Lua-side managed spawning activity
 
+        // per zone scripts
+        m_data_path + '/'+"ES_Library_Objects.lua",
+        m_data_path + '/'+"contacts.lua",
+        m_data_path + '/'+"locations.lua",
+        m_data_path + '/'+"plaques.lua",
+        m_data_path + '/'+"entities.lua",
+        m_data_path + '/'+"missions.lua"
     };
 
     for(const QString &path : script_paths)

@@ -591,7 +591,7 @@ void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location)
 
 void sendStance(MapClientSession &sess, PowerStance &stance)
 {
-    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    qCDebug(logAnimations) << "Sending new PowerStance";
     sess.addCommand<SendStance>(stance);
 }
 
@@ -609,7 +609,7 @@ void sendSouvenirList(MapClientSession &sess)
 
 void sendDeadNoGurney(MapClientSession &sess)
 {
-    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    qCDebug(logSlashCommand) << "Sending DeadNoGurney message";
     sess.addCommand<DeadNoGurney>();
 }
 
@@ -948,7 +948,7 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
     QString from_msg;
     Power_Data powtpl = ppower->getPowerTemplate();
 
-    if (!validTargets(*target_ent, ent, powtpl.EntsAutoHit))//
+    if (!validTargets(*target_ent, ent, powtpl.EntsAutoHit))
         {
         //roll to hit
         uint32_t roll = rand()%100;
@@ -987,29 +987,12 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
             {
                 target_ent = &ent;
             }
-            float scale = 0.0;
-
-            if (powtpl.pAttribMod[i].Aspect == AttribMod_Aspect::Absolute)
-                scale = powtpl.pAttribMod[i].Scale;
-            else
-                scale = powtpl.pAttribMod[i].Magnitude;
-
-            float duration = powtpl.pAttribMod[i].Duration;
-            //todo: delayed or repeated effects here, then remove this check for damamge
-            if (duration != 0.0f && !(powtpl.pAttribMod[i].name.toLower() == "damage" || powtpl.pAttribMod[i].name.toLower() == "entcreate"))
-            {
-                addBuff(*target_ent, ppower, powtpl.pAttribMod[i], ent.m_idx);
-            }
-            else
-            {
-                doAtrrib(ent, target_ent, powtpl.pAttribMod[i], duration, scale);
-            }
+            doAtrrib(ent, target_ent, powtpl.pAttribMod[i], ppower);
         }
     }
 
     if(powtpl.pAttribMod.empty())                                       //give the power an effect to either heal or hurt
     {
-        //GameDataStore &data(getGameData());
         StoredAttribMod temp;
         temp.Scale = (powtpl.RechargeTime +  powtpl.TimeToActivate)/5;  //this is an aproximation of what the damage scales should be
         if(validTarget(*target_ent, ent, StoredEntEnum::Enemy))         //assume it is a damaging power
@@ -1027,24 +1010,32 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
             temp.Scale = temp.Scale/4;                              //further reduce for aoe
 
         powtpl.pAttribMod.push_back(temp);
-        doAtrrib(ent, target_ent, temp, 0.0, temp.Scale);
+        doAtrrib(ent, target_ent, temp, ppower);
         qCDebug(logPowers) << powtpl.m_Name << "power data not found, adding" << temp.name << "with a scale of" << temp.Scale;
     }
 }
 
-void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float duration, float scale)
+void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, CharacterPower * ppower)
 {
     QString lower_name = mod.name.toLower();
+    float scale;
+
+    if (mod.Aspect == AttribMod_Aspect::Absolute)
+        scale = mod.Scale;
+    else
+        scale = mod.Magnitude;
+
+    float duration = mod.Duration;   //todo: multiply this if modtype=duration
+
     if (lower_name == "damage")
     {
         GameDataStore &data(getGameData());             //TODO: apply this to all power effects, once we have strengths for every stat
         scale *= data.m_player_classes[uint32_t(getEntityClassIndex(data, true,
             ent.m_char->m_char_data.m_class_name))].m_ModTable[mod.Table.toUInt()].Values[ent.m_char->m_char_data.m_combat_level];
         if (mod.AllowStrength)
-            scale *= (1 + ent.m_char->m_char_data.m_current_attribs.m_DamageTypes[0]);
-
-        //  if (powtpl.pAttribMod[i].AllowResistance)
-        //      scale *= (1 - target_ent->m_char->m_char_data.m_current_attribs.m_resistances[powtpl.pAttribMod[i].Attrib]);
+            scale *= (1 + ent.m_char->m_char_data.m_current_attribs.m_DamageTypes[mod.Attrib]);
+        //  if (mod.AllowResistance)
+        //      scale *= (1 - target_ent->m_char->m_char_data.m_current_attribs.m_resistances[mod.Attrib]);
         changeHP(*target_ent, getHP(*target_ent->m_char)+scale);       //the modtable is negative, so this subratacts hp
 
         if (ent.m_type == EntType::PLAYER)
@@ -1095,65 +1086,47 @@ void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float
     }
     else
     {
-        qDebug() << "Power effect named:"<< lower_name << " has not been found!";
+        buffset bufftemp;
+        bufftemp.m_value = scale;
+        bufftemp.m_value_name = lower_name;
+        bufftemp.m_attrib = mod.Attrib;
+        bufftemp.m_duration = duration;
+        addBuff(*target_ent, ppower, mod, ent.m_idx, bufftemp);
     }
 }
 
-void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const & mod, uint32_t entidx)
+void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const & mod, uint32_t entidx, buffset &srcbuff)
 {
     const Power_Data powtpl = ppower->getPowerTemplate();
-
     for (Buffs & temp : ent.m_buffs)
     {
         if ((temp.m_name == powtpl.m_Name) && (temp.source_ent_idx == entidx))
         {
-            if (mod.StackType == AttribStackType::Replace)           // most are replace
+            if (mod.StackType == AttribStackType::Replace)      //most are replace
             {
-                for (uint32_t i = 0; i<temp.m_buffs.size();i++)
+                for (buffset &bff :temp.m_buffs)
                 {
-                    if (temp.m_buffs[i].m_value_name == mod.name && mod.Attrib == temp.m_buffs[i].m_attrib)
+                    if (bff.m_value_name == srcbuff.m_value_name && srcbuff.m_attrib == bff.m_attrib)
                     {
-                        temp.m_duration = mod.Duration;      //if the same buff is there, refresh the duration and return
+                        bff.m_duration = srcbuff.m_duration;    //if the same buff is there, refresh the duration and return
                         return;
                     }
                 }
             }
-            buffset buftemp;
-            if (mod.Aspect == AttribMod_Aspect::Absolute)
-                buftemp.m_value = mod.Scale;
-            else
-            {
-                buftemp.m_value = mod.Magnitude;
-            }
-
-            buftemp.m_value_name = mod.name;
-            buftemp.m_attrib = mod.Attrib;
-            modifyAttrib(ent, buftemp);       //if the same power has buffed, but not this stat, add this stat
-            temp.m_buffs.push_back(buftemp);
+            modifyAttrib(ent, srcbuff);                         //if the same power has buffed, but not this stat, add this stat
+            temp.m_buffs.push_back(srcbuff);
             return;
         }
-
     }
-    buffset buftemp;
     Buffs buff;                                                 //otherewise, make a new buff
     buff.m_name = powtpl.m_Name;
     buff.m_buff_info = ppower->m_power_info;
-    buff.m_duration = mod.Duration;
     buff.source_ent_idx = entidx;
 
-    buftemp.m_value_name = mod.name;
-    if (mod.Aspect == AttribMod_Aspect::Absolute)
-        buftemp.m_value = mod.Scale;
-    else
-    {
-        buftemp.m_value = mod.Magnitude;
-    }
-    buftemp.m_attrib = mod.Attrib;
-    buff.m_buffs.push_back(buftemp);
-
+    modifyAttrib(ent, srcbuff);
+    buff.m_buffs.push_back(srcbuff);
     ent.m_buffs.push_back(buff);
     ent.m_update_buffs = true;
-    modifyAttrib(ent, buftemp);
 }
 
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
@@ -1234,14 +1207,14 @@ void increaseLevel(Entity &ent)
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 */
-void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name)
+uint addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_name);
     if(!npc_def)
     {
         sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
-        return;
+        return 0;
     }
 
     int idx = npc_store.npc_idx(npc_def);
@@ -1253,14 +1226,15 @@ void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int varia
     sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
     auto val = sess.m_current_map->m_scripting_interface->callFuncWithClientContext(&sess, "npc_added", e->m_idx);
+    return e->m_idx;
 }
 
-void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
+uint addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
 {
-    addNpcWithOrientation(*sess.m_current_map, name, loc, variation, ori, npc_name);
+    return addNpcWithOrientation(*sess.m_current_map, name, loc, variation, ori, npc_name);
 }
 
-void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
+uint addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -1268,7 +1242,7 @@ void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int v
     {
         qCDebug(logScripts()) << "No NPC definition for: " + name;
         //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
-        return;
+        return 0;
     }
 
     int idx = npc_store.npc_idx(npc_def);
@@ -1281,6 +1255,7 @@ void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int v
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 
     mi.m_scripting_interface->callFuncWithMapInstance(&mi, "npc_added", e->m_idx);
+    return e->m_idx;
 }
 
 void giveEnhancement(MapClientSession &sess, QString &name, int e_level)
@@ -2004,7 +1979,7 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
 }
 
 
-void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int /*f_rank*/)
+uint addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -2012,7 +1987,7 @@ void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm
     {
         qCDebug(logNpcSpawn) << "No NPC definition for: " + name;
         //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
-        return;
+        return 0;
     }
 
     int idx = npc_store.npc_idx(npc_def);
@@ -2024,11 +1999,13 @@ void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm
 
     forcePosition(*e, loc);
     forceOrientation(*e, ori);
-    qCDebug(logNpcSpawn) << QString("Created Enemy with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
+
+    return e->m_idx;
+    //qCDebug(logNpcSpawn) << QString("Created Enemy with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
 }
 
-void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
+uint addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
@@ -2036,7 +2013,7 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
     {
         qCDebug(logNpcSpawn) << "No NPC definition for: " + name;
         //sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
-        return;
+        return 0;
     }
 
     int idx = npc_store.npc_idx(npc_def);
@@ -2063,22 +2040,11 @@ void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
 
     forcePosition(*e, loc);
     forceOrientation(*e, ori);
-    qCDebug(logNpcSpawn) << QString("Created Victim with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
+    //qCDebug(logNpcSpawn) << QString("Created Victim with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z);
     //sendInfoMessage(MessageChannel::DEBUG_INFO, QString("Created npc with ent idx:%1 at location x: %2 y: %3 z: %4").arg(e->m_idx).arg(loc.x).arg(loc.y).arg(loc.z), sess);
-
+    return e->m_idx;
 }
 
-std::vector<CritterSpawnLocations> getMapEncounters(MapInstance *mi)
-{
-    std::vector<CritterSpawnLocations> encounters;
-
-    for(const CritterGenerator &cg: mi->m_critter_generators.m_generators)
-    {
-        encounters.push_back(cg.m_critter_encounter);
-    }
-
-    return encounters;
-}
 
 //! @}
 

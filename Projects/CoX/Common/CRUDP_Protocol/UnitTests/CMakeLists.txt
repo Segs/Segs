@@ -13,3 +13,7 @@ target_link_libraries(CRUDPEventRegistry
     SEGS_Components
     CRUDP_Protocol
 )
+
+set_target_properties (CRUDPEventRegistry PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+)

@@ -7,7 +7,7 @@ RelayRace.name = "Sgt. Johnson";
 -- Model_Bastion , Model_ColleenSaramago , Model_SergeantHicks , Model_SuzanneBernhard , Model_VicJohansson
 RelayRace.model = "Model_VicJohansson"; -- 2009
 RelayRace.location = {};
-RelayRace.location.coordinates = vec3.new(192, 0, -117);
+RelayRace.location.coordinates = vec3.new(175, 16, -247);
 RelayRace.location.orientation = vec3.new(0,0,0);
 RelayRace.variation = 1;
 RelayRace.expected = false;

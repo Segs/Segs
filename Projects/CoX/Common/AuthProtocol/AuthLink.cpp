@@ -12,6 +12,7 @@
 
 #include "AuthLink.h"
 #include "Buffer.h"
+#include "Logging.h"
 
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"
@@ -257,7 +258,7 @@ int AuthLink::handle_input( ACE_HANDLE )
     ssize_t recv_cnt;
     if((recv_cnt = m_peer.recv(buffer, sizeof(buffer))) <= 0)
     {
-        ACE_DEBUG ((LM_DEBUG,ACE_TEXT ("(%P|%t) Connection closed\n")));
+        qCDebug(logConnection) << "Connection closed";
         return -1;
     }
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_buffer_mutex);

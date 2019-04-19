@@ -18,11 +18,11 @@
 #include <QtCore/QFileInfo> // for include support
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
+#include "MapSceneGraph.h"
 
 class QString;
 struct MapClientSession;
 class MapInstance;
-
 
 class ScriptingEngine
 {
