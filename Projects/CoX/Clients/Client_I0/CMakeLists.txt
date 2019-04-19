@@ -30,7 +30,7 @@ link_directories(
 )
 include_directories(SYSTEM
     ${ThirdParty_Install_Dir}/include
-    ${CMAKE_SOURCE_DIR}/../../../../include # glm is located there
+    ${CMAKE_SOURCE_DIR}/../../../../3rd_party # glm is located there
 )
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
