@@ -97,3 +97,9 @@ target_link_libraries(cohdll CityOfX glew_IMP Threads::Threads)
 SET_TARGET_PROPERTIES(cohdll PROPERTIES PREFIX "lib"
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
 
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES cohdll SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (cohdll PROPERTIES
+    FOLDER Projects/CoX/Clients
+)

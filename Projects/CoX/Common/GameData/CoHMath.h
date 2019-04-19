@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -13,6 +13,7 @@
 #include <algorithm>
 
 // AngleRadians for use in PosUpdate etc
+// TODO: we can replace this with glm::vec and other methods
 struct AngleRadians
 {
     static AngleRadians fromDeg(float deg) { return AngleRadians(deg*glm::pi<float>()/180.0f);}
@@ -61,9 +62,9 @@ struct AngleRadians
     bool operator==(const AngleRadians &other) const { return v == other.v; }
     bool operator!=(const AngleRadians &other) const { return v != other.v; }
     AngleRadians &fixup() {
-        if ( v > glm::pi<float>())
+        if( v > glm::pi<float>())
             v -= glm::two_pi<float>();
-        if ( v <= -glm::pi<float>())
+        if( v <= -glm::pi<float>())
             v += glm::two_pi<float>();
         return *this;
     }
@@ -112,7 +113,7 @@ inline glm::vec3 toCoH_YPR(const glm::quat &q)
     float qwx(q.w * q.x);
     float qwy(q.w * q.y);
     float qwz(q.w * q.z);
-    glm::mat3 mat(mat3_cast(q));
+    //glm::mat3 mat(mat3_cast(q));
     //float mat00 = 1 - 2 * (qyy + qzz);
     float mat01 = 2 * (qxy + qwz);
     //float mat02 = 2 * (qxz - qwy);
@@ -126,13 +127,13 @@ inline glm::vec3 toCoH_YPR(const glm::quat &q)
     float yawVal;
     float rollVal;
 
-    if (std::abs(1.0f - std::abs(mat21)) >= 0.00001f)
+    if(std::abs(1.0f - std::abs(mat21)) >= 0.00001f)
     {
         rollVal = std::atan2(-mat01, mat11);
         const float cos_roll = std::cos(rollVal);
-        if (cos_roll == 0.0f)
+        if(cos_roll == 0.0f)
         {
-            if (rollVal <= 0.0f)
+            if(rollVal <= 0.0f)
             {
                 pitchVal = std::atan2(mat21, mat01);
                 yawVal   = std::atan2(-mat12, mat10);
@@ -153,7 +154,7 @@ inline glm::vec3 toCoH_YPR(const glm::quat &q)
     else
     {
         yawVal = std::atan2(-(2 * (qxz - qwy)), 1 - 2 * (qyy + qzz));
-        if (mat21 <= 0.0f)
+        if(mat21 <= 0.0f)
             pitchVal = -glm::radians(90.0f);
         else
             pitchVal = glm::radians(90.0f);
@@ -172,13 +173,13 @@ inline glm::vec3 CoHYprFromMat(const glm::mat3 &mat)
     float yawVal;
     float rollVal;
 
-    if (std::abs(1.0f - std::abs(mat[2][1])) >= 0.00001f)
+    if(std::abs(1.0f - std::abs(mat[2][1])) >= 0.00001f)
     {
         rollVal = std::atan2(-mat[0][1], mat[1][1]);
         const float cos_roll = std::cos(rollVal);
-        if (cos_roll == 0.0f)
+        if(cos_roll == 0.0f)
         {
-            if (rollVal <= 0.0f)
+            if(rollVal <= 0.0f)
             {
                 pitchVal = std::atan2(mat[2][1], mat[0][1]);
                 yawVal   = std::atan2(-mat[1][2], mat[1][0]);
@@ -199,7 +200,7 @@ inline glm::vec3 CoHYprFromMat(const glm::mat3 &mat)
     else
     {
         yawVal = std::atan2(-mat[2][0],mat[0][0]);
-        if (mat[2][1] <= 0.0f)
+        if(mat[2][1] <= 0.0f)
             pitchVal = -1.570796326794897f;
         else
             pitchVal = 1.570796326794897f;
@@ -266,12 +267,44 @@ inline void transformFromYPRandTranslation(glm::mat4 & mat, glm::vec3 pyr,glm::v
     mat[3]= glm::vec4(translation,1);
 }
 
+// XYZ
+inline void createMat3RYP(glm::mat3 *mat, const glm::vec3 *vec)
+{
+    float cx = std::cos(vec->x);
+    float nsx = -std::sin(vec->x);
+    float cy = std::cos(vec->y);
+    float nsy = -std::sin(vec->y);
+    float cz = std::cos(vec->z);
+    float nsz = -std::sin(vec->z);
+    float tmp = -(cz * nsy);
+    float tmp2 = -(nsz * nsy);
+    mat[0][0].x = cz * cy;
+    mat[0][1].y = nsz * cy;
+    mat[0][2].z = nsy;
+    mat[1][0].x = tmp * nsx - nsz * cx;
+    mat[1][1].y = tmp2 * nsx + cz * cx;
+    mat[1][2].z = cy * nsx;
+    mat[2][0].x = nsz * nsx + tmp * cx;
+    mat[2][1].y = tmp2 * cx - cz * nsx;
+    mat[2][2].z = cy * cx;
+}
+
+inline void camLookAt(glm::vec3 *vec, glm::mat3 *mat)
+{
+    glm::vec3 result;
+
+    result.x = std::atan2(vec->y,sqrt(vec->z * vec->z + vec->x * vec->x));
+    result.y = std::atan2(vec->x,vec->z);
+    result.z = 0;
+    createMat3RYP(mat, &result);
+}
+
 inline float normalizeRadAngle(float ang)
 {
     float res = ang;
-    if ( ang > glm::pi<float>() )
+    if( ang > glm::pi<float>() )
         res -= glm::two_pi<float>();
-    if ( res <= -glm::pi<float>() )
+    if( res <= -glm::pi<float>() )
         res += glm::two_pi<float>();
     return res;
 }

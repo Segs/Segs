@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -15,7 +15,8 @@
 #include "Servers/HandlerLocator.h"
 #include "ConfigExtension.h"
 #include "MapManager.h"
-#include "MapServerData.h"
+#include "GameData/GameDataStore.h"
+#include "Runtime/RuntimeData.h"
 #include "MapTemplate.h"
 #include "MapInstance.h"
 #include "SEGSTimer.h"
@@ -30,6 +31,8 @@
 #include <QtCore/QDebug>
 
 #include <set>
+
+using namespace SEGSEvents;
 
 // global variables
 MapServer *g_GlobalMapServer=nullptr;
@@ -47,7 +50,6 @@ namespace
 class MapServer::PrivateData
 {
 public:
-        MapServerData   m_runtime_data;
         MapManager      m_manager;
 };
 
@@ -68,9 +70,11 @@ bool MapServer::Run()
 {
     assert(m_owner_game_server_id != INVALID_GAME_SERVER_ID);
 
-    if (!d->m_runtime_data.read_runtime_data(RUNTIME_DATA_PATH))
+    if(!getGameData().read_game_data(RUNTIME_DATA_PATH))
         return false;
 
+    if(!getRuntimeData().prepare(RUNTIME_DATA_PATH))
+        return false;
     assert(d->m_manager.num_templates() > 0);
 
     qInfo() << "MapServer" << m_id << "now listening on" << m_base_listen_point.get_host_addr() << ":"
@@ -116,30 +120,39 @@ bool MapServer::ReadConfigAndRestart()
 
     bool ok = true;
     QVariant fade_in_variant = config.value("player_fade_in","380.0");
-    d->m_runtime_data.m_player_fade_in = fade_in_variant.toFloat(&ok);
+    getGameData().m_player_fade_in = fade_in_variant.toFloat(&ok);
     if(!ok)
     {
         qCritical() << "Badly formed float for 'player_fade_in': " << fade_in_variant.toString();
         return false;
     }
 
+    QVariant motd_timer = config.value("motd_timer","3600.0");
+    getGameData().m_motd_timer = motd_timer.toFloat(&ok);
+    if(!ok)
+    {
+        qCritical() << "Badly formed float for 'motd_timer': " << motd_timer.toString();
+        return false;
+    }
+
+    // get costume slot unlock levels for use in finalizeLevel()
+    getGameData().m_costume_slot_unlocks = config.value(QStringLiteral("costume_slot_unlocks"), "19,29,39,49").toString().remove(QRegExp("\\s")).split(',');
+
     config.endGroup(); // MapServer
 
     if(!d->m_manager.load_templates(map_templates_dir,m_owner_game_server_id,m_id,{m_base_listen_point,m_base_location}))
     {
-        postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 }));
+        postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 },0));
         return false;
     }
     return Run();
 }
 
-bool MapServer::ShutDown()
+void MapServer::per_thread_shutdown()
 {
     qWarning() << "Shutting down map server";
     // tell all instances to shut down too
     d->m_manager.shut_down_all();
-    putq(SEGSEvent::s_ev_finish.shallow_copy());
-    return true;
 }
 
 MapManager &MapServer::map_manager()
@@ -147,26 +160,24 @@ MapManager &MapServer::map_manager()
     return d->m_manager;
 }
 
-MapServerData &MapServer::runtimeData()
-{
-    return d->m_runtime_data;
-}
-
-void MapServer::sett_game_server_owner(uint8_t owner_id)
+void MapServer::set_game_server_owner(uint8_t owner_id)
 {
     m_owner_game_server_id = owner_id;
 }
 
-void MapServer::dispatch(SEGSEvent *ev)
+void MapServer::dispatch(Event *ev)
 {
     assert(ev);
     switch(ev->type())
     {
-        case Internal_EventTypes::evReloadConfig:
+        case evReloadConfigMessage:
             ReadConfigAndRestart();
             break;
         case Internal_EventTypes::evExpectMapClientRequest:
             on_expect_client(static_cast<ExpectMapClientRequest *>(ev));
+            break;
+        case Internal_EventTypes::evClientMapXferMessage:
+            on_client_map_xfer(static_cast<ClientMapXferMessage *>(ev));
             break;
         default:
             assert(!"Unknown event encountered in dispatch.");
@@ -178,12 +189,11 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     // TODO: handle contention while creating 2 characters with the same name from different clients
     // TODO: SELECT account_id from characters where name=ev->m_character_name
     const ExpectMapClientRequestData &request_data(ev->m_data);
-    MapTemplate *tpl    = map_manager().get_template(request_data.m_map_name);
+    MapTemplate *tpl    = map_manager().get_template(request_data.m_map_name.toLower());
     if(nullptr==tpl)
     {
-        
-        HandlerLocator::getGame_Handler(m_owner_game_server_id)->putq(
-            new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
+        qCDebug(logMapEvents) << "Returning response for base location...";
+        ev->src()->putq(new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
         return;
     }
     EventProcessor *instance = tpl->get_instance();
@@ -192,4 +202,42 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
     instance->putq(ev->shallow_copy());
 }
 
+void MapServer::on_client_map_xfer(ClientMapXferMessage *ev)
+{
+    if(m_current_map_transfers.find(ev->m_data.m_session) == m_current_map_transfers.end())
+    {
+        m_current_map_transfers.insert(std::pair<uint64_t, MapXferData>(ev->m_data.m_session, ev->m_data.m_map_data));
+    }
+    else
+    {
+        qCDebug(logMapXfers) << QString("Client session %1 attempted to request a second map transfer while having an existing transfer in progress").arg(ev->m_data.m_session);
+    }
+}
+
+bool MapServer::session_has_xfer_in_progress(uint64_t session_token)
+{
+    return m_current_map_transfers.find(session_token) != m_current_map_transfers.end();
+}
+
+MapXferData &MapServer::session_map_xfer_idx(uint64_t session_token)
+{
+    assert(session_has_xfer_in_progress(session_token));
+    return m_current_map_transfers[session_token];
+}
+
+void MapServer::session_xfer_complete(uint64_t session_token)
+{
+    assert(session_has_xfer_in_progress(session_token));
+    m_current_map_transfers.erase(session_token);
+}
+
+void MapServer::serialize_from(std::istream &/*is*/)
+{
+    assert(false);
+}
+
+void MapServer::serialize_to(std::ostream &/*os*/)
+{
+    assert(false);
+}
 //! @}

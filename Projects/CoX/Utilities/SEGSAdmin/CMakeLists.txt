@@ -36,7 +36,28 @@ set(SEGSADMIN_SOURCES
     AboutDialog.cpp
     AboutDialog.h
     AboutDialog.ui
-
+    TextEdit.cpp
+    TextEdit.h
+    SelectScriptDialog.cpp
+    SelectScriptDialog.h
+    SelectScriptDialog.ui
+    SyntaxHighlighter.cpp
+    SyntaxHighlighter.h
 )
 add_executable(SEGSAdmin WIN32 ${SEGSADMIN_SOURCES})
-target_link_libraries(SEGSAdmin PUBLIC Qt5::Core Qt5::Widgets Qt5::Network)
+target_link_libraries(SEGSAdmin PUBLIC SEGS_Components Qt5::Core Qt5::Widgets Qt5::Network)
+
+IF(WIN32)
+    include(Windeployqt)
+    windeployqt(SEGSAdmin deploy)
+ELSEIF(APPLE)
+    include(Macdeployqt)
+    macdeployqt(SEGSAdmin deploy)
+ENDIF()
+
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES SEGSAdmin SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (SEGSAdmin PROPERTIES
+    FOLDER Projects/CoX/Utilities
+)

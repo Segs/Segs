@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -19,6 +19,7 @@
 #include <QJsonObject>
 #include <QVariantMap>
 #include <QJsonArray>
+#include <QFile>
 
 NetworkManager::NetworkManager()
 {
@@ -29,11 +30,28 @@ NetworkManager::NetworkManager()
 
 void NetworkManager::get_latest_releases()
 {
+
     all_releases_networkManager = new QNetworkAccessManager(this);
     QUrl url("https://api.github.com/repos/segs/segs/releases");
     request.setUrl(url);
     m_network_reply = all_releases_networkManager->get(request);
-    connect(all_releases_networkManager,&QNetworkAccessManager::finished,this,&NetworkManager::store_latest_releases);
+    connect(all_releases_networkManager,&QNetworkAccessManager::finished,this,&NetworkManager::check_reply);
+
+}
+
+void NetworkManager::check_reply()
+{
+    if(m_network_reply->error() == QNetworkReply::NoError)
+    {
+        qDebug()<<"No Network Error";
+        store_latest_releases();
+    }
+    else
+    {
+        qDebug()<<m_network_reply->error();
+        qDebug()<<"Network Error";
+        emit releasesReadyToRead(m_network_reply->errorString());
+    }
 }
 
 // TODO: Error handling at some stage
@@ -55,4 +73,6 @@ void NetworkManager::store_latest_releases()
     qDebug()<<g_segs_release_info[0].github_url;
     emit releasesReadyToRead();
 }
+
+
 //!@}

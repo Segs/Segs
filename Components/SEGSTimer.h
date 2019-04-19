@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -19,19 +19,19 @@ class SEGSTimer
 {
 protected:
     long                m_id;
-    void *              m_data;
+    uint64_t            m_user_id;
     EventProcessor *    m_target;
     ACE_Time_Value      m_fire_delta_time;
     bool                m_one_shot;
 public:
-                        SEGSTimer(EventProcessor *m_processor,void *data,const ACE_Time_Value &fire_delta_time,bool one_shot=true);
+                        SEGSTimer(EventProcessor *m_processor,uint64_t data,const ACE_Time_Value &fire_delta_time,bool one_shot=true);
                         ~SEGSTimer();
     void                schedule();
     void                cancel();
     void                reset();
     void                reschedule(const ACE_Time_Value &new_time);
     EventProcessor *    target() const {return m_target;}
-    void *              data() const {return m_data;}
+    uint64_t            user_id() const {return m_user_id;}
     void                schedule_repeatable(); 
 };
 typedef ACE_Thread_Timer_Queue_Adapter<ACE_Timer_List> Thread_Timer_Queue;

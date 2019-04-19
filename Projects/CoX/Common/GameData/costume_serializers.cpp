@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -12,6 +12,7 @@
 
 #include "costume_serializers.h"
 #include "serialization_common.h"
+#include "serialization_types.h"
 
 #include "Common/GameData/costume_definitions.h"
 #include "DataStorage.h"
@@ -79,10 +80,10 @@ namespace
         ok &=  s->prepare_nested(); // will update the file size left
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
-            if(_name.compare("GeoSet")==0) {
+            if("GeoSet"==_name) {
                 target->m_GeoSets.emplace_back();
                 ok &= loadFrom(s,&target->m_GeoSets.back());
             } else
@@ -102,11 +103,11 @@ namespace
         ok &=  s->prepare_nested(); // will update the file size left
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("BoneSet")==0) {
+            if("BoneSet"==_name) {
                 target->m_BoneSets.emplace_back();
                 ok &= loadFrom(s,&target->m_BoneSets.back());
             } else
@@ -118,26 +119,26 @@ namespace
     }
 
     bool loadFrom(BinStore *s,CostumeOrigin_Data *target)
-    { 
+    {
         s->prepare();
         bool ok = true;
         ok &= s->read(target->m_Name);
         ok &=  s->prepare_nested(); // will update the file size left
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("BodyPalette")==0) {
+            if("BodyPalette"==_name) {
                 Pallette_Data nt;
                 ok &= loadFrom(s,&nt);
                 target->m_BodyPalette.emplace_back(nt);
-            } else if(_name.compare("SkinPalette")==0) {
+            } else if("SkinPalette"==_name) {
                 Pallette_Data nt;
                 ok &= loadFrom(s,&nt);
                 target->m_SkinPalette.emplace_back(nt);
-            } else if(_name.compare("Region")==0) {
+            } else if("Region"==_name) {
                 Region_Data nt;
                 ok &= loadFrom(s,&nt);
                 target->m_Region.emplace_back(nt);
@@ -157,11 +158,11 @@ namespace
         ok &=  s->prepare_nested(); // will update the file size left
         if(s->end_encountered())
             return ok;
-        QString _name;
+        QByteArray _name;
         while(s->nesting_name(_name))
         {
             s->nest_in();
-            if(_name.compare("Origin")==0) {
+            if("Origin"==_name) {
                 CostumeOrigin_Data nt;
                 ok &= loadFrom(s,&nt);
                 target->m_Origins.push_back(nt);
@@ -214,14 +215,14 @@ bool loadFrom(BinStore *s,GeoSet_Data *target)
     ok &=  s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Info")==0) {
+        if("Info"==_name) {
             target->m_Infos.push_back({});
             ok &= loadFrom(s,target->m_Infos.back());
-        } else if(_name.compare("Mask")==0) {
+        } else if("Mask"==_name) {
             target->m_Masks.push_back({});
             ok &= loadFrom(s,target->m_Masks.back());
         } else
@@ -239,11 +240,11 @@ bool loadFrom(BinStore *s,Pallette_Data *target)
     bool ok =  s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Color")==0) {
+        if("Color"==_name) {
             ColorEntry_Data nt;
             ok &= loadFrom(s,&nt);
             target->m_Colors.emplace_back(nt);
@@ -261,11 +262,11 @@ bool loadFrom(BinStore * s, AllTailorCosts_Data * target)
     bool ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("TailorCostSet")==0) {
+        if("TailorCostSet"==_name) {
             target->emplace_back();
             ok &= loadFrom(s,target->back());
         } else
@@ -282,11 +283,11 @@ bool loadFrom(BinStore * s, CostumeSet_Data * target)
     bool ok = s->prepare_nested();
     if(s->end_encountered())
         return ok;
-    QString _name;
+    QByteArray _name;
     while(s->nesting_name(_name))
     {
         s->nest_in();
-        if(_name.compare("Costume")==0) {
+        if("Costume"==_name) {
             Costume2_Data nt;
             ok &= loadFrom(s,&nt);
             target->emplace_back(nt);

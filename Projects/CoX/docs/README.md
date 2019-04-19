@@ -1,5 +1,6 @@
 SEGS - INFO & INSTALLATION GUIDE
 ======
+> :exclamation: NOTE: this guide is for running your own server, if you're only looking to login and play on a public server, then please read the play-guide located here: https://github.com/Segs/Segs/blob/develop/README.md 
 
 CONTENTS OF THIS FILE
 ------
@@ -26,7 +27,7 @@ REQUIREMENTS AND NOTES
 
 SEGS requires:
 
-- A copy of the CoH client from Issue 0 (release) version 0.22. This can be found through various sources online, or via magnet link: 
+- A copy of the CoH client from Issue 1 (beta) version 0.22. This can be found through various sources online, or via magnet link:
   `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
 
 For more detailed version of this guide or for help, visit our discord or forums by using the links below:
@@ -45,7 +46,7 @@ INSTALL & CONFIGURE THE COX CLIENT
 
 1. **Install CoX Client version 0.22**
 
-   SEGS will only communicate with the CoH client from Issue 0 (version 0.22). This can be found through various sources online, or via the following magnet link provided the City of Heroes community:
+   SEGS will only communicate with the CoH client from Issue 1 (beta) version 0.22. This can be found through various sources online, or via the following magnet link provided the City of Heroes community:
 
    ```
    magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f
@@ -56,19 +57,22 @@ INSTALL & CONFIGURE THE COX CLIENT
 
 2. **Point the CoX client towards your server IP**
 
-   In your CoX Client folder, locate and run `CoX-Auth.exe` to set the IP address to that of your server. If running your server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network.
+   In your CoX Client folder, locate and run `CoX-Auth.exe` to set the IP address to that of the server you'd like to play on. For a list of public servers available to play on, please visit the `#welcome` channel on our https://discord.segs.io
+   
+   If running your own server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network.
    
    > For Windows users, a guide to determining your IP can be found here: https://support.microsoft.com/en-us/help/15291/windows-find-pc-ip-address
    
    > ADVANCED: run `cmd` and type `ipconfig`. Your IP will probably start with `192.168.xxx.xxx` or `10.0.xx.xx`
+   
+   If you have trouble running Cox-Auth.exe then you can do this step manually by opening regedit, and creating the registry key `Computer\HKEY_CURRENT_USER\Software\Cryptic\Segs` then create a string called "Auth" with the value as your server IP.
 
 
 3. **How to correctly run the CoX Client?**
 
    The CoX Client must be run with a special command line argument telling the client that it's not connecting to the official game servers. Create a shortcut to CoX.exe and place it on your desktop. Right click the link to access its properties, and in the `Target:` field, add the following to the end of the line: ` -project SEGS`.
 
-   > Your line should end something like this: `.../CoX.exe" -project SEGS`.  
-Please note the space between the quotation mark and the dash.
+   > Your line should end something like this: `.../CoX.exe" -project SEGS`. Please note the space between the quotation mark and the dash.
       
    If you would like to run the client in windowed mode, you may also add these optional command line arguments: `-fullscreen 0 -screen 1024 768`.
    
@@ -78,7 +82,7 @@ Please note the space between the quotation mark and the dash.
 INSTALL & CONFIGURE SEGS USING SEGSADMIN TOOL
 ------
 
-This is a simple installation guide for those looking to get up and running with SEGS as quickly as possible. It assumes that you will download the latest release package from https://github.com/Segs/Segs/releases and assumes a basic knowledge of computers and computer idioms.
+This is a simple installation guide for those looking to get up and running with their own SEGS Server as quickly as possible. It assumes that you will download the latest release package from https://github.com/Segs/Segs/releases and assumes a basic knowledge of computers and computer idioms.
 
 If you're looking to compile SEGS from source, or need to do an advanced manual setup (NOT RECOMMENDED) then please visit our GitHub https://github.com/Segs/Segs
 
@@ -124,8 +128,11 @@ If you're looking to compile SEGS from source, or need to do an advanced manual 
 
       SEGS requires several CoH files to run. Clicking this button will prompt you to enter the path to your CoX directory. Once selected, it will copy several files from the CoX directory, and extract a portion of those files to your `SEGS/data/` subdirectory. These `.bin` files are required by SEGS to load CoX maps, and spawn NPCs. Once completed, SEGSAdmin will clean up any unnecessary files.
 
-
-4. **(Optional) Add User Account**
+  4. **Ensure proper ports are open on any firewalls**
+      Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200
+     These are the same ports that the original game client and now, SEGS uses as well.
+      
+5. **(Optional) Add User Account**
 
    Optionally, you may elect to add additional user accounts by clicking this button on the left side of the SEGSAdmin window. SEGSAdmin will prompt you to enter a username, password, and access level for each account. A user's access level is used to determine their permissions within your server. Please reference this chart:
    
@@ -148,6 +155,8 @@ Enjoy!
 
 HELP AND MORE INFORMATION
 ------
+
+Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200
 
 For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.io/
 

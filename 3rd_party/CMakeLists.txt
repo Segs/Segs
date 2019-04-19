@@ -1,41 +1,27 @@
 link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
+if(BUILD_COX_MAP_VIEWER)
+#    add_subdirectory(Lute)
+    include(ExternalProject_Lutefisk3D.cmake)
+else()
+endif()
 include(ExternalProject_ACE.cmake)
 if(MINGW) # ERICEDIT: If the OS is Windows:
     add_custom_target( # ERICEDIT: Add a target that depends on authserver.
         libace ALL
-        DEPENDS ${EXECUTABLE_OUTPUT_PATH}/authserver.exe
+        DEPENDS ace_IMP
         )
     add_custom_command( # ERICEDIT: Copy over libACE.dll to the output directory.
         TARGET libace
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ace_LIBRARY_SHARED} ${EXECUTABLE_OUTPUT_PATH}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ace_LIBRARY_SHARED} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
 endif()
-if(BUILD_COX_MAP_VIEWER)
-    include(ExternalProject_Lutefisk3D.cmake)
-endif()
+
 ########################################################################################
 # Optional components
 ########################################################################################
-
-if(ENABLE_SCRIPTING_ENGINE)
-    include(ExternalProject_LUA.cmake)
-    include(ExternalProject_SOL2.cmake)
-endif()
-
-if(ENABLE_TESTS)
-    enable_testing()
-    ExternalProject_Add(
-        GMOCK_BUILD
-        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
-        URL http://googlemock.googlecode.com/files/gmock-1.6.0.zip
-        UPDATE_COMMAND ""
-        PATCH_COMMAND patch -N -t -p1 < ../gmock.patch
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rd_party/gmock
-        INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-    )
-    set(GTest_LIBRARIES gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-endif()
+include(ExternalProject_LUA.cmake)
+include(ExternalProject_SOL2.cmake)
+include(ExternalProject_JCON.cmake)

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -18,7 +18,7 @@
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Logging.h"
-#include "version.h"
+#include "Version.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "AuthServer.h"
@@ -26,6 +26,7 @@
 #include "Servers/GameServer/GameServer.h"
 #include "Servers/GameDatabase/GameDBSync.h"
 #include "Servers/AuthDatabase/AuthDBSync.h"
+#include "AdminRPC.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include <ace/ACE.h>
@@ -45,12 +46,15 @@
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
+#include <QtCore/QDir>
 #include <QtCore/QElapsedTimer>
 #include <thread>
 #include <chrono>
 #include <mutex>
 #include <stdlib.h>
 #include <memory>
+
+using namespace SEGSEvents;
 
 namespace
 {
@@ -68,19 +72,30 @@ struct MessageBusMonitor : public EventProcessor
         m_endpoint.subscribe(MessageBus::ALL_EVENTS);
         activate();
     }
+    IMPL_ID(MessageBusMonitor)
 
     // EventProcessor interface
 public:
-    void dispatch(SEGSEvent *ev)
+    void dispatch(Event *ev) override
     {
         switch(ev->type())
         {
-        case Internal_EventTypes::evServiceStatus:
+        case evServiceStatusMessage:
             on_service_status(static_cast<ServiceStatusMessage *>(ev));
             break;
         default:
             ;//qDebug() << "Unhandled message bus monitor command" <<ev->info();
         }
+    }
+    // EventProcessor interface
+protected:
+    void serialize_from(std::istream &/*is*/) override
+    {
+        assert(false);
+    }
+    void serialize_to(std::ostream &/*os*/) override
+    {
+        assert(false);
     }
 private:
     void on_service_status(ServiceStatusMessage *msg);
@@ -92,29 +107,20 @@ static void shutDownServers(const char *reason)
 {
     qDebug() << "Reason for shutdown: " << reason;
 
-    if (GlobalTimerQueue::instance()->thr_count())
+    if(GlobalTimerQueue::instance()->thr_count())
     {
         GlobalTimerQueue::instance()->deactivate();
     }
-    if(g_game_server && g_game_server->thr_count())
-    {
-        g_game_server->ShutDown();
-    }
-    if(g_map_server && g_map_server->thr_count())
-    {
-        g_map_server->ShutDown();
-    }
-    if(g_auth_server && g_auth_server->thr_count())
-    {
-        g_auth_server->ShutDown();
-    }
+    shutdown_event_processor_and_wait(g_game_server.get());
+    shutdown_event_processor_and_wait(g_map_server.get());
+    shutdown_event_processor_and_wait(g_auth_server.get());
     if(s_bus_monitor && s_bus_monitor->thr_count())
     {
-        s_bus_monitor->putq(SEGSEvent::s_ev_finish.shallow_copy());
+        s_bus_monitor->putq(Finish::s_instance->shallow_copy());
     }
     if(g_message_bus && g_message_bus->thr_count())
     {
-        g_message_bus->putq(SEGSEvent::s_ev_finish.shallow_copy());
+        g_message_bus->putq(Finish::s_instance->shallow_copy());
     }
 
     s_event_loop_is_done = true;
@@ -122,7 +128,7 @@ static void shutDownServers(const char *reason)
 
 void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
 {
-    if (msg->m_data.status_value != 0)
+    if(msg->m_data.status_value != 0)
     {
         qCritical().noquote() << msg->m_data.status_message;
         shutDownServers("Configuration failure");
@@ -132,7 +138,7 @@ void MessageBusMonitor::on_service_status(ServiceStatusMessage *msg)
 }
 
 // this event stops main processing loop of the whole server
-class ServerStopper : public ACE_Event_Handler
+class ServerStopper final : public ACE_Event_Handler
 {
 public:
     ServerStopper(int signum) // when instantiated adds itself to current reactor
@@ -140,7 +146,7 @@ public:
         ACE_Reactor::instance()->register_handler(signum, this);
 }
     // Called when object is signaled by OS.
-    int handle_signal(int, siginfo_t * /*s_i*/, ucontext_t * /*u_c*/)
+    int handle_signal(int, siginfo_t * /*s_i*/, ucontext_t * /*u_c*/) final
     {
         shutDownServers("Signal");
         return 0;
@@ -175,7 +181,7 @@ bool CreateServers()
               },"Starting game(1) server");
     TIMED_LOG({
                   g_map_server.reset(new MapServer(1));
-                  g_map_server->sett_game_server_owner(1);
+                  g_map_server->set_game_server_owner(1);
                   g_map_server->activate();
               },"Starting map server");
 
@@ -199,40 +205,71 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     log_buffer[0] = 0;
     category_text[0] = 0;
     if(strcmp(context.category,"default")!=0)
-        snprintf(category_text,256,"[%s]",context.category);
+        snprintf(category_text, sizeof(category_text), "[%s]", context.category);
+
     QFile segs_log_target;
-    segs_log_target.setFileName("output.log");
-    if (!segs_log_target.open(QFile::WriteOnly | QFile::Append))
+    QDate todays_date(QDate::currentDate());
+    QSettings settings(Settings::getSettingsPath(), QSettings::IniFormat);
+    QString log_path = Settings::getSEGSDir() + QDir::separator() + QString("logs");
+    settings.beginGroup("Logging");
+    if (settings.value("combine_logs", "").toBool() == false) // If combine_logs is off will split logs by logging category.
+    {
+        // Format file name based on logging category. Splits into a file for each category.
+        QString file_name = category_text;
+        file_name.replace("[log.", "");
+        file_name.replace("]", "");
+        if (file_name.isEmpty())
+            file_name = "generic";
+        file_name = todays_date.toString("yyyy-MM-dd") + "_" + file_name;
+        log_path += QDir::separator() +file_name + ".log";
+        segs_log_target.setFileName(log_path);
+    }
+    else // If combine_logs is on will log all to a single file.
+    {
+        log_path += QDir::separator() +todays_date.toString("yyyy-MM-dd") + "_all.log";
+        segs_log_target.setFileName(log_path);
+    }
+    settings.endGroup();
+
+    if(!segs_log_target.open(QFile::WriteOnly | QFile::Append))
     {
         fprintf(stderr,"Failed to open log file in write mode, will procede with console only logging");
     }
+
     QByteArray localMsg = msg.toLocal8Bit();
+    std::string timestamp  = QTime::currentTime().toString("hh:mm:ss").toStdString();
 
     switch (type)
     {
         case QtDebugMsg:
-            snprintf(log_buffer,4096,"%sDebug   : %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sDebug   : %s\n",
+                     timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtInfoMsg:
             // no prefix or category for informational messages, as these are end-user facing
-            snprintf(log_buffer,4096,"%s\n",localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %s\n",
+                     timestamp.c_str(), localMsg.constData());
             break;
         case QtWarningMsg:
-            snprintf(log_buffer,4096,"%sWarning : %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sWarning : %s\n",
+                     timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtCriticalMsg:
-            snprintf(log_buffer,4096,"%sCritical: %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sCritical: %s\n",
+                     timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtFatalMsg:
-            snprintf(log_buffer,4096,"%sFatal: %s\n",category_text,localMsg.constData());
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sFatal: %s\n",
+                     timestamp.c_str(), category_text, localMsg.constData());
     }
+
     fprintf(stdout, "%s", log_buffer);
     fflush(stdout);
-    if (segs_log_target.isOpen())
-    {
+
+    if(segs_log_target.isOpen())
         segs_log_target.write(log_buffer);
-    }
-    if (type == QtFatalMsg)
+
+    if(type == QtFatalMsg)
     {
         segs_log_target.close();
         abort();
@@ -274,12 +311,13 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ServerStopper st(SIGINT); // it'll register itself with current reactor, and shut it down on sigint
     ACE_Reactor::instance()->register_handler(interesting_signals,&st);
 
-    // Print out startup copyright messages
-
+    // Print out today's date and startup copyright messages
+    qInfo().noquote() << QDateTime::currentDateTime().toString();
     qInfo().noquote() << VersionInfo::getCopyright();
     qInfo().noquote() << VersionInfo::getAuthVersion();
 
-    qInfo().noquote() << "main";
+    // Create jsonrpc admin interface
+    startRPCServer();
 
     bool no_err = CreateServers();
     if(!no_err)

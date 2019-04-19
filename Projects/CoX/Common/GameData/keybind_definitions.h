@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -440,32 +440,32 @@ struct Keybind
 {
     KeyName Key;
     ModKeys Mods; // Mod  0, 1 - CONTROL_KEY_PRESSED, 2 - SHIFT PRESSED, 3 - ALT PRESSED
-    QString KeyString;
-    QString Command;
+    QByteArray KeyString;
+    QByteArray Command;
     bool    IsSecondary = false;
 };
 
 struct Keybind_Profiles
 {
-    QString DisplayName;
-    QString Name;
+    QByteArray DisplayName;
+    QByteArray Name;
     std::vector<Keybind> KeybindArr;
 };
 
 struct CommandEntry {
-    QString KeyString;
+    QByteArray KeyString;
     KeyName Key;
     ModKeys Mods; // Mod  0, 1 - CONTROL_KEY_PRESSED, 2 - SHIFT PRESSED, 3 - ALT PRESSED
 };
 struct Command
 {
-    QString CmdString;
-    QString DisplayName;
+    QByteArray CmdString;
+    QByteArray DisplayName;
     CommandEntry CommandArr[2];
 };
 struct CommandCategory_Entry
 {
-    QString DisplayName;
+    QByteArray DisplayName;
     std::vector<Command> commands;
 };
 

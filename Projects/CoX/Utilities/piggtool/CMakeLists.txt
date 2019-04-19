@@ -13,3 +13,10 @@ set(tool_SRC
 )
 add_executable(piggtool ${tool_SRC})
 target_link_libraries(piggtool Qt5::Core)
+# Retain directory structure in visual studio
+get_target_property(TARGET_SOURCES piggtool SOURCES) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
+set_target_properties (piggtool PROPERTIES
+    FOLDER Projects/CoX/Utilities
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
+)

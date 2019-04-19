@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -31,16 +31,15 @@ namespace std
     };
 }
 
-class SEGSEvent;
 
 class CRUDLink;
 
 // This class represents a UDP port<->Client link router
 // when it receives any bytes it will pass them to appropriate ILink instance
 // when it receives PacketEvents from ILink it sends the bytes over the UDP to associated address
-class ServerEndpoint : public EventProcessor
+class ServerEndpoint : public EventSrc
 {
-    typedef EventProcessor super;
+    typedef EventSrc super;
     typedef std::unordered_map<ACE_INET_Addr,CRUDLink *> hmAddrProto;
 public:
 
@@ -50,7 +49,7 @@ public:
                     {
                         m_notifier.event_handler(this);
                     }
-                    ~ServerEndpoint();
+                    ~ServerEndpoint() override;
 private:
         // Part of the low level ace interface, not passed on to derived classes
         ACE_HANDLE  get_handle(void) const override { return this->endpoint_.get_handle(); }
@@ -61,10 +60,6 @@ public:
         int         open(void *p=nullptr) override;
         void        set_downstream(EventProcessor *ds) { m_downstream = ds;}
 protected:
-        void        dispatch(SEGSEvent *) override
-                    {
-                        ACE_ASSERT(!"All events are dispatched from handle_* methods");
-                    }
         CRUDLink *  createLinkInstance();
         CRUDLink *  getClientLink(const ACE_INET_Addr &from_addr);
 virtual CRUDLink *  createLink(EventProcessor *down) = 0;

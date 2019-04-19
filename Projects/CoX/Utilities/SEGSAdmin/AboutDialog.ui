@@ -20,7 +20,7 @@
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="resources.qrc">:/logo/logo4.png</pixmap>
+      <pixmap resource="resources.qrc">:/logo/Resources/logo4.png</pixmap>
      </property>
     </widget>
    </item>

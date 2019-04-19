@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -12,80 +12,88 @@
 #include <ace/Time_Value.h>
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
+#include <glm/vec3.hpp>
+#include <Common/GameData/map_definitions.h>
 
+namespace SEGSEvents
+{
 struct GameAccountResponseCharacterData;
 
-class Internal_EventTypes
+enum Internal_EventTypes
 {
-public:
-    BEGINE_EVENTS_INTERNAL()
-    EVENT_DECL(evExpectClientRequest,0)
-    EVENT_DECL(evExpectClientResponse,1)
-    EVENT_DECL(evExpectMapClientRequest,2)
-    EVENT_DECL(evExpectMapClientResponse,3)
-    EVENT_DECL(evClientConnectionRequest,4)
-    EVENT_DECL(evClientConnectionResponse,5)
-    EVENT_DECL(evReloadConfig,6) // the server that receives this message will reload it's config file and restart with it
-
-    EVENT_DECL(evGameServerStatus,10)
-    EVENT_DECL(evMapServerStatus,11)
+    BEGINE_EVENTS_INTERNAL(Internal_EventTypes)
+    evExpectClientRequest, //,0)
+    evExpectClientResponse, // ,1)
+    evExpectMapClientRequest, //,2)
+    evExpectMapClientResponse, //,3)
+    evClientConnectionRequest, //,4)
+    evClientConnectionResponse, //,5)
+    evReloadConfigMessage, //,6) // the server that receives this message will reload it's config file and restart with it
+    evClientMapXferMessage, //,7)
+    evMapSwapCollisionMessage, //,8)
+    evGameServerStatusMessage = evReloadConfigMessage+4, //10)
+    evMapServerStatusMessage,                     //11)
     // Message bus events
-    EVENT_DECL(evServiceStatus,101)
-    EVENT_DECL(evClientConnected,102)
-    EVENT_DECL(evClientDisconnected,103)
-    END_EVENTS(105)
+    evServiceStatusMessage = evExpectClientRequest+101,
+    evClientConnectedMessage, // 102
+    evClientDisconnectedMessage,  // 103
+    END_EVENTS(Internal_EventTypes,105)
 };
 
-class InternalEvent : public SEGSEvent
+class InternalEvent : public Event
 {
     uint64_t            m_session_token = 0;
 public:
-    using SEGSEvent::SEGSEvent; // forward all constructors to parent class.
+    using Event::Event; // forward all constructors to parent class.
 
     void                session_token(uint64_t token) { m_session_token = token; }
     uint64_t            session_token() const { return m_session_token; }
 
 };
 
-#define ONE_WAY_MESSAGE(name)\
+#define ONE_WAY_MESSAGE(enum_name,name)\
 struct name ## Message final : public InternalEvent\
 {\
     name ## Data m_data;\
-    explicit name ## Message() :  InternalEvent(Internal_EventTypes::ev ## name) {}\
-    name ## Message(name ## Data &&d) :  InternalEvent(Internal_EventTypes::ev ## name),m_data(d) {}\
-};
-
-/// A message without Request having additional data
-#define SIMPLE_TWO_WAY_MESSAGE(name)\
-struct name ## Request final : public InternalEvent\
-{\
-    name ## Message(int token) :  InternalEvent(Internal_EventTypes::ev ## name ## Request) {session_token(token);}\
-};\
-struct name ## Response final : public InternalEvent\
-{\
-    name ## Data m_data;\
-    name ## Response(name ## Data &&d,uint64_t token) :  InternalEvent(Internal_EventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
+    explicit name ## Message() :  InternalEvent(enum_name::ev ## name ## Message) {}\
+    name ## Message(name ## Data &&d,uint64_t token,EventProcessor *ev_src=nullptr) : \
+        InternalEvent(enum_name::ev ## name ## Message) , m_data(std::move(d)) {\
+        session_token(token); src(ev_src);}\
+    EVENT_IMPL(name ## Message)\
 };
 
 /// A message with Request having additional data
-#define TWO_WAY_MESSAGE(name)\
+#define TWO_WAY_MESSAGE(enum_name,name)\
 struct name ## Request final : public InternalEvent\
 {\
     name ## RequestData m_data;\
-    name ## Request(name ## RequestData &&d,uint64_t token) : InternalEvent(Internal_EventTypes::ev ## name ## Request),m_data(d) {session_token(token);}\
+    name ## Request(name ## RequestData &&d,uint64_t token,EventProcessor *ev_src=nullptr) : \
+        InternalEvent(enum_name::ev ## name ## Request) , m_data(std::move(d)) {\
+        session_token(token); src(ev_src);}\
+    /* needed for serialization functions */\
+    explicit name ## Request() : InternalEvent(enum_name::ev ## name ## Request) {}\
+    EVENT_IMPL(name ## Request)\
 };\
 struct name ## Response final : public InternalEvent\
 {\
     name ## ResponseData m_data;\
-    name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(Internal_EventTypes::ev ## name ## Response),m_data(d) {session_token(token);}\
+    name ## Response(name ## ResponseData &&d,uint64_t token) :  InternalEvent(enum_name::ev ## name ## Response),m_data(std::move(d)) {session_token(token);}\
+    /* needed for serialization functions */\
+    explicit name ## Response() : InternalEvent(enum_name::ev ## name ## Response) {}\
+    EVENT_IMPL(name ## Response)\
 };
 
 // This tells the server that it should expect a new client connection from given address
 struct ExpectClientRequestData
 {
-    uint64_t m_client_id;
     ACE_INET_Addr m_from_addr;
+    uint32_t m_client_id;
     uint8_t m_access_level;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_from_addr,m_client_id,m_access_level);
+    }
 };
 
 // This event informs the server that given client is now expected on another server
@@ -95,20 +103,31 @@ struct ExpectClientResponseData
     uint64_t client_id;
     uint32_t cookie;
     uint32_t m_server_id; // this is the id of the server that is expecting the client
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(client_id,cookie,m_server_id);
+    }
 };
-TWO_WAY_MESSAGE(ExpectClient)
+//[[ev_def:macro]]
+TWO_WAY_MESSAGE(Internal_EventTypes,ExpectClient)
 
 struct ExpectMapClientRequestData
 {
     uint64_t m_client_id;
     uint8_t m_access_level;
     ACE_INET_Addr m_from_addr;
-    //TODO: pass this as POD, or serialize it into some internal format.
-    GameAccountResponseCharacterData *char_from_db;
+    QString char_from_db_data; //! serialized character data, if this is empty Map server assumes a new character
     uint16_t m_slot_idx;
     QString m_character_name;
     QString m_map_name;
     uint16_t m_max_slots;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_client_id,m_access_level,m_from_addr,char_from_db_data,
+           m_slot_idx,m_character_name,m_map_name,m_max_slots);
+    }
 };
 
 struct ExpectMapClientResponseData
@@ -116,15 +135,26 @@ struct ExpectMapClientResponseData
     uint32_t      cookie;
     uint32_t      m_server_id;       // this is the id of the server that is expecting the client
     ACE_INET_Addr m_connection_addr; // this is the address that will be sent as a target connection pont to the client
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(cookie,m_server_id,m_connection_addr);
+    }
 };
-TWO_WAY_MESSAGE(ExpectMapClient)
+//[[ev_def:macro]]
+TWO_WAY_MESSAGE(Internal_EventTypes,ExpectMapClient)
 
 // For now, no data here, could be a path to a config file?
 struct ReloadConfigData
 {
 
+    template<class Archive>
+    void serialize(Archive &)
+    {
+    }
 };
-ONE_WAY_MESSAGE(ReloadConfig)
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,ReloadConfig)
 
 struct GameServerStatusData
 {
@@ -134,9 +164,15 @@ struct GameServerStatusData
     uint16_t m_max_players;
     uint8_t m_id;
     bool m_online;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_addr,m_last_status_update,m_current_players,m_max_players,m_id,m_online);
+    }
 };
 // This could be put in Message bus if any other server, apart from Auth needs this info.
-ONE_WAY_MESSAGE(GameServerStatus)
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,GameServerStatus)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /// The following messages are put on the global Message Bus, and published there for all subscribers to see
@@ -145,23 +181,68 @@ struct ServiceStatusData
 {
     QString status_message;
     int status_value;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(status_message,status_value);
+    }
 };
-ONE_WAY_MESSAGE(ServiceStatus)
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,ServiceStatus)
 
 struct ClientConnectedData
 {
     uint64_t m_session;
     uint32_t m_server_id;     // id of the server the client connected to.
     uint32_t m_sub_server_id; // only used when server_id is the map server
+    uint32_t m_char_db_id;       // id of the character connecting
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_session,m_server_id,m_sub_server_id,m_char_db_id);
+    }
 };
-ONE_WAY_MESSAGE(ClientConnected)
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,ClientConnected)
 
 struct ClientDisconnectedData
 {
     uint64_t m_session;
+    uint32_t m_char_db_id;       // id of the character disconnected
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_session,m_char_db_id);
+    }
 };
-ONE_WAY_MESSAGE(ClientDisconnected)
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,ClientDisconnected)
 
-#undef ONE_WAY_MESSAGE
-#undef SIMPLE_TWO_WAY_MESSAGE
-#undef TWO_WAY_MESSAGE
+struct ClientMapXferData
+{
+    uint64_t m_session;
+    MapXferData m_map_data;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_session, m_map_data);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,ClientMapXfer)
+
+struct MapSwapCollisionData
+{
+    uint32_t m_ent_db_id;
+    glm::vec3 m_pos;
+    QString m_node_name;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_ent_db_id, m_pos, m_node_name);
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
+
+} // end of SEGSEvents namespace

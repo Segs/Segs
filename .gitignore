@@ -29,3 +29,7 @@ out/
 
 # Library generated exports
 *.exp
+
+# Environment activation script
+activate.env
+.directory

@@ -1,17 +1,19 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #ifndef SEGSADMINTOOL_H
 #define SEGSADMINTOOL_H
 
+#include "Version.h"
 #include <QMainWindow>
 #include <QDialog>
 #include <QProcess>
 #include <QFontDatabase>
+
 
 namespace Ui {
 class SEGSAdminTool;
@@ -27,8 +29,8 @@ class SEGSAdminTool : public QMainWindow
     class NetworkManager *m_network_manager;
     class UpdateDetailDialog *m_update_dialog;
     class AboutDialog *m_about_dialog;
+    class SelectScriptDialog *m_script_dialog;
     bool m_server_running = false;
-    QString m_segs_version = "v0.5.0"; // Current segs version, must be updated per new release
 
 public:
     explicit SEGSAdminTool(QWidget *parent = nullptr);
@@ -38,14 +40,15 @@ public slots:
     void commit_user(QString username, QString password, QString acclevel);
     void create_databases(bool overwrite);
     void check_db_exist(bool on_startup);
-    void start_auth_server();
-    void stop_auth_server();
+    void start_segs_server();
+    void stop_segs_server();
     void read_createuser();
     void read_createDB();
-    void read_authserver();
+    void read_segsserver();
     void check_for_config_file();
     void check_data_and_dir(QString maps_dir);
-    void check_for_latest_release();
+    void read_release_info(const QString &error);
+    void check_config_version(QString filePath);
 
 signals:
     void readyToRead(QString filePath);
@@ -56,6 +59,8 @@ signals:
     void sendMapsDir(QString maps_dir);
     void newVersionAvailable(QString release_id);
     void getLatestReleases();
+    void checkConfigVersion(QString filePath);
+    void recreateConfig();
 
 
 private:
@@ -63,10 +68,8 @@ private:
     void is_server_running();
     QProcess *m_createUser;
     QProcess *m_createDB;
-    QProcess *m_start_auth_server;
+    QProcess *m_start_segs_server;
     QStringList m_segs_releases;
-    //QString m_release_id;
-
 };
 
 #endif // SEGSADMINTOOL_H

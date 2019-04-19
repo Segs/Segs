@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -12,6 +12,8 @@
 
 #include "MapTemplate.h"
 #include "MapInstance.h"
+
+using namespace SEGSEvents;
 
 uint8_t MapTemplate::s_template_id = 1;
 
@@ -41,7 +43,7 @@ void MapTemplate::shut_down_all()
     {
         if(instance->thr_count()>0)
         {
-            instance->putq(SEGSEvent::s_ev_finish.shallow_copy());
+            instance->putq(Finish::s_instance->shallow_copy());
             instance->wait();
         }
         delete instance;
@@ -57,7 +59,7 @@ QString MapTemplate::client_filename() const
 QString MapTemplate::base_name() const
 {
     int city_idx     = m_map_filename.indexOf('/')+1;
-    int end_or_slash = m_map_filename.indexOf("/", city_idx);
+    int end_or_slash = m_map_filename.indexOf('/', city_idx);
     assert(city_idx != 0);
     return m_map_filename.mid(city_idx, end_or_slash == -1 ? -1 : m_map_filename.size() - end_or_slash).toLower();
 

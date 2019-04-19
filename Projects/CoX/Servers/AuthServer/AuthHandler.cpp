@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -14,15 +14,18 @@
 
 #include "AuthServer/AuthServer.h"
 #include "AuthProtocol/AuthLink.h"
-#include "AuthProtocol/AuthEvents.h"
+#include "Messages/Auth/AuthEvents.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"
 
 #include "Servers/InternalEvents.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
 #include "SEGSTimer.h"
+#include "TimeEvent.h"
 
 #include <QDebug>
+
+using namespace SEGSEvents;
 
 /// Monotonically incrementing session ids, starting at 1, to make 0 special.
 uint64_t AuthHandler::s_last_session_id=1;
@@ -43,24 +46,24 @@ namespace
     };
 
     const ACE_Time_Value session_reaping_interval(0,1000*1000);
-    const ACE_Time_Value link_is_stale_if_disconnected_for(0,2*1000*1000);
+    const ACE_Time_Value link_is_stale_if_disconnected_for(2,0);
 } // namespace
 
-void AuthHandler::dispatch( SEGSEvent *ev )
+void AuthHandler::dispatch( Event *ev )
 {
     assert(ev);
     switch(ev->type())
     {
-        case SEGS_EventTypes::evConnect:
-            on_connect(static_cast<ConnectEvent *>(ev));
+        case evConnect:
+            on_connect(static_cast<Connect *>(ev));
             break;
-        case SEGS_EventTypes::evTimeout:
-            on_timeout(static_cast<TimerEvent *>(ev));
+        case evTimeout:
+            on_timeout(static_cast<Timeout *>(ev));
             break;
         case evReconnectAttempt:
             qWarning() << "Unhandled reconnect packet??";
             break;
-        case evLogin:
+        case evLoginRequest:
             on_login(static_cast<LoginRequest *>(ev));
             break;
         case evServerListRequest:
@@ -71,10 +74,10 @@ void AuthHandler::dispatch( SEGSEvent *ev )
             break;
         case evDbError:
             // client sends this on exit sometimes ?
-            on_disconnect(static_cast<DisconnectEvent *>(ev));
+            on_disconnect(static_cast<Disconnect *>(ev));
             break;
-        case SEGS_EventTypes::evDisconnect:
-            on_disconnect(static_cast<DisconnectEvent *>(ev));
+        case evDisconnect:
+            on_disconnect(static_cast<Disconnect *>(ev));
             break;
             //////////////////////////////////////////////////////////////////////////
             //  Events from other servers
@@ -82,17 +85,17 @@ void AuthHandler::dispatch( SEGSEvent *ev )
         case AuthDBEventTypes::evRetrieveAccountResponse:
             on_retrieve_account_response(static_cast<RetrieveAccountResponse *>(ev));
             break;
-        case AuthDBEventTypes::evAuthDbError:
-            on_db_error(static_cast<AuthDbErrorMessage *>(ev)); break;
+        case evAuthDbStatusMessage:
+            on_db_error(static_cast<AuthDbStatusMessage *>(ev)); break;
         case Internal_EventTypes::evExpectClientResponse:
             on_client_expected(static_cast<ExpectClientResponse *>(ev)); break;
-        case Internal_EventTypes::evClientConnected:
+        case Internal_EventTypes::evClientConnectedMessage:
             on_client_connected_to_other_server(static_cast<ClientConnectedMessage *>(ev));
             break;
-        case Internal_EventTypes::evClientDisconnected:
+        case Internal_EventTypes::evClientDisconnectedMessage:
             on_client_disconnected_from_other_server(static_cast<ClientDisconnectedMessage *>(ev));
             break;
-        case Internal_EventTypes::evGameServerStatus:
+        case Internal_EventTypes::evGameServerStatusMessage:
             on_server_status_change(static_cast<GameServerStatusMessage *>(ev));
             break;
         default:
@@ -105,37 +108,38 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
     assert(HandlerLocator::getAuth_Handler()==nullptr);
     HandlerLocator::setAuth_Handler(this);
     m_sessions.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
-    m_message_bus_endpoint.subscribe(Internal_EventTypes::evGameServerStatus);
+    m_message_bus_endpoint.subscribe(evGameServerStatusMessage);
 }
 
-void AuthHandler::on_timeout(TimerEvent *ev)
+void AuthHandler::on_timeout(Timeout *ev)
 {
-    intptr_t timer_id = (intptr_t)ev->data();
-    switch (timer_id) {
+    uint64_t timer_id = ev->timer_id();
+    switch (timer_id)
+    {
         case Session_Reaper_Timer:
             reap_stale_links();
         break;
     }
 }
 
-void AuthHandler::on_connect( ConnectEvent *ev )
+void AuthHandler::on_connect( Connect *ev )
 {
     // TODO: guard for link state update ?
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
     assert(lnk!=nullptr);
-    if(lnk->m_state!=AuthLink::INITIAL)
+    if(lnk->get_link_stage()!=AuthLink::INITIAL)
     {
         ACE_ERROR((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"),  ACE_TEXT ("Multiple connection attempts from the same addr/port")));
     }
-    lnk->m_state=AuthLink::CONNECTED;
+    lnk->set_link_stage(AuthLink::CONNECTED);
     uint32_t seed = 0x1; //TODO: rand()
     lnk->init_crypto(30206,seed);
     //qWarning("Crypto seed %08x", seed);
 
-    lnk->putq(new AuthorizationProtocolVersion(30206,seed));
+    lnk->putq(new AuthProtocolVersion(30206,seed));
 }
 
-void AuthHandler::on_disconnect(DisconnectEvent *ev)
+void AuthHandler::on_disconnect(Disconnect *ev)
 {
     // since we cannot trust existence of the DisconnectEvent source at this point, we use the stored token
     if(ev->m_session_token==0)
@@ -145,17 +149,17 @@ void AuthHandler::on_disconnect(DisconnectEvent *ev)
     }
     AuthSession &session(m_sessions.session_from_token(ev->m_session_token));
     session.m_state = AuthSession::NOT_LOGGED_IN;
-    if (!session.m_auth_data)
+    if(!session.m_auth_data)
     {
         qWarning("Client disconnected without a valid login attempt. Old client ?");
     }
     {
         SessionStore::MTGuard guard(m_sessions.reap_lock());
-        if (session.is_connected_to_game_server_id == 0)
+        if(session.is_connected_to_game_server_id == 0)
             m_sessions.mark_session_for_reaping(&session, session.link()->session_token());
     }
 
-    if (session.link())
+    if(session.link())
     {
         session.link(nullptr);
         m_sessions.remove_from_active_sessions(&session);
@@ -163,7 +167,7 @@ void AuthHandler::on_disconnect(DisconnectEvent *ev)
     // TODO: timed session reaping
 }
 
-void AuthHandler::auth_error(EventProcessor *lnk,uint32_t code)
+void AuthHandler::auth_error(EventSrc *lnk,uint32_t code)
 {
     lnk->putq(new AuthorizationError(code));
 }
@@ -212,7 +216,8 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     RetrieveAccountResponseData & acc_inf(msg->m_data);  // all the account info you can eat!
 
     // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
-    if(acc_inf.isBlocked()) {
+    if(acc_inf.isBlocked())
+    {
         lnk->putq(s_auth_error_locked_account.shallow_copy());
         return;
     }
@@ -262,7 +267,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     // inform the client of the successful login attempt
     qDebug() << "Login successful";
     sess_ptr->m_state = AuthSession::LOGGED_IN;
-    lnk->m_state = AuthLink::AUTHORIZED;
+    lnk->set_link_stage(AuthLink::AUTHORIZED);
     m_sessions.setTokenForId(sess_ptr->m_auth_id,lnk->session_token());
     lnk->putq(new LoginResponse());
 }
@@ -282,7 +287,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     }
 
     // if password is too long
-    if (ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
+    if(ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
@@ -294,13 +299,13 @@ void AuthHandler::on_login( LoginRequest *ev )
         return;
     }
 
-    if(lnk->m_state!=AuthLink::CONNECTED)
+    if(lnk->get_link_stage()!=AuthLink::CONNECTED)
     {
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
     }
-    qDebug() << "User" << ev->m_data.login << "trying to login from" << lnk->peer_addr().get_host_addr();
-    if(strlen(ev->m_data.login)<=2)
+    qDebug() << "User" << ev->m_data.login.data() << "trying to login from" << lnk->peer_addr().get_host_addr();
+    if(strlen(ev->m_data.login.data())<=2)
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
@@ -319,7 +324,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     }
 
     RetrieveAccountRequest *request_event =
-        new RetrieveAccountRequest({ev->m_data.login, ev->m_data.password, 0}, sess_tok);
+        new RetrieveAccountRequest({ev->m_data.login.data(), ev->m_data.password.data(), 0}, sess_tok);
     request_event->src(this);
     auth_db_handler->putq(request_event);
     // here we will wait for db response, so here we're going to put the session on the read-to-reap list
@@ -330,13 +335,13 @@ void AuthHandler::on_login( LoginRequest *ev )
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
 {
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-    if(lnk->m_state!=AuthLink::AUTHORIZED)
+    if(lnk->get_link_stage()!=AuthLink::AUTHORIZED)
     {
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
     }
     qDebug() << "Client requesting server list...";
-    lnk->m_state = AuthLink::CLIENT_SERVSELECT;
+    lnk->set_link_stage(AuthLink::CLIENT_SERVSELECT);
     ServerListResponse *r=new ServerListResponse;
     std::deque<GameServerInfo> info;
     std::vector<GameServerStatusData> status_copy;
@@ -368,7 +373,7 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
 {
     AuthSession &session(m_sessions.session_from_event(ev));
     AuthLink *lnk=static_cast<AuthLink *>(ev->src());
-    if(lnk->m_state!=AuthLink::CLIENT_SERVSELECT)
+    if(lnk->get_link_stage()!=AuthLink::CLIENT_SERVSELECT)
     {
         lnk->putq(s_auth_error_unknown.shallow_copy());
         return;
@@ -383,7 +388,7 @@ void AuthHandler::on_server_selected(ServerSelectRequest *ev)
     }
     auto &acc_inf(*session.m_auth_data); //acc_inf.m_access_level,
     ExpectClientRequest *cl_ev = new ExpectClientRequest(
-        {acc_inf.m_acc_server_acc_id, lnk->peer_addr(), acc_inf.m_access_level}, lnk->session_token());
+        {lnk->peer_addr(), acc_inf.m_acc_server_acc_id,acc_inf.m_access_level}, lnk->session_token());
     tgt->putq(cl_ev); // sending request to game server
     // client's state will not change until we get response from GameServer
 }
@@ -397,7 +402,7 @@ void AuthHandler::on_client_expected(ExpectClientResponse *ev)
         assert(!"client disconnected before receiving game cookie");
         return;
     }
-    lnk->m_state = AuthLink::CLIENT_AWAITING_DISCONNECT;
+    lnk->set_link_stage(AuthLink::CLIENT_AWAITING_DISCONNECT);
     lnk->putq(new ServerSelectResponse(this,0xCAFEF00D,ev->m_data.cookie));
 }
 
@@ -428,13 +433,23 @@ void AuthHandler::reap_stale_links()
     m_sessions.reap_stale_links("AuthHandler",link_is_stale_if_disconnected_for);
 }
 
+void AuthHandler::serialize_from(std::istream &/*is*/)
+{
+    assert(false);
+}
+
+void AuthHandler::serialize_to(std::ostream &/*is*/)
+{
+    assert(false);
+}
+
 void AuthHandler::on_server_status_change(GameServerStatusMessage *ev)
 {
     MTGuard guard(m_server_mutex);
     m_known_game_servers[ev->m_data.m_id] = ev->m_data;
 }
 
-void AuthHandler::on_db_error(AuthDbErrorMessage *ev)
+void AuthHandler::on_db_error(AuthDbStatusMessage *ev)
 {
     AuthSession &session(m_sessions.session_from_event(ev));
     session.link()->putq(s_auth_error_db_error.shallow_copy());

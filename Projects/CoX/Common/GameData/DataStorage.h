@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -45,12 +45,12 @@ class BinStore // binary storage
         }
         return sizeof(V);
     }
-    QString     read_pstr(size_t maxlen);
+    const QByteArray &read_pstr(size_t maxlen);
     void        skip_pstr();
     bool        read_data_blocks(bool file_data_blocks);
     bool        check_bin_version_and_crc(uint32_t req_crc);
     uint32_t    current_fsize() {return *m_file_sizes.rbegin();}
-    uint32_t    read_header(QString & name, size_t maxlen);
+    uint32_t    read_header(QByteArray &name, size_t maxlen);
     void        fixup();
 public:
 
@@ -58,22 +58,28 @@ public:
         return read_str(12000);
     }
     bool        read_bytes(char *tgt,size_t sz);
-    QString     read_str(size_t maxlen);
+    const QByteArray &read_str(size_t maxlen);
     bool        read(uint32_t &v);
     bool        read(int32_t &v);
     bool        read(float &v);
     bool        read(uint16_t &v);
     bool        read(uint8_t &v);
+    bool        readU(uint8_t &v);
     bool        read(Vec2 &v);
     bool        read(Vec3 &v);
     bool        read(RGBA &v);
     bool        read(std::vector<uint32_t> &v);
     bool        read(std::vector<int32_t> &res);
     bool        read(std::vector<float> &res);
-    bool        read(std::vector<QString> &res);
+    bool        read(std::vector<QByteArray> &res);
     bool        read(std::vector<std::vector<QString>> &res);
     bool        read(uint8_t *&val, uint32_t length);
-    bool        read(QString &val);
+    bool        read(QByteArray &val);
+    bool        read(std::pair<uint8_t,uint8_t> &v) {
+                    uint8_t skipped, skipped2;
+                    return read_internal(v.first)!=0 &&
+                    read_internal(v.second)!=0 && read_internal(skipped) != 0 && read_internal(skipped2) != 0;
+                }
                 template<class Enum>
     bool        readEnum(Enum &val)
                 {
@@ -95,7 +101,7 @@ public:
                 }
     void        prepare();
     bool        prepare_nested();
-    bool        nesting_name(QString & name);
+    bool        nesting_name(QByteArray &name);
     void        nest_in() {  }
     void        nest_out() { m_file_sizes.pop_back(); }
     bool        end_encountered() const;
