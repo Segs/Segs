@@ -185,8 +185,8 @@ bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum const &target)
 
     if (target_ent.m_char->m_is_dead)
         if (!(target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate
-            || target == StoredEntEnum::DeadVillain || target == StoredEntEnum::DeadOrAliveTeammate)
-            || target == StoredEntEnum::Caster) // Caster is a valid target only if castable after death is true
+            || target == StoredEntEnum::DeadVillain || target == StoredEntEnum::DeadOrAliveTeammate
+            || target == StoredEntEnum::Caster)) // Caster is a valid target only if castable after death is true
             return false;
 
     if (&ent == &target_ent)

@@ -86,12 +86,15 @@ void World::effectsStep(Entity *e,uint32_t msec)
         e->translucency = animateValue(e->translucency,start,target,m_player_fade_in,float(msec)/50.0f);
         if(std::abs(e->translucency-target)<std::numeric_limits<float>::epsilon())
         {
-            e->m_is_fading = false;
             if (e->m_char->m_is_dead)
                 m_owner_instance->m_entities.removeEntityFromActiveList(e);
+            else
+                e->m_is_fading = false;
         }
     }
 }
+
+// Delayed and repeated effects are queued on the target, and activate an effect when the timer counts down
 void World::checkDelayedEffects(Entity *e, uint32_t msec)
 {
     for(auto dly_idx = e->m_delayed.begin(); dly_idx != e->m_delayed.end(); /*dly_idx updated inside loop*/ )
@@ -112,15 +115,16 @@ void World::checkDelayedEffects(Entity *e, uint32_t msec)
         }
 
         if(dly_idx->ticks < 0)
-            e->m_delayed.erase(dly_idx);
+            dly_idx = e->m_delayed.erase(dly_idx);
         else
             ++dly_idx;
     }
 }
-void World::checkActivationTimers(Entity *e, uint32_t msec)
-{
 
-    // Activation Timers -- queue FIFO
+// Activated powers are checked to make sure they have valid contions, and then count down timer to activate power -- queue FIFO
+// Also "default powers" are queued up if one has been set, and nothing else is queued for activation
+void World::checkActivationTimers(Entity *e)
+{
     if(e->m_queued_powers.size() > 0)
     {
         QueuedPowers &qpow = e->m_queued_powers.front();
@@ -150,7 +154,7 @@ void World::checkActivationTimers(Entity *e, uint32_t msec)
             }
             else
             {
-                qpow.m_time_to_activate -= (float(msec)/1000);
+                qpow.m_time_to_activate -= sim_frame_time;
 
                 if(qpow.m_time_to_activate < 0 && qpow.m_active_state_change == false)
                 {
@@ -183,20 +187,20 @@ void World::checkActivationTimers(Entity *e, uint32_t msec)
         PowerTrayGroup &trays =  e->m_char->m_char_data.m_trays;
         if(trays.m_has_default_power)
         {
-            if (checkPowerRecharge(*e, trays.m_default_pset_idx, trays.m_default_pow_idx)
-                    && !(getEntity(e,m_owner_instance,getTargetIdx(*e)))->m_char->m_is_dead)
+            if (checkPowerRecharge(*e, trays.m_default_pset_idx, trays.m_default_pow_idx))
             {
                 usePower(*e, trays.m_default_pset_idx, trays.m_default_pow_idx, getTargetIdx(*e));
             }
         }
     }
 }
-void World::checkRechargeTimers(Entity *e, uint32_t msec)
+
+// Power that have been used are placed in this queue, when the timer counts down they are removed and can be used again
+void World::checkRechargeTimers(Entity *e)
 {
-    // Recharging Timers -- iterate through and remove finished timers
     for(auto rpow_idx = e->m_recharging_powers.begin(); rpow_idx != e->m_recharging_powers.end(); /*rpow_idx updated inside loop*/ )
     {
-        rpow_idx->m_recharge_time -= (float(msec)/1000);
+        rpow_idx->m_recharge_time -= sim_frame_time;
 
         if(rpow_idx->m_recharge_time <= 0)
         {
@@ -206,12 +210,11 @@ void World::checkRechargeTimers(Entity *e, uint32_t msec)
         else
             ++rpow_idx;
     }
-
 }
-void World::checkAutoToggleTimers(Entity *e, uint32_t msec)
-{
 
-    // Auto and Toggle Power Activation Timers
+// Toggles and powers that turn automatically fire an effect every time the timer counts down, toggles have condtions when they are forced off
+void World::checkAutoToggleTimers(Entity *e)
+{
     for(auto rpow_idx = e->m_auto_powers.begin(); rpow_idx != e->m_auto_powers.end();)
     {
         CharacterPower * ppower = getOwnedPowerByVecIdx(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx);
@@ -224,7 +227,7 @@ void World::checkAutoToggleTimers(Entity *e, uint32_t msec)
         }
         else
         {
-            rpow_idx->m_time_to_activate   -= (float(msec)/1000);
+            rpow_idx->m_time_to_activate   -= sim_frame_time;
         }
         if (powtpl.Type == PowerType::Toggle)
         {
@@ -250,13 +253,12 @@ void World::checkAutoToggleTimers(Entity *e, uint32_t msec)
         {
             ++rpow_idx;
         }
-
     }
 }
-void World::checkBuffTimers(Entity *e, uint32_t msec)
-{
 
-    // Buffs
+// Buffs are placed in a queue on the target entity, when the timer runs out the stat changes are reversed
+void World::checkBuffTimers(Entity *e)
+{
     for(auto thisbuff = e->m_buffs.begin(); thisbuff != e->m_buffs.end(); /*thisbuff updated inside loop*/)
     {
         for (auto bff = thisbuff->m_buffs.begin(); bff != thisbuff->m_buffs.end(); /*bff updated inside loop*/)
@@ -268,7 +270,7 @@ void World::checkBuffTimers(Entity *e, uint32_t msec)
             }
             else
             {
-                bff->m_duration -= (float(msec)/1000);                 // duration is in seconds
+                bff->m_duration -= sim_frame_time;                 // duration is in seconds
                 ++bff;
             }
 
@@ -279,13 +281,13 @@ void World::checkBuffTimers(Entity *e, uint32_t msec)
     }
 }
 
-void World::regenHealthEnd(Entity *e, uint32_t msec)
+void World::regenHealthEnd(Entity *e)
 {
     float hp = getHP(*e->m_char);
     float end = getEnd(*e->m_char);
 
-    float regeneration = getMaxHP(*e->m_char) * (e->m_char->m_char_data.m_current_attribs.m_Regeneration/20.0f * float(msec)/1000/12);
-    float recovery = getMaxEnd(*e->m_char) * (e->m_char->m_char_data.m_current_attribs.m_Recovery/4.9f * float(msec)/1000/12);
+    float regeneration = getMaxHP(*e->m_char) * (e->m_char->m_char_data.m_current_attribs.m_Regeneration/20.0f * sim_frame_time/12);
+    float recovery = getMaxEnd(*e->m_char) * (e->m_char->m_char_data.m_current_attribs.m_Recovery/4.9f * sim_frame_time/12);
 
     if(hp < getMaxHP(*e->m_char))
         setHP(*e->m_char, hp + regeneration);
@@ -325,12 +327,12 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
     // for now we only run these on players
     if(e->m_type == EntType::PLAYER)
     {
-        checkActivationTimers(e, uint32_t(dT.msec()));
-        checkRechargeTimers(e, uint32_t(dT.msec()));
-        checkAutoToggleTimers(e, uint32_t(dT.msec()));
-        checkBuffTimers(e, uint32_t(dT.msec()));
+        checkActivationTimers(e);
+        checkRechargeTimers(e);
+        checkAutoToggleTimers(e);
     }
 
+    checkBuffTimers(e);
     checkDelayedEffects(e, uint32_t(dT.msec()));
     collisionStep(e, uint32_t(dT.msec()));
     // TODO: Issue #555 needs to handle team cleanup properly
@@ -350,7 +352,7 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
     if(e->m_char != nullptr)                            //either a player or critter
     {
         if (!e->m_char->m_is_dead)
-            regenHealthEnd(e, uint(dT.msec()));
+            regenHealthEnd(e);
         else if (e->m_type == EntType::CRITTER && !e->m_is_fading)// fading state is set after rewards, so it is only rewarded once here
             grantRewards(m_owner_instance->m_entities, *e);
     }

@@ -338,11 +338,11 @@ static const int m_num_trays = 2; // was 3, displayed trays
 };
 struct DelayedEffect
 {
+    StoredAttribMod mod;
+    CharacterPower *power;
     int m_timer;
     int ticks;
     uint32_t src_ent;
-    StoredAttribMod mod;
-    CharacterPower *power;
 };
 
 /*

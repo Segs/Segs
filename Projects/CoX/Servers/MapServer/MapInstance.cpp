@@ -2331,8 +2331,8 @@ void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
         return;
 
     // remove last queued power
-    session.m_ent->m_queued_powers.end()->m_activation_state = false;
-    session.m_ent->m_queued_powers.end()->m_active_state_change = true;
+    session.m_ent->m_queued_powers.back().m_activation_state = false;
+    session.m_ent->m_queued_powers.back().m_active_state_change = true;
     session.m_ent->m_char->m_char_data.m_has_updated_powers = true; // this must be true, because we're updating queued powers
 
     qCWarning(logMapEvents) << "Aborting queued power";

@@ -981,8 +981,8 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
                 doAtrrib(ent, target_ent, powtpl.pAttribMod[i], ppower);
             else
             {           //queue the power up to fire later or multiple times
-                target_ent->m_delayed.push_back(
-                {powtpl.pAttribMod[i].Delay, powtpl.pAttribMod[i].Period,ent.m_idx, powtpl.pAttribMod[i], ppower});
+                target_ent->m_delayed.emplace_back(DelayedEffect{powtpl.pAttribMod[i], ppower,
+                                            powtpl.pAttribMod[i].Delay, powtpl.pAttribMod[i].Period,ent.m_idx});
             }
         }
     }
@@ -1025,6 +1025,8 @@ void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, Chara
 
     if (lower_name == "damage")
     {
+        if (target_ent->m_char->m_is_dead)              //prevent beating a dead horse
+            return;
         GameDataStore &data(getGameData());             //TODO: apply this to all power effects, once we have strengths for every stat
         scale *= data.m_player_classes[uint32_t(getEntityClassIndex(data, true,
             ent.m_char->m_char_data.m_class_name))].m_ModTable[mod.Table.toUInt()].Values[ent.m_char->m_char_data.m_combat_level];
@@ -1871,11 +1873,8 @@ void changeHP(Entity &e, float val)
             e.m_char->m_char_data.m_current_attribs.m_HitPoints = 0.0f;
             e.m_char->m_char_data.m_current_attribs.m_Endurance = 0.0f;
 
-            if(e.m_type == EntType::PLAYER)
-            {
-                setStateMode(e, ClientStates::DEAD);
-                checkMovement(e);
-            }
+            setStateMode(e, ClientStates::DEAD);
+            checkMovement(e);
         }
     }
 }
