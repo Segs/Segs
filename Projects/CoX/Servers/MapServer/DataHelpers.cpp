@@ -130,7 +130,23 @@ Entity * getEntity(MapInstance* mi, uint32_t idx)
     //sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
     return nullptr;
 }
+Entity * getEntity(Entity * srcEnt, MapInstance* mi, uint32_t idx)
+{
+    EntityManager &em(mi->m_entities);
+    QString errormsg;
 
+    if(idx!=0) // Entity idx 0 is always self
+    {
+        // Iterate through all active entities and return entity by idx
+        for (Entity* pEnt : em.m_live_entlist)
+        {
+            if(pEnt->m_idx == idx)
+                return pEnt;
+        }
+    }
+    // if no valid targets found by idx, return self
+    return srcEnt;
+}
 /**
  * @brief Finds the Entity in the MapInstance
  * @param mi map instance
@@ -674,17 +690,10 @@ void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_i
         sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
         return;
     }
-    // Target IDX of 0 is actually SELF
-    if(tgt_idx == 0)
-        tgt_idx = getIdx(ent);
 
-    // Get target and check that it's a valid entity
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
-        return;
-    }
+    // Get target, if not valid, returns self entity
+    Entity *target_ent = getEntity(&ent, ent.m_client->m_current_map, tgt_idx);
+
     if (!checkPowerTarget(ent, target_ent, tgt_idx, powtpl))
     {
         from_msg = "Invalid target";
@@ -720,9 +729,10 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     QString from_msg, to_msg;
     CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
     const Power_Data powtpl = ppower->getPowerTemplate();
-    if(tgt_idx == 0)
-        tgt_idx = getIdx(ent);
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+
+    // Get target, if not valid, returns self entity
+    Entity *target_ent = getEntity(&ent, ent.m_client->m_current_map, tgt_idx);
+
     if(ent.m_char->m_is_dead && powtpl.CastableAfterDeath == 0)   //Allows self rez
         return;
     if (!checkPowerTarget(ent, target_ent, tgt_idx, powtpl))
@@ -739,24 +749,17 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
  */
 bool checkPowerTarget(Entity &ent, Entity *target_ent, uint32_t &tgt_idx, Power_Data powtpl)
 {
-    if(validTarget(ent, ent, powtpl.Target))                    //check self targetting first
-    {
-        target_ent = &ent;
-        tgt_idx = ent.m_idx;
-        return true;
-    }
-    else if(validTarget(*target_ent, ent, powtpl.Target))      //if not self, and if not select target...
+    if(validTarget(*target_ent, ent, powtpl.Target))      //if not self, and if not select target...
         return true;
     if (ent.m_assist_target_idx != 0)                      //try assist target
         tgt_idx = ent.m_assist_target_idx;
     else if (target_ent->m_target_idx != 0)                //try target of target
         tgt_idx = target_ent->m_target_idx;
 
-    target_ent = getEntity(ent.m_client, tgt_idx);  //check the entity is valid
+    // Get target, if not valid, returns self entity
+    target_ent = getEntity(&ent, ent.m_client->m_current_map, tgt_idx);
 
-    if (target_ent == nullptr || !validTarget(*target_ent, ent, powtpl.Target))
-        return false;
-    return true;
+    return validTarget(*target_ent, ent, powtpl.Target);
 }
 /*
  * checkPowerRecharge returns false if the power is found in the recharging power vector
@@ -844,19 +847,16 @@ void doPower(Entity &ent, QueuedPowers powerinput)
 {
     QString from_msg, to_msg;
     uint32_t tgt_idx = powerinput.m_tgt_idx;
-    if(tgt_idx == 0)
-        tgt_idx = getIdx(ent);
 
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
-        return;
-    }
+    // Get target, if not valid, returns self entity
+    Entity *target_ent = getEntity(&ent, ent.m_client->m_current_map, tgt_idx);
 
     CharacterPower * ppower = nullptr;
     ppower = getOwnedPowerByVecIdx(ent, powerinput.m_pow_idxs.m_pset_vec_idx, powerinput.m_pow_idxs.m_pow_vec_idx);
     const Power_Data powtpl = ppower->getPowerTemplate();
+
+    if (!checkPowerTarget(ent, target_ent, tgt_idx, powtpl))
+        return;
 
     // Face towards your target
     sendFaceEntity(*ent.m_client, tgt_idx);
@@ -1165,7 +1165,8 @@ void grantRewards(EntityManager &em, Entity &e)
                 giveXp(*pEnt->m_client,  e.m_char->m_char_data.m_combat_level*10);
            }
       }
-      em.removeEntityFromActiveList(&e);         //todo: some sort of delay
+      e.m_is_fading = true;
+      e.m_fading_direction=FadeDirection::Out;
 }
 
 void increaseLevel(Entity &ent)

@@ -43,6 +43,7 @@ enum class ClientStates : uint8_t;
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntity(class MapInstance *mi, uint32_t idx);
+Entity * getEntity(Entity *srcEnt, class MapInstance *mi, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *sess);
 void    positionTest(MapClientSession *tgt);

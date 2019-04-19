@@ -85,7 +85,11 @@ void World::effectsStep(Entity *e,uint32_t msec)
         }
         e->translucency = animateValue(e->translucency,start,target,m_player_fade_in,float(msec)/50.0f);
         if(std::abs(e->translucency-target)<std::numeric_limits<float>::epsilon())
+        {
             e->m_is_fading = false;
+            if (e->m_char->m_is_dead)
+                m_owner_instance->m_entities.removeEntityFromActiveList(e);
+        }
     }
 }
 void World::checkDelayedEffects(Entity *e, uint32_t msec)
@@ -95,11 +99,8 @@ void World::checkDelayedEffects(Entity *e, uint32_t msec)
         dly_idx->m_timer -= msec;
         if(dly_idx->m_timer < 0)            // if delay is 0 this will happen right away
         {
-            Entity *tgt = getEntity(m_owner_instance, dly_idx->src_ent);
-            if (tgt == nullptr)
-                dly_idx->ticks = -1;        // quit early if the source entity can't be found
-            else
-                doAtrrib( *tgt, e, dly_idx->mod, dly_idx->power);
+            Entity *tgt = getEntity(e, m_owner_instance, dly_idx->src_ent);
+            doAtrrib( *tgt, e, dly_idx->mod, dly_idx->power);
 
             if (dly_idx->ticks >1)
             {
@@ -116,11 +117,9 @@ void World::checkDelayedEffects(Entity *e, uint32_t msec)
             ++dly_idx;
     }
 }
-void World::checkPowerTimers(Entity *e, uint32_t msec)
+void World::checkActivationTimers(Entity *e, uint32_t msec)
 {
-    // for now we only run this on players
-    if(e->m_type != EntType::PLAYER)
-        return;
+
     // Activation Timers -- queue FIFO
     if(e->m_queued_powers.size() > 0)
     {
@@ -137,10 +136,10 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
                 }
                 else
                 {
-                    Entity *target_ent = getEntity(m_owner_instance,qpow.m_tgt_idx);
+                    Entity *target_ent = getEntity(e,m_owner_instance,qpow.m_tgt_idx);
                     CharacterPower * ppower =  getOwnedPowerByVecIdx(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx);
 
-                    if (target_ent != nullptr && checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx)
+                    if (checkPowerRecharge(*e, qpow.m_pow_idxs.m_pset_vec_idx, qpow.m_pow_idxs.m_pow_vec_idx)
                         && checkPowerRange(*e, *target_ent, ppower->getPowerTemplate().Range))
                     {
                         e->m_is_activating = true;       //queued power can move forward to an active power
@@ -184,10 +183,16 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         PowerTrayGroup &trays =  e->m_char->m_char_data.m_trays;
         if(trays.m_has_default_power)
         {
-            if (checkPowerRecharge(*e, trays.m_default_pset_idx, trays.m_default_pow_idx))
+            if (checkPowerRecharge(*e, trays.m_default_pset_idx, trays.m_default_pow_idx)
+                    && !(getEntity(e,m_owner_instance,getTargetIdx(*e)))->m_char->m_is_dead)
+            {
                 usePower(*e, trays.m_default_pset_idx, trays.m_default_pow_idx, getTargetIdx(*e));
+            }
         }
     }
+}
+void World::checkRechargeTimers(Entity *e, uint32_t msec)
+{
     // Recharging Timers -- iterate through and remove finished timers
     for(auto rpow_idx = e->m_recharging_powers.begin(); rpow_idx != e->m_recharging_powers.end(); /*rpow_idx updated inside loop*/ )
     {
@@ -201,6 +206,10 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         else
             ++rpow_idx;
     }
+
+}
+void World::checkAutoToggleTimers(Entity *e, uint32_t msec)
+{
 
     // Auto and Toggle Power Activation Timers
     for(auto rpow_idx = e->m_auto_powers.begin(); rpow_idx != e->m_auto_powers.end();)
@@ -219,11 +228,10 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         }
         if (powtpl.Type == PowerType::Toggle)
         {
-                Entity *target_ent = getEntity(e->m_client, rpow_idx->m_tgt_idx);
+                Entity *target_ent = getEntity(e, e->m_client->m_current_map, rpow_idx->m_tgt_idx);
                 CharacterPower * ppower =  getOwnedPowerByVecIdx(*e, rpow_idx->m_pow_idxs.m_pset_vec_idx, rpow_idx->m_pow_idxs.m_pow_vec_idx);
 
-                if((getEnd(*e->m_char) < powtpl.EnduranceCost)  || (e->m_char->m_is_dead)
-                        || (target_ent == nullptr) || (target_ent->m_char->m_is_dead)
+                if((getEnd(*e->m_char) < powtpl.EnduranceCost)  || (e->m_char->m_is_dead) || (target_ent->m_char->m_is_dead)
                     || !checkPowerRange(*e, *target_ent, ppower->getPowerTemplate().Range))
 
                 {
@@ -244,6 +252,10 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
         }
 
     }
+}
+void World::checkBuffTimers(Entity *e, uint32_t msec)
+{
+
     // Buffs
     for(auto thisbuff = e->m_buffs.begin(); thisbuff != e->m_buffs.end(); /*thisbuff updated inside loop*/)
     {
@@ -309,7 +321,16 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
 {
     physicsStep(e, uint32_t(dT.msec()));
     effectsStep(e, uint32_t(dT.msec()));
-    checkPowerTimers(e, uint32_t(dT.msec()));
+
+    // for now we only run these on players
+    if(e->m_type == EntType::PLAYER)
+    {
+        checkActivationTimers(e, uint32_t(dT.msec()));
+        checkRechargeTimers(e, uint32_t(dT.msec()));
+        checkAutoToggleTimers(e, uint32_t(dT.msec()));
+        checkBuffTimers(e, uint32_t(dT.msec()));
+    }
+
     checkDelayedEffects(e, uint32_t(dT.msec()));
     collisionStep(e, uint32_t(dT.msec()));
     // TODO: Issue #555 needs to handle team cleanup properly
@@ -330,7 +351,7 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
     {
         if (!e->m_char->m_is_dead)
             regenHealthEnd(e, uint(dT.msec()));
-        else if (e->m_type == EntType::CRITTER)
+        else if (e->m_type == EntType::CRITTER && !e->m_is_fading)// fading state is set after rewards, so it is only rewarded once here
             grantRewards(m_owner_instance->m_entities, *e);
     }
     if(e->m_is_logging_out)
