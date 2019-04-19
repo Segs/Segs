@@ -302,6 +302,7 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
             node->m_children.emplace_back(child);
         else
             qCritical() << "Node" << node->m_name << "\ncan't find member" << dat.name;
+            
     }
 }
 void postprocessLOD(const std::vector<DefLod_Data> &lods, SceneNode *node)
