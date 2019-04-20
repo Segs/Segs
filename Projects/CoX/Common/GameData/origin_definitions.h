@@ -5,8 +5,7 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#ifndef PARSE_ORIGIN_H
-#define PARSE_ORIGIN_H
+#pragma once
 #include <vector>
 #include <QtCore/QString>
 
@@ -23,5 +22,3 @@ struct Parse_Origin
     float ContactBonusLength;
 };
 using Parse_AllOrigins = std::vector<Parse_Origin>;
-
-#endif // PARSE_ORIGIN_H

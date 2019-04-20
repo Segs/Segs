@@ -133,6 +133,10 @@ bool AuthServer::Run()
         qCritical() << "Auth server failed to accept connections on:" << m_location.get_host_addr();
         return false;
     }
+
+    qInfo() << "AuthServer now listening on" << m_location.get_host_addr() << ":"
+            << m_location.get_port_number();
+
     m_running=true;
     return true;
 }

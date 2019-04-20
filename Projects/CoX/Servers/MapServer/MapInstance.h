@@ -21,8 +21,6 @@
 #include <memory>
 #include <vector>
 
-#define WORLD_UPDATE_TICKS_PER_SECOND 30
-
 class MapServer;
 class SEGSTimer;
 class World;
@@ -169,6 +167,7 @@ public:
         CritterGeneratorStore   m_critter_generators;
         SpawnDefinitions        m_enemy_spawn_definitions;
         std::vector<LuaTimer>   m_lua_timers;
+        const ACE_Time_Value    m_world_update_interval;
 
 public:
                                 IMPL_ID(MapInstance)

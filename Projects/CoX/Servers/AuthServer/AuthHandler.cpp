@@ -41,7 +41,7 @@ namespace
     AuthorizationError s_auth_error_already_online(AUTH_ALREADY_LOGGEDIN);
 
     const ACE_Time_Value session_reaping_interval(0,1000*1000);
-    const ACE_Time_Value link_is_stale_if_disconnected_for(0,2*1000*1000);
+    const ACE_Time_Value link_is_stale_if_disconnected_for(2,0);
 } // namespace
 
 void AuthHandler::dispatch( Event *ev )

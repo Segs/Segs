@@ -208,20 +208,23 @@ void World::checkPowerTimers(Entity *e, uint32_t msec)
     // Buffs
     for(auto thisbuff = e->m_buffs.begin(); thisbuff != e->m_buffs.end(); /*thisbuff updated inside loop*/)
     {
-        if(thisbuff->m_duration <= 0 || e->m_char->m_is_dead)
-        {
-            for (auto thisbuffset: thisbuff->m_buffs)       //there can be multiple values for one buff
+        for (auto bff = thisbuff->m_buffs.begin(); bff != thisbuff->m_buffs.end(); /*bff updated inside loop*/)
+            if(bff->m_duration <= 0 || e->m_char->m_is_dead)
             {
-                thisbuffset.m_value = -thisbuffset.m_value;
-                modifyAttrib(*e, thisbuffset);
+                bff->m_value = -bff->m_value;
+                modifyAttrib(*e, *bff);
+                bff = thisbuff->m_buffs.erase(bff);
             }
+            else
+            {
+                bff->m_duration -= (float(msec)/1000);                 // duration is in seconds
+                ++bff;
+            }
+
+        if (thisbuff->m_buffs.empty())
             thisbuff = e->m_buffs.erase(thisbuff);
-        }
         else
-        {
-            thisbuff->m_duration -= (float(msec)/1000);                 // activate period is in minutes
             ++thisbuff;
-        }
     }
 }
 
