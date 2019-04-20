@@ -1380,7 +1380,7 @@ void MapInstance::process_chat(Entity *sender, QString &msg_text)
                              << "\n\t" << "target_name:" << target_name
                              << "\n\t" << "msg_text:" << msg_text;
 
-            Entity *tgt;
+            Entity *tgt = nullptr;
             for(MapClientSession *cl : m_session_store)
             {
                 if(cl->m_ent->name() == target_name)
