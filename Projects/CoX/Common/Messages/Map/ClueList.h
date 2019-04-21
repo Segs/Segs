@@ -108,11 +108,11 @@ class SouvenirDetail final : public GameCommandEvent
         int32_t m_souvenir_idx = 0;
         explicit SouvenirDetailRequest() : MapLinkEvent(MapEventTypes::evSouvenirDetailRequest){}
 
-        void serializeto(BitStream &/*bs*/) const override
+        void serializeto(BitStream &/*bs*/) const final
         {
             assert(!"SouvenirDetailRequest serializeto");
         }
-        void serializefrom(BitStream &bs)    // Packet 68
+        void serializefrom(BitStream &bs) final   // Packet 68
         {
             m_souvenir_idx = bs.GetPackedBits(1);
             qCDebug(logMapEvents) << "SouvenirDetailRequest Event";

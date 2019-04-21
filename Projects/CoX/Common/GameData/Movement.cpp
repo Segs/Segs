@@ -25,17 +25,21 @@
 #include <glm/ext.hpp>
 #include <chrono>
 
-static const glm::mat3  s_identity_matrix = glm::mat3(1.0f);
-static int          s_landed_on_ground = 0;
+namespace
+{
+const glm::mat3  s_identity_matrix = glm::mat3(1.0f);
+//int              s_landed_on_ground = 0;
 //static CollInfo     s_last_surf;
-static const int s_reverse_control_dir[6] = {
-    BinaryControl::BACKWARD,
-    BinaryControl::FORWARD,
-    BinaryControl::RIGHT,
-    BinaryControl::LEFT,
-    BinaryControl::DOWN,
-    BinaryControl::UP,
-};
+//constexpr const int s_reverse_control_dir[6] = {
+//    BinaryControl::BACKWARD,
+//    BinaryControl::FORWARD,
+//    BinaryControl::RIGHT,
+//    BinaryControl::LEFT,
+//    BinaryControl::DOWN,
+//    BinaryControl::UP,
+//};
+
+}
 
 SurfaceParams g_world_surf_params[2] = {
     // traction, friction, bounce, gravity, max_speed

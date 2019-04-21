@@ -47,7 +47,7 @@ class Souvenir
 public:
      enum : uint32_t {class_version       = 1};
 
-    uint32_t m_idx;
+    int32_t m_idx;
     QString m_name;
     QString m_icon;
     QString m_description;

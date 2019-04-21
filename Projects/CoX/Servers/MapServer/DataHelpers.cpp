@@ -280,7 +280,7 @@ QString createKioskMessage(Entity* player)
  */
 
 void getEmailHeaders(MapClientSession& sess)
-{   
+{
     if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
@@ -288,7 +288,7 @@ void getEmailHeaders(MapClientSession& sess)
     }
 
     HandlerLocator::getEmail_Handler()->putq(new EmailHeaderRequest(
-        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));    
+        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));
 }
 
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
@@ -321,7 +321,7 @@ void readEmailMessage(MapClientSession& sess, const uint32_t email_id)
         return;
     }
 
-    EmailReadRequest* msgToHandler = new EmailReadRequest({email_id}, sess.link()->session_token());
+    EmailReadRequest* msgToHandler = new EmailReadRequest({email_id,0}, sess.link()->session_token());
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
@@ -1332,8 +1332,8 @@ void giveXp(MapClientSession &sess, uint32_t xp)
     uint32_t current_xp = getXP(*sess.m_ent->m_char);
 
     GameDataStore &data(getGameData());
-    if (data.m_uses_xp_mod && 
-        data.m_xp_mod_startdate <= QDateTime::currentDateTime() && 
+    if (data.m_uses_xp_mod &&
+        data.m_xp_mod_startdate <= QDateTime::currentDateTime() &&
         data.m_xp_mod_enddate >= QDateTime::currentDateTime())
     {
         xp *= data.m_xp_mod_multiplier;
@@ -1659,11 +1659,11 @@ void removeClue(MapClientSession &cl, Clue clue)
 void addSouvenir(MapClientSession &cl, Souvenir souvenir)
 {
     vSouvenirList souvenir_list = cl.m_ent->m_player->m_souvenirs;
-    if(souvenir_list.size() > 0)
-        souvenir.m_idx = souvenir_list.size(); // Server sets the idx
+    if(!souvenir_list.empty())
+        souvenir.m_idx = int32_t(souvenir_list.size()); // Server sets the idx
 
     qCDebug(logScripts) << "Souvenir m_idx: " << souvenir.m_idx << " about to be added";
-    souvenir_list.push_back(souvenir);
+    souvenir_list.emplace_back(souvenir);
     cl.m_ent->m_player->m_souvenirs = souvenir_list;
     markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
     cl.addCommand<SouvenirListHeaders>(souvenir_list);

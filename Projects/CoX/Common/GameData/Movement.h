@@ -17,7 +17,7 @@ struct PosUpdate // PosUpdatePair
 {
     glm::vec3       m_position;
     glm::vec3       m_pyr_angles;
-    int             m_timestamp;
+    uint32_t        m_timestamp;
     int             m_debug;
 };
 
