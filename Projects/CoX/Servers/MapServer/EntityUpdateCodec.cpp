@@ -23,6 +23,7 @@
 #include "Logging.h"
 
 #include <glm/ext.hpp> // currently only needed for logOrientation debug
+#include <inttypes.h>
 
 namespace  {
 void storeCreation(const Entity &src, BitStream &bs)
