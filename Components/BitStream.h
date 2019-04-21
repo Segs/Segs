@@ -24,9 +24,9 @@ Description: The BitStream class allows it's user to manipulate data in
 #include <utility>
 //#define CUSTOM_CLIENT_CODE
 #ifdef CUSTOM_CLIENT_CODE
-#define PUTDEBUG(x) bs.StoreString(x);
+#define PUTDEBUG(x) bs.StoreString(x)
 #else
-#define PUTDEBUG(x) ;
+#define PUTDEBUG(x)
 #endif
 
 class QString;

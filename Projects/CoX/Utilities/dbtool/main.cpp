@@ -57,9 +57,9 @@ public:
     bool m_character_db = false;
 
     ConfigStruct() = default;
-    
+
     bool initialize_from_settings(const QString &settings_file_name, const QString &group_name);
-    
+
     bool isMysql() const {return m_driver.startsWith("QMYSQL");}
     bool isPostgresql() const {return m_driver.startsWith("QPSQL");}
     bool isSqlite() const {return m_driver.startsWith("QSQLITE");}
@@ -177,7 +177,7 @@ bool dbExists(const ConfigStruct &database_to_look_for)
         query.exec(querytext);
         if(query.size() >= 1)
             ret = true;
-        
+
         segs_db.close();
     }
     QSqlDatabase::removeDatabase(database_to_look_for.m_db_name);
@@ -189,7 +189,7 @@ bool deleteDb(QString const& db_file_name)
     QFile target_file(db_file_name);
     if(target_file.exists() && !target_file.remove())
         return false;
-    
+
     return true;
 }
 
@@ -211,15 +211,15 @@ bool fileQueryDb(QFile &source_file, QSqlQuery &query)
     // The SQLite driver executes only a single (the first) query in the QSqlQuery.
     // If the script contains more queries, it needs to be split.
     QStringList scriptQueries = QTextStream(&source_file).readAll().split(';');
-    
+
     for(QString query_text : scriptQueries) // Execute each command in the source file.
     {
         if(query_text.trimmed().isEmpty())
             continue;
-        
+
         if(!query.exec(query_text))
             return false;
-        
+
         query.finish();
     }
     return true;
@@ -300,7 +300,7 @@ int createDatabases(std::vector<ConfigStruct> const& configs)
             // otherwise, many errors are thrown.
             if(!deleteDb(cfg.m_db_name))
             {
-                qWarning(qPrintable(QString("FAILED to remove existing file: %1").arg(cfg.m_db_name)));
+                qWarning("FAILED to remove existing file: %s",qPrintable(cfg.m_db_name));
                 qCritical("Ensure no processes are using it and you have permission to modify it.");
                 returnvalue = DB_RM_FAILED;
                 break;
@@ -325,7 +325,7 @@ int createDatabases(std::vector<ConfigStruct> const& configs)
         {
             // Roll back the database if something goes wrong,
             // so we're not left with useless poop.
-            segs_db.rollback(); 
+            segs_db.rollback();
             qCritical("One of the queries failed to execute.\n Error detail: %s\n",
                       qPrintable(query.lastError().text()));
             returnvalue = QUERY_FAILED;
@@ -438,7 +438,7 @@ int main(int argc, char **argv)
     parser.addOption(passOption);
     parser.addOption(accessLevelOption);
     parser.addOption(configFileOption);
-    
+
     parser.process(app);
     const QStringList positionalArguments = parser.positionalArguments();
     if(positionalArguments.size()<1 || !known_commands.contains(positionalArguments.first()))
@@ -450,14 +450,14 @@ int main(int argc, char **argv)
 
         parser.showHelp(1);
     }
-    
+
     if(!configs[0].initialize_from_settings(parser.value(configFileOption), "AccountDatabase"))
     {
-        qCritical(qPrintable(QString("File \"%1\" not found.").arg(parser.value(configFileOption))));
+        qCritical("File \"%s\" not found.",qPrintable(parser.value(configFileOption)));
         return SETTINGS_MISSING;
     }
     configs[1].initialize_from_settings(parser.value(configFileOption), "CharacterDatabase");
-    
+
     // Set QT Logging filters after we've initialized settings.cfg with the correct path
     setLoggingFilter();
 
@@ -492,10 +492,10 @@ int main(int argc, char **argv)
             {
                 if(fileExists(configs[0].m_db_name) || dbExists(configs[0]))
                     qWarning() << "Database" << configs[0].m_db_name << "already exists.";
-                
+
                 if(fileExists(configs[1].m_db_name) || dbExists(configs[1]))
                     qWarning() << "Database" << configs[1].m_db_name << "already exists.";
-                
+
                 qInfo() << "Run dbtool with -f option to overwrite existing databases. "
                         << "THIS CANNOT BE UNDONE.";
                 returnvalue = NOT_FORCED;

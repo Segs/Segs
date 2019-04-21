@@ -192,7 +192,7 @@ void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
     if(src.m_type == EntType::PLAYER)
-        qCDebug(logAnimations, "Sending seq triggered moves %d", src.m_triggered_moves.size());
+        qCDebug(logAnimations, "Sending seq triggered moves %" PRIu64, src.m_triggered_moves.size());
 
     // client appears to process only the last 20 triggered moves
     bs.StorePackedBits(1, src.m_triggered_moves.size()); // num moves
