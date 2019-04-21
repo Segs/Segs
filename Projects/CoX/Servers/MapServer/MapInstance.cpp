@@ -1092,6 +1092,7 @@ void MapInstance::on_input_state(RecvInputState *st)
     Entity *   ent = session.m_ent;
 
     // Save current position to last_pos
+    // todo(jbr) don't do this here
     ent->m_motion_state.m_last_pos      = ent->m_entity_data.m_pos;
     // todo(jbr)
     //ent->m_states.current()->m_pos_end  = ent->m_entity_data.m_pos;

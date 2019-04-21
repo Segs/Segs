@@ -377,9 +377,6 @@ void initializeNewPlayerEntity(Entity &e)
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 
-    e.m_states.init(); // Initialize movement input state pointers
-    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
-
     PosUpdate p;
     for(int i = 0; i<64; i++)
     {
@@ -422,10 +419,6 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_char->m_char_data.m_level       = src->m_Level;
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
-
-    e.m_states.init(); // Initialize movement input state pointers
-    //e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
-    // todo(jbr)
 
     PosUpdate p;
     for(int i = 0; i<64; i++)
@@ -478,10 +471,6 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_char->m_char_data.m_current_attribs.m_Endurance = 100;
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
-
-    e.m_states.init(); // Initialize movement input state pointers
-    //e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
-    // todo(jbr)
 
     PosUpdate p;
     for(int i = 0; i<64; i++)

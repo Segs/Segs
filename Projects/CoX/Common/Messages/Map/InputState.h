@@ -28,7 +28,7 @@ public:
     {}
     void serializeto(BitStream &) const override;
     void serializefrom(BitStream &bs) override;
-    void receiveControlState(BitStream &bs);
+    void receiveControlStateChanges(BitStream &bs);
     void extended_input(BitStream &bs);
     void recv_client_opts(BitStream &bs);
     EVENT_IMPL(RecvInputState)

@@ -139,12 +139,9 @@ struct MotionState // current derived state of motion
                                      {0,0,0,0,0} };
 };
 
-void processDirectionControl(InputState *next_state, uint8_t control_id, int ms_since_prev, int keypress_state);
-void setVelocity(Entity &e);
 void processNewInputs(Entity &e);
 
 void addPosUpdate(Entity &e, const PosUpdate &p);
-bool updateRotation(const Entity &e, int axis); // returns true if given axis needs updating;
 void forcePosition(Entity &e, glm::vec3 pos);
 void forceOrientation(Entity &e, glm::vec3 pyr);
 
