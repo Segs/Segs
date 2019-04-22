@@ -358,7 +358,7 @@ void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 
 void sendAFK(const Entity &src, BitStream &bs)
 {
-    CharacterData cd = src.m_char->m_char_data;
+    const CharacterData &cd(src.m_char->m_char_data);
     bool hasMsg = !cd.m_afk_msg.isEmpty();
     bs.StoreBits(1, cd.m_afk); // 1/0 only
     if(cd.m_afk)

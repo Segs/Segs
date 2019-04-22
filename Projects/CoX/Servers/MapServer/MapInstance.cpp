@@ -139,19 +139,19 @@ void MapInstance::start(const QString &scenegraph_path)
     {
         qInfo() << "Loading map instance data...";
         bool scene_graph_loaded = false;
-        Q_UNUSED(scene_graph_loaded);
+        Q_UNUSED(scene_graph_loaded)
 
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
                 scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
                 m_map_transfers = m_map_scenegraph->get_map_transfers();
-            }, "Loading original scene graph");
+            }, "Loading original scene graph")
 
         TIMED_LOG({
             m_map_scenegraph->spawn_npcs(this);         // handles persistents, Spawndef, npc/vehicle encounters
             m_npc_generators.generate(this);            // handles doors, monorails, trains
             m_all_spawners = m_map_scenegraph->getSpawnPoints();    // used for locating player spawn points
-            }, "Spawning npcs");
+            }, "Spawning npcs")
 
         // Set correct MapInstance in scripting engine
         m_scripting_interface->updateMapInstance(this);
@@ -2115,7 +2115,7 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
         map_cells->resize(map_cells->size() + (ev->tile_idx - map_cells->size() + 1023) / 1024 * 1024);
     }
 
-    // #818 map_cells of type array with a size of 1024 threw 
+    // #818 map_cells of type array with a size of 1024 threw
     // out of range exception on maps that had index tiles larger than 1024
     map_cells->at(ev->tile_idx) = true;
 
@@ -2164,7 +2164,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
     else
     {
         MapXferData &map_data = map_server->session_map_xfer_idx(session.link()->session_token());
-        
+
         if(!m_all_spawners.empty() && m_all_spawners.contains(map_data.m_target_spawn_name))
         {
             setSpawnLocation(*session.m_ent, map_data.m_target_spawn_name);
@@ -2172,7 +2172,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         else
         {
             setPlayerSpawn(*session.m_ent);
-        }        
+        }
 
         // else don't send motd, as this is from a map transfer
         // TODO: check if there's a better place to complete the map transfer..
@@ -2186,7 +2186,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         // TODO: Check map type to determine if is_opaque is true / false
         sendVisitMapCells(session, false, *visible_map_cells);
     }
-    
+
     initializeCharacter(*session.m_ent->m_char);
 
     // Call Lua Connected function.
