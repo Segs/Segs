@@ -171,7 +171,7 @@ void Character::addPowersByLevel(const QString &pcat_name, const QString &pset_n
     // Iterate through the availability of all powers in the set
     for(size_t i = 0; i < pset.Available.size(); ++i)
     {
-        if(level < pset.Available.at(i))
+        if(int(level) < pset.Available[i])
             continue;
         // skip prestige powers
         if(pset.m_Powers.at(i).m_Name.contains("prestige_"))

@@ -203,7 +203,7 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
         lnk->putq(s_auth_error_locked_account.shallow_copy());
         return;
     }
-    qDebug("Server Account Id : %" PRIu64, acc_inf.m_acc_server_acc_id);
+    qDebug("Server Account Id : %" PRIu32, acc_inf.m_acc_server_acc_id);
     // step 3d: checking if this account is blocked
     if(isClientConnectedAnywhere(acc_inf.m_acc_server_acc_id))
     {

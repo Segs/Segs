@@ -336,7 +336,14 @@ static const int m_num_trays = 2; // was 3, displayed trays
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version);
 };
-
+struct DelayedEffect
+{
+    StoredAttribMod mod;
+    CharacterPower *power;
+    int m_timer;
+    int ticks;
+    uint32_t src_ent;
+};
 
 /*
  * Powers Methods

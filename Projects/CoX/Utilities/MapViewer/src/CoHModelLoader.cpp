@@ -32,8 +32,8 @@ using namespace Urho3D;
 
 // Start of anonymous namespace
 namespace {
-glm::vec3 fromUrho(Vector3 v) {return {v.x_,v.y_,v.z_};}
-Vector3 toUrho(glm::vec3 v) {return {v.x,v.y,v.z};}
+//glm::vec3 fromUrho(Vector3 v) {return {v.x_,v.y_,v.z_};}
+//Vector3 toUrho(glm::vec3 v) {return {v.x,v.y,v.z};}
 } // end of anonymus namespace
 
 float *combineBuffers(SEGS::VBOPointers &meshdata,SEGS::Model *mdl)

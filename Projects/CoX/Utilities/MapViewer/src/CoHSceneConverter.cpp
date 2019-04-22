@@ -46,7 +46,7 @@ std::unordered_map<SEGS::SceneNode *,int> g_node_to_converted;
 
 namespace
 {
-glm::vec3 fromUrho(Vector3 v) { return {v.x_,v.y_,v.z_};}
+//glm::vec3 fromUrho(Vector3 v) { return {v.x_,v.y_,v.z_};}
 Vector3 toUrho(glm::vec3 v) { return {v.x,v.y,v.z};}
 Urho3D::Matrix3x4 fromChildTransform(const SEGS::SceneNodeChildTransform &ct)
 {

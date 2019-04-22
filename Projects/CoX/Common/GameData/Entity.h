@@ -177,6 +177,7 @@ public:
         std::deque<QueuedPowers>    m_queued_powers;
         std::vector<QueuedPowers>   m_auto_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
+        std::vector<DelayedEffect>  m_delayed;
         PowerStance                 m_stance;
         bool                        m_update_buffs  = false;
 
@@ -216,7 +217,7 @@ public:
 
         std::array<PosUpdate, 64> m_pos_updates;
         std::array<BinTreeEntry, 7> m_interp_bintree;
-        size_t              m_update_idx                = 0;
+        int                 m_update_idx                = 0;
         bool                m_pchar_things              = false;
         bool                m_update_anims              = false;
         bool                m_hasname                   = false;
