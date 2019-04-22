@@ -147,6 +147,10 @@ void setAFK(Character &c, const bool is_afk, QString msg)
     if(is_afk)
         c.m_char_data.m_afk_msg = msg;
 }
+bool isAFK(Character &c)
+{
+    return c.m_char_data.m_afk;
+}
 
 void initializeCharacter(Character &c)
 {

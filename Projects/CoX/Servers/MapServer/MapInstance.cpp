@@ -72,17 +72,6 @@ struct EntityIdxCompare;
 
 namespace
 {
-    enum
-    {
-        World_Update_Timer   = 1,
-        State_Transmit_Timer = 2,
-        Session_Reaper_Timer   = 3,
-        Link_Idle_Timer   = 4,
-        Sync_Service_Update_Timer = 5,
-        Afk_Update_Timer = 6,
-        Lua_Timer = 7
-    };
-
     const ACE_Time_Value reaping_interval(0,1000*1000);
     const ACE_Time_Value link_is_stale_if_disconnected_for(5,0);
     const ACE_Time_Value link_update_interval(0,500*1000);
@@ -128,11 +117,33 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
 }
+void MapInstance::startTimers()
+{
+    // world simulation ticks
+    m_world_update_timer = addTimer(m_world_update_interval); //World_Update_Timer
+    startTimer(m_world_update_timer,[this](const ACE_Time_Value &at) {m_world->update(at);});
+    // state broadcast ticks
+    m_resend_timer = addTimer(resend_interval);
+    startTimer(m_resend_timer,&MapInstance::sendState);
+    m_link_timer   = addTimer(link_update_interval);
+    startTimer(m_link_timer, &MapInstance::on_check_links);
+    m_sync_service_timer = addTimer(sync_service_update_interval);
+    startTimer(m_sync_service_timer,&MapInstance::on_update_entities);
+    m_afk_update_timer = addTimer(afk_update_interval);
+    startTimer(m_afk_update_timer,&MapInstance::on_afk_update);
 
+    //Lua timer
+    m_lua_timer_id = addTimer(lua_timer_interval);
+    startTimer(m_lua_timer_id,&MapInstance::on_lua_update);
+
+    // session cleaning
+    m_session_reaping_timer = addTimer(reaping_interval);
+    startTimer(m_session_reaping_timer,&MapInstance::reap_stale_links);
+}
 void MapInstance::start(const QString &scenegraph_path)
 {
-    assert(m_world_update_timer==nullptr);
     assert(m_game_server_id!=255);
+    m_registered_timers.clear();
     m_scripting_interface->registerTypes();
     QFileInfo mapDataDirInfo(m_data_path);
     if(mapDataDirInfo.exists() && mapDataDirInfo.isDir())
@@ -169,19 +180,7 @@ void MapInstance::start(const QString &scenegraph_path)
     m_sync_service->set_db_handler(m_game_server_id);
     m_sync_service->activate();
 
-    // world simulation ticks
-    m_world_update_timer = std::make_unique<SEGSTimer>(this, World_Update_Timer, m_world_update_interval, false);
-    // state broadcast ticks
-    m_resend_timer = std::make_unique<SEGSTimer>(this, State_Transmit_Timer, resend_interval, false);
-    m_link_timer   = std::make_unique<SEGSTimer>(this, Link_Idle_Timer, link_update_interval, false);
-    m_sync_service_timer =
-        std::make_unique<SEGSTimer>(this, Sync_Service_Update_Timer, sync_service_update_interval, false);
-    m_afk_update_timer = std::make_unique<SEGSTimer>(this, Afk_Update_Timer, afk_update_interval, false );
-
-    //Lua timer
-    m_lua_timer = std::make_unique<SEGSTimer>(this, Lua_Timer, lua_timer_interval, false );
-
-    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,reaping_interval); // session cleaning
+    startTimers();
 }
 
 ///
@@ -330,17 +329,6 @@ void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*
 //    session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
 }
 
-void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    session.is_connected_to_map_server_id = 0;
-    session.is_connected_to_map_instance_id = 0;
-    {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        m_session_store.mark_session_for_reaping(&session,ev->session_token());
-    }
-}
-
 void MapInstance::reap_stale_links()
 {
     ACE_Time_Value              time_now = ACE_OS::gettimeofday();
@@ -368,9 +356,6 @@ void MapInstance::dispatch( Event *ev )
     assert(ev);
     switch(ev->type())
     {
-        case evTimeout:
-            on_timeout(static_cast<Timeout *>(ev));
-            break;
         case evDisconnect:
             on_link_lost(ev);
             break;
@@ -622,10 +607,12 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    if(!map_server->session_has_xfer_in_progress(lnk->session_token()))
+    if (!map_server->session_has_xfer_in_progress(lnk->session_token()))
     {
-         qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
-         return;
+        qCDebug(logMapXfers) << QString(
+                                    "Client Session %1 attempting to initiate transfer with no map data message received")
+                                    .arg(session.link()->session_token());
+        return;
     }
 
     // This is used here to get the map idx to send to the client for the transfer, but we
@@ -727,7 +714,7 @@ void MapInstance::on_link_lost(Event *ev)
     send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
 
-    m_session_store.session_link_lost(session_token);
+    m_session_store.session_link_lost(session_token,"MapInstance: link was lost");
     m_session_store.remove_by_token(session_token, session.auth_id());
      // close the link by puting an disconnect event there
     lnk->putq(new Disconnect(session_token));
@@ -753,7 +740,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
 
-    m_session_store.session_link_lost(session_token);
+    m_session_store.session_link_lost(session_token,"MapInstance: client disconnected");
     m_session_store.remove_by_token(session_token, session.auth_id());
 
     lnk->putq(new DisconnectResponse);
@@ -808,12 +795,13 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     map_session.is_connected_to_game_server_id = m_game_server_id;
     cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
-    if(request_data.char_from_db_data.isEmpty())
+    if (request_data.char_from_db_data.isEmpty())
     {
         EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
-        game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
+        game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name}, ev->session_token(), this));
         // while we wait for db response, mark session as waiting for reaping
-        m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
+        m_session_store.locked_mark_session_for_reaping(&map_session, ev->session_token(),
+                                                        "MapSession: Awaiting DB response - duplicate name check");
         return;
     }
     GameAccountResponseCharacterData char_data;
@@ -850,7 +838,8 @@ void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
     // TODO: we've just put the entity in the db, and now we have to load it back ??
     game_db->putq(new GetEntityRequest({ev->m_data.m_char_id},ev->session_token(),this));
     // while we wait for db response, mark session as waiting for reaping
-    m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
+    m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token(),
+                                                    "MapSession: Awaiting DB response - retrieve char");
 }
 
 void MapInstance::on_entity_response(GetEntityResponse *ev)
@@ -867,7 +856,12 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
     // make sure to 'off' the AFK from the character in db first
+    bool was_afk = isAFK(*e->m_char);
     setAFK(*e->m_char, false);
+    if(was_afk)
+    {
+        sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", map_session);
+    }
 
     if(logPlayerSpawn().isDebugEnabled())
     {
@@ -973,7 +967,8 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
     }
     // while we wait for db response, mark session as waiting for reaping
-    m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
+    m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token(),
+                                                    "MapSession: Awaiting DB response - create/retrieve a character");
 }
 
 void MapInstance::on_scene_request(SceneRequest *ev)
@@ -1011,44 +1006,6 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     buildEntityResponse(res,session,EntityUpdateMode::FULL,false);
     session.link()->putq(res);
     m_session_store.add_to_active_sessions(&session);
-}
-
-//! Handle instance-wide timers
-void MapInstance::on_timeout(Timeout *ev)
-{
-    // TODO: This should send 'ping' packets on all client links to which we didn't send
-    // anything in the last time quantum
-    // 1. Find all links that have inactivity_time() > ping_time && <disconnect_time
-    // For each found link
-    //   If there is no ping_pending on this link, add a ping event to queue
-    // 2. Find all links with inactivity_time() >= disconnect_time
-    //   Disconnect given link.
-
-    auto timer_id = ev->timer_id();
-    switch (timer_id)
-    {
-        case World_Update_Timer:
-            m_world->update(ev->arrival_time());
-            break;
-        case State_Transmit_Timer:
-            sendState();
-            break;
-        case Link_Idle_Timer:
-            on_check_links();
-            break;
-        case Session_Reaper_Timer:
-            reap_stale_links();
-            break;
-        case Sync_Service_Update_Timer:
-            on_update_entities();
-            break;
-        case Afk_Update_Timer:
-            on_afk_update();
-            break;
-        case Lua_Timer:
-            on_lua_update();
-            break;
-    }
 }
 
 void MapInstance::sendState()
@@ -2886,7 +2843,7 @@ void MapInstance::on_afk_update()
     const GameDataStore &data(getGameData());
     QString msg;
 
-    for (const auto &sess : active_sessions)
+    for (MapClientSession *sess : active_sessions)
     {
         Entity *e = sess->m_ent;
         CharacterData* cd = &e->m_char->m_char_data;
@@ -2905,14 +2862,16 @@ void MapInstance::on_afk_update()
             cd->m_idle_time = 0;
             cd->m_is_on_auto_logout = false;
             e->m_has_input_on_timeframe = false;
-
             if(cd->m_afk)
+            {
                 setAFK(*e->m_char, false);
+                sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", *sess);
+            }
         }
 
         if(cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
-            setAFK(* e->m_char, true, "Auto AFK");
+            setAFK( *e->m_char, true, "Auto AFK");
             msg = QString("You are AFKed after %1 seconds of inactivity.").arg(data.m_time_to_afk);
             sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *sess);
         }
@@ -2945,25 +2904,24 @@ void MapInstance::on_afk_update()
 
 void MapInstance::on_lua_update()
 {
-    int count = 0;
+    // move all to-remove timers to the end of the m_lua_timers
+    auto first_to_remove=std::partition(m_lua_timers.begin(),m_lua_timers.end(),[](const auto &t) {
+        return !t.m_remove;
+    });
+    // remove all dead timers first
+    if(first_to_remove!=m_lua_timers.end())
+        m_lua_timers.erase(first_to_remove,m_lua_timers.end());
     for(const auto &t: m_lua_timers)
     {
-        if(t.m_remove)
-        {
-            m_lua_timers.erase(m_lua_timers.begin() + count);
-            break;
-        }
-
-        if(t.m_is_enabled && t.m_on_tick_callback != NULL)
+        if(t.m_is_enabled && t.m_on_tick_callback != nullptr)
         {
             m_scripting_interface->updateMapInstance(this);
             int64_t time = getSecsSince2000Epoch();
             int64_t diff = time - t.m_start_time;
             t.m_on_tick_callback(t.m_start_time, diff, time);
         }
-
-        ++count;
     }
+
 }
 
 void MapInstance::on_update_entities()
@@ -3318,7 +3276,7 @@ void MapInstance::add_chat_message(Entity *sender,QString &msg_text)
     process_chat(sender, msg_text);
 }
 
-void MapInstance::startTimer(uint32_t entity_idx)
+void MapInstance::startLuaTimer(uint32_t entity_idx)
 {
     int count = 0;
     bool found = false;
@@ -3338,7 +3296,7 @@ void MapInstance::startTimer(uint32_t entity_idx)
     }
 }
 
-void MapInstance::stopTimer(uint32_t entity_idx)
+void MapInstance::stopLuaTimer(uint32_t entity_idx)
 {
     int count = 0;
     bool found = false;
@@ -3355,7 +3313,7 @@ void MapInstance::stopTimer(uint32_t entity_idx)
         this->m_lua_timers[count].m_is_enabled = false;
 }
 
-void MapInstance::clearTimer(uint32_t entity_idx)
+void MapInstance::clearLuaTimer(uint32_t entity_idx)
 {
     int count = 0;
     bool found = false;
