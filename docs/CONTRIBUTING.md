@@ -128,6 +128,8 @@ Both issue lists are sorted by total number of comments. While not perfect, numb
 
 If you want to read about running SEGS, try the end-user [README](../Projects/CoX/docs/README.md).
 
+Please be aware that SEGS is a Clean Room environment, that means we will not be using code that has leaked for City of Heroes. We can not reliably recreate the game if we use leaked code. In short, everything made for SEGS is original and entirely independent from the leaked code.
+
 #### Local development
 
 SEGS can be developed locally by cloning the git repo to your local machine. For instructions on how to do this, see the following sections in the development [README](../README.md):
