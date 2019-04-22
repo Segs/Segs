@@ -204,7 +204,6 @@ protected:
         uint32_t                index() const { return m_index; }
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
-        void                    on_client_disconnected_from_other_server(SEGSEvents::ClientDisconnectedMessage *ev);
         void                    process_chat(Entity *sender, QString &msg_text);
 
         // DB -> Server messages

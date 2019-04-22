@@ -138,7 +138,7 @@ void AuthHandler::on_disconnect(Disconnect *ev)
     {
         SessionStore::MTGuard guard(m_sessions.reap_lock());
         if(session.is_connected_to_game_server_id == 0)
-            m_sessions.mark_session_for_reaping(&session, session.link()->session_token());
+            m_sessions.mark_session_for_reaping(&session, session.link()->session_token(),"AuthHander: Disconnect");
     }
 
     if(session.link())
@@ -184,6 +184,8 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     }
     AuthSession *sess_ptr = &m_sessions.session_from_token(sess_token);
     // protector takes ownership of the session, removing it from ready-for-reaping set
+    // If the protected session is not `protectee_moved` on destruction of `protector` the session is re-added to
+    // the ready-for-reaping set.
     ReaperProtection<AuthSession> protector(sess_ptr,sess_token,m_sessions);
     m_sessions.reap_lock().unlock();
 
@@ -311,7 +313,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     auth_db_handler->putq(request_event);
     // here we will wait for db response, so here we're going to put the session on the read-to-reap list
     // in case db does not respond in sane time frame, the session is going to be removed.
-    m_sessions.locked_mark_session_for_reaping(session_ptr,sess_tok);
+    m_sessions.locked_mark_session_for_reaping(session_ptr,sess_tok,"AuthHandler: waiting for handover");
 }
 
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
@@ -405,7 +407,7 @@ void AuthHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
     session.is_connected_to_game_server_id = 0;
     {
         SessionStore::MTGuard guard(m_sessions.reap_lock());
-        m_sessions.mark_session_for_reaping(&session,ev->session_token());
+        m_sessions.mark_session_for_reaping(&session,ev->session_token(),"AuthHandler: GameServer disconnect");
     }
 }
 

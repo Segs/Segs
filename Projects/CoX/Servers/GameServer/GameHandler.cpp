@@ -193,7 +193,7 @@ void GameHandler::on_update_server(UpdateServer *ev)
 
     // here we will wait for db response, so here we're going to put the session on the read-to-reap list
     // in case db does not respond in sane time frame, the session is going to be removed.
-    m_session_store.locked_mark_session_for_reaping(&session,expecting_session_token);
+    m_session_store.locked_mark_session_for_reaping(&session,expecting_session_token,"GameHander: Awaiting DB response");
     // if things work ok, than GameHandler::on_account_data will get all it needs.
 }
 
@@ -249,20 +249,20 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
         if(session.m_direction==GameSession::EXITING_TO_MAP)
         {
             SessionStore::MTGuard guard(m_session_store.reap_lock());
-            m_session_store.mark_session_for_reaping(&session,lnk->session_token());
-            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.mark_session_for_reaping(&session,lnk->session_token(),"GameHander: Disconnect/Exiting map");
+            m_session_store.session_link_lost(lnk->session_token(),"GameHandler: exited while joining map");
         }
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
             tgt->putq(
                 new ClientDisconnectedMessage({lnk->session_token(), session.m_game_account.m_game_server_acc_id}, 0));
-            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.session_link_lost(lnk->session_token(),"GameHandler: exited to login screen");
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
     }
     else
-        m_session_store.session_link_lost(lnk->session_token());
+        m_session_store.session_link_lost(lnk->session_token(),"GameHandler: disconnected, but in a map");
     lnk->putq(new DisconnectResponse);
     // Post disconnect event to link, will close it's processing loop, after it sends the response
     lnk->putq(
@@ -279,19 +279,19 @@ void GameHandler::on_link_lost(Event *ev)
         if(session.m_direction==GameSession::EXITING_TO_MAP)
         {
             SessionStore::MTGuard guard(m_session_store.reap_lock());
-            m_session_store.mark_session_for_reaping(&session,lnk->session_token());
-            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.mark_session_for_reaping(&session,lnk->session_token(),"GameHander: LinkLost/Exiting map");
+            m_session_store.session_link_lost(lnk->session_token(),"GameHandler: link lost while joining map");
         }
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
             tgt->putq(new ClientDisconnectedMessage({lnk->session_token(), session.m_game_account.m_game_server_acc_id}, 0));
-            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.session_link_lost(lnk->session_token(),"GameHandler: link lost on the way to login screen");
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
     }
     else
-        m_session_store.session_link_lost(lnk->session_token());
+        m_session_store.session_link_lost(lnk->session_token(),"GameHandler: link lost, but in a map");
     // Post disconnect event to link, will close it's processing loop
     lnk->putq(new Disconnect(lnk->session_token()));
 }
@@ -425,11 +425,8 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
     assert(ev->m_data.m_server_id);
     assert(ev->m_data.m_sub_server_id);
     GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
-    {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        // check if this session perhaps is in ready for reaping set
-        m_session_store.unmark_session_for_reaping(&session);
-    }
+    // remove this session from 'ready for reaping set'
+    m_session_store.locked_unmark_session_for_reaping(&session);
 
     session.is_connected_to_map_server_id = ev->m_data.m_server_id;
     session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
@@ -443,10 +440,8 @@ void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
     GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
     session.is_connected_to_map_server_id = 0;
     session.is_connected_to_map_instance_id = 0;
-    {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
-    }
+    m_session_store.locked_mark_session_for_reaping(&session, ev->m_data.m_session,
+                                                    "GameHandler: disconnected from child server");
 
     postGlobalEvent(new ClientDisconnectedMessage({ev->m_data.m_session, ev->m_data.m_char_db_id}, 0));
 }

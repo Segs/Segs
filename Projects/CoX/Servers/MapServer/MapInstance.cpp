@@ -329,17 +329,6 @@ void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*
 //    session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
 }
 
-void MapInstance::on_client_disconnected_from_other_server(ClientDisconnectedMessage *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    session.is_connected_to_map_server_id = 0;
-    session.is_connected_to_map_instance_id = 0;
-    {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        m_session_store.mark_session_for_reaping(&session,ev->session_token());
-    }
-}
-
 void MapInstance::reap_stale_links()
 {
     ACE_Time_Value              time_now = ACE_OS::gettimeofday();
@@ -618,10 +607,12 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     MapLink *lnk = session.link();
     MapServer *map_server = (MapServer *)HandlerLocator::getMap_Handler(m_game_server_id);
-    if(!map_server->session_has_xfer_in_progress(lnk->session_token()))
+    if (!map_server->session_has_xfer_in_progress(lnk->session_token()))
     {
-         qCDebug(logMapXfers) << QString("Client Session %1 attempting to initiate transfer with no map data message received").arg(session.link()->session_token());
-         return;
+        qCDebug(logMapXfers) << QString(
+                                    "Client Session %1 attempting to initiate transfer with no map data message received")
+                                    .arg(session.link()->session_token());
+        return;
     }
 
     // This is used here to get the map idx to send to the client for the transfer, but we
@@ -723,7 +714,7 @@ void MapInstance::on_link_lost(Event *ev)
     send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
 
-    m_session_store.session_link_lost(session_token);
+    m_session_store.session_link_lost(session_token,"MapInstance: link was lost");
     m_session_store.remove_by_token(session_token, session.auth_id());
      // close the link by puting an disconnect event there
     lnk->putq(new Disconnect(session_token));
@@ -749,7 +740,7 @@ void MapInstance::on_disconnect(DisconnectRequest *ev)
     send_character_update(ent);
     m_entities.removeEntityFromActiveList(ent);
 
-    m_session_store.session_link_lost(session_token);
+    m_session_store.session_link_lost(session_token,"MapInstance: client disconnected");
     m_session_store.remove_by_token(session_token, session.auth_id());
 
     lnk->putq(new DisconnectResponse);
@@ -804,12 +795,13 @@ void MapInstance::on_expect_client( ExpectMapClientRequest *ev )
     map_session.is_connected_to_game_server_id = m_game_server_id;
     cookie                    = 2 + m_session_store.expect_client_session(ev->session_token(), request_data.m_from_addr,
                                                      request_data.m_client_id);
-    if(request_data.char_from_db_data.isEmpty())
+    if (request_data.char_from_db_data.isEmpty())
     {
         EventProcessor *game_db = HandlerLocator::getGame_DB_Handler(m_game_server_id);
-        game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name},ev->session_token(),this) );
+        game_db->putq(new WouldNameDuplicateRequest({request_data.m_character_name}, ev->session_token(), this));
         // while we wait for db response, mark session as waiting for reaping
-        m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
+        m_session_store.locked_mark_session_for_reaping(&map_session, ev->session_token(),
+                                                        "MapSession: Awaiting DB response - duplicate name check");
         return;
     }
     GameAccountResponseCharacterData char_data;
@@ -846,7 +838,8 @@ void MapInstance::on_character_created(CreateNewCharacterResponse *ev)
     // TODO: we've just put the entity in the db, and now we have to load it back ??
     game_db->putq(new GetEntityRequest({ev->m_data.m_char_id},ev->session_token(),this));
     // while we wait for db response, mark session as waiting for reaping
-    m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token());
+    m_session_store.locked_mark_session_for_reaping(&map_session,ev->session_token(),
+                                                    "MapSession: Awaiting DB response - retrieve char");
 }
 
 void MapInstance::on_entity_response(GetEntityResponse *ev)
@@ -863,7 +856,12 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     e->m_direction = fromCoHYpr(e->m_entity_data.m_orientation_pyr);
 
     // make sure to 'off' the AFK from the character in db first
+    bool was_afk = isAFK(*e->m_char);
     setAFK(*e->m_char, false);
+    if(was_afk)
+    {
+        sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", map_session);
+    }
 
     if(logPlayerSpawn().isDebugEnabled())
     {
@@ -969,7 +967,8 @@ void MapInstance::on_create_map_entity(NewEntity *ev)
         game_db->putq(new GetEntityRequest({map_session.m_ent->m_char->m_db_id},lnk->session_token(),this));
     }
     // while we wait for db response, mark session as waiting for reaping
-    m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token());
+    m_session_store.locked_mark_session_for_reaping(&map_session,lnk->session_token(),
+                                                    "MapSession: Awaiting DB response - create/retrieve a character");
 }
 
 void MapInstance::on_scene_request(SceneRequest *ev)
@@ -2844,7 +2843,7 @@ void MapInstance::on_afk_update()
     const GameDataStore &data(getGameData());
     QString msg;
 
-    for (const auto &sess : active_sessions)
+    for (MapClientSession *sess : active_sessions)
     {
         Entity *e = sess->m_ent;
         CharacterData* cd = &e->m_char->m_char_data;
@@ -2863,14 +2862,16 @@ void MapInstance::on_afk_update()
             cd->m_idle_time = 0;
             cd->m_is_on_auto_logout = false;
             e->m_has_input_on_timeframe = false;
-
             if(cd->m_afk)
+            {
                 setAFK(*e->m_char, false);
+                sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", *sess);
+            }
         }
 
         if(cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
-            setAFK(* e->m_char, true, "Auto AFK");
+            setAFK( *e->m_char, true, "Auto AFK");
             msg = QString("You are AFKed after %1 seconds of inactivity.").arg(data.m_time_to_afk);
             sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *sess);
         }

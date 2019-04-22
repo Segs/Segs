@@ -29,7 +29,7 @@ class DisconnectRequest;
 class ConnectRequest;
 class UnknownEvent;
 }
-struct GameSession
+struct GameSession : public ClientSession
 {
     enum eTravelDirection
     {
