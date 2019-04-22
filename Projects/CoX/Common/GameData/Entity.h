@@ -177,6 +177,7 @@ public:
         std::deque<QueuedPowers>    m_queued_powers;
         std::vector<QueuedPowers>   m_auto_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
+        std::vector<DelayedEffect>  m_delayed;
         PowerStance                 m_stance;
         bool                        m_update_buffs  = false;
 

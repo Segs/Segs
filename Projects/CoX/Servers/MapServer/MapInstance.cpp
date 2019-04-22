@@ -2332,7 +2332,8 @@ void MapInstance::on_abort_queued_power(AbortQueuedPower * ev)
         return;
 
     // remove last queued power
-    session.m_ent->m_queued_powers.pop_back();
+    session.m_ent->m_queued_powers.back().m_activation_state = false;
+    session.m_ent->m_queued_powers.back().m_active_state_change = true;
     session.m_ent->m_char->m_char_data.m_has_updated_powers = true; // this must be true, because we're updating queued powers
 
     qCWarning(logMapEvents) << "Aborting queued power";
@@ -2447,12 +2448,6 @@ void MapInstance::on_activate_power(ActivatePower *ev)
     session.m_ent->m_has_input_on_timeframe = true;
     int tgt_idx = ev->target_idx;
 
-    Entity *target_ent = getEntity(&session, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
-        return;
-    }
     checkPower(*session.m_ent, ev->pset_idx, ev->pow_idx, tgt_idx);
 }
 
@@ -2466,12 +2461,6 @@ void MapInstance::on_activate_power_at_location(ActivatePowerAtLocation *ev)
     const Power_Data powtpl = ppower->getPowerTemplate();
     int tgt_idx = ev->target_idx;
 
-    Entity *target_ent = getEntity(&session, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
-        return;
-    }
     if ((powtpl.EntsAffected[0] == StoredEntEnum::Caster ))
         tgt_idx = session.m_ent->m_idx;
     session.m_ent->m_target_loc = ev->location;
