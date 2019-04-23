@@ -193,7 +193,7 @@ void RecvInputState::serializefrom(BitStream &bs)
         TimeState time_state;
         if(m_next_state.m_time_state.size())
         {
-            time_state.serializefrom_delta(bs, m_next_state.m_time_state.last());
+            time_state.serializefrom_delta(bs, m_next_state.m_time_state.back());
         }
         else // initial values
         {

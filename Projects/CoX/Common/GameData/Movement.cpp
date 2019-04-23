@@ -59,19 +59,21 @@ void processNewInputs(Entity &e)
     StateStorage* input_state = &e.m_states;
     for (InputState* new_input = input_state->m_inp_states.begin(); new_input != input_state->m_inp_states.end(); ++new_input) // todo(jbr) buffer these for jitter/cheating
     {
-        for (ControlStateChangesForTick* changes_for_tick = new_input->m_control_state_changes.begin();
-             changes_for_tick != new_input->m_control_state_changes.end();
-             ++changes_for_tick)
+        for (auto iter = new_input->m_control_state_changes.begin();
+             iter != new_input->m_control_state_changes.end();
+             ++iter)
         {
-            if (isControlStateChangeIdNewer(input_state->m_next_expected_control_state_change_id, changes_for_tick->first_change_id)) // todo(jbr) surely just check this when adding them?
+            ControlStateChangesForTick& changes_for_tick = *iter;
+
+            if (isControlStateChangeIdNewer(input_state->m_next_expected_control_state_change_id, changes_for_tick.first_change_id)) // todo(jbr) surely just check this when adding them?
             {
                 continue;
             }
 
-            Q_ASSERT(input_state->m_next_expected_control_state_change_id == changes_for_tick->first_change_id);
+            Q_ASSERT(input_state->m_next_expected_control_state_change_id == changes_for_tick.first_change_id);
 
             uint32_t key_press_start_ms[6] = {};
-            for (const ControlStateChangesForTick::KeyChange& key_change : changes_for_tick->key_changes)
+            for (const ControlStateChangesForTick::KeyChange& key_change : changes_for_tick.key_changes)
             {
                 input_state->m_keys[key_change.key] = key_change.state;
 
@@ -119,7 +121,7 @@ void processNewInputs(Entity &e)
                 }
 
                 // update key press time, keeping within min/max range
-                input_state->m_key_press_duration_ms[i] = glm::clamp<uint32_t>(input_state->m_key_press_duration_ms[i] + changes_for_tick->tick_length_ms - key_press_start_ms[i],
+                input_state->m_key_press_duration_ms[i] = glm::clamp<uint32_t>(input_state->m_key_press_duration_ms[i] + changes_for_tick.tick_length_ms - key_press_start_ms[i],
                            minimum_key_press_time, 1000);
             }
 
@@ -171,14 +173,14 @@ void processNewInputs(Entity &e)
             // todo(jbr) are pitch/yaw changes definitely tick start not tick end?
             glm::vec3 orientation_pyr = e.m_entity_data.m_orientation_pyr;
             bool orientation_changed = false;
-            if (changes_for_tick->pitch_changed)
+            if (changes_for_tick.pitch_changed)
             {
-                orientation_pyr.x = changes_for_tick->pitch;
+                orientation_pyr.x = changes_for_tick.pitch;
                 orientation_changed = true;
             }
-            if (changes_for_tick->yaw_changed)
+            if (changes_for_tick.yaw_changed)
             {
-                orientation_pyr.y = changes_for_tick->yaw;
+                orientation_pyr.y = changes_for_tick.yaw;
                 orientation_changed = true;
             }
             if (orientation_changed)
@@ -189,10 +191,10 @@ void processNewInputs(Entity &e)
                 e.m_direction = fromCoHYpr(orientation_pyr);
             }
 
-            if (changes_for_tick->no_collision_changed)
+            if (changes_for_tick.no_collision_changed)
             {
                 // todo(jbr) command to enable movement logging?
-                if (changes_for_tick->no_collision)
+                if (changes_for_tick.no_collision)
                 {
                     e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
                 }
@@ -294,7 +296,7 @@ void processNewInputs(Entity &e)
                     e.m_entity_data.m_pos.y,
                     e.m_entity_data.m_pos.z);*/
 
-            input_state->m_next_expected_control_state_change_id = changes_for_tick->last_change_id + 1;
+            input_state->m_next_expected_control_state_change_id = changes_for_tick.last_change_id + 1;
 
             for (int i = 0; i < 6; ++i)
             {

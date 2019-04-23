@@ -1094,20 +1094,19 @@ void MapInstance::on_input_state(RecvInputState *st)
     // Save current position to last_pos
     // todo(jbr) don't do this here
     ent->m_motion_state.m_last_pos      = ent->m_entity_data.m_pos;
-    // todo(jbr)
-    //ent->m_states.current()->m_pos_end  = ent->m_entity_data.m_pos;
-    st->m_next_state.m_pos_start        = ent->m_entity_data.m_pos;
 
     // Add new input state
     ent->m_states.addNewState(st->m_next_state);
 
     // Set current Input Packet ID
-    if(st->m_next_state.m_full_input_packet)
-        ent->m_input_pkt_id = st->m_next_state.m_send_id;
+    if(st->m_next_state.m_control_state_changes.size())
+    {
+        ent->m_input_pkt_id = st->m_next_state.m_control_state_changes.back().first_change_id; // todo(jbr) should this be last change id?
+    }
+
 
     // Check for input
-    if(st->m_next_state.m_input_received)
-        ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
+    ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
 
     // Set Target
     if(st->m_next_state.m_has_target && (getTargetIdx(*ent) != st->m_next_state.m_target_idx))
@@ -1116,13 +1115,6 @@ void MapInstance::on_input_state(RecvInputState *st)
         setTarget(*ent, st->m_next_state.m_target_idx);
         //Not needed currently
         //auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
-    }
-
-    // Set Orientation
-    if(st->m_next_state.m_orientation_pyr.p || st->m_next_state.m_orientation_pyr.y || st->m_next_state.m_orientation_pyr.r)
-    {
-        //ent->m_entity_data.m_orientation_pyr = st->m_next_state.m_orientation_pyr;
-        //ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
     }
 
     // Input state messages can be followed by multiple commands.

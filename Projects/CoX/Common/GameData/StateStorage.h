@@ -33,12 +33,20 @@ struct ControlStateChangesForTick
         int key = 0;
         int state = 0;
         uint32_t offset_from_tick_start_ms = 0;
+
+        template<class Archive>
+        void serialize(Archive &ar)
+        {
+            ar(key);
+            ar(state);
+            ar(offset_from_tick_start_ms);
+        }
     };
 
     uint16_t first_change_id        = 0xffff;
     uint16_t last_change_id         = 0xffff;
     uint32_t tick_length_ms         = 0;
-    QVector<KeyChange> key_changes;
+    std::vector<KeyChange> key_changes;
     bool pitch_changed              = false;
     float pitch                     = 0.0f;
     bool yaw_changed                = false;
@@ -51,6 +59,27 @@ struct ControlStateChangesForTick
     uint8_t velocity_scale          = 0;
     bool every_4_ticks_changed      = false; // what's this actually for?
     uint8_t every_4_ticks           = 0;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(first_change_id);
+        ar(last_change_id);
+        ar(tick_length_ms);
+        ar(key_changes);
+        ar(pitch_changed);
+        ar(pitch);
+        ar(yaw_changed);
+        ar(yaw);
+        ar(no_collision_changed);
+        ar(no_collision);
+        ar(controls_disabled);
+        ar(time_diff_1);
+        ar(time_diff_2);
+        ar(velocity_scale);
+        ar(every_4_ticks_changed);
+        ar(every_4_ticks);
+    }
 };
 // is a newer than b?
 bool isControlStateChangeIdNewer(uint16_t a, uint16_t b); // todo(jbr) think this can go
@@ -69,6 +98,17 @@ public:
     void serializefrom_delta(BitStream &bs, const TimeState &prev);
     void serializefrom_base(BitStream &bs);
     void dump();
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_client_timenow);
+        ar(m_time_res);
+        ar(m_timestep);
+        ar(m_time_rel1C);
+        ar(m_perf_cntr_diff);
+        ar(m_perf_freq_diff);
+    }
 };
 
 
@@ -78,7 +118,7 @@ class InputState
 public:
     // todo(jbr) document all these, what do they mean, when are they sent, etc
 
-    QVector<ControlStateChangesForTick> m_control_state_changes;
+    std::vector<ControlStateChangesForTick> m_control_state_changes;
     bool m_has_keys = false;
     bool m_keys[6] = {};
     bool m_has_pitch_and_yaw = false;
@@ -86,8 +126,22 @@ public:
     float m_yaw = 0.0f;
     bool m_has_target = false;
     uint32_t    m_target_idx = 0;
-    QVector<TimeState> m_time_state;
+    std::vector<TimeState> m_time_state;
     //m_input_received (true if any control_ids < 8) or if any keys are held
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_control_state_changes);
+        ar(m_has_keys);
+        ar(m_keys);
+        ar(m_has_pitch_and_yaw);
+        ar(m_pitch);
+        ar(m_yaw);
+        ar(m_has_target);
+        ar(m_target_idx);
+        ar(m_time_state);
+    }
 
 /*    using FloatDuration = std::chrono::duration<float>;
 public:
