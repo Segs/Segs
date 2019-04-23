@@ -653,9 +653,9 @@ void storeClientData(BitStream &bs,Entity *ent,bool incremental)
     bs.StoreBits(1,ent->m_force_camera_dir);
     if(ent->m_force_camera_dir)
     {
-        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.p); // force camera_pitch
-        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.y); // force camera_yaw
-        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.r); // force camera_roll
+        bs.StoreFloat(ent->m_entity_data.m_orientation_pyr.x); // force camera_pitch
+        bs.StoreFloat(ent->m_entity_data.m_orientation_pyr.y); // force camera_yaw
+        bs.StoreFloat(ent->m_entity_data.m_orientation_pyr.z); // force camera_roll
     }
     PUTDEBUG("After character data");
 }

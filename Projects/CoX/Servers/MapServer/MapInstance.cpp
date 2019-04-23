@@ -1106,7 +1106,7 @@ void MapInstance::on_input_state(RecvInputState *st)
 
 
     // Check for input
-    ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
+    ent->m_has_input_on_timeframe = st->m_next_state.hasInput();
 
     // Set Target
     if(st->m_next_state.m_has_target && (getTargetIdx(*ent) != st->m_next_state.m_target_idx))

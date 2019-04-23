@@ -73,6 +73,32 @@ void TimeState::dump()
     qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
 }
 
+bool InputState::hasInput() const
+{
+    if (m_has_keys)
+    {
+        for (bool key : m_keys)
+        {
+            if (key)
+            {
+                return true;
+            }
+        }
+    }
+
+    for (const ControlStateChangesForTick& changes_for_tick : m_control_state_changes)
+    {
+        if (changes_for_tick.key_changes.size() ||
+            changes_for_tick.pitch_changed ||
+            changes_for_tick.yaw_changed)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void StateStorage::addNewState(InputState &new_state)
 {
     m_inp_states.push_back(new_state);

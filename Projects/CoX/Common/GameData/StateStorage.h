@@ -122,12 +122,11 @@ public:
     bool m_has_keys = false;
     bool m_keys[6] = {};
     bool m_has_pitch_and_yaw = false;
-    float m_pitch = 0.0f;
+    float m_pitch = 0.0f; // todo(jbr) check, do these match whatever we got in control state changes?
     float m_yaw = 0.0f;
     bool m_has_target = false;
     uint32_t    m_target_idx = 0;
     std::vector<TimeState> m_time_state;
-    //m_input_received (true if any control_ids < 8) or if any keys are held
 
     template<class Archive>
     void serialize(Archive &ar)
@@ -142,6 +141,8 @@ public:
         ar(m_target_idx);
         ar(m_time_state);
     }
+
+    bool hasInput() const;
 
 /*    using FloatDuration = std::chrono::duration<float>;
 public:

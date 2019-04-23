@@ -59,12 +59,8 @@ void processNewInputs(Entity &e)
     StateStorage* input_state = &e.m_states;
     for (InputState* new_input = input_state->m_inp_states.begin(); new_input != input_state->m_inp_states.end(); ++new_input) // todo(jbr) buffer these for jitter/cheating
     {
-        for (auto iter = new_input->m_control_state_changes.begin();
-             iter != new_input->m_control_state_changes.end();
-             ++iter)
+        for (ControlStateChangesForTick& changes_for_tick : new_input->m_control_state_changes)
         {
-            ControlStateChangesForTick& changes_for_tick = *iter;
-
             if (isControlStateChangeIdNewer(input_state->m_next_expected_control_state_change_id, changes_for_tick.first_change_id)) // todo(jbr) surely just check this when adding them?
             {
                 continue;
