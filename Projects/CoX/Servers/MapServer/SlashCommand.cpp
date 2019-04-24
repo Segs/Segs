@@ -314,17 +314,6 @@ static const SlashCommand g_defined_slash_commands[] = {
 /************************************************************
  *  Helper Functions
  ***********************************************************/
-static QString getCommandParameter(const QString& cmd)
-{
-    const int space = cmd.indexOf(' ');
-    if(space == -1)
-    {
-        return "";
-    }
-
-    return cmd.mid(space + 1);
-}
-
 static Entity* getTargetEntity(MapClientSession& sess)
 {
     if(sess.m_ent == nullptr)
@@ -339,17 +328,6 @@ static Entity* getTargetEntity(MapClientSession& sess)
     }
 
     return getEntity(&sess, idx);
-}
-
-static Entity* getEntityFromCommand(const QString &cmd, MapClientSession& sess)
-{
-    const QString name = getCommandParameter(cmd);
-    if(name.isEmpty())
-    {
-        return getTargetEntity(sess);
-    }
-
-    return getEntity(&sess, name);
 }
 
 static Entity* getEntityFromParam(const QString &param, MapClientSession& sess)
@@ -2017,59 +1995,17 @@ void cmdHandler_EmailRead(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_EmailSend(const QStringList &params, MapClientSession &sess)
 {
-    // ASDF add debug message here to see what client sends from email window
-/*
-    QStringList parts = cmd.split("\"");
-    QStringList result;
-
-    for (const auto &part : parts)
-    {
-        if(part.endsWith('\\') && !result.isEmpty() && !result.back().isEmpty())
-            result.back() += part+"\"";
-        else
-            result.push_back(part);
-    }
-
-    if (result.size() != 5)
+    if (params.size() < 3)
     {
         sendInfoMessage(MessageChannel::SERVER, "Argument count for sending email is not correct! Please send emails from the email window instead.", sess);
         return;
     }
 
-    result[1].replace("\\q ", ";");
-    result[1].replace("\\q", "");
-
-    // result[1] -> recipient name, 3 -> email subject, 4 -> email message
-    // attempt to parse names if sending to multiple recipients
-    QStringList recipients = result[1].split(";");
-
-    // the last element will be empty in all cases (if sent through email window), so remove it
-    recipients.pop_back();
-
-    // first, check if your own character is one of the recipients in the email
-    // cannot send email to self as that will trigger /emailRead without the data in db nor EmailHandler
-    // and that will segfault the server :)
-    if (recipients.contains(sess.m_ent->m_char->getName()))
-    {
-        sendInfoMessage(MessageChannel::SERVER, "You cannot send an email to yourself!", sess);
-        return;
-    }
-
-    for (const auto &recipient : recipients)
-        sendEmail(sess, recipient, result[3], result[4]);
-        */
-
-    if (params.size() != 4)
-    {
-        sendInfoMessage(MessageChannel::SERVER, "Argument count for sending email is not correct! Please send emails from the email window instead. " + params.join(" "), sess);
-        return;
-    }
-
-    // result[1] -> recipient name, 3 -> email subject, 4 -> email message
+    // params are: recipient name, email subject, email message words
     QString recipients = params.at(0);
+    // recipients from email window are enclosed in \q
     recipients.replace("\\q ", ";");
     recipients.replace("\\q", "");
-    // multiple recipients will be semicolon delimited
     QStringList recipient_list = recipients.split(";");
     // the last element will be empty if sent through email window, so remove it
     if (recipient_list.back().isEmpty()) {
@@ -2085,8 +2021,19 @@ void cmdHandler_EmailSend(const QStringList &params, MapClientSession &sess)
         return;
     }
 
-    for (const auto &recipient : recipients)
-        sendEmail(sess, recipient, params.at(1), params.at(2));
+    // Remove recipient and subject, remainder is the email body
+    QStringList email_body_words;
+    int skip = 2;
+    for (QString s : params) {
+        if (--skip < 0) {
+            email_body_words.append(s);
+        }
+    }
+
+    sendInfoMessage(MessageChannel::SERVER, "Sending email.  subject: " + params.at(1) + "  body: "+ email_body_words.join(" "), sess);
+
+    for (const auto &recipient : recipient_list)
+        sendEmail(sess, recipient, params.at(1), email_body_words.join(" "));
 }
 
 void cmdHandler_EmailDelete(const QStringList &params, MapClientSession &sess)
@@ -2102,11 +2049,10 @@ void cmdHandler_EmailDelete(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_TradeAccept(const QStringList &params, MapClientSession &sess)
 {
-    // Game command: "trade_accept \"From\" to_db_id to_db_id \"To\""
-    // ASDF this doesn't seem right
+    // Game command: "trade_accept \"From\" to_db_id \"To\""
     if(params.size() < 3)
     {
-        qWarning() << "Wrong number of arguments for TradeAccept:" << params.join(" ");
+        qWarning() << "Wrong number of arguments for TradeAccept.";
         discardTrade(*sess.m_ent);
         return;
     }
@@ -2153,7 +2099,7 @@ void cmdHandler_TradeDecline(const QStringList &params, MapClientSession &sess)
     // Game command: "trade_decline \"From\" to_db_id \"To\""
     if(params.size() < 3)
     {
-        qWarning() << "Wrong number of arguments for TradeDecline:" << params.join(" ");
+        qWarning() << "Wrong number of arguments for TradeDecline.";
         discardTrade(*sess.m_ent);
         return;
     }
@@ -2277,7 +2223,7 @@ void cmdHandler_ForceLogout(const QStringList &params, MapClientSession &sess)
  */
 void runCommand(const QString &str, MapClientSession &e)
 {
-    // Split args on spaces (but leave spaces in quoted args)
+    // split args on spaces (but leave quote-enclosed spaces)
     QStringList args = str.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?"));
     QString command_name = args.takeFirst();
 
