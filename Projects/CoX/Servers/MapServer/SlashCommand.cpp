@@ -2226,8 +2226,14 @@ void cmdHandler_ForceLogout(const QStringList &params, MapClientSession &sess)
  */
 void runCommand(const QString &str, MapClientSession &e)
 {
-    // split args on spaces (but leave quote-enclosed spaces)
+    // Split args on spaces (but leave quote-enclosed spaces)
     QStringList args = str.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?"));
+    // Regex always produces an empty match for $
+    args.pop_back();
+    // May also produce an extra empty match if input ends in quote
+    if (args.back().isEmpty()) {
+        args.pop_back();
+    }
     QString command_name = args.takeFirst();
 
     for (const auto &cmd : g_defined_slash_commands)
