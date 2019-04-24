@@ -330,6 +330,7 @@ static Entity* getTargetEntity(MapClientSession& sess)
     return getEntity(&sess, idx);
 }
 
+// Get the specified entity or current target if no entity is specified
 static Entity* getEntityFromParam(const QString &param, MapClientSession& sess)
 {
     if(param.isEmpty())
@@ -345,7 +346,7 @@ static Entity* getEntityFromParam(const QString &param, MapClientSession& sess)
 
 void cmdHandler_MoveZone(const QStringList &params, MapClientSession &sess)
 {
-    uint32_t map_idx = params.value(0).toInt();
+    uint32_t map_idx = params.value(0).toUInt();
     if(map_idx == getMapIndex(sess.m_current_map->name()))
         map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
     MapXferData map_data = MapXferData();
@@ -465,7 +466,6 @@ void cmdHandler_Jumppack(const QStringList &/*params*/, MapClientSession &sess)
 
 void cmdHandler_SetSpeed(const QStringList &params, MapClientSession &sess)
 {
-    // QVector<QStringRef> args(cmd.splitRef(' '));
     float v1 = params.value(0).toFloat();
     float v2 = params.value(1).toFloat();
     float v3 = params.value(2).toFloat();
@@ -580,7 +580,7 @@ void cmdHandler_SetInf(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_SetLevel(const QStringList &params, MapClientSession &sess)
 {
-    uint32_t attrib = params.value(0).toUInt()-1; // convert from 1-50 to 0-49
+    uint32_t attrib = params.value(0).toUInt() - 1; // convert from 1-50 to 0-49
 
     setLevel(*sess.m_ent->m_char, attrib);
 
@@ -594,7 +594,7 @@ void cmdHandler_SetLevel(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_SetCombatLevel(const QStringList &params, MapClientSession &sess)
 {
-    uint32_t attrib = params.value(0).toUInt()-1; // convert from 1-50 to 0-49
+    uint32_t attrib = params.value(0).toUInt() - 1; // convert from 1-50 to 0-49
 
     setCombatLevel(*sess.m_ent->m_char, attrib);
 
@@ -603,7 +603,7 @@ void cmdHandler_SetCombatLevel(const QStringList &params, MapClientSession &sess
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
-void cmdHandler_UpdateChar(const QStringList &params, MapClientSession &sess)
+void cmdHandler_UpdateChar(const QStringList &/*params*/, MapClientSession &sess)
 {
     markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
 
@@ -771,7 +771,7 @@ void cmdHandler_SendFloatingNumbers(const QStringList &params, MapClientSession 
     QString msg; // result messages
     bool ok1 = true;
     bool ok2 = true;
-    uint32_t runtimes   = params.value(0).toInt(&ok1);
+    uint32_t runtimes   = params.value(0).toUInt(&ok1);
     float amount        = params.value(1).toFloat(&ok2);
     QString name        = params.value(2);
 
@@ -923,8 +923,8 @@ void cmdHandler_AddEntirePowerSet(const QStringList &params, MapClientSession &s
     CharacterData &cd = sess.m_ent->m_char->m_char_data;
     QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundClue).value();
 
-    uint32_t v1 = params.value(0).toInt();
-    uint32_t v2 = params.value(1).toInt();
+    uint32_t v1 = params.value(0).toUInt();
+    uint32_t v2 = params.value(1).toUInt();
 
     if(params.size() < 2)
     {;
@@ -952,9 +952,9 @@ void cmdHandler_AddPower(const QStringList &params, MapClientSession &sess)
     QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundClue).value();
 
     bool ok;
-    uint32_t v1 = params.value(0).toInt(&ok);
-    uint32_t v2 = params.value(1).toInt();
-    uint32_t v3 = params.value(2).toInt();
+    uint32_t v1 = params.value(0).toUInt(&ok);
+    uint32_t v2 = params.value(1).toUInt();
+    uint32_t v3 = params.value(2).toUInt();
 
     if(params.size() < 3 || !ok)
     {
@@ -1013,7 +1013,7 @@ void cmdHandler_LevelUpXp(const QStringList &params, MapClientSession &sess)
     else
         return;
 
-    qCDebug(logPowers) << "LEVELUP" << sess.m_ent->name() << "to" << level+1
+    qCDebug(logPowers) << "LEVELUP" << sess.m_ent->name() << "to" << level + 1
                        << "NumPowers:" << countAllOwnedPowers(sess.m_ent->m_char->m_char_data, false) // no temps
                        << "NumPowersAtLevel:" << data.countForLevel(level, data.m_pi_schedule.m_Power);
 
@@ -1079,7 +1079,7 @@ void cmdHandler_DoorMessage(const QStringList &params, MapClientSession &sess)
     }
 
     bool ok = true;
-    uint32_t delay_status = params.at(0).toInt(&ok);
+    uint32_t delay_status = params.at(0).toUInt(&ok);
 
     // Combine params after int and use those as message
     QStringList params_copy;
@@ -1101,7 +1101,7 @@ void cmdHandler_DoorMessage(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_Browser(const QStringList &params, MapClientSession &sess)
 {
-    QString content = params.at(0);
+    QString content = params.value(0);
     sendBrowser(sess, content);
 }
 
@@ -1132,7 +1132,7 @@ void cmdHandler_SendContactDialog(const QStringList &params, MapClientSession &s
 
 void cmdHandler_SendContactDialogYesNoOk(const QStringList &params, MapClientSession &sess)
 {
-    if(params.size() < 2)
+    if(params.size() < 1)
     {
         qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" "), sess);
@@ -1191,7 +1191,7 @@ void cmdHandler_SendWaypoint(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_SetStateMode(const QStringList &params, MapClientSession &sess)
 {
-    uint32_t val =params.value(0).toUInt();
+    uint32_t val = params.value(0).toUInt();
 
     sess.m_ent->m_rare_update = true; // this must also be true for statemode to send
     sess.m_ent->m_has_state_mode = true;
@@ -1282,7 +1282,10 @@ void cmdHandler_SendLocations(const QStringList &/*params*/, MapClientSession &s
 
 void cmdHandler_SendConsoleOutput(const QStringList &params, MapClientSession &sess)
 {
-    if(params.size() != 1 )
+    qCDebug(logSlashCommand) << "SendConsoleOutput. size: " << params.size() << " and params: " + params.join(" ");
+    sendInfoMessage(MessageChannel::USER_ERROR, "SendConsoleOutput params: " + params.join(" "), sess);
+
+    if(params.size() != 1)
     {
         qCDebug(logSlashCommand) << "SendConsoleOutput. Bad invocation:  " << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "ConsoleOutput format is '/consoleOutput <Message>'", sess);
@@ -1482,10 +1485,10 @@ void cmdHandler_SetCustomTitles(const QStringList &params, MapClientSession &ses
     }
     else
     {
-        prefix  = !params.value(1).isEmpty();
-        generic = params.value(2);
-        origin  = params.value(3);
-        special = params.value(4);
+        prefix  = !params.value(0).isEmpty();
+        generic = params.value(1);
+        origin  = params.value(2);
+        special = params.value(3);
         setTitles(*sess.m_ent->m_char, prefix, generic, origin, special);
         msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
     }
@@ -1538,7 +1541,7 @@ void cmdHandler_SetSpawnLocation(const QStringList &params, MapClientSession &se
 void cmdHandler_LFG(const QStringList &/*params*/, MapClientSession &sess)
 {
     toggleLFG(*sess.m_ent);
-    QString msg = "Toggling LFG"" + cmd";
+    QString msg = "Toggling LFG";
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::SERVER, msg, sess);
 }
@@ -1756,7 +1759,7 @@ void cmdHandler_TeamBuffs(const QStringList & /*params*/, MapClientSession &sess
 
 void cmdHandler_Friend(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromParam(params.value(0), sess);
+    const Entity* tgt = getEntityFromParam(params.value(0), sess);
     if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
         return;
