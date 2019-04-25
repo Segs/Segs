@@ -331,7 +331,7 @@ static Entity* getTargetEntity(MapClientSession& sess)
 }
 
 // Get the specified entity or current target if no entity is specified
-static Entity* getEntityFromParam(const QString &param, MapClientSession& sess)
+static Entity* getEntityFromName(const QString &param, MapClientSession& sess)
 {
     if(param.isEmpty())
     {
@@ -1081,7 +1081,7 @@ void cmdHandler_DoorMessage(const QStringList &params, MapClientSession &sess)
     bool ok = true;
     uint32_t delay_status = params.at(0).toUInt(&ok);
 
-    // Combine params after int and use those as message
+    // Combine params after int and use those as door message
     QStringList params_copy;
     for (QString s : params) {
         params_copy.append(s);
@@ -1141,7 +1141,7 @@ void cmdHandler_SendContactDialogYesNoOk(const QStringList &params, MapClientSes
 
     bool ok = true;
     bool has_yesno = params.at(0).toInt(&ok);
-    // Combine params after int and use those as content
+    // Combine params after int and use those as dialog content
     QStringList params_copy;
     for (QString s : params) {
         params_copy.append(s);
@@ -1282,9 +1282,6 @@ void cmdHandler_SendLocations(const QStringList &/*params*/, MapClientSession &s
 
 void cmdHandler_SendConsoleOutput(const QStringList &params, MapClientSession &sess)
 {
-    qCDebug(logSlashCommand) << "SendConsoleOutput. size: " << params.size() << " and params: " + params.join(" ");
-    sendInfoMessage(MessageChannel::USER_ERROR, "SendConsoleOutput params: " + params.join(" "), sess);
-
     if(params.size() != 1)
     {
         qCDebug(logSlashCommand) << "SendConsoleOutput. Bad invocation:  " << params.join(" ");
@@ -1556,7 +1553,7 @@ void cmdHandler_MOTD(const QStringList &/*params*/, MapClientSession &sess)
 
 void cmdHandler_Invite(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromParam(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.value(0), sess);
     if(tgt == nullptr)
     {
         return;
@@ -1594,7 +1591,7 @@ void cmdHandler_Invite(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_Kick(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromParam(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.value(0), sess);
     if(tgt == nullptr)
     {
         return;
@@ -1630,7 +1627,7 @@ void cmdHandler_FindMember(const QStringList &/*params*/, MapClientSession &sess
 
 void cmdHandler_MakeLeader(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromParam(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.value(0), sess);
     if(tgt == nullptr)
     {
         return;
@@ -1674,7 +1671,7 @@ void cmdHandler_SetAssistTarget(const QStringList &/*params*/, MapClientSession 
 
 void cmdHandler_Sidekick(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromParam(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.value(0), sess);
     if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
         return;
@@ -1759,7 +1756,7 @@ void cmdHandler_TeamBuffs(const QStringList & /*params*/, MapClientSession &sess
 
 void cmdHandler_Friend(const QStringList &params, MapClientSession &sess)
 {
-    const Entity* tgt = getEntityFromParam(params.value(0), sess);
+    const Entity* tgt = getEntityFromName(params.value(0), sess);
     if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
         return;
@@ -1846,7 +1843,7 @@ void cmdHandler_ReSpec(const QStringList &/*params*/, MapClientSession &sess)
 
 void cmdHandler_Trade(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromParam(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.value(0), sess);
     if(tgt == nullptr || sess.m_ent == nullptr)
         return;
 
