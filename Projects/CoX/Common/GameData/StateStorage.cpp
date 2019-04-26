@@ -25,19 +25,6 @@ const char *control_name[] = {
     "YAW",
 };
 
-bool isControlStateChangeIdNewer(uint16_t a, uint16_t b)
-{
-    // control state change id is a wrapping uint16
-    if (a > b)
-    {
-        return (a - b) <= 0x7fff;
-    }
-    else
-    {
-        return (b - a) > 0x7fff;
-    }
-}
-
 void TimeState::serializefrom_delta(BitStream &bs, const TimeState &/*prev*/)
 {
     m_client_timenow = bs.GetPackedBits(1); // field_0 diff next-current
@@ -86,22 +73,15 @@ bool InputState::hasInput() const
         }
     }
 
-    for (const ControlStateChangesForTick& changes_for_tick : m_control_state_changes)
+    for (const ControlStateChange& csc : m_control_state_changes)
     {
-        if (changes_for_tick.key_changes.size() ||
-            changes_for_tick.pitch_changed ||
-            changes_for_tick.yaw_changed)
+        if (csc.control_id < 8) // key/mouse events are 0-7
         {
             return true;
         }
     }
 
     return false;
-}
-
-void StateStorage::addNewState(InputState &new_state)
-{
-    m_inp_states.push_back(new_state);
 }
 
 //! @}

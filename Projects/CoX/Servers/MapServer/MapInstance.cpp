@@ -1096,12 +1096,12 @@ void MapInstance::on_input_state(RecvInputState *st)
     ent->m_motion_state.m_last_pos      = ent->m_entity_data.m_pos;
 
     // Add new input state
-    ent->m_states.addNewState(st->m_next_state);
+    ent->m_states.m_new_inputs.push_back(st->m_next_state);
 
     // Set current Input Packet ID
     if(st->m_next_state.m_control_state_changes.size())
     {
-        ent->m_input_pkt_id = st->m_next_state.m_control_state_changes.back().first_change_id; // todo(jbr) should this be last change id?
+        ent->m_input_pkt_id = st->m_next_state.m_first_control_state_change_id; // todo(jbr) should this be last change id?
     }
 
 

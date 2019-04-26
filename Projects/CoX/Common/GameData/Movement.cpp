@@ -56,261 +56,332 @@ SurfaceParams g_world_surf_params[2] = {
 
 void processNewInputs(Entity &e)
 {
-    StateStorage* input_state = &e.m_states;
-    for (InputState* new_input = input_state->m_inp_states.begin(); new_input != input_state->m_inp_states.end(); ++new_input) // todo(jbr) buffer these for jitter/cheating
+    // todo(jbr) sort out logging, maybe remove all logging from the packet parser and just log in here, input/movement?
+
+    // state which resets every tick and is affected
+    // by processing control state changes
+    struct
     {
-        for (ControlStateChangesForTick& changes_for_tick : new_input->m_control_state_changes)
+        uint32_t length_ms = 0;
+        uint32_t key_press_start_ms[6] = {};
+        bool orientation_changed = false;
+    } tick_state;
+
+    StateStorage* input_state = &e.m_states;
+    for (auto input_iter = input_state->m_new_inputs.begin();
+         input_iter != input_state->m_new_inputs.end();
+         ++input_iter) // todo(jbr) buffer these for jitter/cheating
+    {
+        const InputState& new_input = *input_iter;
+
+        uint16_t csc_id = new_input.m_first_control_state_change_id;
+        for (auto csc_iter = new_input.m_control_state_changes.begin();
+             csc_iter != new_input.m_control_state_changes.end();
+             ++csc_iter, ++csc_id)
         {
-            if (isControlStateChangeIdNewer(input_state->m_next_expected_control_state_change_id, changes_for_tick.first_change_id)) // todo(jbr) surely just check this when adding them?
+            // The client will re-send the same control state changes until acked, so
+            // need to make sure we ignore any changes we've seen before. Also, need
+            // to use != rather than <, as the ids will wrap around to zero again.
+            if (csc_id != input_state->m_next_expected_control_state_change_id)
             {
                 continue;
             }
+            ++input_state->m_next_expected_control_state_change_id;
 
-            Q_ASSERT(input_state->m_next_expected_control_state_change_id == changes_for_tick.first_change_id);
+            const ControlStateChange& csc = *csc_iter;
 
-            uint32_t key_press_start_ms[6] = {};
-            for (const ControlStateChangesForTick::KeyChange& key_change : changes_for_tick.key_changes)
+            tick_state.length_ms += csc.time_since_prev_ms;
+
+            switch (csc.control_id)
             {
-                input_state->m_keys[key_change.key] = key_change.state;
+                // Processing of keys based on inputFilterAndPassToSendList()
+                case BinaryControl::UP:
+                case BinaryControl::DOWN:
+                case BinaryControl::LEFT:
+                case BinaryControl::RIGHT:
+                case BinaryControl::FORWARD:
+                case BinaryControl::BACKWARD:
+                {
+                    uint8_t key = csc.control_id;
 
-                if (key_change.state)
-                {
-                    key_press_start_ms[key_change.key] = key_change.offset_from_tick_start_ms;
-                }
-                else
-                {
-                    if (!input_state->m_keys[s_reverse_control_dir[key_change.key]])
+                    input_state->m_keys[key] = csc.key_state;
+
+                    if (csc.key_state)
                     {
-                        uint32_t key_press_duration = key_change.offset_from_tick_start_ms;
-                        if (key_press_duration == 0)
+                        tick_state.key_press_start_ms[key] = tick_state.length_ms;
+                    }
+                    else
+                    {
+                        if (!input_state->m_keys[s_reverse_control_dir[key]])
                         {
-                            if (input_state->m_key_press_duration_ms[key_change.key] == 0)
+                            uint32_t key_press_duration = tick_state.length_ms;
+                            if (key_press_duration == 0)
                             {
-                                input_state->m_key_press_duration_ms[key_change.key] = 1;
+                                if (input_state->m_key_press_duration_ms[key] == 0)
+                                {
+                                    input_state->m_key_press_duration_ms[key] = 1;
+                                }
+                            }
+                            else
+                            {
+                                input_state->m_key_press_duration_ms[key] = std::min<uint32_t>(input_state->m_key_press_duration_ms[key] + key_press_duration, 1000);
+                            }
+                        }
+                    }
+                }
+                break;
+
+                case BinaryControl::PITCH:
+                    tick_state.orientation_changed = true;
+                    e.m_entity_data.m_orientation_pyr.x = csc.angle;
+                break;
+
+                case BinaryControl::YAW:
+                    tick_state.orientation_changed = true;
+                    e.m_entity_data.m_orientation_pyr.y = csc.angle;
+                break;
+
+                case 9:
+                    // todo(jbr) every 4 ticks
+                // todo(jbr) log csc?
+                break;
+
+                case 10:
+                // todo(jbr) log csc?
+                    if (csc.no_collision)
+                    {
+                        e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
+                    }
+                    else
+                    {
+                        e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
+                    }
+                break;
+
+                case 8:
+                    // todo(jbr) log csc?
+
+                    // do a tick!
+
+                    // the following is based on pmotionUpdateControlsPrePhysics()
+
+                    // if any keys have been held for 250+ ms, then all keys
+                    // are given a minumum of 250ms press time
+                    uint32_t minimum_key_press_time = 0;
+                    if (e.m_motion_state.m_is_jumping)
+                    {
+                        minimum_key_press_time = 250;
+                    }
+                    else
+                    {
+                        for (int i = 0; i < 6; ++i)
+                        {
+                            if (input_state->m_key_press_duration_ms[i] >= 250)
+                            {
+                                minimum_key_press_time = 250;
+                                break;
+                            }
+                        }
+                    }
+
+                    // todo(jbr) stuff from entmovenocoll
+                    // todo(jbr) be sure to reset m_next_tick after this is done!
+
+                    for (int i = 0; i < 6; ++i)
+                    {
+                        if (!input_state->m_keys[i] || input_state->m_keys[s_reverse_control_dir[i]])
+                        {
+                            continue;
+                        }
+
+                        // update key press time, keeping within min/max range
+                        input_state->m_key_press_duration_ms[i] = glm::clamp<uint32_t>(input_state->m_key_press_duration_ms[i] + tick_state.length_ms - tick_state.key_press_start_ms[i],
+                                   minimum_key_press_time, 1000);
+                    }
+
+                    // todo(jbr) command to enable movement logging?
+                    /*for (int i = 0; i < 6; ++i)
+                    {
+                        if (input_state->m_key_press_time_ms[i])
+                        {
+                            qCDebug(logMovement, "%s%s (%dms)", input_state->m_keys[i] ? "+" : "-", s_key_name[i], input_state->m_key_press_time_ms[i]);
+                        }
+                    }*/
+
+                    // based on pmotionSetVel()
+                    float control_amounts[6] = {};
+                    for (int i = 0; i < 6; ++i)
+                    {
+                        uint32_t press_time = input_state->m_key_press_duration_ms[i];
+
+                        if (!press_time)
+                        {
+                            control_amounts[i] = 0.0f;
+                        }
+                        else if (press_time >= 1000)
+                        {
+                            control_amounts[i] = 1.0f;
+                        }
+                        else if (press_time <= 50 && input_state->m_keys[i])
+                        {
+                            control_amounts[i] = 0.0;
+                        }
+                        else if (press_time >= 75)
+                        {
+                            if (press_time >= 100)
+                            {
+                                control_amounts[i] = (float)(press_time - 100) * 0.004f / 9.0f + 0.6f;
+                            }
+                            else
+                            {
+                                control_amounts[i] = std::pow((float)(press_time  - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
                             }
                         }
                         else
                         {
-                            input_state->m_key_press_duration_ms[key_change.key] = std::min<uint32_t>(input_state->m_key_press_duration_ms[key_change.key] + key_press_duration, 1000);
+                            control_amounts[i] = 0.2f;
                         }
                     }
-                }
-            }
 
-            // if any keys have been held for 250+ ms, then all keys
-            // are given a minumum of 250ms press time
-            uint32_t minimum_key_press_time = 0;
-            for (int i = 0; i < 6; ++i)
-            {
-                if (input_state->m_key_press_duration_ms[i] >= 250)
-                {
-                    minimum_key_press_time = 250;
-                    break;
-                }
-            }
-
-            for (int i = 0; i < 6; ++i)
-            {
-                if (!input_state->m_keys[i] || input_state->m_keys[s_reverse_control_dir[i]])
-                {
-                    continue;
-                }
-
-                // update key press time, keeping within min/max range
-                input_state->m_key_press_duration_ms[i] = glm::clamp<uint32_t>(input_state->m_key_press_duration_ms[i] + changes_for_tick.tick_length_ms - key_press_start_ms[i],
-                           minimum_key_press_time, 1000);
-            }
-
-            // todo(jbr) command to enable movement logging?
-            /*for (int i = 0; i < 6; ++i)
-            {
-                if (input_state->m_key_press_time_ms[i])
-                {
-                    qCDebug(logMovement, "%s%s (%dms)", input_state->m_keys[i] ? "+" : "-", s_key_name[i], input_state->m_key_press_time_ms[i]);
-                }
-            }*/
-
-            float control_amounts[6] = {};
-            uint32_t max_press_time = 0;
-            for (int i = 0; i < 6; ++i)
-            {
-                uint32_t press_time = input_state->m_key_press_duration_ms[i];
-                max_press_time = std::max(max_press_time, press_time);
-
-                if (!press_time)
-                {
-                    control_amounts[i] = 0.0f;
-                }
-                else if (press_time >= 1000)
-                {
-                    control_amounts[i] = 1.0f;
-                }
-                else if (press_time <= 50 && input_state->m_keys[i])
-                {
-                    control_amounts[i] = 0.0;
-                }
-                else if (press_time >= 75)
-                {
-                    if (press_time >= 100)
+                    if (tick_state.orientation_changed)
                     {
-                        control_amounts[i] = (float)(press_time - 100) * 0.004f / 9.0f + 0.6f;
+                        // todo(jbr) command to enable movement logging?
+                        //qCDebug(logMovement, "new pyr = (%f, %f, %f)", orientation_pyr.p, orientation_pyr.y, orientation_pyr.r);
+                        // the control state change processing loop will have written pitch/yaw to
+                        // entity data, so now update direction
+                        e.m_direction = fromCoHYpr(e.m_entity_data.m_orientation_pyr);
+                    }
+
+                    // todo(jbr) command to enable movement logging?
+                    /*qCDebug(logMovement, "pos: (%1.8f, %1.8f, %1.8f)",
+                            e.m_entity_data.m_pos.x,
+                            e.m_entity_data.m_pos.y,
+                            e.m_entity_data.m_pos.z);*/
+
+                    glm::vec3 local_input_velocity(0.0f, 0.0f, 0.0f);
+                    local_input_velocity.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
+                    local_input_velocity.y = control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN];
+                    local_input_velocity.z = control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD];
+                    local_input_velocity.x = local_input_velocity.x * e.m_motion_state.m_speed.x;
+                    local_input_velocity.y = local_input_velocity.y * e.m_motion_state.m_speed.y;
+
+                    glm::vec3 local_input_velocity_xz = local_input_velocity;
+                    if (!e.m_motion_state.m_is_flying)
+                    {
+                        local_input_velocity_xz.y = 0;
+                    }
+
+                    // todo(jbr) think this is client only, do we still want it anyway?
+                    /*float input_velocity_scale = cs->inp_vel_scale;
+
+                    if (local_input_velocity_xz.z < 0.0f)
+                    {
+                        input_velocity_scale = input_velocity_scale * optrel_speeds->speed_back;
+                    }
+                    if (optrel_speeds->stunned)
+                    {
+                        input_velocity_scale = input_velocity_scale * 0.1f;
+                    }
+                    if (controls->speed_scale_F0 != 0.0f)
+                    {
+                        input_velocity_scale = input_velocity_scale * controls->speed_scale_F0;
+                    }
+                    e.m_motion_state.m_velocity_scale = input_velocity_scale; */
+
+                    if (glm::length2(local_input_velocity_xz) > glm::epsilon<float>())
+                    {
+                        local_input_velocity_xz = glm::normalize(local_input_velocity_xz);
+                    }
+
+                    local_input_velocity.x = local_input_velocity_xz.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
+                    local_input_velocity.z = local_input_velocity_xz.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
+                    if (e.m_motion_state.m_is_flying)
+                    {
+                        local_input_velocity.y = local_input_velocity_xz.y * std::fabs(control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN]);
+                    }
+                    else if (false) //controls->bs_38_1[BinaryControl::UP]) todo(jbr)
+                    {
+                        local_input_velocity.y = 0;
                     }
                     else
                     {
-                        control_amounts[i] = std::pow((float)(press_time  - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
+                        local_input_velocity.y *= glm::clamp<float>(e.m_motion_state.m_jump_height, 0.0f, 1.0f);
+                        // todo(jbr)
+                        /*if (!optrel_speeds->flags_178_20)
+                        {
+                            ent->motion.flag_5 = false;
+                        }*/
                     }
-                }
-                else
-                {
-                    control_amounts[i] = 0.2f;
-                }
+
+                    // todo(jbr) command to enable movement logging?
+                    //qCDebug(logMovement, "local_inpvel: (%1.8f, %1.8f, %1.8f)", local_input_velocity.x, local_input_velocity.y, local_input_velocity.z);
+
+                    glm::vec3 input_velocity = e.m_direction * local_input_velocity;
+
+                    // todo(jbr) command to enable movement logging?
+                    //qCDebug(logMovement, "inpvel: (%1.8f, %1.8f, %1.8f)", input_velocity.x, input_velocity.y, input_velocity.z);
+                    //qCDebug(logMovement, "pyr: (%1.8f, %1.8f, %1.8f)", e.m_entity_data.m_orientation_pyr.p, e.m_entity_data.m_orientation_pyr.y, e.m_entity_data.m_orientation_pyr.r);
+
+                    // based on pmotionWithPrediction()
+                    float timestep = 1.0f; // todo(jbr) can this change?
+
+                    // todo(jbr) check move type is nocoll here, put unimplemented block for all else
+                    // based on entMoveNoCollision()
+                    e.m_motion_state.m_is_falling = true;
+                    e.m_motion_state.m_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+                    e.m_motion_state.m_move_time += timestep;
+                    float time_scale = (e.m_motion_state.m_move_time + 6.0f) / 6.0f;
+                    time_scale = std::min(time_scale, 50.0f);
+
+                    e.m_entity_data.m_pos += time_scale * timestep * input_velocity;
+
+                    if (glm::length2(local_input_velocity) < glm::epsilon<float>())
+                    {
+                        e.m_motion_state.m_move_time = 0.0f;
+                    }
+
+                    // todo(jbr) command to enable movement logging?
+                    /*qCDebug(logMovement, "move_time: %1.3f", e.m_motion_state.m_move_time);
+
+                    qCDebug(logMovement, "newpos: (%1.8f, %1.8f, %1.8f)",
+                            e.m_entity_data.m_pos.x,
+                            e.m_entity_data.m_pos.y,
+                            e.m_entity_data.m_pos.z);*/
+
+
+                    // based on pmotionResetMoveTime()
+                    for (int i = 0; i < 6; ++i)
+                    {
+                        // reset total time if button is released, or reverse button is pressed
+                        if (!input_state->m_keys[i] || input_state->m_keys[s_reverse_control_dir[i]])
+                        {
+                            input_state->m_key_press_duration_ms[i] = 0;
+                        }
+                    }
+
+                    // todo(jbr) command to enable movement logging?
+                    //qCDebug(logMovement, "");
+
+                    tick_state = {};
+
+                break;
             }
-
-            // todo(jbr) are pitch/yaw changes definitely tick start not tick end?
-            glm::vec3 orientation_pyr = e.m_entity_data.m_orientation_pyr;
-            bool orientation_changed = false;
-            if (changes_for_tick.pitch_changed)
-            {
-                orientation_pyr.x = changes_for_tick.pitch;
-                orientation_changed = true;
-            }
-            if (changes_for_tick.yaw_changed)
-            {
-                orientation_pyr.y = changes_for_tick.yaw;
-                orientation_changed = true;
-            }
-            if (orientation_changed)
-            {
-                // todo(jbr) command to enable movement logging?
-                //qCDebug(logMovement, "new pyr = (%f, %f, %f)", orientation_pyr.p, orientation_pyr.y, orientation_pyr.r);
-                e.m_entity_data.m_orientation_pyr = orientation_pyr;
-                e.m_direction = fromCoHYpr(orientation_pyr);
-            }
-
-            if (changes_for_tick.no_collision_changed)
-            {
-                // todo(jbr) command to enable movement logging?
-                if (changes_for_tick.no_collision)
-                {
-                    e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
-                }
-                else
-                {
-                    e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
-                }
-            }
-
-            // todo(jbr) command to enable movement logging?
-            /*qCDebug(logMovement, "pos: (%1.8f, %1.8f, %1.8f)",
-                    e.m_entity_data.m_pos.x,
-                    e.m_entity_data.m_pos.y,
-                    e.m_entity_data.m_pos.z);*/
-
-            glm::vec3 local_input_velocity(0.0f, 0.0f, 0.0f);
-            local_input_velocity.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
-            local_input_velocity.y = control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN];
-            local_input_velocity.y = 0.0f;
-            local_input_velocity.z = control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD];
-            local_input_velocity.x = local_input_velocity.x * e.m_motion_state.m_speed.x;
-            local_input_velocity.y = local_input_velocity.y * e.m_motion_state.m_speed.y;
-
-            glm::vec3 local_input_velocity_xz = local_input_velocity;
-            if (!e.m_motion_state.m_is_flying)
-            {
-                local_input_velocity_xz.y = 0;
-            }
-
-            // todo(jbr) think this is client only, do we still want it anyway?
-            /*float input_velocity_scale = cs->inp_vel_scale;
-
-            if (local_input_velocity_xz.z < 0.0f)
-            {
-                input_velocity_scale = input_velocity_scale * optrel_speeds->speed_back;
-            }
-            if (optrel_speeds->stunned)
-            {
-                input_velocity_scale = input_velocity_scale * 0.1f;
-            }
-            if (controls->speed_scale_F0 != 0.0f)
-            {
-                input_velocity_scale = input_velocity_scale * controls->speed_scale_F0;
-            }
-            e.m_motion_state.m_velocity_scale = input_velocity_scale; */
-
-            if (glm::length2(local_input_velocity_xz) > glm::epsilon<float>())
-            {
-                local_input_velocity_xz = glm::normalize(local_input_velocity_xz);
-            }
-
-            local_input_velocity.x = local_input_velocity_xz.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
-            local_input_velocity.z = local_input_velocity_xz.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
-            if (e.m_motion_state.m_is_flying)
-            {
-                local_input_velocity.y = local_input_velocity_xz.y * std::fabs(control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN]);
-            }
-            else if (false) //controls->bs_38_1[BinaryControl::UP]) todo(jbr)
-            {
-                local_input_velocity.y = 0;
-            }
-            else
-            {
-                local_input_velocity.y *= glm::clamp<float>(e.m_motion_state.m_jump_height, 0.0f, 1.0f);
-                // todo(jbr)
-                /*if (!optrel_speeds->flags_178_20)
-                {
-                    ent->motion.flag_5 = false;
-                }*/
-            }
-
-            // todo(jbr) command to enable movement logging?
-            //qCDebug(logMovement, "local_inpvel: (%1.8f, %1.8f, %1.8f)", local_input_velocity.x, local_input_velocity.y, local_input_velocity.z);
-
-            glm::vec3 input_velocity = e.m_direction * local_input_velocity;
-
-            // todo(jbr) command to enable movement logging?
-            //qCDebug(logMovement, "inpvel: (%1.8f, %1.8f, %1.8f)", input_velocity.x, input_velocity.y, input_velocity.z);
-            //qCDebug(logMovement, "pyr: (%1.8f, %1.8f, %1.8f)", e.m_entity_data.m_orientation_pyr.p, e.m_entity_data.m_orientation_pyr.y, e.m_entity_data.m_orientation_pyr.r);
-
-            // todo(jbr) check move type is nocoll here, put unimplemented block for all else
-            float timestep = 1.0f; // todo(jbr) can this change?
-            e.m_motion_state.m_move_time += timestep;
-            float time_scale = (e.m_motion_state.m_move_time + 6.0f) / 6.0f;
-            time_scale = std::min(time_scale, 50.0f);
-
-            e.m_entity_data.m_pos += time_scale * timestep * input_velocity;
-
-            if (glm::length2(local_input_velocity) < glm::epsilon<float>())
-            {
-                e.m_motion_state.m_move_time = 0.0f;
-            }
-
-            // todo(jbr) command to enable movement logging?
-            /*qCDebug(logMovement, "move_time: %1.3f", e.m_motion_state.m_move_time);
-
-            qCDebug(logMovement, "newpos: (%1.8f, %1.8f, %1.8f)",
-                    e.m_entity_data.m_pos.x,
-                    e.m_entity_data.m_pos.y,
-                    e.m_entity_data.m_pos.z);*/
-
-            input_state->m_next_expected_control_state_change_id = changes_for_tick.last_change_id + 1;
-
+        }
+// todo(jbr) Q_ASSERTs
+        if (new_input.m_has_keys)
+        {
             for (int i = 0; i < 6; ++i)
             {
-                // reset total time if button is released, or reverse button is pressed
-                if (!input_state->m_keys[i] || input_state->m_keys[s_reverse_control_dir[i]])
+                if (new_input.m_keys[i] != input_state->m_keys[i])
                 {
-                    input_state->m_key_press_duration_ms[i] = 0;
+                    qCDebug(logInput, "keys input state mismatch");
+                    input_state->m_keys[i] = new_input.m_keys[i];
                 }
             }
-
-            // todo(jbr) command to enable movement logging?
-            //qCDebug(logMovement, "");
         }
-
-        // todo(jbr) check the keypress state at end of packet, make sure all matches up
     }
 
-    input_state->m_inp_states.clear();
+    input_state->m_new_inputs.clear();
 }
 
 void addPosUpdate(Entity &e, const PosUpdate &p)

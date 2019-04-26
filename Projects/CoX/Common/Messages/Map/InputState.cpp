@@ -27,28 +27,28 @@ using namespace SEGSEvents;
 void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly partial_2
 {
     uint8_t csc_deltabits = bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
-    uint16_t send_id = bs.GetBits(16);
+    m_next_state.m_first_control_state_change_id =  bs.GetBits(16);
     //qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_current.m_csc_deltabits, m_current.m_send_id, m_current.current_state_P);
 
-    uint16_t control_state_change_id = send_id;
-    ControlStateChangesForTick changes_for_tick;
-    changes_for_tick.first_change_id = control_state_change_id;
+    bool control_id_8_received_at_least_once = false;
 
-    uint8_t control_id = 0;
     do
     {
+        uint8_t control_id = 0;
         if(bs.GetBits(1))
             control_id = 8;
         else
             control_id = bs.GetBits(4);
 
-        uint32_t ms_since_prev;
+        uint32_t time_since_prev_ms;
         if(bs.GetBits(1))
-            ms_since_prev = bs.GetBits(2)+32; // delta from prev event
+            time_since_prev_ms = bs.GetBits(2)+32; // delta from prev event
         else
-            ms_since_prev = bs.GetBits(csc_deltabits);
+            time_since_prev_ms = bs.GetBits(csc_deltabits);
 
-        changes_for_tick.tick_length_ms += ms_since_prev;
+        ControlStateChange csc;
+        csc.control_id = control_id;
+        csc.time_since_prev_ms = time_since_prev_ms;
 
         switch(control_id)
         {
@@ -56,93 +56,72 @@ void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly parti
             case LEFT: case RIGHT:
             case UP: case DOWN:
             {
-                int32_t keypress_state = bs.GetBits(1); // get keypress state
-
-                qCDebug(logInput, "key %d = %d", control_id, keypress_state);
-
-                ControlStateChangesForTick::KeyChange key_change;
-                key_change.key = control_id;
-                key_change.state = keypress_state;
-                key_change.offset_from_tick_start_ms = changes_for_tick.tick_length_ms;
-                changes_for_tick.key_changes.push_back(key_change);// todo(jbr) could we just have an array of 6? see if it's possible for down and up to both be present in 1 tick
+                csc.key_state = bs.GetBits(1); // get keypress state
+                Q_ASSERT(csc.key_state == 0 || csc.key_state == 1); // todo(jbr)
+                qCDebug(logInput, "key %d = %d", control_id, csc.key_state);
 
                 break;
             }
             case PITCH: // camera pitch (Insert/Delete keybinds)
             {
-                changes_for_tick.pitch_changed = true;
-                changes_for_tick.pitch = AngleDequantize(bs.GetBits(11),11);
-                qCDebug(logInput, "Pitch %f", changes_for_tick.pitch);
+                csc.angle = AngleDequantize(bs.GetBits(11),11);
+                qCDebug(logInput, "Pitch %f", csc.angle);
                 break;
             }
             case YAW: // camera yaw (Q or E keybinds)
             {
-                changes_for_tick.yaw_changed = true;
-                changes_for_tick.yaw = AngleDequantize(bs.GetBits(11),11); // yaw
-                qCDebug(logInput, "Yaw %f", changes_for_tick.yaw);
+                csc.angle = AngleDequantize(bs.GetBits(11),11); // yaw
+                qCDebug(logInput, "Yaw %f", csc.angle);
                 break;
             }
             case 8:
             {
-                changes_for_tick.controls_disabled = bs.GetBits(1);
-                if( m_next_state.m_control_state_changes.size() ) // delta from previous
+                csc.controls_disabled = bs.GetBits(1);
+                if( control_id_8_received_at_least_once ) // delta from previous
                 {
-                    changes_for_tick.time_diff_1 = bs.GetPackedBits(8);   // value - previous_value
-                    changes_for_tick.time_diff_2 = bs.GetPackedBits(8);   // time - previous_time
+                    csc.time_diff_1 = bs.GetPackedBits(8);   // value - previous_value
+                    csc.time_diff_2 = bs.GetPackedBits(8);   // time - previous_time
                 }
                 else
                 {
-                    changes_for_tick.time_diff_1 = bs.GetBits(32);       // value
-                    changes_for_tick.time_diff_2 = bs.GetPackedBits(10); // value - time
+                    control_id_8_received_at_least_once = true;
+                    csc.time_diff_1 = bs.GetBits(32);       // value
+                    csc.time_diff_2 = bs.GetPackedBits(10); // value - time
                 }
 
                 if(bs.GetBits(1)) // if true velocity scale < 255
                 {
-                    changes_for_tick.velocity_scale = bs.GetBits(8);
+                    csc.velocity_scale = bs.GetBits(8);
                 }
                 else
                 {
-                    changes_for_tick.velocity_scale = 255;
+                    csc.velocity_scale = 255;
                 }
-
-                // end of tick, finish collecting control changes and add to array
-                changes_for_tick.last_change_id = control_state_change_id;
-                m_next_state.m_control_state_changes.push_back(changes_for_tick);
-
-                // clear accumulated control changes ready for the next tick
-                changes_for_tick = ControlStateChangesForTick();
-                changes_for_tick.first_change_id = control_state_change_id + 1;
 
                 break;
             }
             case 9:
             {
-                changes_for_tick.every_4_ticks_changed = true;
-                changes_for_tick.every_4_ticks = bs.GetBits(8); // value goes to 0 every 4 ticks. Some kind of send_partial flag
+                csc.every_4_ticks = bs.GetBits(8); // value goes to 0 every 4 ticks. Some kind of send_partial flag
 
                 // todo(jbr) maybe only log all of this stuff in the movement code which uses it?
-                qCDebug(logInput, "This goes to 0 every 4 ticks: %d", changes_for_tick.every_4_ticks);
+                qCDebug(logInput, "This goes to 0 every 4 ticks: %d", csc.every_4_ticks);
 
                 break;
             }
             case 10:
             {
-                changes_for_tick.no_collision_changed = true;
-                changes_for_tick.no_collision = bs.GetBits(1);
-                qCDebug(logInput, "Collision: %d", changes_for_tick.no_collision);
+                csc.no_collision = bs.GetBits(1);
+                qCDebug(logInput, "Collision: %d", csc.no_collision);
                 break;
             }
             default:
                 assert(!"Unknown control_id");
         }
 
-        ++control_state_change_id;
+        m_next_state.m_control_state_changes.push_back(csc);
 
     } while(bs.GetBits(1));
-
-    qCDebug(logInput, "End ControlStateChange");
-
-    Q_ASSERT(control_id == 8); // I make some assumptions that these can't contain partial tick control state changes
 
     //qCDebug(logInput, "recv control_id 9 %f", m_next_state.m_every_4_ticks);
 }
@@ -199,7 +178,7 @@ void RecvInputState::serializefrom(BitStream &bs)
         {
             time_state.serializefrom_base(bs);
         }
-        time_state.dump();
+        //time_state.dump();
         m_next_state.m_time_state.push_back(time_state);
     }
 
