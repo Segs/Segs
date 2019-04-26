@@ -23,7 +23,7 @@ bool DBMigrationStep::canRun(DBConnection *db, int cur_version)
     // databases that don't match the one we're currently checking
     if(getName() != db->getName())
     {
-        qCDebug(logDB).noquote() << QString("We're currently looking for %1 database, but found %2. Skipping to the next migration in the list.")
+        qCDebug(logMigration).noquote() << QString("We're currently looking for %1 database, but found %2. Skipping to the next migration in the list.")
                           .arg(getName(), db->getName());
         return false;
     }
@@ -31,7 +31,7 @@ bool DBMigrationStep::canRun(DBConnection *db, int cur_version)
     // skip migrations with a target version beneath the current db version
     if(getTargetVersion() <= cur_version)
     {
-        qCDebug(logDB).noquote() << QString("Migration step version %1 is beneath current database version %2. Skipping to the next one.")
+        qCDebug(logMigration).noquote() << QString("Migration step version %1 is beneath current database version %2. Skipping to the next one.")
                           .arg(getTargetVersion())
                           .arg(cur_version);
         return false;
@@ -41,7 +41,7 @@ bool DBMigrationStep::canRun(DBConnection *db, int cur_version)
     if(getTargetVersion() == cur_version + 1)
         return true;
 
-    qCDebug(logDB).noquote() << QString("Cannot run migration step %1 on %2 database.").arg(getTargetVersion()).arg(db->getName());
+    qCDebug(logMigration).noquote() << QString("Cannot run migration step %1 on %2 database.").arg(getTargetVersion()).arg(db->getName());
     return false;
 }
 
@@ -56,7 +56,7 @@ bool DBMigrationStep::cleanup(DBConnection *db)
         return false;
     }
 
-    qCDebug(logDB).noquote() << QString("Running commit on upgrade %1 on %2...")
+    qCDebug(logMigration).noquote() << QString("Running commit on upgrade %1 on %2...")
                   .arg(getTargetVersion())
                   .arg(db->getName());
     return true; // successful

@@ -35,14 +35,11 @@ public:
         // second column copy data over to entity data blob
         while(db->m_query->next())
         {
-            QJsonObject char_obj = db->m_query->value("chardata").toJsonObject();
-            db->loadBlob(char_obj);
-            //charObject["value0"].insert("LastOnline", ""); // cereal objects are wrapped in key 'value0'
-            db->saveBlob(char_obj);
-            QJsonDocument chardoc(char_obj);
+            QVariantMap char_obj = db->loadBlob("chardata");
+            QVariantMap ent_obj = db->loadBlob("entitydata");
 
-            QJsonObject ent_obj = db->m_query->value("entitydata").toJsonObject();
-            db->loadBlob(ent_obj);
+            //char_obj.insert("LastOnline", "");
+
             // fourth: move values to new location (table column to entdata)
             QJsonArray pos_arr;
             pos_arr.push_back(QJsonValue::fromVariant(db->m_query->value("posx")));
@@ -56,14 +53,14 @@ public:
             orient_arr.push_back(QJsonValue::fromVariant(db->m_query->value("orientr")));
             ent_obj.insert("Orientation", orient_arr);
 
-            db->saveBlob(ent_obj);
-            QJsonDocument entdoc(ent_obj);
-            //qDebug().noquote() << chardoc.toJson(); // print output for debug
-            //qDebug().noquote() << entdoc.toJson();  // print output for debug
+            QString chardoc = db->saveBlob(char_obj);
+            QString entdoc = db->saveBlob(ent_obj);
+            qCDebug(logMigration).noquote() << chardoc; // print output for debug
+            qCDebug(logMigration).noquote() << entdoc;  // print output for debug
 
             QString querytext = QString("UPDATE characters SET chardata='%1', entitydata='%2'")
-                    .arg(QString(chardoc.toJson()))
-                    .arg(QString(entdoc.toJson()));
+                    .arg(chardoc)
+                    .arg(entdoc);
             if(!db->m_query->exec(querytext))
                 return false;
         }

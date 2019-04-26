@@ -33,7 +33,7 @@ public:
         // with the sql script file and reflect past updates to accounts table
         // it will always return true, and will always succeed.
 
-        qCDebug(logDB).noquote() << QString("PERFORMING UPGRADE %1 on %2")
+        qCDebug(logMigration).noquote() << QString("PERFORMING UPGRADE %1 on %2")
                           .arg(getTargetVersion())
                           .arg(db->getName());
 

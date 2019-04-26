@@ -49,6 +49,7 @@ SEGS_DECLARE_LOGGING_CATEGORY(logTasks)
 SEGS_DECLARE_LOGGING_CATEGORY(logRPC)
 SEGS_DECLARE_LOGGING_CATEGORY(logAFK)
 SEGS_DECLARE_LOGGING_CATEGORY(logConnection)
+SEGS_DECLARE_LOGGING_CATEGORY(logMigration)
 
 void    setLoggingFilter();
 void    toggleLogging(QString &category);

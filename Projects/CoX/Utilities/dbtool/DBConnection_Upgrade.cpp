@@ -20,6 +20,9 @@
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
 
+// right now any upgrades beneath version 8 are experimental
+static int s_experimental_version = 8;
+
 // Must declare this method to populate MigrationStep vector
 extern void register_migrations(std::vector<DBMigrationStep *> &target);
 
@@ -37,6 +40,9 @@ void DBConnection::runUpgrades()
     // get starting DB Version once to avoid multiple queries
     int start_version = getDBVersion();
 
+    if(start_version < s_experimental_version)
+        qWarning() << "Upgrading older databases is still experimental. Proceed at your own risk.";
+
     // check for the latest version
     int final_version = 0;
     for(DBMigrationStep *step : migrations_to_run)
@@ -44,13 +50,13 @@ void DBConnection::runUpgrades()
         if(getName() != step->getName())
             continue;
 
-        qCDebug(logDB) << "Checking migration step version:" << step->getName() << step->getTargetVersion();
+        qCDebug(logMigration) << "Checking migration step version:" << step->getName() << step->getTargetVersion();
 
         if(step->getTargetVersion() > final_version)
             final_version = step->getTargetVersion();
     }
 
-    qCDebug(logDB) << "Final migration version:" << final_version;
+    qCDebug(logMigration) << "Final migration version:" << final_version;
 
     // check database version against schema in default folder
     if(start_version >= final_version)
@@ -167,7 +173,7 @@ bool DBConnection::updateTableVersions(DBSchemas &table_schemas)
         if(!m_query->exec())
             return false;
 
-        qCDebug(logDB) << "Updating Version:" << table.m_table_name << table.m_version << table.m_last_updated;
+        qCDebug(logMigration) << "Updating Version:" << table.m_table_name << table.m_version << table.m_last_updated;
     }
 
     return true;

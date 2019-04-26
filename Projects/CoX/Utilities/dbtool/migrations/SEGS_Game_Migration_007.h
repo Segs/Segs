@@ -36,8 +36,7 @@ public:
         // second column copy data over to character data blob
         while(db->m_query->next())
         {
-            QJsonObject char_obj = db->m_query->value("chardata").toJsonObject();
-            db->loadBlob(char_obj);
+            QVariantMap char_obj = db->loadBlob("chardata");
 
             QJsonObject cur_attribs;
             for(int i = 0; i < 24; ++i)
@@ -100,12 +99,11 @@ public:
 
             char_obj.insert("CurrentAttribs", cur_attribs); // cereal objects are wrapped in key 'value0'
 
-            db->saveBlob(char_obj);
-            QJsonDocument chardoc(char_obj);
-            //qCDebug(logDB).noquote() << chardoc.toJson(); // print output for debug
+            QString chardoc = db->saveBlob(char_obj);
+            qCDebug(logMigration).noquote() << chardoc; // print output for debug
 
             QString querytext = QString("UPDATE characters SET chardata='%1'")
-                    .arg(QString(chardoc.toJson()));
+                    .arg(chardoc);
             if(!db->runQuery(querytext))
                 return false;
         }
@@ -122,8 +120,7 @@ public:
         // delete columns from tables
         db->deleteColumns(QStringLiteral("supergroups"), QStringList("supergroup_id"));
         db->deleteColumns(QStringLiteral("accounts"), QStringList("account_id"));
-        QStringList cols_to_drop = { "char_level", "archetype" };
-        db->deleteColumns(QStringLiteral("characters"), cols_to_drop);
+        db->deleteColumns(QStringLiteral("characters"), QStringList({ "char_level", "archetype" }));
 
         // we're done, return true
         return true;

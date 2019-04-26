@@ -76,13 +76,13 @@ public:
             costume_obj.insert("SendFullCostume", true);
 
             // parts object can be copied wholesale
-            QString parts_obj = db->m_query->value("parts").toString();
+            QJsonArray parts_arr = db->m_query->value("parts").toJsonArray();
             costume_obj.insert("NumParts", 15); // all player "primary" costumes are 15
-            costume_obj.insert("Parts", parts_obj); // cereal objects are wrapped in key 'value0'
+            costume_obj.insert("Parts", parts_arr); // cereal objects are wrapped in key 'value0'
 
-            db->saveBlob(costume_obj);
+            db->prepareBlob(costume_obj);
             QJsonDocument costumedoc(costume_obj);
-            qDebug().noquote() << costumedoc.toJson(); // print output for debug
+            qCDebug(logMigration).noquote() << costumedoc.toJson(); // print output for debug
 
             querytext = QString("UPDATE characters SET costume_data='%1'")
                     .arg(QString(costumedoc.toJson()));

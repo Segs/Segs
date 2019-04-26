@@ -42,10 +42,8 @@ public:
 
         while(db->m_query->next())
         {
-            QJsonObject char_obj = db->m_query->value("chardata").toJsonObject();
-            db->loadBlob(char_obj);
-            char_obj.insert("LastOnline", ""); // cereal objects are wrapped in key 'value0'
-            db->saveBlob(char_obj);
+            QVariantMap char_obj = db->loadBlob("chardata");
+            char_obj.insert("LastOnline", "");
 
             // fourth: move values to new location (chardata and entdata)
             QJsonObject ent_obj;
@@ -54,16 +52,16 @@ public:
             ent_obj.insert("Type", 2);          // EntType == Player
             ent_obj.insert("Idx", 0);
             ent_obj.insert("dbID", 0);
-            db->saveBlob(ent_obj);  // required by cereal
+            db->prepareBlob(ent_obj);  // required by cereal
 
-            QJsonDocument chardoc(char_obj);
-            QJsonDocument entdoc(ent_obj);
-            //qDebug().noquote() << chardoc.toJson(); // print output for debug
-            //qDebug().noquote() << entdoc.toJson();  // print output for debug
+            QString chardoc = db->saveBlob(char_obj);
+            QString entdoc = db->saveBlob(ent_obj.toVariantMap());
+            qCDebug(logMigration).noquote() << chardoc; // print output for debug
+            qCDebug(logMigration).noquote() << entdoc;  // print output for debug
 
             QString querytext = QString("UPDATE characters SET chardata='%1', entitydata='%2'")
-                    .arg(QString(chardoc.toJson()))
-                    .arg(QString(entdoc.toJson()));
+                    .arg(chardoc)
+                    .arg(entdoc);
             if(!db->m_query->exec(querytext))
                 return false;
         }

@@ -213,13 +213,25 @@ bool DBConnection::getColumnsFromTable(const QString &tablename, std::vector<Col
 }
 
 /*!
- * @brief           Cereal adds a wrapper around the entire object
- *                  with a key of `value0`. We remove that here.
- * @param[in,out]   obj
+ * @brief           Return a QVariantMap that we can access easily
+ * @param[in]       column_name of the column that contains the json
  */
-void DBConnection::loadBlob(QJsonObject &obj)
+QVariantMap DBConnection::loadBlob(const QString &column_name)
 {
-    obj = obj["value0"].toObject(); // strip outermost wrap
+    QJsonObject char_obj = m_query->value(column_name).toJsonObject();
+    //char_obj["value0"].toObject(); // strip outermost wrap
+
+    // If logMigration is on, iterate through keys and print
+    if(logMigration().isDebugEnabled())
+    {
+        for(auto &key : char_obj.keys())
+        {
+            QVariant value = char_obj[key].toVariant();
+            qCDebug(logMigration) << key << ": " << value;
+        }
+    }
+
+    return char_obj.toVariantMap();
 }
 
 /*!
@@ -227,11 +239,24 @@ void DBConnection::loadBlob(QJsonObject &obj)
  *                  with a key of `value0`. We add that here.
  * @param[in,out]   obj
  */
-void DBConnection::saveBlob(QJsonObject &obj)
+void DBConnection::prepareBlob(QJsonObject &obj)
 {
     QJsonObject wrapped_obj;
     wrapped_obj.insert("value0", obj);
     obj = wrapped_obj;
+}
+
+/*!
+ * @brief           Cereal adds a wrapper around the entire object
+ *                  with a key of `value0`. We add that here.
+ * @param[in,out]   obj
+ */
+QString DBConnection::saveBlob(const QVariantMap &map)
+{
+    QJsonObject json_obj = QJsonObject::fromVariantMap(map);
+    prepareBlob(json_obj);
+    QJsonDocument json_doc(json_obj);
+    return json_doc.toJson();
 }
 
 //! @}
