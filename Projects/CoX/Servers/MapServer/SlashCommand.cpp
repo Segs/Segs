@@ -361,13 +361,13 @@ void cmdHandler_MoveZone(const QStringList &params, MapClientSession &sess)
 // Access Level 9 Commands (GMs)
 void cmdHandler_Script(const QStringList &params, MapClientSession &sess)
 {
-    QString code = params.value(0);
+    QString code = params.join(" ");
     sess.m_current_map->m_scripting_interface->runScript(&sess, code, "user provided script");
 }
 
 void cmdHandler_Dialog(const QStringList &params, MapClientSession &sess)
 {
-    sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(params.value(0)));
+    sess.addCommandToSendNextUpdate(std::make_unique<StandardDialogCmd>(params.join(" ")));
 }
 
 void cmdHandler_InfoMessage(const QStringList &params, MapClientSession &sess)
@@ -394,7 +394,7 @@ void cmdHandler_InfoMessage(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_SmileX(const QStringList &params, MapClientSession &sess)
 {
-    QString fileName("scripts/" + params.value(0));
+    QString fileName("scripts/" + params.join(" "));
     if(!fileName.endsWith(".smlx"))
             fileName.append(".smlx");
     QFile file(fileName);
@@ -927,7 +927,7 @@ void cmdHandler_AddEntirePowerSet(const QStringList &params, MapClientSession &s
     uint32_t v2 = params.value(1).toUInt();
 
     if(params.size() < 2)
-    {;
+    {
         qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" "), sess);
         return;
@@ -979,7 +979,7 @@ void cmdHandler_AddPower(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_AddInspiration(const QStringList &params, MapClientSession &sess)
 {
-    QString val = params.value(0);
+    QString val = params.join(" ");
     giveInsp(sess, val);
 }
 
@@ -1026,14 +1026,15 @@ void cmdHandler_FaceEntity(const QStringList &params, MapClientSession &sess)
 {
     Entity *tgt = nullptr;
 
+    QString name = params.join(" ");
+
     if(params.size() < 1)
     {
-        qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ");
-        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" "), sess);
+        qCDebug(logSlashCommand) << "Bad invocation:" << name;
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + name, sess);
         return;
     }
 
-    QString name = params.at(0);
     tgt = getEntity(&sess, name); // get Entity by name
     if(tgt == nullptr)
     {
@@ -1081,14 +1082,6 @@ void cmdHandler_DoorMessage(const QStringList &params, MapClientSession &sess)
     bool ok = true;
     uint32_t delay_status = params.at(0).toUInt(&ok);
 
-    // Combine params after int and use those as door message
-    QStringList params_copy;
-    for (QString s : params) {
-        params_copy.append(s);
-    }
-    params_copy.removeFirst();
-    QString msg = params_copy.join(" ");
-
     if(!ok || delay_status > 2)
     {
         qCDebug(logSlashCommand) << "First argument must be 0, 1, or 2;";
@@ -1096,12 +1089,14 @@ void cmdHandler_DoorMessage(const QStringList &params, MapClientSession &sess)
         return;
     }
 
+    // Combine params after int and use those as door message
+    QString msg = params.mid(1).join(" ");
     sendDoorMessage(sess, DoorMessageStatus(delay_status), msg);
 }
 
 void cmdHandler_Browser(const QStringList &params, MapClientSession &sess)
 {
-    QString content = params.value(0);
+    QString content = params.join(" ");
     sendBrowser(sess, content);
 }
 
@@ -1116,7 +1111,7 @@ void cmdHandler_SendTimeUpdate(const QStringList &/*params*/, MapClientSession &
 
 void cmdHandler_SendContactDialog(const QStringList &params, MapClientSession &sess)
 {
-    QString content = params.value(0);
+    QString content = params.join(" ");
     std::vector<ContactEntry> active_contacts;
 
     for(int i = 0; i < 4; ++i)
@@ -1142,12 +1137,7 @@ void cmdHandler_SendContactDialogYesNoOk(const QStringList &params, MapClientSes
     bool ok = true;
     bool has_yesno = params.at(0).toInt(&ok);
     // Combine params after int and use those as dialog content
-    QStringList params_copy;
-    for (QString s : params) {
-        params_copy.append(s);
-    }
-    params_copy.removeFirst();
-    QString content = params_copy.join(" ");
+    QString content = params.mid(1).join(" ");
 
     if(!ok)
     {
@@ -1282,27 +1272,27 @@ void cmdHandler_SendLocations(const QStringList &/*params*/, MapClientSession &s
 
 void cmdHandler_SendConsoleOutput(const QStringList &params, MapClientSession &sess)
 {
-    if(params.size() != 1)
+    if(params.size() < 1)
     {
         qCDebug(logSlashCommand) << "SendConsoleOutput. Bad invocation:  " << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "ConsoleOutput format is '/consoleOutput <Message>'", sess);
         return;
     }
 
-    QString msg = params.at(0);
+    QString msg = params.join(" ");
     sendDeveloperConsoleOutput(sess, msg);
 }
 
 void cmdHandler_SendConsolePrint(const QStringList &params, MapClientSession &sess)
 {
-    if(params.size() != 1)
+    if(params.size() < 1)
     {
         qCDebug(logSlashCommand) << "SendConsolePrintF. Bad invocation:  " << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "ConsolePrintF format is '/consolePrintF <Message>'", sess);
         return;
     }
 
-    QString msg = params.at(0);
+    QString msg = params.join(" ");
     sendClientConsoleOutput(sess, msg);
 }
 
@@ -1349,7 +1339,8 @@ void cmdHandler_SetU1(const QStringList &params, MapClientSession &sess)
 // Access Level 2 Commands
 uint cmdHandler_AddNPC(const QStringList &params, MapClientSession &sess)
 {
-    if(params.size() < 1) {
+    if(params.size() < 1)
+    {
         qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" "), sess);
         return 0;
@@ -1429,7 +1420,7 @@ void cmdHandler_CmdList(const QStringList &params, MapClientSession &sess)
 void cmdHandler_AFK(const QStringList &params, MapClientSession &sess)
 {
     Entity* e = sess.m_ent;
-    QString afk_msg = params.value(0);
+    QString afk_msg = params.join(" ");
     toggleAFK(*e->m_char, afk_msg);
 
     QString msg = "Setting afk message to: " + afk_msg;
@@ -1466,7 +1457,7 @@ void cmdHandler_WhoAll(const QStringList &/*params*/, MapClientSession &sess)
 
 void cmdHandler_SetTitles(const QStringList &params, MapClientSession &sess)
 {
-    QString title = params.value(0);
+    QString title = params.join(" ");
     setTitle(sess, title);
 }
 
@@ -1500,7 +1491,7 @@ void cmdHandler_SetSpecialTitle(const QStringList &params, MapClientSession &ses
     prefix = sess.m_ent->m_char->m_char_data.m_has_the_prefix;
     generic = getGenericTitle(*sess.m_ent->m_char);
     origin = getOriginTitle(*sess.m_ent->m_char);
-    special = params.value(0);
+    special = params.join(" ");
 
     setTitles(*sess.m_ent->m_char, prefix, generic, origin, special);
     msg = "Titles changed to: " + QString::number(prefix) + " " + generic + " " + origin + " " + special;
@@ -1531,7 +1522,7 @@ void cmdHandler_SetSpawnLocation(const QStringList &params, MapClientSession &se
         // No SpawnLocation given, bail.
         return;
     }
-    const QString spawnLocation = params.at(0);
+    const QString spawnLocation = params.join(" ");
     sess.m_current_map->setSpawnLocation(*sess.m_ent, spawnLocation);
 }
 
@@ -1553,7 +1544,7 @@ void cmdHandler_MOTD(const QStringList &/*params*/, MapClientSession &sess)
 
 void cmdHandler_Invite(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromName(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.join(" "), sess);
     if(tgt == nullptr)
     {
         return;
@@ -1591,7 +1582,7 @@ void cmdHandler_Invite(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_Kick(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromName(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.join(" "), sess);
     if(tgt == nullptr)
     {
         return;
@@ -1627,7 +1618,7 @@ void cmdHandler_FindMember(const QStringList &/*params*/, MapClientSession &sess
 
 void cmdHandler_MakeLeader(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromName(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.join(" "), sess);
     if(tgt == nullptr)
     {
         return;
@@ -1671,7 +1662,7 @@ void cmdHandler_SetAssistTarget(const QStringList &/*params*/, MapClientSession 
 
 void cmdHandler_Sidekick(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromName(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.join(" "), sess);
     if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
         return;
@@ -1756,7 +1747,7 @@ void cmdHandler_TeamBuffs(const QStringList & /*params*/, MapClientSession &sess
 
 void cmdHandler_Friend(const QStringList &params, MapClientSession &sess)
 {
-    const Entity* tgt = getEntityFromName(params.value(0), sess);
+    const Entity* tgt = getEntityFromName(params.join(" "), sess);
     if(tgt == nullptr || sess.m_ent->m_char->isEmpty() || tgt->m_char->isEmpty())
     {
         return;
@@ -1782,7 +1773,7 @@ void cmdHandler_Friend(const QStringList &params, MapClientSession &sess)
 void cmdHandler_Unfriend(const QStringList &params, MapClientSession &sess)
 {
     // Cannot use getEntityFromCommand as we need to be able to unfriend logged out characters.
-    QString name = params.value(0);
+    QString name = params.join(" ");
     if(name.isEmpty())
     {
         const Entity* const tgt = getTargetEntity(sess);
@@ -1843,7 +1834,7 @@ void cmdHandler_ReSpec(const QStringList &/*params*/, MapClientSession &sess)
 
 void cmdHandler_Trade(const QStringList &params, MapClientSession &sess)
 {
-    Entity* const tgt = getEntityFromName(params.value(0), sess);
+    Entity* const tgt = getEntityFromName(params.join(" "), sess);
     if(tgt == nullptr || sess.m_ent == nullptr)
         return;
 
@@ -2008,7 +1999,8 @@ void cmdHandler_EmailSend(const QStringList &params, MapClientSession &sess)
     recipients.replace("\\q", "");
     QStringList recipient_list = recipients.split(";");
     // the last element will be empty if sent through email window, so remove it
-    if (recipient_list.back().isEmpty()) {
+    if (recipient_list.back().isEmpty())
+    {
         recipient_list.pop_back();
     }
 
@@ -2021,19 +2013,9 @@ void cmdHandler_EmailSend(const QStringList &params, MapClientSession &sess)
         return;
     }
 
-    // Remove recipient and subject, remainder is the email body
-    QStringList email_body_words;
-    int skip = 2;
-    for (QString s : params) {
-        if (--skip < 0) {
-            email_body_words.append(s);
-        }
-    }
-
-    sendInfoMessage(MessageChannel::SERVER, "Sending email.  subject: " + params.at(1) + "  body: "+ email_body_words.join(" "), sess);
-
     for (const auto &recipient : recipient_list)
-        sendEmail(sess, recipient, params.at(1), email_body_words.join(" "));
+        // Everything after recipient and subject is the email body
+        sendEmail(sess, recipient, params.at(1), params.mid(2).join(" "));
 }
 
 void cmdHandler_EmailDelete(const QStringList &params, MapClientSession &sess)
@@ -2228,7 +2210,8 @@ void runCommand(const QString &str, MapClientSession &e)
     // Regex always produces an empty match for $
     args.pop_back();
     // May also produce an extra empty match if input ends in quote
-    if (args.back().isEmpty()) {
+    if (args.back().isEmpty())
+    {
         args.pop_back();
     }
     QString command_name = args.takeFirst();
