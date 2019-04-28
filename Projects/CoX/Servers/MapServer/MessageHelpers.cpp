@@ -121,16 +121,14 @@ void storeServerControlState(BitStream &bs,Entity *self)
     bs.StoreBits(1,self->m_force_pos_and_cam);
     if(self->m_force_pos_and_cam)
     {
-        // todo(jbr)
-        //bs.StorePackedBits(1,self->m_states.current()->m_every_4_ticks);    // sets g_client_pos_id_rel default = 0
-        bs.StorePackedBits(1,1);
+        bs.StorePackedBits(1,self->m_states.m_every_4_ticks);               // sets g_client_pos_id_rel default = 0
         storeVector(bs,self->m_entity_data.m_pos);                          // server-side pos
         storeVectorConditional(bs,self->m_motion_state.m_velocity);         // server-side velocity
 
-        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.x); // Pitch not used ?
-        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.y); // Yaw
-        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.z); // Roll
-        bs.StorePackedBits(1,self->m_motion_state.m_is_falling); // server side forced falling bit
+        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.x);  // Pitch not used ?
+        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.y);  // Yaw
+        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.z);  // Roll
+        bs.StorePackedBits(1,self->m_motion_state.m_is_falling);            // server side forced falling bit
 
         self->m_force_pos_and_cam = false; // run once
     }

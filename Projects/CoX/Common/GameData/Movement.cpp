@@ -64,7 +64,8 @@ void processNewInputs(Entity &e)
     {
         uint32_t length_ms = 0;
         uint32_t key_press_start_ms[6] = {};
-        bool orientation_changed = false;
+        bool    key_released[6] = {};
+        bool    orientation_changed = false;
     } tick_state;
 
     StateStorage* input_state = &e.m_states;
@@ -79,6 +80,7 @@ void processNewInputs(Entity &e)
              csc_iter != new_input.m_control_state_changes.end();
              ++csc_iter, ++csc_id)
         {
+            // todo(jbr) final pass on the decompiled src
             // The client will re-send the same control state changes until acked, so
             // need to make sure we ignore any changes we've seen before. Also, need
             // to use != rather than <, as the ids will wrap around to zero again.
@@ -112,9 +114,11 @@ void processNewInputs(Entity &e)
                     }
                     else
                     {
+                        tick_state.key_released[key] = true;
+
                         if (!input_state->m_keys[s_reverse_control_dir[key]])
                         {
-                            uint32_t key_press_duration = tick_state.length_ms;
+                            uint32_t key_press_duration = tick_state.length_ms; // todo(jbr) not necessarily true if a key can be pressed and released same tick
                             if (key_press_duration == 0)
                             {
                                 if (input_state->m_key_press_duration_ms[key] == 0)
@@ -144,6 +148,7 @@ void processNewInputs(Entity &e)
                 case 9:
                     // todo(jbr) every 4 ticks
                 // todo(jbr) log csc?
+                    input_state->m_every_4_ticks = csc.every_4_ticks;
                 break;
 
                 case 10:
@@ -162,6 +167,11 @@ void processNewInputs(Entity &e)
                     // todo(jbr) log csc?
 
                     // do a tick!
+
+                    // Save current position to last_pos
+                    e.m_motion_state.m_last_pos = e.m_entity_data.m_pos;
+
+                    input_state->m_velocity_scale = csc.velocity_scale / 255.0f; // todo(jbr) check what we're actually getting for vscale
 
                     // the following is based on pmotionUpdateControlsPrePhysics()
 
@@ -183,9 +193,6 @@ void processNewInputs(Entity &e)
                             }
                         }
                     }
-
-                    // todo(jbr) stuff from entmovenocoll
-                    // todo(jbr) be sure to reset m_next_tick after this is done!
 
                     for (int i = 0; i < 6; ++i)
                     {
@@ -271,22 +278,20 @@ void processNewInputs(Entity &e)
                         local_input_velocity_xz.y = 0;
                     }
 
-                    // todo(jbr) think this is client only, do we still want it anyway?
-                    /*float input_velocity_scale = cs->inp_vel_scale;
-
+                    float input_velocity_scale = input_state->m_velocity_scale;
                     if (local_input_velocity_xz.z < 0.0f)
                     {
-                        input_velocity_scale = input_velocity_scale * optrel_speeds->speed_back;
+                        input_velocity_scale = input_velocity_scale * e.m_motion_state.m_backup_spd;
                     }
-                    if (optrel_speeds->stunned)
+                    if (e.m_motion_state.m_is_stunned)
                     {
                         input_velocity_scale = input_velocity_scale * 0.1f;
                     }
-                    if (controls->speed_scale_F0 != 0.0f)
+                    /*if (controls->speed_scale_F0 != 0.0f)
                     {
-                        input_velocity_scale = input_velocity_scale * controls->speed_scale_F0;
-                    }
-                    e.m_motion_state.m_velocity_scale = input_velocity_scale; */
+                        input_velocity_scale *= controls->speed_scale_F0;
+                    }*/
+                    e.m_motion_state.m_velocity_scale = input_velocity_scale;
 
                     if (glm::length2(local_input_velocity_xz) > glm::epsilon<float>())
                     {
@@ -299,18 +304,18 @@ void processNewInputs(Entity &e)
                     {
                         local_input_velocity.y = local_input_velocity_xz.y * std::fabs(control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN]);
                     }
-                    else if (false) //controls->bs_38_1[BinaryControl::UP]) todo(jbr)
+                    else if (tick_state.key_released[BinaryControl::UP])
                     {
                         local_input_velocity.y = 0;
                     }
                     else
                     {
                         local_input_velocity.y *= glm::clamp<float>(e.m_motion_state.m_jump_height, 0.0f, 1.0f);
-                        // todo(jbr)
-                        /*if (!optrel_speeds->flags_178_20)
+
+                        if (!e.m_motion_state.m_is_sliding)
                         {
-                            ent->motion.flag_5 = false;
-                        }*/
+                            e.m_motion_state.m_flag_5 = false;
+                        }
                     }
 
                     // todo(jbr) command to enable movement logging?

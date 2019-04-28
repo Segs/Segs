@@ -57,7 +57,6 @@ void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly parti
             case UP: case DOWN:
             {
                 csc.key_state = bs.GetBits(1); // get keypress state
-                Q_ASSERT(csc.key_state == 0 || csc.key_state == 1); // todo(jbr)
                 qCDebug(logInput, "key %d = %d", control_id, csc.key_state);
 
                 break;
@@ -145,7 +144,6 @@ void RecvInputState::extended_input(BitStream &bs)
             qCDebug(logInput, "keypress down %d", idx);
         }
     }
-    // todo(jbr) when processing these, just assert these match with what we've got
 
     if(bs.GetBits(1))
     {

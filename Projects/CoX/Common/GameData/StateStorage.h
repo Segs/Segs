@@ -160,4 +160,6 @@ public:
 
     bool m_keys[6] = {};
     uint32_t m_key_press_duration_ms[6] = {};
+    float m_velocity_scale = 1.0f;
+    uint8_t m_every_4_ticks = 0;
 };
