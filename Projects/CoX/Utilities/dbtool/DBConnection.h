@@ -23,7 +23,7 @@ class DBMigrationStep;
 struct ColumnSchema
 {
     QString m_name;
-    QVariant m_data_type;
+    QString m_data_type;
 };
 
 struct TableSchema
@@ -87,7 +87,7 @@ public:
     bool getColumnsFromTable(const QString &tablename, std::vector<ColumnSchema> &old_cols);
     QVariantMap loadBlob(const QString &column_name);
     void prepareBlob(QJsonObject &obj);
-    QString saveBlob(const QVariantMap &map);
+    QString saveBlob(const QVariantMap &map, bool wrap_for_cereal = true);
 
     // DBConnection_Upgrade.cpp
     void            runUpgrades();

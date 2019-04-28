@@ -46,16 +46,15 @@ public:
             char_obj.insert("LastOnline", "");
 
             // fourth: move values to new location (chardata and entdata)
-            QJsonObject ent_obj;
-            ent_obj.insert("OriginIdx", 1);     // TODO: how to actually determine this?
-            ent_obj.insert("ClassIdx", 1);      // TODO: how to actually determine this?
-            ent_obj.insert("Type", 2);          // EntType == Player
-            ent_obj.insert("Idx", 0);
-            ent_obj.insert("dbID", 0);
-            db->prepareBlob(ent_obj);  // required by cereal
+            QVariantMap ent_map;
+            ent_map.insert("OriginIdx", 1);     // TODO: how to actually determine this?
+            ent_map.insert("ClassIdx", 1);      // TODO: how to actually determine this?
+            ent_map.insert("Type", 2);          // EntType == Player
+            ent_map.insert("Idx", 0);
+            ent_map.insert("dbID", 0);
 
             QString chardoc = db->saveBlob(char_obj);
-            QString entdoc = db->saveBlob(ent_obj.toVariantMap());
+            QString entdoc = db->saveBlob(ent_map);
             qCDebug(logMigration).noquote() << chardoc; // print output for debug
             qCDebug(logMigration).noquote() << entdoc;  // print output for debug
 

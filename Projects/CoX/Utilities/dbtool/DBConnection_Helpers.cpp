@@ -155,14 +155,14 @@ bool DBConnection::deleteColumns(const QString &tablename, const QStringList &co
     {
         // Create sql strings here
         old_cols_namelist.push_back(cs.m_name);
-        old_cols_as_sql.push_back(QString("'%1' %2").arg(cs.m_name).arg(cs.m_data_type.toString()));
+        old_cols_as_sql.push_back(QString("'%1' %2").arg(cs.m_name).arg(cs.m_data_type));
 
         // if column should be removed, we're done here
         if(cols_to_remove.contains(cs.m_name, Qt::CaseInsensitive))
             continue;
 
         new_cols_namelist.push_back(cs.m_name);
-        new_cols_as_sql.push_back(QString("'%1' %2").arg(cs.m_name).arg(cs.m_data_type.toString()));
+        new_cols_as_sql.push_back(QString("'%1' %2").arg(cs.m_name).arg(cs.m_data_type));
     }
 
     // Replace current table with one that excludes our "deleted" columns
@@ -194,19 +194,24 @@ bool DBConnection::deleteColumns(const QString &tablename, const QStringList &co
  */
 bool DBConnection::getColumnsFromTable(const QString &tablename, std::vector<ColumnSchema> &old_cols)
 {
-    // Get Original Column List from tablename
-    QSqlRecord record = m_db->driver()->record(tablename);
-    if(record.count() <= 0)
+    // This is only ever called on SQLite tables
+    // because other DB Drivers can delete columns
+    if(m_db->driverName() != "QSQLITE")
+        qWarning() << "Running getColumnsFromTable on non-SQLite DB. Why?";
+
+    QString query = QString("PRAGMA table_info(%1)").arg(tablename);
+    m_query->prepare(query);
+    if(!m_query->exec())
         return false;
 
-    // iterate over columns and fill old_cols vector
-    for(int i = 0; i < record.count(); ++i)
+    while(m_query->next())
     {
         ColumnSchema c;
-        c.m_name = record.fieldName(i);
-        c.m_data_type = record.field(i).type();
+        c.m_name = m_query->value(1).toString();
+        c.m_data_type = m_query->value(2).toString();
         old_cols.push_back(c);
         qCDebug(logDB) << "Reading column:" << c.m_name << c.m_data_type;
+
     }
 
     return true; // we're done here
@@ -215,23 +220,35 @@ bool DBConnection::getColumnsFromTable(const QString &tablename, std::vector<Col
 /*!
  * @brief           Return a QVariantMap that we can access easily
  * @param[in]       column_name of the column that contains the json
+ * @param[out]      QVariantMap of json structure
  */
 QVariantMap DBConnection::loadBlob(const QString &column_name)
 {
-    QJsonObject char_obj = m_query->value(column_name).toJsonObject();
-    //char_obj["value0"].toObject(); // strip outermost wrap
+    QVariantMap work_area;
+    QJsonDocument char_doc = QJsonDocument::fromJson(m_query->value(column_name).toByteArray());
+    QJsonObject char_obj = char_doc.object();
 
-    // If logMigration is on, iterate through keys and print
-    if(logMigration().isDebugEnabled())
+    if(char_obj.size() < 2)
+        char_obj = char_doc.object()["value0"].toObject();
+
+    for(const QString &key : char_obj.keys())
     {
-        for(auto &key : char_obj.keys())
-        {
-            QVariant value = char_obj[key].toVariant();
-            qCDebug(logMigration) << key << ": " << value;
-        }
+        QJsonValue value = char_obj[key];
+        if(char_obj[key].isArray())
+            work_area.insert(key, value.toArray());
+        else if(char_obj[key].isObject())
+            work_area.insert(key, value.toObject());
+        else if(char_obj[key].isBool())
+            work_area.insert(key, value.toBool());
+        else if(char_obj[key].isDouble())
+            work_area.insert(key, value.toDouble());
+        else
+            work_area.insertMulti(key, value.toString());
+
+        qCDebug(logMigration).noquote() << key << ": " << value.toVariant().toStringList().join(" ");
     }
 
-    return char_obj.toVariantMap();
+    return work_area;
 }
 
 /*!
@@ -247,14 +264,16 @@ void DBConnection::prepareBlob(QJsonObject &obj)
 }
 
 /*!
- * @brief           Cereal adds a wrapper around the entire object
- *                  with a key of `value0`. We add that here.
- * @param[in,out]   obj
+ * @brief           Save jsondocument to QString to save to database.
+ * @param[in]       QVariantMap map
+ * @param[out]      QString of json document
  */
-QString DBConnection::saveBlob(const QVariantMap &map)
+QString DBConnection::saveBlob(const QVariantMap &map, bool wrap_for_cereal/* = true*/)
 {
     QJsonObject json_obj = QJsonObject::fromVariantMap(map);
-    prepareBlob(json_obj);
+    if(wrap_for_cereal)
+        prepareBlob(json_obj); // cereal wraps all objects in jsonobject
+
     QJsonDocument json_doc(json_obj);
     return json_doc.toJson();
 }

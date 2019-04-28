@@ -94,7 +94,7 @@ public:
 
             db->prepareBlob(char_obj);
             QJsonDocument doc(char_obj);
-            //qDebug().noquote() << doc.toJson();
+            qCDebug(logMigration).noquote() << doc.toJson();
 
             // fourth: move values to new location (chardata)
             QString querytext = QString("UPDATE characters SET chardata='%1'").arg(QString(doc.toJson()));

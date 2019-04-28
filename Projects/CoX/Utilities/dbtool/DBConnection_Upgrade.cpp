@@ -20,9 +20,6 @@
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
 
-// right now any upgrades beneath version 8 are experimental
-static int s_experimental_version = 8;
-
 // Must declare this method to populate MigrationStep vector
 extern void register_migrations(std::vector<DBMigrationStep *> &target);
 
@@ -39,9 +36,6 @@ void DBConnection::runUpgrades()
 
     // get starting DB Version once to avoid multiple queries
     int start_version = getDBVersion();
-
-    if(start_version < s_experimental_version)
-        qWarning() << "Upgrading older databases is still experimental. Proceed at your own risk.";
 
     // check for the latest version
     int final_version = 0;

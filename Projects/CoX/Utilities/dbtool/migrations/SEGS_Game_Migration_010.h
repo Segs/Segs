@@ -38,56 +38,6 @@ public:
 
         while(db->m_query->next())
         {
-            /*
-{
-    "value0": {
-        "cereal_class_version": 9,
-        "Level": 12,
-        "CombatLevel": 12,
-        "SecurityThreat": 12,
-        "XP": 100000,
-        "Debt": 1000,
-        "PatrolXP": 0,
-        "Influence": 100000,
-        "HasTitles": true,
-        "ThePrefix": true,
-        "Titles": {
-            "value0": "Famous",
-            "value1": "Honorable",
-            "value2": ""
-        },
-        "BattleCry": "Battle Cry!",
-        "Description": "Character description goes here",
-        "AFK": false,
-        "AfkMsg": "",
-        "LFG": false,
-        "Alignment": "hero",
-        "LastCostumeID": 0,
-        "LastOnline": "Sun Feb 24 14:25:28 2019",
-        "Class": "Class_Defender",
-        "Origin": "Magic",
-        "SuperGroupCostume": false,
-        "UsingSGCostume": false,
-        "SideKick": {
-            "cereal_class_version": 1,
-            "HasSidekick": false,
-            "SidekickDbId": 0,
-            "SidekickType": 0
-        },
-        "FriendList": {
-            "cereal_class_version": 1,
-            "HasFriends": false,
-            "FriendsCount": 0,
-            "Friends": []
-        },
-        "KnownContact": [],
-        "MaxInspirationCols": 5,
-        "MaxInspirationRows": 2,
-        "MaxEnhancementSlots": 10
-    }
-}
-             */
-
             QVariantMap char_obj = db->loadBlob("chardata");
             char_obj["LastOnline"] = "test value";
             char_obj["Level"] = 49;

@@ -35,11 +35,11 @@ public:
         if(!db->runQueries(queries))
             return false;
 
-        QStringList cols_to_drop = {
+        QStringList sg_cols_to_drop = {
             "sg_motto", "sg_motd", "sg_rank_names", "sg_rank_perms",
             "sg_emblem", "sg_colors"
         };
-        db->deleteColumns(QStringLiteral("supergroups"), cols_to_drop);
+        db->deleteColumns(QStringLiteral("supergroups"), sg_cols_to_drop);
 
         // select existing costumes from costume table
         // we only knew how to save one costume per character, so we
@@ -53,9 +53,9 @@ public:
         {
             QVariant char_id = db->m_query->value("character_id");
 
-            QJsonObject costume_obj;
-            costume_obj.insert("cereal_class_version", 1);
-            costume_obj.insert("CharacterID", char_id.toJsonValue());
+            QVariantMap costume_map;
+            costume_map.insert("cereal_class_version", 1);
+            costume_map.insert("CharacterID", char_id.toInt());
 
             // get character data for character that owns costume
             QSqlQuery char_query(*db->m_db);
@@ -66,29 +66,35 @@ public:
 
             while(char_query.next())
             {
-                costume_obj.insert("Height", char_query.value("height").toJsonValue());
-                costume_obj.insert("Physique", char_query.value("physique").toJsonValue());
-                costume_obj.insert("BodyType", char_query.value("bodytype").toJsonValue());
+                costume_map.insert("Height", char_query.value("height").toString());
+                costume_map.insert("Physique", char_query.value("physique").toString());
+                costume_map.insert("BodyType", char_query.value("bodytype").toString());
             }
 
-            costume_obj.insert("CostumeIdx", db->m_query->value("costume_index").toJsonValue());
-            costume_obj.insert("SkinColor", db->m_query->value("skin_color").toJsonValue());
-            costume_obj.insert("SendFullCostume", true);
+            costume_map.insert("CostumeIdx", db->m_query->value("costume_index").toString());
+            costume_map.insert("SkinColor", db->m_query->value("skin_color").toString());
+            costume_map.insert("SendFullCostume", true);
 
             // parts object can be copied wholesale
-            QJsonArray parts_arr = db->m_query->value("parts").toJsonArray();
-            costume_obj.insert("NumParts", 15); // all player "primary" costumes are 15
-            costume_obj.insert("Parts", parts_arr); // cereal objects are wrapped in key 'value0'
+            QVariantMap parts_map = db->loadBlob("parts");
+            QString parts_json = db->saveBlob(parts_map, false);
+            costume_map.insert("NumParts", 15); // all player "primary" costumes are 15
+            costume_map.insert("Parts", parts_json); // cereal objects are wrapped in key 'value0'
 
-            db->prepareBlob(costume_obj);
-            QJsonDocument costumedoc(costume_obj);
-            qCDebug(logMigration).noquote() << costumedoc.toJson(); // print output for debug
+            QString costume_blob_as_string = db->saveBlob(costume_map);
+            qCDebug(logMigration).noquote() << "costume as string" << costume_blob_as_string; // print output for debug
 
             querytext = QString("UPDATE characters SET costume_data='%1'")
-                    .arg(QString(costumedoc.toJson()));
+                    .arg(costume_blob_as_string);
             if(!db->m_query->exec(querytext))
                 return false;
         }
+
+        // these have been moved into the costume blob
+        QStringList char_cols_to_drop = {
+            "bodytype", "physique", "height"
+        };
+        db->deleteColumns(QStringLiteral("characters"), char_cols_to_drop);
 
         QString drop_qry = "DROP TABLE costume";
         return db->runQuery(drop_qry);
