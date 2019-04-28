@@ -151,13 +151,11 @@ public:
     bool hasInput() const;
 };
 
-class StateStorage
+class StateStorage // todo(jbr) maybe call this InputState?
 {
 public:
     std::vector<InputState> m_new_inputs;
-
     uint16_t m_next_expected_control_state_change_id = 0;
-
     bool m_keys[6] = {};
     uint32_t m_key_press_duration_ms[6] = {};
     float m_velocity_scale = 1.0f;

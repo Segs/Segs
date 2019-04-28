@@ -323,6 +323,8 @@ void processNewInputs(Entity &e)
 
                     glm::vec3 input_velocity = e.m_direction * local_input_velocity;
 
+                    e.m_motion_state.m_input_velocity = input_velocity;
+
                     // todo(jbr) command to enable movement logging?
                     //qCDebug(logMovement, "inpvel: (%1.8f, %1.8f, %1.8f)", input_velocity.x, input_velocity.y, input_velocity.z);
                     //qCDebug(logMovement, "pyr: (%1.8f, %1.8f, %1.8f)", e.m_entity_data.m_orientation_pyr.p, e.m_entity_data.m_orientation_pyr.y, e.m_entity_data.m_orientation_pyr.r);
