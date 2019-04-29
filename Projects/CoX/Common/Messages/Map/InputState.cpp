@@ -28,7 +28,6 @@ void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly parti
 {
     uint8_t csc_deltabits = bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
     m_next_state.m_first_control_state_change_id =  bs.GetBits(16);
-    //qCDebug(logInput, "CSC_DELTA[%x-%x-%x] : ", m_current.m_csc_deltabits, m_current.m_send_id, m_current.current_state_P);
 
     bool control_id_8_received_at_least_once = false;
 
@@ -57,20 +56,16 @@ void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly parti
             case UP: case DOWN:
             {
                 csc.key_state = bs.GetBits(1); // get keypress state
-                qCDebug(logInput, "key %d = %d", control_id, csc.key_state);
-
                 break;
             }
             case PITCH: // camera pitch (Insert/Delete keybinds)
             {
                 csc.angle = AngleDequantize(bs.GetBits(11),11);
-                qCDebug(logInput, "Pitch %f", csc.angle);
                 break;
             }
             case YAW: // camera yaw (Q or E keybinds)
             {
                 csc.angle = AngleDequantize(bs.GetBits(11),11); // yaw
-                qCDebug(logInput, "Yaw %f", csc.angle);
                 break;
             }
             case 8:
@@ -102,16 +97,11 @@ void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly parti
             case 9:
             {
                 csc.every_4_ticks = bs.GetBits(8); // value goes to 0 every 4 ticks. Some kind of send_partial flag
-
-                // todo(jbr) maybe only log all of this stuff in the movement code which uses it?
-                qCDebug(logInput, "This goes to 0 every 4 ticks: %d", csc.every_4_ticks);
-
                 break;
             }
             case 10:
             {
                 csc.no_collision = bs.GetBits(1);
-                qCDebug(logInput, "Collision: %d", csc.no_collision);
                 break;
             }
             default:
@@ -121,8 +111,6 @@ void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly parti
         m_next_state.m_control_state_changes.push_back(csc);
 
     } while(bs.GetBits(1));
-
-    //qCDebug(logInput, "recv control_id 9 %f", m_next_state.m_every_4_ticks);
 }
 
 void RecvInputState::extended_input(BitStream &bs)
@@ -139,10 +127,6 @@ void RecvInputState::extended_input(BitStream &bs)
     {
         bool keypress_state = bs.GetBits(1);
         m_next_state.m_keys[idx] = keypress_state;
-        if (keypress_state)
-        {
-            qCDebug(logInput, "keypress down %d", idx);
-        }
     }
 
     if(bs.GetBits(1))
@@ -151,7 +135,6 @@ void RecvInputState::extended_input(BitStream &bs)
         m_next_state.m_has_pitch_and_yaw = true;
         m_next_state.m_pitch = AngleDequantize(bs.GetBits(11),11);
         m_next_state.m_yaw = AngleDequantize(bs.GetBits(11),11);
-        qCDebug(logInput, "extended pitch: %f \tyaw: %f", m_next_state.m_pitch, m_next_state.m_yaw);
     }
 }
 
@@ -176,7 +159,6 @@ void RecvInputState::serializefrom(BitStream &bs)
         {
             time_state.serializefrom_base(bs);
         }
-        //time_state.dump();
         m_next_state.m_time_state.push_back(time_state);
     }
 
