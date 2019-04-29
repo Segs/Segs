@@ -195,6 +195,7 @@ void processNewInputs(Entity &e)
                             {
                                 e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
                             }
+                            e.m_motion_state.m_no_collision = csc.no_collision;
                         break;
 
                         case 8:
@@ -205,9 +206,9 @@ void processNewInputs(Entity &e)
                             // Save current position to last_pos
                             e.m_motion_state.m_last_pos = e.m_entity_data.m_pos;
 
-                            input_state->m_velocity_scale = csc.velocity_scale / 255.0f; // todo(jbr) check what we're actually getting for vscale
+                            input_state->m_velocity_scale = csc.velocity_scale / 255.0f;
 
-                            // todo(jbr) controls disabled
+                            e.m_motion_state.m_controls_disabled = csc.controls_disabled;
 
                             // the following is based on pmotionUpdateControlsPrePhysics()
 
@@ -241,16 +242,6 @@ void processNewInputs(Entity &e)
                                 input_state->m_key_press_duration_ms[i] = glm::clamp<uint32_t>(input_state->m_key_press_duration_ms[i] + tick_state.length_ms - tick_state.key_press_start_ms[i],
                                            minimum_key_press_time, 1000);
                             }
-
-                            // todo(jbr) movement logging
-                            // todo(jbr) command to enable movement logging?
-                            /*for (int i = 0; i < 6; ++i)
-                            {
-                                if (input_state->m_key_press_time_ms[i])
-                                {
-                                    qCDebug(logMovement, "%s%s (%dms)", input_state->m_keys[i] ? "+" : "-", s_key_name[i], input_state->m_key_press_time_ms[i]);
-                                }
-                            }*/
 
                             // based on pmotionSetVel()
                             float control_amounts[6] = {};
@@ -289,18 +280,10 @@ void processNewInputs(Entity &e)
 
                             if (tick_state.orientation_changed)
                             {
-                                // todo(jbr) command to enable movement logging?
-                                //qCDebug(logMovement, "new pyr = (%f, %f, %f)", orientation_pyr.p, orientation_pyr.y, orientation_pyr.r);
                                 // the control state change processing loop will have written pitch/yaw to
                                 // entity data, so now update direction
                                 e.m_direction = fromCoHYpr(e.m_entity_data.m_orientation_pyr);
                             }
-
-                            // todo(jbr) command to enable movement logging?
-                            /*qCDebug(logMovement, "pos: (%1.8f, %1.8f, %1.8f)",
-                                    e.m_entity_data.m_pos.x,
-                                    e.m_entity_data.m_pos.y,
-                                    e.m_entity_data.m_pos.z);*/
 
                             glm::vec3 local_input_velocity(0.0f, 0.0f, 0.0f);
                             local_input_velocity.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
@@ -324,7 +307,7 @@ void processNewInputs(Entity &e)
                             {
                                 input_velocity_scale = input_velocity_scale * 0.1f;
                             }
-                            /*if (controls->speed_scale_F0 != 0.0f)
+                            /*if (controls->speed_scale_F0 != 0.0f) todo(jbr)
                             {
                                 input_velocity_scale *= controls->speed_scale_F0;
                             }*/
@@ -355,16 +338,9 @@ void processNewInputs(Entity &e)
                                 }
                             }
 
-                            // todo(jbr) command to enable movement logging?
-                            //qCDebug(logMovement, "local_inpvel: (%1.8f, %1.8f, %1.8f)", local_input_velocity.x, local_input_velocity.y, local_input_velocity.z);
-
                             glm::vec3 input_velocity = e.m_direction * local_input_velocity;
 
                             e.m_motion_state.m_input_velocity = input_velocity;
-
-                            // todo(jbr) command to enable movement logging?
-                            //qCDebug(logMovement, "inpvel: (%1.8f, %1.8f, %1.8f)", input_velocity.x, input_velocity.y, input_velocity.z);
-                            //qCDebug(logMovement, "pyr: (%1.8f, %1.8f, %1.8f)", e.m_entity_data.m_orientation_pyr.p, e.m_entity_data.m_orientation_pyr.y, e.m_entity_data.m_orientation_pyr.r);
 
                             // based on pmotionWithPrediction()
                             float timestep = 1.0f; // todo(jbr) can this change?
@@ -384,14 +360,65 @@ void processNewInputs(Entity &e)
                                 e.m_motion_state.m_move_time = 0.0f;
                             }
 
-                            // todo(jbr) command to enable movement logging?
-                            /*qCDebug(logMovement, "move_time: %1.3f", e.m_motion_state.m_move_time);
+                            if (logMovement().isDebugEnabled())
+                            {
+                                static int32_t count = -1;
 
-                            qCDebug(logMovement, "newpos: (%1.8f, %1.8f, %1.8f)",
-                                    e.m_entity_data.m_pos.x,
-                                    e.m_entity_data.m_pos.y,
-                                    e.m_entity_data.m_pos.z);*/
+                                bool any_keys_relevant = false;
+                                for (int i = 0; i < 6; ++i)
+                                {
+                                    if (input_state->m_key_press_duration_ms[i])
+                                    {
+                                        any_keys_relevant = true;
+                                        break;
+                                    }
+                                }
 
+                                if (!any_keys_relevant && e.m_motion_state.m_last_pos == e.m_entity_data.m_pos)
+                                {
+                                    count = -1;
+                                }
+                                else
+                                {
+                                    ++count;
+
+                                    QString keys = "";
+                                    for (int i = 0; i < 6; ++i)
+                                    {
+                                        if (input_state->m_key_press_duration_ms[i])
+                                        {
+                                            QTextStream(&keys) << (tick_state.key_released[i] ? "-" : "+") << s_key_name[i] << " (" << input_state->m_key_press_duration_ms[i] << "), ";
+                                        }
+                                    }
+
+                                    qCDebug(logMovement,
+                                            "\n"
+                                            "%4d.    keys:      %s\n"
+                                            "        pos:       (%1.8f, %1.8f, %1.8f)\n"
+                                            "      + vel:       (%1.8f, %1.8f, %1.8f)\n"
+                                            "      + inpvel:    (%1.8f, %1.8f, %1.8f) @ %f\n"
+                                            "      + pyr:       (%1.8f, %1.8f, %1.8f)\n"
+                                            "      + misc:      grav=%1.3f, %s%s\n"
+                                            "      + move_time: %1.3f\n"
+                                            "      = newpos:    (%1.8f, %1.8f, %1.8f)\n"
+                                            "        newvel:    (%1.8f, %1.8f, %1.8f)\n"
+                                            "%s%s\n",
+                                            count,
+                                            keys.data(),
+                                            e.m_motion_state.m_last_pos.x, e.m_motion_state.m_last_pos.y, e.m_motion_state.m_last_pos.z,
+                                            e.m_motion_state.m_velocity.x, e.m_motion_state.m_velocity.y, e.m_motion_state.m_velocity.z,
+                                            e.m_motion_state.m_input_velocity.x, e.m_motion_state.m_input_velocity.y, e.m_motion_state.m_input_velocity.z,
+                                            e.m_entity_data.m_orientation_pyr.x, e.m_entity_data.m_orientation_pyr.y, e.m_entity_data.m_orientation_pyr.z,
+                                            0.0f, // gravity
+                                            e.m_motion_state.m_is_jumping ? "Jumping, " : "",
+                                            e.m_motion_state.m_controls_disabled ? "NoControls, " : "",
+                                            e.m_motion_state.m_move_time,
+                                            e.m_entity_data.m_pos.x, e.m_entity_data.m_pos.y, e.m_entity_data.m_pos.z,
+                                            e.m_motion_state.m_velocity.x, e.m_motion_state.m_velocity.y, e.m_motion_state.m_velocity.z,
+                                            e.m_motion_state.m_no_collision ? "    ** NO ENT COLL **\n" : "",
+                                            e.m_motion_state.m_is_flying ? "    ** FLYING **\n" : "");
+                                }
+                            }
 
                             // based on pmotionResetMoveTime()
                             for (int i = 0; i < 6; ++i)
@@ -402,9 +429,6 @@ void processNewInputs(Entity &e)
                                     input_state->m_key_press_duration_ms[i] = 0;
                                 }
                             }
-
-                            // todo(jbr) command to enable movement logging?
-                            //qCDebug(logMovement, "");
 
                             tick_state = {};
 
