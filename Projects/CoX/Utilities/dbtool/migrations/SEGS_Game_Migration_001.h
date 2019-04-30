@@ -92,7 +92,7 @@ public:
             char_obj.insert("SuperGroupCostume", false);
             char_obj.insert("UsingSGCostume", false);
 
-            db->prepareBlob(char_obj);
+            db->prepareCerealObject(char_obj);
             QJsonDocument doc(char_obj);
             qCDebug(logMigration).noquote() << doc.toJson();
 

@@ -15,7 +15,7 @@ private:
     QString m_name = SEGS_GAME_DB_NAME;
     std::vector<TableSchema> m_table_schemas = {
         {"db_version", 9, "2018-10-22 22:56:43"},
-        {"characters", 9, "2018-10-22 22:56:43"},
+        {"characters", 12, "2019-04-28 22:56:43"},
         {"supergroups", 2, "2018-10-22 22:56:43"},
     };
 
@@ -53,40 +53,53 @@ public:
         {
             QVariant char_id = db->m_query->value("character_id");
 
-            QVariantMap costume_map;
-            costume_map.insert("cereal_class_version", 1);
-            costume_map.insert("CharacterID", char_id.toInt());
+            QJsonObject costume_obj;
+            costume_obj.insert("cereal_class_version", 1);
+            costume_obj.insert("CharacterID", QJsonValue::fromVariant(char_id));
 
             // get character data for character that owns costume
             QSqlQuery char_query(*db->m_db);
-            QString querytext = QString("SELECT * FROM 'characters' WHERE id=%1").arg(char_id.toInt());
+            QString querytext = QString("SELECT * FROM 'characters' WHERE id=%1").arg(char_id.toUInt());
             char_query.prepare(querytext);
             if(!char_query.exec())
                 return false;
 
             while(char_query.next())
             {
-                costume_map.insert("Height", char_query.value("height").toString());
-                costume_map.insert("Physique", char_query.value("physique").toString());
-                costume_map.insert("BodyType", char_query.value("bodytype").toString());
+                costume_obj.insert("Height", char_query.value("height").toFloat());
+                costume_obj.insert("Physique", char_query.value("physique").toFloat());
+                costume_obj.insert("BodyType", QJsonValue::fromVariant(char_query.value("bodytype")));
             }
 
-            costume_map.insert("CostumeIdx", db->m_query->value("costume_index").toString());
-            costume_map.insert("SkinColor", db->m_query->value("skin_color").toString());
-            costume_map.insert("SendFullCostume", true);
+            costume_obj.insert("CostumeIdx", QJsonValue::fromVariant(db->m_query->value("costume_index")));
+            costume_obj.insert("SkinColor", QJsonValue::fromVariant(db->m_query->value("skin_color")));
+            costume_obj.insert("SendFullCostume", true);
+            costume_obj.insert("NumParts", 15); // all player "primary" costumes are 15
 
-            // parts object can be copied wholesale
-            QVariantMap parts_map = db->loadBlob("parts");
-            QString parts_json = db->saveBlob(parts_map, false);
-            costume_map.insert("NumParts", 15); // all player "primary" costumes are 15
-            costume_map.insert("Parts", parts_json); // cereal objects are wrapped in key 'value0'
+            // parts object can be copied wholesale, but we need to strip the object
+            // and add cereal's version value, also we changed how we store value indexes
+            // and we need to update them 0-15
+            // cereal objects are wrapped in key 'value0'
+            QJsonArray parts_arr = db->loadBlob("parts")["value0"].toArray();
+            for(int i = 0; i < parts_arr.size(); ++i)
+            {
+                QJsonObject part_obj = parts_arr.at(i).toObject();
+                if(i == 0) // cereal requires class version in first object ONLY.
+                    part_obj.insert("cereal_class_version", 1);
 
-            QString costume_blob_as_string = db->saveBlob(costume_map);
-            qCDebug(logMigration).noquote() << "costume as string" << costume_blob_as_string; // print output for debug
+                part_obj["value0"] = i;
+                parts_arr.replace(i,part_obj);
+            }
+            costume_obj.insert("Parts", parts_arr); // save it back here
+
+            // costumes are now saved as a vector of objects, add to jsonarray
+            db->prepareCerealArray(costume_obj);
+            QString costumes_json = db->saveBlob(costume_obj);
+            //qCDebug(logMigration).noquote() << "costumes:" << costumes_json; // print output for debug
 
             querytext = QString("UPDATE characters SET costume_data='%1'")
-                    .arg(costume_blob_as_string);
-            if(!db->m_query->exec(querytext))
+                    .arg(costumes_json);
+            if(!db->runQuery(querytext))
                 return false;
         }
 
@@ -97,6 +110,71 @@ public:
         db->deleteColumns(QStringLiteral("characters"), char_cols_to_drop);
 
         QString drop_qry = "DROP TABLE costume";
-        return db->runQuery(drop_qry);
+        if(!db->runQuery(drop_qry))
+            return false;
+
+        // We never iterated our database version for changes to the character data
+        // table v9-v12, so we update those here
+        db->m_query->prepare("SELECT * FROM 'characters'");
+        if(!db->m_query->exec())
+            return false;
+
+        while(db->m_query->next())
+        {
+            QJsonObject char_obj = db->loadBlob("chardata");
+            QJsonObject ent_obj = db->loadBlob("entitydata");
+            QJsonObject player_obj = db->loadBlob("player_data");
+
+            // iterate cereal class versions
+            char_obj["cereal_class_version"] = 12; // set to 12
+            player_obj["cereal_class_version"] = 3; // set to 3
+
+            // set MapIdx to new value because mapidxs changed and 0 doesn't work
+            ent_obj["MapIdx"] = 24; // Outbreak
+            QString ent_data_json = db->saveBlob(ent_obj);
+            //qCDebug(logMigration).noquote() << "entitydata:" << ent_data_json; // print output for debug
+
+            // Transfer KnownContacts over from chardata and remove field
+            player_obj.insert("KnownContacts", char_obj["KnownContact"].toArray());
+            char_obj.remove("KnownContact");
+            QString char_data_json = db->saveBlob(char_obj);
+            //qCDebug(logMigration).noquote() << "chardata:" << char_data_json; // print output for debug
+
+            // Add these arrays. They can be empty
+            QJsonArray tasks_arr;
+            player_obj.insert("Tasks", tasks_arr);
+            QJsonArray clues_arr;
+            player_obj.insert("Clue", clues_arr); // note: Keyword `Clue` is singular here
+            QJsonArray souvenirs_arr;
+            player_obj.insert("Souvenirs", souvenirs_arr);
+
+            // Statistics obj requires class version info
+            QJsonObject statistics_obj;
+            statistics_obj.insert("cereal_class_version", 2); // we jump to 2 because no one iterated the prior version
+            QJsonObject hidenseek_obj;
+            hidenseek_obj.insert("cereal_class_version", 1);
+            hidenseek_obj.insert("Count", 0);
+            statistics_obj.insert("HideAndSeek", hidenseek_obj);
+            QJsonArray relay_arr;
+            statistics_obj.insert("RelayRaces", relay_arr);
+            QJsonArray hunts_arr;
+            statistics_obj.insert("Hunts", hunts_arr);
+            // save completed statistics_obj to player_obj
+            player_obj.insert("Statistics", statistics_obj);
+
+            QString player_data_json = db->saveBlob(player_obj);
+            //qCDebug(logMigration).noquote() << "player_data:" << player_data_json; // print output for debug
+
+            QString querytext = QString("UPDATE characters SET chardata='%1', entitydata='%2', player_data='%3'")
+                    .arg(char_data_json)
+                    .arg(ent_data_json)
+                    .arg(player_data_json);
+
+            if(!db->runQuery(querytext))
+                return false;
+        }
+
+        // we're done, return true for success
+        return true;
     }
 };

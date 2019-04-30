@@ -36,7 +36,8 @@ public:
         // second column copy data over to character data blob
         while(db->m_query->next())
         {
-            QVariantMap char_obj = db->loadBlob("chardata");
+            QJsonObject char_obj = db->loadBlob("chardata");
+            char_obj["cereal_class_version"] = 8; // set to 8
 
             QJsonObject cur_attribs;
             for(int i = 0; i < 24; ++i)

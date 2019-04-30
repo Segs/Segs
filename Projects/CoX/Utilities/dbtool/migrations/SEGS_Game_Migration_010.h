@@ -14,7 +14,8 @@ private:
     int m_target_version = 10;
     QString m_name = SEGS_GAME_DB_NAME;
     std::vector<TableSchema> m_table_schemas = {
-        {"db_version", 10, "2018-01-23 10:27:01"},
+        {"db_version", 10, "2019-04-28 22:56:43"},
+        {"characters", 12, "2019-04-28 22:56:43"},
     };
 
 public:
@@ -29,28 +30,31 @@ public:
                           .arg(getTargetVersion())
                           .arg(db->getName());
 
-        // select existing costumes from costume table
-        // we only knew how to save one costume per character, so we
-        // can make some assumptions about costume index
+        // Add player progress to characters table column player_data
         db->m_query->prepare("SELECT * FROM 'characters'");
         if(!db->m_query->exec())
             return false;
 
         while(db->m_query->next())
         {
-            QVariantMap char_obj = db->loadBlob("chardata");
-            char_obj["LastOnline"] = "test value";
-            char_obj["Level"] = 49;
-            char_obj["HasTitles"] = true;
-            char_obj["ThePrefix"] = true;
-            char_obj["Titles"] = QStringList({"Title1","Title2","Title3"});
+            QJsonObject player_obj = db->loadBlob("player_data");
+            QJsonObject progress_obj;
+            QJsonObject mapcells_obj;
 
-            QString chardoc = db->saveBlob(char_obj);
-            qCDebug(logMigration).noquote() << chardoc; // print output for debug
+            player_obj["cereal_class_version"] = 4; // set to 4
+
+            progress_obj.insert("cereal_class_version", 1);
+            progress_obj.insert("VisibleMapCells", mapcells_obj);
+            player_obj.insert("Progress", progress_obj);
+
+            QString player_data_json = db->saveBlob(player_obj);
+            qCDebug(logMigration).noquote() << "progress:" << player_data_json; // print output for debug
+
+            QString querytext = QString("UPDATE characters SET player_data='%1'")
+                    .arg(player_data_json);
+            if(!db->runQuery(querytext))
+                return false;
         }
-
-        // update database table schemas here
-        // update cereal blobs once schemas are correct
 
         return true;
     }

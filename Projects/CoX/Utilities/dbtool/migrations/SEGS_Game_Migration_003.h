@@ -35,10 +35,10 @@ public:
         // second column copy data over to entity data blob
         while(db->m_query->next())
         {
-            QVariantMap char_obj = db->loadBlob("chardata");
-            QVariantMap ent_obj = db->loadBlob("entitydata");
+            QJsonObject ent_obj = db->loadBlob("entitydata");
 
-            //char_obj.insert("LastOnline", "");
+            // third update cereal_class_version
+            ent_obj["cereal_class_version"] = 2; // set to 2
 
             // fourth: move values to new location (table column to entdata)
             QJsonArray pos_arr;
@@ -53,13 +53,10 @@ public:
             orient_arr.push_back(QJsonValue::fromVariant(db->m_query->value("orientr")));
             ent_obj.insert("Orientation", orient_arr);
 
-            QString chardoc = db->saveBlob(char_obj);
             QString entdoc = db->saveBlob(ent_obj);
-            qCDebug(logMigration).noquote() << chardoc; // print output for debug
             qCDebug(logMigration).noquote() << entdoc;  // print output for debug
 
-            QString querytext = QString("UPDATE characters SET chardata='%1', entitydata='%2'")
-                    .arg(chardoc)
+            QString querytext = QString("UPDATE characters SET entitydata='%1'")
                     .arg(entdoc);
             if(!db->m_query->exec(querytext))
                 return false;

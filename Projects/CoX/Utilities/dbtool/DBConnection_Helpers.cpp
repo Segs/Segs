@@ -88,7 +88,7 @@ bool DBConnection::runQuery(const QString &q)
     {
         qCritical("One of the queries failed to prepare.\n Error detail: %s\n",
                   qPrintable(m_query->lastError().text()));
-        qCritical() << m_query->lastQuery();
+        qCritical().noquote() << m_query->lastQuery();
         return false;
     }
 
@@ -96,11 +96,11 @@ bool DBConnection::runQuery(const QString &q)
     {
         qCritical("One of the queries failed to execute.\n Error detail: %s\n",
                   qPrintable(m_query->lastError().text()));
-        qCritical() << m_query->lastQuery();
+        qCritical().noquote() << m_query->lastQuery();
         return false;
     }
 
-    qCDebug(logDB) << "exec:" << m_query->lastQuery();
+    qCDebug(logDB).noquote() << "exec:" << m_query->lastQuery();
     return true;
 }
 
@@ -218,37 +218,17 @@ bool DBConnection::getColumnsFromTable(const QString &tablename, std::vector<Col
 }
 
 /*!
- * @brief           Return a QVariantMap that we can access easily
- * @param[in]       column_name of the column that contains the json
- * @param[out]      QVariantMap of json structure
+ * @brief           Some objects have become arrays of objects
+ *                  like costumes for example. Convert them here.
+ * @param[in,out]   obj
  */
-QVariantMap DBConnection::loadBlob(const QString &column_name)
+void DBConnection::prepareCerealArray(QJsonObject &obj)
 {
-    QVariantMap work_area;
-    QJsonDocument char_doc = QJsonDocument::fromJson(m_query->value(column_name).toByteArray());
-    QJsonObject char_obj = char_doc.object();
-
-    if(char_obj.size() < 2)
-        char_obj = char_doc.object()["value0"].toObject();
-
-    for(const QString &key : char_obj.keys())
-    {
-        QJsonValue value = char_obj[key];
-        if(char_obj[key].isArray())
-            work_area.insert(key, value.toArray());
-        else if(char_obj[key].isObject())
-            work_area.insert(key, value.toObject());
-        else if(char_obj[key].isBool())
-            work_area.insert(key, value.toBool());
-        else if(char_obj[key].isDouble())
-            work_area.insert(key, value.toDouble());
-        else
-            work_area.insertMulti(key, value.toString());
-
-        qCDebug(logMigration).noquote() << key << ": " << value.toVariant().toStringList().join(" ");
-    }
-
-    return work_area;
+    QJsonArray wrapped_arr;
+    wrapped_arr.append(QJsonValue(obj));
+    QJsonObject wrapped_obj;
+    wrapped_obj.insert("value0", QJsonValue(wrapped_arr));
+    obj = wrapped_obj;
 }
 
 /*!
@@ -256,7 +236,7 @@ QVariantMap DBConnection::loadBlob(const QString &column_name)
  *                  with a key of `value0`. We add that here.
  * @param[in,out]   obj
  */
-void DBConnection::prepareBlob(QJsonObject &obj)
+void DBConnection::prepareCerealObject(QJsonObject &obj)
 {
     QJsonObject wrapped_obj;
     wrapped_obj.insert("value0", obj);
@@ -264,18 +244,42 @@ void DBConnection::prepareBlob(QJsonObject &obj)
 }
 
 /*!
+ * @brief           Return a QVariantMap that we can access easily
+ * @param[in]       column_name of the column that contains the json
+ * @param[out]      QVariantMap of json structure
+ */
+QJsonObject DBConnection::loadBlob(const QString &column_name)
+{
+    QJsonParseError err;
+    QJsonDocument jdoc = QJsonDocument::fromJson(m_query->value(column_name).toByteArray(), &err);
+
+    if(err.error != QJsonParseError::NoError)
+        qWarning() << "Json Parser Error:" << qPrintable(err.errorString()) << err.offset;
+
+    QJsonObject obj = jdoc.object();
+    if(obj.size() < 2) // if single cereal object, remove wrapper
+        obj = jdoc.object()["value0"].toObject();
+
+    qCDebug(logMigration).noquote() << "Loading Blob:" << jdoc.toJson();
+    return obj;
+}
+
+/*!
  * @brief           Save jsondocument to QString to save to database.
  * @param[in]       QVariantMap map
  * @param[out]      QString of json document
  */
-QString DBConnection::saveBlob(const QVariantMap &map, bool wrap_for_cereal/* = true*/)
+QString DBConnection::saveBlob(QJsonObject &obj)
 {
-    QJsonObject json_obj = QJsonObject::fromVariantMap(map);
-    if(wrap_for_cereal)
-        prepareBlob(json_obj); // cereal wraps all objects in jsonobject
+    // annoyingly cereal wraps every object with key "value0"
+    // if there is no cereal wrapper, then add it here
+    if(obj.size() > 1 && !obj.keys().contains("value0", Qt::CaseInsensitive))
+        prepareCerealObject(obj);
 
-    QJsonDocument json_doc(json_obj);
-    return json_doc.toJson();
+    QJsonDocument json_doc(obj);
+    QString sanitized_blob = json_doc.toJson();
+    sanitized_blob.replace("'","''"); // sql uses ' as an escape character, escape the escape!
+    return sanitized_blob;
 }
 
 //! @}

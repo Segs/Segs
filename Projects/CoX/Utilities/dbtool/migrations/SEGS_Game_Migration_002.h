@@ -42,11 +42,11 @@ public:
 
         while(db->m_query->next())
         {
-            QVariantMap char_obj = db->loadBlob("chardata");
+            QJsonObject char_obj = db->loadBlob("chardata");
             char_obj.insert("LastOnline", "");
 
             // fourth: move values to new location (chardata and entdata)
-            QVariantMap ent_map;
+            QJsonObject ent_map;
             ent_map.insert("OriginIdx", 1);     // TODO: how to actually determine this?
             ent_map.insert("ClassIdx", 1);      // TODO: how to actually determine this?
             ent_map.insert("Type", 2);          // EntType == Player

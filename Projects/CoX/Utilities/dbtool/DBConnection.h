@@ -85,9 +85,10 @@ public:
     bool deleteColumn(const QString &tablename, const QString &col_to_remove);
     bool deleteColumns(const QString &tablename, const QStringList &cols_to_remove);
     bool getColumnsFromTable(const QString &tablename, std::vector<ColumnSchema> &old_cols);
-    QVariantMap loadBlob(const QString &column_name);
-    void prepareBlob(QJsonObject &obj);
-    QString saveBlob(const QVariantMap &map, bool wrap_for_cereal = true);
+    void prepareCerealArray(QJsonObject &obj);
+    void prepareCerealObject(QJsonObject &obj);
+    QJsonObject loadBlob(const QString &column_name);
+    QString saveBlob(QJsonObject &obj);
 
     // DBConnection_Upgrade.cpp
     void            runUpgrades();
