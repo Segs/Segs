@@ -37,7 +37,7 @@ class Event
 protected:
         const uint32_t  m_type;
         std::atomic<int> m_ref_count {1}; // used to prevent event being deleted when it's in multiple queues
-        EventSrc *m_event_source;
+        EventSrc *      m_event_source;
 
 public:
 

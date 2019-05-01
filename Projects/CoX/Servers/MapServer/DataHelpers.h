@@ -43,6 +43,7 @@ enum class ClientStates : uint8_t;
 Entity * getEntity(MapClientSession *src, const QString &name);
 Entity * getEntity(MapClientSession *src, uint32_t idx);
 Entity * getEntity(class MapInstance *mi, uint32_t idx);
+Entity * getEntity(Entity *srcEnt, class MapInstance *mi, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
 void    sendServerMOTD(MapClientSession *sess);
 void    positionTest(MapClientSession *tgt);
@@ -119,9 +120,9 @@ void doPower(Entity &ent, QueuedPowers powerinput);
 void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx);
 void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time);
 void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower);
-void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float duration, float scale);
+void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, CharacterPower * ppower);
 void sendResult(Entity &src,Entity &tgt, QString name, float value);
-void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const &mod, uint32_t entidx);
+void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const &mod, uint32_t entidx, buffset &srcbuff);
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void grantRewards(class EntityManager &em, Entity &e);
@@ -170,5 +171,5 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment);
 void addHideAndSeekResult(MapClientSession &cl, int points);
 
 // Spawning related
-uint addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
+uint32_t addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
 uint addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);

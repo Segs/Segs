@@ -38,6 +38,8 @@ namespace
 {
 constexpr uint32_t    stringcachecount_bitlength=12;
 constexpr uint32_t    colorcachecount_bitlength =10;
+constexpr int    minimumTicksPerSecond = 1;
+constexpr int    maximumTicksPerSecond = 1000;
 
 uint32_t color_to_4ub(const glm::vec3 &rgb)
 {
@@ -342,10 +344,10 @@ uint32_t GameDataStore::expDebtForLevel(uint32_t lev) const
 uint32_t GameDataStore::expMaxLevel() const
 {
     // return -1 because level is stored in indexed array (starting 0)
-    return m_experience_and_debt_per_level.m_ExperienceRequired.size()-1;
+    return uint32_t(m_experience_and_debt_per_level.m_ExperienceRequired.size()-1);
 }
 
-int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
+uint32_t GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
 {
     uint32_t i = 0;
 
@@ -482,6 +484,15 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
         m_xp_mod_enddate = QDateTime::fromString(config.value(QStringLiteral("xp_mod_enddate"), "").toString(),
              "M/d/yyyy h:mm AP");
     config.endGroup(); // Modifiers
+
+    qInfo() << "Loading Experimental settings...";
+    config.beginGroup(QStringLiteral("Experimental"));
+
+    // constrain to a reasonable range
+    int ticks = config.value(QStringLiteral("world_update_ticks_per_sec"), "").toInt();
+    m_world_update_ticks_per_sec = std::min(std::max(ticks, minimumTicksPerSecond), maximumTicksPerSecond);
+
+    config.endGroup(); // Experiemental
 
     return true;
 }

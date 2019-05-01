@@ -27,9 +27,13 @@ public:
         float           accumulated_time=0;
 protected:
         void            physicsStep(Entity *e, uint32_t msec);
+        void            checkActivationTimers(Entity *e);
+        void            checkDelayedEffects(Entity *e, uint32_t msec);
+        void            checkRechargeTimers(Entity *e);
+        void            checkAutoToggleTimers(Entity *e);
+        void            checkBuffTimers(Entity *e);
         void            effectsStep(Entity *e, uint32_t msec);
-        void            checkPowerTimers(Entity *e, uint32_t msec);
-        void            regenHealthEnd(Entity *e, uint32_t msec);
+        void            regenHealthEnd(Entity *e);
         void            updateEntity(Entity *e, const ACE_Time_Value &dT);
         void            collisionStep(Entity *e, uint32_t msec);
         EntityManager & ref_ent_mager;

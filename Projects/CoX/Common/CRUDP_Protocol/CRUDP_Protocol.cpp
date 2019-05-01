@@ -201,6 +201,7 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
             break;
     }
     recv_acks.erase(recv_acks.begin(),iter);
+    m_unacked_count = recv_acks.size();
 }
 
 bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibid)
@@ -229,6 +230,7 @@ void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
     reliable_packets.erase(first_invalid,reliable_packets.end());
 
     recv_acks.push_back(a->GetSequenceNumber());
+    m_unacked_count = recv_acks.size();
     if(!a->HasSiblings())
     {
         avail_packets.push_back(a);

@@ -302,6 +302,7 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
             node->m_children.emplace_back(child);
         else
             qCritical() << "Node" << node->m_name << "\ncan't find member" << dat.name;
+
     }
 }
 void postprocessLOD(const std::vector<DefLod_Data> &lods, SceneNode *node)
@@ -440,12 +441,12 @@ void postprocessEditorBeacon(const std::vector<DefBeacon_Data> &data, SceneNode 
     if( data.empty())
         return;
     // mostly markers like TrafficBeacon/CombatBeacon/BasicBeacon
-    const DefBeacon_Data &bcn(data.front());
 //TODO: consider if we want to allow the use of editor beacons ?
-//        HBeacon b = BeaconStorage::instance().create();
-//        b->name = bcn.name;
-//        b->radius = bcn.amplitude;
-//        node->m_editor_beacon=b;
+//    const DefBeacon_Data &bcn(data.front());
+//    HBeacon b = BeaconStorage::instance().create();
+//    b->name = bcn.name;
+//    b->radius = bcn.amplitude;
+//    node->m_editor_beacon=b;
 }
 
 void postprocessFog(const std::vector<DefFog_Data> &data, SceneNode * /*node*/)
@@ -454,7 +455,7 @@ void postprocessFog(const std::vector<DefFog_Data> &data, SceneNode * /*node*/)
     if( data.empty() )
         return;
 
-    const DefFog_Data &fog_data(data.front());
+    //const DefFog_Data &fog_data(data.front());
     //TODO: MapViewer does not handle this info yet
     // HFog f = FogInfoStorage::instance().create()
     // f->color_1 = fog_data.fogClr1;
@@ -470,7 +471,7 @@ void postprocessAmbient(const std::vector<DefAmbient_Data> &data, SceneNode * /*
     if( data.empty() )
         return;
 
-    const DefAmbient_Data &light_data(data.front());
+    //const DefAmbient_Data &light_data(data.front());
     //NOTE: original engine used the same value for first fog color and ambient light!
     //TODO: MapViewer does not handle this info yet
     // HAmbientLight l = AmbientLightStorage::instance().create()
@@ -482,7 +483,7 @@ void postprocessTintColor(const std::vector<TintColor_Data> &data, SceneNode * /
     //TODO: only 1 tint is used here, either change the source structure or consider how multi-tint would work ?
     if( data.empty() )
         return;
-    const TintColor_Data &tint_data(data.front());
+    //const TintColor_Data &tint_data(data.front());
     //TODO: MapViewer does not handle this case
     //Nodes with a tint set could use that value, if proper ModelModifiers flag was set.
     //ColorOnly models would use first tint color
@@ -516,7 +517,7 @@ void postprocessNodeFlags(const SceneGraphNode_Data & node_data, SceneNode * nod
 void  groupApplyModifiers(SceneNode *node)
 {
     RuntimeData &rd(getRuntimeData());
-    
+
     Model *model = node->m_model;
     if( !model )
         return;
@@ -554,7 +555,7 @@ void  groupApplyModifiers(SceneNode *node)
     if( mods->node._TrickFlags & SelectOnly )
         ; // set the model's triangles as only selectable ?? ( selection mesh ? )
     if( mods->node._TrickFlags & NotSelectable )
-        ; // 
+        ; //
 }
 bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore &prefabs)
 {

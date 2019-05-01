@@ -12,7 +12,7 @@
   This file is meant to provide message sending helpers
 */
 class QString;
-class MapClientSession;
+struct MapClientSession;
 class Entity;
 
 namespace SEGSEvents

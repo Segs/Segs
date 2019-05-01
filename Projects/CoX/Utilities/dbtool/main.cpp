@@ -170,7 +170,7 @@ int main(int argc, char **argv)
     parser.addOption(passOption);
     parser.addOption(accessLevelOption);
     parser.addOption(configFileOption);
-    
+
     parser.process(app);
 
     // Print out Project Name and Version

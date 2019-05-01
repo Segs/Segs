@@ -130,7 +130,23 @@ Entity * getEntity(MapInstance* mi, uint32_t idx)
     //sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
     return nullptr;
 }
+Entity * getEntity(Entity * srcEnt, MapInstance* mi, uint32_t idx)
+{
+    EntityManager &em(mi->m_entities);
+    QString errormsg;
 
+    if(idx!=0) // Entity idx 0 is always self
+    {
+        // Iterate through all active entities and return entity by idx
+        for (Entity* pEnt : em.m_live_entlist)
+        {
+            if(pEnt->m_idx == idx)
+                return pEnt;
+        }
+    }
+    // if no valid targets found by idx, return self
+    return srcEnt;
+}
 /**
  * @brief Finds the Entity in the MapInstance
  * @param mi map instance
@@ -280,7 +296,7 @@ QString createKioskMessage(Entity* player)
  */
 
 void getEmailHeaders(MapClientSession& sess)
-{   
+{
     if(!sess.m_ent->m_client)
     {
         qWarning() << "m_client does not yet exist!";
@@ -288,7 +304,7 @@ void getEmailHeaders(MapClientSession& sess)
     }
 
     HandlerLocator::getEmail_Handler()->putq(new EmailHeaderRequest(
-        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));    
+        {sess.m_ent->m_char->m_db_id}, sess.link()->session_token()));
 }
 
 void sendEmail(MapClientSession& sess, QString recipient_name, QString subject, QString message)
@@ -321,7 +337,7 @@ void readEmailMessage(MapClientSession& sess, const uint32_t email_id)
         return;
     }
 
-    EmailReadRequest* msgToHandler = new EmailReadRequest({email_id}, sess.link()->session_token());
+    EmailReadRequest* msgToHandler = new EmailReadRequest({email_id,0}, sess.link()->session_token());
     HandlerLocator::getEmail_Handler()->putq(msgToHandler);
 }
 
@@ -591,7 +607,7 @@ void sendWaypoint(MapClientSession &sess, int point_idx, glm::vec3 &location)
 
 void sendStance(MapClientSession &sess, PowerStance &stance)
 {
-    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    qCDebug(logAnimations) << "Sending new PowerStance";
     sess.addCommand<SendStance>(stance);
 }
 
@@ -609,7 +625,7 @@ void sendSouvenirList(MapClientSession &sess)
 
 void sendDeadNoGurney(MapClientSession &sess)
 {
-    qCDebug(logSlashCommand) << "Sending new PowerStance";
+    qCDebug(logSlashCommand) << "Sending DeadNoGurney message";
     sess.addCommand<DeadNoGurney>();
 }
 
@@ -674,17 +690,10 @@ void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_i
         sendFloatingInfo(*ent.m_client, from_msg, FloatingInfoStyle::FloatingInfo_Info, 0.0);
         return;
     }
-    // Target IDX of 0 is actually SELF
-    if(tgt_idx == 0)
-        tgt_idx = getIdx(ent);
 
-    // Get target and check that it's a valid entity
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
-        return;
-    }
+    // Get target, if not valid, returns self entity
+    Entity *target_ent = getEntity(&ent, ent.m_client->m_current_map, tgt_idx);
+
     if (!checkPowerTarget(ent, target_ent, tgt_idx, powtpl))
     {
         from_msg = "Invalid target";
@@ -720,9 +729,10 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
     QString from_msg, to_msg;
     CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
     const Power_Data powtpl = ppower->getPowerTemplate();
-    if(tgt_idx == 0)
-        tgt_idx = getIdx(ent);
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
+
+    // Get target, if not valid, returns self entity
+    Entity *target_ent = getEntity(&ent, ent.m_client->m_current_map, tgt_idx);
+
     if(ent.m_char->m_is_dead && powtpl.CastableAfterDeath == 0)   //Allows self rez
         return;
     if (!checkPowerTarget(ent, target_ent, tgt_idx, powtpl))
@@ -739,24 +749,17 @@ void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx
  */
 bool checkPowerTarget(Entity &ent, Entity *target_ent, uint32_t &tgt_idx, Power_Data powtpl)
 {
-    if(validTarget(ent, ent, powtpl.Target))                    //check self targetting first
-    {
-        target_ent = &ent;
-        tgt_idx = ent.m_idx;
-        return true;
-    }
-    else if(validTarget(*target_ent, ent, powtpl.Target))      //if not self, and if not select target...
+    if(validTarget(*target_ent, ent, powtpl.Target))      //if not self, and if not select target...
         return true;
     if (ent.m_assist_target_idx != 0)                      //try assist target
         tgt_idx = ent.m_assist_target_idx;
     else if (target_ent->m_target_idx != 0)                //try target of target
         tgt_idx = target_ent->m_target_idx;
 
-    target_ent = getEntity(ent.m_client, tgt_idx);  //check the entity is valid
+    // Get target, if not valid, returns self entity
+    target_ent = getEntity(&ent, ent.m_client->m_current_map, tgt_idx);
 
-    if (target_ent == nullptr || !validTarget(*target_ent, ent, powtpl.Target))
-        return false;
-    return true;
+    return validTarget(*target_ent, ent, powtpl.Target);
 }
 /*
  * checkPowerRecharge returns false if the power is found in the recharging power vector
@@ -780,18 +783,7 @@ bool checkPowerRange(Entity &ent, Entity &target_ent, float range)
             return false;
     return true;
 }
-bool checkPowerRange(Entity &ent, uint32_t tgt_idx, uint32_t pset_idx, uint32_t pow_idx)
-{
-    CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
-    const Power_Data powtpl = ppower->getPowerTemplate();
-    if(powtpl.Range != 0.0f)
-    {
-        Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-        if(glm::distance(ent.m_entity_data.m_pos,target_ent->m_entity_data.m_pos) > powtpl.Range)
-            return false;
-    }
-    return true;
-}
+
 void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx)
 {
     CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
@@ -855,19 +847,16 @@ void doPower(Entity &ent, QueuedPowers powerinput)
 {
     QString from_msg, to_msg;
     uint32_t tgt_idx = powerinput.m_tgt_idx;
-    if(tgt_idx == 0)
-        tgt_idx = getIdx(ent);
 
-    Entity *target_ent = getEntity(ent.m_client, tgt_idx);
-    if(target_ent == nullptr)
-    {
-        qCDebug(logPowers) << "Failed to find target:" << tgt_idx;
-        return;
-    }
+    // Get target, if not valid, returns self entity
+    Entity *target_ent = getEntity(&ent, ent.m_client->m_current_map, tgt_idx);
 
     CharacterPower * ppower = nullptr;
     ppower = getOwnedPowerByVecIdx(ent, powerinput.m_pow_idxs.m_pset_vec_idx, powerinput.m_pow_idxs.m_pow_vec_idx);
     const Power_Data powtpl = ppower->getPowerTemplate();
+
+    if (!checkPowerTarget(ent, target_ent, tgt_idx, powtpl))
+        return;
 
     // Face towards your target
     sendFaceEntity(*ent.m_client, tgt_idx);
@@ -948,7 +937,7 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
     QString from_msg;
     Power_Data powtpl = ppower->getPowerTemplate();
 
-    if (!validTargets(*target_ent, ent, powtpl.EntsAutoHit))//
+    if (!validTargets(*target_ent, ent, powtpl.EntsAutoHit))
         {
         //roll to hit
         uint32_t roll = rand()%100;
@@ -987,29 +976,19 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
             {
                 target_ent = &ent;
             }
-            float scale = 0.0;
 
-            if (powtpl.pAttribMod[i].Aspect == AttribMod_Aspect::Absolute)
-                scale = powtpl.pAttribMod[i].Scale;
+            if (powtpl.pAttribMod[i].Delay == 0 && powtpl.pAttribMod[i].Period == 0)
+                doAtrrib(ent, target_ent, powtpl.pAttribMod[i], ppower);
             else
-                scale = powtpl.pAttribMod[i].Magnitude;
-
-            float duration = powtpl.pAttribMod[i].Duration;
-            //todo: delayed or repeated effects here, then remove this check for damamge
-            if (duration != 0.0f && !(powtpl.pAttribMod[i].name.toLower() == "damage" || powtpl.pAttribMod[i].name.toLower() == "entcreate"))
-            {
-                addBuff(*target_ent, ppower, powtpl.pAttribMod[i], ent.m_idx);
-            }
-            else
-            {
-                doAtrrib(ent, target_ent, powtpl.pAttribMod[i], duration, scale);
+            {           //queue the power up to fire later or multiple times
+                target_ent->m_delayed.emplace_back(DelayedEffect{powtpl.pAttribMod[i], ppower,
+                                            powtpl.pAttribMod[i].Delay, powtpl.pAttribMod[i].Period,ent.m_idx});
             }
         }
     }
 
     if(powtpl.pAttribMod.empty())                                       //give the power an effect to either heal or hurt
     {
-        //GameDataStore &data(getGameData());
         StoredAttribMod temp;
         temp.Scale = (powtpl.RechargeTime +  powtpl.TimeToActivate)/5;  //this is an aproximation of what the damage scales should be
         if(validTarget(*target_ent, ent, StoredEntEnum::Enemy))         //assume it is a damaging power
@@ -1027,24 +1006,34 @@ void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower)
             temp.Scale = temp.Scale/4;                              //further reduce for aoe
 
         powtpl.pAttribMod.push_back(temp);
-        doAtrrib(ent, target_ent, temp, 0.0, temp.Scale);
+        doAtrrib(ent, target_ent, temp, ppower);
         qCDebug(logPowers) << powtpl.m_Name << "power data not found, adding" << temp.name << "with a scale of" << temp.Scale;
     }
 }
 
-void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float duration, float scale)
+void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, CharacterPower * ppower)
 {
     QString lower_name = mod.name.toLower();
+    float scale;
+
+    if (mod.Aspect == AttribMod_Aspect::Absolute)
+        scale = mod.Scale;
+    else
+        scale = mod.Magnitude;
+
+    float duration = mod.Duration;   //todo: multiply this if modtype=duration
+
     if (lower_name == "damage")
     {
+        if (target_ent->m_char->m_is_dead)              //prevent beating a dead horse
+            return;
         GameDataStore &data(getGameData());             //TODO: apply this to all power effects, once we have strengths for every stat
         scale *= data.m_player_classes[uint32_t(getEntityClassIndex(data, true,
             ent.m_char->m_char_data.m_class_name))].m_ModTable[mod.Table.toUInt()].Values[ent.m_char->m_char_data.m_combat_level];
         if (mod.AllowStrength)
-            scale *= (1 + ent.m_char->m_char_data.m_current_attribs.m_DamageTypes[0]);
-
-        //  if (powtpl.pAttribMod[i].AllowResistance)
-        //      scale *= (1 - target_ent->m_char->m_char_data.m_current_attribs.m_resistances[powtpl.pAttribMod[i].Attrib]);
+            scale *= (1 + ent.m_char->m_char_data.m_current_attribs.m_DamageTypes[mod.Attrib]);
+        //  if (mod.AllowResistance)
+        //      scale *= (1 - target_ent->m_char->m_char_data.m_current_attribs.m_resistances[mod.Attrib]);
         changeHP(*target_ent, getHP(*target_ent->m_char)+scale);       //the modtable is negative, so this subratacts hp
 
         if (ent.m_type == EntType::PLAYER)
@@ -1095,65 +1084,47 @@ void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float
     }
     else
     {
-        qDebug() << "Power effect named:"<< lower_name << " has not been found!";
+        buffset bufftemp;
+        bufftemp.m_value = scale;
+        bufftemp.m_value_name = lower_name;
+        bufftemp.m_attrib = mod.Attrib;
+        bufftemp.m_duration = duration;
+        addBuff(*target_ent, ppower, mod, ent.m_idx, bufftemp);
     }
 }
 
-void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const & mod, uint32_t entidx)
+void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const & mod, uint32_t entidx, buffset &srcbuff)
 {
     const Power_Data powtpl = ppower->getPowerTemplate();
-
     for (Buffs & temp : ent.m_buffs)
     {
         if ((temp.m_name == powtpl.m_Name) && (temp.source_ent_idx == entidx))
         {
-            if (mod.StackType == AttribStackType::Replace)           // most are replace
+            if (mod.StackType == AttribStackType::Replace)      //most are replace
             {
-                for (uint32_t i = 0; i<temp.m_buffs.size();i++)
+                for (buffset &bff :temp.m_buffs)
                 {
-                    if (temp.m_buffs[i].m_value_name == mod.name && mod.Attrib == temp.m_buffs[i].m_attrib)
+                    if (bff.m_value_name == srcbuff.m_value_name && srcbuff.m_attrib == bff.m_attrib)
                     {
-                        temp.m_duration = mod.Duration;      //if the same buff is there, refresh the duration and return
+                        bff.m_duration = srcbuff.m_duration;    //if the same buff is there, refresh the duration and return
                         return;
                     }
                 }
             }
-            buffset buftemp;
-            if (mod.Aspect == AttribMod_Aspect::Absolute)
-                buftemp.m_value = mod.Scale;
-            else
-            {
-                buftemp.m_value = mod.Magnitude;
-            }
-
-            buftemp.m_value_name = mod.name;
-            buftemp.m_attrib = mod.Attrib;
-            modifyAttrib(ent, buftemp);       //if the same power has buffed, but not this stat, add this stat
-            temp.m_buffs.push_back(buftemp);
+            modifyAttrib(ent, srcbuff);                         //if the same power has buffed, but not this stat, add this stat
+            temp.m_buffs.push_back(srcbuff);
             return;
         }
-
     }
-    buffset buftemp;
     Buffs buff;                                                 //otherewise, make a new buff
     buff.m_name = powtpl.m_Name;
     buff.m_buff_info = ppower->m_power_info;
-    buff.m_duration = mod.Duration;
     buff.source_ent_idx = entidx;
 
-    buftemp.m_value_name = mod.name;
-    if (mod.Aspect == AttribMod_Aspect::Absolute)
-        buftemp.m_value = mod.Scale;
-    else
-    {
-        buftemp.m_value = mod.Magnitude;
-    }
-    buftemp.m_attrib = mod.Attrib;
-    buff.m_buffs.push_back(buftemp);
-
+    modifyAttrib(ent, srcbuff);
+    buff.m_buffs.push_back(srcbuff);
     ent.m_buffs.push_back(buff);
     ent.m_update_buffs = true;
-    modifyAttrib(ent, buftemp);
 }
 
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row)
@@ -1196,7 +1167,8 @@ void grantRewards(EntityManager &em, Entity &e)
                 giveXp(*pEnt->m_client,  e.m_char->m_char_data.m_combat_level*10);
            }
       }
-      em.removeEntityFromActiveList(&e);         //todo: some sort of delay
+      e.m_is_fading = true;
+      e.m_fading_direction=FadeDirection::Out;
 }
 
 void increaseLevel(Entity &ent)
@@ -1359,8 +1331,8 @@ void giveXp(MapClientSession &sess, uint32_t xp)
     uint32_t current_xp = getXP(*sess.m_ent->m_char);
 
     GameDataStore &data(getGameData());
-    if (data.m_uses_xp_mod && 
-        data.m_xp_mod_startdate <= QDateTime::currentDateTime() && 
+    if (data.m_uses_xp_mod &&
+        data.m_xp_mod_startdate <= QDateTime::currentDateTime() &&
         data.m_xp_mod_enddate >= QDateTime::currentDateTime())
     {
         xp *= data.m_xp_mod_multiplier;
@@ -1686,11 +1658,11 @@ void removeClue(MapClientSession &cl, Clue clue)
 void addSouvenir(MapClientSession &cl, Souvenir souvenir)
 {
     vSouvenirList souvenir_list = cl.m_ent->m_player->m_souvenirs;
-    if(souvenir_list.size() > 0)
-        souvenir.m_idx = souvenir_list.size(); // Server sets the idx
+    if(!souvenir_list.empty())
+        souvenir.m_idx = int32_t(souvenir_list.size()); // Server sets the idx
 
     qCDebug(logScripts) << "Souvenir m_idx: " << souvenir.m_idx << " about to be added";
-    souvenir_list.push_back(souvenir);
+    souvenir_list.emplace_back(souvenir);
     cl.m_ent->m_player->m_souvenirs = souvenir_list;
     markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
     cl.addCommand<SouvenirListHeaders>(souvenir_list);
@@ -1901,11 +1873,8 @@ void changeHP(Entity &e, float val)
             e.m_char->m_char_data.m_current_attribs.m_HitPoints = 0.0f;
             e.m_char->m_char_data.m_current_attribs.m_Endurance = 0.0f;
 
-            if(e.m_type == EntType::PLAYER)
-            {
-                setStateMode(e, ClientStates::DEAD);
-                checkMovement(e);
-            }
+            setStateMode(e, ClientStates::DEAD);
+            checkMovement(e);
         }
     }
 }
@@ -2006,7 +1975,8 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
 }
 
 
-uint addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank)
+uint32_t addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name,
+              int level, QString &faction_name, int /*f_rank*/)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
     const Parse_NPC * npc_def = npc_store.npc_by_name(&name);

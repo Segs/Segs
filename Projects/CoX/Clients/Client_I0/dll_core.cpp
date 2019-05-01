@@ -6,7 +6,7 @@
 
 HMODULE coh_instance;
 extern "C" {
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
+BOOL WINAPI DllMain(HINSTANCE /*hinstDLL*/, DWORD fdwReason, LPVOID /*lpvReserved*/) {
 
     switch (fdwReason)
     {
