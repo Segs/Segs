@@ -500,7 +500,7 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
 bool GameDataStore::read_powers(const QString &directory_path)
 {
     qDebug() << "Loading powers:";
-    if(QFile(directory_path+"bin/powers.json").exists() && loadFrom(directory_path+"bin/powers.json", m_all_powers))
+    if(QFile(directory_path+"powers.json").exists() && loadFrom(directory_path+"powers.json", m_all_powers))
     {
         qDebug() << "Loaded power data from powers.json!";
             return true;
