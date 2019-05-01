@@ -29,7 +29,7 @@ struct ColumnSchema
 struct TableSchema
 {
     QString m_table_name;
-    uint32_t m_version;
+    int     m_version;
     QString m_last_updated;
 
     inline bool operator==(const TableSchema& other) const

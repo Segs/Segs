@@ -37,6 +37,6 @@ public:
     virtual std::vector<TableSchema> getTableVersions() const { return m_table_schemas; }
 
     virtual bool canRun(DBConnection *db, int cur_version);
-    virtual bool execute(DBConnection */*db*/) { return false; }
+    virtual bool execute(DBConnection * /*db*/) { return false; }
     virtual bool cleanup(DBConnection *db);
 };
