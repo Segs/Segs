@@ -20,7 +20,7 @@ function player_connected(id)
         RandomSpawn(30, "Cars")
         spawnOnce = true
 
-        print("Initiating map auto-refresh")
+        --print("Initiating map auto-refresh")
         MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
         TimeCopMode(true, 40, 120)
     end

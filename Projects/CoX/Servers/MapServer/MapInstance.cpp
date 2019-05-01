@@ -1069,10 +1069,7 @@ void MapInstance::on_input_state(RecvInputState *st)
 
     // Check for input
     if(st->m_next_state.m_input_received)
-    {
-        qCDebug(logAFK) << "Input Received:" << st->m_next_state.m_input_received;
         ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
-    }
 
     // Set Target
     if(st->m_next_state.m_has_target && (getTargetIdx(*ent) != st->m_next_state.m_target_idx))
@@ -2601,6 +2598,8 @@ void MapInstance::on_interact_with(InteractWithEntity *ev)
     MapClientSession &session(m_session_store.session_from_event(ev));
     Entity *entity = getEntity(&session, ev->m_srv_idx);
 
+    session.m_ent->m_has_input_on_timeframe = true;
+
     qCDebug(logMapEvents) << "Entity: " << session.m_ent->m_idx << "wants to interact with" << ev->m_srv_idx;
     auto val = m_scripting_interface->callFuncWithClientContext(&session,"entity_interact",ev->m_srv_idx, entity->m_entity_data.m_pos);
 }
@@ -2677,6 +2676,8 @@ void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
 void MapInstance::on_dialog_button(DialogButton *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
+
+    session.m_ent->m_has_input_on_timeframe = true;
 
     if(ev->success) // only sent by contactresponse
         qCDebug(logMapEvents) << "Dialog success" << ev->success;
