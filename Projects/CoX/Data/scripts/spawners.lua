@@ -6,8 +6,8 @@ MapEncPool = {}         -- used in place of a currently non-existent zone manage
 function spinPersists()
     totalCount = MapInstance.GetPersistentCount()
 
-    print("-----------------------------------------")
-    print("Persistent count is " .. tostring(totalCount)) 
+    --print("-----------------------------------------")
+    --print("Persistent count is " .. tostring(totalCount))
 
     if totalCount == 0 or totalCount == nil then
         print("No persistents located or peristents invalid.")
@@ -37,8 +37,8 @@ end
 --For now, it also spawns them, but some sort of manager should do so in the future
 function spinCivilians()
     totalCount = MapInstance.GetCivCount()
-    print("-----------------------------------------")
-    print("Civ Spawner count is " .. tostring(totalCount))
+    --print("-----------------------------------------")
+    --print("Civ Spawner count is " .. tostring(totalCount))
 
     if totalCount == 0 or totalCount == nil then
         print("No civ spawners located or civ spawners invalid.")
@@ -50,8 +50,8 @@ end
 --For now, it also spawns them, but some sort of manager should do so in the future
 function spinCars()
     totalCount = MapInstance.GetCarCount()
-    print("-----------------------------------------")
-    print("Car Spawner count is " .. tostring(totalCount))
+    --print("-----------------------------------------")
+    --print("Car Spawner count is " .. tostring(totalCount))
 
     if totalCount == 0 or totalCount == nil then
         print("No car spawners located or car spawners invalid.")
@@ -61,8 +61,8 @@ end
 
 function spinSpawners()
     totalCount = MapInstance.GetSpawnerCount()
-    print("-----------------------------------------")
-    print("Spawner count is " .. tostring(totalCount))
+    --print("-----------------------------------------")
+    --print("Spawner count is " .. tostring(totalCount))
 
     if totalCount == 0 or totalCount == nil then
         print("No spawners located or spawners invalid.")
