@@ -489,7 +489,7 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
     config.beginGroup(QStringLiteral("Experimental"));
 
     // constrain to a reasonable range
-    int ticks = config.value(QStringLiteral("world_update_ticks_per_sec"), "").toInt();
+    int ticks = config.value(QStringLiteral("world_update_ticks_per_sec"), "30").toInt();
     m_world_update_ticks_per_sec = std::min(std::max(ticks, minimumTicksPerSecond), maximumTicksPerSecond);
 
     config.endGroup(); // Experiemental
