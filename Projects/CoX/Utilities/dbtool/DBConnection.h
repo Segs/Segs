@@ -11,7 +11,6 @@
 
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
-#include <QVariant>
 #include <vector>
 #include <memory>
 
@@ -41,7 +40,7 @@ struct TableSchema
 using DBSchemas = std::vector<TableSchema>;
 
 // Return value enumeration
-enum class dbToolResult : int
+enum class DBToolResult : int
 {
     SUCCESS             = 0,
     SETTINGS_MISSING,
@@ -60,7 +59,7 @@ class DBConnection
 {
 public:
     DatabaseConfig m_config;
-    QSqlDatabase *m_db;
+    std::unique_ptr<QSqlDatabase> m_db;
     std::unique_ptr<QSqlQuery> m_query;
 
     DBConnection(const DatabaseConfig &cfg);
@@ -71,29 +70,31 @@ public:
     QString getName() const { return m_config.m_short_name; } // "segs.db" or "segs_game.db"
 
     // DBConnection_AddUser.cpp
-    dbToolResult    addAccount(const QString &username, const QString &password, uint16_t access_level);
+    DBToolResult    addAccount(const QString &username, const QString &password, uint16_t access_level);
 
     // DBConnection_Create.cpp
-    dbToolResult    createDB();
+    DBToolResult    createDB();
     bool            deleteDB();
     bool            runQueryFromFile(QFile &source_file);
 
     // DBConnection_Helpers.cpp
-    bool isConnected();
-    bool runQuery(const QString &q);
-    bool runQueries(const QStringList &qlist);
-    bool deleteColumn(const QString &tablename, const QString &col_to_remove);
-    bool deleteColumns(const QString &tablename, const QStringList &cols_to_remove);
-    bool getColumnsFromTable(const QString &tablename, std::vector<ColumnSchema> &old_cols);
-    void prepareCerealArray(QJsonObject &obj);
-    void prepareCerealObject(QJsonObject &obj);
-    QJsonObject loadBlob(const QString &column_name);
-    QString saveBlob(QJsonObject &obj);
+    bool            isConnected();
+    bool            runQuery(const QString &q);
+    bool            runQueries(const QStringList &qlist);
+    bool            deleteColumnsCommon(const QString &tablename, const QStringList &cols_to_remove);
+    bool            deleteColumnsSqlite(const QString &tablename, const QStringList &cols_to_remove);
+    bool            deleteColumns(const QString &tablename, const QStringList &cols_to_remove);
+    bool            deleteColumn(const QString &tablename, const QString &col_to_remove);
+    bool            getColumnsFromTable(const QString &tablename, std::vector<ColumnSchema> &old_cols);
+    void            prepareCerealArray(QJsonObject &obj);
+    void            prepareCerealObject(QJsonObject &obj);
+    QJsonObject     loadBlob(const QString &column_name);
+    QString         saveBlob(QJsonObject &obj);
 
     // DBConnection_Upgrade.cpp
     void            runUpgrades();
     int             getDBVersion();
-    int             getFinalMigrationVersion(std::vector<DBMigrationStep *> &migrations);
-    bool            updateTableVersions(DBSchemas &table_schemas);
+    int             getFinalMigrationVersion(std::vector<DBMigrationStep *> &migrations, const QString &db_name);
+    bool            updateTableVersions(const DBSchemas &table_schemas);
 };
 

@@ -40,10 +40,8 @@ bool DBConnection::isConnected()
     }
     else if(m_config.isPostgresql())
     {
-        querytext = "SELECT table_schema || '.' || table_name FROM";
-        querytext.append("information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema ='");
-        querytext.append(m_config.m_db_name);
-        querytext.append("';");
+        querytext = QString("SELECT table_schema || '.' || table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema ='%1';")
+                .arg(m_config.m_db_name);
     }
     else
     {
@@ -105,41 +103,36 @@ bool DBConnection::runQuery(const QString &q)
 }
 
 /*!
- * @brief           Delete columns (col_to_remove) in tablename
+ * @brief           Delete columns (col_to_remove) in tablename using
+ *                  common sql methods
  * @param[in]       tablename as QString
  * @param[in]       col_to_remove a QStringList of column names
  */
-bool DBConnection::deleteColumn(const QString &tablename, const QString &col_to_remove)
+bool DBConnection::deleteColumnsCommon(const QString &tablename, const QStringList &cols_to_remove)
 {
-    QStringList cols;
-    cols.push_back(col_to_remove);
-    return deleteColumns(tablename, cols);
+    // iterate over all columns in tablename
+    for(const QString &column : cols_to_remove)
+    {
+        QString tmp_query = QString("ALTER TABLE %1 DROP %2;").arg(tablename, column);
+        if(!runQuery(tmp_query))
+        {
+            qWarning() << column << "does not exist in" << tablename;
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /*!
- * @brief           Delete columns (cols_to_remove) in tablename
+ * @brief           Delete columns (col_to_remove) in tablename using
+ *                  sqlite specific methods
  * @param[in]       tablename as QString
- * @param[in]       cols_to_remove a QStringList of column names
+ * @param[in]       col_to_remove a QStringList of column names
  */
-bool DBConnection::deleteColumns(const QString &tablename, const QStringList &cols_to_remove)
+bool DBConnection::deleteColumnsSqlite(const QString &tablename, const QStringList &cols_to_remove)
 {
-    if(!m_config.isSqlite())
-    {
-        // iterate over all columns in tablename
-        for(const QString &column : cols_to_remove)
-        {
-            QString tmp_query = QString("ALTER TABLE %1 DROP %2;").arg(tablename, column);
-            if(!runQuery(tmp_query))
-            {
-                qWarning() << column << "does not exist in" << tablename;
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    // Otherwise SQLite has limited ALTER TABLE support and cannot drop columns.
+    // SQLite has limited ALTER TABLE support and cannot drop columns.
     // the workaround is to duplicate the table without the "dropped" columns
 
     // Get Original Column List and fill it
@@ -185,6 +178,31 @@ bool DBConnection::deleteColumns(const QString &tablename, const QStringList &co
              .arg(tablename);
 
     return runQueries(queries);
+}
+
+/*!
+ * @brief           Delete columns (cols_to_remove) in tablename
+ * @param[in]       tablename as QString
+ * @param[in]       cols_to_remove a QStringList of column names
+ */
+bool DBConnection::deleteColumns(const QString &tablename, const QStringList &cols_to_remove)
+{
+    if(!m_config.isSqlite())
+        return deleteColumnsCommon(tablename, cols_to_remove);
+
+    return deleteColumnsSqlite(tablename, cols_to_remove);
+}
+
+/*!
+ * @brief           Delete single column (col_to_remove) in tablename
+ * @param[in]       tablename as QString
+ * @param[in]       col_to_remove a QStringList of column names
+ */
+bool DBConnection::deleteColumn(const QString &tablename, const QString &col_to_remove)
+{
+    QStringList cols;
+    cols.push_back(col_to_remove);
+    return deleteColumns(tablename, cols);
 }
 
 /*!

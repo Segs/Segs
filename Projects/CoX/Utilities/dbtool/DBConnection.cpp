@@ -21,16 +21,18 @@ DBConnection::DBConnection(const DatabaseConfig &cfg)
 DBConnection::~DBConnection()
 {
     close();
-    delete m_db;
     // unload the database (this doesn't delete it)
     QSqlDatabase::removeDatabase(m_config.m_db_name);
 }
 
 void DBConnection::open()
 {
+    if(m_db != nullptr)
+        close();
+
     qCDebug(logDB) << "Opening database connection at:" << m_config.m_db_name;
 
-    m_db = new QSqlDatabase(QSqlDatabase::addDatabase(m_config.m_driver, m_config.m_db_name));
+    m_db = std::make_unique<QSqlDatabase>(QSqlDatabase::addDatabase(m_config.m_driver, m_config.m_db_name));
     m_db->setDatabaseName(m_config.m_db_name); // must be path
     m_db->setHostName(m_config.m_host);
     m_db->setPort(m_config.m_port.toInt());
@@ -56,8 +58,17 @@ void DBConnection::open()
 
 void DBConnection::close()
 {
-    m_query->clear();
-    m_query->finish();
+    if(m_db == nullptr)
+        return;
+
+    if(m_query != nullptr)
+    {
+        m_query->clear();
+        m_query->finish();
+        m_query.reset();
+    }
+
     m_db->close();
     m_db->setConnectOptions();
+    m_db.reset();
 }

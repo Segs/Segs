@@ -34,7 +34,7 @@
 #define VersionNumber "0.5"
 #define VersionString ProjectName " v" VersionNumber
 
-enum dbToolCommands
+enum DBToolCommands
 {
     CREATE,
     ADDUSER,
@@ -135,7 +135,7 @@ void errorHandler(QtMsgType type, const QMessageLogContext &context, const QStri
 int main(int argc, char **argv)
 {
     const QStringList known_commands {"create","adduser","upgrade","info"};
-    dbToolResult ret = dbToolResult::SUCCESS;
+    DBToolResult ret = DBToolResult::SUCCESS;
 
     qInstallMessageHandler(errorHandler);
     QCoreApplication app(argc,argv);
@@ -191,7 +191,7 @@ int main(int argc, char **argv)
     // Locate and setup database configs
     std::vector<DatabaseConfig> configs;
     if(!setupConfigs(parser.value(configFileOption), configs))
-        return int(dbToolResult::SETTINGS_MISSING);
+        return int(DBToolResult::SETTINGS_MISSING);
 
     // Set QT Logging filters after we've initialized settings.cfg with the correct path
     setLoggingFilter();
@@ -199,13 +199,13 @@ int main(int argc, char **argv)
     // stick all db connections in a vector to iterate over when necessary
     std::vector< std::unique_ptr<DBConnection> > segs_dbs;
     if(!createDBConns(configs, segs_dbs))
-        return int(dbToolResult::DB_CONN_FAILED);
+        return int(DBToolResult::DB_CONN_FAILED);
 
     // Handle command argument
     int selected_operation = known_commands.indexOf(positionalArguments.first());
     switch (selected_operation)
     {
-        case dbToolCommands::CREATE:
+        case DBToolCommands::CREATE:
         {
             // Check if database already exists
             qInfo() << "Checking for existing databases OR forced (-f) command...";
@@ -227,7 +227,7 @@ int main(int argc, char **argv)
             {
                 qInfo() << "Run dbtool with -f option to overwrite ALL existing databases. "
                         << "THIS CANNOT BE UNDONE.";
-                ret = dbToolResult::NOT_FORCED;
+                ret = DBToolResult::NOT_FORCED;
                 break;
             }
 
@@ -245,31 +245,31 @@ int main(int argc, char **argv)
 
             break;
         }
-        case dbToolCommands::ADDUSER:
+        case DBToolCommands::ADDUSER:
         {
             if(!parser.isSet(loginOption) || !parser.isSet(passOption))
             {
                 qCritical()<< "adduser operation requires login and password";
-                return int(dbToolResult::NOT_ENOUGH_PARAMS);
+                return int(DBToolResult::NOT_ENOUGH_PARAMS);
             }
             if(configs[0].isSqlite() && !fileExists(configs[0].m_db_name))
             {
                 qCritical() << "Cannot add account, the database does not exist";
-                return int(dbToolResult::SQLITE_DB_MISSING);
+                return int(DBToolResult::SQLITE_DB_MISSING);
             }
             ret = segs_dbs[0]->addAccount(parser.value(loginOption),
                                      parser.value(passOption),
                                      parser.value(accessLevelOption).toUInt());
             break;
         }
-        case dbToolCommands::UPGRADE:
+        case DBToolCommands::UPGRADE:
         {
             for(auto &db : segs_dbs)
                 db->runUpgrades();
 
             break;
         }
-        case dbToolCommands::INFO:
+        case DBToolCommands::INFO:
         {
             qInfo() << "\nDatabase Information:";
             for(auto &db : segs_dbs)

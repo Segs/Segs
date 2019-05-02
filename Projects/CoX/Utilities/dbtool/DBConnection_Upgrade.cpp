@@ -139,7 +139,7 @@ int DBConnection::getDBVersion()
     return version;
 }
 
-int getFinalMigrationVersion(std::vector<DBMigrationStep *> &migrations, QString &db_name)
+int getFinalMigrationVersion(std::vector<DBMigrationStep *> &migrations, const QString &db_name)
 {
     int final_version = 0;
     for(DBMigrationStep *step : migrations)
@@ -154,9 +154,9 @@ int getFinalMigrationVersion(std::vector<DBMigrationStep *> &migrations, QString
     return final_version;
 }
 
-bool DBConnection::updateTableVersions(DBSchemas &table_schemas)
+bool DBConnection::updateTableVersions(const DBSchemas &table_schemas)
 {
-    for(TableSchema &table : table_schemas)
+    for(const TableSchema &table : table_schemas)
     {
         QString query_txt = QString("UPDATE table_versions SET version = '%1', last_update = '%2' WHERE table_name = '%3';")
                 .arg(table.m_version)

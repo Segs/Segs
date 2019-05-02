@@ -14,8 +14,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-const QString SEGS_DB_NAME = "segs";
-const QString SEGS_GAME_DB_NAME = "segs_game";
+const QLatin1String SEGS_DB_NAME("segs");
+const QLatin1String SEGS_GAME_DB_NAME("segs_game");
 
 class DBMigrationStep
 {

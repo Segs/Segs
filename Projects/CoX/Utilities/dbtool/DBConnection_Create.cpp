@@ -30,7 +30,7 @@
  * @param[in] vector of database configuration settings
  * @returns enum class of return values
  */
-dbToolResult DBConnection::createDB()
+DBToolResult DBConnection::createDB()
 {
     qInfo() << "Creating database" << getName();
 
@@ -38,23 +38,23 @@ dbToolResult DBConnection::createDB()
     {
         qCritical() << m_config.m_template_path << "is not readable!"
                     << "Please check that the file is present and not corrupted.";
-        return dbToolResult::SETTINGS_MISSING;
+        return DBToolResult::SETTINGS_MISSING;
     }
 
-    QFile source_file(m_config.m_template_path);
     if(!deleteDB()) // Delete the existing database
     {
         qWarning(qPrintable(QString("FAILED to remove existing file: %1").arg(m_config.m_db_name)));
         qCritical("Ensure no processes are using it and you have permission to modify it.");
-        return dbToolResult::DB_RM_FAILED;
+        return DBToolResult::DB_RM_FAILED;
     }
 
+    QFile source_file(m_config.m_template_path);
     if(!runQueryFromFile(source_file))
-        return dbToolResult::QUERY_FAILED;
+        return DBToolResult::QUERY_FAILED;
 
     source_file.close();
     qInfo() << "COMPLETED creating:" << m_config.m_db_name;
-    return dbToolResult::SUCCESS;
+    return DBToolResult::SUCCESS;
 }
 
 /*!
@@ -74,10 +74,10 @@ bool DBConnection::deleteDB()
         // For SQlite we must reopen database or it wont exist and
         // everything will fail without any real error messages
         close(); // yes, really
-        delete m_db;
+
         // unload the database (this doesn't delete it)
         QSqlDatabase::removeDatabase(m_config.m_db_name);
-        open();
+        open(); // we just closed this, reopen it
     }
     else if(m_config.isMysql() || m_config.isPostgresql())
     {
@@ -107,7 +107,10 @@ bool DBConnection::runQueryFromFile(QFile &source_file)
     // database scripts already have transactions, let's commit and close the open
     // transaction here before proceeding.
     if(!m_db->commit())
+    {
         qWarning().noquote() << "Commit failed";
+        return false;
+    }
 
     // The SQLite driver executes only a single (the first) query in the QSqlQuery.
     // If the script contains more queries, it needs to be split.

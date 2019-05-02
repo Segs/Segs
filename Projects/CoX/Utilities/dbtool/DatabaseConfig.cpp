@@ -77,32 +77,21 @@ bool DatabaseConfig::putFilePath()
 
     qCDebug(logSettings) << "Templates Dir" << Settings::getTemplateDirPath();
 
+    QString driver;
     if(isSqlite())
-    {
-        if(m_character_db)
-            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "sqlite/segs_game_sqlite_create.sql";
-        else
-            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "sqlite/segs_sqlite_create.sql";
-    }
+        driver = "sqlite";
     else if(isMysql())
-    {
-        if(m_character_db)
-            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "mysql/segs_game_mysql_create.sql";
-        else
-            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "mysql/segs_mysql_create.sql";
-    }
+        driver = "mysql";
     else if(isPostgresql())
-    {
-        if(m_character_db)
-            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "pgsql/segs_game_postgres_create.sql";
-        else
-            m_template_path = tpl_dir.absolutePath() + QDir::separator() + "pgsql/segs_postgres_create.sql";
-    }
+        driver = "pgsql";
     else
     {
         qCritical("Unknown database driver.");
         return false;
     }
+
+    QString base_dir(tpl_dir.absolutePath() + QDir::separator());
+    m_template_path = QString("%1%2/segs%3_%2.sql").arg(base_dir).arg(driver).arg(m_character_db?"_game":"");
 
     qCDebug(logSettings) << "m_file_path" << m_template_path;
     return true;

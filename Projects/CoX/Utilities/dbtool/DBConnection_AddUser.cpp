@@ -28,14 +28,14 @@
  * @param[in]   Access Level ranging from 0-9
  * @returns     Returns an enum value based upon result, 0 == SUCCESS
  */
-dbToolResult DBConnection::addAccount(const QString &username, const QString &password, uint16_t access_level)
+DBToolResult DBConnection::addAccount(const QString &username, const QString &password, uint16_t access_level)
 {
     qInfo().noquote() << "Adding new account to" << getName() << "database";
 
     if(!m_query->prepare("INSERT INTO accounts (username,passw,access_level,salt,creation_date) VALUES (?,?,?,?,?);"))
     {
         qDebug() << "SQL_ERROR:" << m_query->lastError();
-        return dbToolResult::QUERY_PREP_FAILED;
+        return DBToolResult::QUERY_PREP_FAILED;
     }
 
     PasswordHasher hasher;
@@ -58,10 +58,10 @@ dbToolResult DBConnection::addAccount(const QString &username, const QString &pa
             // MySQL:       1062
             // PostgreSQL: 23503
             qWarning() << "Error: Username already taken. Please try another name.";
-            return dbToolResult::USERNAME_TAKEN;
+            return DBToolResult::USERNAME_TAKEN;
         }
         qDebug() << "SQL_ERROR:" << m_query->lastError(); // Why the query failed
-        return dbToolResult::QUERY_FAILED;
+        return DBToolResult::QUERY_FAILED;
     }
 
     // attempt to commit transaction
@@ -69,11 +69,11 @@ dbToolResult DBConnection::addAccount(const QString &username, const QString &pa
     {
         qWarning() << "Commit unsuccessful, rolling back database.";
         m_db->rollback();
-        return dbToolResult::QUERY_FAILED;
+        return DBToolResult::QUERY_FAILED;
     }
 
     qInfo() << "Successfully added user" << username << "to database";
-    return dbToolResult::SUCCESS;
+    return DBToolResult::SUCCESS;
 }
 
 //! @}
