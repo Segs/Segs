@@ -231,7 +231,7 @@ void SettingsDialog::read_config_file(QString filePath)
     config_file.endGroup(); // Modifiers
 
     config_file.beginGroup("Experimental");
-    ui->ticksPerSecond->setValue(config_file.value("world_update_ticks_per_sec", "").toInt());
+    ui->ticksPerSecond->setValue(config_file.value("world_update_ticks_per_sec", "30").toInt());
     config_file.endGroup(); // Experimental
 }
 
