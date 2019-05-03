@@ -19,7 +19,7 @@ class RecvInputState : public MapLinkEvent
 {
 public:
     // [[ev_def:field]]
-    InputState   m_next_state;
+    InputStateChange m_input_state_change;
     // [[ev_def:field]]
     BitStream m_user_commands;
 

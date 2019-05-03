@@ -54,6 +54,11 @@ SurfaceParams g_world_surf_params[2] = {
     { 1.50f, 3.00f, 0.00f, 3.00f, 3.00f },      // air; test values
 };
 
+static bool floatEquals(float a, float b)
+{
+    return std::fabs(a - b) < std::numeric_limits<float>::epsilon();
+}
+
 // how much is b newer than a
 // e.g. 2: 2 changes ahead
 // -3: 3 changes behind
@@ -71,34 +76,296 @@ static int32_t cscIdDelta(uint16_t a, uint16_t b)
     return diff;
 }
 
+// state which resets every tick and is affected
+// by processing control state changes
+struct TickState
+{
+    uint32_t length_ms = 0;
+    uint32_t key_press_start_ms[6] = {};
+    bool    key_released[6] = {};
+    bool    orientation_changed = false;
+    uint8_t padding[1];
+};
+
+static void playerMotionUpdateControlsPrePhysics(Entity* player, const TickState* tick_state) // based on pmotionUpdateControlsPrePhysics
+{
+    if (player->m_motion_state.m_controls_disabled && !player->m_player->m_options.alwaysmobile)
+    {
+        for (int key = 0; key <= BinaryControl::LAST_BINARY_VALUE; ++key)
+        {
+            player->m_input_state.m_key_press_duration_ms[key] = 0;
+        }
+        return;
+    }
+
+    // if any keys have been held for 250+ ms, then all keys
+    // are given a minumum of 250ms press time
+    uint32_t minimum_key_press_time = 0;
+    if (player->m_motion_state.m_is_jumping)
+    {
+        minimum_key_press_time = 250;
+    }
+    else
+    {
+        for (int key = 0; key <= BinaryControl::LAST_BINARY_VALUE; ++key)
+        {
+            if (player->m_input_state.m_key_press_duration_ms[key] >= 250)
+            {
+                minimum_key_press_time = 250;
+                break;
+            }
+        }
+    }
+
+    for (int key = 0; key <= BinaryControl::LAST_BINARY_VALUE; ++key )
+    {
+        if (!player->m_input_state.m_keys[key] || player->m_input_state.m_keys[s_reverse_control_dir[key]]) // not pressed or pressed both direction at once
+        {
+            continue;
+        }
+
+        // update key press time, keeping within min/max range
+        const uint32_t current_duration = player->m_input_state.m_key_press_duration_ms[key];
+        uint32_t milliseconds = tick_state->length_ms - tick_state->key_press_start_ms[key];
+
+        player->m_input_state.m_key_press_duration_ms[key] = glm::clamp<uint32_t>(
+                    current_duration + milliseconds,
+                    minimum_key_press_time,
+                    1000);
+
+        qCDebug(logMovement, "\nAdding: %s += \t%dms (%dms total)\n",
+                s_key_name[key],
+                milliseconds,
+                player->m_input_state.m_key_press_duration_ms[key]);
+    }
+}
+
+static void playerMotionSetInputVelocity(Entity* player, const TickState* tick_state) // based on pmotionSetVel()
+{
+    if (player->m_motion_state.m_no_collision)
+    {
+        player->m_move_type |= MOVETYPE_NOCOLL;
+    }
+    else
+    {
+        player->m_move_type &= ~MOVETYPE_NOCOLL;
+    }
+
+    glm::vec3 local_input_velocity(0.0f, 0.0f, 0.0f);
+
+    if (!player->m_motion_state.m_no_collision
+            && !player->m_player->m_options.alwaysmobile
+            && (player->m_motion_state.m_controls_disabled
+             || player->m_motion_state.m_has_headpain
+             //|| controls->controls_disabled not sure why client appears to check this twice?
+             ))
+    {
+        local_input_velocity = { 0,0,0 };
+    }
+    else
+    {
+        float control_amounts[6] = {};
+        for (int key = 0; key <= BinaryControl::LAST_BINARY_VALUE; ++key)
+        {
+            uint32_t press_time = player->m_input_state.m_key_press_duration_ms[key];
+
+            if (!press_time)
+            {
+                control_amounts[key] = 0.0f;
+            }
+            else if (press_time >= 1000)
+            {
+                control_amounts[key] = 1.0f;
+            }
+            else if (press_time <= 50 && player->m_input_state.m_keys[key])
+            {
+                control_amounts[key] = 0.0;
+            }
+            else if (press_time >= 75)
+            {
+                if (press_time >= 100)
+                {
+                    control_amounts[key] = (float)(press_time - 100) * 0.004f / 9.0f + 0.6f;
+                }
+                else
+                {
+                    control_amounts[key] = std::pow((float)(press_time  - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
+                }
+            }
+            else
+            {
+                control_amounts[key] = 0.2f;
+            }
+        }
+
+        local_input_velocity.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
+        local_input_velocity.y = control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN];
+        local_input_velocity.z = control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD];
+        local_input_velocity.x = local_input_velocity.x * player->m_motion_state.m_speed.x;
+        local_input_velocity.y = local_input_velocity.y * player->m_motion_state.m_speed.y;
+
+        glm::vec3 local_input_velocity_xz = local_input_velocity;
+        if (!player->m_motion_state.m_is_flying)
+        {
+            local_input_velocity_xz.y = 0;
+        }
+
+        float input_velocity_scale = player->m_input_state.m_velocity_scale;
+        if (local_input_velocity.z < 0.0f)
+        {
+            input_velocity_scale = input_velocity_scale * player->m_motion_state.m_backup_spd;
+        }
+        if (player->m_motion_state.m_is_stunned)
+        {
+            input_velocity_scale = input_velocity_scale * 0.1f;
+        }
+        if (player->m_player->m_options.speed_scale != 0.0f)
+        {
+            input_velocity_scale *= player->m_player->m_options.speed_scale;
+        }
+        player->m_motion_state.m_velocity_scale = input_velocity_scale;
+
+        if (glm::length2(local_input_velocity_xz) > std::numeric_limits<float>::epsilon())
+        {
+            local_input_velocity_xz = glm::normalize(local_input_velocity_xz);
+        }
+
+        local_input_velocity.x = local_input_velocity_xz.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
+        local_input_velocity.z = local_input_velocity_xz.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
+        if (player->m_motion_state.m_is_flying)
+        {
+            local_input_velocity.y = local_input_velocity_xz.y * std::fabs(control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN]);
+        }
+        else if (tick_state->key_released[BinaryControl::UP])
+        {
+            local_input_velocity.y = 0;
+        }
+        else
+        {
+            local_input_velocity.y *= glm::clamp<float>(player->m_motion_state.m_jump_height, 0.0f, 1.0f);
+
+            if (!player->m_motion_state.m_is_sliding)
+            {
+                player->m_motion_state.m_flag_5 = false;
+            }
+        }
+    }
+
+    if (player->m_motion_state.m_is_flying)
+    {
+        player->m_move_type |= MOVETYPE_FLY;
+    }
+    else
+    {
+        player->m_move_type &= ~MOVETYPE_FLY;
+    }
+
+    if (player->m_motion_state.m_has_jumppack)
+    {
+        player->m_move_type |= MOVETYPE_JETPACK;
+    }
+    else
+    {
+        player->m_move_type &= ~MOVETYPE_JETPACK;
+    }
+
+    player->m_motion_state.m_input_velocity = local_input_velocity;
+
+    if (player->m_char->m_char_data.m_afk &&
+        glm::length2(player->m_motion_state.m_input_velocity) > std::numeric_limits<float>::epsilon())
+    {
+        if(player->m_type == EntType::PLAYER)
+        {
+            qCDebug(logMovement) << "Moving so turning off AFK";
+
+            toggleAFK(*player->m_char);
+        }
+    }
+}
+
+// based on entMoveNoCollision
+static void playerMoveNoCollision(Entity* player, float timestep)
+{
+    player->m_motion_state.m_is_falling = true;
+    player->m_motion_state.m_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+    player->m_motion_state.m_move_time += timestep;
+    float time_scale = (player->m_motion_state.m_move_time + 6.0f) / 6.0f;
+    time_scale = std::min(time_scale, 50.0f);
+
+    player->m_entity_data.m_pos += time_scale * timestep * player->m_motion_state.m_input_velocity;
+
+    if (glm::length2(player->m_motion_state.m_input_velocity) <= std::numeric_limits<float>::epsilon())
+    {
+        player->m_motion_state.m_move_time = 0.0f;
+    }
+}
+
+static void playerWalk(Entity* /*player*/)
+{
+    // not implemented
+}
+
+static bool checkPlayerCollision(Entity* /*player*/, bool /*bouncing*/)
+{
+    // not implemented
+    return true;
+}
+
+// based on pmotionWithPrediction()
+static void playerMotion(Entity* player, glm::vec3* final_input_velocity)
+{
+    float timestep = 1.0f;
+    player->m_motion_state.m_input_velocity = *final_input_velocity;
+
+    // will be needed later
+    /*
+    if (player->m_motion_state.m_landing_recovery_time)
+    {
+        --player->m_motion_state.m_landing_recovery_time;
+    }*/
+
+    // based on entMotion()
+    if ( player->m_motion_state.m_is_falling
+         || glm::length2(player->m_motion_state.m_velocity) > std::numeric_limits<float>::epsilon()
+         || glm::length2(player->m_motion_state.m_input_velocity) > std::numeric_limits<float>::epsilon()
+         || !(player->m_move_type & MOVETYPE_WALK)
+         || (player->m_type == EntType::PLAYER && checkPlayerCollision(player, /*bouncing*/ false)) )
+    {
+        if (player->m_move_type & MOVETYPE_NOCOLL)
+        {
+            playerMoveNoCollision(player, timestep);
+        }
+        else if (player->m_move_type & MOVETYPE_WALK)
+        {
+            player->m_motion_state.m_move_time = 0;
+            playerWalk(player);
+            player->m_motion_state.m_input_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+        }
+        else
+        {
+            player->m_motion_state.m_is_falling = false;
+        }
+    }
+}
+
 void processNewInputs(Entity &e)
 {
-    // todo(jbr) sort out logging, maybe remove all logging from the packet parser and just log in here, input/movement?
-
-    // state which resets every tick and is affected
-    // by processing control state changes
-    struct
+    InputState* input_state = &e.m_input_state;
+    for (auto input_change_iter = input_state->m_queued_changes.begin();
+         input_change_iter != input_state->m_queued_changes.end();
+         ++input_change_iter) // todo: buffer these for jitter/cheating
     {
-        uint32_t length_ms = 0;
-        uint32_t key_press_start_ms[6] = {};
-        bool    key_released[6] = {};
-        bool    orientation_changed = false;
-    } tick_state;
+        const InputStateChange& input_change = *input_change_iter;
 
-    StateStorage* input_state = &e.m_states;
-    for (auto input_iter = input_state->m_new_inputs.begin();
-         input_iter != input_state->m_new_inputs.end();
-         ++input_iter) // todo(jbr) buffer these for jitter/cheating
-    {
-        const InputState& new_input = *input_iter;
-
-        if (new_input.m_control_state_changes.size())
+        if (input_change.m_control_state_changes.size())
         {
-            qCDebug(logInput, "csc range %hu->%hu", new_input.m_first_control_state_change_id, new_input.m_first_control_state_change_id + new_input.m_control_state_changes.size() - 1);
+            qCDebug(logInput, "csc range %hu->%hu",
+                    input_change.m_first_control_state_change_id,
+                    input_change.m_first_control_state_change_id + (uint16_t)input_change.m_control_state_changes.size() - 1);
 
             // The client will re-send the same control state changes until acked, so
             // need to make sure we skip any changes we've seen before.
-            int32_t csc_id_delta = cscIdDelta(new_input.m_first_control_state_change_id, input_state->m_next_expected_control_state_change_id);
+            int32_t csc_id_delta = cscIdDelta(input_change.m_first_control_state_change_id, input_state->m_next_expected_control_state_change_id);
 
             // if this is negative, it means there is a gap in control state changes, shouldn't ever happen
             assert(csc_id_delta >= 0);
@@ -110,13 +377,15 @@ void processNewInputs(Entity &e)
 
             // if csc_id_delta >= control_state_changes.size() then all of 
             // these changes are old and should be ignored
-            if (csc_id_delta < new_input.m_control_state_changes.size())
+            if (csc_id_delta < (int32_t)input_change.m_control_state_changes.size())
             {
-                for (auto csc_iter = new_input.m_control_state_changes.begin() + csc_id_delta;
-                    csc_iter != new_input.m_control_state_changes.end();
+                TickState tick_state = {};
+
+                // iterate control state changes
+                for (auto csc_iter = input_change.m_control_state_changes.begin() + csc_id_delta;
+                    csc_iter != input_change.m_control_state_changes.end();
                     ++csc_iter)
                 {
-                    // todo(jbr) final pass on the decompiled src
                     const ControlStateChange& csc = *csc_iter;
 
                     tick_state.length_ms += csc.time_since_prev_ms;
@@ -147,7 +416,7 @@ void processNewInputs(Entity &e)
 
                                 if (!input_state->m_keys[s_reverse_control_dir[key]])
                                 {
-                                    uint32_t key_press_duration = tick_state.length_ms; // todo(jbr) not necessarily true if a key can be pressed and released same tick
+                                    uint32_t key_press_duration = tick_state.length_ms; // note: I have never observed a key press & release in the same tick, appears to be impossible
                                     if (key_press_duration == 0)
                                     {
                                         if (input_state->m_key_press_duration_ms[key] == 0)
@@ -187,14 +456,6 @@ void processNewInputs(Entity &e)
                         case 10:
                             qCDebug(logInput, "nocoll=%d", csc.no_collision);
 
-                            if (csc.no_collision)
-                            {
-                                e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
-                            }
-                            else
-                            {
-                                e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
-                            }
                             e.m_motion_state.m_no_collision = csc.no_collision;
                         break;
 
@@ -210,73 +471,9 @@ void processNewInputs(Entity &e)
 
                             e.m_motion_state.m_controls_disabled = csc.controls_disabled;
 
-                            // the following is based on pmotionUpdateControlsPrePhysics()
-
-                            // if any keys have been held for 250+ ms, then all keys
-                            // are given a minumum of 250ms press time
-                            uint32_t minimum_key_press_time = 0;
-                            if (e.m_motion_state.m_is_jumping)
-                            {
-                                minimum_key_press_time = 250;
-                            }
-                            else
-                            {
-                                for (int i = 0; i < 6; ++i)
-                                {
-                                    if (input_state->m_key_press_duration_ms[i] >= 250)
-                                    {
-                                        minimum_key_press_time = 250;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            for (int i = 0; i < 6; ++i)
-                            {
-                                if (!input_state->m_keys[i] || input_state->m_keys[s_reverse_control_dir[i]])
-                                {
-                                    continue;
-                                }
-
-                                // update key press time, keeping within min/max range
-                                input_state->m_key_press_duration_ms[i] = glm::clamp<uint32_t>(input_state->m_key_press_duration_ms[i] + tick_state.length_ms - tick_state.key_press_start_ms[i],
-                                           minimum_key_press_time, 1000);
-                            }
-
-                            // based on pmotionSetVel()
-                            float control_amounts[6] = {};
-                            for (int i = 0; i < 6; ++i)
-                            {
-                                uint32_t press_time = input_state->m_key_press_duration_ms[i];
-
-                                if (!press_time)
-                                {
-                                    control_amounts[i] = 0.0f;
-                                }
-                                else if (press_time >= 1000)
-                                {
-                                    control_amounts[i] = 1.0f;
-                                }
-                                else if (press_time <= 50 && input_state->m_keys[i])
-                                {
-                                    control_amounts[i] = 0.0;
-                                }
-                                else if (press_time >= 75)
-                                {
-                                    if (press_time >= 100)
-                                    {
-                                        control_amounts[i] = (float)(press_time - 100) * 0.004f / 9.0f + 0.6f;
-                                    }
-                                    else
-                                    {
-                                        control_amounts[i] = std::pow((float)(press_time  - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
-                                    }
-                                }
-                                else
-                                {
-                                    control_amounts[i] = 0.2f;
-                                }
-                            }
+                            // following code is based on playerPredictMotion_betaname() in client
+                            playerMotionUpdateControlsPrePhysics(&e, &tick_state);
+                            playerMotionSetInputVelocity(&e, &tick_state);
 
                             if (tick_state.orientation_changed)
                             {
@@ -285,89 +482,23 @@ void processNewInputs(Entity &e)
                                 e.m_direction = fromCoHYpr(e.m_entity_data.m_orientation_pyr);
                             }
 
-                            glm::vec3 local_input_velocity(0.0f, 0.0f, 0.0f);
-                            local_input_velocity.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
-                            local_input_velocity.y = control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN];
-                            local_input_velocity.z = control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD];
-                            local_input_velocity.x = local_input_velocity.x * e.m_motion_state.m_speed.x;
-                            local_input_velocity.y = local_input_velocity.y * e.m_motion_state.m_speed.y;
-
-                            glm::vec3 local_input_velocity_xz = local_input_velocity;
-                            if (!e.m_motion_state.m_is_flying)
+                            glm::vec3 final_input_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+                            if (!e.m_motion_state.m_controls_disabled)
                             {
-                                local_input_velocity_xz.y = 0;
+                                e.m_direction * e.m_motion_state.m_input_velocity;
                             }
 
-                            float input_velocity_scale = input_state->m_velocity_scale;
-                            if (local_input_velocity_xz.z < 0.0f)
-                            {
-                                input_velocity_scale = input_velocity_scale * e.m_motion_state.m_backup_spd;
-                            }
-                            if (e.m_motion_state.m_is_stunned)
-                            {
-                                input_velocity_scale = input_velocity_scale * 0.1f;
-                            }
-                            /*if (controls->speed_scale_F0 != 0.0f) todo(jbr)
-                            {
-                                input_velocity_scale *= controls->speed_scale_F0;
-                            }*/
-                            e.m_motion_state.m_velocity_scale = input_velocity_scale;
+                            playerMotion(&e, &final_input_velocity);
 
-                            if (glm::length2(local_input_velocity_xz) > glm::epsilon<float>())
-                            {
-                                local_input_velocity_xz = glm::normalize(local_input_velocity_xz);
-                            }
-
-                            local_input_velocity.x = local_input_velocity_xz.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
-                            local_input_velocity.z = local_input_velocity_xz.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
-                            if (e.m_motion_state.m_is_flying)
-                            {
-                                local_input_velocity.y = local_input_velocity_xz.y * std::fabs(control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN]);
-                            }
-                            else if (tick_state.key_released[BinaryControl::UP])
-                            {
-                                local_input_velocity.y = 0;
-                            }
-                            else
-                            {
-                                local_input_velocity.y *= glm::clamp<float>(e.m_motion_state.m_jump_height, 0.0f, 1.0f);
-
-                                if (!e.m_motion_state.m_is_sliding)
-                                {
-                                    e.m_motion_state.m_flag_5 = false;
-                                }
-                            }
-
-                            glm::vec3 input_velocity = e.m_direction * local_input_velocity;
-
-                            e.m_motion_state.m_input_velocity = input_velocity;
-
-                            // based on pmotionWithPrediction()
-                            float timestep = 1.0f; // todo(jbr) can this change?
-
-                            // todo(jbr) check move type is nocoll here, put unimplemented block for all else
-                            // based on entMoveNoCollision()
-                            e.m_motion_state.m_is_falling = true;
-                            e.m_motion_state.m_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-                            e.m_motion_state.m_move_time += timestep;
-                            float time_scale = (e.m_motion_state.m_move_time + 6.0f) / 6.0f;
-                            time_scale = std::min(time_scale, 50.0f);
-
-                            e.m_entity_data.m_pos += time_scale * timestep * input_velocity;
-
-                            if (glm::length2(local_input_velocity) < glm::epsilon<float>())
-                            {
-                                e.m_motion_state.m_move_time = 0.0f;
-                            }
-
+                            // based on reportPhysicsSteps()
                             if (logMovement().isDebugEnabled())
                             {
                                 static int32_t count = -1;
 
                                 bool any_keys_relevant = false;
-                                for (int i = 0; i < 6; ++i)
+                                for (int key = 0; key <= BinaryControl::LAST_BINARY_VALUE; ++key)
                                 {
-                                    if (input_state->m_key_press_duration_ms[i])
+                                    if (input_state->m_key_press_duration_ms[key])
                                     {
                                         any_keys_relevant = true;
                                         break;
@@ -383,11 +514,14 @@ void processNewInputs(Entity &e)
                                     ++count;
 
                                     QString keys = "";
-                                    for (int i = 0; i < 6; ++i)
+                                    for (int key = 0; key <= BinaryControl::LAST_BINARY_VALUE; ++key)
                                     {
-                                        if (input_state->m_key_press_duration_ms[i])
+                                        if (input_state->m_key_press_duration_ms[key])
                                         {
-                                            QTextStream(&keys) << (tick_state.key_released[i] ? "-" : "+") << s_key_name[i] << " (" << input_state->m_key_press_duration_ms[i] << "), ";
+                                            keys += QString::asprintf("%s%s (%d), ",
+                                                        tick_state.key_released[key] ? "-" : "+",
+                                                        s_key_name[key],
+                                                        input_state->m_key_press_duration_ms[key]);
                                         }
                                     }
 
@@ -404,10 +538,11 @@ void processNewInputs(Entity &e)
                                             "        newvel:    (%1.8f, %1.8f, %1.8f)\n"
                                             "%s%s\n",
                                             count,
-                                            keys.data(),
+                                            keys.toUtf8().constData(),
                                             e.m_motion_state.m_last_pos.x, e.m_motion_state.m_last_pos.y, e.m_motion_state.m_last_pos.z,
                                             e.m_motion_state.m_velocity.x, e.m_motion_state.m_velocity.y, e.m_motion_state.m_velocity.z,
-                                            e.m_motion_state.m_input_velocity.x, e.m_motion_state.m_input_velocity.y, e.m_motion_state.m_input_velocity.z,
+                                            final_input_velocity.x, final_input_velocity.y, final_input_velocity.z,
+                                            e.m_motion_state.m_velocity_scale,
                                             e.m_entity_data.m_orientation_pyr.x, e.m_entity_data.m_orientation_pyr.y, e.m_entity_data.m_orientation_pyr.z,
                                             0.0f, // gravity
                                             e.m_motion_state.m_is_jumping ? "Jumping, " : "",
@@ -421,46 +556,59 @@ void processNewInputs(Entity &e)
                             }
 
                             // based on pmotionResetMoveTime()
-                            for (int i = 0; i < 6; ++i)
+                            for (int key = 0; key <= BinaryControl::LAST_BINARY_VALUE; ++key)
                             {
                                 // reset total time if button is released, or reverse button is pressed
-                                if (!input_state->m_keys[i] || input_state->m_keys[s_reverse_control_dir[i]])
+                                if (!input_state->m_keys[key] || input_state->m_keys[s_reverse_control_dir[key]])
                                 {
-                                    input_state->m_key_press_duration_ms[i] = 0;
+                                    input_state->m_key_press_duration_ms[key] = 0;
                                 }
                             }
 
                             tick_state = {};
 
+                            if (input_change.m_has_pitch_and_yaw)
+                            {
+                                qCDebug(logInput, "extended py");
+                            }
+
                         break;
                     }
                 }
-                // todo(jbr) warnings
-                uint16_t new_csc_count = new_input.m_control_state_changes.size() - csc_id_delta;
-                qCDebug(logInput, "processed csc %hu->%hu", input_state->m_next_expected_control_state_change_id, input_state->m_next_expected_control_state_change_id + new_csc_count - 1);
+
+                // assuming that the client never sends a partial tick, if that's not the case 
+                // then tick_state needs to move into the entity somewhere
+                assert(tick_state.length_ms == 0);
+
+                uint16_t new_csc_count = input_change.m_control_state_changes.size() - csc_id_delta;
+
+                qCDebug(logInput, "processed csc %hu->%hu", 
+                    input_state->m_next_expected_control_state_change_id, 
+                    input_state->m_next_expected_control_state_change_id + new_csc_count - 1);
+
                 input_state->m_next_expected_control_state_change_id += new_csc_count;
             }
         }
 
-        if (new_input.m_has_keys)
+        if (input_change.m_has_keys)
         {
-            for (int i = 0; i < 6; ++i)
+            for (int key = 0; key <= BinaryControl::LAST_BINARY_VALUE; ++key)
             {
-                if (new_input.m_keys[i] != input_state->m_keys[i])
+                if (input_change.m_keys[key] != input_state->m_keys[key])
                 {
                     qCDebug(logInput, "keys input state mismatch");
-                    input_state->m_keys[i] = new_input.m_keys[i];
+                    input_state->m_keys[key] = input_change.m_keys[key];
                 }
             }
         }
 
-        if (logInput().isDebugEnabled() && new_input.m_has_pitch_and_yaw)
+        if (logInput().isDebugEnabled() && input_change.m_has_pitch_and_yaw)
         {
-            qCDebug(logInput, "extended pitch=%f, yaw=%f", new_input.m_pitch, new_input.m_yaw);
+            qCDebug(logInput, "extended pitch=%f, yaw=%f", input_change.m_pitch, input_change.m_yaw);
         }
     }
 
-    input_state->m_new_inputs.clear();
+    input_state->m_queued_changes.clear();
 }
 
 void addPosUpdate(Entity &e, const PosUpdate &p)

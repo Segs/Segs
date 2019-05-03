@@ -27,7 +27,7 @@ using namespace SEGSEvents;
 void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly partial_2
 {
     uint8_t csc_deltabits = bs.GetBits(5) + 1; // number of bits in max_time_diff_ms
-    m_next_state.m_first_control_state_change_id =  bs.GetBits(16);
+    m_input_state_change.m_first_control_state_change_id =  bs.GetBits(16);
 
     bool control_id_8_received_at_least_once = false;
 
@@ -108,7 +108,7 @@ void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly parti
                 assert(!"Unknown control_id");
         }
 
-        m_next_state.m_control_state_changes.push_back(csc);
+        m_input_state_change.m_control_state_changes.push_back(csc);
 
     } while(bs.GetBits(1));
 }
@@ -122,19 +122,18 @@ void RecvInputState::extended_input(BitStream &bs)
     }
 
     // Key Pressed/Held
-    m_next_state.m_has_keys = true;
+    m_input_state_change.m_has_keys = true;
     for(int idx=0; idx<6; ++idx)
     {
         bool keypress_state = bs.GetBits(1);
-        m_next_state.m_keys[idx] = keypress_state;
+        m_input_state_change.m_keys[idx] = keypress_state;
     }
 
     if(bs.GetBits(1))
     {
-        // todo(jbr) when do these get sent? every second?
-        m_next_state.m_has_pitch_and_yaw = true;
-        m_next_state.m_pitch = AngleDequantize(bs.GetBits(11),11);
-        m_next_state.m_yaw = AngleDequantize(bs.GetBits(11),11);
+        m_input_state_change.m_has_pitch_and_yaw = true;
+        m_input_state_change.m_pitch = AngleDequantize(bs.GetBits(11),11);
+        m_input_state_change.m_yaw = AngleDequantize(bs.GetBits(11),11);
     }
 }
 
@@ -143,23 +142,23 @@ void RecvInputState::serializefrom(BitStream &bs)
     if(bs.GetBits(1))
         extended_input(bs);
 
-    m_next_state.m_has_target = bs.GetBits(1);
-    m_next_state.m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
+    m_input_state_change.m_has_target = bs.GetBits(1);
+    m_input_state_change.m_target_idx = bs.GetPackedBits(14); // targeted entity server_index
 
-    qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_next_state.m_has_target, m_next_state.m_target_idx);
+    qCDebug(logTarget, "Has Target? %d | TargetIdx: %d", m_input_state_change.m_has_target, m_input_state_change.m_target_idx);
 
     while(bs.GetBits(1)) // receive control state array entries ?
     {
         TimeState time_state;
-        if(m_next_state.m_time_state.size())
+        if(m_input_state_change.m_time_state.size())
         {
-            time_state.serializefrom_delta(bs, m_next_state.m_time_state.back());
+            time_state.serializefrom_delta(bs, m_input_state_change.m_time_state.back());
         }
         else // initial values
         {
             time_state.serializefrom_base(bs);
         }
-        m_next_state.m_time_state.push_back(time_state);
+        m_input_state_change.m_time_state.push_back(time_state);
     }
 
     recv_client_opts(bs); // g_pak contents will follow

@@ -60,7 +60,7 @@ void TimeState::dump()
     qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
 }
 
-bool InputState::hasInput() const
+bool InputStateChange::hasInput() const
 {
     if (m_has_keys)
     {

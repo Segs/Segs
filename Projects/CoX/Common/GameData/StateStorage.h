@@ -33,17 +33,17 @@ struct ControlStateChange
 
     union
     {
-      uint8_t key_state;
-      float angle;
+      uint8_t key_state;            // control_id 0-5
+      float angle;                  // control_id 6-7
       struct
       {
-          bool controls_disabled;
+          bool controls_disabled;   // control_id 8
           uint32_t time_diff_1;
           uint32_t time_diff_2;
           uint8_t velocity_scale;
       };
-      uint8_t every_4_ticks; // todo(jbr) what's this actually for?
-      bool no_collision;
+      uint8_t every_4_ticks;        // control_id 9 (not sure what this is for)
+      bool no_collision;            // control_id 10
     };
 
     template<class Archive>
@@ -117,20 +117,40 @@ public:
     }
 };
 
-class InputState
+class InputStateChange
 {
 public:
-    // todo(jbr) document all these, what do they mean, when are they sent, etc
-
+    /* control state changes
+        - can be empty
+        - can contain multiple ticks
+        - doesn't contain partial ticks
+        - may contain ticks which have been received before by server (client resends until acked)
+    */
     std::vector<ControlStateChange> m_control_state_changes;
-    uint16_t m_first_control_state_change_id = 0xffff;
-    bool m_has_keys = false;
-    bool m_keys[6] = {};
-    bool m_has_pitch_and_yaw = false;
-    float m_pitch = 0.0f;
-    float m_yaw = 0.0f;
-    bool m_has_target = false;
+
+    // id of first control state change in the vector, each change bumps the id
+    // by 1, NOT the tick, wraps around to 0 on overflow. Use these to figure
+    // out if these control state changes are new or not.
+    uint16_t    m_first_control_state_change_id = 0xffff;
+
+    // whether this state change contains the keys currently held in m_keys,
+    // doesn't necessarily mean any of them have changed, but useful for 
+    // validating against current key state on server
+    bool        m_has_keys = false;
+    bool        m_keys[6] = {};
+
+    // whether this state change contains the client pitch/yaw which are sent
+    // every second. This seems to deviate slightly from the pitch/yaw changes
+    // which are sent in the control state changes, so I tend to ignore this
+    bool        m_has_pitch_and_yaw = false;
+    float       m_pitch = 0.0f;
+    float       m_yaw = 0.0f;
+
+    // whether this state change contains a new target
+    bool        m_has_target = false;
     uint32_t    m_target_idx = 0;
+
+    // not sure what these do
     std::vector<TimeState> m_time_state;
 
     template<class Archive>
@@ -151,13 +171,25 @@ public:
     bool hasInput() const;
 };
 
-class StateStorage // todo(jbr) maybe call this InputState?
+class InputState
 {
 public:
-    std::vector<InputState> m_new_inputs;
-    uint16_t m_next_expected_control_state_change_id = 0;
-    bool m_keys[6] = {};
-    uint32_t m_key_press_duration_ms[6] = {};
-    float m_velocity_scale = 1.0f;
-    uint8_t m_every_4_ticks = 0;
+    // input changes which have been received from the client but not processed yet
+    std::vector<InputStateChange>   m_queued_changes;
+
+    // next control state change id that the server wants, used to avoid processing
+    // the same control state changes multiple times
+    uint16_t                        m_next_expected_control_state_change_id = 0;
+
+    // keys currently held
+    bool                            m_keys[6] = {};
+
+    // how long each key has been held
+    uint32_t                        m_key_press_duration_ms[6] = {};
+
+    // sent by client, not sure what it's for
+    float                           m_velocity_scale = 1.0f;
+
+    // sent by client, not sure what it's for
+    uint8_t                         m_every_4_ticks = 0;
 };

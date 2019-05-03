@@ -145,7 +145,7 @@ private:
                             Entity();
                             ~Entity();
 public:
-        StateStorage        m_states;
+        InputState          m_input_state;
         MotionState         m_motion_state;
         // Some entities might not have a character data ( doors, cars )
         // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
