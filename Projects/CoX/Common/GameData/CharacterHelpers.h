@@ -40,8 +40,9 @@ const QString &     getDescription(const Character &c);
 const QString &     getBattleCry(const Character &c);
 const QString &     getAlignment(const Character &c);
 const QString &     getLastOnline(const Character &c);
-
-// Setters
+//======================================================
+// Accessor functions
+//======================================================
 void    setLevel(Character &c, uint32_t val);
 void    setCombatLevel(Character &c, uint32_t val);
 void    setSecurityThreat(Character &c, uint32_t val);
@@ -56,11 +57,12 @@ void    setTitles(Character &c, bool prefix = false, QString generic = "", QStri
 void    setInf(Character &c, uint32_t val);
 void    setDescription(Character &c, QString val);
 void    setBattleCry(Character &c, QString val);
+void    setAFK(Character &c, const bool is_afk, QString msg = "");
+bool    isAFK(Character &c);
 void    updateLastOnline(Character &c);
 void    initializeCharacter(Character &c);
 
 // Toggles
-void    toggleAFK(Character &c, const bool isTrue, QString msg = "");
 void    toggleAFK(Character &c, QString msg = "");
 
 /*

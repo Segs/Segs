@@ -36,6 +36,10 @@ Configure SEGS using SEGSADMIN
       Once selected, it will copy several files from the CoX directory, and extract a portion of those files to your `SEGS/data/` subdirectory.  
       These `.bin` files are required by SEGS to load CoX maps, and spawn NPCs. Once completed, SEGSAdmin will clean up any unnecessary files.  
 
+
+    4. **(Optional) Add Community Power Data**
+      Copy powers.json from https://github.com/segs-community/cox-scripts/blob/master/powers.json into data folder.
+
 3. **Ensure proper ports are open on any firewalls**  
 
     Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200  

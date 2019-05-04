@@ -23,7 +23,7 @@ Some other useful links:
 
 DOCUMENTATION
 ------
-- [Contribute](#e)  
+- [Contribute](#./docs/CONTRIBUTING.md)  
 - *Compile an install SEGS on:*  
           - [MacOS](#)   
           - [CentOS/RHEL](./docs/SEGS-COMPILE_AND_INSTALL-CENTOS.md)  

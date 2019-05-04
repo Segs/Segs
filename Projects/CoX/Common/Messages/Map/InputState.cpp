@@ -125,8 +125,7 @@ void RecvInputState::extended_input(BitStream &bs)
     m_input_state_change.m_has_keys = true;
     for(int idx=0; idx<6; ++idx)
     {
-        bool keypress_state = bs.GetBits(1);
-        m_input_state_change.m_keys[idx] = keypress_state;
+        m_input_state_change.m_keys[idx] = bs.GetBits(1);
     }
 
     if(bs.GetBits(1))

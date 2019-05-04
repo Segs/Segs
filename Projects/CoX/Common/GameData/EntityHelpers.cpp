@@ -104,6 +104,7 @@ void setTarget(Entity &e, uint32_t target_idx)
     e.m_target_idx = target_idx;
     // To trigger update to client
     e.m_pchar_things = true;
+    qCDebug(logTarget) << "Setting Target to" << target_idx;
 }
 
 void setAssistTarget(Entity &e, uint32_t target_idx)
@@ -181,6 +182,13 @@ bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum const &target)
     if (target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate || target == StoredEntEnum::DeadVillain)
         if (!target_ent.m_char->m_is_dead)
             return false;
+
+    if (target_ent.m_char->m_is_dead)
+        if (!(target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate
+            || target == StoredEntEnum::DeadVillain || target == StoredEntEnum::DeadOrAliveTeammate
+            || target == StoredEntEnum::Caster)) // Caster is a valid target only if castable after death is true
+            return false;
+
     if (&ent == &target_ent)
         return (target == StoredEntEnum::Caster || target == StoredEntEnum::Any || target == StoredEntEnum::Location || target == StoredEntEnum::Teleport);
     switch(target)
@@ -223,7 +231,7 @@ bool validTargets(Entity &target_ent, Entity &ent, std::vector<StoredEntEnum> co
 }
 
 void modifyAttrib(Entity &e, buffset change)
-{
+{//todo: take Parse_CharAttrib as argument, to modify max/current/res/str
     if (change.m_value_name == "regeneration")
         e.m_char->m_char_data.m_current_attribs.m_Regeneration += change.m_value;
     else if (change.m_value_name == "recovery")
@@ -236,18 +244,34 @@ void modifyAttrib(Entity &e, buffset change)
         e.m_char->m_char_data.m_current_attribs.m_Defense += change.m_value;         //for now everything is general defense
     else if (change.m_value_name == "damagebuff")
     {
-        e.m_char->m_char_data.m_current_attribs.m_DamageTypes[change.m_attrib] += change.m_value;  //for now dmg type 0 applies to all damage
+        e.m_char->m_char_data.m_current_attribs.m_DamageTypes[change.m_attrib] += change.m_value;
     }
     else if (change.m_value_name == "mezresist" || change.m_value_name == "reseffect" || change.m_value_name == "resistance")
     {
-       ;// e.m_char->m_char_data.m_current_attribs.m_ResistTypes[change.attrib] += change.m_value;  //we don't store resists?
+       ;// e.m_char->m_char_data.m_current_attribs.m_ResistTypes[change.attrib] += change.m_value;  //we don't store resists currently
     }
     else if (change.m_value_name == "jumpheight")
     {
         e.m_char->m_char_data.m_current_attribs.m_jump_height += change.m_value;
         e.m_motion_state.m_jump_height = e.m_char->m_char_data.m_current_attribs.m_jump_height;
     }
-    else if (change.m_value_name == "jump_speed")
+    else if (change.m_value_name == "rechargetime")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_RechargeTime += change.m_value;
+    }
+    else if (change.m_value_name == "range")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Range += change.m_value;
+    }
+    else if (change.m_value_name == "hitpoints")
+    {
+        e.m_char->m_max_attribs.m_HitPoints += change.m_value;  //max attribs
+    }
+    else if (change.m_value_name == "endurance")
+    {
+        e.m_char->m_max_attribs.m_Endurance += change.m_value;  //max attribs
+    }
+    else if (change.m_value_name == "speedjumping")
     {
         e.m_char->m_char_data.m_current_attribs.m_SpeedJumping += change.m_value;
     }
@@ -262,6 +286,14 @@ void modifyAttrib(Entity &e, buffset change)
             e.m_motion_state.m_is_flying = true;
         else
             e.m_motion_state.m_is_flying = false;
+    }
+    else if (change.m_value_name == "jumppack")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_has_jumppack += change.m_value;
+        if (e.m_char->m_char_data.m_current_attribs.m_has_jumppack > 0)
+            e.m_motion_state.m_has_jumppack = true;
+        else
+            e.m_motion_state.m_has_jumppack = false;
     }
     else if (change.m_value_name == "speedflying")
     {
@@ -307,17 +339,15 @@ void modifyAttrib(Entity &e, buffset change)
     {
         e.m_char->m_char_data.m_current_attribs.m_PerceptionRadius += change.m_value;
     }
-    else if (change.m_value_name == "xpdebtprotection")
-    {
-        ;//not actually stored?
-    }
-    else if (change.m_value_name == "translucency")
-    {
-        ;//an FX or stance?
-    }
+    else if (QStringList{"knockup","knockdown","knockback","xpdebtprotection","translucency","setmode"
+            ,"stealthradiusplayer","stealthradius","threatlevel","combatphase","grantpower","null"
+            ,"untouchable","terrorized","afraid","teleport","repel","setcostume","endurancediscount"
+            ,"taunt","globalchancemod","intangible","mez"  //mez used by powerboost
+            }.contains(change.m_value_name))
+        ;//these effects not implimented yet, but will be, so skip error message
     else
     {
-        qDebug() << change.m_value_name << "not found";
+        qCDebug(logPowers) << change.m_value_name << "found in powers.json, don't know what it is!";
     }
     resetSpeed(e);
     checkMovement(e);

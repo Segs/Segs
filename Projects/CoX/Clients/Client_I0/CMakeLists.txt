@@ -10,12 +10,12 @@ IF(MSVC)
             add_compile_options("/std:c++latest")
         endif()
     endif()
-ELSE()
-   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11"  )
+ELSE()#-Wduplicated-cond -Wduplicated-branches -Wnull-dereference
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -Wshadow -std=c++11"  )
 endif()
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../../../../CMakeScripts;${CMAKE_MODULE_PATH})
 MESSAGE(${CMAKE_SOURCE_DIR}/../../../../CMakeScripts)
@@ -23,19 +23,28 @@ include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_CURRENT_BINARY_DIR}/3rd_party/built)
 
 add_subdirectory(3rd_party)
-
+find_package(Threads REQUIRED)
 link_directories(
     ${ThirdParty_Install_Dir}/lib
     ../patch_tools
 )
-include_directories(
+include_directories(SYSTEM
     ${ThirdParty_Install_Dir}/include
+    ${CMAKE_SOURCE_DIR}/../../../../3rd_party # glm is located there
+)
+include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     include
 )
 set(DLL_SOURCES
+    3rd_party/mikktspace/mikktspace.c
+    3rd_party/mikktspace/mikktspace.h
     include/GameState.h
     renderer/Model.h
+    renderer/ModelCache.cpp
+    renderer/ModelCache.h
+    renderer/PBufferRenderer.cpp
+    renderer/PBufferRenderer.h
     renderer/RendererUtils.cpp
     renderer/RendererUtils.h
     renderer/RenderShadow.cpp
@@ -46,16 +55,30 @@ set(DLL_SOURCES
     renderer/RenderModel.h
     renderer/RenderBonedModel.cpp
     renderer/RenderBonedModel.h
+    renderer/RenderParticles.cpp
+    renderer/RenderParticles.h
     renderer/RenderSprites.cpp
     renderer/RenderSprites.h
     renderer/RenderTree.cpp
     renderer/RenderTree.h
     renderer/RenderTricks.cpp
     renderer/RenderTricks.h
+    renderer/ShaderProgramCache.cpp
+    renderer/ShaderProgramCache.h
     renderer/Texture.h
     renderer/Texture.cpp
+    renderer/TextureGenerator.h
+    renderer/TextureGenerator.cpp
+    graphics/GroupDraw.cpp
+    graphics/GroupDraw.h
     graphics/gfx.cpp
     graphics/gfx.h
+    graphics/FontManager.cpp
+    graphics/FontManager.h
+    graphics/SeqGraphics.cpp
+    graphics/SeqGraphics.h
+    entity/EntClient.cpp
+    entity/EntClient.h
     entity/entityDebug.cpp
     entity/entityDebug.h
     utils/helpers.cpp
@@ -69,7 +92,7 @@ set(SOURCES
 )
 add_library(cohdll SHARED ${SOURCES})
 # we link to the imp lib for the exe
-target_link_libraries(cohdll CityOfX glew_IMP)
+target_link_libraries(cohdll CityOfX glew_IMP Threads::Threads)
 # enforce the dll prefix.
 SET_TARGET_PROPERTIES(cohdll PROPERTIES PREFIX "lib"
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)

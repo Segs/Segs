@@ -25,10 +25,12 @@
 #include <glm/ext.hpp>
 #include <chrono>
 
-static const glm::mat3  s_identity_matrix = glm::mat3(1.0f);
-static int          s_landed_on_ground = 0;
+namespace
+{
+const glm::mat3  s_identity_matrix = glm::mat3(1.0f);
+//int              s_landed_on_ground = 0;
 //static CollInfo     s_last_surf;
-static const int s_reverse_control_dir[6] = {
+constexpr const int s_reverse_control_dir[6] = {
     BinaryControl::BACKWARD,
     BinaryControl::FORWARD,
     BinaryControl::RIGHT,
@@ -45,6 +47,8 @@ static const char* s_key_name[6] =
     "UP",
     "DOWN",
 };
+
+}
 
 SurfaceParams g_world_surf_params[2] = {
     // traction, friction, bounce, gravity, max_speed
@@ -281,9 +285,9 @@ static void playerMotionSetInputVelocity(Entity* player, const TickState* tick_s
         if(player->m_type == EntType::PLAYER)
         {
             qCDebug(logMovement) << "Moving so turning off AFK";
-
-            toggleAFK(*player->m_char);
         }
+
+        setAFK(*player->m_char, false);
     }
 }
 

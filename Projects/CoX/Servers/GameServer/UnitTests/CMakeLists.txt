@@ -18,4 +18,5 @@ get_target_property(TARGET_SOURCES GameEventRegistry SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
 set_target_properties (GameEventRegistry PROPERTIES
     FOLDER UnitTests/GameServer/GameEventRegistry
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
 )
