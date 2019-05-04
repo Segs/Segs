@@ -169,7 +169,11 @@ static void playerMotionSetInputVelocity(Entity* player, const TickState* tick_s
         {
             uint32_t press_time = player->m_input_state.m_key_press_duration_ms[key];
 
-            if (!press_time)
+            if (key >= BinaryControl::UP && !player->m_motion_state.m_is_flying)
+            {
+                control_amounts[key] = (float)(press_time != 0);
+            }
+            else if (!press_time )
             {
                 control_amounts[key] = 0.0f;
             }
@@ -183,13 +187,13 @@ static void playerMotionSetInputVelocity(Entity* player, const TickState* tick_s
             }
             else if (press_time >= 75)
             {
-                if (press_time >= 100)
+                if (press_time < 75 || press_time >= 100)
                 {
                     control_amounts[key] = (float)(press_time - 100) * 0.004f / 9.0f + 0.6f;
                 }
                 else
                 {
-                    control_amounts[key] = std::pow((float)(press_time  - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
+                    control_amounts[key] = std::pow((float)(press_time - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
                 }
             }
             else
@@ -201,8 +205,8 @@ static void playerMotionSetInputVelocity(Entity* player, const TickState* tick_s
         local_input_velocity.x = control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT];
         local_input_velocity.y = control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN];
         local_input_velocity.z = control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD];
-        local_input_velocity.x = local_input_velocity.x * player->m_motion_state.m_speed.x;
-        local_input_velocity.y = local_input_velocity.y * player->m_motion_state.m_speed.y;
+        local_input_velocity.x *= player->m_motion_state.m_speed.x;
+        local_input_velocity.y *= player->m_motion_state.m_speed.y;
 
         glm::vec3 local_input_velocity_xz = local_input_velocity;
         if (!player->m_motion_state.m_is_flying)
@@ -485,7 +489,7 @@ void processNewInputs(Entity &e)
                             glm::vec3 final_input_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
                             if (!e.m_motion_state.m_controls_disabled)
                             {
-                                e.m_direction * e.m_motion_state.m_input_velocity;
+                                final_input_velocity = e.m_direction * e.m_motion_state.m_input_velocity;
                             }
 
                             playerMotion(&e, &final_input_velocity);
@@ -518,7 +522,7 @@ void processNewInputs(Entity &e)
                                     {
                                         if (input_state->m_key_press_duration_ms[key])
                                         {
-                                            keys += QString::asprintf("%s%s (%d), ",
+                                            keys += QString::asprintf("%s%s (%dms), ",
                                                         tick_state.key_released[key] ? "-" : "+",
                                                         s_key_name[key],
                                                         input_state->m_key_press_duration_ms[key]);
@@ -569,7 +573,7 @@ void processNewInputs(Entity &e)
 
                             if (input_change.m_has_pitch_and_yaw)
                             {
-                                qCDebug(logInput, "extended py");
+                                qCDebug(logInput, "extended pitch=%f, yaw=%f", input_change.m_pitch, input_change.m_yaw);
                             }
 
                         break;
