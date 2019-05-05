@@ -92,23 +92,7 @@ Entity * getEntity(MapClientSession *src, const QString &name)
 
 Entity * getEntity(MapClientSession *src, uint32_t idx)
 {
-    MapInstance *mi = src->m_current_map;
-    EntityManager &em(mi->m_entities);
-    QString errormsg;
-
-    if(idx!=0) // Entity idx 0 is special case, so we can't return it
-    {
-        // Iterate through all active entities and return entity by idx
-        for (Entity* pEnt : em.m_live_entlist)
-        {
-            if(pEnt->m_idx == idx)
-                return pEnt;
-        }
-    }
-    errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
-    qWarning() << errormsg;
-    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
-    return nullptr;
+    return getEntity(src->m_ent, src->m_current_map, idx);
 }
 
 Entity * getEntity(MapInstance* mi, uint32_t idx)
@@ -127,33 +111,41 @@ Entity * getEntity(MapInstance* mi, uint32_t idx)
     }
     errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
     qWarning() << errormsg;
-    //sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
     return nullptr;
 }
-Entity * getEntity(Entity * srcEnt, MapInstance* mi, uint32_t idx)
+
+/**
+ * @brief   Get an Entity based upon mapinstance and index
+ * @param   srcEnt the entity that made this call
+ * @param   mi MapInstance
+ * @param   idx the index of the target entity
+ * @return  pointer to the target entity or self if it does not exist.
+ */
+Entity * getEntity(Entity *srcEnt, MapInstance *mi, uint32_t idx)
 {
     EntityManager &em(mi->m_entities);
-    QString errormsg;
 
-    if(idx!=0) // Entity idx 0 is always self
+    if(idx == 0) // Entity idx 0 is always self
+        return srcEnt;
+
+    // Iterate through all active entities and return entity by idx
+    for (Entity *pEnt : em.m_live_entlist)
     {
-        // Iterate through all active entities and return entity by idx
-        for (Entity* pEnt : em.m_live_entlist)
-        {
-            if(pEnt->m_idx == idx)
-                return pEnt;
-        }
+        if(pEnt->m_idx == idx)
+            return pEnt;
     }
+
     // if no valid targets found by idx, return self
     return srcEnt;
 }
+
 /**
  * @brief Finds the Entity in the MapInstance
  * @param mi map instance
  * @param db_id db id of the entity to find.
  * @return pointer to the entity or nullptr if it does not exist.
  */
-Entity *getEntityByDBID(MapInstance *mi,uint32_t db_id)
+Entity *getEntityByDBID(MapInstance *mi, uint32_t db_id)
 {
     EntityManager &em(mi->m_entities);
     QString        errormsg;
@@ -167,6 +159,42 @@ Entity *getEntityByDBID(MapInstance *mi,uint32_t db_id)
             return pEnt;
     }
     return nullptr;
+}
+
+/**
+ * @brief   Get's the target Entity based upon name or idx if avail
+ * @param   sess MapClientSession
+ * @param   target_name name string to compare to entity current target.
+ * @return  pointer to the target entity or self if it does not exist.
+ */
+Entity * getCmdTargetByNameOrIdx(MapClientSession &sess, const QString &name_from_cmd)
+{
+    uint32_t target_idx = getTargetIdx(*sess.m_ent);
+    Entity *tgt = nullptr;
+    tgt = getEntity(&sess, target_idx);
+    if(tgt != nullptr)
+    {
+        if(0 == name_from_cmd.compare(tgt->name(), Qt::CaseInsensitive))
+            return tgt;
+
+        tgt = sess.m_ent;
+    }
+
+    // if target_name parameter matches user name, then assume target is self
+    if(0 == name_from_cmd.compare(sess.m_ent->name(), Qt::CaseInsensitive))
+        return sess.m_ent;
+
+    // if we haven't returned yet, then use NAME to get target
+    tgt = getEntity(&sess, name_from_cmd);
+    if(tgt == nullptr)
+    {
+        tgt = sess.m_ent; // if tgt isn't found by name, fallback to self
+        QString msg = QString("Target %1 cannot be found. Targeting Self.").arg(name_from_cmd);
+        qCDebug(logSlashCommand) << msg;
+        sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
+    }
+
+    return tgt;
 }
 
 void sendMissionObjectiveTimer(MapClientSession &sess, QString &message, float time)

@@ -49,7 +49,7 @@ struct SlashCommand
 {
     QStringList m_valid_prefixes;
     QString m_help_text;
-    std::function<void(const QStringList &,MapClientSession &)> m_handler;
+    std::function<void(const QStringList &, MapClientSession &)> m_handler;
     uint32_t m_required_access_level;
 };
 
@@ -62,12 +62,10 @@ void cmdHandler_Script(const QStringList &params, MapClientSession &sess);
 void cmdHandler_Dialog(const QStringList &params, MapClientSession &sess);
 void cmdHandler_InfoMessage(const QStringList &params, MapClientSession &sess);
 void cmdHandler_SmileX(const QStringList &params, MapClientSession &sess);
-void cmdHandler_Fly(const QStringList &params, MapClientSession &sess);
 void cmdHandler_Falling(const QStringList &params, MapClientSession &sess);
 void cmdHandler_Sliding(const QStringList &params, MapClientSession &sess);
 void cmdHandler_Jumping(const QStringList &params, MapClientSession &sess);
 void cmdHandler_Stunned(const QStringList &params, MapClientSession &sess);
-void cmdHandler_Jumppack(const QStringList &params, MapClientSession &sess);
 void cmdHandler_SetSpeed(const QStringList &params, MapClientSession &sess);
 void cmdHandler_SetBackupSpd(const QStringList &params, MapClientSession &sess);
 void cmdHandler_SetJumpHeight(const QStringList &params, MapClientSession &sess);
@@ -139,6 +137,9 @@ void cmdHandler_SetU1(const QStringList &params, MapClientSession &sess);
 uint cmdHandler_AddNPC(const QStringList &params, MapClientSession &sess);
 void cmdHandler_MoveTo(const QStringList &params, MapClientSession &sess);
 void cmdHandler_Alignment(const QStringList &params, MapClientSession &sess);
+void cmdHandler_Fly(const QStringList &params, MapClientSession &sess);
+void cmdHandler_Jumppack(const QStringList &params, MapClientSession &sess);
+void cmdHandler_Teleport(const QStringList &params, MapClientSession &sess);
 
 // Access Level 1 Commands
 void cmdHandler_CmdList(const QStringList &params, MapClientSession &sess);
@@ -189,12 +190,10 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"Dialog", "dlg"},"Open a dialog box with any string arg", cmdHandler_Dialog, 9},
     {{"InfoMessage", "imsg"},"Send an info message into chat. Expects <int> <string>, e.g. /imsg 1 test", cmdHandler_InfoMessage, 9},
     {{"SmileX"},"Runs the smlx script SmileX", cmdHandler_SmileX, 9},
-    {{"fly", "flying"},"Toggle flying On/Off", cmdHandler_Fly, 9},
     {{"falling"},"Toggle falling On/Off", cmdHandler_Falling, 9},
     {{"sliding"},"Toggle sliding On/Off", cmdHandler_Sliding, 9},
     {{"jumping"},"Toggle jumping On/Off", cmdHandler_Jumping, 9},
     {{"stunned"},"Toggle stunned character On/Off", cmdHandler_Stunned, 9},
-    {{"jumppack"},"Toggle jump pack On/Off", cmdHandler_Jumppack, 9},
     {{"setSpeed", "speed"},"Set your player Speed", cmdHandler_SetSpeed, 9},
     {{"setBackupSpd", "BackupSpd"},"Set the Backup Speed", cmdHandler_SetBackupSpd, 9},
     {{"setJumpHeight", "JumpHeight"},"Set the Jump Height", cmdHandler_SetJumpHeight, 9},
@@ -266,6 +265,9 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"addNpc"},"add <npc_name> with costume [variation] in front of gm", cmdHandler_AddNPC, 2},
     {{"moveTo", "setpos", "setpospyr"},"set the gm's position to <x> <y> <z>", cmdHandler_MoveTo, 2},
     {{"align", "alignment", "herostatus"},"set the gm's alignment to hero, villain, both, none/neither", cmdHandler_Alignment, 2},
+    {{"fly", "flying"},"Toggle flying On/Off", cmdHandler_Fly, 2},
+    {{"jumppack"},"Toggle jump pack On/Off", cmdHandler_Jumppack, 2},
+    {{"teleport", "tp"}, "Teleport", cmdHandler_Teleport, 2},
 
     /* Access Level 1 Commands */
     {{"cmdlist","commandlist"},"List all accessible commands", cmdHandler_CmdList, 1},
@@ -410,15 +412,6 @@ void cmdHandler_SmileX(const QStringList &params, MapClientSession &sess)
     }
 }
 
-void cmdHandler_Fly(const QStringList &/*params*/, MapClientSession &sess)
-{
-    toggleFlying(*sess.m_ent);
-
-    QString msg = "Toggling flight";
-    qCDebug(logSlashCommand) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
-}
-
 void cmdHandler_Falling(const QStringList &/*params*/, MapClientSession &sess)
 {
     toggleFalling(*sess.m_ent);
@@ -451,15 +444,6 @@ void cmdHandler_Stunned(const QStringList &/*params*/, MapClientSession &sess)
     toggleStunned(*sess.m_ent);
 
     QString msg = "Toggling stunned";
-    qCDebug(logSlashCommand) << msg;
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
-}
-
-void cmdHandler_Jumppack(const QStringList &/*params*/, MapClientSession &sess)
-{
-    toggleJumppack(*sess.m_ent);
-
-    QString msg = "Toggling jumppack";
     qCDebug(logSlashCommand) << msg;
     sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
@@ -1358,8 +1342,9 @@ void cmdHandler_MoveTo(const QStringList &params, MapClientSession &sess)
 {
     if(params.size() < 3)
     {
-        qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ");
-        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" "), sess);
+        QString errormsg = "Bad invocation. /moveto expects 3 parameters e.g. '/moveto x y z'. Received:" + params.join(" ");
+        qCDebug(logSlashCommand) << errormsg;
+        sendInfoMessage(MessageChannel::USER_ERROR, errormsg, sess);
         return;
     }
 
@@ -1382,6 +1367,44 @@ void cmdHandler_Alignment(const QStringList &params, MapClientSession &sess)
     QString msg = "Choose from hero, villain, both or none/neither: ";
     qCDebug(logSlashCommand) << msg << params.join(" ");
     sendInfoMessage(MessageChannel::USER_ERROR, msg + params.join(" "), sess);
+}
+
+void cmdHandler_Fly(const QStringList &/*params*/, MapClientSession &sess)
+{
+    toggleFlying(*sess.m_ent);
+
+    QString msg = "Toggling flight";
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_Jumppack(const QStringList &/*params*/, MapClientSession &sess)
+{
+    toggleJumppack(*sess.m_ent);
+
+    QString msg = "Toggling jumppack";
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
+}
+
+void cmdHandler_Teleport(const QStringList &params, MapClientSession &sess)
+{
+    QString msg = "Teleport format is '/teleport {target_name}'";
+    QString name = sess.m_ent->name();
+    if(!params.isEmpty())
+        name = params.join(" ");
+
+    // getTargetByNameOrIdx will always return a valid Entity, or self
+    Entity *tgt = getCmdTargetByNameOrIdx(sess, name);
+    name = tgt->name(); // make sure we have the final name
+    glm::vec3 new_pos = tgt->m_entity_data.m_pos;
+
+    sendFaceLocation(sess, new_pos);
+    forcePosition(*sess.m_ent, new_pos);
+
+    msg = QString("Teleporting to target %1.").arg(name);
+    qCDebug(logSlashCommand) << msg;
+    sendInfoMessage(MessageChannel::DEBUG_INFO, msg, sess);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2203,7 +2226,7 @@ void cmdHandler_ForceLogout(const QStringList &params, MapClientSession &sess)
 /*
  * runCommand for executing commands on MapClientSession
  */
-void runCommand(const QString &str, MapClientSession &e)
+void runCommand(const QString &str, MapClientSession &sess)
 {
     // Split args on spaces (but leave quote-enclosed spaces)
     QStringList args = str.split(QRegularExpression("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?"));
@@ -2220,15 +2243,13 @@ void runCommand(const QString &str, MapClientSession &e)
     {
         if(cmd.m_valid_prefixes.contains(command_name, Qt::CaseInsensitive))
         {
-            if(!canAccessCommand(cmd, e))
+            if(!canAccessCommand(cmd, sess))
                 return; // no access, so return early
-            cmd.m_handler(args, e);
+            cmd.m_handler(args, sess);
             return; // return here to avoid unknown command msg
         }
     }
     qCDebug(logSlashCommand) << "Unknown game command:" << str;
 }
-
-
 
 //! @}
