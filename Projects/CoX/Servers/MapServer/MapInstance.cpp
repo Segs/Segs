@@ -1061,6 +1061,8 @@ void MapInstance::on_input_state(RecvInputState *st)
     // Set current Input Packet ID
     if(st->m_input_state_change.m_control_state_changes.size())
     {
+        // todo: when corrections are turned on, I think this needs to be m_input_ack?
+        // Also perhaps it should be the last csc id in this packet, not the first?
         ent->m_input_pkt_id = st->m_input_state_change.m_first_control_state_change_id;
     }
 
