@@ -24,7 +24,7 @@
 
 static constexpr int s_config_version = 2;
 static constexpr int s_auth_db_version = 1;
-static constexpr int s_game_db_version = 9;
+static constexpr int s_game_db_version = 10;
 
 // Contains version information for the various server modules
 class VersionInfo

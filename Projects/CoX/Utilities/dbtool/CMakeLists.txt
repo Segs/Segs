@@ -8,22 +8,22 @@ ELSE()
 ENDIF()
 find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 
-#add_subdirectory(Migrations)
+add_subdirectory(migrations)
 
 set(tool_SRC
     main.cpp
-    #DatabaseConfig.cpp
-    #DatabaseConfig.h
-    #DBConnection.cpp
-    #DBConnection.h
-    #DBConnection_AddUser.cpp
-    #DBConnection_Create.cpp
-    #DBConnection_Helpers.cpp
-    #DBConnection_Upgrade.cpp
-    #DBMigrationStep.cpp
-    #DBMigrationStep.h
+    DatabaseConfig.cpp
+    DatabaseConfig.h
+    DBConnection.cpp
+    DBConnection.h
+    DBConnection_AddUser.cpp
+    DBConnection_Create.cpp
+    DBConnection_Helpers.cpp
+    DBConnection_Upgrade.cpp
+    DBMigrationStep.cpp
+    DBMigrationStep.h
     # Migrations are added programatically
-    #${MIGRATION_SOURCES}
+    ${MIGRATION_SOURCES}
 )
 
 add_executable(dbtool ${tool_SRC})
@@ -48,4 +48,4 @@ set_target_properties (dbtool PROPERTIES
 )
 
 # hack to prevent errors with FOLDER properties when using generated files
-#target_sources(dbtool PRIVATE ${MIGRATION_GEN})
+target_sources(dbtool PRIVATE ${MIGRATION_GEN})
