@@ -1134,7 +1134,7 @@ void MapInstance::on_window_state(WindowState * ev)
         e->m_player->m_gui.m_wnds.at(idx).guiWindowDump();
 }
 
-QString process_replacement_strings(MapClientSession *sender,const QString &msg_text)
+QString processReplacementStrings(MapClientSession *sender, const QString &msg_text)
 {
     /*
     // $$           - newline
@@ -1144,8 +1144,6 @@ QString process_replacement_strings(MapClientSession *sender,const QString &msg_
     // $name        - your character's name
     // $origin      - your character's origin
     // $target      - your currently selected target's name
-
-    msg_text = msg_text.replace("$target",sender->m_ent->target->name());
     */
 
     QString new_msg = msg_text;
@@ -1167,15 +1165,11 @@ QString process_replacement_strings(MapClientSession *sender,const QString &msg_
     QString  sender_char_name   = c.getName();
     QString  sender_origin      = getOrigin(c);
     uint32_t target_idx         = getTargetIdx(*sender->m_ent);
-    QString  target_char_name   = c.getName();
 
     qCDebug(logChat) << "src -> tgt: " << sender->m_ent->m_idx  << "->" << target_idx;
 
-    if(target_idx > 0)
-    {
-        Entity   *tgt    = getEntity(sender,target_idx);
-        target_char_name = tgt->name(); // change name
-    }
+    Entity *tgt = getEntity(sender, target_idx);
+    QString target_char_name = tgt->name(); // change name
 
     foreach (const QString &str, replacements)
     {
@@ -1253,17 +1247,16 @@ void MapInstance::process_chat(Entity *sender, QString &msg_text)
     if(!sender)
       return;
 
-
     sender_char_name = sender->name();
 
-     for(MapClientSession *cl : m_session_store)
-     {
-         if(cl->m_ent->m_db_id == sender->m_db_id)
-         {
-             sender_sess = cl;
-             break;
-         }
-     }
+    for(MapClientSession *cl : m_session_store)
+    {
+        if(cl->m_ent->m_db_id == sender->m_db_id)
+        {
+            sender_sess = cl;
+            break;
+        }
+    }
 
     switch(kind)
     {
@@ -1453,24 +1446,18 @@ void MapInstance::on_console_command(ConsoleCommand * ev)
     Entity *ent = session.m_ent;
 
     if(contents.contains("$")) // does it contain replacement strings?
-        contents = process_replacement_strings(&session, contents);
+        contents = processReplacementStrings(&session, contents);
 
-    //printf("Console command received %s\n",qPrintable(ev->contents));
+    //qCDebug(logChat, "Console command received %1").arg(qPrintable(ev->contents);
 
     ent->m_has_input_on_timeframe = true;
 
     if(isChatMessage(contents))
-    {
         process_chat(ent,contents);
-    }
     else if(has_emote_prefix(contents))
-    {
         on_emote_command(contents, ent);
-    }
     else
-    {
-        runCommand(contents,session);
-    }
+        runCommand(contents, session);
 }
 
 void MapInstance::on_emote_command(const QString &command, Entity *ent)
