@@ -91,7 +91,7 @@ bool DatabaseConfig::putFilePath()
     }
 
     QString base_dir(tpl_dir.absolutePath() + QDir::separator());
-    m_template_path = QString("%1%2/segs%3_%2.sql").arg(base_dir).arg(driver).arg(m_character_db?"_game":"");
+    m_template_path = QString("%1%2/segs%3_%2_create.sql").arg(base_dir).arg(driver).arg(m_character_db?"_game":"");
 
     qCDebug(logSettings) << "m_file_path" << m_template_path;
     return true;
