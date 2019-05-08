@@ -66,6 +66,7 @@ bool DBConnection::deleteDB()
 {
     if(m_config.isSqlite())
     {
+        close(); // ensure SQLite dbase is truly closed or windows will be mad
         // SQLite databases are just a file. Remove it
         QFile target_file(m_config.m_db_name);
         if(target_file.exists() && !target_file.remove())
@@ -74,7 +75,7 @@ bool DBConnection::deleteDB()
         // For SQlite we must reopen database or it wont exist and
         // everything will fail without any real error messages
         close(); // yes, really
-
+        
         // unload the database (this doesn't delete it)
         QSqlDatabase::removeDatabase(m_config.m_db_name);
         open(); // we just closed this, reopen it
