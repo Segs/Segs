@@ -141,7 +141,7 @@ public:
 
     // whether this state change contains the client pitch/yaw which are sent
     // every second. This seems to deviate slightly from the pitch/yaw changes
-    // which are sent in the control state changes, so I tend to ignore this
+    // which are sent in the control state changes, so maybe it's camera pitch/yaw?
     bool        m_has_pitch_and_yaw = false;
     float       m_pitch = 0.0f;
     float       m_yaw = 0.0f;
@@ -187,9 +187,12 @@ public:
     // how long each key has been held
     uint32_t                        m_key_press_duration_ms[6] = {};
 
-    // sent by client, not sure what it's for
+    // sent by client, alters speed of all movement
     float                           m_velocity_scale = 1.0f;
 
     // sent by client, not sure what it's for
     uint8_t                         m_every_4_ticks = 0;
+
+    // whether to generate input logging for this entity
+    bool                            m_debug = false;
 };

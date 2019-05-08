@@ -137,6 +137,8 @@ struct MotionState // current derived state of motion
 
     SurfaceParams   m_surf_mods[2] = { {0,0,0,0,0},
                                      {0,0,0,0,0} };
+
+    bool            m_debug = false; // wether to generate movement logging for this entity
 };
 
 void processNewInputs(Entity &e);
