@@ -259,8 +259,8 @@ static const SlashCommand g_defined_slash_commands[] = {
     {{"clientConsoleOutput"}, "Send message to ingame (~) console", cmdHandler_SendConsolePrint, 9},
     {{"clearTarget"}, "Clear current target", cmdHandler_ClearTarget, 9},
     {{"startTimer"}, "Create a small timer", cmdHandler_StartTimer, 9},
-    {{"toggleInputLog"}, "Enable input logging for a player", cmdHandler_ToggleInputLog, 9},
-    {{"toggleMovementLog"}, "Enable movement logging for a player", cmdHandler_ToggleMovementLog, 9},
+    {{"toggleInputLog"}, "Enable input logging for a player (e.g. /toggleInputLog playerName), if no player name is specified it uses the sender", cmdHandler_ToggleInputLog, 9},
+    {{"toggleMovementLog"}, "Enable movement logging for a player (e.g. /toggleMovementLog playerName), if no player name is specified it uses the sender", cmdHandler_ToggleMovementLog, 9},
 
     // For live value-testing
     {{"setu1"},"Set bitvalue u1. Used for live-debugging.", cmdHandler_SetU1, 9},
@@ -1312,32 +1312,24 @@ void cmdHandler_StartTimer(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_ToggleInputLog(const QStringList &params, MapClientSession &sess)
 {
-    Entity* target = getTargetEntity(sess);
+    QString name = sess.m_ent->name();
+    if(!params.isEmpty())
+        name = params.join(" ");
 
-    // toggle logging for target if there is one, otherwise use the sender
-    if (target && target->m_type == EntType::PLAYER)
-    {
-        target->m_input_state.m_debug = !target->m_input_state.m_debug;
-    }
-    else
-    {
-        sess.m_ent->m_input_state.m_debug = !sess.m_ent->m_input_state.m_debug;
-    }
+    // getTargetByNameOrIdx will always return a valid Entity, or self
+    Entity* target = getCmdTargetByNameOrIdx(sess, name);
+    target->m_input_state.m_debug = !target->m_input_state.m_debug;
 }
 
 void cmdHandler_ToggleMovementLog(const QStringList &params, MapClientSession &sess)
 {
-    Entity* target = getTargetEntity(sess);
+    QString name = sess.m_ent->name();
+    if(!params.isEmpty())
+        name = params.join(" ");
 
-    // toggle logging for target if there is one, otherwise use the sender
-    if (target && target->m_type == EntType::PLAYER)
-    {
-        target->m_motion_state.m_debug = !target->m_motion_state.m_debug;
-    }
-    else
-    {
-        sess.m_ent->m_motion_state.m_debug = !sess.m_ent->m_motion_state.m_debug;
-    }
+    // getTargetByNameOrIdx will always return a valid Entity, or self
+    Entity* target = getCmdTargetByNameOrIdx(sess, name);
+    target->m_motion_state.m_debug = !target->m_motion_state.m_debug;
 }
 
 // Slash commands for setting bit values

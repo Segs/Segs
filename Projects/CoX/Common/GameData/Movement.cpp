@@ -137,10 +137,13 @@ static void playerMotionUpdateControlsPrePhysics(Entity* player, const TickState
                     minimum_key_press_time,
                     1000);
 
-        qCDebug(logMovement, "\nAdding: %s += \t%dms (%dms total)\n",
-                s_key_name[key],
-                milliseconds,
-                player->m_input_state.m_key_press_duration_ms[key]);
+        if (logMovement().isDebugEnabled() && player->m_motion_state.m_debug)
+        {
+            qCDebug(logMovement, "\nAdding: %s += \t%dms (%dms total)\n",
+                    s_key_name[key],
+                    milliseconds,
+                    player->m_input_state.m_key_press_duration_ms[key]);
+        }
     }
 }
 
@@ -282,7 +285,7 @@ static void playerMotionSetInputVelocity(Entity* player, const TickState* tick_s
     if (player->m_char->m_char_data.m_afk &&
         glm::length2(player->m_motion_state.m_input_velocity) > std::numeric_limits<float>::epsilon())
     {
-        if(player->m_type == EntType::PLAYER)
+        if(logMovement().isDebugEnabled() && player->m_motion_state.m_debug && player->m_type == EntType::PLAYER)
         {
             qCDebug(logMovement) << "Moving so turning off AFK";
         }
@@ -367,9 +370,12 @@ void processNewInputs(Entity &e)
 
         if (input_change.m_control_state_changes.size())
         {
-            qCDebug(logInput, "csc range %hu->%hu",
-                    input_change.m_first_control_state_change_id,
-                    input_change.m_first_control_state_change_id + (uint16_t)input_change.m_control_state_changes.size() - 1);
+            if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
+            {
+                qCDebug(logInput, "csc range %hu->%hu",
+                        input_change.m_first_control_state_change_id,
+                        input_change.m_first_control_state_change_id + (uint16_t)input_change.m_control_state_changes.size() - 1);
+            }
 
             // The client will re-send the same control state changes until acked, so
             // need to make sure we skip any changes we've seen before.
@@ -378,7 +384,7 @@ void processNewInputs(Entity &e)
             // if this is negative, it means there is a gap in control state changes, shouldn't ever happen
             assert(csc_id_delta >= 0);
 
-            if (logInput().isDebugEnabled() && csc_id_delta > 0)
+            if (logInput().isDebugEnabled() && e.m_input_state.m_debug && csc_id_delta > 0)
             {
                 qCDebug(logInput, "skipping %d changes", csc_id_delta);
             }
@@ -408,7 +414,10 @@ void processNewInputs(Entity &e)
                         case BinaryControl::FORWARD:
                         case BinaryControl::BACKWARD:
                         {
-                            qCDebug(logInput, "key %hhu = %hhu", csc.control_id, csc.key_state);
+                            if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
+                            {
+                                qCDebug(logInput, "key %hhu = %hhu", csc.control_id, csc.key_state);
+                            }
 
                             uint8_t key = csc.control_id;
 
@@ -442,33 +451,48 @@ void processNewInputs(Entity &e)
                         break;
 
                         case BinaryControl::PITCH:
-                            qCDebug(logInput, "pitch=%f", csc.angle);
+                            if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
+                            {
+                                qCDebug(logInput, "pitch=%f", csc.angle);
+                            }
 
                             tick_state.orientation_changed = true;
                             e.m_entity_data.m_orientation_pyr.x = csc.angle;
                         break;
 
                         case BinaryControl::YAW:
-                            qCDebug(logInput, "yaw=%f", csc.angle);
+                            if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
+                            {
+                                qCDebug(logInput, "yaw=%f", csc.angle);
+                            }
 
                             tick_state.orientation_changed = true;
                             e.m_entity_data.m_orientation_pyr.y = csc.angle;
                         break;
 
                         case 9:
-                            qCDebug(logInput, "every_4_ticks=%hhu", csc.every_4_ticks);
+                            if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
+                            {
+                                qCDebug(logInput, "every_4_ticks=%hhu", csc.every_4_ticks);
+                            }
 
                             input_state->m_every_4_ticks = csc.every_4_ticks;
                         break;
 
                         case 10:
-                            qCDebug(logInput, "nocoll=%d", csc.no_collision);
+                            if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
+                            {
+                                qCDebug(logInput, "nocoll=%d", csc.no_collision);
+                            }
 
                             e.m_motion_state.m_no_collision = csc.no_collision;
                         break;
 
                         case 8:
-                            qCDebug(logInput, "doing tick, controls_disabled=%d, time_diff_1=%u, time_diff_2=%u, velocity_scale=%hhu", csc.controls_disabled, csc.time_diff_1, csc.time_diff_2, csc.velocity_scale);
+                            if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
+                            {
+                                qCDebug(logInput, "doing tick, controls_disabled=%d, time_diff_1=%u, time_diff_2=%u, velocity_scale=%hhu", csc.controls_disabled, csc.time_diff_1, csc.time_diff_2, csc.velocity_scale);
+                            }
 
                             // do a tick!
 
@@ -499,7 +523,7 @@ void processNewInputs(Entity &e)
                             playerMotion(&e, &final_input_velocity);
 
                             // based on reportPhysicsSteps()
-                            if (logMovement().isDebugEnabled())
+                            if (logMovement().isDebugEnabled() && e.m_motion_state.m_debug)
                             {
                                 static int32_t count = -1;
 
@@ -575,7 +599,7 @@ void processNewInputs(Entity &e)
 
                             tick_state = {};
 
-                            if (input_change.m_has_pitch_and_yaw)
+                            if (logInput().isDebugEnabled() && e.m_input_state.m_debug && input_change.m_has_pitch_and_yaw)
                             {
                                 qCDebug(logInput, "extended pitch=%f, yaw=%f", input_change.m_pitch, input_change.m_yaw);
                             }
@@ -590,9 +614,12 @@ void processNewInputs(Entity &e)
 
                 uint16_t new_csc_count = input_change.m_control_state_changes.size() - csc_id_delta;
 
-                qCDebug(logInput, "processed csc %hu->%hu", 
-                    input_state->m_next_expected_control_state_change_id, 
-                    input_state->m_next_expected_control_state_change_id + new_csc_count - 1);
+                if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
+                {
+                    qCDebug(logInput, "processed csc %hu->%hu",
+                        input_state->m_next_expected_control_state_change_id,
+                        input_state->m_next_expected_control_state_change_id + new_csc_count - 1);
+                }
 
                 input_state->m_next_expected_control_state_change_id += new_csc_count;
             }
@@ -604,13 +631,16 @@ void processNewInputs(Entity &e)
             {
                 if (input_change.m_keys[key] != input_state->m_keys[key])
                 {
-                    qCDebug(logInput, "keys input state mismatch");
+                    if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
+                    {
+                        qCDebug(logInput, "keys input state mismatch");
+                    }
                     input_state->m_keys[key] = input_change.m_keys[key];
                 }
             }
         }
 
-        if (logInput().isDebugEnabled() && input_change.m_has_pitch_and_yaw)
+        if (logInput().isDebugEnabled() && e.m_input_state.m_debug && input_change.m_has_pitch_and_yaw)
         {
             qCDebug(logInput, "extended pitch=%f, yaw=%f", input_change.m_pitch, input_change.m_yaw);
         }
