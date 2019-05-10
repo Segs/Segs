@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -22,7 +22,10 @@
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
 #include "SelectScriptDialog.h"
-#include "version.h"
+
+#include "Settings.h"
+#include "Version.h"
+
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -31,6 +34,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QDir>
+#include <QSettings>
 #include <iostream>
 
 SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
@@ -61,6 +65,8 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(this,&SEGSAdminTool::checkForConfigFile,this,&SEGSAdminTool::check_for_config_file);
     connect(this,&SEGSAdminTool::getMapsDirConfigCheck,m_settings_dialog,&SettingsDialog::send_maps_dir_config_check); // May be a much better way to do this, but this works for now
     connect(this,&SEGSAdminTool::readyToRead,m_settings_dialog,&SettingsDialog::read_config_file);
+    connect(this,&SEGSAdminTool::checkConfigVersion,this,&SEGSAdminTool::check_config_version);
+    connect(this,&SEGSAdminTool::recreateConfig,m_generate_config_dialog,&GenerateConfigFileDialog::on_generate_config_file);
     connect(ui->actionAbout,&QAction::triggered,m_about_dialog,&AboutDialog::show_ui);
     connect(ui->update_detail,&QPushButton::clicked,m_update_dialog,&UpdateDetailDialog::show_update);
     connect(ui->createUser,&QPushButton::clicked,m_add_user_dialog,&AddNewUserDialog::on_add_user);
@@ -144,14 +150,14 @@ void SEGSAdminTool::commit_user(QString username, QString password, QString accl
     ui->createUser->setText("Please Wait...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
+    QString program = "utilities/dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
     #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
-    program.prepend("./");
+        program.prepend("./");
     #endif
     m_createUser = new QProcess(this);
     m_createUser->start(program);
 
-    if (m_createUser->waitForStarted())
+    if(m_createUser->waitForStarted())
     {
         ui->output->appendPlainText("Starting DBTool Add User...");
         qDebug() << "Starting DBTool Add User...";
@@ -181,8 +187,9 @@ void SEGSAdminTool::read_createuser()
     QString output_std = out_std;
     output_err.replace("Press ENTER to continue...", "** FINISHED **");
     output_std.replace("Press ENTER to continue...", "** FINISHED **");
-    ui->output->appendPlainText(output_err);
-    ui->output->appendPlainText(output_std);
+    ui->output->insertPlainText(output_err);
+    ui->output->insertPlainText(output_std);
+    ui->output->moveCursor(QTextCursor::End);
 }
 
 void SEGSAdminTool::check_db_exist(bool on_startup)
@@ -191,11 +198,14 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
-    QFileInfo file1("segs");
-    QFileInfo file2("segs_game");
-    if (on_startup) // Runs this check on startup or for checking creation in other methods
+
+    QSettings config(Settings::getSettingsPath(), QSettings::IniFormat, nullptr);
+
+    QFileInfo file1(config.value(QStringLiteral("AdminServer/AccountDatabase/db_name"), "segs.db").toString());
+    QFileInfo file2(config.value(QStringLiteral("AdminServer/CharacterDatabase/db_name"), "segs_game.db").toString());
+    if(on_startup) // Runs this check on startup or for checking creation in other methods
     {
-        if (file1.exists() && file2.exists())
+        if(file1.exists() && file2.exists())
         {
             ui->output->appendPlainText("SUCCESS: Existing databases found!");
             ui->icon_status_db->setPixmap(check_icon);
@@ -212,7 +222,7 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
     }
     else
     {
-        if (file1.exists() || file2.exists())
+        if(file1.exists() || file2.exists())
         {
             QMessageBox db_overwrite_msgBox;
             //db_overwrite_msgBox.setGeometry(266,125,1142,633);
@@ -222,7 +232,8 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
             db_overwrite_msgBox.setDefaultButton(QMessageBox::No);
             db_overwrite_msgBox.setIcon(QMessageBox::Warning);
             int confirm = db_overwrite_msgBox.exec();
-            switch (confirm) {
+            switch (confirm)
+            {
             case QMessageBox::Yes:
                 SEGSAdminTool::create_databases(true);
                 break;
@@ -248,8 +259,8 @@ void SEGSAdminTool::create_databases(bool overwrite)
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "dbtool create";
-    if (overwrite)
+    QString program = "utilities/dbtool create";
+    if(overwrite)
     {
         program.append(" -f");
     }
@@ -259,7 +270,7 @@ void SEGSAdminTool::create_databases(bool overwrite)
     m_createDB = new QProcess(this);
     m_createDB->start(program);
 
-    if (m_createDB->waitForStarted())
+    if(m_createDB->waitForStarted())
     {
         ui->output->appendPlainText("Starting DBTool Create Databases...");
         qApp->processEvents();
@@ -294,14 +305,15 @@ void SEGSAdminTool::read_createDB()
     QString output_std = out_std;
     output_err.replace("Press ENTER to continue...", "** FINISHED **");
     output_std.replace("Press ENTER to continue...", "** FINISHED **");
-    ui->output->appendPlainText(output_err);
-    ui->output->appendPlainText(output_std);
+    ui->output->insertPlainText(output_err);
+    ui->output->insertPlainText(output_std);
+    ui->output->moveCursor(QTextCursor::End);
     qApp->processEvents();
 }
 
 void SEGSAdminTool::is_server_running()
 {
-    if (m_server_running == true)
+    if(m_server_running == true)
     {
         SEGSAdminTool::stop_segs_server();
     }
@@ -321,7 +333,7 @@ void SEGSAdminTool::start_segs_server()
     m_start_segs_server = new QProcess(this);
     m_start_segs_server->start(program);
 
-    if (m_start_segs_server->waitForStarted())
+    if(m_start_segs_server->waitForStarted())
     {
 
         ui->authserver_start->setText("Please Wait...");
@@ -379,8 +391,9 @@ void SEGSAdminTool::read_segsserver()
     QString output_std = out_std;
     output_err.replace("Press ENTER to continue...", "** FINISHED **");
     output_std.replace("Press ENTER to continue...", "** FINISHED **");
-    ui->output->appendPlainText(output_err);
-    ui->output->appendPlainText(output_std);
+    ui->output->insertPlainText(output_err);
+    ui->output->insertPlainText(output_std);
+    ui->output->moveCursor(QTextCursor::End);
     qApp->processEvents();
 }
 
@@ -413,11 +426,12 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     // Load settings.cfg if exists
     ui->output->appendPlainText("Checking for existing configuration file...");
-    QFileInfo config_file("settings.cfg");
-    if (config_file.exists())
+    QFileInfo config_file(Settings::getSettingsPath());
+    if(config_file.exists())
     {
         QString config_file_path = config_file.absoluteFilePath();
         ui->output->appendPlainText("SUCCESS: Configuration file found!");
+        emit checkConfigVersion(config_file_path);
         ui->icon_status_config->setPixmap(check_icon);
         ui->gen_config_file->setEnabled(false);
         ui->runDBTool->setEnabled(true);
@@ -438,15 +452,48 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     }
 }
 
+void SEGSAdminTool::check_config_version(QString filePath)
+{
+    ui->output->appendPlainText("Checking configuration version...");
+
+    QSettings config_file(filePath, QSettings::IniFormat);
+    config_file.beginGroup("MetaData");
+    int config_version = config_file.value("config_version","").toInt();
+    config_file.endGroup();
+
+    if (config_version != VersionInfo::getConfigVersion())
+    {
+        ui->output->appendPlainText("WARNING: Configuration file version incorrect or missing. Prompting for recreation");
+        QMessageBox::StandardButton ask_recreate_config = QMessageBox::warning(this,
+                    "Config File Version Incorrect", "Your settings.cfg may be out of date. Do you want to to recreate?"
+                    "\n\nWARNING: All settings will be overwritten",
+                    QMessageBox::Yes | QMessageBox::No);
+
+        if(ask_recreate_config == QMessageBox::Yes)
+        {
+            ui->output->appendPlainText("Recreating settings.cfg");
+            emit recreateConfig();
+        }
+        else
+        {
+            ui->output->appendPlainText("Not Recreating settings.cfg");
+        }
+    }
+    else
+    {
+        ui->output->appendPlainText("SUCCESS: Configuration file version correct");
+    }
+}
+
 void SEGSAdminTool::read_release_info(const QString &error)
 {
     ui->output->appendPlainText("Checking for Updates...");
     QString version_number = VersionInfo::getAuthVersionNumber();
     version_number.prepend("v");
-    if (!g_segs_release_info.isEmpty())
+    if(!g_segs_release_info.isEmpty())
     {
         ui->update_detail->setText("Checking for updates...");
-        if (g_segs_release_info[0].tag_name == version_number)
+        if(g_segs_release_info[0].tag_name == version_number)
         {
 
             qDebug()<<"Current Version";
@@ -478,5 +525,5 @@ void SEGSAdminTool::read_release_info(const QString &error)
     }
 
 }
-//!@}
 
+//!@}

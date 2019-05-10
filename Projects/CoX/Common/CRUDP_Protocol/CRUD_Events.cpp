@@ -70,7 +70,7 @@ void Idle::serializeto(BitStream &bs) const
 SEGSEvents::CRUDLink_Event *CRUD_EventFactory::EventFromStream(BitStream &bs)
 {
     int32_t opcode = bs.GetPackedBits(1);
-    if (opcode != 0)
+    if(opcode != 0)
         return nullptr;
     // it seems idle commands can be shortened to only contain opcode==0.
     int32_t control_opcode = bs.GetReadableBits() == 0 ? 0 : bs.GetPackedBits(1);

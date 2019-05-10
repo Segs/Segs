@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -25,33 +25,37 @@
 #include <glm/ext.hpp>
 #include <chrono>
 
-static const glm::mat3  s_identity_matrix = glm::mat3(1.0f);
-static int          s_landed_on_ground = 0;
+namespace
+{
+const glm::mat3  s_identity_matrix = glm::mat3(1.0f);
+//int              s_landed_on_ground = 0;
 //static CollInfo     s_last_surf;
-static const int s_reverse_control_dir[6] = {
-    BinaryControl::BACKWARD,
-    BinaryControl::FORWARD,
-    BinaryControl::RIGHT,
-    BinaryControl::LEFT,
-    BinaryControl::DOWN,
-    BinaryControl::UP,
-};
+//constexpr const int s_reverse_control_dir[6] = {
+//    BinaryControl::BACKWARD,
+//    BinaryControl::FORWARD,
+//    BinaryControl::RIGHT,
+//    BinaryControl::LEFT,
+//    BinaryControl::DOWN,
+//    BinaryControl::UP,
+//};
+
+}
 
 SurfaceParams g_world_surf_params[2] = {
     // traction, friction, bounce, gravity, max_speed
     //{ 1.00f, 0.45f, 0.01f, 0.065f, 1.00f }, // ground; from client (base to be modified later)
     //{ 0.02f, 0.01f, 0.00f, 0.065f, 1.00f },  // air; from client (base to be modified later)
-    { 1.00f, 1.00f, 0.01f, 3.00f, 1.00f }, // ground; test values
-    { 1.00f, 3.00f, 0.00f, 3.00f, 1.00f },  // air; test values
+    { 1.30f, 1.00f, 0.01f, 3.00f, 1.70f },      // ground; test values
+    { 1.50f, 3.00f, 0.00f, 3.00f, 3.00f },      // air; test values
 };
 
 void roundVelocityToZero(glm::vec3 *vel)
 {
-    if (std::abs(vel->x) < 0.00001f)
+    if(std::abs(vel->x) < 0.00001f)
         vel->x = 0;
-    if (std::abs(vel->y) < 0.00001f)
+    if(std::abs(vel->y) < 0.00001f)
         vel->y = 0;
-    if (std::abs(vel->z) < 0.00001f)
+    if(std::abs(vel->z) < 0.00001f)
         vel->z = 0;
 }
 
@@ -95,7 +99,7 @@ void setVelocity(Entity &e) // pmotionSetVel
     int         max_press_time  = 0;
     float       vel_scale_copy  = state->m_velocity_scale;
 
-    if (state->m_no_collision)
+    if(state->m_no_collision)
         e.m_move_type |= MoveType::MOVETYPE_NOCOLL;
     else
         e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
@@ -121,17 +125,17 @@ void setVelocity(Entity &e) // pmotionSetVel
             if(press_time > max_press_time)
                 max_press_time = state->m_keypress_time[i];
 
-            if (i >= BinaryControl::UP && !motion->m_is_flying) // UP or Fly
+            if(i >= BinaryControl::UP && !motion->m_is_flying) // UP or Fly
                 control_amounts[i] = (float)(press_time != 0);
-            else if (!press_time)
+            else if(!press_time)
                 control_amounts[i] = 0.0f;
-            else if (press_time >= 1000)
+            else if(press_time >= 1000)
                 control_amounts[i] = 1.0f;
-            else if (press_time <= 50 && state->m_control_bits[i])
+            else if(press_time <= 50 && state->m_control_bits[i])
                 control_amounts[i] = 0.0f;
-            else if (press_time >= 75)
+            else if(press_time >= 75)
             {
-                if (press_time < 75 || press_time >= 100)
+                if(press_time < 75 || press_time >= 100)
                     control_amounts[i] = (press_time - 100) * 0.004f / 9.0f + 0.6f;
                 else
                     control_amounts[i] = std::pow((press_time - 75) * 0.04f, 2.0f) * 0.4f + 0.2f;
@@ -154,13 +158,13 @@ void setVelocity(Entity &e) // pmotionSetVel
         if(e.m_type == EntType::PLAYER && glm::length(vel))
             qCDebug(logMovement) << "vel:" << glm::to_string(vel).c_str();
 
-        if (!motion->m_is_flying)
+        if(!motion->m_is_flying)
             horiz_vel.y = 0.0f;
 
-        if (vel.z < 0.0f)
+        if(vel.z < 0.0f)
             vel_scale_copy *= motion->m_backup_spd;
 
-        if (motion->m_is_stunned)
+        if(motion->m_is_stunned)
             vel_scale_copy *= 0.1f;
 
         // Client returns 0 for negative length vector
@@ -172,32 +176,32 @@ void setVelocity(Entity &e) // pmotionSetVel
         if(e.m_type == EntType::PLAYER && glm::length(horiz_vel))
             qCDebug(logMovement) << "horizVel:" << glm::to_string(horiz_vel).c_str();
 
-        if (state->m_speed_scale != 0.0f)
+        if(state->m_speed_scale != 0.0f)
             vel_scale_copy *= state->m_speed_scale;
 
         motion->m_velocity_scale = vel_scale_copy;
         vel.x = horiz_vel.x * std::fabs(control_amounts[BinaryControl::RIGHT] - control_amounts[BinaryControl::LEFT]);
         vel.z = horiz_vel.z * std::fabs(control_amounts[BinaryControl::FORWARD] - control_amounts[BinaryControl::BACKWARD]);
 
-        if (motion->m_is_flying)
+        if(motion->m_is_flying)
             vel.y = horiz_vel.y * std::fabs(control_amounts[BinaryControl::UP] - control_amounts[BinaryControl::DOWN]);
-        else if (e.m_states.previous()->m_control_bits[BinaryControl::UP] && !state->m_control_bits[BinaryControl::UP])
+        else if(e.m_states.previous()->m_control_bits[BinaryControl::UP] && !state->m_control_bits[BinaryControl::UP])
             vel.y = 0.0f;
         else
         {
             vel.y *= glm::clamp(motion->m_jump_height, 0.0f, 1.0f);
-            if (!e.m_motion_state.m_is_sliding)
+            if(!e.m_motion_state.m_is_sliding)
                 e.m_motion_state.m_flag_5 = false; // flag_5 moving on y-axis?
         }
      }
 
     // Movement Flags
-    if (motion->m_is_flying)
+    if(motion->m_is_flying)
         e.m_move_type |= MoveType::MOVETYPE_FLY;
     else
         e.m_move_type &= ~MoveType::MOVETYPE_FLY;
 
-    if (motion->m_has_jumppack)
+    if(motion->m_has_jumppack)
         e.m_move_type |= MoveType::MOVETYPE_JETPACK;
     else
         e.m_move_type &= ~MoveType::MOVETYPE_JETPACK;
@@ -207,12 +211,12 @@ void setVelocity(Entity &e) // pmotionSetVel
     if(e.m_type == EntType::PLAYER && glm::length(vel))
         qCDebug(logMovement) << "final vel:" << glm::to_string(vel).c_str();
 
-    if (e.m_char->m_char_data.m_afk && motion->m_input_velocity != glm::vec3(0,0,0))
+    if(e.m_char->m_char_data.m_afk && motion->m_input_velocity != glm::vec3(0,0,0))
     {
         if(e.m_type == EntType::PLAYER)
             qCDebug(logMovement) << "Moving so turning off AFK";
 
-        toggleAFK(*e.m_char);
+        setAFK(*e.m_char, false);
     }
 
     // setPlayerVelQuat(&vel, vel_scale_copy); // we don't need this?

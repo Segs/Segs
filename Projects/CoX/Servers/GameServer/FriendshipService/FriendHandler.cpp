@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -41,7 +41,8 @@ void update_player_friends(FriendHandlerState &state,uint32_t char_db_id, Friend
     /*
      * Add our character to the set for each character we've added.
      */
-    for(const Friend & fr : ptr_list->m_friends) {
+    for(const Friend & fr : ptr_list->m_friends)
+    {
         uint32_t id = fr.m_db_id;
         state.m_player_info_map[id].m_players_added.insert(char_db_id);
     }
@@ -101,7 +102,8 @@ void on_client_connected(FriendHandlerState &state,FriendConnectedMessage *msg)
     for(auto const& val : state.m_player_info_map[char_db_id].m_players_added)
     {
         //We need to notify all the people who added this player (if they're online)
-        if(state.is_online(val)){
+        if(state.is_online(val))
+        {
             uint32_t friend_id = val;
             refresh_player_friends(state,val);
             inst_tgt->putq(new SendNotifyFriendMessage({state.m_player_info_map[char_db_id].m_map_info.session_token,

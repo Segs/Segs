@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -17,45 +17,40 @@ namespace SEGSEvents
 
 enum EmailEventTypes : uint32_t
 {
-    evEmailHeaderRequest = Internal_EventTypes::ID_LAST_Internal_EventTypes,
+    evEmailHeadersToClientMessage = Internal_EventTypes::ID_LAST_Internal_EventTypes,
+    evEmailHeaderToClientMessage,
+    evEmailHeaderRequest,
     evEmailHeaderResponse,
-    evEmailHeadersToClientMessage,
     evEmailReadRequest,
     evEmailReadResponse,
     evEmailSendMessage,
     evEmailSendErrorMessage,
+    evEmailCreateStatusMessage,
     evEmailDeleteMessage,
     evEmailWasReadByRecipientMessage
 };
 
 // when tokens are brought up, use sess.link()->session_token()
 // 'id' below is the email id
-
 struct EmailHeaderRequestData
 {
-    uint32_t m_sender_id;
-    QString m_sender_name;
-    QString m_subject;
-    uint32_t m_timestamp;
+    uint32_t m_user_id;
 
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_sender_id, m_sender_name, m_subject, m_timestamp);
+        ar(m_user_id);
     }
 };
 
 struct EmailHeaderResponseData
 {
-    uint32_t m_email_id;
-    QString m_sender_name;
-    QString m_subject;
-    uint32_t m_timestamp;
+    std::vector<EmailHeaderData> m_email_headers;
 
     template<class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_email_id, m_sender_name, m_subject, m_timestamp);
+        ar(m_email_headers);
     }
 };
 //[[ev_def:macro]]
@@ -74,6 +69,22 @@ struct EmailHeadersToClientData
 };
 //[[ev_def:macro]]
 ONE_WAY_MESSAGE(EmailEventTypes,EmailHeadersToClient)
+
+struct EmailHeaderToClientData
+{
+    uint32_t m_email_id;
+    QString m_sender_name;
+    QString m_subject;
+    uint32_t m_timestamp;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_email_id, m_sender_name, m_subject, m_timestamp);
+    }
+};
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(EmailEventTypes,EmailHeaderToClient)
 
 struct EmailReadRequestData
 {
@@ -158,5 +169,19 @@ struct EmailWasReadByRecipientData
 };
 //[[ev_def:macro]]
 ONE_WAY_MESSAGE(EmailEventTypes,EmailWasReadByRecipient)
+
+struct EmailCreateStatusData
+{
+    bool m_status;
+    QString m_recipient_name;
+
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(m_status, m_recipient_name);
+    }
+};
+//[[ev_def:macro]]
+ONE_WAY_MESSAGE(EmailEventTypes,EmailCreateStatus)
 
 } // end of SEGSEvent namespace

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -16,7 +16,6 @@
 #include "DataStorage.h"
 #include "serialization_common.h"
 
-const constexpr uint32_t GUISettings::class_version;
 CEREAL_CLASS_VERSION(GUISettings, GUISettings::class_version) // register GUISettings class version
 
 template<class Archive>

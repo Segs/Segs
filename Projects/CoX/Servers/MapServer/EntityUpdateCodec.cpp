@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -15,6 +15,7 @@
 
 #include "GameData/Character.h"
 #include "GameData/Entity.h"
+#include "GameData/EntityHelpers.h"
 #include "MapServer.h"
 #include "GameData/GameDataStore.h"
 #include "GameData/CoHMath.h"
@@ -22,6 +23,7 @@
 #include "Logging.h"
 
 #include <glm/ext.hpp> // currently only needed for logOrientation debug
+#include <inttypes.h>
 
 namespace  {
 void storeCreation(const Entity &src, BitStream &bs)
@@ -191,7 +193,7 @@ void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 {
     PUTDEBUG("before sendSeqTriggeredMoves");
     if(src.m_type == EntType::PLAYER)
-        qCDebug(logAnimations, "Sending seq triggered moves %d", src.m_triggered_moves.size());
+        qCDebug(logAnimations, "Sending seq triggered moves %" PRIu64, src.m_triggered_moves.size());
 
     // client appears to process only the last 20 triggered moves
     bs.StorePackedBits(1, src.m_triggered_moves.size()); // num moves
@@ -340,7 +342,7 @@ void sendOnOddSend(const Entity &src,BitStream &bs)
 
 void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1,src.m_is_villian); // on team evil ?
+    bs.StoreBits(1,src.m_is_villain); // on team evil ?
     bs.StoreBits(1,src.m_is_hero); // on team good ?
 }
 void sendEntCollision(const Entity &src,BitStream &bs)
@@ -356,7 +358,7 @@ void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 
 void sendAFK(const Entity &src, BitStream &bs)
 {
-    CharacterData cd = src.m_char->m_char_data;
+    const CharacterData &cd(src.m_char->m_char_data);
     bool hasMsg = !cd.m_afk_msg.isEmpty();
     bs.StoreBits(1, cd.m_afk); // 1/0 only
     if(cd.m_afk)

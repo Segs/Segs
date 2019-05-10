@@ -1,5 +1,18 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+ */
+
+/*!
+ * @addtogroup NetStructures Projects/CoX/Common/NetStructures
+ * @{
+ */
+
 #include "CharacterHelpers.h"
 #include "Character.h"
+#include "Costume.h"
 #include <QDateTime>
 
 /*
@@ -13,7 +26,7 @@ float               getHP(const Character &c) { return c.m_char_data.m_current_a
 float               getEnd(const Character &c) { return c.m_char_data.m_current_attribs.m_Endurance; }
 float               getMaxHP(const Character &c) { return c.m_max_attribs.m_HitPoints; }
 float               getMaxEnd(const Character &c) { return c.m_max_attribs.m_Endurance; }
-uint64_t            getLastCostumeId(const Character &c) { return c.m_char_data.m_last_costume_id; }
+uint32_t            getCurrentCostumeIdx(const Character &c) { return c.m_char_data.m_current_costume_idx; }
 const QString &     getOrigin(const Character &c) { return c.m_char_data.m_origin_name; }
 const QString &     getClass(const Character &c) { return c.m_char_data.m_class_name; }
 uint32_t            getXP(const Character &c) { return c.m_char_data.m_experience_points; }
@@ -31,24 +44,29 @@ const QString &     getLastOnline(const Character &c) { return c.m_char_data.m_l
 // Setters
 void setLevel(Character &c, uint32_t val)
 {
-    if(val>49)
-        val = 49;
+    GameDataStore &data(getGameData());
+    if(val > data.expMaxLevel())
+        val = data.expMaxLevel();
     c.m_char_data.m_level = val; // client stores lvl arrays starting at 0
     c.finalizeLevel();
+    setHPToMax(c);
+    setEndToMax(c);
 }
 
 void setCombatLevel(Character &c, uint32_t val)
 {
-    if(val>49)
-        val = 49;
+    GameDataStore &data(getGameData());
+    if(val > data.expMaxLevel())
+        val = data.expMaxLevel();
     c.m_char_data.m_combat_level = val;
     c.finalizeCombatLevel();
 }
 
 void setSecurityThreat(Character &c, uint32_t val)
 {
-    if(val>49)
-        val = 49;
+    GameDataStore &data(getGameData());
+    if(val > data.expMaxLevel())
+        val = data.expMaxLevel();
     c.m_char_data.m_security_threat = val;
 }
 
@@ -57,7 +75,7 @@ void setHP(Character &c, float val)
     c.m_char_data.m_current_attribs.m_HitPoints = std::max(0.0f, std::min(val,c.m_max_attribs.m_HitPoints));
 }
 
-void setMaxHP(Character &c)
+void setHPToMax(Character &c)
 {
     setHP(c, getMaxHP(c));
 }
@@ -67,19 +85,26 @@ void setEnd(Character &c, float val)
     c.m_char_data.m_current_attribs.m_Endurance = std::max(0.0f, std::min(val,c.m_max_attribs.m_Endurance));
 }
 
-void setMaxEnd(Character &c)
+void setEndToMax(Character &c)
 {
     setEnd(c, getMaxEnd(c));
 }
 
-void    setLastCostumeId(Character &c, uint64_t val) { c.m_char_data.m_last_costume_id = val; }
+void setCurrentCostumeIdx(Character &c, uint32_t idx)
+{
+    c.m_add_new_costume = true;
+    c.m_char_data.m_current_costume_idx = idx;
+}
 
 void setXP(Character &c, uint32_t val)
 {
     c.m_char_data.m_experience_points = val;
 }
 
-void setDebt(Character &c, uint32_t val) { c.m_char_data.m_experience_debt = val; }
+void setDebt(Character &c, uint32_t val)
+{
+    c.m_char_data.m_experience_debt = val;
+}
 
 void setTitles(Character &c, bool prefix, QString generic, QString origin, QString special)
 {
@@ -101,9 +126,41 @@ void setTitles(Character &c, bool prefix, QString generic, QString origin, QStri
     c.m_char_data.m_titles[2] = special;
 }
 
-void setInf(Character &c, uint32_t val) { c.m_char_data.m_influence = val; }
-void setDescription(Character &c, QString val) { c.m_char_data.m_character_description = val; }
-void setBattleCry(Character &c, QString val) { c.m_char_data.m_battle_cry = val; }
+void setInf(Character &c, uint32_t val)
+{
+    c.m_char_data.m_influence = val;
+}
+
+void setDescription(Character &c, QString val)
+{
+    c.m_char_data.m_character_description = val;
+}
+
+void setBattleCry(Character &c, QString val)
+{
+    c.m_char_data.m_battle_cry = val;
+}
+
+void setAFK(Character &c, const bool is_afk, QString msg)
+{
+    c.m_char_data.m_afk = is_afk;
+    if(is_afk)
+        c.m_char_data.m_afk_msg = msg;
+}
+bool isAFK(Character &c)
+{
+    return c.m_char_data.m_afk;
+}
+
+void initializeCharacter(Character &c)
+{
+    GameDataStore &data(getGameData());
+    uint entclass = getEntityClassIndex(data, true, c.m_char_data.m_class_name);
+    c.m_char_data.m_current_attribs = data.m_player_classes[entclass].m_AttribBase[0];
+    c.m_char_data.m_current_attribs.m_HitPoints = c.m_max_attribs.m_HitPoints;
+    c.m_char_data.m_current_attribs.m_Endurance = c.m_max_attribs.m_Endurance;
+    c.m_char_data.m_current_attribs.m_Regeneration *=4;     //for some reason the base regen rate is .25
+}
 
 void updateLastOnline(Character &c)
 {
@@ -111,15 +168,72 @@ void updateLastOnline(Character &c)
 }
 
 // Toggles
-void toggleAFK(Character &c, const bool isTrue, QString msg)
-{
-    c.m_char_data.m_afk = isTrue;
-    //c.m_char_data.m_afk = !c.m_char_data.m_afk;
-    if(c.m_char_data.m_afk)
-        c.m_char_data.m_afk_msg = msg; 
-}
-
 void toggleAFK(Character &c, QString msg)
 {
-    toggleAFK(c, !c.m_char_data.m_afk, msg);
+    setAFK(c, !c.m_char_data.m_afk, msg);
 }
+
+
+/*
+ * Titles -- TODO: get titles from texts/English/titles_def
+ */
+static const QStringList g_generic_titles =
+{
+    "NULL",
+    "Awesome",
+    "Bold",
+    "Courageous",
+    "Daring",
+    "Extraordinary",
+    "Famous",
+    "Gallant",
+    "Heroic",
+    "Incomparable",
+    "Legendary",
+    "Magnificent",
+    "Outstanding",
+    "Powerful",
+    "Remarkable",
+    "Startling",
+    "Terrific",
+    "Ultimate",
+    "Valiant",
+    "Wonderful",
+};
+
+// TODO: get titles from texts/English/titles_def
+static const QStringList g_origin_titles =
+{
+    "NULL",
+    "Adept",
+    "Bright",
+    "Curious",
+    "Deductiv",
+    "Exceptional",
+    "Far Seeing",
+    "Glorious",
+    "Honorable",
+    "Indescribable",
+    "Lucky",
+    "Majestic",
+    "Otherworldly",
+    "Phenomenal",
+    "Redoubtable",
+    "Stupendous",
+    "Thoughtful",
+    "Unearthly",
+    "Venturous",
+    "Watchful",
+};
+
+const QString &getGenericTitle(uint32_t val)
+{
+    return g_generic_titles.at(val);
+}
+
+const QString &getOriginTitle(uint32_t val)
+{
+    return g_origin_titles.at(val);
+}
+
+//! @}

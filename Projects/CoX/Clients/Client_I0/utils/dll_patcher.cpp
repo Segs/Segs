@@ -17,7 +17,7 @@ void patchit(const char *tgt,void *proc)
     if(addr)
     {
         *addr = 0xE9; // write JMP
-        *(DWORD *)(addr+1) = (DWORD)offset; // write target offset
+        *(DWORD *)(addr+1) = offset; // write target offset
         printf("Patched %s\n",tgt);
     }
     else

@@ -42,8 +42,8 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
         else
             ms_since_prev = bs.GetBits(m_next_state.m_csc_deltabits);
 
-        if (control_id < 8)
-                    m_next_state.m_input_received = true;
+        if(control_id < 8)
+            m_next_state.m_input_received = true;
 
         m_next_state.m_ms_since_prev = ms_since_prev;
 
@@ -61,7 +61,7 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                 processDirectionControl(&m_next_state, control_id, ms_since_prev, keypress_state);
 
                 qCDebug(logInput, "key released %d", control_id);
-                qCDebug(logInput, "svr vs client keypress time: %f %f : %f", 
+                qCDebug(logInput, "svr vs client keypress time: %f %f : %f",
                         m_next_state.m_svr_keypress_time[control_id].count(),
                         m_next_state.m_keypress_time[control_id], m_next_state.m_ms_since_prev);
                 break;
@@ -85,7 +85,7 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
             case 8:
             {
                 m_next_state.m_controls_disabled = bs.GetBits(1);
-                if ( m_next_state.m_full_timeupdate ) // sent_run_physics. maybe autorun? maybe is_running?
+                if( m_next_state.m_full_timeupdate ) // sent_run_physics. maybe autorun? maybe is_running?
                 {
                     m_next_state.m_time_diff1 = bs.GetPackedBits(8);   // value - previous_value
                     m_next_state.m_time_diff2 = bs.GetPackedBits(8);   // time - previous_time
@@ -105,7 +105,7 @@ void RecvInputState::receiveControlState(BitStream &bs) // formerly partial_2
                 if(bs.GetBits(1)) // if true velocity scale < 255
                 {
                     m_next_state.m_velocity_scale = bs.GetBits(8);
-                    qCDebug(logInput, "Velocity Scale: %d", m_next_state.m_velocity_scale);
+                    qCDebug(logInput, "Velocity Scale: %f", m_next_state.m_velocity_scale);
                 }
                 else
                     m_next_state.m_velocity_scale = 255;
@@ -157,16 +157,14 @@ void RecvInputState::extended_input(BitStream &bs)
         m_next_state.m_control_bits[idx] = keypress_state;
         if(keypress_state==true)
         {
+            m_next_state.m_input_received = true; // set to true so autoafk doesn't toggle
             m_next_state.m_keypress_start[idx] = std::chrono::steady_clock::now();
             processDirectionControl(&m_next_state, idx, 0, keypress_state);
             qCDebug(logInput, "keypress down %d", idx);
         }
     }
 
-    if (m_next_state.m_control_bits != 0)
-            m_next_state.m_input_received = true;
-
-    if(bs.GetBits(1)) //if ( abs(s_prevTime - ms_time) < 1000 )
+    if(bs.GetBits(1)) //if( abs(s_prevTime - ms_time) < 1000 )
     {
         m_next_state.m_orientation_pyr[0] = AngleDequantize(bs.GetBits(11),11);
         m_next_state.m_orientation_pyr[1] = AngleDequantize(bs.GetBits(11),11);
@@ -232,7 +230,7 @@ void RecvInputState::recv_client_opts(BitStream &bs)
     while((cmd_idx = bs.GetPackedBits(1))!=0)
     {
         entry=opts.get(cmd_idx-1);
-        if (!entry)
+        if(!entry)
         {
             qWarning() << "recv_client_opts missing opt for cmd index" << cmd_idx-1;
             continue;

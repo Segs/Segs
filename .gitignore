@@ -1,5 +1,4 @@
 # common cmake build directories
-build*/
 bld/
 doxygen/
 out/
@@ -33,3 +32,4 @@ out/
 
 # Environment activation script
 activate.env
+.directory

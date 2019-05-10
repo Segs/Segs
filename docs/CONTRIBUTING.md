@@ -2,6 +2,12 @@
 
 :+1::tada: Thank you for contributing to the SEGS Project! :tada::+1:
 
+### Regarding the leaked source code:
+* Please be aware that SEGS is a [Clean Room](https://en.wikipedia.org/wiki/Clean_room_design) environment. 
+* We cannot keep our project at it's current legal status if we were to use leaked source code directly.
+ 
+In short, everything made for SEGS is original and entirely independent from the leaked code.
+
 The following is a set of guidelines for contributing to SEGS. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
 #### Table Of Contents
@@ -43,7 +49,8 @@ We have an official message board and a FAQ where the community chimes in with h
 
 ### Chat with us on Discord
 
-Chat with us on Discord! We're currently hosting a `#segs` channel on Splat Chat. You can join by clicking this link:
+Come and join us in `#pocket-d` channel for general chat or `#troubleshooting` for support. 
+Developers are welcome to join `#development`.  
  
  [**Click here to join SEGS Discord**](https://discord.segs.io/)
 

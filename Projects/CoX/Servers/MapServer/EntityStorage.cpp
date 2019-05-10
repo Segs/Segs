@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -163,6 +163,15 @@ Entity * EntityManager::CreateNpc(const GameDataStore &data,const Parse_NPC &tpl
     m_live_entlist.insert(res);
 
     initializeNewNpcEntity(data,*res,&tpl,idx,variant);
+    return res;
+}
+Entity * EntityManager::CreateCritter(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant, int level)
+{
+    Entity *res = m_store.get();
+    m_live_entlist.insert(res);
+
+    initializeNewCritterEntity(data,*res,&tpl,idx,variant, level);
+
     return res;
 }
 Entity * EntityManager::CreateGeneric(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant,EntType type)

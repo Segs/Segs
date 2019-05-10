@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -16,6 +16,7 @@
 
 #include "DataStorage.h"
 #include "scenegraph_definitions.h"
+#include "Logging.h"
 
 namespace
 {
@@ -372,27 +373,58 @@ bool loadFrom(const QString &filepath, SceneGraph_Data &target)
 {
     return commonReadFrom(filepath,"SceneGraph",target);
 }
+
+QString getFilepathCaseInsensitive(QString fpath)
+{
+    // Windows is far too lax about case sensitivity. Consequently
+    // filenames aren't consistent. This should derive the filename
+    // based upon a case-insensitive comparison, and use the actual
+    // formatted filepath when loading scene data.
+
+    // check file exists, if so, return original path
+    if(QFile(fpath).exists())
+        return fpath;
+
+    // get base from path
+    QString base_path = QFileInfo(fpath).path();
+    QDir dir(base_path);
+
+    if (!dir.exists())
+        qWarning() << "Failed to open" << dir.absolutePath();
+
+    QStringList files = dir.entryList(QDir::Files | QDir::NoSymLinks);
+    for(QString &f : files)
+    {
+        qCDebug(logSceneGraph) << "Comparing" << f << fpath;
+        if(fpath.endsWith(f, Qt::CaseInsensitive))
+            fpath = base_path + "/" + f;
+    }
+
+    return fpath;
+}
+
 bool LoadSceneData(const QString &fname, SceneGraph_Data &scenegraph)
 {
     BinStore binfile;
+    QString fixed_path = getFilepathCaseInsensitive(fname);
 
-    if (fname.contains(".crl"))
+    if(fixed_path.contains(".crl"))
     {
-        if (!loadFrom(fname, scenegraph))
+        if(!loadFrom(fixed_path, scenegraph))
         {
-            qCritical() << "Failed to serialize data from crl:" << fname;
+            qCritical() << "Failed to serialize data from crl:" << fixed_path;
             return false;
         }
         return true;
     }
-    if (!binfile.open(fname, scenegraph_i0_2_requiredCrc))
+    if(!binfile.open(fixed_path, scenegraph_i0_2_requiredCrc))
     {
-        qCritical() << "Failed to open original bin:" << fname;
+        qCritical() << "Failed to open original bin:" << fixed_path;
         return false;
     }
-    if (!loadFrom(&binfile, scenegraph))
+    if(!loadFrom(&binfile, scenegraph))
     {
-        qCritical() << "Failed to load data from original bin:" << fname;
+        qCritical() << "Failed to load data from original bin:" << fixed_path;
         return false;
     }
     return true;

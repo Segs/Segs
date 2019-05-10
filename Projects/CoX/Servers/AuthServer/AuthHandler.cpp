@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -20,7 +20,7 @@
 #include "Servers/InternalEvents.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
-#include "SEGSTimer.h"
+
 #include "TimeEvent.h"
 
 #include <QDebug>
@@ -40,13 +40,8 @@ namespace
     AuthorizationError s_auth_error_locked_account(AUTH_ACCOUNT_BLOCKED);
     AuthorizationError s_auth_error_already_online(AUTH_ALREADY_LOGGEDIN);
 
-    enum
-    {
-        Session_Reaper_Timer   = 1
-    };
-
     const ACE_Time_Value session_reaping_interval(0,1000*1000);
-    const ACE_Time_Value link_is_stale_if_disconnected_for(0,2*1000*1000);
+    const ACE_Time_Value link_is_stale_if_disconnected_for(2,0);
 } // namespace
 
 void AuthHandler::dispatch( Event *ev )
@@ -56,9 +51,6 @@ void AuthHandler::dispatch( Event *ev )
     {
         case evConnect:
             on_connect(static_cast<Connect *>(ev));
-            break;
-        case evTimeout:
-            on_timeout(static_cast<Timeout *>(ev));
             break;
         case evReconnectAttempt:
             qWarning() << "Unhandled reconnect packet??";
@@ -85,8 +77,8 @@ void AuthHandler::dispatch( Event *ev )
         case AuthDBEventTypes::evRetrieveAccountResponse:
             on_retrieve_account_response(static_cast<RetrieveAccountResponse *>(ev));
             break;
-        case evAuthDbErrorMessage:
-            on_db_error(static_cast<AuthDbErrorMessage *>(ev)); break;
+        case evAuthDbStatusMessage:
+            on_db_error(static_cast<AuthDbStatusMessage *>(ev)); break;
         case Internal_EventTypes::evExpectClientResponse:
             on_client_expected(static_cast<ExpectClientResponse *>(ev)); break;
         case Internal_EventTypes::evClientConnectedMessage:
@@ -107,18 +99,9 @@ AuthHandler::AuthHandler(AuthServer *our_server) : m_message_bus_endpoint(*this)
 {
     assert(HandlerLocator::getAuth_Handler()==nullptr);
     HandlerLocator::setAuth_Handler(this);
-    m_sessions.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
+    // Note we do not store the created timer's ID anywhere, this is ok as long as we don't need to manipulate the timer
+    startTimer(addTimer(session_reaping_interval), &AuthHandler::reap_stale_links);
     m_message_bus_endpoint.subscribe(evGameServerStatusMessage);
-}
-
-void AuthHandler::on_timeout(Timeout *ev)
-{
-    uint64_t timer_id = ev->timer_id();
-    switch (timer_id) {
-        case Session_Reaper_Timer:
-            reap_stale_links();
-        break;
-    }
 }
 
 void AuthHandler::on_connect( Connect *ev )
@@ -148,17 +131,17 @@ void AuthHandler::on_disconnect(Disconnect *ev)
     }
     AuthSession &session(m_sessions.session_from_token(ev->m_session_token));
     session.m_state = AuthSession::NOT_LOGGED_IN;
-    if (!session.m_auth_data)
+    if(!session.m_auth_data)
     {
         qWarning("Client disconnected without a valid login attempt. Old client ?");
     }
     {
         SessionStore::MTGuard guard(m_sessions.reap_lock());
-        if (session.is_connected_to_game_server_id == 0)
-            m_sessions.mark_session_for_reaping(&session, session.link()->session_token());
+        if(session.is_connected_to_game_server_id == 0)
+            m_sessions.mark_session_for_reaping(&session, session.link()->session_token(),"AuthHander: Disconnect");
     }
 
-    if (session.link())
+    if(session.link())
     {
         session.link(nullptr);
         m_sessions.remove_from_active_sessions(&session);
@@ -201,6 +184,8 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     }
     AuthSession *sess_ptr = &m_sessions.session_from_token(sess_token);
     // protector takes ownership of the session, removing it from ready-for-reaping set
+    // If the protected session is not `protectee_moved` on destruction of `protector` the session is re-added to
+    // the ready-for-reaping set.
     ReaperProtection<AuthSession> protector(sess_ptr,sess_token,m_sessions);
     m_sessions.reap_lock().unlock();
 
@@ -215,11 +200,12 @@ void AuthHandler::on_retrieve_account_response(RetrieveAccountResponse *msg)
     RetrieveAccountResponseData & acc_inf(msg->m_data);  // all the account info you can eat!
 
     // pre-process the client, check if the account isn't blocked, or if the account isn't already logged in
-    if(acc_inf.isBlocked()) {
+    if(acc_inf.isBlocked())
+    {
         lnk->putq(s_auth_error_locked_account.shallow_copy());
         return;
     }
-    qDebug("Server Account Id : %" PRIu64, acc_inf.m_acc_server_acc_id);
+    qDebug("Server Account Id : %" PRIu32, acc_inf.m_acc_server_acc_id);
     // step 3d: checking if this account is blocked
     if(isClientConnectedAnywhere(acc_inf.m_acc_server_acc_id))
     {
@@ -285,7 +271,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     }
 
     // if password is too long
-    if (ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
+    if(ev->m_data.password[sizeof(ev->m_data.password)-1] != '\0')
     {
         lnk->putq(s_auth_error_blocked_account.shallow_copy());
         return;
@@ -327,7 +313,7 @@ void AuthHandler::on_login( LoginRequest *ev )
     auth_db_handler->putq(request_event);
     // here we will wait for db response, so here we're going to put the session on the read-to-reap list
     // in case db does not respond in sane time frame, the session is going to be removed.
-    m_sessions.locked_mark_session_for_reaping(session_ptr,sess_tok);
+    m_sessions.locked_mark_session_for_reaping(session_ptr,sess_tok,"AuthHandler: waiting for handover");
 }
 
 void AuthHandler::on_server_list_request( ServerListRequest *ev )
@@ -421,7 +407,7 @@ void AuthHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
     session.is_connected_to_game_server_id = 0;
     {
         SessionStore::MTGuard guard(m_sessions.reap_lock());
-        m_sessions.mark_session_for_reaping(&session,ev->session_token());
+        m_sessions.mark_session_for_reaping(&session,ev->session_token(),"AuthHandler: GameServer disconnect");
     }
 }
 
@@ -447,7 +433,7 @@ void AuthHandler::on_server_status_change(GameServerStatusMessage *ev)
     m_known_game_servers[ev->m_data.m_id] = ev->m_data;
 }
 
-void AuthHandler::on_db_error(AuthDbErrorMessage *ev)
+void AuthHandler::on_db_error(AuthDbStatusMessage *ev)
 {
     AuthSession &session(m_sessions.session_from_event(ev));
     session.link()->putq(s_auth_error_db_error.shallow_copy());

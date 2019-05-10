@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -69,7 +69,7 @@ uint8_t     g_interpolation_bits    = 1;
 static void buildErrorTable()
 {
     static bool table_built = false;
-    if ( !table_built )
+    if( !table_built )
     {
         table_built = true;
         for (int i = 3; i < 131; ++i )
@@ -84,7 +84,7 @@ static void buildErrorTable()
 float get_interpolator_perturbation(int16_t a1,int level)
 {
     buildErrorTable();
-    if ( a1 )
+    if( a1 )
         return (2 * (a1 >= 0) - 1) * s_coding_sequence[int(std::abs(a1))]*(1<<level);
 
     return 0.0f;
@@ -149,13 +149,13 @@ void interpolatePosUpdates(Entity *e, std::array<BinTreeEntry,7> &server_pos_upd
 
     for(uint8_t i = 0; i < 7; ++i)
     {
-        if (server_pos_update[i].m_has_height || server_pos_update[i].m_has_other)
+        if(server_pos_update[i].m_has_height || server_pos_update[i].m_has_other)
         {
             midpoint = (pos_update_arr[s_breadth_first_order[s_source_val_idx[i].first]] + pos_update_arr[s_breadth_first_order[s_source_val_idx[i].second]]) * 0.5f;
             const int level = s_enc_level[i];
-            if ( server_pos_update[i].m_has_height )
+            if( server_pos_update[i].m_has_height )
                 midpoint.y += get_interpolator_perturbation(server_pos_update[i].y,level);
-            if ( server_pos_update[i].m_has_other )
+            if( server_pos_update[i].m_has_other )
             {
                 midpoint.x += get_interpolator_perturbation(server_pos_update[i].x,level);
                 midpoint.z += get_interpolator_perturbation(server_pos_update[i].z,level);
@@ -170,13 +170,13 @@ void interpolatePosUpdates(Entity *e, std::array<BinTreeEntry,7> &server_pos_upd
 
     addPosUpdate(*e, prev_pos); //addInterp(*e, prev_pos);
 
-    if ( num_interp_coeffs )
+    if( num_interp_coeffs )
     {
         dt = cur_pos.m_timestamp - prev_timestamp;
         // interpolate into up to 64 updates
         for (int i = 0; i < 7; ++i )
         {
-            if ( needs_update[i] )
+            if( needs_update[i] )
             {
                 lerp_factor = (float)(i + 1) / 8.0f;
                 PosUpdate step;
@@ -275,7 +275,7 @@ std::array<BinTreeEntry,7> interpolateBinTree(std::array<PosUpdate, 64> vals, fl
 void entCalcInterp(Entity *ent, glm::mat4 *mat4, uint32_t time, glm::vec3 *next_pyr)
 {
     std::array<PosUpdate, 64> posupdate_arr = ent->m_pos_updates;
-    PosUpdate *last;
+    PosUpdate *last=nullptr;
     PosUpdate *next;
     glm::vec3 pos;
     glm::vec3 pyr;
@@ -284,11 +284,11 @@ void entCalcInterp(Entity *ent, glm::mat4 *mat4, uint32_t time, glm::vec3 *next_
     for(i = 0; i < 64; ++i)
     {
         last = &posupdate_arr[(64 + ent->m_update_idx - i) % 64];
-        if (time > posupdate_arr[(64 + ent->m_update_idx - i) % 64].m_timestamp)
+        if(time > posupdate_arr[(64 + ent->m_update_idx - i) % 64].m_timestamp)
             break;
     }
 
-    if (i > 0 && (unsigned int)i < 64 && last->m_timestamp)
+    if(i > 0 && i < 64 && last->m_timestamp)
     {
         next = &posupdate_arr[(ent->m_update_idx - i + 64 + 1) % 64];
         float timestep = (float)(unsigned int)(posupdate_arr[(ent->m_update_idx - i + 64 + 1) % 64].m_timestamp - last->m_timestamp);
@@ -306,7 +306,7 @@ void entCalcInterp(Entity *ent, glm::mat4 *mat4, uint32_t time, glm::vec3 *next_
         next = &posupdate_arr[ent->m_update_idx];
         last = &posupdate_arr[(ent->m_update_idx + 64 - 1) % 64];
 
-        if (ent->m_type == EntType::CAR || !ent->m_is_fading) // possibly: e->m_fading_direction != FadeDirection::Out
+        if(ent->m_type == EntType::CAR || !ent->m_is_fading) // possibly: e->m_fading_direction != FadeDirection::Out
         {
             last->m_position = next->m_position;
             last->m_pyr_angles = next->m_pyr_angles;
@@ -315,7 +315,7 @@ void entCalcInterp(Entity *ent, glm::mat4 *mat4, uint32_t time, glm::vec3 *next_
         }
         else
         {
-            float scale = (float)(time - last->m_timestamp) / (float)(unsigned int)(next->m_timestamp - last->m_timestamp);
+            float scale = float(time - last->m_timestamp) / std::fabs(float(next->m_timestamp - last->m_timestamp));
             glm::vec3 distance = next->m_position - last->m_position;
             glm::vec3 magnitude = distance * scale;
             pos = magnitude + last->m_position;
@@ -326,7 +326,7 @@ void entCalcInterp(Entity *ent, glm::mat4 *mat4, uint32_t time, glm::vec3 *next_
     //quat = fromCoHYpr(pos); // below does this
     transformFromYPRandTranslation(*mat4, pyr, pos);
 
-    if (next_pyr)
+    if(next_pyr)
         *next_pyr = pyr;
 }
 
@@ -341,28 +341,30 @@ int storeBinTreesResult(BitStream &bs, const std::array<BinTreeEntry, 7> &bintre
     static const uint8_t dependency_indices[] = {0,0,0,1,1,2,2};
     static const uint8_t tree_depth_bits_mod[8] = { 1,2,2,3,3,3,3 };
     int     res = 0;
-    char    num_bits;
-    char    base_bitcount;
+    uint8_t num_bits;
+    uint8_t base_bitcount;
 
     std::array<BinTreeEntry, 7> tree_copy = bintree;
     base_bitcount = g_interpolation_bits + 5;
 
-    if (tree_copy[0].m_has_height && tree_copy[0].m_has_other)
+    if(tree_copy[0].m_has_height && tree_copy[0].m_has_other)
         bs.StoreBits(1, 1); // we have both values
     else
         bs.StoreBits(1, tree_copy[0].m_has_height); // otherwise it is assumed that has_other is true
 
     for (int idx = 0; idx < 7; ++idx )
     {
-        if ( (idx && !tree_copy[dependency_indices[idx]].m_has_height) || tree_depth_bits_mod[idx] > g_interpolation_level )
+        if( (idx && !tree_copy[dependency_indices[idx]].m_has_height) || tree_depth_bits_mod[idx] > g_interpolation_level )
             tree_copy[idx].m_has_height = 0; // mark dependency as missing
         else
         {
-            if ( idx )
+            if( idx )
                 bs.StoreBits(1, tree_copy[idx].m_has_height);
 
-            if ( tree_copy[idx].m_has_height )
+            if( tree_copy[idx].m_has_height )
             {
+                // make sure we don't encounter a case when we try to send 0 or less bits.
+                assert(base_bitcount > tree_depth_bits_mod[idx]);
                 num_bits = base_bitcount - tree_depth_bits_mod[idx];
                 res = 1;
 
@@ -375,14 +377,14 @@ int storeBinTreesResult(BitStream &bs, const std::array<BinTreeEntry, 7> &bintre
     for (int idx = 0; idx < 7; ++idx )
     {
         // check if the 'source' value for the one located at idx has xz values,
-        if ( (idx && !tree_copy[dependency_indices[idx]].m_has_other) || tree_depth_bits_mod[idx] > g_interpolation_level )
+        if( (idx && !tree_copy[dependency_indices[idx]].m_has_other) || tree_depth_bits_mod[idx] > g_interpolation_level )
             tree_copy[idx].m_has_other = false;
         else
         {
-            if ( idx )
+            if( idx )
                 bs.StoreBits(1, tree_copy[idx].m_has_other);
 
-            if ( tree_copy[idx].m_has_other )
+            if( tree_copy[idx].m_has_other )
             {
                 num_bits = base_bitcount - tree_depth_bits_mod[idx];
                 res = 1;

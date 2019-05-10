@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -53,7 +53,7 @@ void Team::dump()
     QString output = "Debugging Team: " + QString::number(m_team_idx)
              + "\n\t size: " + QString::number(m_team_members.size())
              + "\n\t leader db_id: " + QString::number(m_team_leader_idx)
-             + "\n\t has mission? " + QString::number(m_team_has_mission)
+             + "\n\t has mission? " + QString::number(m_has_taskforce)
              + "\nTeam Members: ";
     qDebug().noquote() << output;
 
@@ -113,7 +113,7 @@ bool inviteTeam(Entity &src, Entity &tgt)
         src.m_team->addTeamMember(&tgt,0);
         return true;
     }
-    if (src.m_has_team && src.m_team->isTeamLeader(&src))
+    if(src.m_has_team && src.m_team->isTeamLeader(&src))
     {
         src.m_team->addTeamMember(&tgt,0);
         return true;
@@ -124,7 +124,7 @@ bool inviteTeam(Entity &src, Entity &tgt)
 
 bool kickTeam(Entity &tgt)
 {
-    if (!tgt.m_has_team)
+    if(!tgt.m_has_team)
         return false;
 
     removeTeamMember(*tgt.m_team, &tgt);
@@ -220,7 +220,7 @@ SidekickChangeStatus inviteSidekick(Entity &src, Entity &tgt)
         return SidekickChangeStatus::CANNOT_MENTOR_YET;
     if(src_sk.m_has_sidekick)
         return SidekickChangeStatus::HAVE_SIDEKICK_ALREADY;
-    if (tgt_sk.m_has_sidekick)
+    if(tgt_sk.m_has_sidekick)
         return SidekickChangeStatus::TARGET_IS_SIDEKICKING_ALREADY;
     if(!src.m_has_team || !tgt.m_has_team || src.m_team == nullptr || tgt.m_team == nullptr)
         return SidekickChangeStatus::NO_TEAM_OR_SAME_TEAM_REQUIRED;
@@ -267,7 +267,7 @@ uint32_t getSidekickId(const Character &src)
     return src_sk.m_db_id;
 }
 
-SidekickChangeStatus removeSidekick(Entity &src, uint32_t sidekick_id)
+SidekickChangeStatus removeSidekick(Entity &src, uint32_t /*sidekick_id*/)
 {
     //TODO: this function should actually post messages related to de-sidekicking to our target entity.
     QString     msg = "Unable to remove sidekick.";

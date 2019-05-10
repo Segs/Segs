@@ -51,7 +51,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -150,7 +150,7 @@ void TextEdit::show_text_editor(const QString &script)
 }
 void TextEdit::closeEvent(QCloseEvent *e)
 {
-    if (maybeSave())
+    if(maybeSave())
         e->accept();
     else
         e->ignore();
@@ -315,16 +315,16 @@ void TextEdit::setupTextActions()
 
 bool TextEdit::load(const QString &f)
 {
-    if (!QFile::exists(f))
+    if(!QFile::exists(f))
         return false;
     QFile file(f);
-    if (!file.open(QFile::ReadOnly))
+    if(!file.open(QFile::ReadOnly))
         return false;
 
     QByteArray data = file.readAll();
     QTextCodec *codec = Qt::codecForHtml(data);
     QString str = codec->toUnicode(data);
-    if (Qt::mightBeRichText(str)) {
+    if(Qt::mightBeRichText(str)) {
         textEdit->setHtml(str);
     } else {
         str = QString::fromLocal8Bit(data);
@@ -337,7 +337,7 @@ bool TextEdit::load(const QString &f)
 
 bool TextEdit::maybeSave()
 {
-    if (!textEdit->document()->isModified())
+    if(!textEdit->document()->isModified())
         return true;
 
     const QMessageBox::StandardButton ret =
@@ -345,9 +345,9 @@ bool TextEdit::maybeSave()
                              tr("The document has been modified.\n"
                                 "Do you want to save your changes?"),
                              QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-    if (ret == QMessageBox::Save)
+    if(ret == QMessageBox::Save)
         return fileSave();
-    else if (ret == QMessageBox::Cancel)
+    else if(ret == QMessageBox::Cancel)
         return false;
     return true;
 }
@@ -358,7 +358,7 @@ void TextEdit::setCurrentFileName(const QString &fileName)
     textEdit->document()->setModified(false);
 
     QString shownName;
-    if (fileName.isEmpty())
+    if(fileName.isEmpty())
         shownName = "untitled.txt";
     else
         shownName = QFileInfo(fileName).fileName();
@@ -369,7 +369,7 @@ void TextEdit::setCurrentFileName(const QString &fileName)
 
 void TextEdit::fileNew()
 {
-    if (maybeSave()) {
+    if(maybeSave()) {
         textEdit->clear();
         setCurrentFileName(QString());
     }
@@ -381,10 +381,10 @@ void TextEdit::fileOpen()
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
     fileDialog.setFileMode(QFileDialog::ExistingFile);
     fileDialog.setMimeTypeFilters(QStringList() << "text/html" << "text/plain");
-    if (fileDialog.exec() != QDialog::Accepted)
+    if(fileDialog.exec() != QDialog::Accepted)
         return;
     const QString fn = fileDialog.selectedFiles().first();
-    if (load(fn))
+    if(load(fn))
         statusBar()->showMessage(tr("Opened \"%1\"").arg(QDir::toNativeSeparators(fn)));
     else
         statusBar()->showMessage(tr("Could not open \"%1\"").arg(QDir::toNativeSeparators(fn)));
@@ -392,15 +392,15 @@ void TextEdit::fileOpen()
 
 bool TextEdit::fileSave()
 {
-    if (fileName.isEmpty())
+    if(fileName.isEmpty())
         return fileSaveAs();
-    if (fileName.startsWith(QStringLiteral(":/")))
+    if(fileName.startsWith(QStringLiteral(":/")))
         return fileSaveAs();
 
     QTextDocumentWriter writer(fileName);
     writer.setFormat("plaintext");
     bool success = writer.write(textEdit->document());
-    if (success) {
+    if(success) {
         textEdit->document()->setModified(false);
         statusBar()->showMessage(tr("Wrote \"%1\"").arg(QDir::toNativeSeparators(fileName)));
     } else {
@@ -419,7 +419,7 @@ bool TextEdit::fileSaveAs()
     mimeTypes << "application/vnd.oasis.opendocument.text" << "text/html" << "text/plain";
     fileDialog.setMimeTypeFilters(mimeTypes);
     fileDialog.setDefaultSuffix("odt");
-    if (fileDialog.exec() != QDialog::Accepted)
+    if(fileDialog.exec() != QDialog::Accepted)
         return false;
     const QString fn = fileDialog.selectedFiles().first();
     setCurrentFileName(fn);
@@ -439,7 +439,7 @@ void TextEdit::insert_new_link()
 {
     QString link = QInputDialog::getText(this, "Insert Link", "Enter a link/URL");
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
+    if(!cursor.hasSelection())
     {
         cursor.insertText("<a href " + link + ">");
         int oldPosition = cursor.position();
@@ -477,7 +477,7 @@ void TextEdit::insert_new_link()
 void TextEdit::textBold()
 {
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
+    if(!cursor.hasSelection())
     {
         cursor.insertText("<b>");
         int oldPosition = cursor.position();
@@ -514,7 +514,7 @@ void TextEdit::textBold()
 void TextEdit::textItalic()
 {
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
+    if(!cursor.hasSelection())
     {
         cursor.insertText("<i>");
         int oldPosition = cursor.position();
@@ -552,7 +552,7 @@ void TextEdit::textFamily(const QString &f)
 {
     QString face = f;
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
+    if(!cursor.hasSelection())
     {
         cursor.insertText("<face " + face + ">");
         int oldPosition = cursor.position();
@@ -589,7 +589,7 @@ void TextEdit::textFamily(const QString &f)
 void TextEdit::textSize(const QString &p)
 {
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
+    if(!cursor.hasSelection())
     {
         cursor.insertText("<scale " + p + ">");
         int oldPosition = cursor.position();
@@ -627,7 +627,7 @@ void TextEdit::textStyle(int styleIndex)
 {
     QTextCursor cursor = textEdit->textCursor();
 
-    if (styleIndex != 0) {
+    if(styleIndex != 0) {
         QTextListFormat::Style style = QTextListFormat::ListDisc;
 
         switch (styleIndex) {
@@ -664,7 +664,7 @@ void TextEdit::textStyle(int styleIndex)
 
         QTextListFormat listFmt;
 
-        if (cursor.currentList()) {
+        if(cursor.currentList()) {
             listFmt = cursor.currentList()->format();
         } else {
             listFmt.setIndent(blockFmt.indent() + 1);
@@ -688,10 +688,10 @@ void TextEdit::textStyle(int styleIndex)
 void TextEdit::textColor()
 {
     QColor col = QColorDialog::getColor();
-    if (!col.isValid())
+    if(!col.isValid())
         return;
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
+    if(!cursor.hasSelection())
     {
         cursor.insertText("<color " + col.name() + ">");
         int oldPosition = cursor.position();
@@ -728,7 +728,7 @@ void TextEdit::textColor()
 void TextEdit::textShadow(const QString &p)
 {
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
+    if(!cursor.hasSelection())
     {
         cursor.insertText("<shadow " + p + ">");
         int oldPosition = cursor.position();
@@ -765,7 +765,7 @@ void TextEdit::textShadow(const QString &p)
 void TextEdit::textOutline(const QString &p)
 {
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
+    if(!cursor.hasSelection())
     {
         cursor.insertText("<outline " + p + ">");
         int oldPosition = cursor.position();
@@ -802,7 +802,7 @@ void TextEdit::textOutline(const QString &p)
 void TextEdit::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
 {
     QTextCursor cursor = textEdit->textCursor();
-    if (!cursor.hasSelection())
+    if(!cursor.hasSelection())
         cursor.select(QTextCursor::WordUnderCursor);
     cursor.mergeCharFormat(format);
     textEdit->mergeCurrentCharFormat(format);

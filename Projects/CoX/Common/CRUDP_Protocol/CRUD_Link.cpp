@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -80,7 +80,7 @@ void CRUDLink::packets_for_event(Event *ev)
     // create one or more properly formated CrudP_Packets in the protocol object
     // qDebug() << "Adding packets for"<<c_ev->info();
     m_protocol.SendPacket(res);
-    if (!m_protocol.batchSend(packets_to_send))
+    if(!m_protocol.batchSend(packets_to_send))
     {
         // link is unresponsive, tell our target object
         target()->putq(new Disconnect(this));
@@ -98,20 +98,21 @@ void CRUDLink::packets_for_event(Event *ev)
 //! Connection updates are done only when new data is available on the link
 void CRUDLink::connection_update()
 {
-    m_last_recv_activity = steady_clock::now();
+    m_last_recv_activity = steady_clock::now().time_since_epoch().count();
+
 }
 
 //! Connection updates are done only when new data is sent on the link
 void CRUDLink::connection_sent_packet()
 {
-    m_last_send_activity = steady_clock::now();
+    m_last_send_activity = steady_clock::now().time_since_epoch().count();
 }
 
 //! Called when we start to service a new connection, here we tell reactor to wake us
 //! when queue() is not empty.
 int CRUDLink::open (void *p)
 {
-    if (super::open (p) == -1)
+    if(super::open (p) == -1)
         return -1;
     m_notifier.reactor(reactor());  // notify reactor with write event,
     msg_queue()->notification_strategy (&m_notifier);   // whenever there is a new event on msg_queue()
@@ -151,7 +152,7 @@ int CRUDLink::handle_output( ACE_HANDLE )
         //TODO: consider breaking out of this loop after processing N messages ?
     }
     // Now if our message queue is empty, we will wait unitl m_notifier awakens us.
-    if (msg_queue()->is_empty ()) // we don't want to be woken up
+    if(msg_queue()->is_empty ()) // we don't want to be woken up
         reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
     else // unless there is something to send still
         reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
@@ -181,13 +182,13 @@ void CRUDLink::received_block( BitStream &bytes )
 //! return the amount of time, in milliseconds, this client hasn't received anything
 CRUDLink::duration CRUDLink::client_last_seen_packets() const
 {
-    return duration_cast<milliseconds>(steady_clock::now() - m_last_recv_activity);
+    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch() - duration(m_last_recv_activity));
 }
 
 //! return the amount of time this client wasn't sending anything
 CRUDLink::duration CRUDLink::last_sent_packets() const
 {
-    return duration_cast<milliseconds>(steady_clock::now() - m_last_send_activity);
+    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch() - duration(m_last_send_activity));
 }
 
 int CRUDLink::handle_close(ACE_HANDLE h, ACE_Reactor_Mask c)

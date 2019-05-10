@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -54,7 +54,7 @@ void SelectScriptDialog::populate_dropdown()
 
 void SelectScriptDialog::open_editor()
 {
-    if (ui->script_select->currentText() == "-- Select --")
+    if(ui->script_select->currentText() == "-- Select --")
     {
         QMessageBox select_script_msgbox;
         select_script_msgbox.setText("Please select a script from the available options");

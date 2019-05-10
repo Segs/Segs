@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -178,9 +178,9 @@ bool LoadModifiersData(const QString &fname, SceneModifiers &m)
 {
     BinStore binfile;
 
-    if (fname.contains(".crl"))
+    if(fname.contains(".crl"))
     {
-        if (!loadFrom(fname, m))
+        if(!loadFrom(fname, m))
         {
             qCritical() << "Failed to serialize data from crl:" << fname;
             return false;
@@ -190,12 +190,12 @@ bool LoadModifiersData(const QString &fname, SceneModifiers &m)
     bool opened = binfile.open(fname, tricks_i0_requiredCrc);
     if(!opened)
         opened = binfile.open(fname, tricks_i2_requiredCrc);
-    if (!opened)
+    if(!opened)
     {
         qCritical() << "Failed to open original bin:" << fname;
         return false;
     }
-    if (!loadFrom(&binfile, m))
+    if(!loadFrom(&binfile, m))
     {
         qCritical() << "Failed to load data from original bin:" << fname;
         return false;

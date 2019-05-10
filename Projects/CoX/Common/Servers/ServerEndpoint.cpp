@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -32,7 +32,7 @@ int ServerEndpoint::handle_input(ACE_HANDLE /*fd*/) //! Called when input is ava
     uint8_t buf[0x2000];
     ACE_INET_Addr from_addr;
     ssize_t n = this->endpoint_.recv(buf, sizeof buf,from_addr);
-    if (n == -1)
+    if(n == -1)
         ACE_ERROR_RETURN((LM_ERROR,ACE_TEXT("%p\n"),"handle_input"),0);
     CRUDLink *crud_link = getClientLink(from_addr); // get packet handling object for this connection
     ACE_ASSERT(crud_link!=nullptr);
@@ -55,7 +55,7 @@ int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is p
         {
             Packet *pkt_ev = (Packet *)ev;
             ssize_t send_cnt = endpoint_.send(pkt_ev->bytes(),pkt_ev->size(),pkt_ev->target);
-            if (send_cnt == -1)
+            if(send_cnt == -1)
             {
                 // inform the link that it should die.
                 pkt_ev->src()->putq(Finish::s_instance->shallow_copy());
@@ -66,7 +66,7 @@ int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is p
         }
         ev->release();
     }
-    if (msg_queue()->is_empty ()) // we don't want to be woken up
+    if(msg_queue()->is_empty ()) // we don't want to be woken up
         reactor()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
     else // unless there is something to send still
         reactor()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
@@ -76,7 +76,7 @@ int ServerEndpoint::handle_output(ACE_HANDLE /*fd*/) //! Called when output is p
 //! Called when this handler is removed from the ACE_Reactor.
 int ServerEndpoint::handle_close(ACE_HANDLE, ACE_Reactor_Mask)
 {
-    if (this->reactor() && this->reactor()->remove_handler(this, ALL_EVENTS_MASK | DONT_CALL) == -1)
+    if(this->reactor() && this->reactor()->remove_handler(this, ALL_EVENTS_MASK | DONT_CALL) == -1)
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("unable to unregister client handler")), -1);
     endpoint_.close();
     return 0;
@@ -84,12 +84,12 @@ int ServerEndpoint::handle_close(ACE_HANDLE, ACE_Reactor_Mask)
 
 int ServerEndpoint::open(void *p)
 {
-    if (super::open (p) == -1)
+    if(super::open (p) == -1)
         return -1;
     // register ourselves with the reactor,
     // it will call our handle_input method whenever there are
     // new bytes available on our handle.
-    if (this->reactor () && this->reactor ()->register_handler(this,ACE_Event_Handler::READ_MASK) == -1)
+    if(this->reactor () && this->reactor ()->register_handler(this,ACE_Event_Handler::READ_MASK) == -1)
         ACE_ERROR_RETURN ((LM_ERROR,ACE_TEXT ("%p\n"),ACE_TEXT ("unable to register client handler")),-1);
 
     m_notifier.reactor(reactor()); // notify current reactor with write event,
@@ -97,7 +97,8 @@ int ServerEndpoint::open(void *p)
     return 0;
 }
 
-CRUDLink *ServerEndpoint::createLinkInstance() {
+CRUDLink *ServerEndpoint::createLinkInstance()
+{
     CRUDLink *res = createLink(m_downstream); // create a new client handler
     res->reactor(reactor());
     if(-1==res->open())

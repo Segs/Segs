@@ -1,14 +1,14 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
 
 #include "GameData/Entity.h"
-#include "Servers/MapServer/DataHelpers.h"
+#include "GameData/EntityHelpers.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
@@ -33,8 +33,10 @@ public:
 
 class EntityManager
 {
-    struct EntityIdxCompare {
-        bool operator()(const Entity *a,const Entity *b) const {
+    struct EntityIdxCompare
+    {
+        bool operator()(const Entity *a,const Entity *b) const
+        {
             return getIdx(*a) < getIdx(*b);
         }
     };
@@ -51,6 +53,7 @@ public:
     Entity *        CreatePlayer();
     Entity *        CreateNpc(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant);
     Entity *        CreateGeneric(const GameDataStore &data, const Parse_NPC &tpl, int idx, int variant, EntType type);
+    Entity *        CreateCritter(const GameDataStore &data,const Parse_NPC &tpl,int idx,int variant, int level);
     void            removeEntityFromActiveList(Entity *ent);
     size_t          active_entities() { return m_live_entlist.size(); }
     ACE_Thread_Mutex &getEntitiesMutex() { return m_mutex; }

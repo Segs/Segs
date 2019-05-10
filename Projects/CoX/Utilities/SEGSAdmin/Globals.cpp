@@ -15,7 +15,6 @@ QStringList g_map_names = {
     "City_04_01",
     "City_04_02",
     "City_05_01",
-    "City_23_01",
     "Hazard_01_01",
     "Hazard_02_01",
     "Hazard_03_01",

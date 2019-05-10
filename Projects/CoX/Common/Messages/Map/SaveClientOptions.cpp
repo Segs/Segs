@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -18,7 +18,7 @@ using namespace SEGSEvents;
 
 void SaveClientOptions::serializefrom(BitStream & bs)
 {
-    qDebug() << "Serializing options from Client";
+    qCDebug(logSettings) << "Serializing options from Client";
     data.m_mouse_speed          = bs.GetFloat();
     data.m_turn_speed           = bs.GetFloat();
     data.m_mouse_invert         = bs.GetBits(1);
@@ -41,7 +41,7 @@ void SaveClientOptions::serializefrom(BitStream & bs)
 
 void SaveClientOptions::serializeto(BitStream &tgt) const
 {
-    qDebug() << "Serializing to ClientOptions";
+    qCDebug(logSettings) << "Serializing to ClientOptions";
     tgt.StorePackedBits(1,65);
     tgt.StoreFloat(data.m_mouse_speed);
     tgt.StoreFloat(data.m_turn_speed);

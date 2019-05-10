@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -79,12 +79,13 @@ enum ChatWindowMasks : uint32_t {   // top      bottom  bottom              top
 
 class GUIWindow
 {
-    enum {class_version=1};
 public:
+        // GUIWindow serialization class version
+        enum : uint32_t {class_version = 1};
+
         // GUI Window Params
         WindowIDX           m_idx               = wdw_DockDraw;
         WindowVisibility    m_mode              = wv_Uninitialized;
-        bool                m_draggable_frame   = false;
         int32_t             m_posx              = 0;
         int32_t             m_posy              = 0;
         uint32_t            m_width             = 0;
@@ -92,6 +93,7 @@ public:
         uint32_t            m_locked            = 0;
         uint32_t            m_color             = 0x3399FF99;   // 0x3399FF99 (light blue with 60% transparency)
         uint32_t            m_alpha             = 0x88;         // default 136 (0x88)
+        bool                m_draggable_frame   = false;
 
         void                guiWindowDump() const
                             {
@@ -129,8 +131,8 @@ class GUISettings
 public:
     GUISettings() = default;
 
-// GUISettings serialization class version
-static const constexpr uint32_t class_version = 1;
+        // GUISettings serialization class version
+        enum : uint32_t { class_version = 1 };
 
         // List of Windows
         std::array<GUIWindow, 35> m_wnds;

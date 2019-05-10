@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -22,26 +22,26 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evScene                      ,5)
     EVENT_DECL(MapEventTypes, evEntitiesRequest            ,6)
     EVENT_DECL(MapEventTypes, evEntitiesResponse           ,7)
-    EVENT_DECL(MapEventTypes, evRecvInputState                 ,8)
+    EVENT_DECL(MapEventTypes, evRecvInputState             ,8)
     EVENT_DECL(MapEventTypes, evClientQuit                 ,9)
-    EVENT_DECL(MapEventTypes, evForcedLogout               ,10)
     EVENT_DECL(MapEventTypes, evInitiateMapXfer            ,11)
     EVENT_DECL(MapEventTypes, evMapXferComplete            ,12)
     EVENT_DECL(MapEventTypes, evChatDividerMoved           ,36)
 // server -> client commands
     EVENT_DECL(MapEventTypes, evFirstServerToClient        ,100)
-//    EVENT_DECL(MapEventTypes, evServerGameCommand        ,113) // 1013?
     EVENT_DECL(MapEventTypes, evMapXferWait                ,110)
     EVENT_DECL(MapEventTypes, evMapXferRequest             ,111)
+    EVENT_DECL(MapEventTypes, evForceLogout                ,112)
+//    EVENT_DECL(MapEventTypes, evServerGameCommand        ,113) // 1013?
     EVENT_DECL(MapEventTypes, evStandardDialogCmd          ,114)
     EVENT_DECL(MapEventTypes, evInfoMessageCmd             ,115)
     EVENT_DECL(MapEventTypes, evDoorMessage                ,116)
-//    EVENT_DECL(MapEventTypes, evConsoleOutput            ,117)
+    EVENT_DECL(MapEventTypes, evConsoleOutput              ,117)
     EVENT_DECL(MapEventTypes, evSetClientState             ,118)
-//    EVENT_DECL(MapEventTypes, evConPrintf                ,119)
+    EVENT_DECL(MapEventTypes, evConsolePrint               ,119)
     EVENT_DECL(MapEventTypes, evChatMessage                ,120)
     EVENT_DECL(MapEventTypes, evFloatingDamage             ,121)
-//    EVENT_DECL(MapEventTypes, evVisitMapCells            ,122)
+    EVENT_DECL(MapEventTypes, evVisitMapCells              ,122)
     EVENT_DECL(MapEventTypes, evSendWaypoint               ,123)
     EVENT_DECL(MapEventTypes, evTeamOffer                  ,124)
     EVENT_DECL(MapEventTypes, evTeamLooking                ,125)
@@ -64,9 +64,9 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evContactDialogYesNo         ,142)
     EVENT_DECL(MapEventTypes, evContactStatusList          ,143)
     EVENT_DECL(MapEventTypes, evContactSelect              ,144)
-//    EVENT_DECL(MapEventTypes, evTaskStatusList           ,145)
-//    EVENT_DECL(MapEventTypes, evTaskSelect               ,146)
-//    EVENT_DECL(MapEventTypes, evTaskRemoveTeammates      ,147)
+    EVENT_DECL(MapEventTypes, evTaskStatusList             ,145)
+    EVENT_DECL(MapEventTypes, evTaskSelect                 ,146)
+    EVENT_DECL(MapEventTypes, evTaskListRemoveTeammates    ,147)
     EVENT_DECL(MapEventTypes, evTimeUpdate                 ,148)
 //    EVENT_DECL(MapEventTypes, evMissionEntryText         ,149)
 //    EVENT_DECL(MapEventTypes, evMissionKick              ,150)
@@ -82,15 +82,23 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evAddTimeStateLog            ,160)
     EVENT_DECL(MapEventTypes, evLevelUp                    ,161)
     EVENT_DECL(MapEventTypes, evChangeTitle                ,162)
+    EVENT_DECL(MapEventTypes, evSendLocations              ,163)
 //    EVENT_DECL(MapEventTypes, evCSRBugReport             ,164)
     EVENT_DECL(MapEventTypes, evEmailHeaders               ,165)
     EVENT_DECL(MapEventTypes, evEmailRead                  ,166)
     EVENT_DECL(MapEventTypes, evEmailMessageStatus         ,167)
     EVENT_DECL(MapEventTypes, evEntityInfoResponse         ,169) // Send entity info (description)
-//    EVENT_DECL(MapEventTypes, evClueUpdate               ,170)
+    EVENT_DECL(MapEventTypes, evClueList                   ,170)
+    EVENT_DECL(MapEventTypes, evSouvenirListHeaders        ,171)
+    EVENT_DECL(MapEventTypes, evSouvenirDetail             ,172)
+    EVENT_DECL(MapEventTypes, evMissionObjectiveTimer      ,173)
+    EVENT_DECL(MapEventTypes, evTaskDetail                 ,175)
     EVENT_DECL(MapEventTypes, evBrowser                    ,176)
+    EVENT_DECL(MapEventTypes, evStoreOpen                  ,178)
+    EVENT_DECL(MapEventTypes, evStoreClose                 ,179)
     EVENT_DECL(MapEventTypes, evTrayAdd                    ,182)
     EVENT_DECL(MapEventTypes, evCombineEnhanceResponse     ,183)
+    EVENT_DECL(MapEventTypes, evTailorOpen                 ,188)
 // client -> server commands
     EVENT_DECL(MapEventTypes, evConsoleCommand             ,200)
     EVENT_DECL(MapEventTypes, evMiniMapState               ,201)
@@ -135,12 +143,19 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evTradeWasCancelledMessage   ,254) // Trade window: player clicked "Cancel" or closed the window.
     EVENT_DECL(MapEventTypes, evTradeWasUpdatedMessage     ,255) // Trade window: player changed something in the window.
     EVENT_DECL(MapEventTypes, evEntityInfoRequest          ,256) // right-click entity select "Info"
+    EVENT_DECL(MapEventTypes, evRecvCostumeChange          ,260)
     EVENT_DECL(MapEventTypes, evLocationVisited            ,262)
+    EVENT_DECL(MapEventTypes, evReceiveTaskDetailRequest   ,263)
     EVENT_DECL(MapEventTypes, evSwitchViewPoint            ,264)
     EVENT_DECL(MapEventTypes, evSaveClientOptions          ,265)
     EVENT_DECL(MapEventTypes, evRecvSelectedTitles         ,266)
     EVENT_DECL(MapEventTypes, evDescriptionAndBattleCry    ,267)
+    EVENT_DECL(MapEventTypes, evSouvenirDetailRequest      ,268)
+    EVENT_DECL(MapEventTypes, evStoreBuyItem               ,269)
+    EVENT_DECL(MapEventTypes, evStoreSellItem              ,270)
     EVENT_DECL(MapEventTypes, evBrowserClose               ,277)
+
+
     END_EVENTS(MapEventTypes, 1500)
 };
 } // end of SEGSEvents namespace

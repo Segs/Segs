@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -361,7 +361,7 @@ int64_t BitStream::Get64Bits()
     int64_t result=0;
     uint32_t *res_ptr=reinterpret_cast<uint32_t *>(&result);
     int byte_count=GetBits(3);
-    if ( byte_count > 4 )
+    if( byte_count > 4 )
     {
         result=GetBits(BITS_PER_UINT32);
         byte_count-=4;

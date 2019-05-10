@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -13,6 +13,8 @@
 #include <QDateTime>
 namespace SEGSEvents
 {
+
+const QString EMPTY_STRING = "EMPTY"; // Client expects value "EMPTY" in several places
 
 enum GameDBEventTypes : uint32_t
 {
@@ -71,40 +73,22 @@ struct CharacterUpdateData
 {
     QString m_char_name;
     // Cerealized blobs
+    QString m_costume_data;
     QString m_char_data;
     QString m_entitydata;
     QString m_player_data;
-    // plain values
-    uint32_t m_bodytype;
-    float    m_height;
-    float    m_physique;
     uint32_t m_supergroup_id;
     uint32_t m_id;
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_char_name,m_char_data,m_entitydata,m_player_data );
-        ar( m_bodytype,m_height,m_physique );
-        ar( m_supergroup_id,m_id );
+        ar( m_char_name, m_costume_data );
+        ar( m_char_data, m_entitydata, m_player_data );
+        ar( m_supergroup_id, m_id );
     }
 };
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(GameDBEventTypes,CharacterUpdate)
-
-struct CostumeUpdateData
-{
-    QString m_parts; // cereal serialized costume parts
-    int m_db_id;
-    int m_costume_index;
-    uint32_t m_skin_color;
-    template <class Archive>
-    void serialize( Archive & ar )
-    {
-        ar( m_parts,m_db_id,m_costume_index,m_costume_index );
-    }
-};
-// [[ev_def:macro]]
-ONE_WAY_MESSAGE(GameDBEventTypes,CostumeUpdate)
 
 struct RemoveCharacterRequestData
 {
@@ -142,71 +126,37 @@ struct GameAccountRequestData
     }
 };
 
-struct GameAccountResponseCostumeData
-{
-    QString m_serialized_data;
-    uint64_t m_character_id; //! Character to whom this costume belongs
-    uint32_t m_body_type;
-    float m_height;
-    float m_physique;
-    uint32_t skin_color;
-    uint8_t  m_slot_index;
-
-    template <class Archive>
-    void serialize( Archive & ar )
-    {
-        ar( m_serialized_data,m_character_id );
-        ar( m_body_type,m_height, m_physique);
-        ar( skin_color,m_slot_index );
-    }
-};
-
 struct GameAccountResponseCharacterData
 {
-    std::vector<GameAccountResponseCostumeData> m_costumes;
     QString m_name;
+    QString m_serialized_costume_data;
     QString m_serialized_chardata;
-    QString m_serialized_player_data;
     QString m_serialized_entity_data;
+    QString m_serialized_player_data;
 
     uint32_t m_db_id;
     uint32_t m_account_id;
+    int m_slot_idx;
 
-    int index;
-    uint32_t m_current_costume_idx;
-    bool m_villain;
-    bool m_multiple_costumes;
     void reset()
     {
-        m_name="EMPTY";
-        m_villain=false;
-        m_multiple_costumes=false;
-        m_current_costume_idx=0;
+        m_name=EMPTY_STRING;
+        m_serialized_entity_data.clear(); // Clearing entity data on character delete
     }
+
     bool isEmpty() const
     {
-        return 0==m_name.compare("EMPTY",Qt::CaseInsensitive);
+        return 0==m_name.compare(EMPTY_STRING, Qt::CaseInsensitive);
     }
-    GameAccountResponseCostumeData &current_costume() {
-        if(m_current_costume_idx<m_costumes.size() )
-            return m_costumes[m_current_costume_idx];
-        assert(!m_costumes.empty());
-        m_current_costume_idx = 0;
-        return m_costumes.front();
-    }
-    const GameAccountResponseCostumeData &current_costume() const {
-        if(m_current_costume_idx<m_costumes.size() )
-            return m_costumes[m_current_costume_idx];
-        assert(!m_costumes.empty());
-        return m_costumes.front();
-    }
+
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_costumes,m_name );
-        ar( m_serialized_chardata,m_serialized_player_data, m_serialized_entity_data);
-        ar( m_db_id,m_account_id );
-        ar( index,m_current_costume_idx,m_villain, m_multiple_costumes );
+        ar( m_name, m_serialized_costume_data );
+        ar( m_serialized_chardata, m_serialized_entity_data );
+        ar( m_serialized_player_data );
+        ar( m_db_id, m_account_id );
+        ar( m_slot_idx );
     }
 };
 
@@ -230,7 +180,7 @@ struct GameAccountResponseData
         int8_t res = 0;
         for(const auto & c : m_characters)
         {
-            if(c.m_name.compare("EMPTY")==0)
+            if(c.m_name.compare(EMPTY_STRING)==0)
                 return res;
             res++;
         }
@@ -240,11 +190,24 @@ struct GameAccountResponseData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_game_server_acc_id,m_max_slots,m_characters  );
+        ar( m_game_server_acc_id, m_max_slots, m_characters  );
     }
 };
 // [[ev_def:macro]]
 TWO_WAY_MESSAGE(GameDBEventTypes,GameAccount)
+
+struct CostumeUpdateData
+{
+    uint32_t m_id;
+    QString m_costume_data;
+    template <class Archive>
+    void serialize( Archive & ar )
+    {
+        ar( m_id, m_costume_data );
+    }
+};
+// [[ev_def:macro]]
+ONE_WAY_MESSAGE(GameDBEventTypes,CostumeUpdate)
 
 struct CreateNewCharacterRequestData
 {
@@ -256,8 +219,8 @@ struct CreateNewCharacterRequestData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_character,m_ent_data );
-        ar( m_slot_idx,m_max_allowed_slots);
+        ar( m_character, m_ent_data );
+        ar( m_slot_idx, m_max_allowed_slots);
         ar( m_client_id );
     }
 };
@@ -269,7 +232,7 @@ struct CreateNewCharacterResponseData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_char_id,slot_idx );
+        ar( m_char_id, slot_idx );
     }
 };
 // [[ev_def:macro]]
@@ -292,7 +255,7 @@ struct GetEntityResponseData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_supergroup_id,m_ent_data );
+        ar( m_supergroup_id, m_ent_data );
     }
 };
 // [[ev_def:macro]]
@@ -386,12 +349,13 @@ struct EmailCreateRequestData
 {
     uint32_t m_sender_id;
     uint32_t m_recipient_id;
+    QString m_recipient_name;
     QString m_email_data; // cerealized email
 
     template <class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_sender_id, m_recipient_id, m_email_data);
+        ar(m_sender_id, m_recipient_id, m_recipient_name, m_email_data);
     }
 };
 
@@ -400,12 +364,13 @@ struct EmailCreateResponseData
     uint32_t m_email_id;
     uint32_t m_sender_id;
     uint32_t m_recipient_id;
+    QString m_recipient_name;
     QString m_cerealized_email_data; // cerealized email
 
     template <class Archive>
     void serialize(Archive &ar)
     {
-        ar(m_email_id, m_sender_id, m_recipient_id, m_cerealized_email_data);
+        ar(m_email_id, m_sender_id, m_recipient_id, m_recipient_name, m_cerealized_email_data);
     }
 };
 // [[ev_def:macro]]
@@ -574,6 +539,7 @@ struct FillEmailRecipientIdResponseData
     uint32_t m_sender_id;
     uint32_t m_recipient_id;    // the point of this is to get recipient_id from recipient_name :)
     QString m_sender_name;
+    QString m_recipient_name;
     QString m_subject;
     QString m_message;
     uint32_t m_timestamp;
@@ -581,7 +547,7 @@ struct FillEmailRecipientIdResponseData
     template <class Archive>
     void serialize (Archive &ar)
     {
-        ar (m_sender_id, m_recipient_id, m_sender_name, m_subject, m_message, m_timestamp);
+        ar (m_sender_id, m_recipient_id, m_sender_name, m_recipient_name, m_subject, m_message, m_timestamp);
     }
 };
 // [[ev_def:macro]]
@@ -590,12 +556,12 @@ TWO_WAY_MESSAGE(GameDBEventTypes,FillEmailRecipientId)
 struct FillEmailRecipientIdErrorData
 {
     uint32_t m_sender_id;
-    QString m_error_message;
+    QString m_recipient_name;
 
     template <class Archive>
     void serialize (Archive &ar)
     {
-        ar (m_sender_id, m_error_message);
+        ar (m_sender_id, m_recipient_name);
     }
 };
 // [[ev_def:macro]]

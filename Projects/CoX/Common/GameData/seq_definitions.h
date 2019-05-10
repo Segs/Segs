@@ -1,20 +1,32 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #pragma once
+#include "Runtime/HandleBasedStorage.h"
+
+#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
 
 #include <vector>
 #include <bitset>
 #include <stdint.h>
+#include <unordered_map>
 
 #include <QMap>
 #include <qobjectdefs.h>
 
 struct AnimTrack;
+namespace std
+{
+template <> struct hash<QByteArray>
+{
+    size_t operator()(const QByteArray &x) const { return qHash(x); }
+};
+} // namespace std
 // WHY, WINDOWS, WHY ?
 #ifdef FAR
 #undef FAR
@@ -22,6 +34,13 @@ struct AnimTrack;
 #ifdef NEAR
 #undef NEAR
 #endif
+namespace SEGS
+{
+struct SequencerInstanceStorage;
+struct SceneTreeNode;
+enum class CollisionType;
+enum class SelectionMode;
+}
 namespace SEGS_Enums
 {
 Q_NAMESPACE
@@ -403,10 +422,10 @@ struct SeqMoveDataTypeAnim
 {
     QByteArray name;
     int firstFrame; // first frame ticks
-    int lastFrame; // float ?
+    int lastFrame; // last frame tick ?
 };
 
-struct Parser_PlayFx
+struct SeqPlayFxData
 {
     QByteArray name;
     uint32_t delay;
@@ -416,9 +435,8 @@ struct Parser_PlayFx
 struct SeqMoveTypeData
 {
     QByteArray                         name;
-    std::vector<SeqMoveDataTypeAnim *> m_Anim;
-    std::vector<Parser_PlayFx *>       m_PlayFx;
-    AnimTrack *                        anm_track;
+    std::vector<SeqMoveDataTypeAnim>   m_Anim;
+    std::vector<SeqPlayFxData>         m_PlayFx;
     float                              Scale;
     float                              MoveRate;
     float                              PitchAngle;
@@ -440,9 +458,10 @@ struct SeqCycleMoveData
 
 enum
 {
-    MAXMOVES = 0x800
+    MAXMOVES = 2048
 };
 
+// Structure that holds all transient data of a SeqMove
 struct SeqMoveRawData
 {
     SeqBitSet requires_bits;
@@ -455,6 +474,11 @@ struct SeqMoveRawData
     SeqBitSet sets_child_bits;
     SeqBitSet sticks_on_child_bits;
 };
+struct SeqTypeAnimation
+{
+    SeqMoveTypeData *m_template;
+    HandleT<20,12,struct AnimTrack>  m_anm_track;
+};
 
 struct SeqMoveData
 {
@@ -464,11 +488,9 @@ struct SeqMoveData
     uint32_t Interpolate;
     uint32_t Priority;
     uint32_t Flags;
-    int idx;
-    SeqMoveRawData raw;
-    std::vector<SeqNextMoveData*> m_NextMove;
-    std::vector<SeqCycleMoveData*> m_CycleMove;
-    std::vector<SeqMoveTypeData*> m_Type;
+    std::vector<SeqNextMoveData> m_NextMove;
+    std::vector<SeqCycleMoveData> m_CycleMove;
+    std::vector<SeqMoveTypeData> m_Type;
     std::vector<QByteArray > SticksOnChild;
     std::vector<QByteArray > SetsOnChild;
     std::vector<QByteArray > Sets;
@@ -478,22 +500,25 @@ struct SeqMoveData
 
     enum eFlags
     {
-        Cycle=1,
-        GlobalAnim=2,
-        FinishCycle=4,
-        ReqInputs=8,
-        ComplexCycle=0x10,
-        NoInterp=0x20,
-        HitReact=0x40,
-        NoSizeScale=0x80,
-        MoveScale=0x100,
-        NotSelectable=0x200,
-        SmoothSprint=0x400,
-        PitchToTarget=0x800,
-        PickRandomly=0x1000,
-        FullSizeScale=0x2000,
-        AlwaysSizeScale=0x4000
+        Cycle           = 0x0001,
+        GlobalAnim      = 0x0002,
+        FinishCycle     = 0x0004,
+        ReqInputs       = 0x0008,
+        ComplexCycle    = 0x0010,
+        NoInterp        = 0x0020,
+        HitReact        = 0x0040,
+        NoSizeScale     = 0x0080,
+        MoveScale       = 0x0100,
+        NotSelectable   = 0x0200,
+        SmoothSprint    = 0x0400,
+        PitchToTarget   = 0x0800,
+        PickRandomly    = 0x1000,
+        FullSizeScale   = 0x2000,
+        AlwaysSizeScale = 0x4000
     };
+    SeqMoveRawData m_raw;
+    std::vector<SeqTypeAnimation> m_type_animations;
+    int idx;
 };
 
 struct SeqGroupNameData
@@ -511,16 +536,85 @@ struct SeqTypeDefData
 struct SequencerData
 {
     QByteArray name;
-    std::vector<SeqTypeDefData *> m_TypeDef;
-    std::vector<SeqGroupNameData *> m_Group;
-    std::vector<SeqMoveData *> m_Move;
-    int m_lastChangeDate;
-    int initialized = 0;
+    std::vector<SeqTypeDefData> m_TypeDef;
+    std::vector<SeqGroupNameData> m_Group;
+    std::vector<SeqMoveData> m_Move;
 };
 
 struct SequencerList
 {
-    std::vector<SequencerData *> sq_list;
+    /// @note the size of this std::vector *cannot* be modified after load, since seqGetMoveIdxByName returns pointers to it's members.
+    /// @todo consider using Handle pattern here ?
+    std::vector<SequencerData> sq_list;
     int dev_seqInfoCount;
-    QMap<QString, SequencerData> m_Sequencers; // ordered by sequencer's name ( implemented by 'operator <' )
+    QMap<QString, int> m_Sequencers; // ordered by sequencer's name ( implemented by 'operator <' )
+    SequencerData * getSequencerData(const QByteArray &seq_name);
 };
+// Binds an NPC/Player to a SequencerData
+struct EntitySequencerData
+{
+    QByteArray m_name;
+    QByteArray m_sequencer_name;
+    QByteArray m_seq_type;
+    QByteArray m_graphics;
+    QByteArray m_lod_names[3];
+    float m_lod_dists[4] = {0,0,0,0};
+    float m_visibility_sphere_radius=0;
+    int m_max_alpha=0;
+    float m_reverse_fade_out_distance=0;
+    float m_fade_out_start=0;
+    float m_fade_out_finish=0;
+    QByteArray m_shadow;
+    int m_use_shadow=0;
+    int m_ticks_to_linger_after_death=0;
+    int m_ticks_to_fade_away_after_death=0;
+    QByteArray m_shadow_type;
+    QByteArray m_shadow_texture;
+    QByteArray m_shadow_quality;
+    QByteArray m_flags;
+    glm::vec3 m_shadow_size = {0,0,0};
+    glm::vec3 m_shadow_offset = {0,0,0};
+    int m_light_as_door_outside; // switch over to bool ?
+    glm::vec3 m_geometry_scale = {0,0,0};
+    //! \note if this is set the resulting scale will be randomly selected between m_geometry_scale and this
+    glm::vec3 m_geometry_scale_max = {0,0,0};
+    float m_anim_scale=0;
+    QByteArray m_effect_names[5];
+    int m_has_random_name=0;
+    glm::vec3 m_collision_size = {0,0,0};
+    glm::vec3 m_collision_offset = {0,0,0};
+    QByteArray m_world_group;
+    float m_minimum_ambient=0;
+    QByteArray m_bone_scale_fat;
+    QByteArray m_bone_scale_skinny;
+    int m_random_bone_scale=0;
+    int m_not_selectable=0;
+    int m_no_collision=0;
+    float m_bounciness=0;
+    QByteArray m_collision_type;
+    QByteArray m_placement;
+    QByteArray m_selection;
+    QByteArray m_constant_state;
+
+    QByteArray m_cape_file;
+    QByteArray m_cape_name;
+    QByteArray m_cape_harness_file;
+    QByteArray m_cape_harness_name;
+    QByteArray m_cape_textures[2];
+    QByteArray m_cape_inner_textures[2];
+    glm::vec3 m_cape_colors[2] = {{0,0,0},{0,0,0}};
+    glm::vec3 m_inner_cape_colors[2] = {{0,0,0},{0,0,0}};
+    glm::vec2 m_reticle_mod = {0,0}; // targeting reticle fixup translation
+
+    // transient fields
+    SEGS::CollisionType m_converted_collision_type=SEGS::CollisionType(0);
+    SEGS::SelectionMode m_converted_selection_mode=SEGS::SelectionMode(0);
+    int m_converted_shadow_type=0;
+    int m_converted_shadow_quality=0;
+    int m_converted_flags=0;
+    int m_converted_placement=0;
+    SeqBitSet m_converted_constant_bits;
+};
+void cleanSeqFileName(QByteArray &filename);
+int getSeqMoveIdxByName(const QByteArray &name, const SequencerData &seq);
+using SequencerTypeMap = std::unordered_map<QByteArray,EntitySequencerData>;

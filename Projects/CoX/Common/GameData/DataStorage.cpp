@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -24,7 +24,7 @@ bool BinStore::check_bin_version_and_crc(uint32_t req_crc)
     m_str.read(magic_contents,8);
     read(crc_from_file);
     tgt=read_pstr(4096);
-    if ( 0!=strncmp(magic_contents,"CrypticS",8) || tgt.midRef(0,6)!="Parse4" || (req_crc!=0 && crc_from_file != req_crc) ) //
+    if( 0!=strncmp(magic_contents,"CrypticS",8) || tgt.midRef(0,6)!="Parse4" || (req_crc!=0 && crc_from_file != req_crc) ) //
     {
         m_str.close();
         return false;
@@ -205,7 +205,7 @@ bool BinStore::read(std::vector<QByteArray> &res)
     bool parse_ok=true;
     uint32_t to_read = 0;
     parse_ok &= read(to_read);
-    if ( 0==to_read)
+    if( 0==to_read)
         return parse_ok;
     for(size_t idx = 0; idx < to_read; ++idx)
     {
@@ -221,7 +221,7 @@ bool BinStore::read(std::vector<uint32_t> &res)
     uint32_t to_read = 0;
     parse_ok &= read(to_read);
     res.clear();
-    if ( 0==to_read)
+    if( 0==to_read)
         return parse_ok;
     for(size_t idx = 0; idx < to_read; ++idx)
     {
@@ -237,7 +237,7 @@ bool BinStore::read(std::vector<int32_t> &res)
     uint32_t to_read = 0;
     parse_ok &= read(to_read);
     res.clear();
-    if ( 0==to_read)
+    if( 0==to_read)
         return parse_ok;
     for(size_t idx = 0; idx < to_read; ++idx)
     {
@@ -253,7 +253,7 @@ bool BinStore::read(std::vector<float> &res)
     uint32_t to_read = 0;
     parse_ok &= read(to_read);
     res.clear();
-    if ( 0==to_read)
+    if( 0==to_read)
         return parse_ok;
     for(size_t idx = 0; idx < to_read; ++idx)
     {

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -19,5 +19,5 @@ static const constexpr  uint32_t    class_version       = 5;    // v5: removes m
                         uint8_t     m_class_idx         = {0};
                         glm::vec3   m_pos;
                         glm::vec3   m_orientation_pyr;          // Stored in Radians
-                        uint32_t    m_map_idx           = 0;	// map_idx == 0 will load up Outbreak. So newly-created characters will go there
+                        uint32_t    m_map_idx           = 24;    // map_idx == 24 will load up Outbreak. So newly-created characters will go there
 };

@@ -3,7 +3,7 @@
 #include "SEGSEventFactory.h"
 
 using namespace SEGSEvents;
-extern void register_MapEvents();
+extern void register_MapServerEvents();
 namespace
 {
     const char *event_names[] =
@@ -58,6 +58,7 @@ namespace
         "NewEntity",
         "PlaqueVisited",
         "PowersDockMode",
+        "RecvCostumeChange",
         "RecvNewPower",
         "RecvSelectedTitles",
         "RemoveKeybind",
@@ -79,6 +80,7 @@ namespace
         "StandardDialogCmd",
         "SwitchTray",
         "SwitchViewPoint",
+        "TailorOpen",
         "TargetChatChannelSelected",
         "TeamLooking",
         "TeamOffer",
@@ -96,7 +98,8 @@ namespace
     };
 }
 
-class MapEventRegistry : public QObject {
+class MapEventRegistry : public QObject
+{
     Q_OBJECT
 private slots:
     void creationByName()
@@ -106,7 +109,7 @@ private slots:
             QVERIFY2(create_by_name(ev_name)==nullptr,"no types registered yet, create_by_name result should be null");
         }
         // TODO: call register_all_events();
-        register_MapEvents();
+        register_MapServerEvents();
         for(const char *ev_name : event_names)
         {
             QVERIFY2(create_by_name(ev_name) != nullptr,

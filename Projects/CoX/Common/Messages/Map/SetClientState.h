@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -27,7 +27,7 @@ namespace SEGSEvents
         void serializeto(BitStream &bs) const override
         {
             bs.StorePackedBits(1, type() - evFirstServerToClient); // pkt 18
-            bs.StorePackedBits(1, uint8_t(m_new_state));
+            bs.StorePackedBits(1, static_cast<uint8_t>(m_new_state));
         }
 
         EVENT_IMPL(SetClientState)

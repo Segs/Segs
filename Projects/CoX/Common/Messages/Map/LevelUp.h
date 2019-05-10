@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -48,12 +48,12 @@ public:
     {
         bs.StorePackedBits(1,type()-evFirstServerToClient); // pkt 47
     }
-    void    serializefrom(BitStream &bs) override
+    void    serializefrom(BitStream &/*bs*/) override
     {
         qCDebug(logMapEvents) << "LevelUp Complete";
 
-        button_id = bs.GetPackedBits(1);
-        result = bs.GetPackedBits(1);
+        //button_id = bs.GetPackedBits(1);
+        //result = bs.GetPackedBits(1);
     }
 
     EVENT_IMPL(LevelUpResponse)

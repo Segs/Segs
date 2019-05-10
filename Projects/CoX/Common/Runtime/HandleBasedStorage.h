@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -82,7 +82,7 @@ private:
     }
     uint32_t getNextFreeNode()
     {
-        if (m_free_list_head != HType::FREE_LIST_TERMINATOR)
+        if(m_free_list_head != HType::FREE_LIST_TERMINATOR)
             return m_free_list_head;
         //NOTE: we allocate 256 new 'nodes' each time
         uint32_t start_idx = m_sparse_array.size();

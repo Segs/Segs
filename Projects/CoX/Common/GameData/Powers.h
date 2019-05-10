@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -85,12 +85,13 @@ struct QueuedPowers
     bool            m_active_state_change   = false;
     bool            m_activation_state      = false;
     bool            m_timer_updated         = false;
+    uint32_t        m_tgt_idx               = 0;
 };
 
 class PowerPool_Info
 {
 public:
-enum : uint32_t { class_version=1 };
+enum : uint32_t { class_version = 1 };
         uint32_t        m_pcat_idx          = 0;
         uint32_t        m_pset_idx          = 0;
         uint32_t        m_pow_idx           = 0;
@@ -101,11 +102,20 @@ enum : uint32_t { class_version=1 };
         void serialize(Archive &archive, uint32_t const version);
 };
 
+struct buffset
+{
+    float           m_value                 = 0.0;
+    QString         m_value_name            = "";
+    float           m_duration              = 0.0f;
+    uint32_t        m_attrib                = 0;       // for damage resistances or defenses or others
+};
+
 struct Buffs
 {
-    PowerPool_Info  m_buff_info;
-    float           m_time_to_activate      = 0.0f;
-    float           m_activate_period       = 0.0f;
+    QString         m_name                  = "unknown";
+    PowerPool_Info  m_buff_info;                        //There is one buff for each power, so that only one icon is shown
+    std::vector<buffset>    m_buffs;                    //powers with multiple effects have a buffset per effect
+    uint32_t         source_ent_idx          = 0;
 };
 
 struct CharacterInspiration
@@ -133,9 +143,9 @@ struct vInspirations
 
     vInspirations(size_t cols = 5, size_t rows = 4)
     {
-        if (cols > 5)
+        if(cols > 5)
             qCritical() << "vInspirations has more than 5 columns!";
-        if (rows > 4)
+        if(rows > 4)
             qCritical() << "vInspirations has more than 4 rows!";
 
         m_cols = cols;
@@ -150,14 +160,14 @@ struct vInspirations
             m_inspirations[i].resize(m_rows);
     }
 
-    int size()
+    uint32_t size()
     {
         return m_cols * m_rows;
     }
 
     CharacterInspiration& at (const size_t col, const size_t row)
     {
-        if (col >= m_cols || row >= m_rows)
+        if(col >= m_cols || row >= m_rows)
             qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
 
         return m_inspirations[col][row];
@@ -165,7 +175,7 @@ struct vInspirations
 
     const CharacterInspiration& at (const size_t col, const size_t row) const
     {
-        if (col >= m_cols || row >= m_rows)
+        if(col >= m_cols || row >= m_rows)
             qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
 
         return m_inspirations[col][row];
@@ -173,7 +183,7 @@ struct vInspirations
 
     CharacterInspiration& from_first_row (const size_t col)
     {
-        if (!m_inspirations[col][0].m_has_insp)
+        if(!m_inspirations[col][0].m_has_insp)
             push_to_first_row(col);
 
         return m_inspirations[col][0];
@@ -199,7 +209,7 @@ struct vInspirations
         size_t i = 1;
         while (m_inspirations[col][0].m_has_insp && i < m_rows)
         {
-            if (m_inspirations[col][i].m_has_insp)
+            if(m_inspirations[col][i].m_has_insp)
                 std::swap(m_inspirations[col][0], m_inspirations[col][i]);
             i++;
         }
@@ -326,7 +336,14 @@ static const int m_num_trays = 2; // was 3, displayed trays
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version);
 };
-
+struct DelayedEffect
+{
+    StoredAttribMod mod;
+    CharacterPower *power;
+    int m_timer;
+    int ticks;
+    uint32_t src_ent;
+};
 
 /*
  * Powers Methods
@@ -348,7 +365,6 @@ void dumpPowerPoolInfo(const PowerPool_Info &pinfo);
 void dumpPower(const CharacterPower &pow);
 void dumpOwnedPowers(CharacterData &cd);
 
-
 /*
  * Inspirations Methods
  */
@@ -358,9 +374,7 @@ void addInspirationToChar(CharacterData &cd, const CharacterInspiration& insp);
 int getNumberInspirations(const CharacterData &cd);
 int getMaxNumberInspirations(const CharacterData &cd);
 void moveInspiration(CharacterData &cd, uint32_t src_col, uint32_t src_row, uint32_t dest_col, uint32_t dest_row);
-bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void removeInspiration(CharacterData &cd, uint32_t col, uint32_t row);
-void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 void dumpInspirations(CharacterData &cd);
 
 

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -127,7 +127,7 @@ public:
         if(in_use>=watermark || in_use>=m_storage.size())
         {
             uint32_t factor=1;
-            if ( in_use >= watermark || in_use >= m_storage.size() - 1 )
+            if( in_use >= watermark || in_use >= m_storage.size() - 1 )
                 factor=2;
             resize(factor*m_storage.size());
         }

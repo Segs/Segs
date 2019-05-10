@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -15,6 +15,7 @@
 #include <cereal/cereal.hpp>
 
 #include <QtCore/QString>
+#include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
@@ -59,9 +60,11 @@ void commonSaveTo(const T & target, const char *classname, const QString & baseN
 }
 
 template<class T>
-bool commonReadFrom(const QString &crl_path,const char *classname, T &target) {
+bool commonReadFrom(const QString &crl_path,const char *classname, T &target)
+{
     QFile ifl(crl_path);
-    if(crl_path.endsWith("json") || crl_path.endsWith("crl_json")) {
+    if(crl_path.endsWith("json") || crl_path.endsWith("crl_json"))
+    {
         if(!ifl.open(QFile::ReadOnly|QFile::Text))
         {
             qWarning() << "Failed to open" << crl_path;

@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -9,6 +9,7 @@
 #include "CommonNetStructures.h"
 #include "BitStream.h"
 #include "Powers.h"
+#include "Costume.h"
 #include "Common/GameData/CharacterData.h"
 #include "Common/GameData/CharacterAttributes.h"
 #include "Common/GameData/entitydata_definitions.h"
@@ -26,10 +27,8 @@ namespace SEGSEvents
 {
     struct GameAccountResponseCharacterData;
 }
-class CharacterCostume;
 
 struct PlayerData;
-struct Costume;
 class PowerPool_Info;
 class GameDataStore;
 
@@ -45,16 +44,26 @@ enum ConditionalFlag : bool
     Conditional = true,
 };
 
+enum ClientWindowState
+{
+    None = 0,
+    Training = 1,
+    Tailor = 2,
+    Supergroup = 3,
+    Enhancements = 4,
+    Id = 5,
+    AwaitingGurney = 6
+
+};
+
 class Character
 {
         friend  class CharacterDatabase;
 
-        using vCostume = std::vector<CharacterCostume>;
-
         uint64_t                m_owner_account_id;
         uint8_t                 m_player_collisions=0;
         friend bool toActualCharacter(const SEGSEvents::GameAccountResponseCharacterData &src, Character &tgt,PlayerData &player, EntityData &entity);
-        friend bool fromActualCharacter(const Character &src,const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);
+        friend bool fromActualCharacter(const Character &src, const PlayerData &player, const EntityData &entity, SEGSEvents::GameAccountResponseCharacterData &tgt);
 public:
                         Character();
 //////////////////////////////////////////////////////////////////////////
@@ -75,7 +84,7 @@ const   QString &       getName() const { return m_name; }
         bool            isEmpty();
         void            serializefrom(BitStream &buffer);
         void            serializeto(BitStream &buffer) const;
-        void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool all_costumes=true) const;
+        void            serialize_costumes(BitStream &buffer, const ColorAndPartPacker *packer, bool send_all_costumes=true) const;
         void            serializetoCharsel(BitStream &bs, const QString& entity_map_name);
         void            finalizeLevel();
         void            addStartingInspirations(QStringList &starting_insps);
@@ -88,7 +97,10 @@ const   QString &       getName() const { return m_name; }
         void            GetCharBuildInfo(BitStream &src); // serialize from char creation
         void            SendCharBuildInfo(BitStream &bs) const;
         void            recv_initial_costume(BitStream &src, const ColorAndPartPacker *packer);
-        const CharacterCostume *getCurrentCostume() const;
+        const Costume   *getCurrentCostume() const;
+        const vCostumes *getAllCostumes() const;
+        void            addCostumeSlot();
+        void            saveCostume(uint32_t idx, Costume &new_costume);
         void            dumpSidekickInfo();
         void            dumpBuildInfo();
         void            face_bits(uint32_t){}
@@ -107,18 +119,15 @@ const   QString &       getName() const { return m_name; }
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;
-        bool                m_in_training   = false;
+        ClientWindowState   m_client_window_state = ClientWindowState::None;
+        bool                m_add_new_costume = true;
+        bool                m_is_dead = false;
 
 protected:
         QString         m_name;
-        vCostume        m_costumes;
+        vCostumes       m_costumes;
         Costume *       m_sg_costume;
-        uint32_t        m_current_costume_idx;
-        uint32_t        m_num_costumes;
         uint8_t         m_index;
-        bool            m_villain;
-        bool            m_current_costume_set;
-        bool            m_multiple_costumes;  // has more then 1 costume
         enum CharBodyType
         {
             TYPE_MALE,
