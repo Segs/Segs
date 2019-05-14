@@ -58,11 +58,6 @@ SurfaceParams g_world_surf_params[2] = {
     { 1.50f, 3.00f, 0.00f, 3.00f, 3.00f },      // air; test values
 };
 
-static bool floatEquals(float a, float b)
-{
-    return std::fabs(a - b) < std::numeric_limits<float>::epsilon();
-}
-
 // how much is b newer than a
 // e.g. 2: 2 changes ahead
 // -3: 3 changes behind
@@ -416,14 +411,14 @@ void processNewInputs(Entity &e)
                         {
                             if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
                             {
-                                qCDebug(logInput, "key %hhu = %hhu", csc.control_id, csc.key_state);
+                                qCDebug(logInput, "key %hhu = %hhu", csc.control_id, csc.data.key_state);
                             }
 
                             uint8_t key = csc.control_id;
 
-                            input_state->m_keys[key] = csc.key_state;
+                            input_state->m_keys[key] = csc.data.key_state;
 
-                            if (csc.key_state)
+                            if (csc.data.key_state)
                             {
                                 tick_state.key_press_start_ms[key] = tick_state.length_ms;
                             }
@@ -453,45 +448,49 @@ void processNewInputs(Entity &e)
                         case BinaryControl::PITCH:
                             if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
                             {
-                                qCDebug(logInput, "pitch=%f", csc.angle);
+                                qCDebug(logInput, "pitch=%f", csc.data.angle);
                             }
 
                             tick_state.orientation_changed = true;
-                            e.m_entity_data.m_orientation_pyr.x = csc.angle;
+                            e.m_entity_data.m_orientation_pyr.x = csc.data.angle;
                         break;
 
                         case BinaryControl::YAW:
                             if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
                             {
-                                qCDebug(logInput, "yaw=%f", csc.angle);
+                                qCDebug(logInput, "yaw=%f", csc.data.angle);
                             }
 
                             tick_state.orientation_changed = true;
-                            e.m_entity_data.m_orientation_pyr.y = csc.angle;
+                            e.m_entity_data.m_orientation_pyr.y = csc.data.angle;
                         break;
 
                         case 9:
                             if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
                             {
-                                qCDebug(logInput, "every_4_ticks=%hhu", csc.every_4_ticks);
+                                qCDebug(logInput, "every_4_ticks=%hhu", csc.data.every_4_ticks);
                             }
 
-                            input_state->m_every_4_ticks = csc.every_4_ticks;
+                            input_state->m_every_4_ticks = csc.data.every_4_ticks;
                         break;
 
                         case 10:
                             if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
                             {
-                                qCDebug(logInput, "nocoll=%d", csc.no_collision);
+                                qCDebug(logInput, "nocoll=%d", csc.data.no_collision);
                             }
 
-                            e.m_motion_state.m_no_collision = csc.no_collision;
+                            e.m_motion_state.m_no_collision = csc.data.no_collision;
                         break;
 
                         case 8:
                             if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
                             {
-                                qCDebug(logInput, "doing tick, controls_disabled=%d, time_diff_1=%u, time_diff_2=%u, velocity_scale=%hhu", csc.controls_disabled, csc.time_diff_1, csc.time_diff_2, csc.velocity_scale);
+                                qCDebug(logInput, "doing tick, controls_disabled=%d, time_diff_1=%u, time_diff_2=%u, velocity_scale=%hhu",
+                                        csc.data.control_id_8.controls_disabled,
+                                        csc.data.control_id_8.time_diff_1,
+                                        csc.data.control_id_8.time_diff_2,
+                                        csc.data.control_id_8.velocity_scale);
                             }
 
                             // do a tick!
@@ -499,9 +498,9 @@ void processNewInputs(Entity &e)
                             // Save current position to last_pos
                             e.m_motion_state.m_last_pos = e.m_entity_data.m_pos;
 
-                            input_state->m_velocity_scale = csc.velocity_scale / 255.0f;
+                            input_state->m_velocity_scale = csc.data.control_id_8.velocity_scale / 255.0f;
 
-                            e.m_motion_state.m_controls_disabled = csc.controls_disabled;
+                            e.m_motion_state.m_controls_disabled = csc.data.control_id_8.controls_disabled;
 
                             // following code is based on playerPredictMotion_betaname() in client
                             playerMotionUpdateControlsPrePhysics(&e, &tick_state);

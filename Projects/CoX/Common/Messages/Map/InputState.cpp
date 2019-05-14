@@ -55,53 +55,49 @@ void RecvInputState::receiveControlStateChanges(BitStream &bs) // formerly parti
             case LEFT: case RIGHT:
             case UP: case DOWN:
             {
-                csc.key_state = bs.GetBits(1); // get keypress state
+                csc.data.key_state = bs.GetBits(1); // get keypress state
                 break;
             }
             case PITCH: // camera pitch (Insert/Delete keybinds)
             {
-                csc.angle = AngleDequantize(bs.GetBits(11),11);
+                csc.data.angle = AngleDequantize(bs.GetBits(11),11);
                 break;
             }
             case YAW: // camera yaw (Q or E keybinds)
             {
-                csc.angle = AngleDequantize(bs.GetBits(11),11); // yaw
+                csc.data.angle = AngleDequantize(bs.GetBits(11),11); // yaw
                 break;
             }
             case 8:
             {
-                csc.controls_disabled = bs.GetBits(1);
+                csc.data.control_id_8.controls_disabled = bs.GetBits(1);
                 if( control_id_8_received_at_least_once ) // delta from previous
                 {
-                    csc.time_diff_1 = bs.GetPackedBits(8);   // value - previous_value
-                    csc.time_diff_2 = bs.GetPackedBits(8);   // time - previous_time
+                    csc.data.control_id_8.time_diff_1 = bs.GetPackedBits(8);   // value - previous_value
+                    csc.data.control_id_8.time_diff_2 = bs.GetPackedBits(8);   // time - previous_time
                 }
                 else
                 {
                     control_id_8_received_at_least_once = true;
-                    csc.time_diff_1 = bs.GetBits(32);       // value
-                    csc.time_diff_2 = bs.GetPackedBits(10); // value - time
+                    csc.data.control_id_8.time_diff_1 = bs.GetBits(32);       // value
+                    csc.data.control_id_8.time_diff_2 = bs.GetPackedBits(10); // value - time
                 }
 
                 if(bs.GetBits(1)) // if true velocity scale < 255
-                {
-                    csc.velocity_scale = bs.GetBits(8);
-                }
+                    csc.data.control_id_8.velocity_scale = bs.GetBits(8);
                 else
-                {
-                    csc.velocity_scale = 255;
-                }
+                    csc.data.control_id_8.velocity_scale = 255;
 
                 break;
             }
             case 9:
             {
-                csc.every_4_ticks = bs.GetBits(8); // value goes to 0 every 4 ticks. Some kind of send_partial flag
+                csc.data.every_4_ticks = bs.GetBits(8); // value goes to 0 every 4 ticks. Some kind of send_partial flag
                 break;
             }
             case 10:
             {
-                csc.no_collision = bs.GetBits(1);
+                csc.data.no_collision = bs.GetBits(1);
                 break;
             }
             default:

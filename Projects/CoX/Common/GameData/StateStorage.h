@@ -41,10 +41,10 @@ struct ControlStateChange
           uint32_t time_diff_1;
           uint32_t time_diff_2;
           uint8_t velocity_scale;
-      };
+      } control_id_8;
       uint8_t every_4_ticks;        // control_id 9 (not sure what this is for)
       bool no_collision;            // control_id 10
-    };
+    } data;
 
     template<class Archive>
     void serialize(Archive &ar)
@@ -60,31 +60,31 @@ struct ControlStateChange
             case BinaryControl::RIGHT:
             case BinaryControl::UP:
             case BinaryControl::DOWN:
-                ar(key_state);
+                ar(data.key_state);
                 break;
 
             case BinaryControl::PITCH:
             case BinaryControl::YAW:
-                ar(angle);
+                ar(data.angle);
                 break;
 
             case 8:
-                ar(controls_disabled);
-                ar(time_diff_1);
-                ar(time_diff_2);
-                ar(velocity_scale);
+                ar(data.control_id_8.controls_disabled);
+                ar(data.control_id_8.time_diff_1);
+                ar(data.control_id_8.time_diff_2);
+                ar(data.control_id_8.velocity_scale);
                 break;
 
             case 9:
-                ar(every_4_ticks);
+                ar(data.every_4_ticks);
                 break;
 
             case 10:
-                ar(no_collision);
+                ar(data.no_collision);
                 break;
 
             default:
-                assert("unexpected control id");
+                assert(!"unexpected control id");
                 break;
         }
     }

@@ -67,18 +67,14 @@ bool InputStateChange::hasInput() const
         for (bool key : m_keys)
         {
             if (key)
-            {
                 return true;
-            }
         }
     }
 
     for (const ControlStateChange& csc : m_control_state_changes)
     {
         if (csc.control_id < 8) // key/mouse events are 0-7
-        {
             return true;
-        }
     }
 
     return false;
