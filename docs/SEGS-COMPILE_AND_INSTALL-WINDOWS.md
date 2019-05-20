@@ -91,7 +91,7 @@ In order to run SEGSAdmin, certain OpenSSL DLLs are required: `libeay32.dll` and
 Configure SEGS using SEGSADMIN
 ------
 
--[Configure SEGS using SEGSADMIN](./docs/SEGS-CONFIGURE_WITH_SEGSADMIN.md) 
+-[Configure SEGS using SEGSADMIN](./SEGS-CONFIGURE_WITH_SEGSADMIN.md) 
 
 
 HELP AND MORE INFORMATION

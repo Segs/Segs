@@ -18,7 +18,7 @@
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Logging.h"
-#include "version.h"
+#include "Version.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "AuthServer.h"
@@ -46,6 +46,7 @@
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
+#include <QtCore/QDir>
 #include <QtCore/QElapsedTimer>
 #include <thread>
 #include <chrono>
@@ -204,45 +205,70 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     log_buffer[0] = 0;
     category_text[0] = 0;
     if(strcmp(context.category,"default")!=0)
-        snprintf(category_text,sizeof(category_text),"[%s]",context.category);
+        snprintf(category_text, sizeof(category_text), "[%s]", context.category);
+
     QFile segs_log_target;
-    segs_log_target.setFileName("output.log");
+    QDate todays_date(QDate::currentDate());
+    QSettings settings(Settings::getSettingsPath(), QSettings::IniFormat);
+    QString log_path = Settings::getSEGSDir() + QDir::separator() + QString("logs");
+    settings.beginGroup("Logging");
+    if (settings.value("combine_logs", "").toBool() == false) // If combine_logs is off will split logs by logging category.
+    {
+        // Format file name based on logging category. Splits into a file for each category.
+        QString file_name = category_text;
+        file_name.replace("[log.", "");
+        file_name.replace("]", "");
+        if (file_name.isEmpty())
+            file_name = "generic";
+        file_name = todays_date.toString("yyyy-MM-dd") + "_" + file_name;
+        log_path += QDir::separator() +file_name + ".log";
+        segs_log_target.setFileName(log_path);
+    }
+    else // If combine_logs is on will log all to a single file.
+    {
+        log_path += QDir::separator() +todays_date.toString("yyyy-MM-dd") + "_all.log";
+        segs_log_target.setFileName(log_path);
+    }
+    settings.endGroup();
+
     if(!segs_log_target.open(QFile::WriteOnly | QFile::Append))
     {
         fprintf(stderr,"Failed to open log file in write mode, will procede with console only logging");
     }
+
     QByteArray localMsg = msg.toLocal8Bit();
     std::string timestamp  = QTime::currentTime().toString("hh:mm:ss").toStdString();
 
     switch (type)
     {
         case QtDebugMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sDebug   : %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sDebug   : %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtInfoMsg:
             // no prefix or category for informational messages, as these are end-user facing
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %s\n",
                      timestamp.c_str(), localMsg.constData());
             break;
         case QtWarningMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sWarning : %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sWarning : %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtCriticalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sCritical: %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sCritical: %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtFatalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sFatal: %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sFatal: %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
     }
+
     fprintf(stdout, "%s", log_buffer);
     fflush(stdout);
+
     if(segs_log_target.isOpen())
-    {
         segs_log_target.write(log_buffer);
-    }
+
     if(type == QtFatalMsg)
     {
         segs_log_target.close();
@@ -285,12 +311,10 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ServerStopper st(SIGINT); // it'll register itself with current reactor, and shut it down on sigint
     ACE_Reactor::instance()->register_handler(interesting_signals,&st);
 
-    // Print out startup copyright messages
-
+    // Print out today's date and startup copyright messages
+    qInfo().noquote() << QDateTime::currentDateTime().toString();
     qInfo().noquote() << VersionInfo::getCopyright();
     qInfo().noquote() << VersionInfo::getAuthVersion();
-
-    qInfo().noquote() << "main";
 
     // Create jsonrpc admin interface
     startRPCServer();

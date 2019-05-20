@@ -19,6 +19,7 @@
 #include "Common/GameData/shop_definitions.h"
 
 #include "NpcStore.h"
+#include <QDate>
 
 class ColorAndPartPacker;
 class IndexedStringPacker;
@@ -55,7 +56,7 @@ public:
         uint32_t        expForLevel(uint32_t lev) const;
         uint32_t        expDebtForLevel(uint32_t lev) const;
         uint32_t        expMaxLevel() const;
-        int             countForLevel(uint32_t lvl,const std::vector<uint32_t> &schedule) const;
+        uint32_t countForLevel(uint32_t lvl,const std::vector<uint32_t> &schedule) const;
         const NPCStorage & getNPCDefinitions() const
                         {
                             return m_npc_store;
@@ -98,6 +99,15 @@ public:
         float                       m_time_to_logout_msg = 18 * 60;
         float                       m_time_to_auto_logout = 2 * 60;
         bool                        m_uses_auto_logout = true;
+
+        // experience modifier settings
+        bool                        m_uses_xp_mod;
+        double                      m_xp_mod_multiplier;
+        QDateTime                   m_xp_mod_startdate;
+        QDateTime                   m_xp_mod_enddate;
+
+        // default of 30 for cases where settings are not yet loaded
+        int                         m_world_update_ticks_per_sec=30;
 };
 int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
 int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);

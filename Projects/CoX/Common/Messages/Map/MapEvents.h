@@ -302,8 +302,7 @@ public:
     }
     void serializefrom(BitStream &/*bs*/) override
     {
-        // TODO: Seems like nothing is received server side.
-        qWarning() << "UnqueueAll unimplemented.";
+        // Seems to be properly handled elsewheres
     }
     EVENT_IMPL(UnqueueAll)
 };

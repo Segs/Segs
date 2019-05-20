@@ -47,7 +47,7 @@ class Souvenir
 public:
      enum : uint32_t {class_version       = 1};
 
-    uint32_t m_idx;
+    int32_t m_idx;
     QString m_name;
     QString m_icon;
     QString m_description;
@@ -68,15 +68,3 @@ public:
 };
 
 using vSouvenirList = std::vector<Souvenir>;
-
-class ClueSouvenirList
-{
-public:
-    enum : uint32_t {class_version       = 1};
-
-    std::vector<Clue> m_clue_list;
-    std::vector<Souvenir> m_souvenir_list;
-
-    template<class Archive>
-    void serialize(Archive &archive, uint32_t const version);
-};

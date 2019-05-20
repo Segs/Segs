@@ -25,24 +25,28 @@
 #include <glm/ext.hpp>
 #include <chrono>
 
-static const glm::mat3  s_identity_matrix = glm::mat3(1.0f);
-static int          s_landed_on_ground = 0;
+namespace
+{
+const glm::mat3  s_identity_matrix = glm::mat3(1.0f);
+//int              s_landed_on_ground = 0;
 //static CollInfo     s_last_surf;
-static const int s_reverse_control_dir[6] = {
-    BinaryControl::BACKWARD,
-    BinaryControl::FORWARD,
-    BinaryControl::RIGHT,
-    BinaryControl::LEFT,
-    BinaryControl::DOWN,
-    BinaryControl::UP,
-};
+//constexpr const int s_reverse_control_dir[6] = {
+//    BinaryControl::BACKWARD,
+//    BinaryControl::FORWARD,
+//    BinaryControl::RIGHT,
+//    BinaryControl::LEFT,
+//    BinaryControl::DOWN,
+//    BinaryControl::UP,
+//};
+
+}
 
 SurfaceParams g_world_surf_params[2] = {
     // traction, friction, bounce, gravity, max_speed
     //{ 1.00f, 0.45f, 0.01f, 0.065f, 1.00f }, // ground; from client (base to be modified later)
     //{ 0.02f, 0.01f, 0.00f, 0.065f, 1.00f },  // air; from client (base to be modified later)
-    { 1.00f, 1.00f, 0.01f, 3.00f, 1.00f }, // ground; test values
-    { 1.00f, 3.00f, 0.00f, 3.00f, 1.00f },  // air; test values
+    { 1.30f, 1.00f, 0.01f, 3.00f, 1.70f },      // ground; test values
+    { 1.50f, 3.00f, 0.00f, 3.00f, 3.00f },      // air; test values
 };
 
 void roundVelocityToZero(glm::vec3 *vel)
@@ -212,7 +216,7 @@ void setVelocity(Entity &e) // pmotionSetVel
         if(e.m_type == EntType::PLAYER)
             qCDebug(logMovement) << "Moving so turning off AFK";
 
-        toggleAFK(*e.m_char);
+        setAFK(*e.m_char, false);
     }
 
     // setPlayerVelQuat(&vel, vel_scale_copy); // we don't need this?

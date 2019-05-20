@@ -26,10 +26,6 @@
 #include <sstream>
 #include <memory>
 
-//TODO: this file needs to know the MapInstance's WorldSimulation rate - Maybe extract it as a configuration object ?
-
-#define WORLD_UPDATE_TICKS_PER_SECOND 30
-
 void Entity::sendAllyID(BitStream &bs)
 {
     bs.StorePackedBits(2,0);
@@ -43,7 +39,6 @@ void Entity::sendPvP(BitStream &bs)
     bs.StorePackedBits(5,0);
     bs.StoreBits(1,0);
 }
-
 void Entity::fillFromCharacter(const GameDataStore &data)
 {
     m_hasname = !m_char->getName().isEmpty();

@@ -56,11 +56,11 @@ Character::Character()
 
 void Character::reset()
 {
-    m_name                                  = "EMPTY";
+    m_name                                  = EMPTY_STRING;
     m_char_data.m_level                     = 0;
     m_char_data.m_combat_level              = m_char_data.m_level;
-    m_char_data.m_class_name                = "EMPTY";
-    m_char_data.m_origin_name               = "EMPTY";
+    m_char_data.m_class_name                = EMPTY_STRING;
+    m_char_data.m_origin_name               = EMPTY_STRING;
     m_char_data.m_has_sg_costume            = false;
     m_char_data.m_current_costume_idx       = 0;
     m_char_data.m_using_sg_costume          = false;
@@ -74,8 +74,8 @@ void Character::reset()
 
 bool Character::isEmpty()
 {
-    return ( 0==m_name.compare("EMPTY",Qt::CaseInsensitive)&&
-            (0==m_char_data.m_class_name.compare("EMPTY",Qt::CaseInsensitive)));
+    return ( 0==m_name.compare(EMPTY_STRING,Qt::CaseInsensitive)&&
+            (0==m_char_data.m_class_name.compare(EMPTY_STRING,Qt::CaseInsensitive)));
 }
 
 void Character::setName(const QString &val )
@@ -83,7 +83,7 @@ void Character::setName(const QString &val )
     if(val.length()>0)
         m_name = val;
     else
-        m_name = "EMPTY";
+        m_name = EMPTY_STRING;
 }
 
 void Character::sendTray(BitStream &bs) const
@@ -171,7 +171,7 @@ void Character::addPowersByLevel(const QString &pcat_name, const QString &pset_n
     // Iterate through the availability of all powers in the set
     for(size_t i = 0; i < pset.Available.size(); ++i)
     {
-        if(level < pset.Available.at(i))
+        if(int(level) < pset.Available[i])
             continue;
         // skip prestige powers
         if(pset.m_Powers.at(i).m_Name.contains("prestige_"))
@@ -327,7 +327,7 @@ void Character::serializetoCharsel( BitStream &bs, const QString& entity_map_nam
 
     if(m_costumes.empty())
     {
-        assert(m_name.compare("EMPTY")==0); // only empty characters can have no costumes
+        assert(m_name.compare(EMPTY_STRING)==0); // only empty characters can have no costumes
         Costume::NullCostume.storeCharsel(bs);
     }
     else
@@ -623,8 +623,8 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
 
     try
     {
-        qCDebug(logDB) << src.m_name << src.m_db_id << src.m_account_id << src.m_slot_idx;
-        qCDebug(logDB).noquote() << "Costume:" << src.m_serialized_costume_data;
+        qCDebug(logCharSel) << src.m_name << src.m_db_id << src.m_account_id << src.m_slot_idx;
+        qCDebug(logCharSel).noquote() << "Costume:" << src.m_serialized_costume_data;
         serializeFromQString(tgt.m_costumes, src.m_serialized_costume_data);
         serializeFromQString(cd, src.m_serialized_chardata);
         serializeFromQString(entity, src.m_serialized_entity_data);
@@ -638,7 +638,6 @@ bool toActualCharacter(const GameAccountResponseCharacterData &src,
     {
         qCritical() << e.what();
     }
-
     return true;
 }
 

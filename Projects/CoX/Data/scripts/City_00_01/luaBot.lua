@@ -5,7 +5,9 @@ local LuaBot = {};
 LuaBot.spawned = false;
 LuaBot.name = 'LuaBot';
 LuaBot.model = 'Jumpbot_02';
-LuaBot.location = vec3.new(-90, 0, 170);
+LuaBot.location = {};
+LuaBot.location.coordinates = vec3.new(-90, 0, 170);
+LuaBot.location.orientation = vec3.new(0, 0, 0);
 LuaBot.variation = 1;
 LuaBot.expected = false;
 LuaBot.entityId = nil;
@@ -407,7 +409,8 @@ LuaBot.dialogPages[3].actions["CONTACTLINK_HELLO"] = function ()
 end
 
 LuaBot.dialogPages[3].actions["CONTACTLINK_MAIN"] = function ()
-    Player.GiveRandomEnhancement(1);
+    local level = Player.GetLevel();
+    Player.GiveRandomEnhancement(level);
 end
 
 LuaBot.dialogPages[3].actions["CONTACTLINK_MISSIONS"] = function ()

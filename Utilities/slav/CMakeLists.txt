@@ -29,7 +29,9 @@ get_target_property(TARGET_SOURCES2 ManifestBuilder SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES2}) 
 set_target_properties (slav PROPERTIES
     FOLDER Utilities
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
 )
 set_target_properties (ManifestBuilder PROPERTIES
     FOLDER Utilities
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities
 )

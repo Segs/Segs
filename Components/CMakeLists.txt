@@ -15,6 +15,7 @@ SET(target_CPP
     Settings.cpp
     Logging.cpp
     PasswordHasher.cpp
+    TimeHelpers.cpp
 )
 SET(target_INCLUDE
     Colors.h
@@ -34,6 +35,7 @@ SET(target_INCLUDE
     Settings.h
     Logging.h
     PasswordHasher.h
+    TimeHelpers.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

@@ -168,7 +168,7 @@ void serialize(Archive &archive, FriendsList &fl, uint32_t const version)
     archive(cereal::make_nvp("FriendsCount",fl.m_friends_count));
     archive(cereal::make_nvp("Friends",fl.m_friends));
 }
-const constexpr uint32_t FriendsList::class_version;
+
 CEREAL_CLASS_VERSION(FriendsList, FriendsList::class_version)       // register FriendList struct version
 SPECIALIZE_VERSIONED_SERIALIZATIONS(FriendsList)
 

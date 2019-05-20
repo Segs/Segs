@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 #include <QStringList>
+#include <../Common/GameData/map_definitions.h>
+#include <../Common/GameData/spawn_definitions.h>
 
 class QString;
 
@@ -34,10 +36,14 @@ public:
     ~MapSceneGraph();
     bool loadFromFile(const QString &mapname);
     QMultiHash<QString, glm::mat4> getSpawnPoints() const;
-    QString getNearestDoor(glm::vec3 location) const;
+    QHash<QString, MapXferData> get_map_transfers() const;
     void spawn_npcs(class MapInstance *instance);
     void build_combat_navigation_graph();
     void build_pedestrian_navigation_graph();
+    std::vector<SpawnerNode> m_csNodes;
+    std::vector<SpawnerNode> m_persNodes;
+    std::vector<SpawnerNode> m_carNodes;
+    std::vector<SpawnerNode> m_npcNodes;
 };
 
 QString getCostumeFromName(const QString &n);

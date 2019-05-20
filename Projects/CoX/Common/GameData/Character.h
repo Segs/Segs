@@ -44,6 +44,18 @@ enum ConditionalFlag : bool
     Conditional = true,
 };
 
+enum ClientWindowState
+{
+    None = 0,
+    Training = 1,
+    Tailor = 2,
+    Supergroup = 3,
+    Enhancements = 4,
+    Id = 5,
+    AwaitingGurney = 6
+
+};
+
 class Character
 {
         friend  class CharacterDatabase;
@@ -107,8 +119,9 @@ const   QString &       getName() const { return m_name; }
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;
-        bool                m_in_training   = false;
+        ClientWindowState   m_client_window_state = ClientWindowState::None;
         bool                m_add_new_costume = true;
+        bool                m_is_dead = false;
 
 protected:
         QString         m_name;

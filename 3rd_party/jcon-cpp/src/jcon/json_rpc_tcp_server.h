@@ -20,8 +20,8 @@ public:
                      std::shared_ptr<JsonRpcLogger> logger = nullptr);
     virtual ~JsonRpcTcpServer();
 
-    void listen(int port) override;
-    void listen(const QHostAddress& addr, int port) override;
+    bool listen(int port) override;
+    bool listen(const QHostAddress& addr, int port) override;
     void close() override;
 
 protected:

@@ -48,7 +48,7 @@ public:
     {
         bs.StorePackedBits(1,type()-evFirstServerToClient); // pkt 47
     }
-    void    serializefrom(BitStream &bs) override
+    void    serializefrom(BitStream &/*bs*/) override
     {
         qCDebug(logMapEvents) << "LevelUp Complete";
 

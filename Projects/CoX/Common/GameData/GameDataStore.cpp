@@ -11,7 +11,7 @@
  */
 
 #include "GameDataStore.h"
-#include "trick_definitions.h"
+#include "Common/GameData/trick_definitions.h"
 
 #include "Common/GameData/DataStorage.h"
 #include "Common/GameData/costume_serializers.h"
@@ -38,6 +38,8 @@ namespace
 {
 constexpr uint32_t    stringcachecount_bitlength=12;
 constexpr uint32_t    colorcachecount_bitlength =10;
+constexpr int    minimumTicksPerSecond = 1;
+constexpr int    maximumTicksPerSecond = 1000;
 
 uint32_t color_to_4ub(const glm::vec3 &rgb)
 {
@@ -222,7 +224,7 @@ template<class TARGET,unsigned int CRC>
 bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
 {
     QElapsedTimer timer;
-    
+
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading "<<directory_path<<storage<<" ... ";
     timer.start();
@@ -342,10 +344,10 @@ uint32_t GameDataStore::expDebtForLevel(uint32_t lev) const
 uint32_t GameDataStore::expMaxLevel() const
 {
     // return -1 because level is stored in indexed array (starting 0)
-    return m_experience_and_debt_per_level.m_ExperienceRequired.size()-1;
+    return uint32_t(m_experience_and_debt_per_level.m_ExperienceRequired.size()-1);
 }
 
-int GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
+uint32_t GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> &schedule) const
 {
     uint32_t i = 0;
 
@@ -463,9 +465,9 @@ bool GameDataStore::read_npcs(const QString &directory_path)
 
 bool GameDataStore::read_settings(const QString &/*directory_path*/)
 {
-    qInfo() << "Loading AFK settings...";
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
+    qInfo() << "Loading AFK settings...";
     config.beginGroup(QStringLiteral("AFK Settings"));
         m_time_to_afk = config.value(QStringLiteral("time_to_afk"), "300").toInt();
         m_time_to_logout_msg = config.value(QStringLiteral("time_to_logout_msg"), "1080").toInt();
@@ -473,35 +475,43 @@ bool GameDataStore::read_settings(const QString &/*directory_path*/)
         m_uses_auto_logout = config.value(QStringLiteral("uses_auto_logout"), "true").toBool();
     config.endGroup(); // AFK Settings
 
+    qInfo() << "Loading Modifier settings...";
+    config.beginGroup(QStringLiteral("Modifiers"));
+        m_uses_xp_mod = config.value(QStringLiteral("uses_xp_mod"), "").toBool();
+        m_xp_mod_multiplier = config.value(QStringLiteral("xp_mod_multiplier"), "").toDouble();
+        m_xp_mod_startdate = QDateTime::fromString(config.value(QStringLiteral("xp_mod_startdate"), "").toString(),
+             "M/d/yyyy h:mm AP");
+        m_xp_mod_enddate = QDateTime::fromString(config.value(QStringLiteral("xp_mod_enddate"), "").toString(),
+             "M/d/yyyy h:mm AP");
+    config.endGroup(); // Modifiers
+
+    qInfo() << "Loading Experimental settings...";
+    config.beginGroup(QStringLiteral("Experimental"));
+
+    // constrain to a reasonable range
+    int ticks = config.value(QStringLiteral("world_update_ticks_per_sec"), "30").toInt();
+    m_world_update_ticks_per_sec = std::min(std::max(ticks, minimumTicksPerSecond), maximumTicksPerSecond);
+
+    config.endGroup(); // Experiemental
+
     return true;
 }
 
 bool GameDataStore::read_powers(const QString &directory_path)
 {
     qDebug() << "Loading powers:";
-    if(!read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path, "bin/powers.bin",
-                                                                   m_all_powers))
+    if(QFile(directory_path+"powers.json").exists() && loadFrom(directory_path+"powers.json", m_all_powers))
+    {
+        qDebug() << "Loaded power data from powers.json!";
+            return true;
+    }
+    else if(read_data_to<AllPowerCategories, powers_i0_requiredCrc>(directory_path,
+                                                                    "bin/powers.bin",m_all_powers))
+    {
+        qDebug() << "Loaded power data from powers.bin!";
+    }
+    else
         return false;
-
-    // Hardcoding of stats to test powers
-    StoredAttribMod temp;
-    Power_Data *temppower = nullptr;
-
-    temp.name = "Damage";
-    temp.Magnitude = 5;
-    temppower = editable_power_tpl(26,0,0);    // brawl
-    temppower->pAttribMod.push_back(temp);
-
-    temp.name = "Healing";
-    temppower = editable_power_tpl(26,0,7);    // rest
-    temppower->pAttribMod.push_back(temp);
-    temppower = editable_power_tpl(27,0,24);   // medkit
-    temppower->pAttribMod.push_back(temp);
-
-    temp.name = "Speed_Boost";
-    temp.Magnitude = 0.5;
-    temppower = editable_power_tpl(26,0,6);    // sprint
-    temppower->pAttribMod.push_back(temp);
 
     return true;
 }
@@ -543,8 +553,10 @@ bool GameDataStore::read_fx(const QString &directory_path)
     return read_data_to<std::vector<struct FxInfo>, fxinfos_i0_requiredCrc>(directory_path, "bin/fxinfo.bin",
                                                                             m_fx_infos);
 }
+
 bool GameDataStore::read_sequencer_definitions(const QString &directory_path)
 {
+    qDebug() << "Loading Sequencer Information:";
     return read_data_to<SequencerList, seqencerlist_i0_requiredCrc>(directory_path, "bin/sequencers.bin",m_seq_definitions);
 }
 
@@ -597,8 +609,8 @@ int getEntityOriginIndex(const GameDataStore &data, bool is_player, const QStrin
             return idx;
         idx++;
     }
-    qWarning() << "Failed to locate origin index for"<<origin_name;
-    return 0;
+    qCDebug(logNpcSpawn) << "Failed to locate origin index for" << origin_name;
+    return -1;
 }
 int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString &class_name)
 {
@@ -611,8 +623,8 @@ int getEntityClassIndex(const GameDataStore &data, bool is_player, const QString
             return idx;
         idx++;
     }
-    qWarning() << "Failed to locate class index for" << class_name;
-    return 0;
+    qCDebug(logNpcSpawn) << "Failed to locate class index for" << class_name;
+    return -1;
 }
 
 GameDataStore &getGameData() {
@@ -621,4 +633,3 @@ GameDataStore &getGameData() {
 }
 
 //! @}
-

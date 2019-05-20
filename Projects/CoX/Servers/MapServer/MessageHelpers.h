@@ -12,18 +12,18 @@
   This file is meant to provide message sending helpers
 */
 class QString;
-class MapClientSession;
+struct MapClientSession;
+class Entity;
 
 namespace SEGSEvents
 {
 class EntitiesResponse;
 }
-void sendChatMessage(MessageChannel t, const QString &msg, MapClientSession *src, MapClientSession &tgt);
+void sendChatMessage(MessageChannel t, const QString &msg, Entity *e, MapClientSession &tgt);
 void sendInfoMessage(MessageChannel t, const QString &msg, MapClientSession &tgt);
 
 class BitStream;
 class EntityManager;
-class Entity;
 void storeEntityResponseCommands(BitStream &tgt,float time_of_day);
 void storeEntityResponseOtherEntities(BitStream &tgt, EntityManager &manager, MapClientSession *self, bool incremental,
                                       bool debug);

@@ -12,7 +12,7 @@
 
 #include "SEGSAdminTool.h"
 #include "Globals.h"
-#include "version.h"
+#include "Version.h"
 #include <QApplication>
 #include <QFontDatabase>
 #include <QSplashScreen>
