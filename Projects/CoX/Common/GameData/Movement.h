@@ -125,6 +125,7 @@ struct MotionState // current derived state of motion
     float           m_jump_height           = 2.0f;
     float           m_max_jump_height       = 0.0f;
     float           m_jump_apex             = 0.0f;
+    float           m_jump_start            = 0.0f;
     int             m_jump_time             = 0;
     int             m_walk_flags            = 0;
     int             m_coll_surf_flags       = 0;

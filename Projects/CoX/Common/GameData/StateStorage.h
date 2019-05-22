@@ -193,6 +193,9 @@ public:
     // sent by client, not sure what it's for
     uint8_t                         m_every_4_ticks = 0;
 
+    // seems to only ever be 1 on the client when predicting movement, so should only need to be 1 on server (I think) todo(jbr)
+    float                           m_timestep = 1.0f; // todo(jbr) is this in the packet? the array of timestate things, equal to number of full ticks?
+
     // whether to generate input logging for this entity
     bool                            m_debug = false;
 };
