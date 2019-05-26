@@ -30,8 +30,10 @@ enum class CoHBlendMode : uint8_t
     BUMPMAP_COLORBLEND_DUAL = 6,
     INVALID                 = 255,
 };
+struct TextureStorage;
 struct TextureWrapper
 {
+    using StorageClass = SEGS::TextureStorage; //tells the handle template to look up
     enum
     {
         ALPHA          = 0x0001,
@@ -54,6 +56,13 @@ struct TextureWrapper
     TextureModifiers *info {nullptr};
 };
 using HTexture = SingularStoreHandleT<20,12,TextureWrapper>;
-using TextureStorage = HandleBasedStorage<TextureWrapper>;
+struct TextureStorage : public HandleBasedStorage<TextureWrapper>
+{
+    static TextureStorage &instance() 
+    {
+        static TextureStorage s_instance;
+        return s_instance;
+    }
+};
 void loadTexHeader(const QString &fname);
 } // end of SEGS namespace

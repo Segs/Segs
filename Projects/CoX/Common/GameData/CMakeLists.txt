@@ -42,6 +42,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/def_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gui_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/npc_serializers.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/npc_definitions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fx_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/keybind_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/keybind_definitions.cpp
