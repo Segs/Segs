@@ -33,6 +33,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/entitydata_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/trays_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/anim_serializers.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/bodypart_definitions.cpp
     # Resource file formats
     ${CMAKE_CURRENT_SOURCE_DIR}/attrib_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bodypart_serializers.cpp

@@ -15,9 +15,9 @@ class BinStore;
 class QString;
 struct BodyPart_Data;
 
-using AllBodyParts_Data = std::vector<BodyPart_Data>;
+struct BodyPartsStorage;
 
 constexpr const static uint32_t bodyparts_i0_requiredCrc = 0x541B59EB;
-bool loadFrom(BinStore *s,AllBodyParts_Data *target) ;
-void saveTo(const AllBodyParts_Data &target,const QString &baseName,bool text_format=false);
+bool loadFrom(BinStore *s,BodyPartsStorage &target) ;
+void saveTo(const BodyPartsStorage &target,const QString &baseName,bool text_format=false);
 

@@ -502,7 +502,7 @@ int main(int argc,char **argv)
 //        case eSequencers:   doConvert(doLoad<SequencerList>(&binfile),target_basename,json_output); break;
           case eTailorCosts:  doConvert(doLoad<AllTailorCosts_Data>(&binfile),target_basename,json_output); break;
           case eCostumeSets:  doConvert(doLoad<CostumeSet_Data>(&binfile),target_basename,json_output); break;
-          case eBodyParts:    doConvert(doLoad<AllBodyParts_Data>(&binfile),target_basename,json_output); break;
+          case eBodyParts:    doConvert(doLoadRef<BodyPartsStorage>(&binfile),target_basename,json_output); break;
           case eGroupEmblems: doConvert(doLoad<GeoSet_Data>(&binfile),target_basename,json_output); break;
           case ePaletteSets:  doConvert(doLoad<Pallette_Data>(&binfile),target_basename,json_output); break;
           case eZones:        doConvert(doLoadRef<AllMaps_Data>(&binfile),target_basename,json_output); break;

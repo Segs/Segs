@@ -16,6 +16,7 @@ int getSeqMoveIdxByName(const QByteArray &name, const SequencerData &seq)
         if ( seq.m_Move[i].name.toLower()==compare_against )
             return i;
     }
+    qDebug() << "Cannot find move" << name;
     return -1;
 }
 

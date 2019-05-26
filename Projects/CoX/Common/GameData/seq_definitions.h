@@ -19,7 +19,6 @@
 #include <QMap>
 #include <qobjectdefs.h>
 
-struct AnimTrack;
 namespace std
 {
 template <> struct hash<QByteArray>
@@ -40,6 +39,7 @@ struct SequencerInstanceStorage;
 struct SceneTreeNode;
 enum class CollisionType;
 enum class SelectionMode;
+struct AnimTrack;
 }
 namespace SEGS_Enums
 {
@@ -444,6 +444,8 @@ struct SeqMoveTypeData
     float                              PitchStart;
     float                              PitchEnd;
     float                              SmoothSprint;
+    // Transient data
+    HandleT<20,12,SEGS::AnimTrack>     m_anm_track;
 };
 
 struct SeqNextMoveData
@@ -461,6 +463,11 @@ enum
     MAXMOVES = 2048
 };
 
+struct SeqTypeAnimation
+{
+    SeqMoveTypeData *m_template;
+    HandleT<20,12,SEGS::AnimTrack> m_anm_track;
+};
 // Structure that holds all transient data of a SeqMove
 struct SeqMoveRawData
 {
@@ -473,11 +480,9 @@ struct SeqMoveRawData
     SeqBitSet sets_bits;
     SeqBitSet sets_child_bits;
     SeqBitSet sticks_on_child_bits;
-};
-struct SeqTypeAnimation
-{
-    SeqMoveTypeData *m_template;
-    HandleT<20,12,struct AnimTrack>  m_anm_track;
+    const struct SeqMoveData *m_source_data;
+    int idx;  // index of source move in SeqMoveData
+    //std::vector<SeqTypeAnimation> m_type_animations;
 };
 
 struct SeqMoveData
@@ -517,8 +522,6 @@ struct SeqMoveData
         AlwaysSizeScale = 0x4000
     };
     SeqMoveRawData m_raw;
-    std::vector<SeqTypeAnimation> m_type_animations;
-    int idx;
 };
 
 struct SeqGroupNameData
@@ -558,6 +561,20 @@ struct EntitySequencerData
     QByteArray m_seq_type;
     QByteArray m_graphics;
     QByteArray m_lod_names[3];
+    const QByteArray &lod_Name(int idx) const
+    {
+        switch(idx) {
+        case 0:
+            return m_graphics;
+        case 1:
+        case 2:
+        case 3:
+            return m_lod_names[idx-1];
+        default:
+            assert(false);
+        }
+        return m_graphics;
+    }
     float m_lod_dists[4] = {0,0,0,0};
     float m_visibility_sphere_radius=0;
     int m_max_alpha=0;

@@ -8,6 +8,12 @@
 #pragma once
 #include <QtCore/QString>
 #include <array>
+#include <vector>
+
+enum BoneIds
+{
+    MAX_BONES=70
+};
 
 struct BodyPart_Data
 {
@@ -15,8 +21,23 @@ struct BodyPart_Data
     QByteArray m_GeoName;
     QByteArray m_TexName;
     QByteArray m_BaseName;
-    std::array<int,2> boneIndices;
-    int part_idx;
     int m_BoneCount;
     int m_InfluenceCost;
+    // Transient data.
+    std::array<int,2> boneIndices;
+    int part_idx;
 };
+struct BodyPartsStorage
+{
+    std::vector<BodyPart_Data> m_parts;
+
+    BodyPart_Data *getBodyPartFromName(const QByteArray &name);
+
+    void postProcess();
+};
+
+namespace SEGS
+{
+bool legitBone(int idx);
+const char *boneName(int idx);
+}
