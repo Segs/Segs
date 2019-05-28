@@ -599,6 +599,12 @@ static void entMotion(Entity* ent)
         else if (ent->m_move_type & MOVETYPE_WALK)
         {
             ent->m_motion_state.m_move_time = 0;
+
+            // TODO: this is temprary spoofing of player movement, remove this when putting in entWorldCollide
+            ent->m_motion_state.m_velocity = ent->m_motion_state.m_input_velocity;
+            ent->m_entity_data.m_pos += ent->m_motion_state.m_velocity * 2.0f;
+            // End of temporary spoofing
+
             entWalk(ent);
             ent->m_motion_state.m_input_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
         }
