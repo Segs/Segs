@@ -36,8 +36,7 @@ inline QByteArray uncompr_zip(char *comp_data,int size_comprs,uint32_t size_unco
 
 struct GeosetHeader32
 {
-    char name[124];
-    int  parent_idx;
+    char name[128];
     int  unkn1;
     int  subs_idx;
     int  num_subs;

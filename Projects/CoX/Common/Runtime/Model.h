@@ -37,6 +37,8 @@ struct VBOPointers
     std::vector<glm::vec2> uv2;
     std::vector<glm::ivec3> triangles;
     std::vector<HTexture> assigned_textures;
+    std::vector<glm::vec2> bone_weights;
+    std::vector<std::pair<uint16_t,uint16_t>> bone_indices;
     bool needs_tangents=false;
 };
 enum ModelFlags : uint32_t
@@ -85,6 +87,12 @@ struct PackBlock
     DeltaPack &operator[](uint8_t idx) { return (&tris)[idx]; }
 };
 
+struct BoneInfo
+{
+    int numbones;
+    int bone_ID[15];
+};
+
 struct Model
 {
     AxisAlignedBoundingBox   box;
@@ -95,6 +103,7 @@ struct Model
     PackBlock                packed_data;
     std::vector<TextureBind> texture_bind_info;
     ptrdiff_t                boneinfo_offset = 0;
+    BoneInfo *               bone_info_data = nullptr;
     GeoSet *                 geoset;
     ModelModifiers *         trck_node = nullptr;
     glm::vec3                scale;

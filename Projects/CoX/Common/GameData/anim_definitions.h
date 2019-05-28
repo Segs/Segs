@@ -8,8 +8,18 @@
 #pragma once
 
 #include <QString>
+#include <vector>
+#include <glm/gtx/quaternion.hpp>
+#include "Common/Runtime/HandleBasedStorage.h"
 
-struct BoneAnimTrack;
+struct BoneAnimTrack
+{
+    std::vector<glm::quat> rot_keys;
+    std::vector<glm::vec3> pos_keys;
+    uint16_t               rotation_ticks;
+    uint16_t               position_ticks;
+    uint8_t                tgtBoneOrTexId;
+};
 
 struct TextureAnim_Data
 {

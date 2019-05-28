@@ -47,6 +47,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/keybind_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/keybind_definitions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/particlesys_serializers.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/particle_definitions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/costume_serializers.cpp
     #def_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/map_serializers.cpp
