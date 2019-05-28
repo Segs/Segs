@@ -94,6 +94,7 @@ struct RootNode
 
 struct SceneGraph
 {
+    // Static scene nodes loaded/created from map definition file
     std::vector<SceneNode *> all_converted_defs;
     std::vector<RootNode *> refs;
 

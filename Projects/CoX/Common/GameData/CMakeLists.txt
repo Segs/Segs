@@ -35,6 +35,7 @@ SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/anim_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bodypart_definitions.cpp
     # Resource file formats
+    ${CMAKE_CURRENT_SOURCE_DIR}/anim_definitions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/attrib_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bodypart_serializers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/scenegraph_serializers.cpp

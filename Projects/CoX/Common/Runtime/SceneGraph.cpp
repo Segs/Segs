@@ -573,7 +573,7 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
 
     if( !defload.p_Obj.isEmpty() )
     {
-        node->m_model = prefabs.groupModelFind(defload.p_Obj,ctx);
+        node->m_model = prefabs.groupModelFind(defload.p_Obj);
         if( !node->m_model )
             qCritical() << "Cannot find root geometry in" << defload.p_Obj;
 

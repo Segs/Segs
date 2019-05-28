@@ -30,3 +30,28 @@ struct TextureAnim_Data
     float stScale;
     int flags;
 };
+namespace SEGS
+{
+struct BoneLink
+{
+    int32_t  child_id;
+    int32_t  next_bone_idx;
+    uint32_t id;
+};
+class AnimationStorage;
+struct AnimTrack
+{
+    using StorageClass = AnimationStorage; //tells the handle template to look up
+    std::vector<BoneAnimTrack> m_bone_tracks;
+    std::vector<BoneLink>      m_skeleton_hierarchy;
+    QByteArray                 m_name;
+    QByteArray                 m_parent_track_name;
+    SingularStoreHandleT<20,12,AnimTrack> m_backup_anim_track;
+    int                        m_size;
+    float                      m_max_hip_displacement;
+    float                      m_length;
+    int                        m_last_change_date;
+};
+using HAnimationTrack = SingularStoreHandleT<20,12,AnimTrack>;
+}
+BoneAnimTrack *getTrackForBone(SEGS::HAnimationTrack trk, int bone);
