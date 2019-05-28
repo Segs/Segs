@@ -29,6 +29,8 @@ struct GeoSet
     uint32_t             geo_data_size;
     bool                 data_loaded = false;
 };
+Model *getModelById(GeoSet *gset, int id);
+
 // Geo file info
 struct GeoStoreDef
 {

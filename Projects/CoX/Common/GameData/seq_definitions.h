@@ -633,5 +633,5 @@ struct EntitySequencerData
     SeqBitSet m_converted_constant_bits;
 };
 void cleanSeqFileName(QByteArray &filename);
-int getSeqMoveIdxByName(const QByteArray &name, const SequencerData &seq);
+int16_t getSeqMoveIdxByName(const QByteArray &name, const SequencerData &seq);
 using SequencerTypeMap = std::unordered_map<QByteArray,EntitySequencerData>;

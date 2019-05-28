@@ -98,7 +98,7 @@ struct Model32
     int             geoset_list_idx;
     PackInfo        pack_data[7];
 };
-ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, uint32_t num_entries, UnpackMode v_type)
+ptrdiff_t unpackDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, uint32_t num_entries, UnpackMode v_type)
 {
     uint32_t     idx;
     float        float_acc[3] = {0, 0, 0};
@@ -177,11 +177,11 @@ void geoUnpackDeltas(const DeltaPack *src, uint8_t *target, uint32_t entry_size,
     if(src->compressed_size)
     {
         QByteArray unpacked = uncompr_zip((char *)src->compressed_data, src->compressed_size, src->uncomp_size);
-        consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)unpacked.data(), entry_size, num_entries, type);
+        consumed_bytes = unpackDeltaPack((int *)target, (uint8_t *)unpacked.data(), entry_size, num_entries, type);
     }
     else
     {
-        consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)src->compressed_data, entry_size, num_entries, type);
+        consumed_bytes = unpackDeltaPack((int *)target, (uint8_t *)src->compressed_data, entry_size, num_entries, type);
     }
 }
 

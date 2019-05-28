@@ -180,3 +180,13 @@ void PrefabStore::sceneGraphWasReset()
     for(auto & v : m_dir_to_geoset)
         v.loaded = false;
 }
+
+Model *getModelById(GeoSet *gset, int id)
+{
+    for (Model *v : gset->subs)
+    {
+        if (id == v->m_id)
+            return v;
+    }
+    return nullptr;
+}

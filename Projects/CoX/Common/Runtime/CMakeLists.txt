@@ -13,6 +13,8 @@ set(COMMON_RUNTIME_SRC
     RuntimeData.h
     SceneGraph.h
     SceneGraph.cpp
+    Sequencer.cpp
+    Sequencer.h
     Texture.cpp
     Texture.h
 )

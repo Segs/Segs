@@ -7,7 +7,7 @@
 #include <QMetaEnum>
 #include <set>
 
-int getSeqMoveIdxByName(const QByteArray &name, const SequencerData &seq)
+int16_t getSeqMoveIdxByName(const QByteArray &name, const SequencerData &seq)
 {
     int cnt = seq.m_Move.size();
     QByteArray compare_against=name.toLower();
