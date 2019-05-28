@@ -439,7 +439,7 @@ std::unique_ptr<VBOPointers> fillVbo(const Model &model)
 
         geoUnpack(&model.packed_data.weights, (char *)weights.data());
         geoUnpack(&model.packed_data.matidxs, (char *)indices.data());
-        for(int i=0; i<model.vertex_count; ++i)
+        for(uint32_t i=0; i<model.vertex_count; ++i)
         {
             vbo->bone_indices[i] = std::make_pair(uint16_t(indices[i].first),uint16_t(indices[i].second));
             vbo->bone_weights[i].x = (weights[i]/255.0f);

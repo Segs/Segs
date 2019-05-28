@@ -1,5 +1,7 @@
 find_package(Qt5 COMPONENTS Core REQUIRED)
 set(COMMON_RUNTIME_SRC
+    Animation.cpp
+    Animation.h
     AnimationEngine.cpp
     AnimationEngine.h
     Handle.h
