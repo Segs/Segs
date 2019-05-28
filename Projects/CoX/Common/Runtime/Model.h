@@ -97,7 +97,7 @@ struct Model
 {
     AxisAlignedBoundingBox   box;
     QString                  name;
-    int                      flags;
+    uint32_t                 flags;
     float                    visibility_radius;
     uint32_t                 num_textures;
     PackBlock                packed_data;
@@ -111,6 +111,9 @@ struct Model
     uint32_t                 model_tri_count;
     CoHBlendMode             blend_mode;
     std::unique_ptr<VBOPointers> vbo;
+    int                      m_id;
+    bool                     hasBoneWeights() const { return flags & OBJ_DRAW_AS_ENT; }
+
 };
 void geosetLoadHeader(QFile &fp, GeoSet *geoset);
 void geosetLoadData(QFile &fp, GeoSet *geoset);
