@@ -106,5 +106,4 @@ public:
     void        nest_out() { m_file_sizes.pop_back(); }
     bool        end_encountered() const;
     bool        open(const QString & name, uint32_t required_crc);
-    bool        findAndOpen(const QString & name, uint32_t reqcrc=0);
 };

@@ -47,13 +47,13 @@ QString entTypeFileName(const Parse_Costume *costume)
 }
 QByteArray bodytype_prefix_fixup(const Parse_Costume *a1, const QByteArray &a2)
 {
-    QByteArray v2;
+    QByteArray name;
     QByteArray str;
 
     if ( a1->m_BodyType == BodyType::Villain )
     {
-        v2 = entTypeFileName(a1).toLatin1();
-        str = v2+"_"+a2+".tga";
+        name = entTypeFileName(a1).toLatin1();
+        str = name+"_"+a2+".tga";
     }
     else
     {

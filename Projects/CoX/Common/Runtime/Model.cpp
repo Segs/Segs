@@ -373,9 +373,9 @@ void modelFixup(const Model &model,VBOPointers &vbo)
 
         glm::vec2 scaletex0 = tex.scaleUV0;
         glm::vec2 scaletex1 = tex.scaleUV1;
-        for(uint32_t v19 = 0; v19 < bind_tri_count; ++v19)
+        for(uint32_t tri_idx = 0; tri_idx < bind_tri_count; ++tri_idx)
         {
-            glm::ivec3 tri(vbo.triangles[v19+triangle_offset]);
+            glm::ivec3 tri(vbo.triangles[tri_idx+triangle_offset]);
             for(int vnum=0; vnum<3; ++vnum)
             {
                 const uint32_t vert_idx = tri[vnum];

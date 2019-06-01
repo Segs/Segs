@@ -32,7 +32,7 @@ namespace Urho3D
 
 enum
 {
-    CONVERT_MINIMAL,
+    CONVERT_MINIMAL=1,
     CONVERT_EDITOR_MARKERS,
 };
 

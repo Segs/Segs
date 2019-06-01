@@ -192,9 +192,9 @@ inline glm::vec3 CoHYprFromMat(const glm::mat3 &mat)
         }
         else
         {
-            float v11 = mat[1][1] / cos_roll;
-            pitchVal = std::atan2(mat[2][1], v11);
-            yawVal   = std::atan2(mat[2][0] / v11, mat[2][2] / v11);
+            float m11 = mat[1][1] / cos_roll;
+            pitchVal = std::atan2(mat[2][1], m11);
+            yawVal   = std::atan2(mat[2][0] / m11, mat[2][2] / m11);
         }
     }
     else

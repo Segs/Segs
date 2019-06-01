@@ -6,14 +6,13 @@
  */
 
 /*!
- * @addtogroup MapViewer Projects/CoX/Utilities/MapViewer
+ * @addtogroup MapViewer Projects/CoX/Utilities/CharacterViewer
  * @{
  */
 
 #include "CohModelConverter.h"
 
 #include "CoHModelLoader.h"
-#include "CoHSceneConverter.h"
 #include "CohTextureConverter.h"
 
 #include "GameData/DataStorage.h"
@@ -26,6 +25,7 @@
 #include <Lutefisk3D/Scene/Node.h>
 #include <Lutefisk3D/Core/Context.h>
 #include <Lutefisk3D/Graphics/StaticModel.h>
+#include <Lutefisk3D/Graphics/AnimatedModel.h>
 #include <Lutefisk3D/Graphics/Material.h>
 #include <Lutefisk3D/Graphics/Technique.h>
 #include <Lutefisk3D/Graphics/Model.h>
@@ -78,6 +78,16 @@ void reportUnhandled(const QString &message)
 SharedPtr<Urho3D::Model> modelCreateObjectFromModel(Urho3D::Context *ctx,SEGS::Model *model,std::vector<SEGS::HTexture> &textures)
 {
     initLoadedModel([ctx](const QString &v) -> SEGS::HTexture { return tryLoadTexture(ctx, v); }, model, textures);
+    if ( model->name.startsWith("GEO_", Qt::CaseInsensitive) )
+    {
+        model->flags |= SEGS::OBJ_DRAW_AS_ENT;
+        if ( model->name.contains("eyes",Qt::CaseInsensitive) )
+        {
+            if ( !model->trck_node )
+                model->trck_node = new ModelModifiers;
+            model->trck_node->_TrickFlags |= DoubleSided;
+        }
+    }
     SEGS::fillVBO(*model);
     std::unique_ptr<SEGS::VBOPointers> &vbo(model->vbo);
     vbo->assigned_textures.reserve(textures.size());
@@ -99,6 +109,11 @@ SharedPtr<Urho3D::Model> modelCreateObjectFromModel(Urho3D::Context *ctx,SEGS::M
         vertex_elements.emplace_back(TYPE_VECTOR2, SEM_TEXCOORD,1);
     if (vbo->needs_tangents)
         vertex_elements.emplace_back(TYPE_VECTOR4, SEM_TANGENT);
+    if (model->hasBoneWeights())
+    {
+        vertex_elements.emplace_back(TYPE_VECTOR4, SEM_BLENDWEIGHTS);
+        vertex_elements.emplace_back(TYPE_UBYTE4, SEM_BLENDINDICES);
+    }
 
     float *combined = combineBuffers(*vbo,model);
     vb->SetShadowed(true);
@@ -148,6 +163,8 @@ Urho3D::Model *buildModel(Urho3D::Context *ctx,SEGS::Model *mdl)
     {
         QString str=parts.takeFirst();
         if(str.compare(QLatin1Literal("object_library"),Qt::CaseInsensitive)==0)
+            break;
+        if(str.compare(QLatin1Literal("player_library"),Qt::CaseInsensitive)==0)
             break;
     }
     QString cache_path="converted/Models/"+parts.join('/')+"/"+mdl->name+".mdl";
@@ -385,9 +402,9 @@ void copyStaticModel(Urho3D::StaticModel *src, Urho3D::StaticModel *tgt)
 }
 } // end of anonymus namespace
 
-Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node *tgtnode, SEGS::SceneNode *node, int opt)
+void convertedModelToLutefisk(Urho3D::Node *tgtnode, SEGS::Model *segs_model, int opt, float draw_dist)
 {
-    SEGS::Model *mdl = node->m_model;
+    SEGS::Model *mdl = segs_model;
     Urho3D::StaticModel * converted=nullptr;
     auto loc = s_coh_model_to_static_model.find(mdl);
     if (loc != s_coh_model_to_static_model.end())
@@ -395,47 +412,51 @@ Urho3D::StaticModel *convertedModelToLutefisk(Urho3D::Context *ctx, Urho3D::Node
 
     if (mdl && converted)
     {
-        float per_node_draw_distance = node->lod_far + node->lod_far_fade;
-        StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
+        float per_node_draw_distance = draw_dist;
+        AnimatedModel* boxObject = tgtnode->GetComponent<AnimatedModel>();
+        if(!boxObject)
+            boxObject = tgtnode->CreateComponent<AnimatedModel>();
         copyStaticModel(converted, boxObject);
         boxObject->SetDrawDistance(per_node_draw_distance);
-        return boxObject;
+        return;
     }
 
     ModelModifiers *model_trick = mdl->trck_node;
     if (model_trick)
     {
-        if (opt != CONVERT_EDITOR_MARKERS && model_trick->isFlag(NoDraw))
+        if (model_trick->isFlag(NoDraw))
         {
             //qDebug() << mdl->name << "Set as no draw";
-            return nullptr;
+            return;
         }
-        if (opt != CONVERT_EDITOR_MARKERS && model_trick->isFlag(EditorVisible))
+        if (model_trick->isFlag(EditorVisible))
         {
             //qDebug() << mdl->name << "Set as editor model";
-            return nullptr;
+            return;
         }
         if (model_trick && model_trick->isFlag(CastShadow))
         {
             //qDebug() << "Not converting shadow models"<<mdl->name;
-            return nullptr;
+            return;
         }
         if (model_trick && model_trick->isFlag(ParticleSys))
         {
             qDebug() << "Not converting particle sys:" << mdl->name;
-            return nullptr;
+            return;
         }
     }
-    Urho3D::Model *modelptr = buildModel(ctx, mdl);
+    Urho3D::Model *modelptr = buildModel(tgtnode->GetContext(), mdl);
     if(!modelptr)
-        return nullptr;
-    StaticModel* boxObject = tgtnode->CreateComponent<StaticModel>();
+        return;
+    AnimatedModel* boxObject = tgtnode->GetComponent<AnimatedModel>();
+    if(!boxObject)
+        boxObject = tgtnode->CreateComponent<AnimatedModel>();
 
-    boxObject->SetDrawDistance(node->lod_far+node->lod_far_fade);
+    boxObject->SetDrawDistance(draw_dist);
     boxObject->SetModel(modelptr);
-    convertMaterial(ctx,mdl,boxObject);
+    convertMaterial(tgtnode->GetContext(),mdl,boxObject);
     s_coh_model_to_static_model[mdl] = boxObject;
-    return boxObject;
+    return;
 }
 
 //! @}
