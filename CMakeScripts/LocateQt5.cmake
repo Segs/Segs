@@ -11,12 +11,13 @@ IF(MSVC)
     STRING(REPLACE "/Tools" ";" QT_BIN "${QT_BIN}")
     LIST(GET QT_BIN 0 QT_BIN)
     FILE(GLOB QT_VERSIONS "${QT_BIN}/5.*")
-    LIST(SORT QT_VERSIONS)
-
-    # assume the latest version will be last alphabetically
-    LIST(REVERSE QT_VERSIONS)
-
     LIST(GET QT_VERSIONS 0 QT_VERSION)
+    # find the latest qt version in QT_VERSIONS
+    foreach(Ver ${QT_VERSIONS})
+        if(${Ver} VERSION_GREATER ${QT_VERSION})
+            set(QT_VERSION ${Ver})
+        endif()
+    endforeach()
 
     # fix any double slashes which seem to be common
     STRING(REPLACE "//" "/"  QT_VERSION "${QT_VERSION}")
