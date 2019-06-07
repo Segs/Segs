@@ -87,7 +87,7 @@ install:
 #    fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      sudo apt-get install -qq qt512base qt512declarative qt512websockets qt512quickcontrols2; source /opt/qt512/bin/qt512-env.sh;
+      sudo apt-get install -qq libgl1-mesa-dev qt512base qt512declarative qt512websockets qt512quickcontrols2; source /opt/qt512/bin/qt512-env.sh;
       CMAKE_OPTS="";
     else
       brew install cppcheck qt;
