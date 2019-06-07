@@ -3,7 +3,7 @@ cache:
   ccache: true    # includes $HOME/.ccache and adds /usr/lib/ccache to $PATH
 # directories:
 #   - 3rd_party   # this is sometimes breaking subsequent Travis builds
-dist: trusty
+dist: xenial
 
 notifications:
   email: false
@@ -70,7 +70,7 @@ matrix:
       env: BUILD='Debug'
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository ppa:beineri/opt-qt593-trusty -y; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository ppa:beineri/opt-qt-5.12.2-xenial -y; fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       sudo apt-get update -qq;
@@ -87,7 +87,7 @@ install:
 #    fi
   - |
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
-      sudo apt-get install -qq qt59base qt59declarative qt59websockets qt59quickcontrols2; source /opt/qt59/bin/qt59-env.sh;
+      sudo apt-get install -qq libgl1-mesa-dev qt512base qt512declarative qt512websockets qt512quickcontrols2; source /opt/qt512/bin/qt512-env.sh;
       CMAKE_OPTS="";
     else
       brew install cppcheck qt;
