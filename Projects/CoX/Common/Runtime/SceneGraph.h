@@ -92,8 +92,15 @@ struct RootNode
     uint32_t index_in_roots_array=0;
 };
 
+struct SceneTreeNode
+{
+    //TODO: REMOVE. This is only used to make debugging dynamic_cast work.
+    virtual ~SceneTreeNode() {}
+};
+
 struct SceneGraph
 {
+    // Static scene nodes loaded/created from map definition file
     std::vector<SceneNode *> all_converted_defs;
     std::vector<RootNode *> refs;
 

@@ -91,3 +91,4 @@ struct Parse_AllPSystems
     std::vector<ParticleSystemInfo> m_Systems;
     QMap<QString,size_t> m_NameToIdx;
 };
+void cleanupPSystemName(QByteArray &name);

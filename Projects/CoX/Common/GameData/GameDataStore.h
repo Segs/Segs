@@ -17,6 +17,7 @@
 #include "Common/GameData/power_definitions.h"
 #include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/shop_definitions.h"
+#include "Common/GameData/bodypart_definitions.h"
 
 #include "NpcStore.h"
 #include <QDate>
@@ -48,6 +49,8 @@ class GameDataStore
         bool            read_store_data(const QString &directory_path);
         bool            read_store_items_data(const QString &directory_path);
         bool            read_store_depts_data(const QString &directory_path);
+        bool            read_sequencer_types(const QString &directory_path);
+        bool            read_body_parts(const QString &directory_path);
 public:
                         GameDataStore();
                         ~GameDataStore();
@@ -84,6 +87,8 @@ public:
         float                       m_motd_timer = 60 * 60; // default 1 hr
         QStringList                 m_costume_slot_unlocks; // used in finalizeLevel() to award costume slots
         SequencerList               m_seq_definitions; // animation sequencer definitions
+        SequencerTypeMap            m_seq_types;
+        BodyPartsStorage            m_body_parts;
 
         // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)
         const StoredPowerCategory&  get_power_category(uint32_t pcat_idx);
