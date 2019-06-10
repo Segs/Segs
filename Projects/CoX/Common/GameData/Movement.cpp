@@ -769,7 +769,7 @@ void processNewInputs(Entity &e)
                                         csc.data.control_id_8.velocity_scale);
                             }
 
-                            // do a tick!
+                            // control id 8 signals the end of a tick, so now we can simulate this tick
 
                             // Save current position to last_pos
                             e.m_motion_state.m_last_pos = e.m_entity_data.m_pos;
