@@ -1055,36 +1055,27 @@ void MapInstance::on_input_state(RecvInputState *st)
     MapClientSession &session(m_session_store.session_from_event(st));
     Entity *   ent = session.m_ent;
 
-    // Save current position to last_pos
-    ent->m_motion_state.m_last_pos      = ent->m_entity_data.m_pos;
-    ent->m_states.current()->m_pos_end  = ent->m_entity_data.m_pos;
-    st->m_next_state.m_pos_start        = ent->m_entity_data.m_pos;
-
-    // Add new input state
-    ent->m_states.addNewState(st->m_next_state);
+    // Add new input state change
+    ent->m_input_state.m_queued_changes.push_back(st->m_input_state_change);
 
     // Set current Input Packet ID
-    if(st->m_next_state.m_full_input_packet)
-        ent->m_input_pkt_id = st->m_next_state.m_send_id;
-
-    // Check for input
-    if(st->m_next_state.m_input_received)
-        ent->m_has_input_on_timeframe = st->m_next_state.m_input_received;
-
-    // Set Target
-    if(st->m_next_state.m_has_target && (getTargetIdx(*ent) != st->m_next_state.m_target_idx))
+    if(st->m_input_state_change.m_control_state_changes.size())
     {
-        ent->m_has_input_on_timeframe = true;
-        setTarget(*ent, st->m_next_state.m_target_idx);
-        //Not needed currently
-        //auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
+        // todo: when corrections are turned on, I think this needs to be m_input_ack?
+        // Also perhaps it should be the last csc id in this packet, not the first?
+        ent->m_input_pkt_id = st->m_input_state_change.m_first_control_state_change_id;
     }
 
-    // Set Orientation
-    if(st->m_next_state.m_orientation_pyr.p || st->m_next_state.m_orientation_pyr.y || st->m_next_state.m_orientation_pyr.r)
+    // Check for input
+    ent->m_has_input_on_timeframe = st->m_input_state_change.hasInput();
+
+    // Set Target
+    if(st->m_input_state_change.m_has_target && (getTargetIdx(*ent) != st->m_input_state_change.m_target_idx))
     {
-        ent->m_entity_data.m_orientation_pyr = st->m_next_state.m_orientation_pyr;
-        ent->m_direction = fromCoHYpr(ent->m_entity_data.m_orientation_pyr);
+        ent->m_has_input_on_timeframe = true;
+        setTarget(*ent, st->m_input_state_change.m_target_idx);
+        //Not needed currently
+        //auto val = m_scripting_interface->callFuncWithClientContext(&session,"set_target", st->m_next_state.m_target_idx);
     }
 
     // Input state messages can be followed by multiple commands.

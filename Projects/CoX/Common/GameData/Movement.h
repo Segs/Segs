@@ -125,6 +125,7 @@ struct MotionState // current derived state of motion
     float           m_jump_height           = 2.0f;
     float           m_max_jump_height       = 0.0f;
     float           m_jump_apex             = 0.0f;
+    float           m_jump_start            = 0.0f;
     int             m_jump_time             = 0;
     int             m_walk_flags            = 0;
     int             m_coll_surf_flags       = 0;
@@ -137,13 +138,13 @@ struct MotionState // current derived state of motion
 
     SurfaceParams   m_surf_mods[2] = { {0,0,0,0,0},
                                      {0,0,0,0,0} };
+
+    bool            m_debug = false; // wether to generate movement logging for this entity
 };
 
-void processDirectionControl(InputState *next_state, uint8_t control_id, int ms_since_prev, int keypress_state);
-void setVelocity(Entity &e);
+void processNewInputs(Entity &e);
 
 void addPosUpdate(Entity &e, const PosUpdate &p);
-bool updateRotation(const Entity &e, int axis); // returns true if given axis needs updating;
 void forcePosition(Entity &e, glm::vec3 pos);
 void forceOrientation(Entity &e, glm::vec3 pyr);
 

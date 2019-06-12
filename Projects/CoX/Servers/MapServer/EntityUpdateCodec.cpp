@@ -137,7 +137,6 @@ void storeOrientation(const Entity &src,BitStream &bs)
     // output everything
     qCDebug(logOrientation, "Player: %d", src.m_idx);
     qCDebug(logOrientation, "dir: %s", glm::to_string(src.m_direction).c_str());
-    qCDebug(logOrientation, "camera_pyr: %s", glm::to_string(src.m_states.current()->m_camera_pyr).c_str());
     qCDebug(logOrientation, "pyr_angles: farr(%f, %f, %f)", pyr_angles[0], pyr_angles[1], pyr_angles[2]);
     qCDebug(logOrientation, "orient_p: %f", src.m_entity_data.m_orientation_pyr[0]);
     qCDebug(logOrientation, "orient_y: %f", src.m_entity_data.m_orientation_pyr[1]);

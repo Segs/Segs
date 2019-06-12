@@ -19,7 +19,7 @@ class RecvInputState : public MapLinkEvent
 {
 public:
     // [[ev_def:field]]
-    InputState   m_next_state;
+    InputStateChange m_input_state_change;
     // [[ev_def:field]]
     BitStream m_user_commands;
 
@@ -28,7 +28,7 @@ public:
     {}
     void serializeto(BitStream &) const override;
     void serializefrom(BitStream &bs) override;
-    void receiveControlState(BitStream &bs);
+    void receiveControlStateChanges(BitStream &bs);
     void extended_input(BitStream &bs);
     void recv_client_opts(BitStream &bs);
     EVENT_IMPL(RecvInputState)
