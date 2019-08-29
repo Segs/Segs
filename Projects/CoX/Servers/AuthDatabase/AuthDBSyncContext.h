@@ -7,6 +7,7 @@
 
 #pragma once
 #include <memory>
+#include <array>
 
 class QSqlDatabase;
 class QSqlQuery;
