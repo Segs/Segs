@@ -27,13 +27,19 @@ struct ValidatePasswordResponseData;
 ///
 class AuthDbSyncContext
 {
-
-    std::unique_ptr<QSqlDatabase> m_db;
-    std::unique_ptr<QSqlQuery> m_add_account_query;
-    std::unique_ptr<QSqlQuery> m_prepared_select_account_by_id;
-    std::unique_ptr<QSqlQuery> m_prepared_select_account_passw;
-    std::unique_ptr<QSqlQuery> m_prepared_select_account_by_username;
-    std::unique_ptr<QSqlError> last_error;
+public:
+	enum QueryId {
+		ID_FETCH_DB_VERSION_QUERY=0,
+		ID_ADD_ACCOUNT_QUERY,
+		ID_SELECT_ACCOUNT_BY_USERNAME_QUERY,
+		ID_SELECT_ACCOUNT_BY_ID_QUERY,
+		ID_SELECT_ACCOUNT_PASSWORD_QUERY,
+		QUERY_COUNT
+	};
+private:
+	std::array<std::unique_ptr<QSqlQuery>,QUERY_COUNT> m_query_mapping;
+	std::unique_ptr<QSqlDatabase> m_db;
+	std::unique_ptr<QSqlError> last_error;
     bool m_setup_complete = false;
 
 public:
