@@ -1,9 +1,9 @@
 SEGS Developers
 ======
-- broxen 			_[broxen.net](http://broxen.net/) `broxen AT segs.io`_
-- ldilley			_[dilley.me](http://www.dilley.me/) `lloyd AT segs.io`_
-- mobbyg			_`mobbyg AT segs.io`_
-- nemerle			_[nemerle.eu](http://www.nemerle.eu/) `nemerle AT segs.io`_
+- broxen 			_[broxen.net](http://broxen.net/) `broxen AT segs.dev`_
+- ldilley			_[dilley.me](http://www.dilley.me/) `lloyd AT segs.dev`_
+- mobbyg			_`mobbyg AT segs.dev`_
+- nemerle			_[nemerle.eu](http://www.nemerle.eu/) `nemerle AT segs.dev`_
 
 
 SEGS Contributors
