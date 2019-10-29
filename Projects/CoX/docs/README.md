@@ -31,9 +31,9 @@ SEGS requires:
   `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
 
 For more detailed version of this guide or for help, visit our discord or forums by using the links below:
-- https://segs.io/
-- https://discord.segs.io/
-- https://forum.segs.io/
+- https://segs.dev/
+- https://discord.segs.dev/
+- https://forum.segs.dev/
 
 To report any bugs, please visit our GitHub:
 - https://github.com/Segs/Segs
@@ -57,7 +57,7 @@ INSTALL & CONFIGURE THE COX CLIENT
 
 2. **Point the CoX client towards your server IP**
 
-   In your CoX Client folder, locate and run `CoX-Auth.exe` to set the IP address to that of the server you'd like to play on. For a list of public servers available to play on, please visit the `#welcome` channel on our https://discord.segs.io
+   In your CoX Client folder, locate and run `CoX-Auth.exe` to set the IP address to that of the server you'd like to play on. For a list of public servers available to play on, please visit the `#welcome` channel on our https://discord.segs.dev
    
    If running your own server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network.
    
@@ -158,7 +158,7 @@ HELP AND MORE INFORMATION
 
 Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200
 
-For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.io/
+For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.dev/
 
 
 FAQs

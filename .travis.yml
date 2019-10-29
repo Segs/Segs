@@ -7,7 +7,7 @@ dist: xenial
 
 notifications:
   email: false
-  webhooks: https://segs.io/travis/travis-ci.php
+  webhooks: https://segs.dev/travis/travis-ci.php
     
 env:
   global:
