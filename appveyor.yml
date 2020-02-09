@@ -33,6 +33,7 @@ matrix:
 init:
 - call "%QT5%\bin\qtenv2.bat"
 - call "%VCVARS%"
+- cd /D "%APPVEYOR_BUILD_FOLDER%"
 
 before_build:
 - if exist "%QT5%" set PATH=%QT5%\bin;%PATH%
