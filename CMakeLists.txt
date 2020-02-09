@@ -1,8 +1,14 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.16)
 project(SEGS)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Tell cmake to honor CXX_VISIBILITY_PRESET and ignore it
+cmake_policy(SET CMP0063 NEW)
+cmake_policy(SET CMP0065 NEW)
+cmake_policy(SET CMP0072 NEW)
+cmake_policy(SET CMP0079 NEW)
 
 # for version and revision info. Derived from https://github.com/dolphin-emu/dolphin/blob/master/CMakeLists.txt#L132
 find_package(Git)
@@ -88,7 +94,7 @@ add_subdirectory(3rd_party)
 link_directories(${PROJECT_SOURCE_DIR}/lib) # ERICEDIT: Changed to lowercase.
 
 include(LocateQt5)
-find_package(Qt5 COMPONENTS Core Sql REQUIRED)
+find_package(Qt5 5.12 COMPONENTS Core Sql REQUIRED)
 
 if(ENABLE_TESTS)
     enable_testing()

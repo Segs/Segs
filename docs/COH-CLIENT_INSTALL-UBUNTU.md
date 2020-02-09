@@ -80,11 +80,11 @@ Intel or Radeon card. If you're experienced in debugging on Windows we would be 
   
 Come and join us in `#pocket-d` channel for general chat or `#troubleshooting` for support.  
   
- [**Click here to join SEGS Discord**](https://discord.segs.dev/)  
+ [**Click here to join SEGS Discord**](https://discord.segs.dev/)
   
 Or if **IRC** chat is more your speed, you can join us on IRC:  
   
-  **Server:** irc.segs.dev  
+  **Server:** irc.segs.dev
   **Port:** 6667  
   **SSL port:** 6697  
   **Channel:** #segs  
