@@ -3,7 +3,7 @@ cache:
   ccache: true    # includes $HOME/.ccache and adds /usr/lib/ccache to $PATH
 # directories:
 #   - 3rd_party   # this is sometimes breaking subsequent Travis builds
-dist: xenial
+dist: bionic
 
 notifications:
   email: false
@@ -12,14 +12,14 @@ notifications:
 env:
   global:
     # Ubuntu version
-    - LINUX_DIST=trusty
+    - LINUX_DIST=bionic
     - DEPS_DIR=${TRAVIS_BUILD_DIR}/deps
     # Global build options and C++ flags
     - CXX_FLAGS="-Wall -pedantic"
     - CCACHE_TEMPDIR=/tmp/.ccache-temp
     - CCACHE_COMPRESS=1
     - CASHER_TIME_OUT=1000
-    - QT=511
+    - QT=512
     
 addons_shortcuts:
   addons_clang50: &clang50
@@ -41,29 +41,14 @@ addons_shortcuts:
 
 matrix:
   include:
-#    - os: linux
-#      compiler: "clang-3.9"
-#      env: CLANG_VERSION=3.9 BUILD='Debug' CC=clang-3.9 CXX=clang++-3.9  LIBCXX=On
-#      addons: *clang39
-#    - os: linux
-#      compiler: "clang-4.0"
-#      env: CLANG_VERSION=4.0 BUILD='Debug' CC=clang-4.0 CXX=clang++-4.0  LIBCXX=On
-#      addons: *clang40
-#    - os: linux
-#      compiler: "clang-5.0"
-#      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
-#           CLANG_TIDY=clang-tidy-5.0
-#      addons: *clang50
-#    - os: linux
-#      compiler: "clang-5.0"
-#      env: CLANG_VERSION=5.0 BUILD='Debug' CC=clang-5.0 CXX=clang++-5.0  LIBCXX=On
-#           CXXFLAGS="-fsanitize=address,undefined,integer -fno-sanitize-recover=all -fno-omit-frame-pointer  ${CXXFLAGS}"
-#           LDFLAGS="-fsanitize=address,undefined,integer"
-#      addons: *clang50
     - os: linux
-      compiler: "gcc-7"
-      env: BUILD='Debug' CC=gcc-7 CXX=g++-7
-      addons: *gcc7
+      dist: bionic
+      env: BUILD='Debug' GCC=9
+      before_install:
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.tar.gz -o cmake-3.16.4-Linux-x86_64.tar.gz
+        - tar xf cmake-3.16.4-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.16.4-Linux-x86_64/bin:${PATH}
+        - cmake --version
     - os: osx
       osx_image: xcode9.2
       compiler: clang
