@@ -1,6 +1,7 @@
 SET(QT_MISSING True)
 # msvc only; mingw will need different logic
 IF(MSVC)
+    message("LocateQt5 was given a Qt5 path ${QT_GIVEN_PATH}")
     # look for user-registry pointing to qtcreator
     GET_FILENAME_COMPONENT(QT_BIN [HKEY_CURRENT_USER\\Software\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command] PATH)
     if(${MSVC_VERSION} VERSION_LESS "1910")
@@ -32,7 +33,7 @@ IF(MSVC)
 
     SET(QT_PATH "${QT_VERSION}/msvc${QT_MSVC}")
     if(QT_GIVEN_PATH)
-        set(QT_PATH "${QT_GIVEN_PATH}"
+        set(QT_PATH "${QT_GIVEN_PATH}")
     endif()
     SET(QT_MISSING False)
     file(TO_NATIVE_PATH "${QT_PATH}/bin" QT_BIN_DIR_WINDOWS)
