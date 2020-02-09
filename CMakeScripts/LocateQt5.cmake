@@ -31,6 +31,9 @@ IF(MSVC)
     endif()
 
     SET(QT_PATH "${QT_VERSION}/msvc${QT_MSVC}")
+    if(QT_GIVEN_PATH)
+        set(QT_PATH "${QT_GIVEN_PATH}"
+    endif()
     SET(QT_MISSING False)
     file(TO_NATIVE_PATH "${QT_PATH}/bin" QT_BIN_DIR_WINDOWS)
     set(CMAKE_MSVCIDE_RUN_PATH "${QT_BIN_DIR_WINDOWS}" CACHE STATIC "MSVC IDE Run path" FORCE)
