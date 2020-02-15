@@ -11,9 +11,9 @@ REQUIREMENTS AND NOTES
 
 Below are the utilities and libraries you'll need to compile SEGS in any environment. While it may be possible to use another toolset, the C++ Tool Chain below is the only one officially supported by the SEGS team. These packages are available for both Linux or Windows via the links below:
 
-   - **QT 5.9+** - A cross platform application framework utilized heavily by SEGS. http://download.qt.io/archive/qt/
+   - **QT 5.12+** - A cross platform application framework utilized heavily by SEGS. http://download.qt.io/archive/qt/
 
-   - **CMake 3.6+** - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
+   - **CMake 3.16+** - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
    - **Git** - A version control system for tracking changes in computer files and coordinating work on those files among multiple people. https://git-scm.com/download
 
 **ADVANCED:** By default SEGS uses a local SQLite database created by `SEGSAdmin` or `dbtool`, but optionally may be configured to use another database driver by manually configuring settings.cfg. SEGS is compatible with PostGreSQL or MySQL/MariaDB. These alternate configurations are optional and unsupported. YMMV.
