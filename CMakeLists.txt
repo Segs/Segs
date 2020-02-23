@@ -88,6 +88,8 @@ option(BUILD_CLIENT_PATCH "Build client patch for AMD graphics cards ?" OFF)
 # Prerequisites
 ########################################################################################
 find_package(Threads REQUIRED)
+include(LocateQt5)
+find_package(Qt5 5.12 COMPONENTS Core Sql REQUIRED)
 
 include(SDKHelper)
 include(3rdparty_support)
@@ -95,8 +97,6 @@ set(ThirdParty_Install_Dir ${CMAKE_BINARY_DIR}/3rd_party/built) # ERICEDIT: Chan
 add_subdirectory(3rd_party)
 link_directories(${PROJECT_SOURCE_DIR}/lib) # ERICEDIT: Changed to lowercase.
 
-include(LocateQt5)
-find_package(Qt5 5.12 COMPONENTS Core Sql REQUIRED)
 
 if(ENABLE_TESTS)
     enable_testing()

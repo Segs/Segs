@@ -35,7 +35,7 @@ function(update_binary_deps DEP_PREFIX DEP_NAME DEP_FOLDER DEP_VERSION)
 endfunction()
 
 function(check_and_update_binary_deps DEP_PREFIX DEP_NAME DEP_FOLDER DEP_VERSION)
-	set(BUILTIN_DEP_VERSION_FILE ${DEP_FOLDER}/.version)
+    set(BUILTIN_DEP_VERSION_FILE ${DEP_FOLDER}/.version)
 	if(NOT EXISTS ${BUILTIN_DEP_VERSION_FILE})
 		message(STATUS "Binary dependencies for '${DEP_PREFIX}' are missing. Downloading package...")
 		update_binary_deps(${DEP_PREFIX} ${DEP_NAME} ${DEP_FOLDER} ${DEP_VERSION})
