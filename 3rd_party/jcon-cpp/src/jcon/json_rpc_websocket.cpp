@@ -3,6 +3,7 @@
 
 #include <QSignalSpy>
 #include <QTime>
+#include <QElapsedTimer>
 #include <QWebSocket>
 
 namespace jcon {
@@ -62,7 +63,7 @@ void JsonRpcWebSocket::connectToUrl(const QUrl& url)
 
 bool JsonRpcWebSocket::waitForConnected(int msecs)
 {
-    QTime timer(0, 0, 0, msecs);
+    QElapsedTimer timer;
     QSignalSpy spy(m_socket, &QWebSocket::connected);
     timer.start();
     while (spy.isEmpty() && timer.elapsed() < msecs) {

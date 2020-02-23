@@ -19,6 +19,8 @@
 #include <QMap>
 #include <qobjectdefs.h>
 
+// Qt 5.14 has built-in specialization for std hash on some of their types
+#ifndef QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_CREF
 namespace std
 {
 template <> struct hash<QByteArray>
@@ -26,6 +28,8 @@ template <> struct hash<QByteArray>
     size_t operator()(const QByteArray &x) const { return qHash(x); }
 };
 } // namespace std
+#endif
+
 // WHY, WINDOWS, WHY ?
 #ifdef FAR
 #undef FAR
