@@ -1,8 +1,19 @@
-set(SE_SDK_PATH ${PROJECT_SOURCE_DIR}/../SegsEngine_installdir)
-if(EXISTS "${SE_SDK_PATH}/cmake/editor_engine_Targets.cmake")
-    include(${SE_SDK_PATH}/cmake/editor_engine_Targets.cmake)
-endif()
+if(MSVC)
+check_and_update_binary_deps(SegsEngine SegsEngine ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt 4.0.0-alpha)
+find_package(SegsEngine REQUIRED)
 
-
-add_executable(SegsEditor main.cpp)
+set(SOURCES
+    main.cpp
+    os_specific/app.rc
+)
+add_executable(SegsEditor ${SOURCES})
 target_link_libraries(SegsEditor SegsEngine::editor_engine)
+
+# copy engine dlls and plugins to editor executable directory
+add_custom_command(
+        TARGET SegsEditor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin
+                ${CMAKE_BINARY_DIR}/out)
+
+endif()

@@ -1,6 +1,6 @@
 # the following code is based on BSF's HelperMethods.cmake
 
-set(SE_BINARY_DEP_WEBSITE "https://segs.dev")
+set(SE_BINARY_DEP_WEBSITE "https://segs.dev/sdk")
 
 function(update_binary_deps DEP_PREFIX DEP_NAME DEP_FOLDER DEP_VERSION)
 	if(NOT WIN32)
@@ -11,8 +11,8 @@ function(update_binary_deps DEP_PREFIX DEP_NAME DEP_FOLDER DEP_VERSION)
 	execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/Temp)	
 	execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/Temp)	
 
-	set(BINARY_DEPENDENCIES_URL ${SE_BINARY_DEP_WEBSITE}/${DEP_PREFIX}_${DEP_TYPE}_${DEP_VERSION}.zip)
-	file(DOWNLOAD ${BINARY_DEPENDENCIES_URL} ${PROJECT_SOURCE_DIR}/Temp/Dependencies.zip
+    set(BINARY_DEPENDENCIES_URL ${SE_BINARY_DEP_WEBSITE}/${DEP_PREFIX}_${DEP_TYPE}_${DEP_VERSION}.7z)
+    file(DOWNLOAD ${BINARY_DEPENDENCIES_URL} ${PROJECT_SOURCE_DIR}/Temp/Dependencies.7z
 		SHOW_PROGRESS
 		STATUS DOWNLOAD_STATUS)
 		
@@ -22,22 +22,16 @@ function(update_binary_deps DEP_PREFIX DEP_NAME DEP_FOLDER DEP_VERSION)
 	endif()
 	
 	message(STATUS "Extracting files. Please wait...")
-	execute_process(
-		COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/Temp/Dependencies.zip
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Temp
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/Temp/unpack)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/Temp/Dependencies.7z
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Temp/unpack
 	)
-	
-	# Copy executables and dynamic libraries
-	if(EXISTS ${PROJECT_SOURCE_DIR}/Temp/bin)
-		execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/Temp/bin ${DEP_FOLDER}/../bin)	
-	endif()
-	
-	# Copy static libraries, headers and tools
-	execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEP_FOLDER})	
-	execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/Temp/${DEP_NAME} ${DEP_FOLDER})
-	
-	# Clean up
-	execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/Temp)	
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEP_FOLDER})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEP_FOLDER})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/Temp/unpack ${DEP_FOLDER})
+#    execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/Temp)
+
 endfunction()
 
 function(check_and_update_binary_deps DEP_PREFIX DEP_NAME DEP_FOLDER DEP_VERSION)
@@ -47,7 +41,7 @@ function(check_and_update_binary_deps DEP_PREFIX DEP_NAME DEP_FOLDER DEP_VERSION
 		update_binary_deps(${DEP_PREFIX} ${DEP_NAME} ${DEP_FOLDER} ${DEP_VERSION})
 	else()
 		file (STRINGS ${BUILTIN_DEP_VERSION_FILE} CURRENT_DEP_VERSION)
-		if(${DEP_VERSION} GREATER ${CURRENT_DEP_VERSION})
+        if(${DEP_VERSION} VERSION_GREATER ${CURRENT_DEP_VERSION})
 			message(STATUS "Your precomiled dependencies package for '${DEP_PREFIX}' is out of date. Downloading latest package...")
 			update_binary_deps(${DEP_PREFIX} ${DEP_NAME} ${DEP_FOLDER} ${DEP_VERSION})
 		endif()
