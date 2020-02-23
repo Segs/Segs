@@ -75,6 +75,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
+set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt")
 set(UNICODE TRUE)
 set(INSTALLED_TARGETS)
 option(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
@@ -88,6 +89,7 @@ option(BUILD_CLIENT_PATCH "Build client patch for AMD graphics cards ?" OFF)
 ########################################################################################
 find_package(Threads REQUIRED)
 
+include(SDKHelper)
 include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_BINARY_DIR}/3rd_party/built) # ERICEDIT: Changed to CMAKE_BINARY_DIR so that this variable always points to the top level of the build directory.
 add_subdirectory(3rd_party)

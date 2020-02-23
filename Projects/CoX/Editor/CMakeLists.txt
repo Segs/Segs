@@ -1,0 +1,19 @@
+if(MSVC)
+check_and_update_binary_deps(SegsEngine SegsEngine ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt 4.0.0-alpha)
+find_package(SegsEngine REQUIRED)
+
+set(SOURCES
+    main.cpp
+    os_specific/app.rc
+)
+add_executable(SegsEditor ${SOURCES})
+target_link_libraries(SegsEditor SegsEngine::editor_engine)
+
+# copy engine dlls and plugins to editor executable directory
+add_custom_command(
+        TARGET SegsEditor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin
+                ${CMAKE_BINARY_DIR}/out)
+
+endif()
