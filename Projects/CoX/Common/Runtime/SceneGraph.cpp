@@ -238,9 +238,9 @@ void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore
     transformFromYPRandTranslation(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z},refload.pos);
 }
 
-SceneNode *newDef(SceneGraph &scene)
+SceneNode *newDef(SceneGraph &scene,int level)
 {
-    SceneNode *res = new SceneNode;
+    SceneNode *res = new SceneNode(level);
     res->m_index_in_scenegraph = scene.all_converted_defs.size();
     scene.all_converted_defs.emplace_back(res);
     res->in_use = true;
@@ -566,7 +566,7 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
     SceneNode * node = getNodeByName(*ctx.m_target,obj_path);
     if(!node)
     {
-        node = newDef(*ctx.m_target);
+        node = newDef(*ctx.m_target,ctx.m_nesting_level);
         if(!defload.p_Property.empty())
             node->m_properties = new std::vector<GroupProperty_Data> (defload.p_Property);
     }
@@ -633,7 +633,7 @@ SceneGraph *loadWholeMap(const QString &filename)
     RuntimeData &rd(getRuntimeData());
 
     SceneGraph *m_scene_graph = new SceneGraph;
-    SEGS::LoadingContext ctx;
+    SEGS::LoadingContext ctx(0);
     ctx.m_target = m_scene_graph;
     int geobin_idx= filename.indexOf("geobin");
     int maps_idx = filename.indexOf("maps");
@@ -658,6 +658,7 @@ void loadSubgraph(const QString &filename, LoadingContext &ctx,PrefabStore &pref
 {
     QFileInfo fi(filename);
     LoadingContext tmp = ctx;
+    tmp.m_nesting_level++;
     loadSceneGraph(fi.path()+"/"+fi.completeBaseName()+".txt",tmp,prefabs);
 }
 

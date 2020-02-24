@@ -41,8 +41,9 @@ using HLightProperties = std::unique_ptr<LightProperties>;
 
 struct SceneNode
 {
-    SceneNode()
+    SceneNode(int depth)
     {
+        m_nest_level = depth;
         is_LOD_fade_node = 0;
     }
     struct GeoStoreDef *    m_belongs_to_geoset = nullptr;
@@ -56,6 +57,7 @@ struct SceneNode
     QString m_dir;
     AxisAlignedBoundingBox        m_bbox;
     int                           m_index_in_scenegraph=0;
+    int                           m_nest_level = 0;
 
     uint32_t                      m_fx_name_hash  = 0; //!< This is fnv1a hash of downcased fx file path.
     glm::vec3                     m_center;

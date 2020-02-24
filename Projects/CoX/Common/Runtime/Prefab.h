@@ -45,10 +45,13 @@ struct NameList
 };
 struct LoadingContext
 {
+    LoadingContext(int depth) : m_nesting_level(depth) {}
+
     int last_node_id=0; // used to create new number suffixes for generic nodes
     QString m_base_path;
     NameList m_renamer; // used to rename prefab nodes to keep all names unique in the loaded graph
     SceneGraph *m_target;
+    int m_nesting_level=0; // how deep are we in include hierarchy
 };
 struct PrefabStore
 {

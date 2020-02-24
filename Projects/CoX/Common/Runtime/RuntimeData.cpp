@@ -158,11 +158,13 @@ bool RuntimeData::read_model_modifiers(const QString &directory_path)
 
 bool RuntimeData::prepare(const QString &directory_path)
 {
+    m_ready = false;
     if(!read_prefab_definitions(directory_path))
         return false;
     if(!read_model_modifiers(directory_path))
         return false;
 
+    m_ready = true;
     return true;
 }
 

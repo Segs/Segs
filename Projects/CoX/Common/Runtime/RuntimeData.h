@@ -18,8 +18,9 @@ struct RuntimeData
     QHash<QString, QString> m_texture_paths;
     PrefabStore *           m_prefab_mapping = nullptr; //!< maps directories and model names to geosets
     SceneModifiers *        m_modifiers      = nullptr;
-    
+    bool                    m_ready          = false; //!< set to true if runtime data was read.
     bool prepare(const QString &directory_path);
+
 
     bool read_prefab_definitions(const QString &directory_path);
     bool read_model_modifiers(const QString &directory_path);

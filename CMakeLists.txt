@@ -52,6 +52,16 @@ add_definitions(
 
 if(MSVC)
     add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -D_USE_MATH_DEFINES)
+    add_compile_options (/wd4251) # disable warning related to dll interface needed ... clients of class
+    if (NOT (MSVC_VERSION LESS 1910))
+      add_compile_options (/MP)
+      add_compile_options (/permissive-)
+      #add_compile_options (/d2cgsummary)
+      #add_compile_options (/d1reportTime)
+      add_compile_options (/diagnostics:caret)
+      #add_compile_options (/sdl)
+      #add_compile_options (/arch:AVX2)
+    endif()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast")
