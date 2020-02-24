@@ -1,6 +1,8 @@
 if(MSVC)
 
 check_and_update_binary_deps(SegsEngine SegsEngine ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt 4.0.0-alpha)
+endif()
+
 find_package(SegsEngine REQUIRED)
 
 ###########################################################################################
@@ -54,4 +56,3 @@ add_custom_command(
                 ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin
                 ${CMAKE_BINARY_DIR}/out)
 
-endif()
