@@ -50,8 +50,8 @@ class EditorSceneImporterCoHGeo : public QObject, public EditorSceneImporterInte
 public:
     uint32_t get_import_flags() const override;
     void get_extensions(Vector<String> &p_extensions) const override;
-    Node *import_scene(se_string_view p_path, uint32_t p_flags, int p_bake_fps, Vector<String> *r_missing_deps, Error *r_err = nullptr) override;
-    Ref<Animation> import_animation(se_string_view p_path, uint32_t p_flags, int p_bake_fps) override;
+    Node *import_scene(StringView p_path, uint32_t p_flags, int p_bake_fps, Vector<String> *r_missing_deps, Error *r_err = nullptr) override;
+    Ref<Animation> import_animation(StringView p_path, uint32_t p_flags, int p_bake_fps) override;
 
 
     ~EditorSceneImporterCoHGeo() override = default;

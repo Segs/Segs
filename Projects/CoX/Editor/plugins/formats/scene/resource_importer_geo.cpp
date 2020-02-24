@@ -204,7 +204,7 @@ Node *convertFromRoot(SceneGraphInfo &sg,SEGS::SceneNode *n)
     assert(false);
     return res;
 }
-Node *EditorSceneImporterCoHGeo::import_scene(se_string_view p_path, uint32_t p_flags, int p_bake_fps,
+Node *EditorSceneImporterCoHGeo::import_scene(StringView p_path, uint32_t p_flags, int p_bake_fps,
                                               Vector<String> *r_missing_deps, Error *r_error)
 {
 
@@ -258,7 +258,7 @@ Node *EditorSceneImporterCoHGeo::import_scene(se_string_view p_path, uint32_t p_
         *r_error = ERR_CANT_OPEN;
     return nullptr;
 }
-Ref<Animation> EditorSceneImporterCoHGeo::import_animation(se_string_view p_path, uint32_t p_flags, int p_bake_fps) {
+Ref<Animation> EditorSceneImporterCoHGeo::import_animation(StringView p_path, uint32_t p_flags, int p_bake_fps) {
     // we don't support this YET
     return Ref<Animation>();
 }
