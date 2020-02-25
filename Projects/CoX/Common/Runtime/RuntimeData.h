@@ -4,7 +4,11 @@
 #include <QHash>
 
 struct SceneModifiers;
-
+namespace SEGS
+{
+    struct RuntimeData;
+}
+extern SEGS::RuntimeData& getRuntimeData();
 namespace SEGS
 {
 using HTexture = SingularStoreHandleT<20,12,struct TextureWrapper>;
@@ -24,8 +28,13 @@ struct RuntimeData
 
     bool read_prefab_definitions(const QString &directory_path);
     bool read_model_modifiers(const QString &directory_path);
+    // This is a non-copyable type
+    RuntimeData(const RuntimeData &) = delete;
+    RuntimeData &operator=(const RuntimeData&) = delete;
+private:
+    friend RuntimeData& ::getRuntimeData();
+    RuntimeData() = default;
 };
 void preloadTextureNames(const QString &basepath);
 } //end of SEGS namespace
 
-extern SEGS::RuntimeData& getRuntimeData();

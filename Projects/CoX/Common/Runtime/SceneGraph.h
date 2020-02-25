@@ -53,6 +53,7 @@ struct SceneNode
     HLightProperties m_light;
     Model *m_model = nullptr;
     struct GeoStoreDef *m_geoset_info = nullptr; // where is this node from ?
+    void *m_engine_node = nullptr; // used by the engine during loading/importing
     QString m_name;
     QString m_dir;
     AxisAlignedBoundingBox        m_bbox;
