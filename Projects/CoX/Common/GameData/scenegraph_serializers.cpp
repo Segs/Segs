@@ -18,6 +18,8 @@
 #include "scenegraph_definitions.h"
 #include "Logging.h"
 
+#include <QFileInfo>
+
 namespace
 {
     bool loadFrom(BinStore *s, GroupProperty_Data &target)
@@ -369,12 +371,11 @@ void saveTo(const SceneGraph_Data &target, const QString &baseName, bool text_fo
     commonSaveTo(target,"SceneGraph",baseName,text_format);
 }
 
-bool loadFrom(const QString &filepath, SceneGraph_Data &target)
+bool loadFrom(FSWrapper &fs, const QString &filepath, SceneGraph_Data &target)
 {
-    return commonReadFrom(filepath,"SceneGraph",target);
+    return commonReadFrom(fs,filepath,"SceneGraph",target);
 }
-
-QString getFilepathCaseInsensitive(QString fpath)
+QString getFilepathCaseInsensitive(FSWrapper& fs, QString fpath)
 {
     // Windows is far too lax about case sensitivity. Consequently
     // filenames aren't consistent. This should derive the filename
@@ -382,42 +383,40 @@ QString getFilepathCaseInsensitive(QString fpath)
     // formatted filepath when loading scene data.
 
     // check file exists, if so, return original path
-    if(QFile(fpath).exists())
+    if (fs.exists(fpath))
         return fpath;
 
     // get base from path
     QString base_path = QFileInfo(fpath).path();
-    QDir dir(base_path);
 
-    if (!dir.exists())
-        qWarning() << "Failed to open" << dir.absolutePath();
+    if (!fs.exists(base_path))
+        qWarning() << "Failed to open" << base_path;
 
-    QStringList files = dir.entryList(QDir::Files | QDir::NoSymLinks);
-    for(QString &f : files)
+    QStringList files = fs.dir_entries(base_path);
+    for (QString& f : files)
     {
         qCDebug(logSceneGraph) << "Comparing" << f << fpath;
-        if(fpath.endsWith(f, Qt::CaseInsensitive))
+        if (fpath.endsWith(f, Qt::CaseInsensitive))
             fpath = base_path + "/" + f;
     }
 
     return fpath;
 }
-
-bool LoadSceneData(const QString &fname, SceneGraph_Data &scenegraph)
+bool LoadSceneData(FSWrapper &fs, const QString &fname, SceneGraph_Data &scenegraph)
 {
     BinStore binfile;
-    QString fixed_path = getFilepathCaseInsensitive(fname);
+    QString fixed_path = getFilepathCaseInsensitive(fs,fname);
 
     if(fixed_path.contains(".crl"))
     {
-        if(!loadFrom(fixed_path, scenegraph))
+        if(!loadFrom(fs, fixed_path, scenegraph))
         {
             qCritical() << "Failed to serialize data from crl:" << fixed_path;
             return false;
         }
         return true;
     }
-    if(!binfile.open(fixed_path, scenegraph_i0_2_requiredCrc))
+    if(!binfile.open(fs,fixed_path, scenegraph_i0_2_requiredCrc))
     {
         qCritical() << "Failed to open original bin:" << fixed_path;
         return false;

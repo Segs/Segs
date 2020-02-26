@@ -281,17 +281,17 @@ static void convertTextureNames(const int *a1, std::vector<QString> &a2)
     }
 }
 
-void geosetLoadHeader(QFile &fp, GeoSet *geoset)
+void geosetLoadHeader(QIODevice *fp, GeoSet *geoset)
 {
     unsigned int anm_hdr_size;
     const uint8_t * stream_pos_0;
     const uint8_t * stream_pos_1;
     uint32_t headersize;
-    fp.read((char *)&anm_hdr_size, 4u);
+    fp->read((char *)&anm_hdr_size, 4u);
     anm_hdr_size -= 4;
-    fp.read((char *)&headersize, sizeof(uint32_t));
+    fp->read((char *)&headersize, sizeof(uint32_t));
 
-    QByteArray zipmem = fp.read(anm_hdr_size);
+    QByteArray zipmem = fp->read(anm_hdr_size);
     QByteArray unc_arr = uncompr_zip(zipmem.data(), anm_hdr_size, headersize);
 
     const uint8_t * mem = (const uint8_t *)unc_arr.data();
@@ -467,14 +467,14 @@ static void convertModelBones(Model *m, ModelBones_32 *src)
     for (int i = 0; i < src->cnt; ++i)
         tgt->bone_ID[i] = src->bone_ID[i];
 }
-void geosetLoadData(QFile &fp, GeoSet *geoset)
+void geosetLoadData(QIODevice *fp, GeoSet *geoset)
 {
     int buffer;
-    fp.seek(0);
-    fp.read((char *)&buffer, 4);
-    fp.seek(buffer + 8);
+    fp->seek(0);
+    fp->read((char *)&buffer, 4);
+    fp->seek(buffer + 8);
     geoset->m_geo_data.resize(geoset->geo_data_size); //, 1, "\\src\\Common\\seq\\anim.c", 496);
-    fp.read(geoset->m_geo_data.data(), geoset->geo_data_size);
+    fp->read(geoset->m_geo_data.data(), geoset->geo_data_size);
     uint8_t *buffer_b = (uint8_t *)geoset->m_geo_data.data();
 
     for(Model *current_sub : geoset->subs)

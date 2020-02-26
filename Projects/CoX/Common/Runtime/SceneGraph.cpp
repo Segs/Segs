@@ -573,7 +573,7 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
 
     if( !defload.p_Obj.isEmpty() )
     {
-        node->m_model = prefabs.groupModelFind(defload.p_Obj);
+        node->m_model = prefabs.groupModelFind(defload.p_Obj,ctx);
         if( !node->m_model )
             qCritical() << "Cannot find root geometry in" << defload.p_Obj;
 
@@ -622,18 +622,20 @@ bool loadSceneGraph(const QString &path,LoadingContext &ctx,PrefabStore &prefabs
     SceneGraph_Data serialized_graph;
     ctx.m_renamer.basename = buildBaseName(path);
     binName.replace(QStringLiteral("Chunks.bin"), QStringLiteral("CHUNKS.bin"));
-    LoadSceneData(binName, serialized_graph);
+    LoadSceneData(*ctx.fs_wrap, binName, serialized_graph);
 
     serializeIn(serialized_graph, ctx, prefabs);
     return true;
 }
 
-SceneGraph *loadWholeMap(const QString &filename)
+SceneGraph *loadWholeMap(FSWrapper *fs, const QString &filename)
 {
     RuntimeData &rd(getRuntimeData());
+    assert(fs);
 
     SceneGraph *m_scene_graph = new SceneGraph;
     SEGS::LoadingContext ctx(0);
+    ctx.fs_wrap = fs;
     ctx.m_target = m_scene_graph;
     int geobin_idx= filename.indexOf("geobin");
     int maps_idx = filename.indexOf("maps");

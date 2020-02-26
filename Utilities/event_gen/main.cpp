@@ -50,6 +50,7 @@ void generate_cpp(const std::vector<DefFile> &files,const QString &group_name,co
     tgt_stream << QString("#include \"SEGSEventFactory.h\"\n");
     tgt_stream << "#include \"serialization_common.h\"\n\n";
     tgt_stream << "#include \"serialization_types.h\"\n\n";
+    tgt_stream << "#include <QDebug>\n\n";
     tgt_stream << "using namespace SEGSEvents;\n\n";
     for(const DefFile &d : files)
     {

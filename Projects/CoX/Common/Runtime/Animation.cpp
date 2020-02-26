@@ -327,28 +327,27 @@ HAnimationTrack getOrLoadAnimationTrack(const QString &name)
     atrack.m_max_hip_displacement = 4.0f;
     return animTrack;
 }
-static GeoSet *getAnimatedGeoSet(const QString &name, QFile &fp)
+static GeoSet *getAnimatedGeoSet(FSWrapper &fs,const QString &name, QIODevice *&fp)
 {
-    GeoSet *     geoset = nullptr;
     RuntimeData &rd(getRuntimeData());
     QString      base_path = rd.m_prefab_mapping->m_base_path;
-    fp.setFileName(base_path + "/" + name);
-    if (!fp.open(QFile::ReadOnly))
+    fp = fs.open(base_path + "/" + name,true);
+    if (!fp)
     {
         qWarning() << "Failed to open" << name;
         g_missing_geos.insert(name.toLower());
         return nullptr;
     }
-    geoset       = new GeoSet;
+    GeoSet *geoset = new GeoSet;
     geoset->name = name;
     geosetLoadHeader(fp, geoset);
-    fp.seek(0);
+    fp->seek(0);
     g_geoset_dictionary[geoset->name] = geoset;
     return geoset;
 }
-GeoSet *animLoad(const QString &filename, bool background_load, bool header_only)
+GeoSet *animLoad(FSWrapper &fs, const QString &filename, bool background_load, bool header_only)
 {
-    GeoSet *geoset = nullptr;
+    GeoSet *geoset;
     QString animname(filename);
 
     if (animname.endsWith(".anm", Qt::CaseInsensitive))
@@ -367,9 +366,9 @@ GeoSet *animLoad(const QString &filename, bool background_load, bool header_only
 
         // TODO: if given geo set is being loaded asynchronously, wait for it.
     }
-    QFile file;
+    QIODevice *file;
     if (!geoset)
-        geoset = getAnimatedGeoSet(animname, file);
+        geoset = getAnimatedGeoSet(fs,animname, file);
 
     if (header_only || !geoset)
         return geoset;

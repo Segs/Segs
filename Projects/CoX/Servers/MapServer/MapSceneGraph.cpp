@@ -44,7 +44,8 @@ MapSceneGraph::~MapSceneGraph()
 
 bool MapSceneGraph::loadFromFile(const QString &filename)
 {
-    m_scene_graph.reset(loadWholeMap(filename));
+    QFSWrapper wrap;
+    m_scene_graph.reset(loadWholeMap(&wrap, filename));
     if(!m_scene_graph)
         return false;
     for(SceneNode *def : m_scene_graph->all_converted_defs)

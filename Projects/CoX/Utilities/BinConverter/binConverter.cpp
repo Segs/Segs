@@ -128,7 +128,7 @@ BinType getLoader(const QString &fname)
 template<class T>
 T * doLoad(BinStore *bs) {
     T *res = new T;
-    if(!loadFrom(bs,res)) {
+    if(!loadFrom(bs, res)) {
         delete res;
         res = nullptr;
     }
@@ -480,8 +480,9 @@ int main(int argc,char **argv)
         showSupportedBinTypes();
         return -1;
     }
+    QFSWrapper wrap;
     BinStore binfile;
-    binfile.open(argv[1],0);
+    binfile.open(wrap,argv[1],0);
     QString target_basename=QFileInfo(argv[1]).baseName();
     bool json_output=true;
 

@@ -20,6 +20,8 @@
 #include <vector>
 #include <memory>
 
+#include "serialization_common.h"
+
 namespace SEGS
 {
 struct LoadingContext;
@@ -113,7 +115,7 @@ struct PrefabStore;
 struct LoadingContext;
 
 bool loadSceneGraph(const QString &path, LoadingContext &ctx, PrefabStore &prefabs);
-SceneGraph *loadWholeMap(const QString &filename);
+SceneGraph *loadWholeMap(FSWrapper *fs, const QString &filename);
 void loadSubgraph(const QString &filename, LoadingContext &ctx,PrefabStore &prefabs);
 SceneNode * getNodeByName(const SceneGraph &graph,const QString &name);
 } // and of SEGS namespace

@@ -56,6 +56,82 @@
 
 #include <QDebug>
 
+struct FileIOWrap : public QIODevice
+{
+    explicit FileIOWrap(FileAccess *fa)
+        : m_fa(fa)
+    {
+    }
+    bool isSequential() const override { return false; }
+    /*qint64 pos() const
+    {
+        return m_fa->get_position();
+    }*/
+    qint64 size() const override
+    {
+        return m_fa->get_len();
+    }
+    bool seek(qint64 pos) override
+    {
+        QIODevice::seek(pos);
+        m_fa->seek(pos);
+        return this->pos()==pos;
+    }
+    qint64 bytesAvailable() const override
+    {
+        return m_fa->get_len()-pos();
+    }
+
+protected:
+    qint64 readData(char *data, qint64 maxlen) override
+    {
+        return m_fa->get_buffer((uint8_t *)data,maxlen);
+    }
+    qint64 writeData(const char *data, qint64 len) override
+    {
+        auto p = pos();
+        m_fa->store_buffer((const uint8_t*)data, len);
+        return pos() - p;
+    }
+
+public:
+    mutable FileAccessRef m_fa;
+};
+struct SE_FSWrapper : public FSWrapper
+{
+    Set<String> missing_files;
+    QIODevice * open(const QString &path, bool read_only, bool text_only) override
+    {
+        FileAccess *wrap(FileAccess::open(qPrintable(path), read_only ? FileAccess::READ : FileAccess::READ_WRITE));
+        if(!wrap) {
+            missing_files.insert(qPrintable(path));
+            return nullptr;
+        }
+        auto res = new FileIOWrap(wrap);
+        res->open((read_only ? QIODevice::ReadOnly : QIODevice::ReadWrite)| (text_only ? QIODevice::Text : QIODevice::NotOpen));
+        return res;
+    }
+    bool exists(const QString &path) override
+    {
+        return FileAccess::exists(qPrintable(path));
+    }
+    QStringList dir_entries(const QString &path) override
+    {
+        DirAccessRef da(DirAccess::open(qPrintable(path)));
+        if(!da)
+            return {}; //TODO: report missing directory?
+        da->list_dir_begin();
+        QStringList res;
+        String item;
+        while (!(item = da->get_next()).empty()) {
+
+            if (item == "." || item == "..")
+                continue;
+            res.push_back(StringUtils::from_utf8(item));
+        }
+        return res;
+    }
+};
 static Spatial *convertFromRoot(struct SceneGraphInfo &sg, Spatial *parent, SEGS::SceneNode *n);
 struct FileDeleter {
     void operator()(FileAccess *fa) const {
@@ -300,7 +376,7 @@ static String targetDirForNodePrefab(SEGS::SceneNode *n)
 {
     auto gs = n->m_geoset_info;
     int idx = gs->geopath.lastIndexOf("geobin");
-    String target_directory = qPrintable("Converted/" + gs->geopath.mid(idx));
+    String target_directory = qPrintable(gs->geopath.mid(idx));
     return target_directory;
 }
 static bool convertChildren(SceneGraphInfo &sg,SEGS::SceneNode *n, Spatial *res)
@@ -323,7 +399,7 @@ Spatial *convertFromRoot(SceneGraphInfo &sg, Spatial *parent, SEGS::SceneNode *n
     Spatial *res = nullptr;
     if (!sg.m_imported_prefabs.contains(n))
     {
-        if (sg.isInternalNode(n) == SceneGraphInfo::UsedAsPrefab)
+        if (sg.isInternalNode(n) == SceneGraphInfo::UsedAsPrefab || n->m_nest_level>0)
         {
             auto target_directory = targetDirForNodePrefab(n);
             Ref<PackedScene> prefab = sg.GetPrefabAsset(target_directory, qPrintable(n->m_name));
@@ -334,6 +410,7 @@ Spatial *convertFromRoot(SceneGraphInfo &sg, Spatial *parent, SEGS::SceneNode *n
                 assert(object_cast<Spatial>(prefab_res)!=nullptr);
                 return (Spatial *)prefab_res;
             }
+            return nullptr;
         }
         res = memnew(Spatial);
         res->set_name(qPrintable(n->m_name));
@@ -395,7 +472,8 @@ Spatial *convertFromRoot(SceneGraphInfo &sg, Spatial *parent, SEGS::SceneNode *n
 Node *EditorSceneImporterCoHGeo::import_scene(StringView p_path, uint32_t p_flags, int p_bake_fps,
                                               Vector<String> *r_missing_deps, Error *r_error)
 {
-
+    using namespace StringUtils;
+    SE_FSWrapper se_wrap;
     // Check if the selected file is correctly located in the hierarchy, just to make sure.
     SceneGraphInfo sg_info;
     auto idx = StringUtils::find_last(p_path,"geobin");
@@ -415,13 +493,22 @@ Node *EditorSceneImporterCoHGeo::import_scene(StringView p_path, uint32_t p_flag
         // we expect coh data to live under res://coh_data
         String basepath = ProjectSettings::get_singleton()->get_resource_path()+"/coh_data/";
         ;
-        if(!rd.prepare(basepath.c_str()))
+        if(!rd.prepare(&se_wrap,basepath.c_str()))
         {
             PLUG_FAIL_V_MSG(nullptr, "The required bin files are missing ?");
         }
     }
-
-    m_scene_graph.reset(SEGS::loadWholeMap(fs_path.c_str()));
+    m_scene_graph.reset(SEGS::loadWholeMap(&se_wrap, fs_path.c_str()));
+    if(!se_wrap.missing_files.empty() && r_missing_deps)
+    {
+        for(const String &s : se_wrap.missing_files)
+        {
+            if(PathUtils::get_extension(s)=="bin")
+            {
+                r_missing_deps->emplace_back("res://"+substr(s,s.find("coh_data/")));
+            }
+        }
+    }
     Spatial* layer_root = memnew(Spatial);
     sg_info.root = layer_root;
     auto top_nodes = sg_info.calculateUsages(m_scene_graph);
@@ -453,7 +540,7 @@ Node *EditorSceneImporterCoHGeo::import_scene(StringView p_path, uint32_t p_flag
 //        }
     }
     if (r_error)
-        *r_error = OK;
+        *r_error = se_wrap.missing_files.empty() ? OK : ERR_FILE_MISSING_DEPENDENCIES;
     return layer_root;
 }
 Ref<Animation> EditorSceneImporterCoHGeo::import_animation(StringView p_path, uint32_t p_flags, int p_bake_fps) {

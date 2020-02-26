@@ -225,12 +225,12 @@ template<class TARGET,unsigned int CRC>
 bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
 {
     QElapsedTimer timer;
-
+    QFSWrapper wrap;
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading "<<directory_path<<storage<<" ... ";
     timer.start();
     BinStore bin_store;
-    if(!bin_store.open(directory_path+storage,CRC))
+    if(!bin_store.open(wrap,directory_path+storage,CRC))
     {
         deb << "failure";
         qWarning().noquote() << "Couldn't load "<<storage<<" from" << directory_path;
@@ -367,10 +367,11 @@ uint32_t GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> 
 
 bool GameDataStore::read_costumes(const QString &directory_path)
 {
+    QFSWrapper wrap;
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading " << directory_path << "bin/costume.bin ... ";
     BinStore costumes_store;
-    if(!costumes_store.open(directory_path + "bin/costume.bin", costumesets_i0_requiredCrc))
+    if(!costumes_store.open(wrap,directory_path + "bin/costume.bin", costumesets_i0_requiredCrc))
     {
         deb << "failure";
         qWarning().noquote() << "Couldn't load bin/costume.bin from" << directory_path;
@@ -391,11 +392,12 @@ bool GameDataStore::read_costumes(const QString &directory_path)
 
 bool GameDataStore::read_colors( const QString &directory_path )
 {
+    QFSWrapper wrap;
     QDebug deb=qDebug().noquote().nospace();
     deb << "Reading " << directory_path << "bin/supergroupColors.bin ... ";
     BinStore sg_color_store;
 
-    if(!sg_color_store.open(directory_path + "bin/supergroupColors.bin", palette_i0_requiredCrc))
+    if(!sg_color_store.open(wrap,directory_path + "bin/supergroupColors.bin", palette_i0_requiredCrc))
     {
         deb << "failure";
         qWarning().noquote() << "Couldn't load bin/supergroupColors.bin from" << directory_path;

@@ -456,6 +456,7 @@ void saveTo(const AllPowerCategories & target, const QString & baseName, bool te
 }
 bool loadFrom(const QString &filepath, AllPowerCategories &target)
 {
-    return commonReadFrom(filepath,"Powers",target);
+    QFSWrapper wrap;
+    return commonReadFrom(wrap,filepath,"Powers",target);
 }
 //! @}

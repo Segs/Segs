@@ -1020,9 +1020,9 @@ int seqProcessClientInst(HSequencerInstance seq, float step_size, int idx, bool 
 
 namespace SEGS
 {
-void seqResetSeqType(HSequencerInstance seq_handle, const char *entType_filename, int seed)
+void seqResetSeqType(HSequencerInstance seq_handle, FSWrapper &fs, const char *entType_filename, int seed)
 {
-    float              bonescale_ratio;
+    float bonescale_ratio;
     SequencerInstance &seq(seq_handle.get());
     // consider releasing previous data underlying the seq_handle
 
@@ -1053,13 +1053,13 @@ void seqResetSeqType(HSequencerInstance seq_handle, const char *entType_filename
     // load skinny/fat bodytype animations
     if (!seq.m_seq_type_info.m_bone_scale_fat.isEmpty())
     {
-        GeoSet *anim_lst = animLoad(seq.m_seq_type_info.m_bone_scale_fat);
+        GeoSet *anim_lst = animLoad(fs, seq.m_seq_type_info.m_bone_scale_fat);
         if (anim_lst)
             seq.m_fat_bodytype_animation = anim_lst;
     }
     if (!seq.m_seq_type_info.m_bone_scale_skinny.isEmpty())
     {
-        GeoSet *anim_lst = animLoad(seq.m_seq_type_info.m_bone_scale_skinny);
+        GeoSet *anim_lst = animLoad(fs, seq.m_seq_type_info.m_bone_scale_skinny);
         if (anim_lst)
             seq.m_skinny_bodytype_animation = anim_lst;
     }

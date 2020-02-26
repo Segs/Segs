@@ -15,6 +15,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <qiodevice.h>
 
 struct ModelModifiers;
 struct TextureModifiers;
@@ -115,8 +116,8 @@ struct Model
     bool                     hasBoneWeights() const { return flags & OBJ_DRAW_AS_ENT; }
 
 };
-void geosetLoadHeader(QFile &fp, GeoSet *geoset);
-void geosetLoadData(QFile &fp, GeoSet *geoset);
+void geosetLoadHeader(QIODevice *fp, GeoSet *geoset);
+void geosetLoadData(QIODevice *fp, GeoSet *geoset);
 void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model *model,const std::vector<HTexture> &textures);
 void fillVBO(Model & model);
 } // namespace SEGS

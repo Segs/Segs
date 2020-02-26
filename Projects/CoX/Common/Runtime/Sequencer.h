@@ -19,6 +19,10 @@
 #include <array>
 #include <unordered_map>
 #include <unordered_set>
+
+
+#include "GameData/anim_definitions.h"
+#include "GameData/anim_definitions.h"
 class QByteArray;
 struct SequencerData;
 
@@ -120,7 +124,7 @@ struct SequencerInstanceStorage : public HandleBasedStorage<SequencerInstance>
 using HSequencerInstance = SingularStoreHandleT<20, 12, SequencerInstance>;
 
 SequencerData * getInitializedSequencerData(const QByteArray &name);
-void            seqResetSeqType(HSequencerInstance seq_handle, const char *entType_filename, int seed);
+void            seqResetSeqType(HSequencerInstance seq_handle, FSWrapper &fs, const char *entType_filename, int seed);
 SeqTypeDefData *getSeqTypedefByName(SequencerData *data, const QByteArray &name);
 bool            changeSequencerScale(HSequencerInstance seq, const glm::vec3 &scale);
 void            changeBoneScale(HSequencerInstance seq, float newbonescale);

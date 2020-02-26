@@ -6,9 +6,8 @@
 #include "Common/GameData/GameDataStore.h"
 #include "Common/GameData/scenegraph_serializers.h" //for getFilepathCaseInsensitive
 
-#include <QFile>
-#include <QDebug>
 #include <QDir>
+#include <QDebug>
 
 namespace SEGS
 {
@@ -19,21 +18,23 @@ QHash<QString,SEGS::GeoSet *> s_name_to_geoset;
 
 using namespace SEGS;
 
-GeoSet *findAndPrepareGeoSet(const QString &fname,const QString &base_path)
+GeoSet *findAndPrepareGeoSet(FSWrapper &fs,const QString &fname,const QString &base_path)
 {
     GeoSet *geoset = nullptr;
-    QFile fp;
     QString name_fixed = fname;
     name_fixed.replace(".anm", ".geo");
-    QString true_path = getFilepathCaseInsensitive(base_path + name_fixed);
-    fp.setFileName(true_path);
-    if(fp.open(QFile::ReadOnly))
+    QString true_path = getFilepathCaseInsensitive(fs,base_path + name_fixed);
+
+    QIODevice *fp = fs.open(true_path);
+    if(fp)
     {
         geoset = new GeoSet;
+        //TODO: QDir(base_path).relativeFilePath(true_path) should be provided by fs service.
         geoset->geopath = QDir(base_path).relativeFilePath(true_path);
         geosetLoadHeader(fp, geoset);
-        fp.seek(0);
+        fp->seek(0);
         s_name_to_geoset[fname] = geoset;
+        delete fp;
     }
     else
         qCritical() << "Can't find .geo file" << fname;
@@ -42,16 +43,16 @@ GeoSet *findAndPrepareGeoSet(const QString &fname,const QString &base_path)
 }
 
 /// load the given geoset, used when loading scene-subgraph and nodes
-GeoSet * geosetLoad(const QString &m,const QString &base_path)
+GeoSet * geosetLoad(FSWrapper &fs, const QString &m, const QString &base_path)
 {
     GeoSet * res = s_name_to_geoset.value(m,nullptr);
     if(res)
         return res;
 
-    return findAndPrepareGeoSet(m,base_path);
+    return findAndPrepareGeoSet(fs,m,base_path);
 }
 
-Model *PrefabStore::modelFind(const QString &geoset_name, const QString &model_name)
+Model *PrefabStore::modelFind(const QString &geoset_name, const QString &model_name, LoadingContext &ctx)
 {
     Model *ptr_sub = nullptr;
     if(model_name.isEmpty() || geoset_name.isEmpty())
@@ -64,7 +65,7 @@ Model *PrefabStore::modelFind(const QString &geoset_name, const QString &model_n
         return nullptr;
     }
 
-    GeoSet *geoset = geosetLoad(geoset_name,m_base_path);
+    GeoSet *geoset = geosetLoad(*ctx.fs_wrap,geoset_name, m_base_path);
     if(!geoset) // failed to load the geometry set
         return nullptr;
 
@@ -140,7 +141,7 @@ bool PrefabStore::loadPrefabForNode(SceneNode *node, LoadingContext &ctx) //grou
     if(!gf->loaded)
     {
         gf->loaded = true;
-        geosetLoad(gf->geopath,m_base_path); // load given subgraph's root geoset
+        geosetLoad(*ctx.fs_wrap,gf->geopath, m_base_path); // load given subgraph's root geoset
         loadSubgraph(gf->geopath,ctx,*this);
     }
 
@@ -156,16 +157,16 @@ bool PrefabStore::loadNamedPrefab(const QString &name, LoadingContext &ctx) //gr
 
     geo_store->loaded = true;
     // load given prefab's geoset
-    geosetLoad(geo_store->geopath,m_base_path);
+    geosetLoad(*ctx.fs_wrap,geo_store->geopath, m_base_path);
     loadSubgraph(geo_store->geopath,ctx,*this);
     return loadPrefabForNode(getNodeByName(*ctx.m_target,name), ctx);
 }
 
-Model *PrefabStore::groupModelFind(const QString & path)
+Model *PrefabStore::groupModelFind(const QString &path, LoadingContext &ctx)
 {
     QString model_name = path.mid(path.lastIndexOf('/') + 1);
     auto val = groupGetFileEntryPtr(model_name);
-    return val ? modelFind(val->geopath, model_name) : nullptr;
+    return val ? modelFind(val->geopath, model_name,ctx) : nullptr;
 }
 
 GeoStoreDef * PrefabStore::groupGetFileEntryPtr(const QString &full_name)
