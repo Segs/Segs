@@ -302,16 +302,14 @@ static void convertComponents(SEGS::SceneNode *n, Spatial *res)
 }
 static void convertModel(SEGS::SceneNode *n, Spatial *res, bool convert_editor_markers)
 {
-    String mesh_path;
-    String model_path;
-
     SEGS::Model *mdl = n->m_model;
     ModelModifiers *model_trick = mdl->trck_node;
-    mesh_path = qPrintable(mdl->geoset->geopath);
+    String mesh_path = qPrintable(mdl->geoset->geopath);
     size_t obj_lib_idx = mesh_path.find("object_library");
     if (obj_lib_idx != String::npos)
         mesh_path = "Assets/Meshes/" + mesh_path.substr(obj_lib_idx);
-    model_path = SceneGraphInfo::GetSafeFilename(mesh_path + "/" + qPrintable(PathUtils::get_basename(mdl->name)) + ".mesh");
+    String model_path = SceneGraphInfo::GetSafeFilename(
+        mesh_path + "/" + qPrintable(PathUtils::get_basename(mdl->name)) + ".mesh");
     MeshInstance *mi = memnew(MeshInstance);
     res->add_child(mi);
     mi->set_owner(res->get_owner());
@@ -363,18 +361,18 @@ static void convertModel(SEGS::SceneNode *n, Spatial *res, bool convert_editor_m
 //            mdl.geoset.createEngineModelsFromPrefabSet();
     }
 //    if (mf.sharedMesh == null)
-//    {
-//        UnityModel res_static;
-//        RuntimeData rd = RuntimeData.get();
+    {
+        MeshInstance *res_static=nullptr;
+          SEGS::RuntimeData &rd(getRuntimeData());
 //        if (!rd.s_coh_model_to_engine_model.TryGetValue(mdl, out res_static))
 //            return;
-//        if (res_static == null)
-//            return;
+        if (res_static == nullptr)
+            return;
 //        SEGSRuntime.Tools.EnsureDirectoryExists(mesh_path);
 //        AssetDatabase.CreateAsset(res_static.m_mesh, model_path);
 //        AssetDatabase.SaveAssets();
 //        mf.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(model_path);
-//    }
+    }
 
 //    convertMaterials(ren, mdl, res);
     qDebug("Not converting models yet");
