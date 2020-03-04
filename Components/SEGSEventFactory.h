@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <functional>
+#include <iosfwd>
 /*!
  * @addtogroup Components
  * @{
