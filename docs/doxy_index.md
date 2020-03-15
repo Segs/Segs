@@ -11,7 +11,6 @@ physics, and more.
 - [Doxygen](https://doxy.segs.dev/)
 - [Forum](http://forum.segs.dev/)
 - [GitHub](https://github.com/Segs/Segs)
-- [IRC](irc://irc.segs.dev/segs)
 - [Main](http://www.segs.dev/)
 - [Twitter](https://twitter.com/segscode)
 - [Wiki](https://github.com/Segs/Segs/wiki)

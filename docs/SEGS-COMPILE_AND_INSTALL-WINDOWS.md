@@ -97,7 +97,19 @@ Configure SEGS using SEGSADMIN
 HELP AND MORE INFORMATION
 ------
 
-Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200  
+**Ensure proper ports are open on any firewalls**
+
+See the table below for a list of Network Ports that SEGS needs open to run properly. These are the same ports that the original game client and now, SEGS uses as well.
+    
+    | Protocol | Ports      | For Use By                         |
+    | TCP      | 2106       | AuthServer                         |
+    | TCP      | 6001       | AdminRPC                           |
+    | UDP      | 7002       | GameServer                         |
+    | UDP      | 7003-7050  | MapServer, each MapServer Instance |
+    | UDP      | 7003-7050  | MapServer, each MapServer Instance |
+
+**Further Help and Troubleshooting**
+
 For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.dev/
 
 
