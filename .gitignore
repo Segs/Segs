@@ -13,6 +13,7 @@ Temp/
 #IDE generated project files
 *.user
 *.user.*
+*.vs
 
 # Compiled Object files
 *.slo
