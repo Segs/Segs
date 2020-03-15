@@ -4,7 +4,7 @@
 #include "jcon_assert.h"
 #include "string_util.h"
 
-//#include <QSignalSpy>
+#include <QtCore/QElapsedTimer>
 #include <QCoreApplication>
 #include <QUuid>
 
@@ -72,7 +72,7 @@ JsonRpcClient::waitForSyncCallbacks(const JsonRpcRequest* request)
                     std::make_shared<JsonRpcError>(code, message, data);
             });
 
-    QTime timer;
+    QElapsedTimer timer;
     timer.start();
     while (m_outstanding_requests.contains(request->id()) &&
            timer.elapsed() < m_call_timeout_ms)

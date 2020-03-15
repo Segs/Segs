@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -50,16 +50,7 @@ void World::update(const ACE_Time_Value &tick_timer)
 
 void World::physicsStep(Entity *e,uint32_t msec)
 {
-    if(glm::length2(e->m_states.current()->m_pos_delta))
-    {
-        setVelocity(*e);
-        //e->m_motion_state.m_velocity = za*e->m_states.current()->m_pos_delta;
-
-        // todo: take into account time between updates
-        glm::mat3 za = static_cast<glm::mat3>(e->m_direction); // quat to mat4x4 conversion
-        //float vel_scale = e->inp_state.m_input_vel_scale/255.0f;
-        e->m_entity_data.m_pos += ((za*e->m_states.current()->m_pos_delta)*float(msec))/40.0f; // formerly 50.0f
-    }
+    processNewInputs(*e);
 }
 
 float animateValue(float v,float start,float target,float length,float dT)

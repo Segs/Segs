@@ -536,17 +536,17 @@ void  groupApplyModifiers(SceneNode *node)
     if( mods->LodScale != 0.0f )
         node->lod_scale = mods->LodScale;
 
-    uint32_t v1 = mods->GroupFlags;
+    uint32_t gflags = mods->GroupFlags;
     node->shadow_dist    = mods->ShadowDist;
-    node->parent_fade    = is_flag_set(v1, ParentFade);
-    node->region_marker  = is_flag_set(v1, RegionMarker);
-    node->volume_trigger = is_flag_set(v1, VolumeTrigger);
-    node->water_volume   = is_flag_set(v1, WaterVolume);
-    node->lava_volume    = is_flag_set(v1, LavaVolume);
-    node->sewer_volume   = is_flag_set(v1, SewerWaterVolume);
-    node->door_volume    = is_flag_set(v1, DoorVolume);
-    node->key_light      = is_flag_set(v1, KeyLight);
-    node->tray           = is_flag_set(v1, VisTray) | is_flag_set(v1, VisOutside);
+    node->parent_fade    = is_flag_set(gflags, ParentFade);
+    node->region_marker  = is_flag_set(gflags, RegionMarker);
+    node->volume_trigger = is_flag_set(gflags, VolumeTrigger);
+    node->water_volume   = is_flag_set(gflags, WaterVolume);
+    node->lava_volume    = is_flag_set(gflags, LavaVolume);
+    node->sewer_volume   = is_flag_set(gflags, SewerWaterVolume);
+    node->door_volume    = is_flag_set(gflags, DoorVolume);
+    node->key_light      = is_flag_set(gflags, KeyLight);
+    node->tray           = is_flag_set(gflags, VisTray) | is_flag_set(gflags, VisOutside);
 
     if(mods->LodNear != 0.0f || mods->LodFar != 0.0f || mods->LodNearFade != 0.0f || mods->LodFarFade != 0.0f || mods->LodScale != 0.0f)
         node->lod_fromtrick = 1;
@@ -573,7 +573,7 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
 
     if( !defload.p_Obj.isEmpty() )
     {
-        node->m_model = prefabs.groupModelFind(defload.p_Obj,ctx);
+        node->m_model = prefabs.groupModelFind(defload.p_Obj);
         if( !node->m_model )
             qCritical() << "Cannot find root geometry in" << defload.p_Obj;
 

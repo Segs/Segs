@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -92,8 +92,15 @@ struct RootNode
     uint32_t index_in_roots_array=0;
 };
 
+struct SceneTreeNode
+{
+    //TODO: REMOVE. This is only used to make debugging dynamic_cast work.
+    virtual ~SceneTreeNode() {}
+};
+
 struct SceneGraph
 {
+    // Static scene nodes loaded/created from map definition file
     std::vector<SceneNode *> all_converted_defs;
     std::vector<RootNode *> refs;
 

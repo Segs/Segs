@@ -6,7 +6,6 @@
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
 #include "GameData/DataStorage.h"
-#include "Logging.h"
 
 #include <QDirIterator>
 #include <QString>
@@ -170,7 +169,7 @@ bool RuntimeData::prepare(const QString &directory_path)
 bool RuntimeData::read_prefab_definitions(const QString &directory_path)
 {
     if(!m_prefab_mapping)
-        m_prefab_mapping = new SEGS::PrefabStore;
+        m_prefab_mapping = new SEGS::PrefabStore(directory_path);
     return m_prefab_mapping->prepareGeoLookupArray(directory_path);
 }
 

@@ -1,5 +1,9 @@
 find_package(Qt5 COMPONENTS Core REQUIRED)
 set(COMMON_RUNTIME_SRC
+    Animation.cpp
+    Animation.h
+    AnimationEngine.cpp
+    AnimationEngine.h
     Handle.h
     Model.cpp
     Model.h
@@ -9,6 +13,8 @@ set(COMMON_RUNTIME_SRC
     RuntimeData.h
     SceneGraph.h
     SceneGraph.cpp
+    Sequencer.cpp
+    Sequencer.h
     Texture.cpp
     Texture.h
 )

@@ -3,6 +3,7 @@ include_directories(Common)
 
 ADD_SUBDIRECTORY(Common)
 ADD_SUBDIRECTORY(Utilities)
+ADD_SUBDIRECTORY(Editor)
 ADD_SUBDIRECTORY(Servers)
 ADD_SUBDIRECTORY(Clients)
 

@@ -121,14 +121,14 @@ void storeServerControlState(BitStream &bs,Entity *self)
     bs.StoreBits(1,self->m_force_pos_and_cam);
     if(self->m_force_pos_and_cam)
     {
-        bs.StorePackedBits(1,self->m_states.current()->m_every_4_ticks);    // sets g_client_pos_id_rel default = 0
+        bs.StorePackedBits(1,self->m_input_state.m_every_4_ticks);               // sets g_client_pos_id_rel default = 0
         storeVector(bs,self->m_entity_data.m_pos);                          // server-side pos
         storeVectorConditional(bs,self->m_motion_state.m_velocity);         // server-side velocity
 
-        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.x); // Pitch not used ?
-        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.y); // Yaw
-        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.z); // Roll
-        bs.StorePackedBits(1,self->m_motion_state.m_is_falling); // server side forced falling bit
+        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.x);  // Pitch not used ?
+        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.y);  // Yaw
+        storeFloatConditional(bs,self->m_entity_data.m_orientation_pyr.z);  // Roll
+        bs.StorePackedBits(1,self->m_motion_state.m_is_falling);            // server side forced falling bit
 
         self->m_force_pos_and_cam = false; // run once
     }
@@ -651,9 +651,9 @@ void storeClientData(BitStream &bs,Entity *ent,bool incremental)
     bs.StoreBits(1,ent->m_force_camera_dir);
     if(ent->m_force_camera_dir)
     {
-        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.p); // force camera_pitch
-        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.y); // force camera_yaw
-        bs.StoreFloat(ent->m_states.current()->m_camera_pyr.r); // force camera_roll
+        bs.StoreFloat(ent->m_entity_data.m_orientation_pyr.x); // force camera_pitch
+        bs.StoreFloat(ent->m_entity_data.m_orientation_pyr.y); // force camera_yaw
+        bs.StoreFloat(ent->m_entity_data.m_orientation_pyr.z); // force camera_roll
     }
     PUTDEBUG("After character data");
 }

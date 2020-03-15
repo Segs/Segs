@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * http://www.segs.dev/
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -156,8 +156,8 @@ Urho3D::Model *buildModel(Urho3D::Context *ctx,SEGS::Model *mdl)
         auto lf3d_model=cache->GetResource<Urho3D::Model>(cache_path);
         if(lf3d_model)
         {
-            std::vector<SEGS::HTexture> v2 = getModelTextures(ctx,mdl->geoset->tex_names);
-            initLoadedModel([ctx](const QString &v) -> SEGS::HTexture { return tryLoadTexture(ctx, v); },mdl,v2);
+            auto textures = getModelTextures(ctx,mdl->geoset->tex_names);
+            initLoadedModel([ctx](const QString &v) -> SEGS::HTexture { return tryLoadTexture(ctx, v); },mdl,textures);
             return lf3d_model;
         }
     }

@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -284,7 +284,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     setLoggingFilter(); // Set QT Logging filters
     qInstallMessageHandler(segsLogMessageOutput);
     QCoreApplication q_app(argc,argv);
-    QCoreApplication::setOrganizationDomain("segs.io");
+    QCoreApplication::setOrganizationDomain("segs.dev");
     QCoreApplication::setOrganizationName("SEGS Project");
     QCoreApplication::setApplicationName("segs_server");
     QCoreApplication::setApplicationVersion(VersionInfo::getAuthVersion());

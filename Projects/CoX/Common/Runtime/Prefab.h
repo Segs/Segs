@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -29,6 +29,8 @@ struct GeoSet
     uint32_t             geo_data_size;
     bool                 data_loaded = false;
 };
+Model *getModelById(GeoSet *gset, int id);
+
 // Geo file info
 struct GeoStoreDef
 {
@@ -52,11 +54,15 @@ struct PrefabStore
 {
     QHash<QString, GeoStoreDef> m_dir_to_geoset;
     QHash<QString, GeoStoreDef *> m_modelname_to_geostore;
+    QString m_base_path;
+
+    PrefabStore(const QString &bp) : m_base_path(bp) {}
 
     bool prepareGeoLookupArray(const QString &base_path);
     bool loadPrefabForNode(SceneNode *node, LoadingContext &ctx);
     bool loadNamedPrefab(const QString &name, LoadingContext &conv);
-    Model *groupModelFind(const QString &path, LoadingContext &ctx);
+    Model *groupModelFind(const QString &path);
+    Model *modelFind(const QString &geoset_name, const QString &model_name);
     GeoStoreDef * groupGetFileEntryPtr(const QString &full_name);
     void sceneGraphWasReset(); // reset 'loaded' flag on all geostores
 };

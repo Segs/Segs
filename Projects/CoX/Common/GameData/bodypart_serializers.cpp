@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -52,7 +52,7 @@ void serialize(Archive & archive, BodyPart_Data & m)
     archive(cereal::make_nvp("BaseName",m.m_BaseName));
 }
 
-bool loadFrom(BinStore * s, AllBodyParts_Data * target)
+bool loadFrom(BinStore * s, BodyPartsStorage &target)
 {
     s->prepare();
     bool ok = s->prepare_nested(); // will update the file size left
@@ -67,7 +67,7 @@ bool loadFrom(BinStore * s, AllBodyParts_Data * target)
         {
             BodyPart_Data nt;
             ok &= loadFrom(s,&nt);
-            target->emplace_back(nt);
+            target.m_parts.emplace_back(nt);
         }
         else
             assert(!"unknown field referenced.");
@@ -78,9 +78,9 @@ bool loadFrom(BinStore * s, AllBodyParts_Data * target)
     return ok;
 }
 
-void saveTo(const AllBodyParts_Data & target, const QString & baseName, bool text_format)
+void saveTo(const BodyPartsStorage & target, const QString & baseName, bool text_format)
 {
-    commonSaveTo(target,"BodyParts",baseName,text_format);
+    commonSaveTo(target.m_parts,"BodyParts",baseName,text_format);
 }
 
 //! @}

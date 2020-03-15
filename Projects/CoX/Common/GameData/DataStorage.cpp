@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -103,20 +103,6 @@ bool BinStore::open(const QString &name,uint32_t required_crc )
     }
     bool result = check_bin_version_and_crc(required_crc);
     return result && read_data_blocks(true);
-}
-
-bool BinStore::findAndOpen(const QString & name,uint32_t reqcrc)
-{
-    QString local_path = "bin/"+name;
-    if(!QFile::exists(local_path))
-        return false;
-    if(!m_str.isOpen())
-    {
-        m_str.setFileName(name);
-        if(!m_str.open(QFile::ReadOnly))
-            return false;
-    }
-    return check_bin_version_and_crc(reqcrc) && read_data_blocks(true);
 }
 
 bool BinStore::read( uint32_t &v )

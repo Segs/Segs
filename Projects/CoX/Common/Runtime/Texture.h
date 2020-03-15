@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -30,8 +30,10 @@ enum class CoHBlendMode : uint8_t
     BUMPMAP_COLORBLEND_DUAL = 6,
     INVALID                 = 255,
 };
+struct TextureStorage;
 struct TextureWrapper
 {
+    using StorageClass = SEGS::TextureStorage; //tells the handle template to look up
     enum
     {
         ALPHA          = 0x0001,
@@ -54,6 +56,13 @@ struct TextureWrapper
     TextureModifiers *info {nullptr};
 };
 using HTexture = SingularStoreHandleT<20,12,TextureWrapper>;
-using TextureStorage = HandleBasedStorage<TextureWrapper>;
+struct TextureStorage : public HandleBasedStorage<TextureWrapper>
+{
+    static TextureStorage &instance() 
+    {
+        static TextureStorage s_instance;
+        return s_instance;
+    }
+};
 void loadTexHeader(const QString &fname);
 } // end of SEGS namespace

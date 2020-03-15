@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -22,6 +22,8 @@ struct Handle
     constexpr Handle(uint32_t idx_, uint16_t gen_) : idx(idx_), gen(gen_) {}
     constexpr Handle() = default;
     operator bool() const { return gen != 0; }
+    uint64_t toInt() const { return uint64_t(idx) | uint64_t(gen) << idx_bits; }
+    static Handle fromInt(uint64_t val) { return { val & ((1<<idx_bits)-1), (val>>idx_bits) & ((1 << gen_bits) - 1) }; }
 };
 
 template <int idx_bits, int gen_bits, typename T>

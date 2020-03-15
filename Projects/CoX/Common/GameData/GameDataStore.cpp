@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -26,6 +26,7 @@
 #include "Common/GameData/seq_serializers.h"
 #include "Common/GameData/shop_serializers.h"
 #include "Common/GameData/shop_definitions.h"
+#include "Common/GameData/bodypart_serializers.h"
 #include "Common/GameData/CommonNetStructures.h"
 #include "Logging.h"
 #include "Settings.h"
@@ -312,6 +313,10 @@ bool GameDataStore::read_game_data(const QString &directory_path)
         return false;
     if(!read_store_depts_data(directory_path)) //Not needed?
         return false;
+    if(!read_sequencer_types(directory_path))
+        return false;
+    if(!read_body_parts(directory_path))
+        return false;
     qInfo().noquote() << "Finished reading game data:  done in"<<float(load_timer.elapsed())/1000.0f<<"s";
     {
         TIMED_LOG({
@@ -576,6 +581,34 @@ bool GameDataStore::read_store_depts_data(const QString &directory_path)
 {
     qDebug() << "Loading shop depts:";
     return read_data_to<AllShopDepts_Data, shopdepts_i0_requiredCrc>(directory_path, "bin/depts.bin", m_shop_depts_data);
+}
+bool GameDataStore::read_sequencer_types(const QString &directory_path)
+{
+    QElapsedTimer timer;
+
+    qDebug() << "Loading Seq types:";
+
+    QDebug deb=qDebug().noquote().nospace();
+
+    bool res=loadFrom(directory_path+"converted/ent_types.crl.json",m_seq_types);
+    if(res)
+        deb << " OK in "<<QString::number(float(timer.elapsed())/1000.0f,'g',4)<<"s";
+    else
+    {
+        deb << "failure";
+        qWarning().noquote() << "Couldn't load" << directory_path<<"ent_types.crl_json: wrong file format?";
+    }
+    return res;
+}
+
+bool GameDataStore::read_body_parts(const QString &directory_path)
+{
+    qDebug() << "Loading body parts:";
+    bool res =
+        read_data_to<BodyPartsStorage, bodyparts_i0_requiredCrc>(directory_path, "bin/BodyParts.bin", m_body_parts);
+    if(res)
+        m_body_parts.postProcess();
+    return res;
 }
 
 const Parse_PowerSet& GameDataStore::get_powerset(uint32_t pcat_idx, uint32_t pset_idx)

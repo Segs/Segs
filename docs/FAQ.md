@@ -71,7 +71,7 @@ Q. How do I create my own server?
 
 A. Well, it’s not a complete server. More like 5%. By if you want 
 to try what we have, you can download a Windows EXE file, or compile the code using 
-QT Creator version 5.8+. Then using the I0 client, and an app to tell it what address 
+QT Creator with Qt 5.12+. Then using the I0 client, and an app to tell it what address 
 to connect to, login, create a character and be in Atlas Park. More detailed 
 instructions are in the Readme on our GitHub page. 
 

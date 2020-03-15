@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -106,5 +106,4 @@ public:
     void        nest_out() { m_file_sizes.pop_back(); }
     bool        end_encountered() const;
     bool        open(const QString & name, uint32_t required_crc);
-    bool        findAndOpen(const QString & name, uint32_t reqcrc=0);
 };
