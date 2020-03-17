@@ -43,6 +43,10 @@ set(SEGSADMIN_SOURCES
     SelectScriptDialog.ui
     SyntaxHighlighter.cpp
     SyntaxHighlighter.h
+    Worker.cpp
+    Worker.h
+    Helpers.cpp
+    Helpers.h
 )
 add_executable(SEGSAdmin WIN32 ${SEGSADMIN_SOURCES})
 target_link_libraries(SEGSAdmin PUBLIC SEGS_Components Qt5::Core Qt5::Widgets Qt5::Network)

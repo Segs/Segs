@@ -46,7 +46,7 @@ public slots:
     void read_createDB();
     void read_segsserver();
     void check_for_config_file();
-    void check_data_and_dir(QString maps_dir);
+    void checkDataAndDir();
     void read_release_info(const QString &error);
     void check_config_version(QString filePath);
 
