@@ -4,6 +4,7 @@ endif()
 
 SET(target_CPP
     serialization_types.cpp
+    serialization_common.cpp
     BitStream.cpp
     Buffer.cpp
     ConfigExtension.cpp

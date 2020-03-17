@@ -9,13 +9,11 @@
 
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
-#include <string>
 #include <vector>
-#include <QtCore/QString>
-#include <QtCore/QFile>
-#include <fstream>
 #include <map>
 #include <type_traits>
+
+#include "serialization_common.h"
 struct RGBA;
 
 typedef glm::vec3 Vec3;
@@ -26,7 +24,7 @@ class BinStore // binary storage
         QString name;
         uint32_t date=0;
     };
-    QFile m_str;
+    QIODevice *m_str=nullptr;
     size_t bytes_read=0;
     uint32_t bytes_to_read=0;
     std::vector<uint32_t> m_file_sizes; // implicit stack
@@ -35,10 +33,10 @@ class BinStore // binary storage
     template<class V>
     size_t read_internal(V &res)
     {
-        if(m_file_sizes.size()>0 && current_fsize()<sizeof(V))
+        if(!m_file_sizes.empty() && current_fsize()<sizeof(V))
             return 0;
-        m_str.read((char *)&res,sizeof(V));
-        if(m_file_sizes.size()>0)
+        m_str->read((char *)&res,sizeof(V));
+        if(!m_file_sizes.empty())
         {
             bytes_read+=sizeof(V);
             (*m_file_sizes.rbegin())-=sizeof(V);
@@ -105,5 +103,5 @@ public:
     void        nest_in() {  }
     void        nest_out() { m_file_sizes.pop_back(); }
     bool        end_encountered() const;
-    bool        open(const QString & name, uint32_t required_crc);
+    bool        open(FSWrapper &fs,const QString & name, uint32_t required_crc);
 };

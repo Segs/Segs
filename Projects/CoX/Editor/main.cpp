@@ -28,19 +28,19 @@ static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, c
     switch (type)
     {
     case QtDebugMsg:
-        text = QString("Qt::Debug (%1:%2, %3): %4").arg(context.file).arg(context.line).arg(context.function).arg(lMessage.constData());
+        text = QString("Debug: %1").arg(lMessage.constData());
         break;
 
     case QtWarningMsg:
-        text = QString("Qt::Warning (%1:%2, %3): %4").arg(context.file).arg(context.line).arg(context.function).arg(lMessage.constData());
+        text = QString("Warning: %1").arg(lMessage.constData());
         break;
 
     case QtCriticalMsg:
-        text = QString("Qt::Critical (%1:%2, %3): %4").arg(context.file).arg(context.line).arg(context.function).arg(lMessage.constData());
+        text = QString("Critical: %1").arg(lMessage.constData());
         break;
 
     case QtFatalMsg:
-        text = QString("Qt::Fatal (%1:%2, %3): %4").arg(context.file).arg(context.line).arg(context.function).arg(lMessage.constData());
+        text = QString("Fatal: %1").arg(lMessage.constData());
         abort();
     }
     QByteArray az = text.toUtf8();

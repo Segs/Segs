@@ -1,6 +1,7 @@
 #pragma once
 #include "Common/Runtime/HandleBasedStorage.h"
 
+struct FSWrapper;
 class QString;
 namespace SEGS
 {
@@ -10,4 +11,4 @@ struct GeoSet;
 }
 
 SEGS::HAnimationTrack getOrLoadAnimationTrack(const QString &name);
-SEGS::GeoSet *animLoad(const QString &filename, bool background_load=false,bool header_only=false);
+SEGS::GeoSet *animLoad(FSWrapper &fs, const QString &filename, bool background_load =false, bool header_only =false);

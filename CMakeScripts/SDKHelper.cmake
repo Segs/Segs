@@ -27,7 +27,10 @@ function(update_binary_deps DEP_PREFIX DEP_NAME DEP_FOLDER DEP_VERSION)
         COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_SOURCE_DIR}/Temp/Dependencies.7z
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Temp/unpack
 	)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEP_FOLDER})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEP_FOLDER}/bin)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEP_FOLDER}/cmake)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEP_FOLDER}/include)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${DEP_FOLDER}/lib)
     execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${DEP_FOLDER})
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/Temp/unpack ${DEP_FOLDER})
 #    execute_process(COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/Temp)
