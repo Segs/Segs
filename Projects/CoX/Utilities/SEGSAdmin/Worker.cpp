@@ -69,7 +69,8 @@ bool Worker::processPiggFile(const QString &file)
 bool Worker::runBinConverter()
 {
     emit sendUIMessage("Starting BinConverter");
-    QString program = "utilities/binconverter data/ent_types";
+    //QString program = "utilities/binconverter data/ent_types";
+    QString program = "utilities/binConverter " + (QDir::currentPath() + "/data/ent_types");
 #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
     program.prepend("./");
 #endif
