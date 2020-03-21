@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -33,7 +33,7 @@ int EventProcessor::handle_timeout( const ACE_Time_Value &current_time, const vo
     // if target is known
     if(timer_object->target())
     {
-        Event *mb=new Timeout(current_time,timer_object->user_id(),this);
+        Event *mb=new Timeout(current_time,timer_object->id(),this);
         // post a new event to it
         return timer_object->target()->putq(mb);
     }
@@ -59,7 +59,16 @@ int EventProcessor::svc( )
             }
             return 0;
         }
-        dispatch(mb);
+
+        if(mb->type()==evTimeout)
+        {
+            Timeout *to = static_cast<Timeout *>(mb);
+            auto iter = m_registered_timers.find(to->timer_id());
+            assert(iter!=m_registered_timers.end());
+            iter->second->callback(to->arrival_time());
+        }
+        else
+            dispatch(mb);
         mb->release();
     }
     this->per_thread_shutdown();
@@ -90,6 +99,55 @@ int EventProcessor::putq(Event *ev,ACE_Time_Value *timeout)
 #ifdef EVENT_RECORDING
 #endif
     return super::putq(ev,timeout);
+}
+/**
+ * @brief Add a new timer to this EventProcessor.
+ * @param fire_delta_time - time after which the timer will trigger, if @arg one_shot is false this is the interval
+ * @param one_shot - when set, the timer will only fire once.
+ * @return the id of created timer
+ * @note created one-shot timers are *NOT* removed after the callback returns.
+ */
+uint32_t EventProcessor::addTimer(const ACE_Time_Value &fire_delta_time,bool one_shot)
+{
+    uint32_t tmr_id = m_next_timer_id++;
+    m_registered_timers.emplace(tmr_id,std::make_unique<SEGSTimer>(tmr_id,fire_delta_time,one_shot));
+    return tmr_id;
+}
+/**
+ * @brief Starts the given timer which will call the provided function
+ * @param id is an identifier of a previously created timer
+ * @param cb is a std::function that holds a callback that will be called
+ * @return the id of a timer
+ * The returned value can be used to write 'compressed' code :
+ * @code
+ * m_timer_id = startTimer(addTimer(timer_period),&ThisClass::CBFunc);
+ */
+uint32_t EventProcessor::startTimer(uint32_t id, std::function<void (const ACE_Time_Value &)> cb)
+{
+    assert(m_registered_timers.find(id)!=m_registered_timers.end());
+    SEGSTimer &tmr(*m_registered_timers[id]);
+    tmr.setTarget(this);
+    tmr.start(cb);
+    return id;
+}
+/**
+ * @brief This method allows access to a timer struct (allows changing period/stopping/restarting etc)
+ * @param id is assumed to be a valid timer id.
+ * @return reference to a SEGSTimer object
+ */
+SEGSTimer &EventProcessor::accessTimer(uint32_t id)
+{
+    assert(m_registered_timers.find(id)!=m_registered_timers.end());
+    return *m_registered_timers[id];
+}
+/**
+ * @brief Remove/destroy the timer that corresponds to provided @arg id
+ * @param id is assumed to be a valid timer id.
+ */
+void EventProcessor::removeTimer(uint32_t id)
+{
+    assert(m_registered_timers.find(id)!=m_registered_timers.end());
+    m_registered_timers.erase(id);
 }
 
 //! @}

@@ -1,17 +1,19 @@
 # common cmake build directories
-build*/
 bld/
 doxygen/
 out/
 3rd_party/include
 3rd_party/lib
+3rd_party/prebuilt
 3rd_party/bin
 3rd_party/gmock
 3rd_party/naked_ace/
+Temp/
 
 #IDE generated project files
 *.user
 *.user.*
+*.vs
 
 # Compiled Object files
 *.slo

@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -19,7 +19,7 @@ class RecvInputState : public MapLinkEvent
 {
 public:
     // [[ev_def:field]]
-    InputState   m_next_state;
+    InputStateChange m_input_state_change;
     // [[ev_def:field]]
     BitStream m_user_commands;
 
@@ -28,7 +28,7 @@ public:
     {}
     void serializeto(BitStream &) const override;
     void serializefrom(BitStream &bs) override;
-    void receiveControlState(BitStream &bs);
+    void receiveControlStateChanges(BitStream &bs);
     void extended_input(BitStream &bs);
     void recv_client_opts(BitStream &bs);
     EVENT_IMPL(RecvInputState)

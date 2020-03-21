@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * http://www.segs.dev/
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -32,8 +32,8 @@ using namespace Urho3D;
 
 // Start of anonymous namespace
 namespace {
-glm::vec3 fromUrho(Vector3 v) {return {v.x_,v.y_,v.z_};}
-Vector3 toUrho(glm::vec3 v) {return {v.x,v.y,v.z};}
+//glm::vec3 fromUrho(Vector3 v) {return {v.x_,v.y_,v.z_};}
+//Vector3 toUrho(glm::vec3 v) {return {v.x,v.y,v.z};}
 } // end of anonymus namespace
 
 float *combineBuffers(SEGS::VBOPointers &meshdata,SEGS::Model *mdl)

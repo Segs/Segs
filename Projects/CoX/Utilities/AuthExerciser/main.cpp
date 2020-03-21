@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -30,7 +30,7 @@
 
 static uint16_t SERVER_PORT = ACE_DEFAULT_SERVER_PORT;
 static QString const SERVER_HOST = ACE_DEFAULT_SERVER_HOST;
-static const int MAX_ITERATIONS = 4;
+//static const int MAX_ITERATIONS = 4;
 
 struct AuthConnector final : public ACE_Connector<AuthLink, ACE_SOCK_Connector>
 {

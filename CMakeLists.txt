@@ -1,8 +1,14 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
-PROJECT(SEGS)
+cmake_minimum_required(VERSION 3.16)
+project(SEGS)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Tell cmake to honor CXX_VISIBILITY_PRESET and ignore it
+cmake_policy(SET CMP0063 NEW)
+cmake_policy(SET CMP0065 NEW)
+cmake_policy(SET CMP0072 NEW)
+cmake_policy(SET CMP0079 NEW)
 
 # for version and revision info. Derived from https://github.com/dolphin-emu/dolphin/blob/master/CMakeLists.txt#L132
 find_package(Git)
@@ -27,15 +33,15 @@ endif()
 
 # version number
 set(SEGS_VERSION_MAJOR "0")
-set(SEGS_VERSION_MINOR "6")
-set(SEGS_VERSION_PATCH "1")
+set(SEGS_VERSION_MINOR "7")
+set(SEGS_VERSION_PATCH "0")
 
 # If SEGS is not built from a Git repository, default the version info to
 # reasonable values.
 if(NOT SEGS_REVISION)
-  set(SEGS_DESCRIPTION "${SEGS_VERSION_MAJOR}.${SEGS_VERSION_MINOR}.${SEGS_VERSION_PATCH}")
-  set(SEGS_REVISION "${SEGS_DESCRIPTION} (no further info)")
-  set(SEGS_BRANCH "develop")
+    set(SEGS_DESCRIPTION "${SEGS_VERSION_MAJOR}.${SEGS_VERSION_MINOR}.${SEGS_VERSION_PATCH}")
+    set(SEGS_REVISION "${SEGS_DESCRIPTION} (no further info)")
+    set(SEGS_BRANCH "develop")
 endif()
 
 add_definitions(
@@ -44,52 +50,63 @@ add_definitions(
     "-DSEGS_DESCRIPTION=\"${SEGS_DESCRIPTION}\""
     )
 
-IF(MSVC)
+if(MSVC)
     add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -D_USE_MATH_DEFINES)
+    add_compile_options (/wd4251) # disable warning related to dll interface needed ... clients of class
+    if (NOT (MSVC_VERSION LESS 1910))
+      #add_compile_options (/MP)
+      add_compile_options (/permissive-)
+      #add_compile_options (/d2cgsummary)
+      #add_compile_options (/d1reportTime)
+      add_compile_options (/diagnostics:caret)
+      #add_compile_options (/sdl)
+      #add_compile_options (/arch:AVX2)
+    endif()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-ELSEIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14")
-   
-   if(MINGW)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
-   endif()
-ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14 -Wno-nested-anon-types -Wno-gnu-anonymous-struct -Wno-gnu-zero-variadic-macro-arguments")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast")
+    if(MINGW)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+    endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -Wno-nested-anon-types -Wno-gnu-anonymous-struct -Wno-gnu-zero-variadic-macro-arguments")
 endif()
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(AUTOGEN_TARGETS_FOLDER ON)
 
 add_definitions(-D__STDC_FORMAT_MACROS)
 
-SET(MAIN_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/3rd_party/include CACHE PATH "Includes")
-SET(MAIN_LIB_PATH ${PROJECT_SOURCE_DIR}/3rd_party/lib CACHE PATH "Libraries")
+set(MAIN_INCLUDE_PATH ${PROJECT_SOURCE_DIR}/3rd_party/include CACHE PATH "Includes")
+set(MAIN_LIB_PATH ${PROJECT_SOURCE_DIR}/3rd_party/lib CACHE PATH "Libraries")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/out)
-SET(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out)
-SET(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
-SET(UNICODE TRUE)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
+set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt")
+set(UNICODE TRUE)
 set(INSTALLED_TARGETS)
-OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
-OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
-OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
-OPTION(BUILD_RPC_TEST_CLIENT "Build RPC Test Client ?" OFF)
+option(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
+option(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
+option(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
+option(BUILD_RPC_TEST_CLIENT "Build RPC Test Client ?" OFF)
+option(BUILD_CLIENT_PATCH "Build client patch for AMD graphics cards ?" OFF)
 
 ########################################################################################
 # Prerequisites
 ########################################################################################
 find_package(Threads REQUIRED)
+include(LocateQt5)
+find_package(Qt5 5.12 COMPONENTS Core Sql REQUIRED)
 
+include(SDKHelper)
 include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_BINARY_DIR}/3rd_party/built) # ERICEDIT: Changed to CMAKE_BINARY_DIR so that this variable always points to the top level of the build directory.
 add_subdirectory(3rd_party)
 link_directories(${PROJECT_SOURCE_DIR}/lib) # ERICEDIT: Changed to lowercase.
 
-include(LocateQt5)
-find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 
 if(ENABLE_TESTS)
     enable_testing()
@@ -102,6 +119,9 @@ if(ENABLE_TESTS)
         target_link_libraries(${testname}
             Qt5::Test
             ${ARGN}
+        )
+        set_target_properties (${testname} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
         )
     endmacro()
 endif()
@@ -160,10 +180,11 @@ macro(add_messages_library name )
     target_link_libraries(${name}_interface PUBLIC Qt5::Core)
     # all interfaces use stuff from Common, so should depend/link to it
     target_link_libraries(${name}_interface PUBLIC SEGS_Components)
-	source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN}) 
-	set_target_properties (${name}_interface PROPERTIES
-		FOLDER Projects/CoX/Common/Messages
-	)
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN})
+    set_target_properties (${name}_interface PROPERTIES
+            FOLDER Projects/CoX/Common/Messages
+            RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+    )
 endmacro()
 
 macro(add_handler name)
@@ -198,6 +219,9 @@ set(MAPNAMES
   Trial_05_01
   )
 foreach(MAPDIR ${MAPNAMES})
-  file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/${MAPDIR})
+  file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/maps/${MAPDIR})
 endforeach(MAPDIR)
+
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default_setup)
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/logs)
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/scripts)

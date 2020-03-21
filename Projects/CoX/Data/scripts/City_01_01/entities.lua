@@ -1,5 +1,7 @@
 --- ATLAS PARK
 
+local spawnOnce = false
+
 -- Called after MOTD for now.
 function player_connected(id)
     --Id is player entity Id
@@ -7,7 +9,24 @@ function player_connected(id)
 
     Tasks.UpdateTasksForZone('Atlas Park')
     Contacts.SpawnContacts('Atlas Park')
-   
+
+    if spawnOnce == false then
+        --spinners gather location data
+        spinSpawners()
+        spinPersists()
+        spinCivilians()
+        spinCars()
+        --RandomSpawns attempt #x creations of the type (encounter is default)
+        RandomSpawn(45)
+        RandomSpawn(80, "Civilians")
+        RandomSpawn(30, "Cars")
+        spawnOnce = true
+
+        --print("Initiating map auto-refresh")
+        MapInstance.SetOnTickCallback(contactsForZone.TimeCop.entityId, contactsForZone.TimeCop.onTickCallBack);
+        TimeCopMode(true, 45, 120)
+end
+
     return  ''
 end
 

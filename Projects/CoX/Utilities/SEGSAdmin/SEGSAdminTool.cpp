@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -22,7 +22,12 @@
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
 #include "SelectScriptDialog.h"
+#include "Helpers.h"
+#include "Worker.h"
+
+#include "Settings.h"
 #include "Version.h"
+
 #include <QDebug>
 #include <QtGlobal>
 #include <QProcess>
@@ -81,14 +86,13 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(m_add_user_dialog,&AddNewUserDialog::sendInput,this,&SEGSAdminTool::commit_user);
 
     // SetUpData Signals
-    connect(m_set_up_data,&SetUpData::dataSetupComplete,this,&SEGSAdminTool::check_data_and_dir);
+    connect(m_set_up_data,&SetUpData::dataSetupComplete,this,&SEGSAdminTool::checkDataAndDir);
     connect(m_set_up_data,&SetUpData::getMapsDir,m_settings_dialog,&SettingsDialog::send_maps_dir);
 
     // SettingsDialog Signals
     connect(m_settings_dialog,&SettingsDialog::checkForConfigFile,this,&SEGSAdminTool::check_for_config_file);
-    connect(m_settings_dialog,&SettingsDialog::check_data_and_dir,this,&SEGSAdminTool::check_data_and_dir);
-    connect(m_settings_dialog,&SettingsDialog::sendMapsDirConfigCheck,this,&SEGSAdminTool::check_data_and_dir);
-    connect(m_settings_dialog,&SettingsDialog::sendMapsDir,m_set_up_data,&SetUpData::create_default_directory);
+    connect(m_settings_dialog,&SettingsDialog::check_data_and_dir,this,&SEGSAdminTool::checkDataAndDir);
+    connect(m_settings_dialog,&SettingsDialog::sendMapsDirConfigCheck,this,&SEGSAdminTool::checkDataAndDir);
 
     // Network Manager Signals
     connect(this,&SEGSAdminTool::getLatestReleases,m_network_manager,&NetworkManager::get_latest_releases);
@@ -107,16 +111,25 @@ SEGSAdminTool::~SEGSAdminTool()
     delete ui;
 }
 
-void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub dirs and maps dir
+void SEGSAdminTool::checkDataAndDir() // Checks for data sub dirs and maps dir
 {
     QPixmap check_icon(":icons/Resources/check.svg");
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for correct data and maps directories...");
-    QStringList data_dirs = {"data/bin","data/geobin","data/object_library"}; // Currently only checking for these 3 sub dirs, check for all files could be overkill
+    QStringList data_dirs = {
+        "data/bin",
+        "data/converted",
+        "data/ent_types",
+        "data/geobin",
+        "data/object_library",
+        "data/scenes",
+        "data/shaders",
+        "data/texts"
+    };
     bool all_maps_exist = true;
     for(const QString &map_name : g_map_names)
     {
-        all_maps_exist &= QDir(maps_dir+"/"+map_name).exists();
+        all_maps_exist &= QDir(Helpers::getMapsDir()+"/"+map_name).exists();
         if(!all_maps_exist)
             break; // at least one map dir is missing, we can finish early
     }
@@ -125,7 +138,10 @@ void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub 
     {
         all_data_dirs_exist &= QDir(data_dir).exists();
         if(!all_data_dirs_exist)
+        {
+            ui->output->appendPlainText("Error: Data directory missing: " + data_dir);
             break; // at least one map dir is missing, we can finish early
+        }
     }
     if(all_data_dirs_exist && all_maps_exist)
     {
@@ -137,7 +153,6 @@ void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub 
         ui->icon_status_data->setPixmap(alert_triangle);
         ui->output->appendPlainText("WARNING: We couldn't find the correct data and/or maps directories. Please use the server setup to your left");
     }
-
 }
 
 void SEGSAdminTool::commit_user(QString username, QString password, QString acclevel)
@@ -147,9 +162,9 @@ void SEGSAdminTool::commit_user(QString username, QString password, QString accl
     ui->createUser->setText("Please Wait...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
+    QString program = "utilities/dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
     #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
-    program.prepend("./");
+        program.prepend("./");
     #endif
     m_createUser = new QProcess(this);
     m_createUser->start(program);
@@ -195,8 +210,11 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for existing databases...");
     qDebug() << "Checking for existing databases...";
-    QFileInfo file1("segs");
-    QFileInfo file2("segs_game");
+
+    QSettings config(Settings::getSettingsPath(), QSettings::IniFormat, nullptr);
+
+    QFileInfo file1(config.value(QStringLiteral("AdminServer/AccountDatabase/db_name"), "segs.db").toString());
+    QFileInfo file2(config.value(QStringLiteral("AdminServer/CharacterDatabase/db_name"), "segs_game.db").toString());
     if(on_startup) // Runs this check on startup or for checking creation in other methods
     {
         if(file1.exists() && file2.exists())
@@ -226,7 +244,8 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
             db_overwrite_msgBox.setDefaultButton(QMessageBox::No);
             db_overwrite_msgBox.setIcon(QMessageBox::Warning);
             int confirm = db_overwrite_msgBox.exec();
-            switch (confirm) {
+            switch (confirm)
+            {
             case QMessageBox::Yes:
                 SEGSAdminTool::create_databases(true);
                 break;
@@ -252,7 +271,7 @@ void SEGSAdminTool::create_databases(bool overwrite)
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "dbtool create";
+    QString program = "utilities/dbtool create";
     if(overwrite)
     {
         program.append(" -f");
@@ -419,7 +438,7 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     // Load settings.cfg if exists
     ui->output->appendPlainText("Checking for existing configuration file...");
-    QFileInfo config_file("settings.cfg");
+    QFileInfo config_file(Settings::getSettingsPath());
     if(config_file.exists())
     {
         QString config_file_path = config_file.absoluteFilePath();
@@ -447,31 +466,30 @@ void SEGSAdminTool::check_for_config_file() // Does this on application start
 
 void SEGSAdminTool::check_config_version(QString filePath)
 {
-    
     ui->output->appendPlainText("Checking configuration version...");
-    
+
     QSettings config_file(filePath, QSettings::IniFormat);
     config_file.beginGroup("MetaData");
     int config_version = config_file.value("config_version","").toInt();
     config_file.endGroup();
-     
+
     if (config_version != VersionInfo::getConfigVersion())
     {
         ui->output->appendPlainText("WARNING: Configuration file version incorrect or missing. Prompting for recreation");
         QMessageBox::StandardButton ask_recreate_config = QMessageBox::warning(this,
-                    "Config File Version Incorrect", "Your settings.cfg may be out of date. Do you want to to recreate?" 
+                    "Config File Version Incorrect", "Your settings.cfg may be out of date. Do you want to to recreate?"
                     "\n\nWARNING: All settings will be overwritten",
                     QMessageBox::Yes | QMessageBox::No);
-        
-        if(ask_recreate_config == QMessageBox::Yes) 
+
+        if(ask_recreate_config == QMessageBox::Yes)
         {
             ui->output->appendPlainText("Recreating settings.cfg");
             emit recreateConfig();
         }
-        else 
+        else
         {
             ui->output->appendPlainText("Not Recreating settings.cfg");
-        }        
+        }
     }
     else
     {
@@ -519,5 +537,5 @@ void SEGSAdminTool::read_release_info(const QString &error)
     }
 
 }
-//!@}
 
+//!@}

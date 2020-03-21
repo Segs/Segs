@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -37,7 +37,7 @@ public:
     {
     }
     void    serializeto(BitStream &bs) const override {
-        bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 16
+        bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // packet 16
 
         bs.StorePackedBits(1, uint32_t(m_delay_status));
         bs.StoreString(m_msg);

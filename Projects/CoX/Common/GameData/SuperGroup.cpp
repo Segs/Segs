@@ -304,7 +304,7 @@ bool toggleSGMode(Entity &e)
     return cd->m_supergroup.m_sg_mode;
 }
 
-QString setSGMOTD(Entity &e, QString &motd)
+QString setSGMOTD(Entity &e, const QString &motd)
 {
     QString msg = "Successfully changed SuperGroup MOTD.";
     SuperGroupStats *sgs = &e.m_char->m_char_data.m_supergroup;
@@ -327,7 +327,7 @@ QString setSGMOTD(Entity &e, QString &motd)
     return msg;
 }
 
-QString setSGMotto(Entity &e, QString &motto)
+QString setSGMotto(Entity &e, const QString &motto)
 {
     QString msg = "Successfully changed SuperGroup Motto.";
     SuperGroupStats *sgs = &e.m_char->m_char_data.m_supergroup;
@@ -350,7 +350,7 @@ QString setSGMotto(Entity &e, QString &motto)
     return msg;
 }
 
-QString setSGTitle(Entity &e, int idx, QString &title)
+QString setSGTitle(Entity &e, int idx, const QString &title)
 {
     SuperGroupStats *sgs = &e.m_char->m_char_data.m_supergroup;
     SuperGroup * sg = getSuperGroupByIdx(sgs->m_sg_db_id);

@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -41,7 +41,12 @@ void setSpeed(Entity &e, float v1, float v2, float v3) { e.m_motion_state.m_spee
 void setBackupSpd(Entity &e, float val) { e.m_motion_state.m_backup_spd = val; }
 void setJumpHeight(Entity &e, float val) { e.m_motion_state.m_jump_height = val; }
 void setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
-
+void resetSpeed(Entity &e)
+{
+    e.m_motion_state.m_speed = {e.m_char->m_char_data.m_current_attribs.m_SpeedRunning,
+                                e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
+                                e.m_char->m_char_data.m_current_attribs.m_SpeedFlying};
+}
 void setTeamID(Entity &e, uint8_t team_id)
 {
     if(team_id == 0)
@@ -105,6 +110,7 @@ void setTarget(Entity &e, uint32_t target_idx)
     e.m_target_idx = target_idx;
     // To trigger update to client
     e.m_pchar_things = true;
+    qCDebug(logTarget) << "Setting Target to" << target_idx;
 }
 
 void setAssistTarget(Entity &e, uint32_t target_idx)
@@ -176,6 +182,203 @@ void toggleMovementAuthority(Entity &e)
 }
 
 
+bool validTarget(Entity &target_ent, Entity &ent, StoredEntEnum const &target)
+{
+    // first check if the target needs to be dead, and isn't dead yet
+    if (target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate || target == StoredEntEnum::DeadVillain)
+        if (!target_ent.m_char->m_is_dead)
+            return false;
+
+    if (target_ent.m_char->m_is_dead)
+        if (!(target == StoredEntEnum::DeadPlayer || target == StoredEntEnum::DeadTeammate
+            || target == StoredEntEnum::DeadVillain || target == StoredEntEnum::DeadOrAliveTeammate
+            || target == StoredEntEnum::Caster)) // Caster is a valid target only if castable after death is true
+            return false;
+
+    if (&ent == &target_ent)
+        return (target == StoredEntEnum::Caster || target == StoredEntEnum::Any || target == StoredEntEnum::Location || target == StoredEntEnum::Teleport);
+    switch(target)
+    {
+        case StoredEntEnum::Any:
+        case StoredEntEnum::Location:               // locations are always valid for this check
+            return true;
+        case StoredEntEnum::Teleport:
+        case StoredEntEnum::Caster:                 // these would have passed above
+        case StoredEntEnum::None:
+            return false;
+        case StoredEntEnum::DeadVillain:
+        case StoredEntEnum::Enemy:
+        case StoredEntEnum::Foe:
+        case StoredEntEnum::NPC:                    // powers never target npcs, but just in case...
+            return (ent.m_is_villain ? target_ent.m_is_hero : target_ent.m_is_villain);    // if both are heroes, or both villains, not a valid foe
+        case StoredEntEnum::DeadTeammate:
+        case StoredEntEnum::Teammate:
+        case StoredEntEnum::DeadOrAliveTeammate:    // will need to do a check for teams
+        case StoredEntEnum::Friend:
+        case StoredEntEnum::Player:
+        case StoredEntEnum::DeadPlayer:
+            return (ent.m_is_hero ? target_ent.m_is_hero : target_ent.m_is_villain);       // both have to be heroes, or both villains
+    }
+    return false;       //default incase anything slips through
+}
+
+// checks a vector of possible targets
+bool validTargets(Entity &target_ent, Entity &ent, std::vector<StoredEntEnum> const & targets)
+{
+    if (targets.empty())
+        return false;
+
+    for (auto tar : targets)
+    {
+        if (validTarget(target_ent, ent, tar))
+            return true;                            // just needs 1 to be valid
+    }
+    return false;
+}
+
+void modifyAttrib(Entity &e, buffset change)
+{//todo: take Parse_CharAttrib as argument, to modify max/current/res/str
+    if (change.m_value_name == "regeneration")
+        e.m_char->m_char_data.m_current_attribs.m_Regeneration += change.m_value;
+    else if (change.m_value_name == "recovery")
+        e.m_char->m_char_data.m_current_attribs.m_Recovery += change.m_value;
+    else if (change.m_value_name == "accuracy")
+        e.m_char->m_char_data.m_current_attribs.m_Accuracy += change.m_value;
+    else if (change.m_value_name == "tohit")
+        e.m_char->m_char_data.m_current_attribs.m_ToHit += change.m_value;
+    else if (change.m_value_name == "defense")
+        e.m_char->m_char_data.m_current_attribs.m_Defense += change.m_value;         //for now everything is general defense
+    else if (change.m_value_name == "damagebuff")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_DamageTypes[change.m_attrib] += change.m_value;
+    }
+    else if (change.m_value_name == "mezresist" || change.m_value_name == "reseffect" || change.m_value_name == "resistance")
+    {
+       ;// e.m_char->m_char_data.m_current_attribs.m_ResistTypes[change.attrib] += change.m_value;  //we don't store resists currently
+    }
+    else if (change.m_value_name == "jumpheight")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_jump_height += change.m_value;
+        e.m_motion_state.m_jump_height = e.m_char->m_char_data.m_current_attribs.m_jump_height;
+    }
+    else if (change.m_value_name == "rechargetime")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_RechargeTime += change.m_value;
+    }
+    else if (change.m_value_name == "range")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Range += change.m_value;
+    }
+    else if (change.m_value_name == "hitpoints")
+    {
+        e.m_char->m_max_attribs.m_HitPoints += change.m_value;  //max attribs
+    }
+    else if (change.m_value_name == "endurance")
+    {
+        e.m_char->m_max_attribs.m_Endurance += change.m_value;  //max attribs
+    }
+    else if (change.m_value_name == "speedjumping")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_SpeedJumping += change.m_value;
+    }
+    else if (change.m_value_name == "speedrunning")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_SpeedRunning += change.m_value;
+    }
+    else if (change.m_value_name == "fly")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_is_flying += change.m_value;
+        if (e.m_char->m_char_data.m_current_attribs.m_is_flying > 0)
+            e.m_motion_state.m_is_flying = true;
+        else
+            e.m_motion_state.m_is_flying = false;
+    }
+    else if (change.m_value_name == "jumppack")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_has_jumppack += change.m_value;
+        if (e.m_char->m_char_data.m_current_attribs.m_has_jumppack > 0)
+            e.m_motion_state.m_has_jumppack = true;
+        else
+            e.m_motion_state.m_has_jumppack = false;
+    }
+    else if (change.m_value_name == "speedflying")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_SpeedFlying += change.m_value;
+    }
+    else if (change.m_value_name == "movementfriction")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_MovementFriction += change.m_value;
+    }
+    else if (change.m_value_name == "movementcontrol")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_MovementControl += change.m_value;
+    }
+    else if (change.m_value_name == "immobilized")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Immobilized += change.m_value;
+    }
+    else if (change.m_value_name == "sleep")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Sleep += change.m_value;
+    }
+    else if (change.m_value_name == "stunned")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_is_stunned += change.m_value;
+        if (e.m_char->m_char_data.m_current_attribs.m_is_stunned > 0)
+            e.m_motion_state.m_is_stunned = true;
+        else
+            e.m_motion_state.m_is_stunned = false;
+    }
+    else if (change.m_value_name == "held")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Held += change.m_value;
+    }
+    else if (change.m_value_name == "confused")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_Confused += change.m_value;
+    }
+    else if (change.m_value_name == "onlyaffectsself")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_OnlyAffectsSelf += change.m_value;
+    }
+    else if (change.m_value_name == "perceptionradius")
+    {
+        e.m_char->m_char_data.m_current_attribs.m_PerceptionRadius += change.m_value;
+    }
+    else if (QStringList{"knockup","knockdown","knockback","xpdebtprotection","translucency","setmode"
+            ,"stealthradiusplayer","stealthradius","threatlevel","combatphase","grantpower","null"
+            ,"untouchable","terrorized","afraid","teleport","repel","setcostume","endurancediscount"
+            ,"taunt","globalchancemod","intangible","mez"  //mez used by powerboost
+            }.contains(change.m_value_name))
+        ;//these effects not implimented yet, but will be, so skip error message
+    else
+    {
+        qCDebug(logPowers) << change.m_value_name << "found in powers.json, don't know what it is!";
+    }
+    resetSpeed(e);
+    checkMovement(e);
+
+}
+
+//called after movment state might change, makes sure everything is clear before allowing movement
+void checkMovement(Entity &e)
+{
+    Parse_CharAttrib & temp = e.m_char->m_char_data.m_current_attribs;
+    if (temp.m_Immobilized > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1 || e.m_is_activating || e.m_char->m_is_dead)
+        e.m_motion_state.m_controls_disabled = true;
+    else
+        e.m_motion_state.m_controls_disabled = false;
+}
+
+//return true if any status effect would prevent the use of powers
+bool checkPowerBlock(Entity &e)
+{
+    Parse_CharAttrib & temp = e.m_char->m_char_data.m_current_attribs;
+    return (temp.m_is_stunned > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1 || temp.m_OnlyAffectsSelf > 1);
+}
+//TODO on both of the above, check for the entity's protection against each status effect and use that value instead of 1
+
+
 // Misc Methods
 void abortLogout(Entity *e)
 {
@@ -190,14 +393,14 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_type                            = EntType::PLAYER; // 2
     e.m_create_player                   = true;
     e.m_is_hero                         = true;
-    e.m_is_villian                      = false;
+    e.m_is_villain                      = false;
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = {0};
     e.m_hasname                         = true;
     e.m_has_team                        = false;
     e.m_pchar_things                    = true;
-    e.m_target_idx                      = -1;
-    e.m_assist_target_idx               = -1;
+    e.m_target_idx                      = 0;
+    e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
     e.m_motion_state.m_is_falling       = true;
 
@@ -208,9 +411,6 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_update_anims = e.m_rare_update   = true;
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
-
-    e.m_states.init(); // Initialize movement input state pointers
-    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
 
     PosUpdate p;
     for(int i = 0; i<64; i++)
@@ -232,7 +432,7 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_type                            = EntType::NPC; // 2
     e.m_create_player                   = false;
     e.m_is_hero                         = false;
-    e.m_is_villian                      = false; // only Critters are Villains
+    e.m_is_villain                      = false; // only Critters are Villains
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
     e.m_hasname                         = true;
@@ -240,8 +440,8 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_pchar_things                    = false;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
-    e.m_target_idx                      = -1;
-    e.m_assist_target_idx               = -1;
+    e.m_target_idx                      = 0;
+    e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
     e.m_motion_state.m_is_falling       = true;
 
@@ -253,9 +453,6 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_char->m_char_data.m_level       = src->m_Level;
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
-
-    e.m_states.init(); // Initialize movement input state pointers
-    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
 
     PosUpdate p;
     for(int i = 0; i<64; i++)
@@ -277,7 +474,7 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_type                            = EntType::CRITTER;
     e.m_create_player                   = false;
     e.m_is_hero                         = false;
-    e.m_is_villian                      = true;
+    e.m_is_villain                      = true;
     e.m_entity_data.m_origin_idx        = {0};
     e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
     e.m_hasname                         = true;
@@ -285,8 +482,8 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_pchar_things                    = true;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
-    e.m_target_idx                      = -1;
-    e.m_assist_target_idx               = -1;
+    e.m_target_idx                      = 0;
+    e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
     e.m_motion_state.m_is_falling       = true;
 
@@ -307,9 +504,6 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_char->m_char_data.m_current_attribs.m_Endurance = 100;
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
-
-    e.m_states.init(); // Initialize movement input state pointers
-    e.m_states.current()->m_pos_start = e.m_states.current()->m_pos_end = e.m_entity_data.m_pos;
 
     PosUpdate p;
     for(int i = 0; i<64; i++)
@@ -358,8 +552,7 @@ void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
 
 void revivePlayer(Entity &e, ReviveLevel lvl)
 {
-    float cur_hp = getHP(*e.m_char);
-    if(e.m_type != EntType::PLAYER && cur_hp != 0)
+    if(e.m_type != EntType::PLAYER && !e.m_char->m_is_dead)
         return;
 
     switch(lvl)
@@ -387,9 +580,10 @@ void revivePlayer(Entity &e, ReviveLevel lvl)
         setEndToMax(*e.m_char);
         break;
     }
-
+    e.m_char->m_is_dead = false;
     // reset state to simple
     setStateMode(e, ClientStates::SIMPLE);
+    checkMovement(e);
 }
 
 //! @}

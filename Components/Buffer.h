@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -69,20 +69,21 @@ inline      void            uPutString(const char *t);
                             template<typename T>
 inline      void            uPut(const T &val)
                             {
-                                    *((T *)&m_buf[m_write_off]) = val; //let the compiler decide how to put type T into array
+                                    memcpy(m_buf+m_write_off,&val,sizeof(T)); // we copy the bits directly to avoid alignment warnings from sanitizer
                                     m_write_off+=sizeof(T);
                             }
 
                             template<typename T>
 inline      void            uGet(T &val)
                             {
-                                    val = *((T *)&m_buf[m_read_off]);
+                                    memcpy(&val,m_buf+m_read_off,sizeof(T));
                                     m_read_off += sizeof(T);
                             }
                             template<typename T>
 inline      T               ruGet()
                             {
-                                    T val = *((T *)&m_buf[m_read_off]);
+                                    T val;
+                                    memcpy(&val,m_buf+m_read_off,sizeof(T));
                                     m_read_off += sizeof(T);
                                     return val;
                             }

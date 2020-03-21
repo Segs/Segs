@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * http://www.segs.dev/
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -272,9 +272,9 @@ void MapViewerApp::onDisplayNode(SEGS::SceneNode *n,bool rootnode)
     if(boxNode!=nullptr)
     {
         m_camera_node->LookAt(boxNode->GetWorldPosition());
-        Vector3 nodecenter = fromGLM(n->m_bbox.center());
-        Vector3 dir = (m_camera_node->GetWorldPosition() - nodecenter).Normalized();
-        Vector3 newpos = nodecenter + dir*n->m_bbox.size().length()*1.5f;
+        //Vector3 nodecenter = fromGLM(n->m_bbox.center());
+        //Vector3 dir = (m_camera_node->GetWorldPosition() - nodecenter).Normalized();
+        //Vector3 newpos = nodecenter + dir*n->m_bbox.size().length()*1.5f;
         //m_camera_node->SetPosition(newpos);
         Quaternion camrot=m_camera_node->GetRotation();
         pitch_=camrot.PitchAngle();
@@ -289,7 +289,7 @@ void MapViewerApp::onDisplayNode(SEGS::SceneNode *n,bool rootnode)
 
 }
 
-void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifiers)
+void MapViewerApp::HandleKeyUp(int key,int /*scancode*/,unsigned /*buttons*/,int /*qualifiers*/)
 {
     // Close console (if open) or exit when ESC is pressed
     if (key == KEY_ESCAPE)
@@ -297,7 +297,7 @@ void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifi
         engine_->Exit();
     }
     if(key>='1' && key<='8') {
-        int layernum = key-'1';
+        uint32_t layernum = uint32_t(key-'1');
         if(layernum>=m_coh_scene->refs.size())
             return;
         auto ref_to_toggle = m_coh_scene->refs[layernum];
@@ -307,7 +307,7 @@ void MapViewerApp::HandleKeyUp(int key,int scancode,unsigned buttons,int qualifi
     }
 }
 
-void MapViewerApp::HandleKeyDown(int key,int scancode,unsigned buttons,int qualifiers, bool repeat)
+void MapViewerApp::HandleKeyDown(int key,int /*scancode*/,unsigned /*buttons*/,int /*qualifiers*/, bool /*repeat*/)
 {
     // Toggle console with F1
     if (key == KEY_F1)
@@ -425,7 +425,7 @@ void MapViewerApp::HandleUpdate(float timeStep)
         Raycast(8500);
 }
 
-void MapViewerApp::HandlePostRenderUpdate(float ts)
+void MapViewerApp::HandlePostRenderUpdate(float /*ts*/)
 {
     // If draw debug mode is enabled, draw viewport debug geometry. Disable depth test so that we can see the effect of occlusion
     if (m_selected_drawable) {

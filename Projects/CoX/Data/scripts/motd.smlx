@@ -1,4 +1,4 @@
-<br><face title><span align=center><color Red>SEGS Release Notes: v0.6.0 Outbreak</color></span></face><br>
+<br><face title><span align=center><color Red>SEGS Release Notes: v0.7.0 (Awakening)</color></span></face><br>
 <face heading>
 <color Tomato><span align=center><b>NOTICE!</b></color></span>
 <br>
@@ -8,16 +8,22 @@ Welcome to the Super Entity Game Server! SEGS is under active development and is
 <br>
 Please consider contributing to our success by reporting bugs on our github and joining our community on Discord:<br>
 <face heading>
-<span align=center><a href="https://github.com/Segs/">https://github.com/Segs/</a> and <a href="https://discord.segs.io">https://discord.segs.io/</a></span>
+<span align=center><a href="https://github.com/Segs/">https://github.com/Segs/</a> and <a href="https://discord.segs.dev">https://discord.segs.dev/</a></span>
 </face><br>
 <br>
 <color SteelBlue>Latest Changes:</color><br>
-- Preliminary Power Support, including Powers, PowerTrays, Enhancements, Inspirations, Temp Powers, and Buffs. With some fun results!<br>
-- Trade between players! Contacts, Contact Lists, Door Anims<br>
-- Minor improvements to Movement. We're not done here, but we're making progress on fixing movement completely!<br>
-- Set Titles with <color BurlyWood><i>/title</i></color> and Leveling up using the new <color BurlyWood><i>/train</i></color> command<br>
-- A big step forward in Lua scripting for the server. Make sure to download the community scripts on the segs-community GitHub repo.<br>
-- Further work on Dialogs (browser), Teams, FriendsLists, Emails, SEGSAdmin, LFG, AFK, Respawns<br>
+- Tasks, Contacts, Clues, Souvenirs, Emails, Stores (test with LuaBot)
+- Lua Scripting of simple mission like "hide-and-seek" and "timed races"
+- Spawn Pedestrians, Cars, Blimps, Contacts, Basic Encounters in Outbreak, Atlas Park, King's Row, Steel Canyon, Skyway City, Talos Island, Independence Port, Perez Park, Boomtown and Dark Astoria.
+- Some Door Transfers
+- Tailor and Multiple Costumes
+- Preliminary Powers (Pew Pew Pew!)
+- To fully utilize powers, make sure the server has a /data/powers.json
+- AdminRPC and RPC support
+- SEGSAdmin improvements
+- Output log improvements
+- Many improvements to how we store/load characters and data from the database.
+- Bug Fixes
 <br>
 <color SandyBrown>Useful Slash Commands:</color><br>
 <color BurlyWood><i>/stuck</i></color>  - resets your character to the starting location in current map<br>

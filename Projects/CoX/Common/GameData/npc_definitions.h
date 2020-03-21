@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -67,3 +67,7 @@ struct Parse_NPC
     bool has_variant(uint32_t idx) const { return idx<m_Costumes.size(); }
 };
 using AllNpcs_Data = std::vector<Parse_NPC>;
+
+BodyType bodyTypeForEntType(const QString &enttypename);
+QString entTypeFileName(const Parse_Costume *costume);
+QByteArray bodytype_prefix_fixup(const Parse_Costume *a1, const QByteArray &a2);

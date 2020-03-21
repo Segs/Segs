@@ -114,9 +114,9 @@ SGResponse inviteSG(Entity &src, Entity &tgt);
 QString kickSG(Entity &src, Entity &tgt);
 void leaveSG(Entity &e);
 bool toggleSGMode(Entity &e);
-QString setSGMOTD(Entity &e, QString &motd);
-QString setSGMotto(Entity &e, QString &motto);
-QString setSGTitle(Entity &e, int idx, QString &title);
+QString setSGMOTD(Entity &e, const QString &motd);
+QString setSGMotto(Entity &e, const QString &motto);
+QString setSGTitle(Entity &e, int idx, const QString &title);
 QString modifySGRank(Entity &src, Entity &tgt, int rank_mod);
 QString demoteSG(Entity &src, Entity &tgt);
 

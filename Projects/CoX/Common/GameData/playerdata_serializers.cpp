@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -39,6 +39,7 @@ void serialize(Archive &archive, PlayerData &pd, uint32_t const version)
     archive(cereal::make_nvp("Clue", pd.m_clues));
     archive(cereal::make_nvp("Souvenirs", pd.m_souvenirs));
     archive(cereal::make_nvp("Statistics", pd.m_player_statistics));
+    archive(cereal::make_nvp("Progress", pd.m_player_progress));
 }
 
 SPECIALIZE_VERSIONED_SERIALIZATIONS(PlayerData)

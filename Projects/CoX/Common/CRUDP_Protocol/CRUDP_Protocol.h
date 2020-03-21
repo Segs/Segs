@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -13,6 +13,7 @@
 #include <list>
 #include <chrono>
 #include <mutex>
+#include <atomic>
 
 template <size_t size>
 struct FixedSizePacketQueue
@@ -55,6 +56,7 @@ private:
         FixedSizePacketQueue<16384> send_queue;
         FixedSizePacketQueue<16384> retransmit_queue;
         std::list<uint32_t> recv_acks; // each successful receive will store it's ack here
+        std::atomic<size_t> m_unacked_count {0};
         hmSibStorage        sibling_map; // we need to lookup mPacketGroup quickly, and insert ordered packets into mPacketGroup
         std::mutex          m_packets_mutex;
         bool                m_compression_allowed=false;
@@ -72,7 +74,7 @@ public:
         PacketCodecNull *   getCodec() const {return m_codec;}
 
         size_t              AvailablePackets() const {return avail_packets.size();}
-        size_t              UnackedPacketCount() const { return recv_acks.size(); }
+        size_t              UnackedPacketCount() const { return m_unacked_count; }
         size_t              GetUnsentPackets(std::list<CrudP_Packet *> &);
         void                ReceivedBlock(BitStream &bs); // bytes received, will create some packets in avail_packets
 

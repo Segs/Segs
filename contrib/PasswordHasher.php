@@ -1,8 +1,8 @@
 /*
  * File:        PasswordHasher.php
  * Date:        6/12/2018
- * Site:        http://www.segs.io/
- * Authors:     Eric P. <erpmario@segs.io> and Lloyd Dilley <lloyd@segs.io>
+ * Site:        http://www.segs.dev/
+ * Authors:     Eric P. <erpmario@segs.dev> and Lloyd Dilley <lloyd@segs.dev>
  * Description: PasswordHasher.php is a PHP port of Projects/CoX/Common/PasswordHasher/PasswordHasher.cpp
  *              from the SEGS project. This program can be used to generate credentials based on user input
  *              via vars passed from a web client. The resultant hash and salt are in the same format as the

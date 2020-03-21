@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -37,7 +37,7 @@ class Event
 protected:
         const uint32_t  m_type;
         std::atomic<int> m_ref_count {1}; // used to prevent event being deleted when it's in multiple queues
-        EventSrc *m_event_source;
+        EventSrc *      m_event_source;
 
 public:
 

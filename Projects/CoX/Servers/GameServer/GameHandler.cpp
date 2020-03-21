@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -31,11 +31,6 @@ using namespace SEGSEvents;
 
 static const uint32_t supported_version=20040422;
 namespace {
-enum {
-    Link_Idle_Timer   = 1,
-    Session_Reaper_Timer   = 2,
-    Service_Status_Timer = 3,
-};
 const ACE_Time_Value link_update_interval(0,500*1000);
 const ACE_Time_Value service_update_interval(5,0);
 const ACE_Time_Value session_reaping_interval(1,0);
@@ -52,10 +47,23 @@ GameHandler::~GameHandler() = default;
 
 void GameHandler::start()
 {
-    ACE_ASSERT(m_link_checker==nullptr);
-    m_link_checker.reset(new SEGSTimer(this, Link_Idle_Timer,link_update_interval,false));
-    m_service_status_timer.reset(new SEGSTimer(this,Service_Status_Timer,service_update_interval,false));
-    m_session_store.create_reaping_timer(this,Session_Reaper_Timer,session_reaping_interval);
+    m_registered_timers.clear(); // remove all timer instances
+
+    // TODO: This should send 'ping' packets on all client links to which we didn't send
+    // anything in the last time quantum
+    // 1. Find all links that have inactivity_time() > ping_time && <disconnect_time
+    // For each found link
+    //   If there is no ping_pending on this link, add a ping event to queue
+    // 2. Find all links with inactivity_time() >= disconnect_time
+    //   Disconnect given link.
+
+    m_link_checker = addTimer(link_update_interval);
+    m_service_status_timer = addTimer(service_update_interval);
+    m_session_reaper_timer = addTimer(session_reaping_interval);
+
+    startTimer(m_link_checker,&GameHandler::on_check_links);
+    startTimer(m_service_status_timer,[this](const ACE_Time_Value &) {report_service_status();});
+    startTimer(m_session_reaper_timer,[this](const ACE_Time_Value &) {reap_stale_links();});
 }
 
 void GameHandler::dispatch( Event *ev )
@@ -63,9 +71,6 @@ void GameHandler::dispatch( Event *ev )
     assert(ev);
     switch(ev->type())
     {
-    case evTimeout:
-        on_timeout(static_cast<Timeout *>(ev));
-        break;
     case evDisconnect: // link layer tells us that a link is not responsive/dead
         on_link_lost(ev);
         break;
@@ -188,7 +193,7 @@ void GameHandler::on_update_server(UpdateServer *ev)
 
     // here we will wait for db response, so here we're going to put the session on the read-to-reap list
     // in case db does not respond in sane time frame, the session is going to be removed.
-    m_session_store.locked_mark_session_for_reaping(&session,expecting_session_token);
+    m_session_store.locked_mark_session_for_reaping(&session,expecting_session_token,"GameHander: Awaiting DB response");
     // if things work ok, than GameHandler::on_account_data will get all it needs.
 }
 
@@ -235,31 +240,6 @@ void GameHandler::report_service_status()
                                                  m_server->getMaxPlayers(),m_server->getId(),true},0));
 }
 
-void GameHandler::on_timeout(Timeout *ev)
-{
-    // TODO: This should send 'ping' packets on all client links to which we didn't send
-    // anything in the last time quantum
-    // 1. Find all links that have inactivity_time() > ping_time && <disconnect_time
-    // For each found link
-    //   If there is no ping_pending on this link, add a ping event to queue
-    // 2. Find all links with inactivity_time() >= disconnect_time
-    //   Disconnect given link.
-
-    intptr_t timer_id = ev->timer_id();
-    switch (timer_id)
-    {
-        case Link_Idle_Timer:
-            on_check_links();
-        break;
-        case Session_Reaper_Timer:
-            reap_stale_links();
-        break;
-        case Service_Status_Timer:
-            report_service_status();
-        break;
-    }
-}
-
 void GameHandler::on_disconnect(DisconnectRequest *ev)
 {
     GameLink * lnk = (GameLink *)ev->src();
@@ -269,20 +249,20 @@ void GameHandler::on_disconnect(DisconnectRequest *ev)
         if(session.m_direction==GameSession::EXITING_TO_MAP)
         {
             SessionStore::MTGuard guard(m_session_store.reap_lock());
-            m_session_store.mark_session_for_reaping(&session,lnk->session_token());
-            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.mark_session_for_reaping(&session,lnk->session_token(),"GameHander: Disconnect/Exiting map");
+            m_session_store.session_link_lost(lnk->session_token(),"GameHandler: exited while joining map");
         }
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
             tgt->putq(
                 new ClientDisconnectedMessage({lnk->session_token(), session.m_game_account.m_game_server_acc_id}, 0));
-            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.session_link_lost(lnk->session_token(),"GameHandler: exited to login screen");
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
     }
     else
-        m_session_store.session_link_lost(lnk->session_token());
+        m_session_store.session_link_lost(lnk->session_token(),"GameHandler: disconnected, but in a map");
     lnk->putq(new DisconnectResponse);
     // Post disconnect event to link, will close it's processing loop, after it sends the response
     lnk->putq(
@@ -299,19 +279,19 @@ void GameHandler::on_link_lost(Event *ev)
         if(session.m_direction==GameSession::EXITING_TO_MAP)
         {
             SessionStore::MTGuard guard(m_session_store.reap_lock());
-            m_session_store.mark_session_for_reaping(&session,lnk->session_token());
-            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.mark_session_for_reaping(&session,lnk->session_token(),"GameHander: LinkLost/Exiting map");
+            m_session_store.session_link_lost(lnk->session_token(),"GameHandler: link lost while joining map");
         }
         else
         {
             EventProcessor * tgt = HandlerLocator::getAuth_Handler();
             tgt->putq(new ClientDisconnectedMessage({lnk->session_token(), session.m_game_account.m_game_server_acc_id}, 0));
-            m_session_store.session_link_lost(lnk->session_token());
+            m_session_store.session_link_lost(lnk->session_token(),"GameHandler: link lost on the way to login screen");
             m_session_store.remove_by_token(lnk->session_token(), session.auth_id());
         }
     }
     else
-        m_session_store.session_link_lost(lnk->session_token());
+        m_session_store.session_link_lost(lnk->session_token(),"GameHandler: link lost, but in a map");
     // Post disconnect event to link, will close it's processing loop
     lnk->putq(new Disconnect(lnk->session_token()));
 }
@@ -445,11 +425,8 @@ void GameHandler::on_client_connected_to_other_server(ClientConnectedMessage *ev
     assert(ev->m_data.m_server_id);
     assert(ev->m_data.m_sub_server_id);
     GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
-    {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        // check if this session perhaps is in ready for reaping set
-        m_session_store.unmark_session_for_reaping(&session);
-    }
+    // remove this session from 'ready for reaping set'
+    m_session_store.locked_unmark_session_for_reaping(&session);
 
     session.is_connected_to_map_server_id = ev->m_data.m_server_id;
     session.is_connected_to_map_instance_id = ev->m_data.m_sub_server_id;
@@ -463,10 +440,8 @@ void GameHandler::on_client_disconnected_from_other_server(ClientDisconnectedMes
     GameSession &session(m_session_store.session_from_token(ev->m_data.m_session));
     session.is_connected_to_map_server_id = 0;
     session.is_connected_to_map_instance_id = 0;
-    {
-        SessionStore::MTGuard guard(m_session_store.reap_lock());
-        m_session_store.mark_session_for_reaping(&session,ev->m_data.m_session);
-    }
+    m_session_store.locked_mark_session_for_reaping(&session, ev->m_data.m_session,
+                                                    "GameHandler: disconnected from child server");
 
     postGlobalEvent(new ClientDisconnectedMessage({ev->m_data.m_session, ev->m_data.m_char_db_id}, 0));
 }

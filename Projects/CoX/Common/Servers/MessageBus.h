@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -26,7 +26,7 @@ class MessageBus final : public EventProcessor
 {
     std::unordered_map<uint32_t,std::vector<MessageBusEndpoint *> > m_specific_subscriber_map;
     std::vector<MessageBusEndpoint *> m_catch_all_subscribers;
-    std::unique_ptr<SEGSTimer> m_statistics_timer;
+    uint32_t m_statistics_timer_id;
     friend void postGlobalEvent(SEGSEvents::Event *ev);
     friend void shutDownMessageBus();
     friend class MessageBusEndpoint; // allow endpoints to register/unregister

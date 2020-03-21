@@ -23,6 +23,8 @@ If running your server locally this CANNOT be 127.0.0.1 (localhost) and must poi
    
 > ADVANCED: run `cmd` and type `ipconfig`. Your IP will probably start with `192.168.xxx.xxx` or `10.0.xx.xx`
 
+If you have trouble running Cox-Auth.exe then you can do this step manually by opening regedit, and creating the registry key "Computer\HKEY_CURRENT_USER\Software\Cryptic\Segs" then create a string called "Auth" with the value as your server IP.
+
 
 **3. How to correctly run the CoX Client?**
 
@@ -56,11 +58,5 @@ Intel or Radeon card. If you're experienced in debugging on Windows we would be 
 
 Come and join us in `#pocket-d` channel for general chat or `#troubleshooting` for support.  
 
- [**Click here to join SEGS Discord**](https://discord.segs.io/)  
+ [**Click here to join SEGS Discord**](https://discord.segs.dev/)  
 
-Or if **IRC** chat is more your speed, you can join us on IRC:  
-
-  **Server:** irc.segs.io  
-  **Port:** 6667  
-  **SSL port:** 6697  
-  **Channel:** #segs  

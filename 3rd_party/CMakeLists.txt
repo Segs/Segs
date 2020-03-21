@@ -7,7 +7,7 @@ if(BUILD_COX_MAP_VIEWER)
 else()
 endif()
 include(ExternalProject_ACE.cmake)
-if(MINGW) # ERICEDIT: If the OS is Windows:
+if(MINGW OR MSVC) # ERICEDIT: If the OS is Windows:
     add_custom_target( # ERICEDIT: Add a target that depends on authserver.
         libace ALL
         DEPENDS ace_IMP
@@ -18,13 +18,10 @@ if(MINGW) # ERICEDIT: If the OS is Windows:
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ace_LIBRARY_SHARED} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
 endif()
+
 ########################################################################################
 # Optional components
 ########################################################################################
-
-if(ENABLE_SCRIPTING_ENGINE)
-    include(ExternalProject_LUA.cmake)
-    include(ExternalProject_SOL2.cmake)
-endif()
+include(ExternalProject_LUA.cmake)
+include(ExternalProject_SOL2.cmake)
 include(ExternalProject_JCON.cmake)
-

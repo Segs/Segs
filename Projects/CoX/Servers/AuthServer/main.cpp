@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -46,6 +46,7 @@
 #include <QtCore/QCommandLineParser>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
+#include <QtCore/QDir>
 #include <QtCore/QElapsedTimer>
 #include <thread>
 #include <chrono>
@@ -204,11 +205,12 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     log_buffer[0] = 0;
     category_text[0] = 0;
     if(strcmp(context.category,"default")!=0)
-        snprintf(category_text,sizeof(category_text),"[%s]",context.category);
+        snprintf(category_text, sizeof(category_text), "[%s]", context.category);
 
     QFile segs_log_target;
     QDate todays_date(QDate::currentDate());
-    QSettings settings("settings.cfg", QSettings::IniFormat);
+    QSettings settings(Settings::getSettingsPath(), QSettings::IniFormat);
+    QString log_path = Settings::getSEGSDir() + QDir::separator() + QString("logs");
     settings.beginGroup("Logging");
     if (settings.value("combine_logs", "").toBool() == false) // If combine_logs is off will split logs by logging category.
     {
@@ -219,12 +221,12 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
         if (file_name.isEmpty())
             file_name = "generic";
         file_name = todays_date.toString("yyyy-MM-dd") + "_" + file_name;
-        QString log_path = QString("logs/") + file_name + ".log";
+        log_path += QDir::separator() +file_name + ".log";
         segs_log_target.setFileName(log_path);
     }
     else // If combine_logs is on will log all to a single file.
     {
-        QString log_path = QString("logs/") + todays_date.toString("yyyy-MM-dd") + "_all.log";
+        log_path += QDir::separator() +todays_date.toString("yyyy-MM-dd") + "_all.log";
         segs_log_target.setFileName(log_path);
     }
     settings.endGroup();
@@ -233,38 +235,40 @@ void segsLogMessageOutput(QtMsgType type, const QMessageLogContext &context, con
     {
         fprintf(stderr,"Failed to open log file in write mode, will procede with console only logging");
     }
+
     QByteArray localMsg = msg.toLocal8Bit();
     std::string timestamp  = QTime::currentTime().toString("hh:mm:ss").toStdString();
 
     switch (type)
     {
         case QtDebugMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sDebug   : %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sDebug   : %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtInfoMsg:
             // no prefix or category for informational messages, as these are end-user facing
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %s\n",
                      timestamp.c_str(), localMsg.constData());
             break;
         case QtWarningMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sWarning : %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sWarning : %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtCriticalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sCritical: %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sCritical: %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
             break;
         case QtFatalMsg:
-            snprintf(log_buffer,sizeof(log_buffer),"[%s] %sFatal: %s\n",
+            snprintf(log_buffer, sizeof(log_buffer), "[%s] %sFatal: %s\n",
                      timestamp.c_str(), category_text, localMsg.constData());
     }
+
     fprintf(stdout, "%s", log_buffer);
     fflush(stdout);
+
     if(segs_log_target.isOpen())
-    {
         segs_log_target.write(log_buffer);
-    }
+
     if(type == QtFatalMsg)
     {
         segs_log_target.close();
@@ -280,7 +284,7 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     setLoggingFilter(); // Set QT Logging filters
     qInstallMessageHandler(segsLogMessageOutput);
     QCoreApplication q_app(argc,argv);
-    QCoreApplication::setOrganizationDomain("segs.io");
+    QCoreApplication::setOrganizationDomain("segs.dev");
     QCoreApplication::setOrganizationName("SEGS Project");
     QCoreApplication::setApplicationName("segs_server");
     QCoreApplication::setApplicationVersion(VersionInfo::getAuthVersion());
@@ -307,8 +311,8 @@ ACE_INT32 ACE_TMAIN (int argc, ACE_TCHAR *argv[])
     ServerStopper st(SIGINT); // it'll register itself with current reactor, and shut it down on sigint
     ACE_Reactor::instance()->register_handler(interesting_signals,&st);
 
-    // Print out startup copyright messages
-
+    // Print out today's date and startup copyright messages
+    qInfo().noquote() << QDateTime::currentDateTime().toString();
     qInfo().noquote() << VersionInfo::getCopyright();
     qInfo().noquote() << VersionInfo::getAuthVersion();
 

@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -201,6 +201,7 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
             break;
     }
     recv_acks.erase(recv_acks.begin(),iter);
+    m_unacked_count = recv_acks.size();
 }
 
 bool CrudP_Protocol::allSiblingsAvailable(uint32_t sibid)
@@ -229,6 +230,7 @@ void CrudP_Protocol::PushRecvPacket(CrudP_Packet *a)
     reliable_packets.erase(first_invalid,reliable_packets.end());
 
     recv_acks.push_back(a->GetSequenceNumber());
+    m_unacked_count = recv_acks.size();
     if(!a->HasSiblings())
     {
         avail_packets.push_back(a);
@@ -324,20 +326,20 @@ CrudP_Packet *CrudP_Protocol::RecvPacket()
 //! this acknowledges that packet with id was successfully received => acknowledged packet is removed from send queue
 void CrudP_Protocol::PacketAck(uint32_t id)
 {
-    for (CrudP_Packet *&v6 : reliable_packets )
+    for (CrudP_Packet *&pack : reliable_packets )
     {
-        if( !v6 || v6->GetSequenceNumber() != id)
+        if( !pack || pack->GetSequenceNumber() != id)
             continue;
         //todo: update ping times here ( basically calculate time before packet's xmit and now
         if( !retransmit_queue.empty() )
         {
             // check if our packet is already in retransmit_queue, if so, remove it from there.
-            auto iter = std::find(retransmit_queue.begin(),retransmit_queue.end(),v6);
+            auto iter = std::find(retransmit_queue.begin(),retransmit_queue.end(),pack);
             if( iter!=retransmit_queue.end() )
                 retransmit_queue.erase(iter);
         }
-        delete v6;
-        v6 = nullptr;
+        delete pack;
+        pack = nullptr;
         break;
     }
     // if we get here it means we got ACK for packet we don't have in our

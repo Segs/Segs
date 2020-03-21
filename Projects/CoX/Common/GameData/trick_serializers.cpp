@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -172,10 +172,12 @@ void saveTo(const SceneModifiers &target, const QString &baseName, bool text_for
 }
 bool loadFrom(const QString &filepath, SceneModifiers &target)
 {
-    return commonReadFrom(filepath,"Tricks",target);
+    QFSWrapper wrap;
+    return commonReadFrom(wrap,filepath,"Tricks",target);
 }
 bool LoadModifiersData(const QString &fname, SceneModifiers &m)
 {
+    QFSWrapper wrap;
     BinStore binfile;
 
     if(fname.contains(".crl"))
@@ -187,9 +189,9 @@ bool LoadModifiersData(const QString &fname, SceneModifiers &m)
         }
         return true;
     }
-    bool opened = binfile.open(fname, tricks_i0_requiredCrc);
+    bool opened = binfile.open(wrap, fname, tricks_i0_requiredCrc);
     if(!opened)
-        opened = binfile.open(fname, tricks_i2_requiredCrc);
+        opened = binfile.open(wrap, fname, tricks_i2_requiredCrc);
     if(!opened)
     {
         qCritical() << "Failed to open original bin:" << fname;
