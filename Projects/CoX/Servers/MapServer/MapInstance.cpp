@@ -3150,7 +3150,7 @@ void MapInstance::on_supergroup_name_clash(SuperGroupNameDuplicateResponse *ev)
     // TODO: otherwise add supergroup.
 }
 
-void MapInstance::on_remove_supergroup(RemoveSuperGroupResponse *ev)
+void MapInstance::on_remove_supergroup(RemoveSuperGroupResponse */*ev*/)
 {
     // find supergroup by idx
     // remove

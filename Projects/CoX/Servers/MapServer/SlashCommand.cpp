@@ -716,7 +716,7 @@ void cmdHandler_SetSuperGroup(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_RegisterSuperGroup(const QStringList &params, MapClientSession &sess)
 {
-    QString val = params.at(1);
+    QString val = params.value(0);
 
     sendRegisterSuperGroup(sess, val);
 

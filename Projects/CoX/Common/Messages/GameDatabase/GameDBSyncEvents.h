@@ -463,17 +463,17 @@ struct RemoveSuperGroupRequestData
     template <class Archive>
     void serialize( Archive & ar )
     {
-        ar( m_sg_id  );
+        ar( m_sg_id );
     }
 };
 
 struct RemoveSuperGroupResponseData
 {
-    bool m_success;
+    uint32_t m_sg_id;
     template <class Archive>
-    void serialize( Archive & ar )
+    void serialize( Archivep & ar )
     {
-        ar( m_success  );
+        ar( m_sg_id );
     }
 };
 // [[ev_def:macro]]
