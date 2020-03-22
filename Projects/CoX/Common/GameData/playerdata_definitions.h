@@ -17,7 +17,6 @@
 #include "Common/GameData/Task.h"
 #include "Common/GameData/PlayerProgress.h"
 
-//#include <bits/stdc++.h>
 #include <stdint.h>
 
 // this part of the Entity is for Players only info

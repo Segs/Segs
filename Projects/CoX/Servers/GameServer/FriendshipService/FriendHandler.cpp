@@ -33,7 +33,7 @@ void send_update_friends_list(FriendHandlerState &state,uint32_t char_db_id)
 /*
  * We take a FriendsList for a player here and update online status.
  */
-void update_sg_roster(FriendHandlerState &state,uint32_t char_db_id, FriendsList friends_list)
+void update_player_friends(FriendHandlerState &state,uint32_t char_db_id, FriendsList friends_list)
 {
     state.m_player_info_map[char_db_id].m_friends_list = friends_list;
     FriendsList *ptr_list = &state.m_player_info_map[char_db_id].m_friends_list; //just done for readability sake
@@ -60,7 +60,7 @@ void update_sg_roster(FriendHandlerState &state,uint32_t char_db_id, FriendsList
 /*
  * Update online status and map zone of friends for player.
  */
-void refresh_sg_roster(FriendHandlerState &state,uint32_t char_db_id)
+void refresh_player_friends(FriendHandlerState &state,uint32_t char_db_id)
 {
     FriendsList *ptr_list = &state.m_player_info_map[char_db_id].m_friends_list; //just done for readability sake
 
@@ -105,13 +105,13 @@ void on_client_connected(FriendHandlerState &state,FriendConnectedMessage *msg)
         if(state.is_online(val))
         {
             uint32_t friend_id = val;
-            refresh_sg_roster(state,val);
+            refresh_player_friends(state,val);
             inst_tgt->putq(new SendNotifyFriendMessage({state.m_player_info_map[char_db_id].m_map_info.session_token,
                                                         state.m_player_info_map[friend_id].m_map_info.session_token},0));
         }
     }
 
-    update_sg_roster(state,char_db_id, msg->m_data.m_friends_list);
+    update_player_friends(state,char_db_id, msg->m_data.m_friends_list);
 }
 
 /*
@@ -125,7 +125,7 @@ void on_client_disconnected(FriendHandlerState &state,ClientDisconnectedMessage 
 
     for(auto const& val : state.m_player_info_map[char_db_id].m_players_added)
     {
-        refresh_sg_roster(state,val);
+        refresh_player_friends(state,val);
     }
 }
 
