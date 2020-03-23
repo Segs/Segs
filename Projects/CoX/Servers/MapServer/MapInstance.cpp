@@ -1016,6 +1016,8 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     EntitiesResponse *res=new EntitiesResponse();
     res->m_map_time_of_day = m_world->time_of_day();
     res->ent_major_update = true;
+    markEntityForUpdate(session.m_ent, EntityUpdateFlags::Full);
+
     res->abs_time = 30*100*(m_world->accumulated_time);
     buildEntityResponse(res,session,EntityUpdateMode::FULL,false);
     session.link()->putq(res);

@@ -436,7 +436,7 @@ void serializeto(const Entity &src, ClientEntityStateBelief &belief, BitStream &
             entityHasFlag(src, EntityUpdateFlags::SuperGroup) ||
             entityHasFlag(src, EntityUpdateFlags::AFK) ||
             entityHasFlag(src, EntityUpdateFlags::NoDrawOnClient) ||
-            entityHasFlag(src, EntityUpdateFlags::Collisions) ||
+            entityHasFlag(src, EntityUpdateFlags::NoCollision) ||
             entityHasFlag(src, EntityUpdateFlags::HeroVillian) ||
             entityHasFlag(src, EntityUpdateFlags::OddSend) ||
             entityHasFlag(src, EntityUpdateFlags::Titles) ||
@@ -449,6 +449,11 @@ void serializeto(const Entity &src, ClientEntityStateBelief &belief, BitStream &
             entityHasFlag(src, EntityUpdateFlags::Stats) ||
             entityHasFlag(src, EntityUpdateFlags::FX);
     bool has_updates = src.m_client_update_flags;
+
+    // NPCs do not have pchar_things (FX, Stats, Buffs, Targets)
+    // Critters and Players may or may not depending on state
+    if(src.m_type == EntType::NPC)
+        update_chars = false;
 
     bs.StoreBits(1, has_updates);
     if(has_updates)
@@ -465,7 +470,6 @@ void serializeto(const Entity &src, ClientEntityStateBelief &belief, BitStream &
     if(update_rarely)
         sendSeqTriggeredMoves(src, bs);
 
-    // NPCs do not have pchar_things (FX, Stats, Buffs, Targets)
     PUTDEBUG("before m_pchar_things");
     bs.StoreBits(1, update_chars);
     if(update_chars)

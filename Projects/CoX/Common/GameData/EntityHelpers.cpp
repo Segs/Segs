@@ -570,6 +570,10 @@ void unmarkEntityForUpdate(Entity *e, EntityUpdateFlags f)
 void resetEntityForUpdate(Entity *e)
 {
     e->m_client_update_flags = uint32_t(EntityUpdateFlags::Movement);
+
+    // it seems Players and Critters need to send Stats or they can't move
+    if(e->m_type == EntType::PLAYER || e->m_type == EntType::CRITTER)
+        markEntityForUpdate(e, EntityUpdateFlags::Stats);
 }
 
 bool entityHasFlag(const Entity &e, EntityUpdateFlags f)

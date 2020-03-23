@@ -766,7 +766,6 @@ void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_i
  */
 void usePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx)//  ,int32_t tgt_id
 {
-    QString from_msg, to_msg;
     CharacterPower * ppower =  getOwnedPowerByVecIdx(ent, pset_idx, pow_idx);
     const Power_Data powtpl = ppower->getPowerTemplate();
 
@@ -938,6 +937,7 @@ void doPower(Entity &ent, QueuedPowers powerinput)
     // Update Powers to Client to show Recharging/Timers/Etc in UI
 
     setEnd(*ent.m_char, getEnd(*ent.m_char)-powtpl.EnduranceCost);      //TODO: endurance discount
+    markEntityForUpdate(&ent, EntityUpdateFlags::Stats);
 
     if (powtpl.Radius != 0.0f)           // Only AoE have a radius
     {

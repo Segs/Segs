@@ -44,7 +44,7 @@ enum class EntityUpdateFlags : uint32_t
     Target          = 0x200,
     OddSend         = 0x400,
     HeroVillian     = 0x800,
-    Collisions      = 0x1000,
+    NoCollision     = 0x1000,
     NoDrawOnClient  = 0x2000,
     AFK             = 0x4000,
     SuperGroup      = 0x8000,
