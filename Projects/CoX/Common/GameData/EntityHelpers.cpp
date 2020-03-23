@@ -109,7 +109,7 @@ void setTarget(Entity &e, uint32_t target_idx)
     // TODO: set target if enemy, set assist_target if friendly
     e.m_target_idx = target_idx;
     // To trigger update to client
-    e.m_pchar_things = true;
+    markEntityForUpdate(&e, EntityUpdateFlags::Target);
     qCDebug(logTarget) << "Setting Target to" << target_idx;
 }
 
@@ -130,8 +130,7 @@ void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
 
 void setStateMode(Entity &e, ClientStates state)
 {
-    e.m_rare_update = true; // this must also be true for statemode to send
-    e.m_has_state_mode = true;
+    markEntityForUpdate(&e, EntityUpdateFlags::StateMode);
     e.m_state_mode = state;
 }
 
@@ -398,7 +397,6 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_entity_data.m_class_idx         = {0};
     e.m_hasname                         = true;
     e.m_has_team                        = false;
-    e.m_pchar_things                    = true;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
@@ -408,7 +406,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_player = std::make_unique<PlayerData>();
     e.m_player->reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anims = e.m_rare_update   = true;
+    markEntityForUpdate(&e, EntityUpdateFlags::Full);
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 
@@ -437,7 +435,6 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
     e.m_hasname                         = true;
     e.m_has_team                        = false;
-    e.m_pchar_things                    = false;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
     e.m_target_idx                      = 0;
@@ -449,8 +446,14 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anims = e.m_rare_update   = true;
     e.m_char->m_char_data.m_level       = src->m_Level;
+
+    // Flag for updates, but remove pchar_things (FX, CharStats, Buffs, Target Updates)
+    markEntityForUpdate(&e, EntityUpdateFlags::Full);
+    unmarkEntityForUpdate(&e, EntityUpdateFlags::FX);
+    unmarkEntityForUpdate(&e, EntityUpdateFlags::Stats);
+    unmarkEntityForUpdate(&e, EntityUpdateFlags::Buffs);
+    unmarkEntityForUpdate(&e, EntityUpdateFlags::Target);
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 
@@ -479,7 +482,6 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_entity_data.m_class_idx         = getEntityClassIndex(data,false,src->m_Class);
     e.m_hasname                         = true;
     e.m_has_team                        = false;
-    e.m_pchar_things                    = true;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
     e.m_target_idx                      = 0;
@@ -491,7 +493,7 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anims = e.m_rare_update   = true;
+    markEntityForUpdate(&e, EntityUpdateFlags::Full);
 
     e.m_char->m_char_data.m_combat_level = level;
     e.m_char->m_char_data.m_level = level;
@@ -526,8 +528,13 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &da
     e.m_char->GetCharBuildInfo(src);
     e.m_char->recv_initial_costume(src,data.getPacker());
     e.m_char->m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
+
     if(e.m_char->m_char_data.m_has_the_prefix)
+    {
         e.m_char->m_char_data.m_has_titles = true;
+        markEntityForUpdate(&e, EntityUpdateFlags::Titles);
+    }
+
     src.GetString(battlecry);
     src.GetString(description);
     setBattleCry(*e.m_char,battlecry);
@@ -548,6 +555,26 @@ void markEntityForDbStore(Entity *e, DbStoreFlags f)
 void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
 {
     e->m_db_store_flags &= ~uint32_t(f);
+}
+
+void markEntityForUpdate(Entity *e, EntityUpdateFlags f)
+{
+    e->m_client_update_flags |= uint32_t(f);
+}
+
+void unmarkEntityForUpdate(Entity *e, EntityUpdateFlags f)
+{
+    e->m_client_update_flags &= ~uint32_t(f);
+}
+
+void resetEntityForUpdate(Entity *e)
+{
+    e->m_client_update_flags = uint32_t(EntityUpdateFlags::Movement);
+}
+
+bool entityHasFlag(const Entity &e, EntityUpdateFlags f)
+{
+    return e.m_client_update_flags & uint32_t(f);
 }
 
 void revivePlayer(Entity &e, ReviveLevel lvl)

@@ -452,7 +452,7 @@ void sendEnhanceCombineResponse(MapClientSession &sess, bool success, bool destr
 
 void sendChangeTitle(MapClientSession &sess, bool select_origin)
 {
-    sess.m_ent->m_rare_update = true; // titles have changed, resend them
+    markEntityForUpdate(sess.m_ent, EntityUpdateFlags::Titles);
     //qCDebug(logSlashCommand) << "Sending ChangeTitle Dialog:" << sess.m_ent->m_idx << "select_origin:" << select_origin;
     sess.addCommand<ChangeTitle>(select_origin);
 }
@@ -526,7 +526,7 @@ void sendBrowser(MapClientSession &sess, QString &content)
 
 void sendTailorOpen(MapClientSession &sess)
 {
-    sess.m_ent->m_rare_update = false;
+    resetEntityForUpdate(sess.m_ent);
     sess.m_ent->m_char->m_client_window_state = ClientWindowState::Tailor;
     qCDebug(logTailor) << QString("Sending TailorOpen");
     sess.addCommand<TailorOpen>();
@@ -617,6 +617,7 @@ void updateContactStatusList(MapClientSession &sess, const Contact &updated_cont
 
     //update database contactList
     sess.m_ent->m_player->m_contacts = contacts;
+    markEntityForUpdate(sess.m_ent, EntityUpdateFlags::Full);
     markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
     qCDebug(logSlashCommand) << "Sending Character Contact Database updated";
 
@@ -2072,7 +2073,11 @@ uint addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
     e->m_faction_data.m_faction_name = "Citizen";
 
     //Required to send changes to clients
-    e->m_pchar_things = true;
+    markEntityForUpdate(e, EntityUpdateFlags::Full);
+    unmarkEntityForUpdate(e, EntityUpdateFlags::FX);
+    unmarkEntityForUpdate(e, EntityUpdateFlags::Stats);
+    unmarkEntityForUpdate(e, EntityUpdateFlags::Buffs);
+    unmarkEntityForUpdate(e, EntityUpdateFlags::Target);
 
     forcePosition(*e, loc);
     forceOrientation(*e, ori);

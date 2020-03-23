@@ -1226,9 +1226,8 @@ void cmdHandler_SetStateMode(const QStringList &params, MapClientSession &sess)
 {
     uint32_t val = params.value(0).toUInt();
 
-    sess.m_ent->m_rare_update = true; // this must also be true for statemode to send
-    sess.m_ent->m_has_state_mode = true;
     sess.m_ent->m_state_mode = static_cast<ClientStates>(val);
+    markEntityForUpdate(sess.m_ent, EntityUpdateFlags::StateMode);
 
     QString msg = "Set StateMode to: " + QString::number(val);
     qCDebug(logSlashCommand) << msg;
@@ -1271,6 +1270,7 @@ void cmdHandler_Revive(const QStringList &params, MapClientSession &sess)
 void cmdHandler_AddCostumeSlot(const QStringList &/*params*/, MapClientSession &sess)
 {
     sess.m_ent->m_char->addCostumeSlot();
+    markEntityForUpdate(sess.m_ent, EntityUpdateFlags::Costumes);
     markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
 
     QString msg = "Adding Costume Slot to " + sess.m_ent->name();
@@ -1350,6 +1350,7 @@ void cmdHandler_ClearTarget(const QStringList &params, MapClientSession &sess)
 
     int idx = params.at(0).toInt();
     setTarget(*sess.m_ent, idx);
+    markEntityForUpdate(sess.m_ent, EntityUpdateFlags::Target);
 }
 void cmdHandler_StartTimer(const QStringList &params, MapClientSession &sess)
 {

@@ -113,6 +113,7 @@ void Costume::serializeCostume(BitStream bs) const
     // This method must be here, because NetStructures can't access g_GlobalMapServer =(
     static const ColorAndPartPacker *packer = data.getPacker();
 
+    qDebug() << "Serializing Costume to Client from SG Window";
     serializeto(*this, bs, packer);
 }
 
@@ -222,7 +223,6 @@ void serializeto(const Costume &costume,BitStream &bs, const ColorAndPartPacker 
 {
     bs.StorePackedBits(3, costume.m_body_type); // 0:male normal
     bs.StoreBits(32, costume.m_skin_color); // rgb ?
-
     bs.StoreFloat(costume.m_height);
     bs.StoreFloat(costume.m_physique);
 

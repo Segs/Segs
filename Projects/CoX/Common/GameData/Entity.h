@@ -204,14 +204,14 @@ public:
         std::array<PosUpdate, 64> m_pos_updates;
         std::array<BinTreeEntry, 7> m_interp_bintree;
         int                 m_update_idx                = 0;
-        bool                m_pchar_things              = false;
-        bool                m_update_anims              = false;
+        bool                m_pchar_things              = false; // to be replaced by m_client_update_flags
+        bool                m_update_appearance         = false; // to be replaced by m_client_update_flags
         bool                m_hasname                   = false;
         bool                m_classname_override        = false;
         bool                m_hasRagdoll                = false;
         bool                m_has_owner                 = false;
         bool                m_create_player             = false;
-        bool                m_rare_update               = false;
+        bool                m_rare_update               = false; // to be replaced by m_client_update_flags
         int                 m_input_pkt_id              = {0};
         uint32_t            m_input_ack                 = {0};
         uint32_t            ownerEntityId               = 0;
@@ -219,6 +219,7 @@ public:
         MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction          = FadeDirection::In;
         uint32_t            m_db_store_flags            = 0;
+        uint32_t            m_client_update_flags       = 0;
         Destination         m_cur_destination;
         float               translucency                = 1.0f;
         bool                player_type                 = false;

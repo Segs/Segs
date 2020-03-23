@@ -129,9 +129,9 @@ public:
     {
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 53
     }
-    void    serializefrom(BitStream &bs)
+    void    serializefrom(BitStream &/*bs*/)
     {
-        qCDebug(logSuperGroups) << "Changing SuperGroup Mode";
+        qCDebug(logMapEvents) << "Changing SuperGroup Mode";
     }
 
     EVENT_IMPL(SuperGroupMode)
@@ -160,7 +160,7 @@ public:
         bs.GetString(data.m_sg_emblem);
         data.m_sg_colors[0] = bs.GetPackedBits(32);
         data.m_sg_colors[1] = bs.GetPackedBits(32);
-        qCDebug(logSuperGroups) << "CreateSuperGroup";
+        qCDebug(logMapEvents) << "CreateSuperGroup";
     }
 
     EVENT_IMPL(CreateSuperGroup)
@@ -184,7 +184,7 @@ public:
     {
         m_sg_colors[0] = bs.GetPackedBits(32);
         m_sg_colors[1] = bs.GetPackedBits(32);
-        qCDebug(logSuperGroups) << "Changing SuperGroup Colors";
+        qCDebug(logMapEvents) << "Changing SuperGroup Colors";
     }
 
     EVENT_IMPL(ChangeSuperGroupColors)
@@ -201,9 +201,9 @@ public:
     {
         bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // packet 59
     }
-    void    serializefrom(BitStream &bs)
+    void    serializefrom(BitStream &/*bs*/)
     {
-        qCDebug(logSuperGroups) << "Accept SuperGroup Changes";
+        qCDebug(logMapEvents) << "Accept SuperGroup Changes";
     }
 
     EVENT_IMPL(AcceptSuperGroupChanges)

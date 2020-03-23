@@ -15,6 +15,7 @@
 #include "Servers/MapServer/DataHelpers.h"
 #include "Messages/Map/MessageChannels.h"
 #include "Entity.h"
+#include "EntityHelpers.h"
 #include "Character.h"
 #include "Logging.h"
 #include "TimeHelpers.h"
@@ -453,7 +454,7 @@ SuperGroup* getSuperGroupByIdx(uint32_t sg_idx)
     return nullptr;
 }
 
-void addSuperGroup(Entity &e, SuperGroupData data)
+void addSuperGroup(Entity &e, SuperGroupData &data)
 {
     CharacterData *cd = &e.m_char->m_char_data;
     SuperGroup sg;
@@ -471,7 +472,10 @@ void addSuperGroup(Entity &e, SuperGroupData data)
     cd->m_supergroup.m_has_sg_costume   = true;
     cd->m_supergroup.m_sg_mode          = true;
     cd->m_supergroup.m_sg_costume       = *e.m_char->getCurrentCostume();
-    cd->m_supergroup.m_sg_costume.m_send_full_costume = false;
+    cd->m_supergroup.m_sg_costume.m_send_full_costume = true;
+
+    markEntityForUpdate(&e, EntityUpdateFlags::Costumes);
+    markEntityForUpdate(&e, EntityUpdateFlags::SuperGroup);
 }
 
 void removeSuperGroup(uint32_t sg_db_id)
@@ -482,6 +486,17 @@ void removeSuperGroup(uint32_t sg_db_id)
         iter = g_all_supergroups.erase(iter);
 }
 
+bool isSuperGroupValid(SuperGroupData &data)
+{
+    // Check to ensure name isn't already in use or restricted
+    // Check to ensure titles aren't restricted (foul language, etc)
+    // For now let's simply provide a means for testing
+    if(data.m_sg_name.contains("Success", Qt::CaseInsensitive))
+        return true;
+
+    return false;
+}
+
 /*
  * SuperGroupStats
  */
@@ -489,6 +504,8 @@ SuperGroup* SuperGroupStats::getSuperGroup()
 {
     if(m_has_supergroup && m_sg_db_id != 0)
         return getSuperGroupByIdx(m_sg_db_id);
+
+    return nullptr;
 }
 
 void SuperGroupStats::dump()

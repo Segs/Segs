@@ -471,7 +471,7 @@ struct RemoveSuperGroupResponseData
 {
     uint32_t m_sg_id;
     template <class Archive>
-    void serialize( Archivep & ar )
+    void serialize( Archive & ar )
     {
         ar( m_sg_id );
     }

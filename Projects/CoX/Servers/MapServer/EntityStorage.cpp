@@ -134,7 +134,8 @@ void EntityManager::sendEntities(BitStream& bs, MapClientSession &target, bool /
         ClientEntityStateBelief &belief(target.m_worldstate_belief[pEnt->m_idx]);
         if(!target.m_in_map)
             belief.m_entity = nullptr; // force full creates until client is actualy in map
-        serializeto(*pEnt,belief, bs);
+        serializeto(*pEnt, belief, bs);
+        resetEntityForUpdate(pEnt); // Now that we've updated the entity, reset it's flags
         PUTDEBUG("end of entity");
     }
 

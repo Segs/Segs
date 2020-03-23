@@ -708,7 +708,10 @@ void MapInstance::on_client_quit(ClientQuit*ev)
             abortLogout(session.m_ent);
     }
     else
+    {
+        markEntityForUpdate(session.m_ent, EntityUpdateFlags::Logout);
         session.m_ent->beginLogout(10);
+    }
 }
 
 void MapInstance::on_link_lost(Event *ev)
@@ -871,9 +874,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     bool was_afk = isAFK(*e->m_char);
     setAFK(*e->m_char, false);
     if(was_afk)
-    {
         sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", map_session);
-    }
+
+    unmarkEntityForUpdate(e, EntityUpdateFlags::AFK);
 
     if(logPlayerSpawn().isDebugEnabled())
     {
@@ -2501,6 +2504,7 @@ void MapInstance::setPlayerSpawn(Entity &e)
 
     forcePosition(e, spawn_pos);
     forceOrientation(e, spawn_pyr);
+    markEntityForUpdate(&e, EntityUpdateFlags::Full);
 }
 
 // Teleport to a specific SpawnLocation; do nothing if the SpawnLocation is not found.
@@ -2659,6 +2663,7 @@ void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
     special = getSpecialTitle(*session.m_ent->m_char);
 
     setTitles(*session.m_ent->m_char, ev->m_has_prefix, generic, origin, special);
+    markEntityForUpdate(session.m_ent, EntityUpdateFlags::Titles);
     qCDebug(logMapEvents) << "Entity sending titles: " << session.m_ent->m_idx << ev->m_has_prefix << generic << origin << special;
 }
 
@@ -2811,8 +2816,8 @@ void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
 
     uint32_t idx = getCurrentCostumeIdx(*session.m_ent->m_char);
     session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
-    session.m_ent->m_rare_update = true; // re-send costumes, they've changed.
     session.m_ent->m_char->m_client_window_state = ClientWindowState::None;
+    markEntityForUpdate(session.m_ent, EntityUpdateFlags::Costumes);
     markEntityForDbStore(session.m_ent, DbStoreFlags::Full);
 }
 
@@ -2855,6 +2860,7 @@ void MapInstance::on_afk_update()
             if(cd->m_afk)
             {
                 setAFK(*e->m_char, false);
+                markEntityForUpdate(e, EntityUpdateFlags::AFK);
                 sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", *sess);
             }
         }
@@ -2862,6 +2868,7 @@ void MapInstance::on_afk_update()
         if(cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
             setAFK( *e->m_char, true, "Auto AFK");
+            markEntityForUpdate(e, EntityUpdateFlags::AFK);
             msg = QString("You are AFKed after %1 seconds of inactivity.").arg(data.m_time_to_afk);
             sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *sess);
         }
@@ -2884,6 +2891,7 @@ void MapInstance::on_afk_update()
                 data.m_time_to_logout_msg + data.m_time_to_auto_logout
                 && !e->m_is_logging_out)
         {
+            markEntityForUpdate(e, EntityUpdateFlags::Logout);
             e->beginLogout(30);
             msg = "You have been inactive for too long. Beginning auto-logout process...";
             sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *sess);
@@ -2906,46 +2914,39 @@ void MapInstance::on_create_supergroup(CreateSuperGroup *ev)
                           << ev->data.m_sg_colors[0]
                           << ev->data.m_sg_colors[1];
 
+    // this order of operations is important
+    qCDebug(logSuperGroups) << "Before Success Check";
+    // check if SuperGroup data is valid
+    bool sg_is_valid = isSuperGroupValid(ev->data);
+
+    // need to have a costume to send for response
     Costume costume = *session.m_ent->m_char->getCurrentCostume();
-    // TODO: makeSGCostume()
+    qCDebug(logSuperGroups) << "SG Costume Parts" << costume.m_parts.size();
+
+    // if sg is invalid (invalid name, etc) send response and return
+    if(!sg_is_valid)
+    {
+        session.m_ent->m_client->addCommand<SuperGroupResponse>(sg_is_valid, costume);
+        return;
+    }
+
+    addSuperGroup(*session.m_ent, ev->data); // Finalize adding SG to sg storage and entity to memberlist
+
     SuperGroupStats *sgs = &session.m_ent->m_char->m_char_data.m_supergroup;
+    qCDebug(logSuperGroups) << "has supergroup and costume: " << sgs->m_has_sg_costume << sgs->m_has_sg_costume;
     if(!sgs->m_has_supergroup && !sgs->m_has_sg_costume)
         return;
 
-    sgs->m_has_sg_costume = true;
+    session.m_ent->m_client->addCommand<SuperGroupResponse>(sg_is_valid, costume);
 
-    qCDebug(logSuperGroups) << "SG Costume Parts" << costume.m_parts.size();
+//    // Finally, create SG in Database
+//    QString serialized_sg_data, serialized_sg_members;
+//    serializeToQString(ev->data, serialized_sg_data);
+//    serializeToQString(session.m_ent->m_char->m_char_data.m_supergroup.getSuperGroup()->m_sg_members, serialized_sg_members);
+//    game_db->putq(new CreateNewSuperGroupRequest({ev->data.m_sg_name, serialized_sg_data, serialized_sg_members},
+//                                                 session.m_session_token, this));
 
-    // Check to ensure name isn't already in use or restricted
-    // Check to ensure titles aren't restricted (foul language, etc)
-    // if(!verifySuperGroupData())
-    //     return;
-
-    // For now let's provide a means for testing
-    bool success = false;
-    if(ev->data.m_sg_name.contains("Success", Qt::CaseInsensitive))
-        success = true;
-
-    qDebug() << "Before: MapInstance on_create_supergroup" << session.m_session_token;
-    // this order of operations is important
-    if(success)
-        addSuperGroup(*session.m_ent, ev->data); // Finalize adding SG to sg storage and entity to memberlist
-
-    session.m_ent->m_client->addCommand<SuperGroupResponse>(success, costume);
-    //session.m_ent->m_client->addCommand<RegisterSuperGroup>(ev->data.m_sg_name);
-
-    // if no success, we sent our error message already, so do nothing.
-    if(!success)
-        return;
-
-    qDebug() << "After: MapInstance on_create_supergroup" << session.m_session_token;
-
-    // Finally, create SG in Database
-    QString serialized_sg_data, serialized_sg_members;
-    serializeToQString(ev->data, serialized_sg_data);
-    serializeToQString(session.m_ent->m_char->m_char_data.m_supergroup.getSuperGroup()->m_sg_members, serialized_sg_members);
-    game_db->putq(new CreateNewSuperGroupRequest({ev->data.m_sg_name, serialized_sg_data, serialized_sg_members},
-                                                 session.m_session_token, this));
+    qCDebug(logSuperGroups) << "After: MapInstance on_create_supergroup" << session.m_session_token;
 }
 
 void MapInstance::on_change_supergroup_colors(ChangeSuperGroupColors *ev)

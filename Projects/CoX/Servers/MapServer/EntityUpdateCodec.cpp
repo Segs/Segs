@@ -277,16 +277,17 @@ void sendXLuency(BitStream &bs,float val)
     storeBitsConditional(bs,8,std::min(static_cast<int>(uint8_t(val*255)),255));
 }
 
-void sendCharacterStats(const Entity &src,BitStream &bs)
+void sendCharacterStats(const Entity &src, BitStream &bs)
 {
     // FixMe: have_stats and stats_changed are never modified prior to if comparison below.
     bool have_stats = true; // no stats -> dead ?
     bool stats_changed = true;
 
-    bs.StoreBits(1,have_stats); // nothing here for now
+    bs.StoreBits(1, have_stats); // nothing here for now
     if(!have_stats)
         return;
-    bs.StoreBits(1,stats_changed);
+
+    bs.StoreBits(1, stats_changed);
     if(!stats_changed)
         return;
 
@@ -298,7 +299,7 @@ void sendCharacterStats(const Entity &src,BitStream &bs)
         bool is_mentor = isSidekickMentor(src);
         bool has_dbid  = (sidekick.m_db_id != 0);
 
-        bs.StoreBits(1,is_mentor);
+        bs.StoreBits(1, is_mentor);
         bs.StoreBits(1, has_dbid);
         if(has_dbid)
             bs.StorePackedBits(20,sidekick.m_db_id);
@@ -379,16 +380,13 @@ void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
 
     SuperGroup * sg = getSuperGroupByIdx(cd.m_supergroup.m_sg_db_id);
     if(sg == nullptr)
-    {
         qFatal("getSuperGroupByIdx returned nullptr");
-        return; // if somehow qFatal doesn't do it
-    }
 
     bs.StorePackedBits(2, sg->m_sg_db_id);
     if(sg->m_sg_db_id)
     {
         bs.StoreString(sg->m_data.m_sg_name);    // 64 chars max
-        bs.StoreString(sg->m_data.m_sg_emblem);  // 128 chars max -> hash table key from the CostumeString_HTable. Maybe emblem?
+        bs.StoreString(sg->m_data.m_sg_emblem);  // 128 chars max -> hash table key from the CostumeString_HTable. Emblem.
         bs.StoreBits(32, sg->m_data.m_sg_colors[0]); // supergroup color 1
         bs.StoreBits(32, sg->m_data.m_sg_colors[1]); // supergroup color 2
     }
@@ -416,7 +414,7 @@ void sendBuffs(const Entity &src, BitStream &bs)
         buff.m_buff_info.serializeto(bs);
 }
 
-void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream &bs )
+void serializeto(const Entity &src, ClientEntityStateBelief &belief, BitStream &bs )
 {
     bool client_believes_ent_exists=belief.m_entity!=nullptr;
     bool ent_exists = src.m_destroyed==false;
@@ -433,52 +431,71 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bs.StoreBits(1,src.m_update_anims); //var_C
+    bool update_rarely = entityHasFlag(src, EntityUpdateFlags::Full) ||
+            entityHasFlag(src, EntityUpdateFlags::Logout) ||
+            entityHasFlag(src, EntityUpdateFlags::SuperGroup) ||
+            entityHasFlag(src, EntityUpdateFlags::AFK) ||
+            entityHasFlag(src, EntityUpdateFlags::NoDrawOnClient) ||
+            entityHasFlag(src, EntityUpdateFlags::Collisions) ||
+            entityHasFlag(src, EntityUpdateFlags::HeroVillian) ||
+            entityHasFlag(src, EntityUpdateFlags::OddSend) ||
+            entityHasFlag(src, EntityUpdateFlags::Titles) ||
+            entityHasFlag(src, EntityUpdateFlags::Translucency) ||
+            entityHasFlag(src, EntityUpdateFlags::Costumes) ||
+            entityHasFlag(src, EntityUpdateFlags::Animations) ||
+            entityHasFlag(src, EntityUpdateFlags::StateMode);
+    bool update_chars = entityHasFlag(src, EntityUpdateFlags::Target) ||
+            entityHasFlag(src, EntityUpdateFlags::Buffs) ||
+            entityHasFlag(src, EntityUpdateFlags::Stats) ||
+            entityHasFlag(src, EntityUpdateFlags::FX);
+    bool has_updates = src.m_client_update_flags;
 
-    if(src.m_update_anims)
-        bs.StoreBits(1,src.m_rare_update);
+    bs.StoreBits(1, has_updates);
+    if(has_updates)
+        bs.StoreBits(1, update_rarely);
 
-    if(src.m_rare_update)
-        sendStateMode(src,bs);
+    if(update_rarely)
+        sendStateMode(src, bs);
 
-    storePosUpdate(src,update_existence && ent_exists, bs);
+    storePosUpdate(src, update_existence && ent_exists, bs);
 
-    if(src.m_update_anims)
-        sendSeqMoveUpdate(src,bs);
+    if(has_updates)
+        sendSeqMoveUpdate(src, bs);
 
-    if(src.m_rare_update)
-        sendSeqTriggeredMoves(src,bs);
+    if(update_rarely)
+        sendSeqTriggeredMoves(src, bs);
 
-    // NPC -> m_pchar_things=0 ?
+    // NPCs do not have pchar_things (FX, Stats, Buffs, Targets)
     PUTDEBUG("before m_pchar_things");
-    bs.StoreBits(1,src.m_pchar_things);
-    if(src.m_pchar_things)
+    bs.StoreBits(1, update_chars);
+    if(update_chars)
+        sendNetFx(src, bs);
+
+    if(update_rarely)
     {
-        sendNetFx(src,bs);
-    }
-    if(src.m_rare_update)
-    {
-        sendCostumes(src,bs);
-        sendXLuency(bs,src.translucency);
+        sendCostumes(src, bs);
+        sendXLuency(bs, src.translucency);
         bs.StoreBits(1, src.m_char->m_char_data.m_has_titles); // Does entity have titles?
         if(src.m_char->m_char_data.m_has_titles)
-            src.m_char->sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
+            src.m_char->sendTitles(bs, NameFlag::HasName, ConditionalFlag::Conditional);
     }
-    if(src.m_pchar_things)
+
+    if(update_chars)
     {
-        sendCharacterStats(src,bs);
-        sendBuffsConditional(src,bs);
-        sendTargetUpdate(src,bs);
+        sendCharacterStats(src, bs);
+        sendBuffsConditional(src, bs);
+        sendTargetUpdate(src, bs);
     }
-    if(src.m_rare_update)
+
+    if(update_rarely)
     {
-        sendOnOddSend(src,bs); // is one on client end
-        sendWhichSideOfTheForce(src,bs);
-        sendEntCollision(src,bs);
-        sendNoDrawOnClient(src,bs);
-        sendAFK(src,bs);
-        sendOtherSupergroupInfo(src,bs);
-        sendLogoutUpdate(src,belief,bs);
+        sendOnOddSend(src, bs); // is one on client end
+        sendWhichSideOfTheForce(src, bs);
+        sendEntCollision(src, bs);
+        sendNoDrawOnClient(src, bs);
+        sendAFK(src, bs);
+        sendOtherSupergroupInfo(src, bs);
+        sendLogoutUpdate(src, belief, bs);
     }
 }
 
