@@ -21,7 +21,7 @@
 #include "MapTemplate.h"
 #include "MessageHelpers.h"
 #include "SEGSTimer.h"
-#include "SlashCommand.h"
+#include "SlashCommands/SlashCommand.h"
 #include "TimeEvent.h"
 #include "TimeHelpers.h"
 #include "WorldSimulation.h"
