@@ -10,8 +10,6 @@
 #include "GameCommand.h"
 #include "MapEventTypes.h"
 
-
-
 struct MapClientSession;
 
 namespace SEGSEvents

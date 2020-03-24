@@ -59,7 +59,7 @@ void GameDBSyncService::on_character_update(CharacterUpdateMessage* msg)
                     // Cerealized blobs
                     msg->m_data.m_costume_data,
                     msg->m_data.m_char_data,
-                    msg->m_data.m_entitydata,
+                    msg->m_data.m_entity_data,
                     msg->m_data.m_player_data,
 
                     // plain values

@@ -6,17 +6,16 @@
  */
 
 #pragma once
-//#include "MapLink.h"
 #include "MapEventTypes.h"
 #include "BitStream.h"
-//#include "MapRef.h"
-//#include "CRUD_Events.h"
 #include <vector>
 #include <string>
 
 struct MapClientSession;
+
 namespace SEGSEvents
 {
+
 using MapLinkEvent = CRUDLink_Event; //<MapLink>
 
 // [[ev_def:type]]
@@ -53,5 +52,6 @@ explicit            EntitiesResponse();
         uint8_t     g_interpolation_bits;
         EVENT_IMPL(EntitiesResponse)
 };
+
 } // end of SEGSEvents namespace
 

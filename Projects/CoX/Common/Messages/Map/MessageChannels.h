@@ -7,7 +7,8 @@
 
 #pragma once
 
-enum class MessageChannel : int {
+enum class MessageChannel : int
+{
     COMBAT         = 1, // COMBAT
     DAMAGE         = 2, // DAMAGE
     SERVER         = 3, // SVR_COM

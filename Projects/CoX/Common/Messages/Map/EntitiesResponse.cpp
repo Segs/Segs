@@ -19,11 +19,7 @@
 #include "GameData/Movement.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/map_definitions.h"
-//#include "MapClientSession.h"
 #include "MapEvents.h"
-//#include "MapInstance.h"
-//#include "EntityUpdateCodec.h"
-//#include "DataHelpers.h"
 #include "Logging.h"
 
 #include <QByteArray>

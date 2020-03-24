@@ -8,6 +8,8 @@
 #include "Messages/Map/ChatMessage.h"
 #include "Messages/Map/Browser.h"
 #include "Messages/Map/FloatingDamage.h"
+#include "Messages/Map/FloatingInfo.h"
+#include "Messages/Map/FloatingInfoStyles.h"
 #include "Messages/Map/InfoMessageCmd.h"
 #include "Messages/Map/StandardDialogCmd.h"
 #include "Messages/Map/StoresEvents.h"

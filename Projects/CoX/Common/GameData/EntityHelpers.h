@@ -29,6 +29,29 @@ enum class DbStoreFlags : uint32_t
     Full       = ~0U,
 };
 
+enum class EntityUpdateFlags : uint32_t
+{
+    None            = 0x0,
+    StateMode       = 0x1,
+    Movement        = 0x2,
+    Animations      = 0x4,
+    FX              = 0x8,
+    Costumes        = 0x10,
+    Translucency    = 0x20,
+    Titles          = 0x40,
+    Stats           = 0x80,
+    Buffs           = 0x100,
+    Target          = 0x200,
+    OddSend         = 0x400,
+    HeroVillian     = 0x800,
+    NoCollision     = 0x1000,
+    NoDrawOnClient  = 0x2000,
+    AFK             = 0x4000,
+    SuperGroup      = 0x8000,
+    Logout          = 0x10000,
+    Full            = ~0U,
+};
+
 /*
  * Entity Methods
  */
@@ -91,6 +114,10 @@ void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
 void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant, int level);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
-void markEntityForDbStore(Entity *e,DbStoreFlags f);
+void markEntityForDbStore(Entity *e, DbStoreFlags f);
 void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
+void markEntityForUpdate(Entity *e, EntityUpdateFlags f);
+void unmarkEntityForUpdate(Entity *e, EntityUpdateFlags f);
+void resetEntityForUpdate(Entity *e);
+bool entityHasFlag(const Entity &e, EntityUpdateFlags f);
 void revivePlayer(Entity &e, ReviveLevel lvl);

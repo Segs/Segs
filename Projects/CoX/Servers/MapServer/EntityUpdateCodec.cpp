@@ -336,7 +336,7 @@ void sendOnOddSend(const Entity &src,BitStream &bs)
     // set move change timer to be always 0
     // calculate interpolations using slow timer
     //
-    bs.StoreBits(1,src.m_odd_send);
+    bs.StoreBits(1, entityHasFlag(src, EntityUpdateFlags::OddSend));
 }
 
 void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
@@ -352,7 +352,7 @@ void sendEntCollision(const Entity &src,BitStream &bs)
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1, src.m_no_draw_on_client); // 1/0 only
+    bs.StoreBits(1, entityHasFlag(src, EntityUpdateFlags::NoDrawOnClient)); // 1/0 only
 }
 
 void sendAFK(const Entity &src, BitStream &bs)
@@ -385,15 +385,15 @@ void sendOtherSupergroupInfo(const Entity &src,BitStream &bs)
 
 void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStream &bs)
 {
-    if(belief.m_is_logging_out==src.m_is_logging_out) // no change in logout state
+    if(belief.m_is_logging_out == src.m_is_logging_out) // no change in logout state
     {
-        bs.StoreBits(1,false);
+        bs.StoreBits(1, false);
         return;
     }
-    bs.StoreBits(1,true); // logout state update
-    bs.StoreBits(1,0); // if 1 then it means the logout was caused by low connection quality.
+    bs.StoreBits(1, true); // logout state update
+    bs.StoreBits(1, 0); // if 1 then it means the logout was caused by low connection quality.
     // we send 0 as a time to logout if this is a logout-abort
-    storePackedBitsConditional(bs,5,src.m_is_logging_out ? src.m_time_till_logout/(1000) : 0);
+    storePackedBitsConditional(bs, 5, src.m_is_logging_out ? src.m_time_till_logout/(1000) : 0);
     belief.m_is_logging_out = src.m_is_logging_out;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -422,52 +422,75 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bs.StoreBits(1,src.m_update_anims); //var_C
+    bool update_rarely = entityHasFlag(src, EntityUpdateFlags::Full) ||
+            entityHasFlag(src, EntityUpdateFlags::Logout) ||
+            entityHasFlag(src, EntityUpdateFlags::SuperGroup) ||
+            entityHasFlag(src, EntityUpdateFlags::AFK) ||
+            entityHasFlag(src, EntityUpdateFlags::NoDrawOnClient) ||
+            entityHasFlag(src, EntityUpdateFlags::NoCollision) ||
+            entityHasFlag(src, EntityUpdateFlags::HeroVillian) ||
+            entityHasFlag(src, EntityUpdateFlags::OddSend) ||
+            entityHasFlag(src, EntityUpdateFlags::Titles) ||
+            entityHasFlag(src, EntityUpdateFlags::Translucency) ||
+            entityHasFlag(src, EntityUpdateFlags::Costumes) ||
+            entityHasFlag(src, EntityUpdateFlags::Animations) ||
+            entityHasFlag(src, EntityUpdateFlags::StateMode);
+    bool update_chars = entityHasFlag(src, EntityUpdateFlags::Target) ||
+            entityHasFlag(src, EntityUpdateFlags::Buffs) ||
+            entityHasFlag(src, EntityUpdateFlags::Stats) ||
+            entityHasFlag(src, EntityUpdateFlags::FX);
+    bool has_updates = src.m_entity_update_flags;
 
-    if(src.m_update_anims)
-        bs.StoreBits(1,src.m_rare_update);
+    // NPCs never have pchar_things (FX, Stats, Buffs, Targets)
+    // Critters and Players may or may not depending on state
+    if(src.m_type == EntType::NPC)
+        update_chars = false;
 
-    if(src.m_rare_update)
-        sendStateMode(src,bs);
+    bs.StoreBits(1, has_updates);
+    if(has_updates)
+        bs.StoreBits(1, update_rarely);
 
-    storePosUpdate(src,update_existence && ent_exists, bs);
+    if(update_rarely)
+        sendStateMode(src, bs);
 
-    if(src.m_update_anims)
-        sendSeqMoveUpdate(src,bs);
+    storePosUpdate(src, update_existence && ent_exists, bs);
 
-    if(src.m_rare_update)
-        sendSeqTriggeredMoves(src,bs);
+    if(has_updates)
+        sendSeqMoveUpdate(src, bs);
 
-    // NPC -> m_pchar_things=0 ?
+    if(update_rarely)
+        sendSeqTriggeredMoves(src, bs);
+
     PUTDEBUG("before m_pchar_things");
-    bs.StoreBits(1,src.m_pchar_things);
-    if(src.m_pchar_things)
-    {
+    bs.StoreBits(1, update_chars);
+    if(update_chars)
         sendNetFx(src,bs);
-    }
-    if(src.m_rare_update)
+
+    if(update_rarely)
     {
-        sendCostumes(src,bs);
-        sendXLuency(bs,src.translucency);
+        sendCostumes(src, bs);
+        sendXLuency(bs, src.translucency);
         bs.StoreBits(1, src.m_char->m_char_data.m_has_titles); // Does entity have titles?
         if(src.m_char->m_char_data.m_has_titles)
-            src.m_char->sendTitles(bs,NameFlag::HasName,ConditionalFlag::Conditional);
+            src.m_char->sendTitles(bs, NameFlag::HasName, ConditionalFlag::Conditional);
     }
-    if(src.m_pchar_things)
+
+    if(update_chars)
     {
-        sendCharacterStats(src,bs);
-        sendBuffsConditional(src,bs);
-        sendTargetUpdate(src,bs);
+        sendCharacterStats(src, bs);
+        sendBuffsConditional(src, bs);
+        sendTargetUpdate(src, bs);
     }
-    if(src.m_rare_update)
+
+    if(update_rarely)
     {
-        sendOnOddSend(src,bs); // is one on client end
-        sendWhichSideOfTheForce(src,bs);
-        sendEntCollision(src,bs);
-        sendNoDrawOnClient(src,bs);
-        sendAFK(src,bs);
-        sendOtherSupergroupInfo(src,bs);
-        sendLogoutUpdate(src,belief,bs);
+        sendOnOddSend(src, bs); // is one on client end
+        sendWhichSideOfTheForce(src, bs);
+        sendEntCollision(src, bs);
+        sendNoDrawOnClient(src, bs);
+        sendAFK(src, bs);
+        sendOtherSupergroupInfo(src, bs);
+        sendLogoutUpdate(src, belief, bs);
     }
 }
 

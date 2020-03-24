@@ -6,7 +6,8 @@
  */
 #pragma once
 
-#include "GameCommandList.h"
+#include "GameCommand.h"
+#include "GameData/Powers.h"
 #include "GameData/Trade.h"
 
 #include <vector>

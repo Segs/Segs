@@ -27,7 +27,6 @@ class ConsoleOutput final : public GameCommandEvent
         m_msg = msg;
     }
 
-
     void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 17

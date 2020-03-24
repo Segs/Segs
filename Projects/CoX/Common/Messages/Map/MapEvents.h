@@ -614,7 +614,6 @@ public:
 #include "Messages/Map/DoorAnims.h"
 #include "Messages/Map/EntitiesResponse.h"
 #include "Messages/Map/FriendsListUpdate.h"
-#include "Messages/Map/GameCommandList.h"
 #include "Messages/Map/InteractWithEntity.h"
 #include "Messages/Map/LocationVisited.h"
 #include "Messages/Map/PlaqueVisited.h"

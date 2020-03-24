@@ -14,7 +14,7 @@
 
 #include "Common/Servers/Database.h"
 #include "DataHelpers.h"
-#include "Messages/Map/GameCommandList.h"
+#include "Common/Messages/Map/FloatingInfoStyles.h"
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
 #include <glm/gtx/vector_query.hpp>

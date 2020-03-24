@@ -11,6 +11,7 @@
  */
 
 #include "Entity.h"
+#include "EntityHelpers.h"
 #include "LFG.h"
 #include "Team.h"
 #include "Character.h"
@@ -39,6 +40,7 @@ void Entity::sendPvP(BitStream &bs)
     bs.StorePackedBits(5,0);
     bs.StoreBits(1,0);
 }
+
 void Entity::fillFromCharacter(const GameDataStore &data)
 {
     m_hasname = !m_char->getName().isEmpty();
@@ -54,6 +56,7 @@ void Entity::fillFromCharacter(const GameDataStore &data)
 void Entity::beginLogout(uint16_t time_till_logout)
 {
     m_is_logging_out = true;
+    markEntityForUpdate(this, EntityUpdateFlags::Logout);
     m_time_till_logout = time_till_logout*1000;
 }
 
