@@ -29,8 +29,10 @@ void cmdHandler_SendContactDialog(const QStringList &params, MapClientSession &s
 {
     QString content = params.join(" ");
     std::vector<ContactEntry> active_contacts;
+    // TODO: Derive number to send from parameters
+    int num_contacts_to_send = 4;
 
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < num_contacts_to_send; ++i)
     {
         ContactEntry con;
         con.m_response_text = QString("Response #%1").arg(i);
@@ -43,10 +45,10 @@ void cmdHandler_SendContactDialog(const QStringList &params, MapClientSession &s
 
 void cmdHandler_SendContactDialogYesNoOk(const QStringList &params, MapClientSession &sess)
 {
-    if(params.size() < 1)
+    if(params.size() < 2)
     {
-        qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ");
-        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" "), sess);
+        qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ") << " requires at least two arguments";
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" ") + " requires at least two arguments", sess);
         return;
     }
 

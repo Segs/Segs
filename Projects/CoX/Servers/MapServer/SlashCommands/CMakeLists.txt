@@ -41,7 +41,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 
-add_library(SlashCommands ${target_SOURCES})
+add_library(SlashCommands STATIC ${target_SOURCES})
 target_link_libraries(SlashCommands PUBLIC Qt5::Core gameData)
 
 get_target_property(TARGET_SOURCES SlashCommands SOURCES)

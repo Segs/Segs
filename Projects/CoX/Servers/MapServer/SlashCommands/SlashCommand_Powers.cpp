@@ -30,18 +30,18 @@ using namespace SEGSEvents;
 // Access Level 9 Commands (GMs)
 void cmdHandler_AddEntirePowerSet(const QStringList &params, MapClientSession &sess)
 {
-    CharacterData &cd = sess.m_ent->m_char->m_char_data;
-    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundClue).value();
-
-    uint32_t v1 = params.value(0).toUInt();
-    uint32_t v2 = params.value(1).toUInt();
-
     if(params.size() < 2)
     {
         qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" "), sess);
         return;
     }
+
+    CharacterData &cd = sess.m_ent->m_char->m_char_data;
+    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundClue).value();
+
+    uint32_t v1 = params.value(0).toUInt();
+    uint32_t v2 = params.value(1).toUInt();
 
     QString msg = QString("Granting Entire PowerSet <%1, %2> to %3").arg(v1).arg(v2).arg(sess.m_ent->name());
 
@@ -58,20 +58,19 @@ void cmdHandler_AddEntirePowerSet(const QStringList &params, MapClientSession &s
 
 void cmdHandler_AddPower(const QStringList &params, MapClientSession &sess)
 {
-    CharacterData &cd = sess.m_ent->m_char->m_char_data;
-    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundClue).value();
-
-    bool ok;
-    uint32_t v1 = params.value(0).toUInt(&ok);
-    uint32_t v2 = params.value(1).toUInt();
-    uint32_t v3 = params.value(2).toUInt();
-
-    if(params.size() < 3 || !ok)
+    if(params.size() < 3)
     {
         qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" "), sess);
         return;
     }
+
+    CharacterData &cd = sess.m_ent->m_char->m_char_data;
+    QString floating_msg = FloatingInfoMsg.find(FloatingMsg_FoundClue).value();
+
+    uint32_t v1 = params.value(0).toUInt();
+    uint32_t v2 = params.value(1).toUInt();
+    uint32_t v3 = params.value(2).toUInt();
 
     QString msg = QString("Granting Power <%1, %2, %3> to %4").arg(v1).arg(v2).arg(v3).arg(sess.m_ent->name());
 
@@ -95,13 +94,18 @@ void cmdHandler_AddInspiration(const QStringList &params, MapClientSession &sess
 
 void cmdHandler_AddEnhancement(const QStringList &params, MapClientSession &sess)
 {
-    QString name = params.value(0);
-    uint32_t level = params.value(1).toUInt() -1;
-
-    if(params.size() < 2)
+    if(params.isEmpty())
     {
-        level = getLevel(*sess.m_ent->m_char);
+        qCDebug(logSlashCommand) << "Bad invocation:" << params.join(" ") << " requires the enhancement name";
+        sendInfoMessage(MessageChannel::USER_ERROR, "Bad invocation:" + params.join(" ") + " requires the enhancement name", sess);
+        return;
     }
+
+    // second param is optional level
+    QString name = params.value(0);
+    uint32_t level = getLevel(*sess.m_ent->m_char);
+    if(params.size() > 1)
+        level = params.value(1).toUInt() -1;
 
     giveEnhancement(sess, name, level);
 }

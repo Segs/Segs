@@ -51,7 +51,9 @@ target_link_libraries(MapServer PUBLIC gameData)
 add_subdirectory(ScriptingEngine)
 add_subdirectory(SlashCommands)
 
-target_link_libraries(MapServer PUBLIC Qt5::Core ScriptingEngine SlashCommands)
+target_link_libraries(MapServer PUBLIC Qt5::Core ScriptingEngine)
+target_link_libraries(MapServer PRIVATE SlashCommands)
+
 
 if(ENABLE_TESTS)
     add_subdirectory(UnitTests)

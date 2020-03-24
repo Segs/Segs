@@ -97,10 +97,7 @@ void cmdHandler_SendFloatingNumbers(const QStringList &params, MapClientSession 
     QString name        = params.value(2);
 
     // reign in the insanity
-    if(runtimes<=0)
-        runtimes = 1;
-    else if(runtimes > 5)
-        runtimes = 5;
+    runtimes = std::clamp(runtimes, uint32_t(0), uint32_t(5));
 
     if(!ok1 || !ok2 || name.isEmpty())
     {
@@ -205,10 +202,13 @@ void cmdHandler_SetClientState(const QStringList &params, MapClientSession &sess
 
 void cmdHandler_LevelUpXp(const QStringList &params, MapClientSession &sess)
 {
-    GameDataStore &data(getGameData());
+    // start with our current level + 1, unless provided with one
+    uint32_t level = getLevel(*sess.m_ent->m_char) + 1;
+    if(!params.isEmpty())
+        level = params.value(0).toUInt();
 
+    GameDataStore &data(getGameData());
     // must adjust level for 0-index array, capped at 49
-    uint32_t level = params.value(0).toUInt();
     uint32_t max_level = data.expMaxLevel();
     level = std::max(uint32_t(0), std::min(level, max_level));
 

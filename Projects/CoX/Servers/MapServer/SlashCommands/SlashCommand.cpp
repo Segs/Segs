@@ -275,9 +275,8 @@ void runCommand(const QString &str, MapClientSession &sess)
     args.pop_back();
     // May also produce an extra empty match if input ends in quote
     if (args.back().isEmpty())
-    {
         args.pop_back();
-    }
+
     QString command_name = args.takeFirst();
 
     for (const auto &cmd : g_defined_slash_commands)
