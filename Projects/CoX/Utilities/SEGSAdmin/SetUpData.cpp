@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -14,6 +14,12 @@
 #include "ui_SetUpData.h"
 #include "SEGSAdminTool.h"
 #include "Globals.h"
+#include "Worker.h"
+#include "Helpers.h"
+
+#include "Settings.h"
+
+
 #include <QFileDialog>
 #include <QFile>
 #include <QDebug>
@@ -23,6 +29,7 @@
 #include <QMessageBox>
 #include <QCryptographicHash>
 #include <QStandardPaths>
+#include <QSettings>
 
 SetUpData::SetUpData(QWidget *parent) :
     QDialog(parent),
@@ -33,15 +40,14 @@ SetUpData::SetUpData(QWidget *parent) :
     dejavu_font.setFamily("DejaVu Sans Condensed");
     dejavu_font.setPointSize(12);
     ui->piggtool_output->setFont(dejavu_font);
-    connect(ui->pigg_select_file,&QToolButton::clicked,this,&SetUpData::select_piggs_dir);
-    connect(ui->copy_extract_button,&QPushButton::clicked,this,&SetUpData::check_client_version);
-    connect(this,&SetUpData::fileCopyComplete,this,&SetUpData::pigg_dispatcher);
-    connect(this,&SetUpData::callPiggWorker,this,&SetUpData::pigg_tool_worker);
-    connect(this,&SetUpData::readyToCopy,this,&SetUpData::copy_piggs_files);
+    connect(ui->pigg_select_file,&QToolButton::clicked,this,&SetUpData::selectPiggsDir);
+    connect(ui->copy_extract_button,&QPushButton::clicked,this,&SetUpData::extractPiggs);
 }
 
 SetUpData::~SetUpData()
 {
+    worker_thread.quit();  // Gracefully stop thread when component destroyed
+    worker_thread.wait();
     delete ui;
 }
 
@@ -61,33 +67,75 @@ void SetUpData::open_data_dialog()
     show();
 }
 
-void SetUpData::select_piggs_dir()
+void SetUpData::logUIMessage(QString message)
 {
-    QString homedir = QStandardPaths::locate(QStandardPaths::HomeLocation, QString(), QStandardPaths::LocateDirectory);
+    ui->piggtool_output->appendPlainText(message);
+}
+
+void SetUpData::updateUIPercentage(int progress)
+{
+    ui->progressBar_piggtool->setValue(progress);
+}
+
+void SetUpData::selectPiggsDir()
+{
+    QString home_dir = QStandardPaths::locate(QStandardPaths::HomeLocation, QString(),
+                                              QStandardPaths::LocateDirectory);
     QString pigg_dir = QFileDialog::getExistingDirectory(this, tr("Select CoX Directory"),
-                                                         homedir,
+                                                         home_dir,
                                                          QFileDialog::ShowDirsOnly);
     ui->pigg_file_url->setText(pigg_dir);
     ui->copy_extract_button->setEnabled(true);
 }
 
-void SetUpData::check_client_version() // Generate SHA-1 hash of CoX.exe and compare against hash set below, checks if client version is correct.
+void SetUpData::extractPiggs()
 {
-    QString coxexe = ui->pigg_file_url->text().append("/CoX.exe");
-    QCryptographicHash hash(QCryptographicHash::Sha1);
-    QFile file(coxexe);
+    // Check client version
+    if(!checkClientVersion())
+        logUIMessage("Error when checking client version");
 
-    if(file.open(QIODevice::ReadOnly))
-    {
-        qDebug()<<"Generating SHA-1 Hash of CoX.exe";
-        ui->piggtool_output->appendPlainText("Checking CoX client is correct version");
-        hash.addData(file.readAll());
-    }
-    else
+    // Copy piggs to working directory
+    if(!copyPiggFiles())
+        logUIMessage("Error copying pigg files");
+
+    // Create default maps directory
+
+    if(!createDefaultDirectorys())
+        logUIMessage("Error creating default directories");
+
+    // Extract piggs
+
+    ui->label_extract_pigg->setEnabled(true);
+    ui->progressBar_piggtool->setEnabled(true);
+
+    // Prepare seperate thread and signals/slots for pigg file(s) extraction
+    Worker *worker = new Worker;
+    worker->moveToThread(&worker_thread); // Sending this to another thread here
+    connect(&worker_thread, &QThread::finished, worker, &QObject::deleteLater);
+    connect(this, &SetUpData::callPiggWorker, worker, &Worker::piggDispatcher);
+    connect(worker, &Worker::sendUIMessage, this, &SetUpData::logUIMessage);
+    connect(worker, &Worker::sendUIPercentage, this, &SetUpData::updateUIPercentage);
+    connect(worker, &Worker::dataReady, this, &SetUpData::dataReady);
+    worker_thread.start();
+
+    emit callPiggWorker();
+}
+
+bool SetUpData::checkClientVersion() // Generate SHA-1 hash of CoX.exe and compare against hash set below, checks if client version is correct.
+{
+    QString cox_exe = ui->pigg_file_url->text().append("/CoX.exe");
+    QCryptographicHash hash(QCryptographicHash::Sha1);
+    QFile file(cox_exe);
+
+    if(!file.open(QIODevice::ReadOnly))
     {
         qDebug()<<"Cannot find or open CoX.exe";
         ui->piggtool_output->appendPlainText("Cannot find or open CoX.exe, did you pick the correct directory?");
+        return false;
     }
+    qDebug()<<"Generating SHA-1 Hash of CoX.exe";
+    ui->piggtool_output->appendPlainText("Checking CoX client is correct version");
+    hash.addData(file.readAll());
 
     // Retrieve the SHA1 signature of the file
     QByteArray clienthash = hash.result();
@@ -96,23 +144,22 @@ void SetUpData::check_client_version() // Generate SHA-1 hash of CoX.exe and com
     // qDebug()<<(clienthash);
 
     // Compare SHA1 hashes
-    if(clienthash == "\xFF""E0_\x1A\x84\x92\xB4\xCE\x84\xF7?\xFAk2JH\x8FM%")
-    {
-        ui->piggtool_output->appendPlainText("Correct client version found");
-        emit readyToCopy();
-    }
-    else
+    if(clienthash != "\xFF""E0_\x1A\x84\x92\xB4\xCE\x84\xF7?\xFAk2JH\x8FM%")
     {
         ui->piggtool_output->appendPlainText("Wrong client version found... Stopping");
+        return false;
     }
+
+    ui->piggtool_output->appendPlainText("Correct client version found");
+    return true;
 }
 
-void SetUpData::copy_piggs_files()
+bool SetUpData::copyPiggFiles()
 {
     ui->piggtool_output->appendPlainText("Copying Files...");
     ui->progressBar->setEnabled(true);
     ui->buttonBox->setEnabled(false);
-    QStringList sourceFileList = {
+    QStringList source_file_list = {
         "bin.pigg",
         "geom.pigg",
         "geomBC.pigg",
@@ -124,6 +171,7 @@ void SetUpData::copy_piggs_files()
         "mapsMisc.pigg",
         "mapsMissiong.pigg",
         "mapsTrials.pigg",
+        "misc.pigg",
     };
     QDir sourceDir(ui->pigg_file_url->text()+"/piggs");
     QDir targetDir(QDir::currentPath()+"/data");
@@ -134,19 +182,17 @@ void SetUpData::copy_piggs_files()
         invalid_source_dir.setText("Invalid CoX directory");
         invalid_source_dir.setInformativeText("Please ensure you select the main CoX directory");
         invalid_source_dir.setStandardButtons(QMessageBox::Ok);
-        return;
+        return false;
     }
     if(!targetDir.exists())  // If directory doesn't exist, create it
     {
         targetDir.mkdir(targetDir.absolutePath());
     }
 
-    QFileInfoList fileInfoList = sourceDir.entryInfoList(sourceFileList);
+    QFileInfoList fileInfoList = sourceDir.entryInfoList(source_file_list);
     foreach(QFileInfo fileInfo, fileInfoList)
     {
-
         // If file exists in targetDir already, delete it
-
         if(targetDir.exists(fileInfo.fileName()))
         {
             targetDir.remove(fileInfo.fileName());
@@ -157,114 +203,36 @@ void SetUpData::copy_piggs_files()
 
         ui->progressBar->setValue(counter / fileInfoList.count() * 100);
         counter++;
-        qApp->processEvents();
     }
     ui->icon_cox_directory->show();
     ui->piggtool_output->appendPlainText("File Copy Complete");
-    emit fileCopyComplete();
-}
-/*
- * Grabs a list of files then dispatches one to worker, when finished signal detected,
- * deletes pigg file and will send the next file.
- * Ensures only one pigg file is processed at a time and stops GUI freeze.
- */
-void SetUpData::pigg_dispatcher()
-{
-    ui->piggtool_output->appendPlainText("Extracting Pigg Files...");
-    ui->label_extract_pigg->setEnabled(true);
-    ui->progressBar_piggtool->setEnabled(true);
-    QStringList fileTypes;
-    fileTypes << "*.pigg";
-    QDir sourceDir(QDir::currentPath().append("/data"));
-    QFileInfoList piggInfoList = sourceDir.entryInfoList(fileTypes);
-
-    float counter = 0;
-    foreach(QFileInfo fileInfo, piggInfoList)
-    {
-        //QString program = "piggtool -x data/bin.pigg";
-        QString program = "utilities/piggtool -x " + fileInfo.absoluteFilePath();
-        #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
-            program.prepend("./");
-        #endif
-        emit callPiggWorker(program);
-        QTimer timer;
-        //timer.setSingleShot(true);
-        QEventLoop loop;
-        loop.connect(m_pigg_tool, SIGNAL(finished(int)), &loop, SLOT(quit())); // Couldn't get this to work on new signal/slot syntax
-        loop.connect(&timer, SIGNAL(timeout()), this, SLOT(pigg_dispatcher_wait_dialog()));
-        loop.connect(this, SIGNAL(quitPiggLoop()), &loop, SLOT(quit()));
-        timer.start(30000); // 30 Second timer, will time out and prompt user if they want to wait or quit,
-                          // if for some reason the event loop doesn't recieve a finished signal from pigg_tool_worker
-        loop.exec();
-        if(timer.isActive())
-        {
-            qDebug()<<"Completed";
-        }
-        else
-        {
-            qDebug()<<"Timeout";
-        }
-        float progress = counter / piggInfoList.count() * 100;
-        ui->progressBar_piggtool->setValue(progress);
-        counter++;
-        //Delete pigg file once done with it
-        QFile::remove(fileInfo.absoluteFilePath());
-    }
-    ui->progressBar_piggtool->setValue(100);
-    ui->icon_extract_pigg->show();
-    ui->piggtool_output->appendPlainText("Files Extracted");
-    emit getMapsDir();
+    return true;
 }
 
-void SetUpData::pigg_dispatcher_wait_dialog()
+//void SetUpData::pigg_dispatcher_wait_dialog()
+//{
+//    QMessageBox pigg_dispatcher_wait_msgbox;
+//    pigg_dispatcher_wait_msgbox.setText("Stop Process?");
+//    pigg_dispatcher_wait_msgbox.setInformativeText("This process is taking longer than expected, do you want to wait?");
+//    pigg_dispatcher_wait_msgbox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+//    pigg_dispatcher_wait_msgbox.setDefaultButton(QMessageBox::Yes);
+//    int confirm = pigg_dispatcher_wait_msgbox.exec();
+//    switch (confirm)
+//    {
+//    case QMessageBox::Yes:
+//        break;
+//    case QMessageBox::No:
+//        emit quitPiggLoop();
+//        break;
+//    default:
+//        break;
+//    }
+//}
+
+// change to get maps_dir from settings.cfg
+bool SetUpData::createDefaultDirectorys() // Creates default directories
 {
-    QMessageBox pigg_dispatcher_wait_msgbox;
-    pigg_dispatcher_wait_msgbox.setText("Stop Process?");
-    pigg_dispatcher_wait_msgbox.setInformativeText("This process is taking longer than expected, do you want to wait?");
-    pigg_dispatcher_wait_msgbox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    pigg_dispatcher_wait_msgbox.setDefaultButton(QMessageBox::Yes);
-    int confirm = pigg_dispatcher_wait_msgbox.exec();
-    switch (confirm)
-    {
-    case QMessageBox::Yes:
-        break;
-    case QMessageBox::No:
-        emit quitPiggLoop();
-        break;
-    default:
-        break;
-    }
-}
-
-void SetUpData::pigg_tool_worker(QString program) // Processes pigg file from dispatcher, emits finished signal when done.
-{
-    m_pigg_tool = new QProcess(this);
-    m_pigg_tool->start(program);
-
-    if(m_pigg_tool->waitForStarted())
-    {
-        connect(m_pigg_tool,&QProcess::readyReadStandardError,this,&SetUpData::read_piggtool);
-        connect(m_pigg_tool,&QProcess::readyReadStandardOutput,this,&SetUpData::read_piggtool);
-    }
-    else
-    {
-        qDebug() <<"Failed to process ";
-    }
-}
-
-void SetUpData::read_piggtool()
-{
-    QByteArray out_err = m_pigg_tool->readAllStandardError();
-    QByteArray out_std = m_pigg_tool->readAllStandardOutput();
-    qDebug().noquote()<<QString(out_err);
-    qDebug().noquote()<<QString(out_std);
-    ui->piggtool_output->appendPlainText(out_err);
-    ui->piggtool_output->appendPlainText(out_std);
-
-}
-
-void SetUpData::create_default_directory(QString maps_dir) // Creates default directories
-{
+    QString maps_dir = Helpers::getMapsDir();
     ui->label_create_directory->setEnabled(true);
     qDebug()<<"maps_dir: "<<maps_dir;
     QDir path(QDir::currentPath());
@@ -274,7 +242,36 @@ void SetUpData::create_default_directory(QString maps_dir) // Creates default di
     }
     ui->icon_create_directory->show();
     ui->buttonBox->setEnabled(true);
-    emit dataSetupComplete(maps_dir);
+    return true;
+}
+
+void SetUpData::runBinConverter() // Runs binconverter for ent_types conversion after piggtool extraction
+{
+    ui->piggtool_output->appendPlainText("Running BinConverter");
+    QString program = "utilities\binconverter";
+#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
+    program.prepend("./");
+#endif
+    bin_converter = new QProcess(this);
+    bin_converter->setProcessChannelMode(QProcess::MergedChannels);
+    bin_converter->start(program);
+
+    if(!bin_converter->waitForStarted())
+    {
+        QString error = "BinConverter Error: " + bin_converter->errorString();
+        ui->piggtool_output->appendPlainText(error);
+    }
+
+    bin_converter->waitForFinished();
+    QString output = bin_converter->readAll();
+    ui->piggtool_output->appendPlainText(output);
+    ui->piggtool_output->appendPlainText("BinConverter Completed");
+}
+
+// Worker thread will signal once everything is done so main UI can re-check data.
+void SetUpData::dataReady()
+{
+    emit dataSetupComplete();
 }
 
 //!@}

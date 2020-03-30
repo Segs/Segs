@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -456,6 +456,7 @@ void saveTo(const AllPowerCategories & target, const QString & baseName, bool te
 }
 bool loadFrom(const QString &filepath, AllPowerCategories &target)
 {
-    return commonReadFrom(filepath,"Powers",target);
+    QFSWrapper wrap;
+    return commonReadFrom(wrap,filepath,"Powers",target);
 }
 //! @}

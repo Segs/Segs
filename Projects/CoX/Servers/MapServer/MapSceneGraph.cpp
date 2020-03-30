@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -44,7 +44,8 @@ MapSceneGraph::~MapSceneGraph()
 
 bool MapSceneGraph::loadFromFile(const QString &filename)
 {
-    m_scene_graph.reset(loadWholeMap(filename));
+    QFSWrapper wrap;
+    m_scene_graph.reset(loadWholeMap(&wrap, filename));
     if(!m_scene_graph)
         return false;
     for(SceneNode *def : m_scene_graph->all_converted_defs)

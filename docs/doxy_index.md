@@ -7,11 +7,10 @@ superhero-themed MMORPG clients. %SEGS is written in C++ and facilitates common 
 such as account and character storage/retrieval using a database, secure client authentication, chat,
 physics, and more.
 
-- [Discord](https://discord.segs.io/)
-- [Doxygen](https://doxy.segs.io/)
-- [Forum](http://forum.segs.io/)
+- [Discord](https://discord.segs.dev/)
+- [Doxygen](https://doxy.segs.dev/)
+- [Forum](http://forum.segs.dev/)
 - [GitHub](https://github.com/Segs/Segs)
-- [IRC](irc://irc.segs.io/segs)
-- [Main](http://www.segs.io/)
+- [Main](http://www.segs.dev/)
 - [Twitter](https://twitter.com/segscode)
 - [Wiki](https://github.com/Segs/Segs/wiki)

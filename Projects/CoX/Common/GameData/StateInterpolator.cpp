@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -81,11 +81,11 @@ static void buildErrorTable()
     }
 }
 
-float get_interpolator_perturbation(int16_t a1,int level)
+float get_interpolator_perturbation(int16_t val,int level)
 {
     buildErrorTable();
-    if( a1 )
-        return (2 * (a1 >= 0) - 1) * s_coding_sequence[int(std::abs(a1))]*(1<<level);
+    if ( val )
+        return (2 * (val >= 0) - 1) * s_coding_sequence[int(std::abs(val))]*(1<<level);
 
     return 0.0f;
 }

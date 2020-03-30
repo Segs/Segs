@@ -238,9 +238,9 @@ void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore
     transformFromYPRandTranslation(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z},refload.pos);
 }
 
-SceneNode *newDef(SceneGraph &scene)
+SceneNode *newDef(SceneGraph &scene,int level)
 {
-    SceneNode *res = new SceneNode;
+    SceneNode *res = new SceneNode(level);
     res->m_index_in_scenegraph = scene.all_converted_defs.size();
     scene.all_converted_defs.emplace_back(res);
     res->in_use = true;
@@ -536,17 +536,17 @@ void  groupApplyModifiers(SceneNode *node)
     if( mods->LodScale != 0.0f )
         node->lod_scale = mods->LodScale;
 
-    uint32_t v1 = mods->GroupFlags;
+    uint32_t gflags = mods->GroupFlags;
     node->shadow_dist    = mods->ShadowDist;
-    node->parent_fade    = is_flag_set(v1, ParentFade);
-    node->region_marker  = is_flag_set(v1, RegionMarker);
-    node->volume_trigger = is_flag_set(v1, VolumeTrigger);
-    node->water_volume   = is_flag_set(v1, WaterVolume);
-    node->lava_volume    = is_flag_set(v1, LavaVolume);
-    node->sewer_volume   = is_flag_set(v1, SewerWaterVolume);
-    node->door_volume    = is_flag_set(v1, DoorVolume);
-    node->key_light      = is_flag_set(v1, KeyLight);
-    node->tray           = is_flag_set(v1, VisTray) | is_flag_set(v1, VisOutside);
+    node->parent_fade    = is_flag_set(gflags, ParentFade);
+    node->region_marker  = is_flag_set(gflags, RegionMarker);
+    node->volume_trigger = is_flag_set(gflags, VolumeTrigger);
+    node->water_volume   = is_flag_set(gflags, WaterVolume);
+    node->lava_volume    = is_flag_set(gflags, LavaVolume);
+    node->sewer_volume   = is_flag_set(gflags, SewerWaterVolume);
+    node->door_volume    = is_flag_set(gflags, DoorVolume);
+    node->key_light      = is_flag_set(gflags, KeyLight);
+    node->tray           = is_flag_set(gflags, VisTray) | is_flag_set(gflags, VisOutside);
 
     if(mods->LodNear != 0.0f || mods->LodFar != 0.0f || mods->LodNearFade != 0.0f || mods->LodFarFade != 0.0f || mods->LodScale != 0.0f)
         node->lod_fromtrick = 1;
@@ -566,7 +566,7 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
     SceneNode * node = getNodeByName(*ctx.m_target,obj_path);
     if(!node)
     {
-        node = newDef(*ctx.m_target);
+        node = newDef(*ctx.m_target,ctx.m_nesting_level);
         if(!defload.p_Property.empty())
             node->m_properties = new std::vector<GroupProperty_Data> (defload.p_Property);
     }
@@ -622,18 +622,20 @@ bool loadSceneGraph(const QString &path,LoadingContext &ctx,PrefabStore &prefabs
     SceneGraph_Data serialized_graph;
     ctx.m_renamer.basename = buildBaseName(path);
     binName.replace(QStringLiteral("Chunks.bin"), QStringLiteral("CHUNKS.bin"));
-    LoadSceneData(binName, serialized_graph);
+    LoadSceneData(*ctx.fs_wrap, binName, serialized_graph);
 
     serializeIn(serialized_graph, ctx, prefabs);
     return true;
 }
 
-SceneGraph *loadWholeMap(const QString &filename)
+SceneGraph *loadWholeMap(FSWrapper *fs, const QString &filename)
 {
     RuntimeData &rd(getRuntimeData());
+    assert(fs);
 
     SceneGraph *m_scene_graph = new SceneGraph;
-    SEGS::LoadingContext ctx;
+    SEGS::LoadingContext ctx(0);
+    ctx.fs_wrap = fs;
     ctx.m_target = m_scene_graph;
     int geobin_idx= filename.indexOf("geobin");
     int maps_idx = filename.indexOf("maps");
@@ -658,6 +660,7 @@ void loadSubgraph(const QString &filename, LoadingContext &ctx,PrefabStore &pref
 {
     QFileInfo fi(filename);
     LoadingContext tmp = ctx;
+    tmp.m_nesting_level++;
     loadSceneGraph(fi.path()+"/"+fi.completeBaseName()+".txt",tmp,prefabs);
 }
 

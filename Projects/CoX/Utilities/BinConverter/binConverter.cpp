@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -128,7 +128,7 @@ BinType getLoader(const QString &fname)
 template<class T>
 T * doLoad(BinStore *bs) {
     T *res = new T;
-    if(!loadFrom(bs,res)) {
+    if(!loadFrom(bs, res)) {
         delete res;
         res = nullptr;
     }
@@ -480,8 +480,9 @@ int main(int argc,char **argv)
         showSupportedBinTypes();
         return -1;
     }
+    QFSWrapper wrap;
     BinStore binfile;
-    binfile.open(argv[1],0);
+    binfile.open(wrap,argv[1],0);
     QString target_basename=QFileInfo(argv[1]).baseName();
     bool json_output=true;
 
@@ -502,7 +503,7 @@ int main(int argc,char **argv)
 //        case eSequencers:   doConvert(doLoad<SequencerList>(&binfile),target_basename,json_output); break;
           case eTailorCosts:  doConvert(doLoad<AllTailorCosts_Data>(&binfile),target_basename,json_output); break;
           case eCostumeSets:  doConvert(doLoad<CostumeSet_Data>(&binfile),target_basename,json_output); break;
-          case eBodyParts:    doConvert(doLoad<AllBodyParts_Data>(&binfile),target_basename,json_output); break;
+          case eBodyParts:    doConvert(doLoadRef<BodyPartsStorage>(&binfile),target_basename,json_output); break;
           case eGroupEmblems: doConvert(doLoad<GeoSet_Data>(&binfile),target_basename,json_output); break;
           case ePaletteSets:  doConvert(doLoad<Pallette_Data>(&binfile),target_basename,json_output); break;
           case eZones:        doConvert(doLoadRef<AllMaps_Data>(&binfile),target_basename,json_output); break;

@@ -15,7 +15,7 @@ As a rule, SEGS attempts to use scripts for configuration and server-side data w
 The current database schema is version 7. SEGS is using [dbdesigner.net](http://dbdesigner.net) to cooperatively work on database schema changes. We have a limited number of available shares for dbdesigner, so proposed changes to schemas should be made by creating a [new GitHub issue](https://github.com/Segs/Segs/issues/new), describing your changes, and submitting those changes in the appropriate database scripts in [`Projects/CoX/Data/`](https://github.com/Segs/Segs/tree/master/Projects/CoX/Data)
 
 ### `segs` database
-![segs database](http://doxy.segs.io/images/dbschema/segs_dbschema.png)
+![segs database](http://doxy.segs.dev/images/dbschema/segs_dbschema.png)
 
 ### `segs_game` database
-![segs_game database](http://doxy.segs.io/images/dbschema/segs_game_dbschema.png)
+![segs_game database](http://doxy.segs.dev/images/dbschema/segs_game_dbschema.png)

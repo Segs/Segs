@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -15,6 +15,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <qiodevice.h>
 
 struct ModelModifiers;
 struct TextureModifiers;
@@ -37,6 +38,8 @@ struct VBOPointers
     std::vector<glm::vec2> uv2;
     std::vector<glm::ivec3> triangles;
     std::vector<HTexture> assigned_textures;
+    std::vector<glm::vec2> bone_weights;
+    std::vector<std::pair<uint16_t,uint16_t>> bone_indices;
     bool needs_tangents=false;
 };
 enum ModelFlags : uint32_t
@@ -85,16 +88,23 @@ struct PackBlock
     DeltaPack &operator[](uint8_t idx) { return (&tris)[idx]; }
 };
 
+struct BoneInfo
+{
+    int numbones;
+    int bone_ID[15];
+};
+
 struct Model
 {
     AxisAlignedBoundingBox   box;
     QString                  name;
-    int                      flags;
+    uint32_t                 flags;
     float                    visibility_radius;
     uint32_t                 num_textures;
     PackBlock                packed_data;
     std::vector<TextureBind> texture_bind_info;
     ptrdiff_t                boneinfo_offset = 0;
+    BoneInfo *               bone_info_data = nullptr;
     GeoSet *                 geoset;
     ModelModifiers *         trck_node = nullptr;
     glm::vec3                scale;
@@ -102,9 +112,12 @@ struct Model
     uint32_t                 model_tri_count;
     CoHBlendMode             blend_mode;
     std::unique_ptr<VBOPointers> vbo;
+    int                      m_id;
+    bool                     hasBoneWeights() const { return flags & OBJ_DRAW_AS_ENT; }
+
 };
-void geosetLoadHeader(QFile &fp, GeoSet *geoset);
-void geosetLoadData(QFile &fp, GeoSet *geoset);
+void geosetLoadHeader(QIODevice *fp, GeoSet *geoset);
+void geosetLoadData(QIODevice *fp, GeoSet *geoset);
 void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model *model,const std::vector<HTexture> &textures);
 void fillVBO(Model & model);
 } // namespace SEGS

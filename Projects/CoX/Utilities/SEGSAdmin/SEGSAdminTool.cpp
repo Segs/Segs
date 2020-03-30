@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -22,6 +22,8 @@
 #include "UpdateDetailDialog.h"
 #include "AboutDialog.h"
 #include "SelectScriptDialog.h"
+#include "Helpers.h"
+#include "Worker.h"
 
 #include "Settings.h"
 #include "Version.h"
@@ -84,14 +86,13 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(m_add_user_dialog,&AddNewUserDialog::sendInput,this,&SEGSAdminTool::commit_user);
 
     // SetUpData Signals
-    connect(m_set_up_data,&SetUpData::dataSetupComplete,this,&SEGSAdminTool::check_data_and_dir);
+    connect(m_set_up_data,&SetUpData::dataSetupComplete,this,&SEGSAdminTool::checkDataAndDir);
     connect(m_set_up_data,&SetUpData::getMapsDir,m_settings_dialog,&SettingsDialog::send_maps_dir);
 
     // SettingsDialog Signals
     connect(m_settings_dialog,&SettingsDialog::checkForConfigFile,this,&SEGSAdminTool::check_for_config_file);
-    connect(m_settings_dialog,&SettingsDialog::check_data_and_dir,this,&SEGSAdminTool::check_data_and_dir);
-    connect(m_settings_dialog,&SettingsDialog::sendMapsDirConfigCheck,this,&SEGSAdminTool::check_data_and_dir);
-    connect(m_settings_dialog,&SettingsDialog::sendMapsDir,m_set_up_data,&SetUpData::create_default_directory);
+    connect(m_settings_dialog,&SettingsDialog::check_data_and_dir,this,&SEGSAdminTool::checkDataAndDir);
+    connect(m_settings_dialog,&SettingsDialog::sendMapsDirConfigCheck,this,&SEGSAdminTool::checkDataAndDir);
 
     // Network Manager Signals
     connect(this,&SEGSAdminTool::getLatestReleases,m_network_manager,&NetworkManager::get_latest_releases);
@@ -110,16 +111,25 @@ SEGSAdminTool::~SEGSAdminTool()
     delete ui;
 }
 
-void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub dirs and maps dir
+void SEGSAdminTool::checkDataAndDir() // Checks for data sub dirs and maps dir
 {
     QPixmap check_icon(":icons/Resources/check.svg");
     QPixmap alert_triangle(":icons/Resources/alert-triangle.svg");
     ui->output->appendPlainText("Checking for correct data and maps directories...");
-    QStringList data_dirs = {"data/bin","data/geobin","data/object_library"}; // Currently only checking for these 3 sub dirs, check for all files could be overkill
+    QStringList data_dirs = {
+        "data/bin",
+        "data/converted",
+        "data/ent_types",
+        "data/geobin",
+        "data/object_library",
+        "data/scenes",
+        "data/shaders",
+        "data/texts"
+    };
     bool all_maps_exist = true;
     for(const QString &map_name : g_map_names)
     {
-        all_maps_exist &= QDir(maps_dir+"/"+map_name).exists();
+        all_maps_exist &= QDir(Helpers::getMapsDir()+"/"+map_name).exists();
         if(!all_maps_exist)
             break; // at least one map dir is missing, we can finish early
     }
@@ -128,7 +138,10 @@ void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub 
     {
         all_data_dirs_exist &= QDir(data_dir).exists();
         if(!all_data_dirs_exist)
+        {
+            ui->output->appendPlainText("Error: Data directory missing: " + data_dir);
             break; // at least one map dir is missing, we can finish early
+        }
     }
     if(all_data_dirs_exist && all_maps_exist)
     {
@@ -140,7 +153,6 @@ void SEGSAdminTool::check_data_and_dir(QString maps_dir) // Checks for data sub 
         ui->icon_status_data->setPixmap(alert_triangle);
         ui->output->appendPlainText("WARNING: We couldn't find the correct data and/or maps directories. Please use the server setup to your left");
     }
-
 }
 
 void SEGSAdminTool::commit_user(QString username, QString password, QString acclevel)

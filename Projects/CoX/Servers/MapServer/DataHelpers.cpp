@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -229,7 +229,7 @@ void positionTest(MapClientSession *tgt)
     QString output = "==== Position Test =======================\n";
 
     output += QString("Move Time: %1\n")
-            .arg(tgt->m_ent->m_states.current()->m_move_time, 0, 'f', 1);
+            .arg(tgt->m_ent->m_motion_state.m_move_time, 0, 'f', 1);
 
     output += QString("Prev Pos <%1, %2, %3>\n")
             .arg(tgt->m_ent->m_motion_state.m_last_pos.x, 0, 'f', 1)

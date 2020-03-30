@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -145,7 +145,7 @@ private:
                             Entity();
                             ~Entity();
 public:
-        StateStorage        m_states;
+        InputState          m_input_state;
         MotionState         m_motion_state;
         // Some entities might not have a character data ( doors, cars )
         // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
@@ -241,7 +241,7 @@ public:
         bool                m_is_store                  = false;
         vStoreItems         m_store_items;
 
-        std::function<void(int)>  m_active_dialog       = NULL;
+        std::function<void(int)>  m_active_dialog      = nullptr;
 
         void                dump();
 

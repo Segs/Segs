@@ -19,16 +19,6 @@ std::vector<glm::vec3> convertToVec3Vector(const std::vector<float>& src) {
     }
     return res;
 }
-void cleanupPSystemName(QByteArray &name)
-{
-    int idx = name.indexOf("/FX/",0);
-    if(idx==-1 && name.startsWith("FX/"))
-        idx=0;
-    if(idx!=-1)
-    {
-        name = name.mid(idx+3).toUpper();
-    }
-}
 bool loadFrom(BinStore * s, ParticleSystemInfo * target)
 {
     bool ok = true;

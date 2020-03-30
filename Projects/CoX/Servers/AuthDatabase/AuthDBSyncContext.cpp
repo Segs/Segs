@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -48,7 +48,13 @@ namespace
 
     static constexpr auto SELECT_ACCOUNT_PASSWORD_QUERY =
         "SELECT passw, salt FROM accounts WHERE username = ?;";
-
+	static constexpr std::pair<const char *,AuthDbSyncContext::QueryId> all_query_texts[] = {
+		{FETCH_DB_VERSION_QUERY,AuthDbSyncContext::ID_FETCH_DB_VERSION_QUERY},
+		{ADD_ACCOUNT_QUERY,AuthDbSyncContext::ID_ADD_ACCOUNT_QUERY},
+		{SELECT_ACCOUNT_BY_USERNAME_QUERY,AuthDbSyncContext::ID_SELECT_ACCOUNT_BY_USERNAME_QUERY},
+		{SELECT_ACCOUNT_BY_ID_QUERY,AuthDbSyncContext::ID_SELECT_ACCOUNT_BY_ID_QUERY},
+		{SELECT_ACCOUNT_PASSWORD_QUERY,AuthDbSyncContext::ID_SELECT_ACCOUNT_PASSWORD_QUERY},
+	};
     //! @image html dbschema/segs_dbschema.png
     bool GetAccount(RetrieveAccountResponseData &client, QSqlQuery &results)
     {
@@ -154,36 +160,15 @@ bool AuthDbSyncContext::loadAndConfigure()
         db2->setConnectOptions();
         return false;
     }
-
-    m_add_account_query.reset(new QSqlQuery(*m_db));
-    m_prepared_select_account_by_username.reset(new QSqlQuery(*m_db));
-    m_prepared_select_account_by_id.reset(new QSqlQuery(*m_db));
-    m_prepared_select_account_passw.reset(new QSqlQuery(*m_db));
-
-    if(!m_add_account_query->prepare(ADD_ACCOUNT_QUERY))
-    {
-        qDebug() << "SQL_ERROR:" << m_add_account_query->lastError();
-        return false;
-    }
-
-    if(!m_prepared_select_account_by_username->prepare(SELECT_ACCOUNT_BY_USERNAME_QUERY))
-    {
-        qDebug() << "SQL_ERROR:" << m_prepared_select_account_by_username->lastError();
-        return false;
-    }
-      
-    if(!m_prepared_select_account_by_id->prepare(SELECT_ACCOUNT_BY_ID_QUERY))
-    {
-        qDebug() << "SQL_ERROR:" << m_prepared_select_account_by_id->lastError();
-        return false;
-    }
-
-    if(!m_prepared_select_account_passw->prepare(SELECT_ACCOUNT_PASSWORD_QUERY))
-    {
-        qDebug() << "SQL_ERROR:" << m_prepared_select_account_passw->lastError();
-        return false;
-    }
-
+	for(const std::pair<const char *,QueryId> &v : all_query_texts)
+	{
+		m_query_mapping[v.second].reset(new QSqlQuery(*m_db));
+		if(!m_query_mapping[v.second]->prepare(v.first))
+		{
+			qDebug() << "SQL_ERROR:" << m_query_mapping[v.second]->lastError();
+			return false;
+		}
+	}
     return true;
 }
 
@@ -192,13 +177,14 @@ bool AuthDbSyncContext::addAccount(const CreateAccountData &data)
     PasswordHasher hasher;
     QByteArray     salt            = hasher.generateSalt();
     QByteArray     hashed_password = hasher.hashPassword(data.password.toUtf8(), salt);
-    m_add_account_query->bindValue(0, data.username);
-    m_add_account_query->bindValue(1, hashed_password);
-    m_add_account_query->bindValue(2, data.access_level);
-    m_add_account_query->bindValue(3, salt);
-    if(false == m_add_account_query->exec()) // Send our query to the PostgreSQL db server to process
+	const auto &qr(m_query_mapping[ID_ADD_ACCOUNT_QUERY]);
+	qr->bindValue(0, data.username);
+	qr->bindValue(1, hashed_password);
+	qr->bindValue(2, data.access_level);
+	qr->bindValue(3, salt);
+	if(false == qr->exec()) // Send our query to the PostgreSQL db server to process
     {
-        last_error.reset(new QSqlError(m_add_account_query->lastError()));
+		last_error.reset(new QSqlError(qr->lastError()));
         qDebug() << "SQL_ERROR:" << *last_error; // Why the query failed
         return false;
     }
@@ -232,21 +218,23 @@ bool AuthDbSyncContext::addAccount(const CreateAccountData &data)
 
 bool AuthDbSyncContext::checkPassword(const QString &login, const QString &password)
 {
-    m_prepared_select_account_passw->bindValue(0, login);
+	const auto &qr(m_query_mapping[ID_SELECT_ACCOUNT_PASSWORD_QUERY]);
 
-    if(!m_prepared_select_account_passw->exec())
+	qr->bindValue(0, login);
+
+	if(!qr->exec())
     {
-        last_error.reset(new QSqlError(m_prepared_select_account_passw->lastError()));
+		last_error.reset(new QSqlError(qr->lastError()));
         qDebug() << "SQL_ERROR:" << *last_error; // Why the query failed
         return false;
     }
-    if(!m_prepared_select_account_passw->next())
+	if(!qr->next())
     {
         return false;
     }
     PasswordHasher hasher;
-    QByteArray     required_pass = m_prepared_select_account_passw->value("passw").toByteArray();
-    QByteArray     salt          = m_prepared_select_account_passw->value("salt").toByteArray();
+	QByteArray     required_pass = qr->value("passw").toByteArray();
+	QByteArray     salt          = qr->value("salt").toByteArray();
     // TODO: remove
     QByteArray hashed_password = hasher.hashPassword(password.toUtf8(), salt);
     return hashed_password == required_pass;
@@ -268,17 +256,18 @@ bool AuthDbSyncContext::retrieveAccountAndCheckPassword(
 
         return !last_error->isValid();
     }
+	const auto &qr(m_query_mapping[ID_SELECT_ACCOUNT_BY_USERNAME_QUERY]);
 
-    m_prepared_select_account_by_username->bindValue(0, request.m_login);
+	qr->bindValue(0, request.m_login);
 
-    if(!m_prepared_select_account_by_username->exec())
+	if(!qr->exec())
     {
-        last_error.reset(new QSqlError(m_prepared_select_account_by_username->lastError()));
+		last_error.reset(new QSqlError(qr->lastError()));
         qDebug() << "SQL_ERROR:" << *last_error; // Why the query failed
         return false;
     }
 
-    return GetAccount(response, *m_prepared_select_account_by_username);
+	return GetAccount(response, *qr);
 }
 
 bool AuthDbSyncContext::getPasswordValidity(const ValidatePasswordRequestData &data,

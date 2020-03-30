@@ -1,8 +1,14 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.16)
 project(SEGS)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Tell cmake to honor CXX_VISIBILITY_PRESET and ignore it
+cmake_policy(SET CMP0063 NEW)
+cmake_policy(SET CMP0065 NEW)
+cmake_policy(SET CMP0072 NEW)
+cmake_policy(SET CMP0079 NEW)
 
 # for version and revision info. Derived from https://github.com/dolphin-emu/dolphin/blob/master/CMakeLists.txt#L132
 find_package(Git)
@@ -46,6 +52,16 @@ add_definitions(
 
 if(MSVC)
     add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -D_USE_MATH_DEFINES)
+    add_compile_options (/wd4251) # disable warning related to dll interface needed ... clients of class
+    if (NOT (MSVC_VERSION LESS 1910))
+      #add_compile_options (/MP)
+      add_compile_options (/permissive-)
+      #add_compile_options (/d2cgsummary)
+      #add_compile_options (/d1reportTime)
+      add_compile_options (/diagnostics:caret)
+      #add_compile_options (/sdl)
+      #add_compile_options (/arch:AVX2)
+    endif()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast")
@@ -69,6 +85,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
+set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt")
 set(UNICODE TRUE)
 set(INSTALLED_TARGETS)
 option(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
@@ -81,14 +98,15 @@ option(BUILD_CLIENT_PATCH "Build client patch for AMD graphics cards ?" OFF)
 # Prerequisites
 ########################################################################################
 find_package(Threads REQUIRED)
+include(LocateQt5)
+find_package(Qt5 5.12 COMPONENTS Core Sql REQUIRED)
 
+include(SDKHelper)
 include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_BINARY_DIR}/3rd_party/built) # ERICEDIT: Changed to CMAKE_BINARY_DIR so that this variable always points to the top level of the build directory.
 add_subdirectory(3rd_party)
 link_directories(${PROJECT_SOURCE_DIR}/lib) # ERICEDIT: Changed to lowercase.
 
-include(LocateQt5)
-find_package(Qt5 COMPONENTS Core Sql REQUIRED)
 
 if(ENABLE_TESTS)
     enable_testing()

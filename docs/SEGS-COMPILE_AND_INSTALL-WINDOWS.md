@@ -11,9 +11,9 @@ REQUIREMENTS AND NOTES
 
 Below are the utilities and libraries you'll need to compile SEGS in any environment. While it may be possible to use another toolset, the C++ Tool Chain below is the only one officially supported by the SEGS team. These packages are available for both Linux or Windows via the links below:
 
-   - **QT 5.9+** - A cross platform application framework utilized heavily by SEGS. http://download.qt.io/archive/qt/
+   - **QT 5.12+** - A cross platform application framework utilized heavily by SEGS. http://download.qt.io/archive/qt/
 
-   - **CMake 3.6+** - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
+   - **CMake 3.16+** - CMake is the cross-platform make utility. It generates makefiles for multiple platforms. https://cmake.org/download/
    - **Git** - A version control system for tracking changes in computer files and coordinating work on those files among multiple people. https://git-scm.com/download
 
 **ADVANCED:** By default SEGS uses a local SQLite database created by `SEGSAdmin` or `dbtool`, but optionally may be configured to use another database driver by manually configuring settings.cfg. SEGS is compatible with PostGreSQL or MySQL/MariaDB. These alternate configurations are optional and unsupported. YMMV.
@@ -39,7 +39,7 @@ BUILD SEGS
 **1. Start QTCreator and Clone Git Repository**
 
 Start QTCreator and select New Project. The _New Project_ dialog box will appear. From the list on the left, select `Import Project`, and from the middle column `Git Clone`, then press the `Choose...` button at the bottom right of the dialog window.
-![New Project Dialog Screenshot](https://segs.io/user/pages/02.developers/newProject.png "New Project Dialog Screenshot")
+![New Project Dialog Screenshot](https://segs.dev/user/pages/02.developers/newProject.png "New Project Dialog Screenshot")
 
 The dialog box will change to show the _Git Clone_ dialog, which contains configuration options for importing a project from Git.
 
@@ -57,7 +57,7 @@ Next, QTCreator will ask you to configuration your project. This is where you'll
 > QTCreator uses kits to group various settings for building and running projects.
 
 Begin by selecting MinGW 32bit.
-![Project Configuration](https://segs.io/user/pages/02.developers/ProjectConfiguration.png "Project Configuration")
+![Project Configuration](https://segs.dev/user/pages/02.developers/ProjectConfiguration.png "Project Configuration")
 
 You may select the `Details` button next to MinGW if you'd like to customize the paths where QTCreator will store temporary build files.
 
@@ -68,7 +68,7 @@ Finally, click `Configure Project`.
 **3. Build All**
 
 If everything went well, you'll see the SEGS file tree in the _Projects Pane_ of QTCreator.
-![Projects Pane](https://segs.io/user/pages/02.developers/ConfiguredProject.png "Projects Pane")
+![Projects Pane](https://segs.dev/user/pages/02.developers/ConfiguredProject.png "Projects Pane")
 
 Now, select `Build > Build All` from the menu at the top of QTCreator. The bottom half of the window will show compiling output as SEGS builds. The first time you build SEGS it may take several minutes and the output window may show hundreds of warnings, but if compiled successfully, you'll see the following in the _Compile Output_ window.
 ```
@@ -97,8 +97,20 @@ Configure SEGS using SEGSADMIN
 HELP AND MORE INFORMATION
 ------
 
-Make sure the following Network Ports are open: TCP 443, TCP 2104, TCP 2016, and UDP 7000-7200  
-For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.io/
+**Ensure proper ports are open on any firewalls**
+
+See the table below for a list of Network Ports that SEGS needs open to run properly. These are the same ports that the original game client and now, SEGS uses as well.
+    
+    | Protocol | Ports      | For Use By                         |
+    | TCP      | 2106       | AuthServer                         |
+    | TCP      | 6001       | AdminRPC                           |
+    | UDP      | 7002       | GameServer                         |
+    | UDP      | 7003-7050  | MapServer, each MapServer Instance |
+    | UDP      | 7003-7050  | MapServer, each MapServer Instance |
+
+**Further Help and Troubleshooting**
+
+For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.dev/
 
 
 FAQs
