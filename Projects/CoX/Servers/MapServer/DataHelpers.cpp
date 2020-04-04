@@ -70,46 +70,72 @@ void toggleLFG(Entity &e)
     }
 }
 
-// Poll EntityManager to return Entity by Name or IDX
-Entity * getEntity(MapClientSession *src, const QString &name)
+/**
+ * @brief   Get Entity by current Target
+ * @param   sess MapClientSession of the client that called this
+ * @return  pointer to the target entity or nullptr if it does not exist.
+ */
+Entity * getTargetEntity(MapClientSession &sess)
 {
-    MapInstance *mi = src->m_current_map;
-    EntityManager &em(mi->m_entities);
-    QString errormsg;
+    if(sess.m_ent == nullptr)
+        return nullptr;
+
+    const uint32_t idx = getTargetIdx(*sess.m_ent);
+    if(idx == 0)
+        return nullptr;
+
+    return getEntity(&sess, idx);
+}
+
+/**
+ * @brief   Poll Entity Manager for Entity by Name
+ * @param   src MapClientSession that made this call
+ * @param   name QString of the target entity name
+ * @return  pointer to the named entity, or target entity if it does not exist.
+ */
+Entity * getEntity(MapClientSession *sess, const QString &name)
+{
+    // if name is empty, get entity by target
+    if(name.isEmpty())
+        return getTargetEntity(*sess);
+
+    // if name is ours, return self
+    if(0 == name.compare(sess->m_ent->name(), Qt::CaseInsensitive))
+        return sess->m_ent;
 
     // Iterate through all active entities and return entity by name
+    MapInstance *mi = sess->m_current_map;
+    EntityManager &em(mi->m_entities);
     for (Entity* pEnt : em.m_live_entlist)
     {
         if(pEnt->name() == name)
             return pEnt;
     }
 
-    errormsg = "Entity " + name + " does not exist, or is not currently online.";
+    QString errormsg = "Entity " + name + " does not exist, or is not currently online.";
     qWarning() << errormsg;
-    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *src);
+    sendInfoMessage(MessageChannel::USER_ERROR, errormsg, *sess);
     return nullptr;
 }
 
-Entity * getEntity(MapClientSession *src, uint32_t idx)
+Entity * getEntity(MapClientSession *sess, uint32_t idx)
 {
-    return getEntity(src->m_ent, src->m_current_map, idx);
+    return getEntity(sess->m_ent, sess->m_current_map, idx);
 }
 
 Entity * getEntity(MapInstance* mi, uint32_t idx)
 {
-    EntityManager &em(mi->m_entities);
-    QString errormsg;
-
     if(idx!=0) // Entity idx 0 is special case, so we can't return it
     {
         // Iterate through all active entities and return entity by idx
+        EntityManager &em(mi->m_entities);
         for (Entity* pEnt : em.m_live_entlist)
         {
             if(pEnt->m_idx == idx)
                 return pEnt;
         }
     }
-    errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
+    QString errormsg = "Entity " + QString::number(idx) + " does not exist, or is not currently online.";
     qWarning() << errormsg;
     return nullptr;
 }
@@ -123,11 +149,10 @@ Entity * getEntity(MapInstance* mi, uint32_t idx)
  */
 Entity * getEntity(Entity *srcEnt, MapInstance *mi, uint32_t idx)
 {
-    EntityManager &em(mi->m_entities);
-
     if(idx == 0) // Entity idx 0 is always self
         return srcEnt;
 
+    EntityManager &em(mi->m_entities);
     // Iterate through all active entities and return entity by idx
     for (Entity *pEnt : em.m_live_entlist)
     {
@@ -147,17 +172,17 @@ Entity * getEntity(Entity *srcEnt, MapInstance *mi, uint32_t idx)
  */
 Entity *getEntityByDBID(MapInstance *mi, uint32_t db_id)
 {
-    EntityManager &em(mi->m_entities);
-    QString        errormsg;
-
     if(db_id == 0)
         return nullptr;
+
     // TODO: Iterate through all entities in Database and return entity by db_id
+    EntityManager &em(mi->m_entities);
     for (Entity *pEnt : em.m_live_entlist)
     {
         if(pEnt->m_db_id == db_id)
             return pEnt;
     }
+
     return nullptr;
 }
 
@@ -167,22 +192,14 @@ Entity *getEntityByDBID(MapInstance *mi, uint32_t db_id)
  * @param   target_name name string to compare to entity current target.
  * @return  pointer to the target entity or self if it does not exist.
  */
-Entity * getCmdTargetByNameOrIdx(MapClientSession &sess, const QString &name_from_cmd)
+Entity * getEntityByNameOrTarget(MapClientSession &sess, const QString &name_from_cmd)
 {
-    uint32_t target_idx = getTargetIdx(*sess.m_ent);
-    Entity *tgt = nullptr;
-    tgt = getEntity(&sess, target_idx);
+    Entity *tgt = getTargetEntity(sess);
     if(tgt != nullptr)
     {
-        if(0 == name_from_cmd.compare(tgt->name(), Qt::CaseInsensitive))
+        if(name_from_cmd.isEmpty() || 0 == name_from_cmd.compare(tgt->name(), Qt::CaseInsensitive))
             return tgt;
-
-        tgt = sess.m_ent;
     }
-
-    // if target_name parameter matches user name, then assume target is self
-    if(0 == name_from_cmd.compare(sess.m_ent->name(), Qt::CaseInsensitive))
-        return sess.m_ent;
 
     // if we haven't returned yet, then use NAME to get target
     tgt = getEntity(&sess, name_from_cmd);
@@ -194,7 +211,7 @@ Entity * getCmdTargetByNameOrIdx(MapClientSession &sess, const QString &name_fro
         sendInfoMessage(MessageChannel::USER_ERROR, msg, sess);
     }
 
-    return tgt;
+    return tgt; // always return an entity, even if it's self
 }
 
 void sendMissionObjectiveTimer(MapClientSession &sess, QString &message, float time)
