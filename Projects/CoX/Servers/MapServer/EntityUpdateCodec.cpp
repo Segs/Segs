@@ -422,23 +422,13 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bool update_rarely = src.m_entity_update_flags.testFlag(src.UpdateFlag::Full)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Logout)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::SuperGroup)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::AFK)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::NoDrawOnClient)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::NoCollision)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::HeroVillian)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::OddSend)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Titles)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Translucency)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Costumes)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Animations)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::StateMode);
-    bool update_chars = src.m_entity_update_flags.testFlag(src.UpdateFlag::Target)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Buffs)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Stats)
-            || src.m_entity_update_flags.testFlag(src.UpdateFlag::FX);
+    bool update_rarely = src.m_entity_update_flags & (src.UpdateFlag::Full
+            | src.UpdateFlag::Logout | src.UpdateFlag::SuperGroup | src.UpdateFlag::AFK
+            | src.UpdateFlag::NoDrawOnClient | src.UpdateFlag::NoCollision | src.UpdateFlag::HeroVillian
+            | src.UpdateFlag::OddSend | src.UpdateFlag::Titles | src.UpdateFlag::Translucency
+            | src.UpdateFlag::Costumes | src.UpdateFlag::Animations | src.UpdateFlag::StateMode);
+    bool update_chars = src.m_entity_update_flags & (src.UpdateFlag::Target
+            | src.UpdateFlag::Buffs | src.UpdateFlag::Stats | src.UpdateFlag::FX);
     bool has_updates = src.m_entity_update_flags;
 
     // NPCs never have pchar_things (FX, Stats, Buffs, Targets)
