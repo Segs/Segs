@@ -936,7 +936,7 @@ void forcePosition(Entity &e, glm::vec3 pos)
 {
     e.m_entity_data.m_pos = pos;
     e.m_force_pos_and_cam = true;
-    e.m_entity_update_flags.setFlag(e.UpdateFlag::Movement);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::MOVEMENT);
 }
 
 void forceOrientation(Entity &e, glm::vec3 pyr)
@@ -944,7 +944,7 @@ void forceOrientation(Entity &e, glm::vec3 pyr)
     e.m_direction = glm::quat(pyr);
     e.m_entity_data.m_orientation_pyr = pyr;
     e.m_force_pos_and_cam = true;
-    e.m_entity_update_flags.setFlag(e.UpdateFlag::Movement);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::MOVEMENT);
 }
 
 // Move to Sequences or Triggers files later
@@ -956,7 +956,7 @@ void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_
     tmove.m_trigger_fx_idx = fx_idx;
 
     e.m_triggered_moves.push_back(tmove);
-    e.m_entity_update_flags.setFlag(e.UpdateFlag::Animations);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::ANIMATIONS);
     qCDebug(logAnimations) << "Queueing triggered move:"
                            << move_idx << delay << fx_idx;
 }

@@ -56,7 +56,7 @@ void Entity::fillFromCharacter(const GameDataStore &data)
 void Entity::beginLogout(uint16_t time_till_logout)
 {
     m_is_logging_out = true;
-    m_entity_update_flags.setFlag(UpdateFlag::Logout);
+    m_entity_update_flags.setFlag(UpdateFlag::LOGOUT);
     m_time_till_logout = time_till_logout*1000;
 }
 

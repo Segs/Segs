@@ -84,9 +84,9 @@ void sendStateMode(const Entity &src, BitStream &bs)
 {
     // if(state_mode & 2) then RespawnIfDead, AliveEnough==true, close some windows
     PUTDEBUG("before sendStateMode");
-    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::StateMode));
+    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::STATEMODE));
     PUTDEBUG("before sendStateMode 2");
-    if(src.m_entity_update_flags.testFlag(src.UpdateFlag::StateMode))
+    if(src.m_entity_update_flags.testFlag(src.UpdateFlag::STATEMODE))
         storePackedBitsConditional(bs, 3, uint32_t(src.m_state_mode));
 
     PUTDEBUG("after sendStateMode");
@@ -336,7 +336,7 @@ void sendOnOddSend(const Entity &src,BitStream &bs)
     // set move change timer to be always 0
     // calculate interpolations using slow timer
     //
-    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::OddSend));
+    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::ODDSEND));
 }
 
 void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
@@ -352,7 +352,7 @@ void sendEntCollision(const Entity &src,BitStream &bs)
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::NoDrawOnClient)); // 1/0 only
+    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::NODRAWONCLIENT)); // 1/0 only
 }
 
 void sendAFK(const Entity &src, BitStream &bs)
@@ -422,13 +422,13 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bool update_rarely = src.m_entity_update_flags & (src.UpdateFlag::Full
-            | src.UpdateFlag::Logout | src.UpdateFlag::SuperGroup | src.UpdateFlag::AFK
-            | src.UpdateFlag::NoDrawOnClient | src.UpdateFlag::NoCollision | src.UpdateFlag::HeroVillian
-            | src.UpdateFlag::OddSend | src.UpdateFlag::Titles | src.UpdateFlag::Translucency
-            | src.UpdateFlag::Costumes | src.UpdateFlag::Animations | src.UpdateFlag::StateMode);
-    bool update_chars = src.m_entity_update_flags & (src.UpdateFlag::Target
-            | src.UpdateFlag::Buffs | src.UpdateFlag::Stats | src.UpdateFlag::FX);
+    bool update_rarely = src.m_entity_update_flags & (src.UpdateFlag::FULL
+            | src.UpdateFlag::LOGOUT | src.UpdateFlag::SUPERGROUP | src.UpdateFlag::AFK
+            | src.UpdateFlag::NODRAWONCLIENT | src.UpdateFlag::NOCOLLISION | src.UpdateFlag::HEROVILLAIN
+            | src.UpdateFlag::ODDSEND | src.UpdateFlag::TITLES | src.UpdateFlag::TRANSLUCENCY
+            | src.UpdateFlag::COSTUMES | src.UpdateFlag::ANIMATIONS | src.UpdateFlag::STATEMODE);
+    bool update_chars = src.m_entity_update_flags & (src.UpdateFlag::TARGET
+            | src.UpdateFlag::BUFFS | src.UpdateFlag::STATS | src.UpdateFlag::FX);
     bool has_updates = src.m_entity_update_flags;
 
     // NPCs never have pchar_things (FX, Stats, Buffs, Targets)

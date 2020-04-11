@@ -153,27 +153,28 @@ public:
         EntityPtr           m_entity;
         NPCPtr              m_npc;
 
-        enum class UpdateFlag : uint32_t
+        // enum because enum class has issues in clang, see PR #925
+        enum UpdateFlag
         {
-            None            = 0x0,
-            StateMode       = 0x1,
-            Movement        = 0x2,
-            Animations      = 0x4,
+            NONE            = 0x0,
+            STATEMODE       = 0x1,
+            MOVEMENT        = 0x2,
+            ANIMATIONS      = 0x4,
             FX              = 0x8,
-            Costumes        = 0x10,
-            Translucency    = 0x20,
-            Titles          = 0x40,
-            Stats           = 0x80,
-            Buffs           = 0x100,
-            Target          = 0x200,
-            OddSend         = 0x400,
-            HeroVillian     = 0x800,
-            NoCollision     = 0x1000,
-            NoDrawOnClient  = 0x2000,
+            COSTUMES        = 0x10,
+            TRANSLUCENCY    = 0x20,
+            TITLES          = 0x40,
+            STATS           = 0x80,
+            BUFFS           = 0x100,
+            TARGET          = 0x200,
+            ODDSEND         = 0x400,
+            HEROVILLAIN     = 0x800,
+            NOCOLLISION     = 0x1000,
+            NODRAWONCLIENT  = 0x2000,
             AFK             = 0x4000,
-            SuperGroup      = 0x8000,
-            Logout          = 0x10000,
-            Full            = ~0U
+            SUPERGROUP      = 0x8000,
+            LOGOUT          = 0x10000,
+            FULL            = ~0U
         };
         Q_DECLARE_FLAGS(UpdateFlags, UpdateFlag)
 
