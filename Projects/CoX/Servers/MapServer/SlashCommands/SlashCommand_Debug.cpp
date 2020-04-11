@@ -310,9 +310,8 @@ void cmdHandler_SetStateMode(const QStringList &params, MapClientSession &sess)
 {
     uint32_t val = params.value(0).toUInt();
 
-    sess.m_ent->m_has_state_mode = true;
     sess.m_ent->m_state_mode = static_cast<ClientStates>(val);
-    markEntityForUpdate(sess.m_ent, EntityUpdateFlags::StateMode);
+    sess.m_ent->EntityUpdateFlags.setFlag(sess.m_ent->UpdateFlag::StateMode);
 
     QString msg = "Set StateMode to: " + QString::number(val);
     qCDebug(logSlashCommand) << msg;

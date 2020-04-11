@@ -40,8 +40,6 @@ enum class FadeDirection
     Out
 };
 
-
-
 // returned by getEntityFromDB()
 struct CharacterFromDB
 {
@@ -130,7 +128,6 @@ struct NetFx
     NetFxTarget origin;
 };
 
-
 class Entity
 {
     // only EntityStore can create instances of this class
@@ -155,6 +152,30 @@ public:
         PlayerPtr           m_player;
         EntityPtr           m_entity;
         NPCPtr              m_npc;
+
+        enum class UpdateFlag : uint32_t
+        {
+            None            = 0x0,
+            StateMode       = 0x1,
+            Movement        = 0x2,
+            Animations      = 0x4,
+            FX              = 0x8,
+            Costumes        = 0x10,
+            Translucency    = 0x20,
+            Titles          = 0x40,
+            Stats           = 0x80,
+            Buffs           = 0x100,
+            Target          = 0x200,
+            OddSend         = 0x400,
+            HeroVillian     = 0x800,
+            NoCollision     = 0x1000,
+            NoDrawOnClient  = 0x2000,
+            AFK             = 0x4000,
+            SuperGroup      = 0x8000,
+            Logout          = 0x10000,
+            Full            = ~0U
+        };
+        Q_DECLARE_FLAGS(UpdateFlags, UpdateFlag)
 
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_supergroup        = true;
@@ -228,7 +249,7 @@ public:
         MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction          = FadeDirection::In;
         uint32_t            m_db_store_flags            = 0;
-        uint32_t            m_entity_update_flags       = 0;
+        UpdateFlags         m_entity_update_flags       = UpdateFlag::Movement;
         Destination         m_cur_destination;
         float               translucency                = 1.0f;
         bool                player_type                 = false;
@@ -249,3 +270,4 @@ static  void                sendPvP(BitStream &bs);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
         void                setActiveDialogCallback(std::function<void(int)> callback);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Entity::UpdateFlags)

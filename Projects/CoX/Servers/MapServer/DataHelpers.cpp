@@ -475,7 +475,7 @@ void sendEnhanceCombineResponse(MapClientSession &sess, bool success, bool destr
 
 void sendChangeTitle(MapClientSession &sess, bool select_origin)
 {
-    markEntityForUpdate(sess.m_ent, EntityUpdateFlags::Titles);
+    sess.m_ent->UpdateFlags::setFlag(sess.m_ent->UpdateFlag::Titles);
     //qCDebug(logSlashCommand) << "Sending ChangeTitle Dialog:" << sess.m_ent->m_idx << "select_origin:" << select_origin;
     sess.addCommand<ChangeTitle>(select_origin);
 }
@@ -549,7 +549,7 @@ void sendBrowser(MapClientSession &sess, QString &content)
 
 void sendTailorOpen(MapClientSession &sess)
 {
-    unmarkEntityForUpdate(sess.m_ent, EntityUpdateFlags::Movement);
+    sess.m_ent->UpdateFlags::setFlag(sess.m_ent->UpdateFlag::Movement, false);
     sess.m_ent->m_char->m_client_window_state = ClientWindowState::Tailor;
     qCDebug(logTailor) << QString("Sending TailorOpen");
     sess.addCommand<TailorOpen>();
@@ -640,7 +640,8 @@ void updateContactStatusList(MapClientSession &sess, const Contact &updated_cont
 
     //update database contactList
     sess.m_ent->m_player->m_contacts = contacts;
-    markEntityForUpdate(sess.m_ent, EntityUpdateFlags::Full);
+    sess.m_ent->UpdateFlags::setFlag(sess.m_ent->UpdateFlag::Full);
+    markEntityForUpdate(sess.m_ent, UpdateFlags::Full);
     markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
     qCDebug(logSlashCommand) << "Sending Character Contact Database updated";
 
@@ -737,7 +738,7 @@ void checkPower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_i
             {
                 rpow_idx->m_activation_state = false;
                 rpow_idx->m_active_state_change = true;
-                markEntityForUpdate(&ent, EntityUpdateFlags::Buffs); // we may have toggled a buff
+                ent.UpdateFlags::setFlag(ent.UpdateFlag::Buffs); // we may have toggled a buff
                 return;
             }
         }
@@ -961,7 +962,7 @@ void doPower(Entity &ent, QueuedPowers powerinput)
     // Update Powers to Client to show Recharging/Timers/Etc in UI
 
     setEnd(*ent.m_char, getEnd(*ent.m_char)-powtpl.EnduranceCost);      //TODO: endurance discount
-    markEntityForUpdate(&ent, EntityUpdateFlags::Stats);
+    ent.UpdateFlags::setFlag(ent.UpdateFlag::Stats);
 
     if (powtpl.Radius != 0.0f)           // Only AoE have a radius
     {
@@ -1785,7 +1786,7 @@ void removeContact(MapClientSession &sess, Contact contact)
     {
         contacts.erase(contacts.begin() + count);
         sess.m_ent->m_player->m_contacts = contacts;
-        markEntityForUpdate(sess.m_ent, EntityUpdateFlags::Full);
+        sess.m_ent->UpdateFlags::setFlag(sess.m_ent->UpdateFlag::Full);
         markEntityForDbStore(sess.m_ent, DbStoreFlags::Full);
         sess.addCommand<ContactStatusList>(contacts);
     }
@@ -2098,11 +2099,11 @@ uint addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, gl
     e->m_faction_data.m_faction_name = "Citizen";
 
     //Required to send changes to clients
-    markEntityForUpdate(e, EntityUpdateFlags::Full);
-    unmarkEntityForUpdate(e, EntityUpdateFlags::FX);
-    unmarkEntityForUpdate(e, EntityUpdateFlags::Stats);
-    unmarkEntityForUpdate(e, EntityUpdateFlags::Buffs);
-    unmarkEntityForUpdate(e, EntityUpdateFlags::Target);
+    e->UpdateFlags::setFlag(e->UpdateFlag::Full);
+    e->UpdateFlags::setFlag(e->UpdateFlag::FX
+                                  | e->UpdateFlag::Stats
+                                  | e->UpdateFlag::Buffs
+                                  | e->UpdateFlag::Target, false);
 
     forcePosition(*e, loc);
     forceOrientation(*e, ori);

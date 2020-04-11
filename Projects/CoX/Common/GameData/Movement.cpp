@@ -513,7 +513,7 @@ static void entMotionSetInputVelocity(Entity* ent, const TickState* tick_state) 
         }
 
         setAFK(*ent->m_char, false);
-        markEntityForUpdate(ent, EntityUpdateFlags::AFK);
+        ent->m_entity_update_flags.setFlag(ent->UpdateFlag::AFK);
     }
 }
 
@@ -936,7 +936,7 @@ void forcePosition(Entity &e, glm::vec3 pos)
 {
     e.m_entity_data.m_pos = pos;
     e.m_force_pos_and_cam = true;
-    markEntityForUpdate(&e, EntityUpdateFlags::Movement);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::Movement);
 }
 
 void forceOrientation(Entity &e, glm::vec3 pyr)
@@ -944,7 +944,7 @@ void forceOrientation(Entity &e, glm::vec3 pyr)
     e.m_direction = glm::quat(pyr);
     e.m_entity_data.m_orientation_pyr = pyr;
     e.m_force_pos_and_cam = true;
-    markEntityForUpdate(&e, EntityUpdateFlags::Movement);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::Movement);
 }
 
 // Move to Sequences or Triggers files later
@@ -956,7 +956,7 @@ void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_
     tmove.m_trigger_fx_idx = fx_idx;
 
     e.m_triggered_moves.push_back(tmove);
-    markEntityForUpdate(&e, EntityUpdateFlags::Animations);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::Animations);
     qCDebug(logAnimations) << "Queueing triggered move:"
                            << move_idx << delay << fx_idx;
 }

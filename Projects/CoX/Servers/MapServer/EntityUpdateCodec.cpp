@@ -84,9 +84,9 @@ void sendStateMode(const Entity &src, BitStream &bs)
 {
     // if(state_mode & 2) then RespawnIfDead, AliveEnough==true, close some windows
     PUTDEBUG("before sendStateMode");
-    bs.StoreBits(1,src.m_has_state_mode);
+    bs.StoreBits(1, src.EntityUpdateFlags.testFlag(src.UpdateFlag::StateMode));
     PUTDEBUG("before sendStateMode 2");
-    if(src.m_has_state_mode)
+    if(src.EntityUpdateFlags.testFlag(src.UpdateFlag::StateMode))
         storePackedBitsConditional(bs, 3, uint32_t(src.m_state_mode));
 
     PUTDEBUG("after sendStateMode");
@@ -336,7 +336,7 @@ void sendOnOddSend(const Entity &src,BitStream &bs)
     // set move change timer to be always 0
     // calculate interpolations using slow timer
     //
-    bs.StoreBits(1, entityHasFlag(src, EntityUpdateFlags::OddSend));
+    bs.StoreBits(1, entityHasFlag(src, UpdateFlags::OddSend));
 }
 
 void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
@@ -352,7 +352,7 @@ void sendEntCollision(const Entity &src,BitStream &bs)
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1, entityHasFlag(src, EntityUpdateFlags::NoDrawOnClient)); // 1/0 only
+    bs.StoreBits(1, entityHasFlag(src, UpdateFlags::NoDrawOnClient)); // 1/0 only
 }
 
 void sendAFK(const Entity &src, BitStream &bs)
@@ -422,23 +422,23 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bool update_rarely = entityHasFlag(src, EntityUpdateFlags::Full) ||
-            entityHasFlag(src, EntityUpdateFlags::Logout) ||
-            entityHasFlag(src, EntityUpdateFlags::SuperGroup) ||
-            entityHasFlag(src, EntityUpdateFlags::AFK) ||
-            entityHasFlag(src, EntityUpdateFlags::NoDrawOnClient) ||
-            entityHasFlag(src, EntityUpdateFlags::NoCollision) ||
-            entityHasFlag(src, EntityUpdateFlags::HeroVillian) ||
-            entityHasFlag(src, EntityUpdateFlags::OddSend) ||
-            entityHasFlag(src, EntityUpdateFlags::Titles) ||
-            entityHasFlag(src, EntityUpdateFlags::Translucency) ||
-            entityHasFlag(src, EntityUpdateFlags::Costumes) ||
-            entityHasFlag(src, EntityUpdateFlags::Animations) ||
-            entityHasFlag(src, EntityUpdateFlags::StateMode);
-    bool update_chars = entityHasFlag(src, EntityUpdateFlags::Target) ||
-            entityHasFlag(src, EntityUpdateFlags::Buffs) ||
-            entityHasFlag(src, EntityUpdateFlags::Stats) ||
-            entityHasFlag(src, EntityUpdateFlags::FX);
+    bool update_rarely = entityHasFlag(src, UpdateFlags::Full) ||
+            entityHasFlag(src, UpdateFlags::Logout) ||
+            entityHasFlag(src, UpdateFlags::SuperGroup) ||
+            entityHasFlag(src, UpdateFlags::AFK) ||
+            entityHasFlag(src, UpdateFlags::NoDrawOnClient) ||
+            entityHasFlag(src, UpdateFlags::NoCollision) ||
+            entityHasFlag(src, UpdateFlags::HeroVillian) ||
+            entityHasFlag(src, UpdateFlags::OddSend) ||
+            entityHasFlag(src, UpdateFlags::Titles) ||
+            entityHasFlag(src, UpdateFlags::Translucency) ||
+            entityHasFlag(src, UpdateFlags::Costumes) ||
+            entityHasFlag(src, UpdateFlags::Animations) ||
+            entityHasFlag(src, UpdateFlags::StateMode);
+    bool update_chars = entityHasFlag(src, UpdateFlags::Target) ||
+            entityHasFlag(src, UpdateFlags::Buffs) ||
+            entityHasFlag(src, UpdateFlags::Stats) ||
+            entityHasFlag(src, UpdateFlags::FX);
     bool has_updates = src.m_entity_update_flags;
 
     // NPCs never have pchar_things (FX, Stats, Buffs, Targets)
