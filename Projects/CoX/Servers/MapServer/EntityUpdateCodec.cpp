@@ -84,9 +84,9 @@ void sendStateMode(const Entity &src, BitStream &bs)
 {
     // if(state_mode & 2) then RespawnIfDead, AliveEnough==true, close some windows
     PUTDEBUG("before sendStateMode");
-    bs.StoreBits(1, src.EntityUpdateFlags.testFlag(src.UpdateFlag::StateMode));
+    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::StateMode));
     PUTDEBUG("before sendStateMode 2");
-    if(src.EntityUpdateFlags.testFlag(src.UpdateFlag::StateMode))
+    if(src.m_entity_update_flags.testFlag(src.UpdateFlag::StateMode))
         storePackedBitsConditional(bs, 3, uint32_t(src.m_state_mode));
 
     PUTDEBUG("after sendStateMode");
@@ -336,7 +336,7 @@ void sendOnOddSend(const Entity &src,BitStream &bs)
     // set move change timer to be always 0
     // calculate interpolations using slow timer
     //
-    bs.StoreBits(1, entityHasFlag(src, UpdateFlags::OddSend));
+    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::OddSend));
 }
 
 void sendWhichSideOfTheForce(const Entity &src,BitStream &bs)
@@ -352,7 +352,7 @@ void sendEntCollision(const Entity &src,BitStream &bs)
 
 void sendNoDrawOnClient(const Entity &src,BitStream &bs)
 {
-    bs.StoreBits(1, entityHasFlag(src, UpdateFlags::NoDrawOnClient)); // 1/0 only
+    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::NoDrawOnClient)); // 1/0 only
 }
 
 void sendAFK(const Entity &src, BitStream &bs)
@@ -422,28 +422,28 @@ void serializeto(const Entity & src, ClientEntityStateBelief &belief, BitStream 
     // creation ends here
     PUTDEBUG("before entReceiveStateMode");
 
-    bool update_rarely = entityHasFlag(src, UpdateFlags::Full) ||
-            entityHasFlag(src, UpdateFlags::Logout) ||
-            entityHasFlag(src, UpdateFlags::SuperGroup) ||
-            entityHasFlag(src, UpdateFlags::AFK) ||
-            entityHasFlag(src, UpdateFlags::NoDrawOnClient) ||
-            entityHasFlag(src, UpdateFlags::NoCollision) ||
-            entityHasFlag(src, UpdateFlags::HeroVillian) ||
-            entityHasFlag(src, UpdateFlags::OddSend) ||
-            entityHasFlag(src, UpdateFlags::Titles) ||
-            entityHasFlag(src, UpdateFlags::Translucency) ||
-            entityHasFlag(src, UpdateFlags::Costumes) ||
-            entityHasFlag(src, UpdateFlags::Animations) ||
-            entityHasFlag(src, UpdateFlags::StateMode);
-    bool update_chars = entityHasFlag(src, UpdateFlags::Target) ||
-            entityHasFlag(src, UpdateFlags::Buffs) ||
-            entityHasFlag(src, UpdateFlags::Stats) ||
-            entityHasFlag(src, UpdateFlags::FX);
+    bool update_rarely = src.m_entity_update_flags.testFlag(src.UpdateFlag::Full)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Logout)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::SuperGroup)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::AFK)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::NoDrawOnClient)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::NoCollision)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::HeroVillian)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::OddSend)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Titles)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Translucency)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Costumes)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Animations)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::StateMode);
+    bool update_chars = src.m_entity_update_flags.testFlag(src.UpdateFlag::Target)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Buffs)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::Stats)
+            || src.m_entity_update_flags.testFlag(src.UpdateFlag::FX);
     bool has_updates = src.m_entity_update_flags;
 
     // NPCs never have pchar_things (FX, Stats, Buffs, Targets)
     // Critters and Players may or may not depending on state
-    if(src.m_type == EntType::NPC)
+    if(src.m_type == EntType::NPC || src.m_type == EntType::DOOR)
         update_chars = false;
 
     bs.StoreBits(1, has_updates);

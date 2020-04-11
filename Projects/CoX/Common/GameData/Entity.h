@@ -249,7 +249,7 @@ public:
         MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction          = FadeDirection::In;
         uint32_t            m_db_store_flags            = 0;
-        UpdateFlags         m_entity_update_flags       = UpdateFlag::Movement;
+        UpdateFlags         m_entity_update_flags;
         Destination         m_cur_destination;
         float               translucency                = 1.0f;
         bool                player_type                 = false;

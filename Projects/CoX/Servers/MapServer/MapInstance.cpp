@@ -868,7 +868,7 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     if(was_afk)
         sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", map_session);
 
-    e->EntityUpdateFlags.setFlag(e->UpdateFlag::AFK); // status of afk has changed
+    e->m_entity_update_flags.setFlag(e->UpdateFlag::AFK); // status of afk has changed
 
     if(logPlayerSpawn().isDebugEnabled())
     {
@@ -1009,7 +1009,7 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     EntitiesResponse *res=new EntitiesResponse();
     res->m_map_time_of_day = m_world->time_of_day();
     res->ent_major_update = true;
-    session.m_ent->EntityUpdateFlags.setFlag(session.m_ent->UpdateFlag::FULL);
+    session.m_ent->m_entity_update_flags.setFlag(session.m_ent->UpdateFlag::Full);
 
     res->abs_time = 30*100*(m_world->accumulated_time);
     buildEntityResponse(res,session,EntityUpdateMode::FULL,false);
@@ -2080,7 +2080,7 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         // Force position and orientation to fix #617 spawn at 0,0,0 bug
         forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
         forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
-        session.m_ent->EntityUpdateFlags.setFlag(session.m_ent->UpdateFlag::Full);
+        session.m_ent->m_entity_update_flags.setFlag(session.m_ent->UpdateFlag::Full);
 
         char buf[256];
         std::string welcome_msg = std::string("Welcome to ") + VersionInfo::getAuthVersion()+"\n";
@@ -2496,7 +2496,7 @@ void MapInstance::setPlayerSpawn(Entity &e)
 
     forcePosition(e, spawn_pos);
     forceOrientation(e, spawn_pyr);
-    e->EntityUpdateFlags.setFlag(e->UpdateFlag::Full);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::Full);
 }
 
 // Teleport to a specific SpawnLocation; do nothing if the SpawnLocation is not found.
@@ -2655,7 +2655,7 @@ void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
     special = getSpecialTitle(*session.m_ent->m_char);
 
     setTitles(*session.m_ent->m_char, ev->m_has_prefix, generic, origin, special);
-    session.m_ent->EntityUpdateFlags.setFlag(session.m_ent->UpdateFlag::Titles);
+    session.m_ent->m_entity_update_flags.setFlag(session.m_ent->UpdateFlag::Titles);
     qCDebug(logMapEvents) << "Entity sending titles: " << session.m_ent->m_idx << ev->m_has_prefix << generic << origin << special;
 }
 
@@ -2810,7 +2810,7 @@ void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
     session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
 
     session.m_ent->m_char->m_client_window_state = ClientWindowState::None;
-    session.m_ent->EntityUpdateFlags.setFlag(session.m_ent->UpdateFlag::Cotumes);
+    session.m_ent->m_entity_update_flags.setFlag(session.m_ent->UpdateFlag::Costumes);
     markEntityForDbStore(session.m_ent, DbStoreFlags::Full);
 }
 
@@ -2853,15 +2853,15 @@ void MapInstance::on_afk_update()
             if(cd->m_afk)
             {
                 setAFK(*e->m_char, false);
-                e->EntityUpdateFlags.setFlag(e->UpdateFlag::AFK, false);
+                e->m_entity_update_flags.setFlag(e->UpdateFlag::AFK, false);
                 sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", *sess);
             }
         }
 
         if(cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
-            setAFK( *e->m_char, true, "Auto AFK");
-            e.UpdateFlags::setFlag(e.UpdateFlag::AFK);
+            setAFK(*e->m_char, true, "Auto AFK");
+            e->m_entity_update_flags.setFlag(e->UpdateFlag::AFK);
             msg = QString("You are AFKed after %1 seconds of inactivity.").arg(data.m_time_to_afk);
             sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *sess);
         }
