@@ -1,6 +1,7 @@
 
 <img src="docs/segs-medallion-med.png" align="right" alt="SEGS Logo">
 
+[![Discord](https://img.shields.io/discord/242088237596803073.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.segs.dev)
 [![master Build Status](https://travis-ci.com/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs)
 [![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
@@ -15,7 +16,7 @@ For legal information, please see [LICENSE.md](./LICENSE.md).
 For a list of SEGS authors and contributors, please see [AUTHORS.md](./docs/AUTHORS.md).
 
 Some other useful links:
-* Our [Discord](https://discord.segs.io/)
+* Our [Discord](https://discord.segs.dev/)
 * Our [wiki](https://github.com/Segs/Segs/wiki)
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
 * How Can I Help? [Specific Tasks to Help](https://github.com/Segs/Segs/issues/519)
@@ -23,7 +24,7 @@ Some other useful links:
 
 DOCUMENTATION
 ------
-- [Contribute](#e)  
+- [Contribute](#./docs/CONTRIBUTING.md)  
 - *Compile an install SEGS on:*  
           - [MacOS](#)   
           - [CentOS/RHEL](./docs/SEGS-COMPILE_AND_INSTALL-CENTOS.md)  
@@ -46,7 +47,7 @@ CONTRIBUTE TO DEVELOPMENT
 ------
 **SEGS needs your help!** From editing README's like this one, to coding the MapServer, there are tasks that can be tackled by contributors of all skill level!
 
-Basic instructions for compiling SEGS in Linux and Windows are above, however for more detailed visual instructions, visit https://segs.io/developers
+Basic instructions for compiling SEGS in Linux and Windows are above, however for more detailed visual instructions, visit https://segs.dev/developers
 
 Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to begin:
 
@@ -60,7 +61,7 @@ Please read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) and see the links below to
 HELP AND MORE INFORMATION
 ------
 
-For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.io/
+For Help with installation and configuration of your local SEGS, please see visit us on discord at https://discord.segs.dev/
 
 
 FAQs

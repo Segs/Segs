@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -103,7 +103,7 @@ bool GameDbSyncContext::loadAndConfigure()
         QString dbdriver = config.value(QStringLiteral("db_driver"),"QSQLITE").toString();
         QString dbhost = config.value(QStringLiteral("db_host"),"127.0.0.1").toString();
         int dbport = config.value(QStringLiteral("db_port"),"5432").toInt();
-        QString dbname = config.value(QStringLiteral("db_name"),"segs_game").toString();
+        QString dbname = config.value(QStringLiteral("db_name"),"segs_game.db").toString();
         QString dbuser = config.value(QStringLiteral("db_user"),"segsadmin").toString();
         QString dbpass = config.value(QStringLiteral("db_pass"),"segs123").toString();
     config.endGroup(); // CharacterDatabase
@@ -131,7 +131,7 @@ bool GameDbSyncContext::loadAndConfigure()
 
     if(!m_db->open())
     {
-        qFatal("Failed to open database: %s", dbname.toStdString().c_str());
+        qCritical().noquote() << "Failed to open database:" << dbname;
         db2->setConnectOptions();
         return false;
     }

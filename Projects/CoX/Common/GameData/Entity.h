@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -153,7 +153,7 @@ private:
                             Entity();
                             ~Entity();
 public:
-        StateStorage        m_states;
+        InputState          m_input_state;
         MotionState         m_motion_state;
         // Some entities might not have a character data ( doors, cars )
         // Making it an unique_ptr<Character> makes it clear that Entity 'owns'
@@ -186,6 +186,7 @@ public:
         std::deque<QueuedPowers>    m_queued_powers;
         std::vector<QueuedPowers>   m_auto_powers;
         std::vector<QueuedPowers>   m_recharging_powers;
+        std::vector<DelayedEffect>  m_delayed;
         PowerStance                 m_stance;
         bool                        m_update_buffs  = false;
 
@@ -217,7 +218,6 @@ public:
         bool                m_has_control_id        = true;     // EntityReponse sendServerPhysicsPositions
         bool                m_has_interp            = false;    // EntityUpdateCodec storePosUpdate
         bool                m_move_instantly        = false;    // EntityUpdateCodec storePosUpdate
-        bool                m_in_training           = false;
         bool                m_has_input_on_timeframe= false;
         bool                m_is_using_mapmenu      = false;
         bool                m_map_swap_collided     = false;
@@ -226,7 +226,7 @@ public:
 
         std::array<PosUpdate, 64> m_pos_updates;
         std::array<BinTreeEntry, 7> m_interp_bintree;
-        size_t              m_update_idx                = 0;
+        int                 m_update_idx                = 0;
         bool                m_pchar_things              = false;
         bool                m_update_anims              = false;
         bool                m_hasname                   = false;
@@ -250,7 +250,7 @@ public:
         bool                m_is_store                  = false;
         vStoreItems         m_store_items;
 
-        std::function<void(int)>  m_active_dialog       = NULL;
+        std::function<void(int)>  m_active_dialog      = nullptr;
 
         void                dump();
 

@@ -9,8 +9,8 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `table_versions`;
 DROP TABLE IF EXISTS `supergroups`;
 DROP TABLE IF EXISTS `progress`;
--- The costume table is no more but for compatibility with older releases
--- we want to make sure to still remove it.
+/* The costume table is no more but for compatibility with older releases
+   we want to make sure to still remove it. */
 DROP TABLE IF EXISTS `costume`;
 DROP TABLE IF EXISTS `emails`;
 DROP TABLE IF EXISTS `characters`;
@@ -55,10 +55,10 @@ CREATE TABLE `table_versions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 INSERT INTO `table_versions` (`id`, `table_name`, `version`, `last_update`) VALUES
-(1, 'db_version', 9, '2018-10-22 22:56:43'),
+(1, 'db_version', 10, '2019-04-28 22:56:43'),
 (2, 'table_versions', 0, '2017-11-11 08:57:42'),
 (3, 'accounts', 1, '2018-05-03 12:52:03'),
-(4, 'characters', 9, '2018-10-22 22:56:43'),
+(4, 'characters', 12, '2019-04-28 22:56:43'),
 (7, 'supergroups', 2, '2018-10-22 22:56:43'),
 (8, 'emails', 0, '2018-09-23 08:00:00');
 

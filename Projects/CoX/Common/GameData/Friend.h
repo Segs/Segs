@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -15,7 +15,7 @@ static const int g_max_friends = 25;
 struct Friend
 {
         enum : uint32_t { class_version=1 };
-        
+
         bool        m_online_status;
         uint32_t    m_db_id;           // m_db_id
         QString     m_name;
@@ -29,10 +29,11 @@ struct Friend
 
 struct FriendsList
 {
-static const constexpr  uint32_t    class_version   = 1;
-                        bool        m_has_friends;
-                        int         m_friends_count = 0;    // v12
-                        std::vector<Friend> m_friends;
+    enum : uint32_t { class_version = 1 };
+
+    bool                m_has_friends   = false;
+    int                 m_friends_count = 0;
+    std::vector<Friend> m_friends;
 };
 template<class Archive>
 void serialize(Archive &archive, FriendsList &fl, uint32_t const version);

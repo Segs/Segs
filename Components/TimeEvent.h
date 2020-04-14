@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -18,17 +18,18 @@ public:
                         // [[ev_def:field]]
     ACE_Time_Value      m_arrival_time;
                         // [[ev_def:field]]
-    uint64_t            m_timer_id;
+    uint32_t            m_timer_id;
 
                         Timeout(EventSrc *source=nullptr) : Event(evTimeout,source)
-                            {
-                            }
-                        Timeout(const ACE_Time_Value &time, uint64_t dat,EventSrc *source)
+                        {
+                        }
+                        Timeout(const ACE_Time_Value &time, uint32_t dat,EventSrc *source)
                                 : Event(evTimeout,source), m_arrival_time(time), m_timer_id(dat)
                         {
                         }
-    uint64_t            timer_id() { return m_timer_id; }
+    uint32_t            timer_id() const { return m_timer_id; }
     ACE_Time_Value      arrival_time() const { return m_arrival_time; }
+
     EVENT_IMPL(Timeout)
 };
 } // end of SEGSEvents namespace

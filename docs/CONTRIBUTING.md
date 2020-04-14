@@ -2,6 +2,12 @@
 
 :+1::tada: Thank you for contributing to the SEGS Project! :tada::+1:
 
+### Regarding the leaked source code:
+* Please be aware that SEGS is a [Clean Room](https://en.wikipedia.org/wiki/Clean_room_design) environment. 
+* We cannot keep our project at it's current legal status if we were to use leaked source code directly.
+ 
+In short, everything made for SEGS is original and entirely independent from the leaked code.
+
 The following is a set of guidelines for contributing to SEGS. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
 #### Table Of Contents
@@ -10,7 +16,6 @@ The following is a set of guidelines for contributing to SEGS. These are mostly 
 
 [I don't want to read this whole thing, I just have a question!!!](#i-dont-want-to-read-this-whole-thing-i-just-have-a-question)
   * [Chat with us on Discord](#chat-with-us-on-discord)
-  * [Chat with us on IRC](#chat-with-us-on-irc)
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
   * [SEGS and Packages](#segs-and-packages)
@@ -38,25 +43,15 @@ This project and everyone participating in it is governed by the [SEGS Code of C
 
 We have an official message board and a FAQ where the community chimes in with helpful advice if you have questions.
 
-* [SEGS Official Forums](https://forum.segs.io/)
-* [The FAQ Thread](https://forum.segs.io/viewtopic.php?f=8&t=8244)
+* [SEGS Official Forums](https://forum.segs.dev/)
+* [The FAQ Thread](https://forum.segs.dev/viewtopic.php?f=8&t=8244)
 
 ### Chat with us on Discord
 
 Come and join us in `#pocket-d` channel for general chat or `#troubleshooting` for support. 
 Developers are welcome to join `#development`.  
  
- [**Click here to join SEGS Discord**](https://discord.segs.io/)
-
-
-### Chat with us on IRC
-
-Or if IRC chat is more your speed, you can join us on IRC:
-
-  **Server:** irc.segs.io 
-  **Port:** 6667  
-  **SSL port:** 6697  
-  **Channel:** #segs  
+ [**Click here to join SEGS Discord**](https://discord.segs.dev/)
 
 
 ## What should I know before I get started?
@@ -81,7 +76,7 @@ Before creating issues, please check [this list](#before-submitting-an-issue) as
 #### Before Submitting An Issue
 
 * **Check the [debugging guide](DEBUGGING_GUIDE.md).** You might be able to find the cause of the problem and fix things yourself. Most importantly, check if you can reproduce the problem [in the latest version of SEGS](http://github.com/Segs/Segs).
-* **Check the [FAQs on the forum](https://forum.segs.io/viewtopic.php?f=8&t=8244)** for a list of common questions and problems.
+* **Check the [FAQs on the wiki](https://github.com/Segs/Segs/wiki/FAQ)** for a list of common questions and problems.
 * **Perform a [cursory search](https://github.com/Segs/Segs/issues?q=is%3Aopen+is%3Aissue)** to see if the problem has already been reported. If it has **and the issue is still open**, add a comment to the existing issue instead of opening a new one.
 
 #### How Do I Submit A (Good) Issue?

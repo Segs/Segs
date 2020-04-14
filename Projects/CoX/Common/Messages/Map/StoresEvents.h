@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -56,7 +56,7 @@ namespace SEGSEvents
             assert(!"StoreBuyItem serializeto");
         }
 
-        void serializefrom(BitStream &bs)    // Packet 69
+        void serializefrom(BitStream &bs) final   // Packet 69
         {
             m_npc_idx = bs.GetPackedBits(12);
             bs.GetString(m_item_name);
@@ -77,12 +77,12 @@ namespace SEGSEvents
 
         explicit StoreSellItem() : MapLinkEvent(MapEventTypes::evStoreSellItem){}
 
-        void serializeto(BitStream &/*bs*/) const override
+        void serializeto(BitStream &/*bs*/) const final
         {
             assert(!"StoreSellItem serializeto");
         }
 
-        void serializefrom(BitStream &bs)    // Packet 70
+        void serializefrom(BitStream &bs) final // Packet 70
         {
             m_npc_idx = bs.GetPackedBits(12);
             m_is_enhancement = bs.GetBits(1);

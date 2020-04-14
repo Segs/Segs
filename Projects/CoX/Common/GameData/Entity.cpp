@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -25,10 +25,6 @@
 #include <limits>
 #include <sstream>
 #include <memory>
-
-//TODO: this file needs to know the MapInstance's WorldSimulation rate - Maybe extract it as a configuration object ?
-
-#define WORLD_UPDATE_TICKS_PER_SECOND 30
 
 void Entity::sendAllyID(BitStream &bs)
 {

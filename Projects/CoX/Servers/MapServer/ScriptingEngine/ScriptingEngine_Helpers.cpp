@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -17,7 +17,7 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
     if(!load_res.valid())
     {
         sol::error err = load_res;
-        qCritical() << err.what();
+        qCDebug(logScripts) << err.what();
         return -1;
     }
 
@@ -25,7 +25,7 @@ int ScriptingEngine::loadAndRunFile(const QString &filename)
     if(!script_result.valid())
     {
         sol::error err = script_result;
-        qCritical() << err.what();
+        qCDebug(logScripts) << err.what();
         return -1;
     }
 
@@ -96,14 +96,14 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
     funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
     if(!funcwrap.valid())
     {
-        qCritical() << "Failed to retrieve script func:" << name;
+        qCDebug(logScripts) << "Failed to retrieve script func:" << name;
         return "";
     }
     auto result = funcwrap(arg1);
     if(!result.valid())
     {
         sol::error err = result;
-        qCritical() << "Failed to run script func:" << name << err.what();
+        qCDebug(logScripts) << "Failed to run script func:" << name << err.what();
         return "";
     }
     return result.get<std::string>();
@@ -116,14 +116,14 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
 
     if(!funcwrap.valid())
     {
-        qCritical() << "Failed to retrieve script func:" << name;
+        qCDebug(logScripts) << "Failed to retrieve script func:" << name;
         return "";
     }
     auto result = funcwrap(arg1, loc);
     if(!result.valid())
     {
         sol::error err = result;
-        qCritical() << "Failed to run script func:"<<name<<err.what();
+        qCDebug(logScripts) << "Failed to run script func:"<<name<<err.what();
         return "";
     }
     return result.get<std::string>();
@@ -136,14 +136,14 @@ std::string ScriptingEngine::callFunc(const char *name, const char *arg1, glm::v
 
     if(!funcwrap.valid())
     {
-        qCritical() << "Failed to retrieve script func:"<<name;
+        qCDebug(logScripts) << "Failed to retrieve script func:"<<name;
         return "";
     }
     auto result = funcwrap(arg1, loc);
     if(!result.valid())
     {
         sol::error err = result;
-        qCritical() << "Failed to run script func:"<<name<<err.what();
+        qCDebug(logScripts) << "Failed to run script func:"<<name<<err.what();
         return "";
     }
     return result.get<std::string>();
@@ -156,14 +156,14 @@ std::string ScriptingEngine::callFunc(const char *name, std::vector<Contact> con
 
     if(!funcwrap.valid())
     {
-        qCritical() << "Failed to retrieve script func:"<<name;
+        qCDebug(logScripts) << "Failed to retrieve script func:"<<name;
         return "";
     }
     auto result = funcwrap(contact_list);
     if(!result.valid())
     {
         sol::error err = result;
-        qCritical() << "Failed to run script func:"<<name<<err.what();
+        qCDebug(logScripts) << "Failed to run script func:"<<name<<err.what();
         return "";
     }
      return result.get<std::string>();
@@ -197,14 +197,14 @@ int ScriptingEngine::runScript(const QString &script_contents, const char *scrip
     if(!load_res.valid())
     {
         sol::error err = load_res;
-        // TODO: report error here.
+        qCDebug(logScripts) << err.what();
         return -1;
     }
     sol::protected_function_result script_result = load_res();
     if(!script_result.valid())
     {
         sol::error err = script_result;
-        // TODO: report error here.
+        qCDebug(logScripts) << err.what();
         return -1;
     }
     return 0;

@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -10,6 +10,7 @@
 #include "InternalEvents.h"
 #include "SEGSEvent.h"
 #include "SEGSTimer.h"
+#include "Logging.h"
 
 #include <ace/OS_NS_time.h>
 
@@ -22,6 +23,54 @@
 #include <cassert>
 #include <cinttypes>
 
+/**
+ * @brief The ClientSession struct is a base for all class for all sessions registered in ClientSessionStore
+ */
+struct ClientSession
+{
+        uint64_t    m_session_token= 0; // a back-link to owning session, used in serialization
+};
+
+#define DEBUG_REAPING
+
+#ifdef DEBUG_REAPING
+struct  ReapingMetadata
+{
+        //! @note This class does not take ownership of the `const char *` memory
+        //! the best approach is to pass it '.data' section strings only.
+        std::unordered_map<uint64_t,const char *> m_reaped_link_reason;
+        void marked_for_reaping(uint64_t token,const char *reason)
+        {
+            m_reaped_link_reason[token] = reason;
+        }
+        void unmarked_for_reaping(uint64_t token)
+        {
+            m_reaped_link_reason.erase(token);
+        }
+        [[noreturn]]
+        void fatal_failure(const char *msg,uint64_t token)
+        {
+            auto iter = m_reaped_link_reason.find(token);
+            const char *reason = "Unregistered reason";
+            if(iter!=m_reaped_link_reason.end())
+                reason = iter->second;
+            qFatal("Session failure %s : Reaped because: %s",msg,reason);
+        }
+
+};
+#else
+struct  ReapingMetadata
+{
+        void marked_for_reaping(uint64_t token,const char *reason) {}
+        void unmarked_for_reaping(uint64_t token) {}
+        [[noreturn]]
+        void fatal_failure(const char *msg,uint64_t /*token*/)
+        {
+            qFatal("Session failure %s",msg);
+        }
+};
+#endif
+
 // TODO: consider storing all sessions in vector, and convert m_session_store to token->index map
 template <class SESSION_CLASS>
 class ClientSessionStore
@@ -32,7 +81,7 @@ using   vClients = std::vector<SESSION_CLASS *>;
 using   ivClients = typename vClients::iterator;
 using   civClients = typename vClients::const_iterator;
 protected:
-        std::unique_ptr<SEGSTimer> m_session_reaper_timer;
+
 mutable std::mutex m_store_mutex;
         std::mutex m_reaping_mutex;
         struct ExpectClientInfo
@@ -54,12 +103,13 @@ mutable std::mutex m_store_mutex;
         std::unordered_map<uint32_t,uint64_t> m_id_to_token;
         std::vector<ExpectClientInfo> m_session_expecting_clients;
         std::vector<WaitingSession> m_session_ready_for_reaping;
+        ReapingMetadata m_reaping_data;
         vClients m_active_sessions;
         uint32_t create_cookie(const ACE_INET_Addr &from,uint64_t id)
         {
                 uint64_t res = ((from.hash()+id)&0xFFFFFFFF)^(id>>32);
                 qWarning("Create_cookie still needs a good algorithm. 0x%" PRIx64, res);
-                return (uint32_t)res;
+                return uint32_t(res);
         }
 
 public:
@@ -95,7 +145,9 @@ public:
         SESSION_CLASS &create_session(uint64_t token)
         {
             assert(m_token_to_session.find(token)==m_token_to_session.end());
-            return m_token_to_session[token];
+            SESSION_CLASS &res(m_token_to_session[token]);
+            res.m_session_token = token;
+            return res;
         }
         uint64_t token_for_id(uint32_t id) const
         {
@@ -115,15 +167,17 @@ public:
         SESSION_CLASS &session_from_token(uint64_t token)
         {
             auto iter = m_token_to_session.find(token);
-            assert(iter != m_token_to_session.end());
+            if(iter == m_token_to_session.end())
+                m_reaping_data.fatal_failure("missing session",token);
             return iter->second;
         }
         SESSION_CLASS &session_from_event(SEGSEvents::Event *ev)
         {
             assert(dynamic_cast<LinkBase *>(ev->src())!=nullptr); // make sure the event source is a Link
-            LinkBase * lnk = (LinkBase *)ev->src();
+            LinkBase * lnk = static_cast<LinkBase *>(ev->src());
             auto iter = m_token_to_session.find(lnk->session_token());
-            assert(iter!=m_token_to_session.end());
+            if(iter == m_token_to_session.end())
+                m_reaping_data.fatal_failure("missing session for event",lnk->session_token());
             SESSION_CLASS &session(iter->second);
             assert(session.link()==lnk);
             return session;
@@ -132,13 +186,14 @@ public:
         SESSION_CLASS &session_from_event(SEGSEvents::InternalEvent *ev)
         {
             auto iter = m_token_to_session.find(ev->session_token());
-            assert(iter != m_token_to_session.end());
+            if(iter == m_token_to_session.end())
+                m_reaping_data.fatal_failure("missing session for internal event",ev->session_token());
             return iter->second;
         }
         uint32_t expect_client_session(uint64_t token, const ACE_INET_Addr &from, uint64_t id)
         {
             uint32_t cook = create_cookie(from, id);
-            for (ExpectClientInfo sess : m_session_expecting_clients)
+            for (const ExpectClientInfo &sess : m_session_expecting_clients)
             {
                 // if we already expect this client
                 if(sess.m_cookie == cook)
@@ -153,15 +208,16 @@ public:
         // used to recover assigned cookie from session
         uint32_t get_cookie_for_session(uint64_t token)
         {
-            for (ExpectClientInfo sess : m_session_expecting_clients)
+            for (const ExpectClientInfo &sess : m_session_expecting_clients)
             {
                 if(sess.m_session_token==token)
                     return sess.m_cookie;
             }
             return 0;
         }
-        void session_link_lost(uint64_t token)
+        void session_link_lost(uint64_t token,const char *reason)
         {
+            qCDebug(logConnection,"Link lost on session:%lu caused by %s",token,reason);
             SESSION_CLASS &session(session_from_token(token));
             remove_from_active_sessions(&session);
             for (size_t idx = 0, total = m_session_expecting_clients.size(); idx < total; ++idx)
@@ -205,7 +261,7 @@ public:
                     return;
                 }
             }
-            assert(false);
+            m_reaping_data.fatal_failure("session not in active sessions",cl->m_session_token);
         }
         void add_to_active_sessions(SESSION_CLASS *cl)
         {
@@ -224,22 +280,20 @@ public:
         {
             return m_token_to_session.size();
         }
-        void create_reaping_timer(EventProcessor *tgt, uint32_t id, ACE_Time_Value interval)
+        void mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token,const char *reason)
         {
-            m_session_reaper_timer.reset(new SEGSTimer(tgt, id, interval, false));
-        }
-        void mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token)
-        {
+            m_reaping_data.marked_for_reaping(token,reason);
             m_session_ready_for_reaping.emplace_back(WaitingSession{ACE_OS::gettimeofday(), sess, token});
         }
-        void locked_mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token)
+        void locked_mark_session_for_reaping(SESSION_CLASS *sess, uint64_t token,const char *reason)
         {
             MTGuard guard(reap_lock());
-            mark_session_for_reaping(sess,token);
+            mark_session_for_reaping(sess,token,reason);
         }
 
         void unmark_session_for_reaping(SESSION_CLASS *sess)
         {
+            m_reaping_data.unmarked_for_reaping(sess->m_session_token);
             for (size_t idx = 0, total = m_session_ready_for_reaping.size(); idx < total; ++idx)
             {
                 if(m_session_ready_for_reaping[idx].m_session == sess)
@@ -264,9 +318,11 @@ public:
                 WaitingSession &waiting_session(m_session_ready_for_reaping[idx]);
                 if(time_now - waiting_session.m_waiting_since < link_is_stale_if_disconnected_for)
                     continue;
-                if(waiting_session.m_session->link() == nullptr || waiting_session.m_session->is_temporary() ) // trully disconnected
+                //if(waiting_session.m_session->link() == nullptr || waiting_session.m_session->is_temporary() ) // trully disconnected
                 {
-                    qDebug() << name << "Reaping stale link" << intptr_t(waiting_session.m_session);
+                    m_reaping_data.unmarked_for_reaping(waiting_session.m_session_token);
+
+                    qCDebug(logConnection) << name << "Reaping stale link" << intptr_t(waiting_session.m_session);
                     reap_callback(waiting_session.m_session_token);
                     if(waiting_session.m_session->link()) // it's a temporary session
                     {
@@ -279,11 +335,11 @@ public:
                     m_session_ready_for_reaping.pop_back();
                     total--; // update the total size
                 }
-                else
-                {
-                    // the session still has a link 'active', re-schedule the check
-                    waiting_session.m_waiting_since = time_now;
-                }
+//                else
+//                {
+//                    // the session still has a link 'active', re-schedule the check
+//                    waiting_session.m_waiting_since = time_now;
+//                }
             }
         }
         SESSION_CLASS *create_or_reuse_session_for(uint64_t token)
@@ -296,7 +352,7 @@ public:
             {
                 sess = &iter->second;
                 unmark_session_for_reaping(sess);
-                qDebug() << "Existing client session reused";
+                qCDebug(logConnection) << "Existing client session reused";
                 sess->reset();
             } else
                 sess = &create_session(token);
@@ -322,7 +378,7 @@ struct ReaperProtection
         if(m_protectee)
         {
             typename ClientSessionStore<SESSION_CLASS>::MTGuard guard(m_store.reap_lock());
-            m_store.mark_session_for_reaping(m_protectee,m_token);
+            m_store.mark_session_for_reaping(m_protectee,m_token,"ReaperProtection: Expired");
         }
     }
     void protectee_moved() { m_protectee = nullptr; }

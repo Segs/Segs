@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -15,9 +15,29 @@
 #include <cereal/cereal.hpp>
 
 #include <QtCore/QString>
-#include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
+
+ // A simple file access wrapper to allow re-locating/packing files
+struct FSWrapper
+{
+    virtual ~FSWrapper() = default;
+
+    virtual QIODevice* open(const QString &path, bool read_only = true, bool text_only = false)=0;
+    virtual bool exists(const QString& path)=0;
+    virtual QStringList dir_entries(const QString& path) = 0;
+};
+
+struct QFSWrapper : public FSWrapper
+{
+    ~QFSWrapper() override = default;
+
+    QIODevice *open(const QString &path, bool read_only = true, bool text_only = false) override;
+
+    bool exists(const QString &path) override;
+
+    QStringList dir_entries(const QString &path) override;
+};
 
 template<class T>
 void commonSaveTo(const T & target, const char *classname, const QString & baseName, bool text_format)
@@ -60,18 +80,20 @@ void commonSaveTo(const T & target, const char *classname, const QString & baseN
 }
 
 template<class T>
-bool commonReadFrom(const QString &crl_path,const char *classname, T &target)
+bool commonReadFrom(FSWrapper &fs,const QString &crl_path,const char *classname, T &target)
 {
-    QFile ifl(crl_path);
+    QIODevice *ifl=nullptr;
     if(crl_path.endsWith("json") || crl_path.endsWith("crl_json"))
     {
-        if(!ifl.open(QFile::ReadOnly|QFile::Text))
+        ifl = fs.open(crl_path,true,true);
+        if(!ifl)
         {
             qWarning() << "Failed to open" << crl_path;
             return false;
         }
 
-        std::istringstream istr(ifl.readAll().toStdString());
+        std::istringstream istr(ifl->readAll().toStdString());
+        delete ifl;
 
         try
         {
@@ -89,13 +111,14 @@ bool commonReadFrom(const QString &crl_path,const char *classname, T &target)
     }
     else if(crl_path.endsWith(".crl.bin"))
     {
-        if(!ifl.open(QFile::ReadOnly))
+        ifl = fs.open(qPrintable(crl_path), true, false);
+        if(!ifl)
         {
             qWarning() << "Failed to open" << crl_path;
             return false;
         }
-        std::istringstream istr(ifl.readAll().toStdString());
-
+        std::istringstream istr(ifl->readAll().toStdString());
+        delete ifl;
         try
         {
             cereal::BinaryInputArchive arc(istr);

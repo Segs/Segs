@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -898,8 +898,8 @@ void reserveEnhancementSlot(CharacterPower *pow, uint32_t level_purchased)
     // Modify based upon level
     auto free_boosts_by_level = getGameData().m_pi_schedule.m_FreeBoostSlotsOnPower;
     int lvl_delta = level_purchased - pow->m_level_bought;
-    int count_for_level = getGameData().countForLevel(lvl_delta, free_boosts_by_level);
-    int cur_max_eh_slots = pow->m_total_eh_slots + count_for_level;
+    uint32_t count_for_level = getGameData().countForLevel(lvl_delta, free_boosts_by_level);
+    uint32_t cur_max_eh_slots = pow->m_total_eh_slots + count_for_level;
 
     if(cur_max_eh_slots > 5)
         cur_max_eh_slots = 5; // I0 and I1 client cannot handle more than 5 eh slots
@@ -928,7 +928,7 @@ void buyEnhancementSlots(Entity &ent, uint32_t available_slots, std::vector<int>
     if(pow_idx.size() != available_slots)
         qCDebug(logPowers) << "EH vector size does not equal available slots";
 
-    for(int i = 0; i < available_slots; ++i)
+    for(uint32_t i = 0; i < available_slots; ++i)
     {
         CharacterPower * pow = getOwnedPowerByVecIdx(ent, pset_idx[i], pow_idx[i]);
 

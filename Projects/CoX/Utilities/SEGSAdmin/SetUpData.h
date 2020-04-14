@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -11,6 +11,7 @@
 #include <QDialog>
 #include <QProcess>
 #include <QFontDatabase>
+#include <QThread>
 
 
 namespace Ui {
@@ -25,29 +26,30 @@ class SetUpData : public QDialog
 public:
     explicit SetUpData(QWidget *parent = 0);
     ~SetUpData();
+    QThread worker_thread;
 
 public slots:
-    void select_piggs_dir();
+    void selectPiggsDir();
     void open_data_dialog();
-    void copy_piggs_files();
-    void pigg_dispatcher();
-    void pigg_tool_worker(QString program);
-    void create_default_directory(QString maps_dir);
-    void read_piggtool();
-    void pigg_dispatcher_wait_dialog();
-    void check_client_version();
+    bool copyPiggFiles();
+    bool createDefaultDirectorys();
+    bool checkClientVersion();
+    void extractPiggs();
+    void logUIMessage(QString message);
+    void updateUIPercentage(int progress);
+    void dataReady();
 
 signals:
-    void fileCopyComplete();
-    void callPiggWorker(QString program);
-    void dataSetupComplete(QString maps_dir);
+    bool callPiggWorker();
     void getMapsDir();
     void quitPiggLoop();
-    void readyToCopy();
+    void workerCompleted();
+    void dataSetupComplete();
 
 private:
     Ui::SetUpData *ui;
-    QProcess *m_pigg_tool;
+    QProcess *bin_converter;
+    void runBinConverter();
 
 };
 

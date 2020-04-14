@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -246,13 +246,17 @@ static void serialize(Archive & archive, StoredAttribMod & src)
     archive(cereal::make_nvp("EffectType",temp));
     if (temp.toLower() == "mez")
         archive(cereal::make_nvp("MezType",temp));
+    if (temp.toLower() == "enhancement")
+        archive(cereal::make_nvp("ETModifies",temp));
     src.name = temp.toLower();
 
+    static const QString dmgtypes[] = {"Smashing","Lethal","Fire","Cold","Energy","Negative","Toxic","Psionic","Special"};
+    static const QString deftypes[] = {"Smashing","Lethal","Fire","Cold","Energy","Negative","Melee","Ranged","AoE"};
     archive(cereal::make_nvp("DamageType",temp));
-    if (temp.toLower() == "fire")
-        src.Attrib = 0;         //todo: turn all the damage types to numbers, for now we'll just use fire
-    else
-        src.Attrib = 1;
+    if (temp != "None")
+        for (int i = 0;i<dmgtypes->size();i++)
+            if (temp == dmgtypes[i] || temp == deftypes[i])
+                 src.Attrib = i;
 
     archive(cereal::make_nvp("Aspect",temp));
     if(temp.toLower() == "cur")
@@ -261,6 +265,8 @@ static void serialize(Archive & archive, StoredAttribMod & src)
         src.Aspect = AttribMod_Aspect::Resistance;
     else if(temp.toLower() == "str")
         src.Aspect = AttribMod_Aspect::Strength;
+    else if(temp.toLower() == "max")
+        src.Aspect = AttribMod_Aspect::Maximum;
     else
         src.Aspect = AttribMod_Aspect::Absolute;
 
@@ -302,6 +308,10 @@ static void serialize(Archive & archive, StoredAttribMod & src)
     archive(cereal::make_nvp("Duration",src.Duration));
     archive(cereal::make_nvp("Mag",src.Magnitude));
     archive(cereal::make_nvp("Summon",src.EntityDef));
+
+    archive(cereal::make_nvp("EffectId",temp));
+    if (temp.toLower() == "MLCrit" || temp.toLower() == "BossCrit")
+        src.Chance = 5;              //make crit happen 5% of the time instead of on every hit
 
     /* The following are not used yet
     archive(cereal::make_nvp("DisplayAttackerHit",src.DisplayAttackerHit));
@@ -446,6 +456,7 @@ void saveTo(const AllPowerCategories & target, const QString & baseName, bool te
 }
 bool loadFrom(const QString &filepath, AllPowerCategories &target)
 {
-    return commonReadFrom(filepath,"Powers",target);
+    QFSWrapper wrap;
+    return commonReadFrom(wrap,filepath,"Powers",target);
 }
 //! @}

@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -40,10 +40,13 @@ enum class ClientStates : uint8_t;
  * This file is intended to hold helper functions for methods
  * requiring access to MapClientSession or MapInstance
  */
-Entity * getEntity(MapClientSession *src, const QString &name);
-Entity * getEntity(MapClientSession *src, uint32_t idx);
+Entity * getTargetEntity(MapClientSession &sess);
+Entity * getEntity(MapClientSession *sess, const QString &name);
+Entity * getEntity(MapClientSession *sess, uint32_t idx);
 Entity * getEntity(class MapInstance *mi, uint32_t idx);
+Entity * getEntity(Entity *srcEnt, class MapInstance *mi, uint32_t idx);
 Entity * getEntityByDBID(class MapInstance *mi,uint32_t idx);
+Entity * getEntityByNameOrTarget(MapClientSession &sess, const QString &name_from_cmd);
 void    sendServerMOTD(MapClientSession *sess);
 void    positionTest(MapClientSession *tgt);
 bool    isFriendOnline(Entity &sess, uint32_t db_id);
@@ -119,9 +122,9 @@ void doPower(Entity &ent, QueuedPowers powerinput);
 void queuePower(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, uint32_t tgt_idx);
 void queueRecharge(Entity &ent, uint32_t pset_idx, uint32_t pow_idx, float time);
 void findAttrib(Entity &ent, Entity *target_ent, CharacterPower * ppower);
-void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, float duration, float scale);
+void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, CharacterPower * ppower);
 void sendResult(Entity &src,Entity &tgt, QString name, float value);
-void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const &mod, uint32_t entidx);
+void addBuff(Entity &ent, CharacterPower * ppower, StoredAttribMod const &mod, uint32_t entidx, buffset &srcbuff);
 void applyInspirationEffect(Entity &ent, uint32_t col, uint32_t row);
 bool useInspiration(Entity &ent, uint32_t col, uint32_t row);
 void grantRewards(class EntityManager &em, Entity &e);
@@ -135,9 +138,9 @@ void changeHP(Entity &e, float val);
 /*
  * Lua Functions
  */
-void addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name);
-void addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
-void addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+uint addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name);
+uint addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
+uint addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
 void giveEnhancement(MapClientSession &sess, QString &name, int level);
 void giveDebt(MapClientSession &sess, int debt);
 void giveEnd(MapClientSession &sess, float end);
@@ -169,6 +172,6 @@ void addRelayRaceResult(MapClientSession &cl, RelayRaceResult &raceResult);
 RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment);
 void addHideAndSeekResult(MapClientSession &cl, int points);
 
-void addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
-void addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);
-std::vector<CritterSpawnLocations> getMapEncounters(MapInstance *mi);
+// Spawning related
+uint32_t addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name, int level, QString &faction_name, int f_rank);
+uint addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name);

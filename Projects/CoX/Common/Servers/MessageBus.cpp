@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -45,7 +45,9 @@ namespace
 
 MessageBus::MessageBus()
 {
-    m_statistics_timer.reset(new SEGSTimer(this,Statistics_Timer,statistic_update_interval,false)); // world simulation ticks
+    // world simulation ticks
+    m_statistics_timer_id = addTimer(statistic_update_interval,false);
+    startTimer(m_statistics_timer_id,&MessageBus::recalculateStatisitcs);
 }
 
 bool MessageBus::ReadConfigAndRestart()
@@ -107,11 +109,6 @@ void MessageBus::do_publish(Event *ev)
 
 void MessageBus::dispatch(Event *ev)
 {
-    if(ev->src()==this && ev->type()==evTimeout)
-    {
-        recalculateStatisitcs();
-        return;
-    }
     do_publish(ev);
 }
 

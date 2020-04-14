@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2018 SEGS Team (see Authors.txt)
  * This software is licensed! (See License.txt for details)
  */
@@ -57,37 +57,27 @@ void TimeState::serializefrom_base(BitStream &bs)
 void TimeState::dump()
 {
     qCDebug(logInput, "CSC: %d,%d, [%f,%f]", m_client_timenow, m_time_res, m_timestep,m_time_rel1C);
-    qCDebug(logInput, "(%lld %lld)", m_perf_cntr_diff, m_perf_freq_diff);
+    qCDebug(logInput, "(%lu %lu)", m_perf_cntr_diff, m_perf_freq_diff);
 }
 
-void StateStorage::addNewState(InputState &new_state)
+bool InputStateChange::hasInput() const
 {
-    if(m_inp_states.size() < 1)
-        m_inp_states.push_back(new_state);
-
-    //new_state.m_pos_start = m_inp_states.back().m_pos_end;
-    //new_state.m_pos_delta = m_inp_states.back().m_pos_end;
-
-    bool update_needed=false;
-    for(int i=0; i<3; ++i)
+    if (m_has_keys)
     {
-        if(!new_state.m_pyr_valid[i])
-            new_state.m_camera_pyr[i] = m_inp_states.back().m_camera_pyr[i];
-
-        if(new_state.m_orientation_pyr[i] != m_inp_states.back().m_orientation_pyr[i])
-            update_needed = true;
+        for (bool key : m_keys)
+        {
+            if (key)
+                return true;
+        }
     }
 
-    if(update_needed)
-        new_state.m_direction = fromCoHYpr(new_state.m_orientation_pyr);
+    for (const ControlStateChange& csc : m_control_state_changes)
+    {
+        if (csc.control_id < 8) // key/mouse events are 0-7
+            return true;
+    }
 
-    m_inp_states.push_back(new_state);
-    // m_time_states.push_back(new_time_state);
-    // m_speed_states.push_back(new_speed_state);
-    // m_motion_states.push_back(new_motion_state);
-
-    if(m_inp_states.size() > 30)
-        m_inp_states.pop_front();
+    return false;
 }
 
 //! @}

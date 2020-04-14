@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -152,12 +152,12 @@ namespace SEGSEvents
         int32_t m_task_idx = 0;
         explicit ReceiveTaskDetailRequest() : MapLinkEvent(MapEventTypes::evReceiveTaskDetailRequest){}
 
-        void serializeto(BitStream &/*bs*/) const override
+        void serializeto(BitStream &/*bs*/) const final
         {
             assert(!"ReceiveContactStatus serializeto");
         }
 
-        void    serializefrom(BitStream &bs)
+        void serializefrom(BitStream &bs) final
         {
             m_db_id = bs.GetPackedBits(1);
             m_task_idx = bs.GetPackedBits(1);
@@ -174,7 +174,7 @@ namespace SEGSEvents
         // [[ev_def:field]]
         QString m_message;
         // [[ev_def:field]]
-        float_t m_mission_time = 0;
+        float m_mission_time = 0;
 
         explicit MissionObjectiveTimer() : GameCommandEvent(MapEventTypes::evMissionObjectiveTimer){}
         MissionObjectiveTimer(QString message, float mission_time) : GameCommandEvent(MapEventTypes::evMissionObjectiveTimer){
@@ -182,14 +182,14 @@ namespace SEGSEvents
             m_mission_time = mission_time;
         }
 
-        void serializeto(BitStream &bs) const override // packet 73
+        void serializeto(BitStream &bs) const final // packet 73
         {
             bs.StorePackedBits(1, type()-evFirstServerToClient);
             bs.StoreString(m_message);
             bs.StoreFloat(m_mission_time);
         }
 
-        void serializefrom(BitStream /*&bs*/)
+        void serializefrom(BitStream &/*bs*/) final
         {
             assert(!"SendMissionObjectTimer serializefrom");
         }

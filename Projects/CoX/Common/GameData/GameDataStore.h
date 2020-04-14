@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -17,6 +17,7 @@
 #include "Common/GameData/power_definitions.h"
 #include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/shop_definitions.h"
+#include "Common/GameData/bodypart_definitions.h"
 
 #include "NpcStore.h"
 #include <QDate>
@@ -48,6 +49,8 @@ class GameDataStore
         bool            read_store_data(const QString &directory_path);
         bool            read_store_items_data(const QString &directory_path);
         bool            read_store_depts_data(const QString &directory_path);
+        bool            read_sequencer_types(const QString &directory_path);
+        bool            read_body_parts(const QString &directory_path);
 public:
                         GameDataStore();
                         ~GameDataStore();
@@ -56,7 +59,7 @@ public:
         uint32_t        expForLevel(uint32_t lev) const;
         uint32_t        expDebtForLevel(uint32_t lev) const;
         uint32_t        expMaxLevel() const;
-        int             countForLevel(uint32_t lvl,const std::vector<uint32_t> &schedule) const;
+        uint32_t countForLevel(uint32_t lvl,const std::vector<uint32_t> &schedule) const;
         const NPCStorage & getNPCDefinitions() const
                         {
                             return m_npc_store;
@@ -84,6 +87,8 @@ public:
         float                       m_motd_timer = 60 * 60; // default 1 hr
         QStringList                 m_costume_slot_unlocks; // used in finalizeLevel() to award costume slots
         SequencerList               m_seq_definitions; // animation sequencer definitions
+        SequencerTypeMap            m_seq_types;
+        BodyPartsStorage            m_body_parts;
 
         // keep in mind the hierarchy is all_powers -> powercat -> powerset -> powerdata (template)
         const StoredPowerCategory&  get_power_category(uint32_t pcat_idx);
@@ -105,6 +110,9 @@ public:
         double                      m_xp_mod_multiplier;
         QDateTime                   m_xp_mod_startdate;
         QDateTime                   m_xp_mod_enddate;
+
+        // default of 30 for cases where settings are not yet loaded
+        int                         m_world_update_ticks_per_sec=30;
 };
 int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
 int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);

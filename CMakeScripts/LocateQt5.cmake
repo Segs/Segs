@@ -1,22 +1,27 @@
 SET(QT_MISSING True)
 # msvc only; mingw will need different logic
 IF(MSVC)
+    message("LocateQt5 was given a Qt5 path ${QT_GIVEN_PATH}")
     # look for user-registry pointing to qtcreator
     GET_FILENAME_COMPONENT(QT_BIN [HKEY_CURRENT_USER\\Software\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command] PATH)
     if(${MSVC_VERSION} VERSION_LESS "1910")
         MESSAGE(FATAL_ERROR "SEGS requires visual studio 2017 to build")
     endif()
 
-    # get root path so we can search for 5.3, 5.4, 5.5, etc
-    STRING(REPLACE "/Tools" ";" QT_BIN "${QT_BIN}")
+    # get root path so we can search for 5.3, 5.4, 5.5, etc, assumes provided path is in a Qt\Tools\QtCreator\bin\qtcreator.exe
+    get_filename_component(t_path ${QT_BIN} DIRECTORY)
+    get_filename_component(t_path ${t_path} DIRECTORY)
+    get_filename_component(QT_BIN ${t_path} DIRECTORY)
+
     LIST(GET QT_BIN 0 QT_BIN)
     FILE(GLOB QT_VERSIONS "${QT_BIN}/5.*")
-    LIST(SORT QT_VERSIONS)
-
-    # assume the latest version will be last alphabetically
-    LIST(REVERSE QT_VERSIONS)
-
     LIST(GET QT_VERSIONS 0 QT_VERSION)
+    # find the latest qt version in QT_VERSIONS
+    foreach(Ver ${QT_VERSIONS})
+        if(${Ver} VERSION_GREATER ${QT_VERSION})
+            set(QT_VERSION ${Ver})
+        endif()
+    endforeach()
 
     # fix any double slashes which seem to be common
     STRING(REPLACE "//" "/"  QT_VERSION "${QT_VERSION}")
@@ -30,6 +35,9 @@ IF(MSVC)
     endif()
 
     SET(QT_PATH "${QT_VERSION}/msvc${QT_MSVC}")
+    if(QT_GIVEN_PATH)
+        set(QT_PATH "${QT_GIVEN_PATH}")
+    endif()
     SET(QT_MISSING False)
     file(TO_NATIVE_PATH "${QT_PATH}/bin" QT_BIN_DIR_WINDOWS)
     set(CMAKE_MSVCIDE_RUN_PATH "${QT_BIN_DIR_WINDOWS}" CACHE STATIC "MSVC IDE Run path" FORCE)

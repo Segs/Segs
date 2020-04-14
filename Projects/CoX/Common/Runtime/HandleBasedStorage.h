@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -11,10 +11,24 @@
 #include <cassert>
 #include <vector>
 
+template <int idx_bits, int gen_bits, typename T>
+struct SingularStoreHandleT : public HandleT<idx_bits, gen_bits,T>
+{
+    using Type = T;
+    using Storage = typename T::StorageClass;
+    using super = HandleT<idx_bits, gen_bits,T>;
+    using super::super;
+    // allow initializing SingularStorage handles from underlying type
+    constexpr SingularStoreHandleT(super from) : super(from) {}
+    constexpr SingularStoreHandleT() : super() {}
+    T*  operator->() const { return &Storage::instance().access(*this); }
+    T &  get() const { return Storage::instance().access(*this); }
+    void destroy() { Storage::instance().destroy(*this); }
+};
 template <class T>
 struct HandleBasedStorage
 {
-    using HType          = HandleT<20, 12, T>;
+    using HType          = SingularStoreHandleT<20,12,T>;
     using InternalHandle = Handle<20, 12>;
     using container_type = std::vector<T>;
     using iterator       = typename container_type::iterator;
@@ -56,19 +70,13 @@ struct HandleBasedStorage
     iterator begin() { return m_nodes.begin(); }
     iterator end() { return m_nodes.end(); }
 
-    static HandleBasedStorage &instance()
-    {
-        static HandleBasedStorage instance;
-        return instance;
-    }
-    
-private:
     HandleBasedStorage()
     {
         m_sparse_array.reserve(256);
         m_nodes.reserve(256);
         m_dense_to_sparse.reserve(256);
     }
+private:
 
     std::vector<InternalHandle> m_sparse_array;
     uint32_t                    m_free_list_head = HType::FREE_LIST_TERMINATOR;
@@ -99,16 +107,3 @@ private:
     }
 };
 
-template <int idx_bits, int gen_bits, typename T>
-struct SingularStoreHandleT : public HandleT<idx_bits, gen_bits,T>
-{
-    using Type = T;
-    using super = HandleT<idx_bits, gen_bits,T>;
-    using super::super;
-    // allow initializing SingularStorage handles from underlying type
-    constexpr SingularStoreHandleT(super from) : super(from) {}
-    constexpr SingularStoreHandleT() : super() {}
-    T *  operator->() const { return &HandleBasedStorage<T>::instance().access(*this); }
-    T &  get() const { return HandleBasedStorage<T>::instance().access(*this); }
-    void destroy() { HandleBasedStorage<T>::instance.destroy(*this); }
-};

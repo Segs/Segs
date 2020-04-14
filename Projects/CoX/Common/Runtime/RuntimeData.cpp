@@ -6,7 +6,7 @@
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
 #include "GameData/DataStorage.h"
-#include "Logging.h"
+#include  "serialization_common.h"
 
 #include <QDirIterator>
 #include <QString>
@@ -95,12 +95,12 @@ static void trickLoadPostProcess(SceneModifiers *mods)
 }
 
 template<class TARGET,unsigned int CRC>
-bool read_data_to(const QString &directory_path,const QString &storage,TARGET &target)
+bool read_data_to(FSWrapper &fs, const QString &directory_path, const QString &storage, TARGET &target)
 {
     QDebug deb = qDebug().noquote().nospace();
     deb << "Reading " << directory_path << storage << " ... ";
     BinStore bin_store;
-    if(!bin_store.open(directory_path+storage,CRC))
+    if(!bin_store.open(fs,directory_path+storage,CRC))
     {
         deb << "failure";
         qWarning().noquote() << "Couldn't load" << storage << "from" << directory_path;
@@ -147,7 +147,8 @@ bool RuntimeData::read_model_modifiers(const QString &directory_path)
     if(m_modifiers)
         return true;
     SceneModifiers tricks_store;
-    if(!read_data_to<SceneModifiers,tricks_i0_requiredCrc>(directory_path,"bin/tricks.bin",tricks_store))
+    assert(m_wrapper);
+    if(!read_data_to<SceneModifiers,tricks_i0_requiredCrc>(*m_wrapper,directory_path,"bin/tricks.bin", tricks_store))
     {
         return false;
     }
@@ -157,20 +158,23 @@ bool RuntimeData::read_model_modifiers(const QString &directory_path)
     return true;
 }
 
-bool RuntimeData::prepare(const QString &directory_path)
+bool RuntimeData::prepare(FSWrapper* fs,const QString &directory_path)
 {
+    m_wrapper = fs;
+    m_ready = false;
     if(!read_prefab_definitions(directory_path))
         return false;
     if(!read_model_modifiers(directory_path))
         return false;
 
+    m_ready = true;
     return true;
 }
 
 bool RuntimeData::read_prefab_definitions(const QString &directory_path)
 {
     if(!m_prefab_mapping)
-        m_prefab_mapping = new SEGS::PrefabStore;
+        m_prefab_mapping = new SEGS::PrefabStore(m_wrapper,directory_path);
     return m_prefab_mapping->prepareGeoLookupArray(directory_path);
 }
 

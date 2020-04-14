@@ -73,11 +73,11 @@ struct ViewState
     float     fxSoundVolume;
     float     musicSoundVolume;
     int       mipLevel;
-    int       min_tex_size;
-    float     controls_draw_dist;
+    uint32_t  min_tex_size;
+    float     vis_scale;
     float     gamma;
     int       bShadowVol;
-    int       unkn_498;
+    int       fancytrees;
     int       noPixShaders;
     int       noVBOs;
     int       noParticles;
@@ -88,8 +88,7 @@ struct ViewState
     int       disableVBOs_particles;
     Vector3   fogcolor;
     int       fogdepth;
-    float     fogdist;
-    float     fogdist2;
+    Vector2   fogdists;
     float     near_far_Z;
     float     zFar;
     int       bNoGLFog;
@@ -199,7 +198,7 @@ struct GameState
     int       g_select_any_entity;
     int       unkn_1E9C;
     EntRef    g_currently_selected_ent_idx;
-    int       unkn_1EA8;
+    int       can_set_cursor;
     int       gReload_costume_bin;
     int       gDispMouseCoord;
     int       dword_12DCBB4;
@@ -222,5 +221,5 @@ struct GameState
 };
 static_assert(sizeof(GameState) == 0x37E0, "GameState size must be 0x37E0");
 extern "C" {
-__declspec(dllimport) GameState g_State;
+extern __declspec(dllimport) GameState g_State;
 }

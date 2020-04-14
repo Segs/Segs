@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -44,7 +44,8 @@ MapSceneGraph::~MapSceneGraph()
 
 bool MapSceneGraph::loadFromFile(const QString &filename)
 {
-    m_scene_graph.reset(loadWholeMap(filename));
+    QFSWrapper wrap;
+    m_scene_graph.reset(loadWholeMap(&wrap, filename));
     if(!m_scene_graph)
         return false;
     for(SceneNode *def : m_scene_graph->all_converted_defs)
@@ -56,6 +57,15 @@ bool MapSceneGraph::loadFromFile(const QString &filename)
         }
     }
     return true;
+}
+
+glm::vec3 FindOrientation(glm::mat4 v)
+{
+    auto valquat = glm::quat_cast(v);
+    glm::vec3 angles = glm::eulerAngles(valquat);
+    angles.y += glm::pi<float>();
+
+    return angles;
 }
 
 void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function<bool(SceneNode *,const glm::mat4 &)> visit_func )
@@ -70,31 +80,6 @@ void walkSceneNode( SceneNode *self, const glm::mat4 &accumulated, std::function
 
         walkSceneNode(child.node, accumulated * transform, visit_func);
     }
-}
-
-static QString getRandCostumeFromName(const QString &n)
-{
-    QStringList matching_costumes;
-    const NPCStorage &npc_store(getGameData().getNPCDefinitions());
-    for(const Parse_NPC &npc : npc_store.m_all_npcs)
-    {
-        QString name(npc.m_Name);
-
-        // skip some odd cases
-        if(name.contains("blimp", Qt::CaseInsensitive))
-            continue;
-        if(name.contains("monorail", Qt::CaseInsensitive))
-            continue;
-
-        if(name.contains(n, Qt::CaseInsensitive))
-            matching_costumes.push_back(QString(npc.m_Name));
-    }
-
-    if(matching_costumes.isEmpty())
-        return "ChessKing";
-
-    int rand_idx = rand() % matching_costumes.size();
-    return matching_costumes[rand_idx];
 }
 
 static bool checkCostumeExists(const QString &n)
@@ -115,34 +100,17 @@ QString getCostumeFromName(const QString &n)
     if(checkCostumeExists(n))
         return n;
 
-    // Special cases will go here
-    // General
-    if(n.contains("CarGenerator", Qt::CaseInsensitive)) // must include underscore
-        return getRandCostumeFromName("Car_");
-    if(n.contains("NPCGenerator", Qt::CaseInsensitive))
-        return getRandCostumeFromName("maleNPC"); // will include females
-    if(n.contains("DoctorNPC", Qt::CaseInsensitive))
-        return getRandCostumeFromName("maleNPC"); // will include females
-    if(n.contains("BusinessNPC", Qt::CaseInsensitive))
-        return getRandCostumeFromName("maleNPC"); // will include females
+    /* Special cases will go here
+        For now, only monorail and blimp generation remains here
+        This will be moved into the vehicle-related Lua framework when managers
+        are later created to deal with them.
+    */
     if(n.contains("NPCDrones", Qt::CaseInsensitive))
-        return "Police_Drone";
+            return "Police_Drone";  // Only handling drones lining sidewalk in Outbreak; will become obsolete.
     if(n.contains("MonorailGenerator", Qt::CaseInsensitive))
         return "Car_Monorail";
     if(n.contains("BlimpGenerator", Qt::CaseInsensitive))
         return "Car_Blimp";
-
-    // Outbreak
-    if(n.contains("Paragon_SWAT", Qt::CaseInsensitive))
-        return getRandCostumeFromName("MaleNPC_230");
-    if(n.contains("Lt_MacReady", Qt::CaseInsensitive))
-        return "CSE_01";
-    if(n.contains("Security_Chief", Qt::CaseInsensitive))
-        return getRandCostumeFromName("Security_Chief");
-
-    // Atlas Park
-    if(n.contains("FreedomCorp", Qt::CaseInsensitive))
-        return getRandCostumeFromName("Freedom_Corp");
 
     // Most costumes are the object's name without spaces
     // and with Model_ prepended. Assume this as fallback
@@ -167,42 +135,66 @@ struct NpcCreator
     bool checkPersistent(SceneNode *n, const glm::mat4 &v)
     {
         assert(map_instance);
-        bool has_npc = false;
-        QString persistent_name;
+
         for (GroupProperty_Data &prop : *n->m_properties)
         {
             if(prop.propName=="PersistentNPC")
-                persistent_name = prop.propValue;
-
-            if(prop.propName.toUpper().contains("NPC"))
             {
-                qCDebug(logNPCs) << prop.propName << '=' << prop.propValue;
-                has_npc = true;
+                SpawnerNode snNode;
+                QString persName = QString::fromStdString(prop.propValue.toStdString());
+                persName = makeReadableName(persName);
+                if(persName.contains(" "))
+                    persName.replace(" ", "_");
+
+                snNode.m_name = persName;         // Persistents use node name to store the NPC name instead
+                qCDebug(logNpcSpawn) << "Persistent parsed: " << persName;
+                snNode.m_position = glm::vec3(v[3]);
+                snNode.m_rotation = FindOrientation(v);
+                map_instance->m_map_scenegraph->m_persNodes.push_back(snNode);
             }
         }
 
-        if(has_npc && map_instance)
+        return true;
+    }
+
+    bool checkCanSpawns(SceneNode *n, const glm::mat4 &v)
+    {
+        assert(map_instance);
+
+        for (GroupProperty_Data &prop : *n->m_properties)
         {
-            qCDebug(logNPCs) << "Attempting to spawn npc" << persistent_name << "at" << v[3][0] << v[3][1] << v[3][2];
-            const NPCStorage & npc_store(getGameData().getNPCDefinitions());
-            QString npc_costume_name = getCostumeFromName(persistent_name);
-            const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
-
-            if(npc_def)
+            if(prop.propName.contains("CanSpawn1"))
             {
-                int idx = npc_store.npc_idx(npc_def);
-                Entity *e = map_instance->m_entities.CreateNpc(getGameData(),*npc_def, idx, 0);
-                e->m_char->setName(makeReadableName(persistent_name));
-                forcePosition(*e,glm::vec3(v[3]));
+                //qCDebug(logNPCs) << " CanSpawn loc: " << v[3][0] << v[3][1] << v[3][2];
+                SpawnerNode snNode;
+                snNode.m_name = n->m_name;
+                snNode.m_position = glm::vec3(v[3]);
+                snNode.m_rotation = FindOrientation(v);
 
-                auto valquat = glm::quat_cast(v);
-                glm::vec3 angles = glm::eulerAngles(valquat);
-                angles.y += glm::pi<float>();
-                forceOrientation(*e, angles);
-                e->m_motion_state.m_velocity = { 0,0,0 };
+                for (uint i = 0; i < n->m_children.size(); i++)
+                {
+                    SpawnerNode snChildNode;
+
+                    snChildNode.m_name = n->m_children.at(i).node->m_name;
+
+                    // handle position
+                    glm::mat4 transform(n->m_children.at(i).m_matrix2);
+                    transform[3] = glm::vec4(n->m_children.at(i).m_translation,1);
+                    transform = v * transform;
+                    glm::vec4 pos4 {0,0,0,1};
+                    pos4 = transform * pos4;
+                    glm::vec3 pos3 = glm::vec3(pos4);
+                    snChildNode.m_position = pos3;
+
+                    // handle rotation
+                    // This isn't always right but it's as close as anything I've seen.
+                    snChildNode.m_rotation = snNode.m_rotation + n->m_children.at(i).m_pyr;
+
+                    snNode.m_markers.push_back(snChildNode);
+                }
+                map_instance->m_map_scenegraph->m_csNodes.push_back(snNode);
             }
         }
-
         return true;
     }
 
@@ -215,7 +207,27 @@ struct NpcCreator
         for (GroupProperty_Data &prop : *n->m_properties)
         {
             if(prop.propName=="Generator")
-                generator_type = prop.propValue;
+            {
+                QString propValue = prop.propValue;
+                SpawnerNode snNode;
+                snNode.m_position = glm::vec3(v[3]);
+                snNode.m_rotation = FindOrientation(v);
+
+                if(propValue.contains("CarGenerator", Qt::CaseSensitive))
+                {
+                    snNode.m_name = n->m_name;
+                    map_instance->m_map_scenegraph->m_carNodes.push_back(snNode);
+                }
+                else if (propValue.contains("NPCGenerator", Qt::CaseSensitive))
+                {
+                    snNode.m_name = n->m_name;
+                    map_instance->m_map_scenegraph->m_npcNodes.push_back(snNode);
+                }
+                else
+                {
+                    generator_type = prop.propValue;
+                }
+            }
         }
 
         if(generator_type.isEmpty())
@@ -223,8 +235,6 @@ struct NpcCreator
 
         if(!generators->m_generators.contains(generator_type))
         {
-            qCDebug(logNPCs) << "Adding generator for" << generator_type;
-
             // Get costume by generator name, includes overrides
             NpcGenerator npcgen = {generator_type, EntType::NPC, {}, {}};
 
@@ -232,10 +242,6 @@ struct NpcCreator
                 npcgen.m_type = EntType::DOOR;
             if(generator_type.contains("Cardrdr", Qt::CaseInsensitive))
                 npcgen.m_type = EntType::DOOR;
-            else if(generator_type.contains("Car_", Qt::CaseInsensitive))
-                npcgen.m_type = EntType::CAR;
-            else if(generator_type.contains("Nemesis_Drone", Qt::CaseInsensitive))
-                npcgen.m_type = EntType::CRITTER;
             else if(generator_type.contains("Door_train", Qt::CaseInsensitive))
                 npcgen.m_type = EntType::MAPXFERDOOR;
             else if(generator_type.contains("MonorailGenerator", Qt::CaseInsensitive))
@@ -245,7 +251,6 @@ struct NpcCreator
 
             generators->m_generators[generator_type] = npcgen;
         }
-
         generators->m_generators[generator_type].m_initial_positions.push_back(v);
         return true;
     }
@@ -255,8 +260,9 @@ struct NpcCreator
         if(!n->m_properties)
             return true;
 
-        checkPersistent(n,v);
-        checkGenerators(n,v);
+        checkPersistent(n,v);           // locates persistent NPCs; exposes to Lua
+        checkCanSpawns(n,v);            // locates encounters with CanSpawn/Spawndef; exposes to Lua
+        checkGenerators(n,v);           // locates and spawns doors, monos, trains; exposes cars, npcs to Lua
         return true;
     }
 };
@@ -287,32 +293,7 @@ struct SpawnPointLocator
         {
             if(prop.propName == "SpawnLocation")
             {
-                qCDebug(logPlayerSpawn) << "Spawner:" << prop.propValue << prop.propertyType;
-                m_targets->insert(prop.propValue, v);
-                return false;
-            }
-        }
-        return true;
-    }
-};
-
-struct EnemySpawnPointLocator
-{
-    QMultiHash<QString, glm::mat4> *m_targets;
-    EnemySpawnPointLocator(QMultiHash<QString, glm::mat4> *targets) :
-        m_targets(targets)
-    {}
-    bool operator()(SceneNode *n, const glm::mat4 &v)
-    {
-        if(!n->m_properties)
-            return true;
-
-        for (GroupProperty_Data &prop : *n->m_properties)
-        {
-
-            if(prop.propName == "EncounterPosition")
-            {
-                qCDebug(logPlayerSpawn) << "Encounter:" << prop.propValue << prop.propertyType;
+                //qCDebug(logPlayerSpawn) << "Spawner:" << prop.propValue << prop.propertyType;
                 m_targets->insert(prop.propValue, v);
                 return false;
             }
@@ -400,157 +381,5 @@ QHash<QString, MapXferData> MapSceneGraph::get_map_transfers() const
     }
     return res;
 }
-
-struct CritterSpawnLocator
-{
-    QHash<QString, CritterSpawnLocations> *m_spawn_def;
-    CritterSpawnLocator(QHash<QString, CritterSpawnLocations> *spawn_def_hash):
-        m_spawn_def(spawn_def_hash)
-    {}
-    bool operator()(SceneNode *n, const glm::mat4 &v)
-    {
-        bool found_encounter = false;
-        if (n->m_properties)
-        {
-            CritterSpawnLocations spawnDef;
-
-            for (GroupProperty_Data &gp: *n->m_properties)
-            {
-                if(gp.propName.contains("SpawnProbability"))
-                {
-                    spawnDef.m_spawn_probability = gp.propValue.toInt();
-                }
-                else if(gp.propName.contains("VillainRadius"))
-                {
-                    spawnDef.m_villain_radius = gp.propValue.toInt();
-                }
-
-                if(gp.propName == "EncounterSpawn" || gp.propName == "EncounterGroup")
-                {
-
-                    for(auto &child : n->m_children)
-                    {
-                        if(child.node->m_name.contains("EG_L", Qt::CaseInsensitive)) //Atlas & Galaxy
-                        {
-                            found_encounter = true;
-                            glm::mat4 encounter_location(child.m_matrix2);
-                            encounter_location[3] = glm::vec4(child.m_translation,1);
-                            encounter_location = v * encounter_location;
-
-                            spawnDef.m_location = encounter_location[3];
-
-                            for(auto &c : child.node->m_children) // _ES_L  EncounterSpawn
-                            {
-                                for(auto &s : c.node->m_children) // Encounter_
-                                {
-                                    CritterSpawnPoint *spawn_point = new CritterSpawnPoint();
-                                    spawn_point->m_name = s.node->m_name;
-
-                                    glm::mat4 spawn_location(s.m_matrix2);
-                                    spawn_location[3] = glm::vec4(s.m_translation,1);
-                                    spawn_location = v * spawn_location;
-                                    glm::vec4 tpos4 {0,0,0,1};
-                                    spawn_point->m_relative_position = spawn_location[3];
-
-                                    auto valquat = glm::quat_cast(spawn_location);
-                                    glm::vec3 angles = glm::eulerAngles(valquat);
-                                    angles.y += glm::pi<float>();
-
-                                    spawn_point->m_rotation = angles;
-
-                                    if(spawn_point->m_name.contains("_V_", Qt::CaseSensitive))
-                                        spawn_point->m_is_victim = true;
-
-                                    spawnDef.m_all_spawn_points.push_back(*spawn_point);
-                                }
-
-                                spawnDef.m_node_name = child.node->m_name;
-                                if(found_encounter)
-                                {
-                                    m_spawn_def->insert(n->m_name, spawnDef);
-                                    return false;
-                                }
-                            }
-                        }
-                        else if(child.node->m_name.contains("ES_", Qt::CaseInsensitive)) // Other maps
-                        {
-                            for (GroupProperty_Data &prop : *child.node->m_properties)
-                            {
-                                if (prop.propName == "EncounterSpawn" || prop.propName == "EncounterGroup")
-                                {
-                                    found_encounter = true;
-
-                                    glm::mat4 encounter_location(child.m_matrix2);
-                                    encounter_location[3] = glm::vec4(child.m_translation,1);
-                                    encounter_location = v * encounter_location;
-
-                                    spawnDef.m_location = encounter_location[3];
-
-                                    for(auto &c_node : child.node->m_children) // Encounter_
-                                    {
-                                        CritterSpawnPoint *spawn_point = new CritterSpawnPoint();
-                                        spawn_point->m_name = c_node.node->m_name;
-
-                                        glm::mat4 spawn_location(c_node.m_matrix2);
-                                        spawn_location[3] = glm::vec4(c_node.m_translation,1);
-                                        spawn_location = encounter_location * spawn_location;
-
-                                        spawn_point->m_relative_position = spawn_location[3];
-
-                                        auto valquat = glm::quat_cast(spawn_location);
-                                        glm::vec3 angles = glm::eulerAngles(valquat);
-                                        angles.y += glm::pi<float>();
-
-                                        spawn_point->m_rotation = angles;
-
-                                        if(spawn_point->m_name.contains("_V_", Qt::CaseSensitive))
-                                            spawn_point->m_is_victim = true;
-
-                                        spawnDef.m_all_spawn_points.push_back(*spawn_point);
-
-                                    }
-
-                                    spawnDef.m_node_name = child.node->m_name;
-
-                                    if(found_encounter)
-                                    {
-                                        m_spawn_def->insert(n->m_name, spawnDef);
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-};
-
-
-void MapSceneGraph::spawn_critters(MapInstance *instance)
-{
-    QHash<QString, CritterSpawnLocations> res;
-    CritterSpawnLocator locator(&res);
-    for (auto v : m_scene_graph->refs)
-    {
-        walkSceneNode(v->node, v->mat, locator);
-    }
-
-    //Creates one generator per encounter.
-    int count = 1;
-    for (auto r: res)
-    {
-        CritterGenerator cg;
-        cg.m_encounter_node_name = r.m_node_name;
-        cg.m_generator_name = "Encounter " + QString(count);
-        cg.m_critter_encounter = r;
-        instance->m_critter_generators.m_generators.insert(cg.m_generator_name, cg);
-        ++count;
-    }
-}
-
 
 //! @}

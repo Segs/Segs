@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -15,6 +15,7 @@
 #include <ace/config-macros.h>
 #include <stddef.h>
 #include <chrono>
+#include <atomic>
 
 class EventSrc;
 
@@ -28,14 +29,16 @@ class CRUD_EventFactory;
 
 class CRUDLink : public LinkBase
 {
-using super = LinkBase;
+
 public:
 
+using super       = LinkBase;
 using stream_type = ACE_SOCK_Dgram;
-using addr_type = ACE_INET_Addr;
-using time_point = std::chrono::steady_clock::time_point;
-using duration = std::chrono::milliseconds;
-public:
+using addr_type   = ACE_INET_Addr;
+using time_point  = std::chrono::steady_clock::time_point;
+using duration    = std::chrono::milliseconds;
+using NotificatinStrategy = ACE_Reactor_Notification_Strategy;
+
                             CRUDLink();
                             ~CRUDLink() override;
 
@@ -43,7 +46,7 @@ public:
         int                 handle_output( ACE_HANDLE = ACE_INVALID_HANDLE ) override;
         void                received_block(BitStream &bytes);
         CrudP_Protocol *    get_proto() { return &m_protocol; }
-        stream_type &       peer() { return peer_; }
+        stream_type &       peer() { return m_peer; }
         addr_type &         peer_addr() { return m_peer_addr; }
 
         duration            client_last_seen_packets() const;
@@ -57,16 +60,17 @@ protected:
         void                connection_sent_packet();
         EventSrc *          target() { return m_target; }
         EventSrc *          net_layer() { return m_net_layer; }
-virtual CRUD_EventFactory &                 factory() = 0;
-        ACE_HANDLE                          get_handle() const override {return peer_.get_handle();}
+virtual CRUD_EventFactory & factory() = 0;
+        ACE_HANDLE          get_handle() const override {return m_peer.get_handle();}
 
-        ACE_Reactor_Notification_Strategy   m_notifier; //!< our queue will use this to inform the reactor of it's new elements
-        time_point                          m_last_recv_activity; //!< last link activity time
-        time_point                          m_last_send_activity; //!< last send activity on the link
-        CrudP_Protocol                      m_protocol;
-        stream_type                         peer_;  //!< Maintain connection with client.
-        addr_type                           m_peer_addr;
-        EventSrc *                          m_net_layer;      //!< All outgoing events are put here
-        EventSrc *                          m_target;         //!< All incoming events are put here
+        NotificatinStrategy m_notifier; //!< our queue will use this to inform the reactor of it's new elements
+
+        std::atomic<long>   m_last_recv_activity; //!< last link activity time as a count of 'rep' since epoch
+        std::atomic<long>   m_last_send_activity; //!< last send activity on the link
+        CrudP_Protocol      m_protocol;
+        stream_type         m_peer; //!< Maintain connection with client.
+        addr_type           m_peer_addr;
+        EventSrc *          m_net_layer; //!< All outgoing events are put here
+        EventSrc *          m_target;    //!< All incoming events are put here
 
 };

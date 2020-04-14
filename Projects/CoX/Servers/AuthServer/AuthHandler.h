@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -19,7 +19,7 @@
 #include <map>
 
 class AuthServer;
-class SEGSTimer;
+
 namespace SEGSEvents
 {
 struct RetrieveAccountResponse;
@@ -48,29 +48,31 @@ enum eAuthError
     AUTH_UNKN_ERROR
 }; // this is a public type so other servers can pass us valid errors
 
-struct AuthSession
+struct AuthSession : public ClientSession
 {
     enum eClientState
     {
-        CLIENT_DISCONNECTED=0,
+        CLIENT_DISCONNECTED = 0,
         CLIENT_EXPECTED,
         NOT_LOGGED_IN,
         LOGGED_IN,
         CLIENT_CONNECTED
     };
-    std::unique_ptr<SEGSEvents::RetrieveAccountResponseData> m_auth_data;
-    uint32_t        m_auth_id=0;
-    eClientState    m_state = NOT_LOGGED_IN;
-    uint32_t        is_connected_to_game_server_id=0;
 
     uint32_t        auth_id() const { return m_auth_id; }
-    // those functions store temporariness state of the link in the lowest bit of the pointer
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // those functions store 'temporariness' state of the link in the lowest bit of the pointer
     void            set_temporary(bool v) { (intptr_t &)(m_link) = (intptr_t(m_link) & ~1) | intptr_t(v); }
     bool            is_temporary() const { return intptr_t(m_link) & 1; }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     AuthLink *      link() { return (AuthLink *)(intptr_t(m_link) & ~1); }
     /// \note setting the link does not preserver the state of the previous one.
     void            link(AuthLink *l) { m_link = l; }
 
+    std::unique_ptr<SEGSEvents::RetrieveAccountResponseData> m_auth_data;
+    uint32_t        m_auth_id=0;
+    eClientState    m_state = NOT_LOGGED_IN;
+    uint32_t        is_connected_to_game_server_id=0;
 protected:
     AuthLink *      m_link = nullptr;
 };
@@ -93,9 +95,6 @@ protected:
     void        serialize_from(std::istream &is) override;
     void        serialize_to(std::ostream &is) override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // internal events
-    void        on_timeout(SEGSEvents::Timeout *ev);
     //////////////////////////////////////////////////////////////////////////
     // Message bus subscriptions
     void        on_server_status_change(SEGSEvents::GameServerStatusMessage *ev);

@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -42,6 +42,18 @@ enum ConditionalFlag : bool
 {
     Unconditional = false,
     Conditional = true,
+};
+
+enum ClientWindowState
+{
+    None = 0,
+    Training = 1,
+    Tailor = 2,
+    Supergroup = 3,
+    Enhancements = 4,
+    Id = 5,
+    AwaitingGurney = 6
+
 };
 
 class Character
@@ -107,7 +119,7 @@ const   QString &       getName() const { return m_name; }
 
         uint32_t            m_account_id;
         uint32_t            m_db_id;
-        bool                m_in_training   = false;
+        ClientWindowState   m_client_window_state = ClientWindowState::None;
         bool                m_add_new_costume = true;
         bool                m_is_dead = false;
 

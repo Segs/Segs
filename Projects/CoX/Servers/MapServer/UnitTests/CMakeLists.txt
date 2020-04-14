@@ -17,3 +17,7 @@ target_link_libraries(MapEventRegistry
     GameDatabase_interface
 )
 set_property(TARGET MapEventRegistry PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+set_target_properties (MapEventRegistry PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
+)

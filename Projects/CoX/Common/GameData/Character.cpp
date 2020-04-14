@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -171,7 +171,7 @@ void Character::addPowersByLevel(const QString &pcat_name, const QString &pset_n
     // Iterate through the availability of all powers in the set
     for(size_t i = 0; i < pset.Available.size(); ++i)
     {
-        if(level < pset.Available.at(i))
+        if(int(level) < pset.Available[i])
             continue;
         // skip prestige powers
         if(pset.m_Powers.at(i).m_Name.contains("prestige_"))

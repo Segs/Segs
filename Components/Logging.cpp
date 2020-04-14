@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -55,6 +55,8 @@ SEGS_LOGGING_CATEGORY(logStores,       "log.stores")
 SEGS_LOGGING_CATEGORY(logTasks,        "log.tasks")
 SEGS_LOGGING_CATEGORY(logRPC,          "log.rpc")
 SEGS_LOGGING_CATEGORY(logAFK,          "log.afk")
+SEGS_LOGGING_CATEGORY(logConnection,   "log.connection")
+SEGS_LOGGING_CATEGORY(logMigration,    "log.migration")
 
 void setLoggingFilter()
 {
@@ -80,7 +82,7 @@ void setLoggingFilter()
     filter_rules += "\nlog.playerspawn="    + config.value("log_playerspawn","false").toString();
     filter_rules += "\nlog.npcspawn="       + config.value("log_npcspawn","false").toString();
     filter_rules += "\nlog.mapevents="      + config.value("log_mapevents","true").toString();
-    filter_rules += "\nlog.mapxfers="       + config.value("log_mapxfers", "true").toString();
+    filter_rules += "\nlog.mapxfers="       + config.value("log_mapxfers", "false").toString();
     filter_rules += "\nlog.slashcommand="   + config.value("log_slashcommand","true").toString();
     filter_rules += "\nlog.description="    + config.value("log_description","false").toString();
     filter_rules += "\nlog.friends="        + config.value("log_friends","false").toString();
@@ -97,6 +99,8 @@ void setLoggingFilter()
     filter_rules += "\nlog.tasks="          + config.value("log_tasks","false").toString();
     filter_rules += "\nlog.rpc="            + config.value("log_rpc","false").toString();
     filter_rules += "\nlog.afk="            + config.value("log_afk","false").toString();
+    filter_rules += "\nlog.connection="     + config.value("log_connection","false").toString();
+    filter_rules += "\nlog.migration="      + config.value("log_migration","false").toString();
     config.endGroup(); // Logging
 
     QLoggingCategory::setFilterRules(filter_rules);
@@ -181,6 +185,10 @@ void toggleLogging(QString &category)
         cat = &logRPC();
     else if(category.contains("afk",Qt::CaseInsensitive))
         cat = &logAFK();
+    else if(category.contains("connection",Qt::CaseInsensitive))
+        cat = &logConnection();
+    else if(category.contains("migration",Qt::CaseInsensitive))
+        cat = &logMigration();
     else
         return;
 
@@ -230,6 +238,8 @@ void dumpLogging()
     output += "\n\t tasks: "        + QString::number(logTasks().isDebugEnabled());
     output += "\n\t rpc: "          + QString::number(logRPC().isDebugEnabled());
     output += "\n\t afk: "          + QString::number(logAFK().isDebugEnabled());
+    output += "\n\t connection: "   + QString::number(logConnection().isDebugEnabled());
+    output += "\n\t migration: "    + QString::number(logMigration().isDebugEnabled());
 
     qDebug().noquote() << output;
 }

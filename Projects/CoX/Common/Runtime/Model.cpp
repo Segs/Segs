@@ -36,8 +36,7 @@ inline QByteArray uncompr_zip(char *comp_data,int size_comprs,uint32_t size_unco
 
 struct GeosetHeader32
 {
-    char name[124];
-    int  parent_idx;
+    char name[128];
     int  unkn1;
     int  subs_idx;
     int  num_subs;
@@ -52,6 +51,14 @@ struct TexBlockInfo
 };
 
 
+struct ModelBones_32
+{
+    int cnt;
+    int bone_ID[15];
+    int float_pairs;
+    int short_pairs;
+};
+static_assert(sizeof(ModelBones_32) == 0x48, "sizeof(ModelBones_32)==0x48");
 struct PackInfo
 {
     int      compressed_size;
@@ -62,7 +69,7 @@ static_assert(sizeof(PackInfo) == 12, "sizeof(PackInfo)==12");
 
 struct Model32
 {
-    int             flg1;
+    uint32_t        flg1;
     float           radius;
     int             vbo;
     uint32_t        num_textures;
@@ -91,7 +98,7 @@ struct Model32
     int             geoset_list_idx;
     PackInfo        pack_data[7];
 };
-ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, uint32_t num_entries, UnpackMode v_type)
+ptrdiff_t unpackDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, uint32_t num_entries, UnpackMode v_type)
 {
     uint32_t     idx;
     float        float_acc[3] = {0, 0, 0};
@@ -162,30 +169,44 @@ ptrdiff_t unpackedDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, ui
     return data_src - data;
 }
 
-void geoUnpackDeltas(const DeltaPack *a1, uint8_t *target, uint32_t entry_size, uint32_t num_entries, UnpackMode type)
+void geoUnpackDeltas(const DeltaPack *src, uint8_t *target, uint32_t entry_size, uint32_t num_entries, UnpackMode type)
 {
-    if(0 == a1->uncomp_size)
+    if(0 == src->uncomp_size)
         return;
     ptrdiff_t consumed_bytes;
-    if(a1->compressed_size)
+    if(src->compressed_size)
     {
-        QByteArray unpacked = uncompr_zip((char *)a1->compressed_data, a1->compressed_size, a1->uncomp_size);
-        consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)unpacked.data(), entry_size, num_entries, type);
+        QByteArray unpacked = uncompr_zip((char *)src->compressed_data, src->compressed_size, src->uncomp_size);
+        consumed_bytes = unpackDeltaPack((int *)target, (uint8_t *)unpacked.data(), entry_size, num_entries, type);
     }
     else
     {
-        consumed_bytes = unpackedDeltaPack((int *)target, (uint8_t *)a1->compressed_data, entry_size, num_entries, type);
+        consumed_bytes = unpackDeltaPack((int *)target, (uint8_t *)src->compressed_data, entry_size, num_entries, type);
     }
 }
 
-inline void geoUnpackDeltas(const DeltaPack *a1, glm::vec3 *unpacked_data, uint32_t num_entries)
+inline void geoUnpackDeltas(const DeltaPack *src, glm::vec3 *unpacked_data, uint32_t num_entries)
 {
-    geoUnpackDeltas(a1, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_FLOATS);
+    geoUnpackDeltas(src, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_FLOATS);
 }
 
-inline void geoUnpackDeltas(const DeltaPack *a1, glm::ivec3 *unpacked_data, uint32_t num_entries)
+inline void geoUnpackDeltas(const DeltaPack *src, glm::ivec3 *unpacked_data, uint32_t num_entries)
 {
-    geoUnpackDeltas(a1, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_INTS);
+    geoUnpackDeltas(src, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_INTS);
+}
+inline void geoUnpack(const DeltaPack *src, char *dest)
+{
+    if (!src->uncomp_size)
+        return;
+
+    if (src->compressed_size)
+    {
+        assert(src->uncomp_size != 0);
+        QByteArray unc = uncompr_zip((char *)src->compressed_data, src->compressed_size, src->uncomp_size);
+        memcpy(dest, unc.data(), unc.size());
+    }
+    else
+        memcpy(dest, src->compressed_data, src->uncomp_size);
 }
 void fixupDataPtr(DeltaPack &a, uint8_t *b)
 {
@@ -228,6 +249,7 @@ static Model *convertAndInsertModel(GeoSet &tgt, const Model32 *v)
     z->flags = v->flg1;
     z->visibility_radius = v->radius;
     z->num_textures = v->num_textures;
+    z->m_id = v->id;
     z->boneinfo_offset = v->boneinfo;
     z->blend_mode = CoHBlendMode(v->blend_mode);
     z->vertex_count = v->vertex_count;
@@ -259,17 +281,17 @@ static void convertTextureNames(const int *a1, std::vector<QString> &a2)
     }
 }
 
-void geosetLoadHeader(QFile &fp, GeoSet *geoset)
+void geosetLoadHeader(QIODevice *fp, GeoSet *geoset)
 {
     unsigned int anm_hdr_size;
     const uint8_t * stream_pos_0;
     const uint8_t * stream_pos_1;
     uint32_t headersize;
-    fp.read((char *)&anm_hdr_size, 4u);
+    fp->read((char *)&anm_hdr_size, 4u);
     anm_hdr_size -= 4;
-    fp.read((char *)&headersize, sizeof(uint32_t));
+    fp->read((char *)&headersize, sizeof(uint32_t));
 
-    QByteArray zipmem = fp.read(anm_hdr_size);
+    QByteArray zipmem = fp->read(anm_hdr_size);
     QByteArray unc_arr = uncompr_zip(zipmem.data(), anm_hdr_size, headersize);
 
     const uint8_t * mem = (const uint8_t *)unc_arr.data();
@@ -284,6 +306,7 @@ void geosetLoadHeader(QFile &fp, GeoSet *geoset)
     const Model32 *     ptr_subs  = (Model32 *)(stream_pos_1 + info->tex_binds_size + sizeof(GeosetHeader32));
     geoset->parent_geoset = geoset;
     geoset->name = header32->name;
+    bool has_alt_pivot=false;
     for(int idx = 0; idx < header32->num_subs; ++idx)
     {
         const Model32 *sub_model = &ptr_subs[idx];
@@ -291,6 +314,8 @@ void geosetLoadHeader(QFile &fp, GeoSet *geoset)
         if(info->tex_binds_size)
             binds = convertTexBinds(sub_model->num_textures, sub_model->texture_bind_offsets + stream_pos_1);
 
+        if (sub_model->num_altpivots > 0)
+            has_alt_pivot |= true;
         Model *m    = convertAndInsertModel(*geoset, sub_model);
         m->texture_bind_info = binds;
         m->geoset       = geoset;
@@ -299,6 +324,8 @@ void geosetLoadHeader(QFile &fp, GeoSet *geoset)
 
     if(!geoset->subs.empty())
         addModelStubs(geoset);
+    if (has_alt_pivot)
+        qDebug() << "Alternate model pivots were not converted";
 }
 
 void modelFixup(const Model &model,VBOPointers &vbo)
@@ -346,9 +373,9 @@ void modelFixup(const Model &model,VBOPointers &vbo)
 
         glm::vec2 scaletex0 = tex.scaleUV0;
         glm::vec2 scaletex1 = tex.scaleUV1;
-        for(uint32_t v19 = 0; v19 < bind_tri_count; ++v19)
+        for(uint32_t tri_idx = 0; tri_idx < bind_tri_count; ++tri_idx)
         {
-            glm::ivec3 tri(vbo.triangles[v19+triangle_offset]);
+            glm::ivec3 tri(vbo.triangles[tri_idx+triangle_offset]);
             for(int vnum=0; vnum<3; ++vnum)
             {
                 const uint32_t vert_idx = tri[vnum];
@@ -400,7 +427,25 @@ std::unique_ptr<VBOPointers> fillVbo(const Model &model)
         geoUnpackDeltas(&model.packed_data.sts, (uint8_t *)vbo->uv1.data(), 2, model.vertex_count, UNPACK_FLOATS);
         vbo->uv2 = vbo->uv1;
     }
+    if(model.hasBoneWeights())
+    {
+        std::vector<uint8_t> weights;
+        std::vector<std::pair<uint8_t,uint8_t>> indices;
+        weights.resize(model.vertex_count);
+        indices.resize(model.vertex_count);
 
+        vbo->bone_weights.resize(model.vertex_count);
+        vbo->bone_indices.resize(model.vertex_count);
+
+        geoUnpack(&model.packed_data.weights, (char *)weights.data());
+        geoUnpack(&model.packed_data.matidxs, (char *)indices.data());
+        for(uint32_t i=0; i<model.vertex_count; ++i)
+        {
+            vbo->bone_indices[i] = std::make_pair(uint16_t(indices[i].first),uint16_t(indices[i].second));
+            vbo->bone_weights[i].x = (weights[i]/255.0f);
+            vbo->bone_weights[i].y = 1.0f - vbo->bone_weights[i].x;
+        }
+    }
     if(bumpMapped(model))
         vbo->needs_tangents = true;
 
@@ -413,15 +458,23 @@ void fillVBO(Model & model)
     modelFixup(model,*databuf);
     model.vbo = std::move(databuf);
 }
-
-void geosetLoadData(QFile &fp, GeoSet *geoset)
+static void convertModelBones(Model *m, ModelBones_32 *src)
+{
+    m->bone_info_data = new BoneInfo;
+    BoneInfo *tgt = m->bone_info_data;
+    tgt->numbones = src->cnt;
+    assert(src->cnt < 15);
+    for (int i = 0; i < src->cnt; ++i)
+        tgt->bone_ID[i] = src->bone_ID[i];
+}
+void geosetLoadData(QIODevice *fp, GeoSet *geoset)
 {
     int buffer;
-    fp.seek(0);
-    fp.read((char *)&buffer, 4);
-    fp.seek(buffer + 8);
+    fp->seek(0);
+    fp->read((char *)&buffer, 4);
+    fp->seek(buffer + 8);
     geoset->m_geo_data.resize(geoset->geo_data_size); //, 1, "\\src\\Common\\seq\\anim.c", 496);
-    fp.read(geoset->m_geo_data.data(), geoset->geo_data_size);
+    fp->read(geoset->m_geo_data.data(), geoset->geo_data_size);
     uint8_t *buffer_b = (uint8_t *)geoset->m_geo_data.data();
 
     for(Model *current_sub : geoset->subs)
@@ -435,8 +488,7 @@ void geosetLoadData(QFile &fp, GeoSet *geoset)
         fixupDataPtr(current_sub->packed_data.matidxs, buffer_b);
         if(current_sub->boneinfo_offset)
         {
-            qCritical() << "Models with bones are not supported yet, bother SEGS devs to fix that";
-            assert(false);
+            convertModelBones(current_sub, (ModelBones_32 *)(buffer_b + current_sub->boneinfo_offset));
         }
     }
     geoset->data_loaded = true;

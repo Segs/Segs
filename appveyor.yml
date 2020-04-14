@@ -12,7 +12,8 @@ environment:
 #  - CMAKE_GENERATOR: "Visual Studio 15 2017"
 #    QT5: C:\Qt\5.10.1\msvc2015
   - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
-    QT5: C:\Qt\5.10.1\msvc2017_64
+    QT5: C:\Qt\5.12.6\msvc2017_64
+    VCVARS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat
     
 branches:
   only:
@@ -29,10 +30,16 @@ clone_depth: 5
 matrix:
   fast_finish: false # set this flag to immediately finish build once one of the jobs fails.
 
+init:
+- call "%QT5%\bin\qtenv2.bat"
+- call "%VCVARS%"
+- cd /D "%APPVEYOR_BUILD_FOLDER%"
+
 before_build:
-- if exist "%QT5%" set Path=%QT5%\bin;%Path%
+- if exist "%QT5%" set PATH=%QT5%\bin;%PATH%
 - md build
-- cmake -H. -Bbuild -G "%CMAKE_GENERATOR%" "-DCMAKE_PREFIX_PATH=%QT5%"
+- cmake -H. -Bbuild -G "%CMAKE_GENERATOR%" -DQT_GIVEN_PATH:STRING="%QT5%" "-DCMAKE_PREFIX_PATH=%QT5%"
+- lib /def:Projects\CoX\Clients\patch_tools\CityOfX.def /OUT:Projects/CoX/Clients/patch_tools/CityOfX.lib
 
 build_script:
 - if "%APPVEYOR_REPO_TAG%"=="true" (set CONFIGURATION=RelWithDebInfo) else (set CONFIGURATION=Debug)

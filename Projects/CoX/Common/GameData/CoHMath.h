@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -76,12 +76,12 @@ struct AngleRadians
     }
     AngleRadians lerp(AngleRadians towards,float factor) const {
 
-        float v3(towards.v - v);
-        if( v3 > glm::pi<float>())
-            v3 = v3 - glm::two_pi<float>();
-        if( v3 <= -glm::pi<float>())
-            v3 = v3 + glm::two_pi<float>();
-        return AngleRadians(v3 * factor + v);
+        float diff(towards.v - v);
+        if ( diff > glm::pi<float>())
+            diff = diff - glm::two_pi<float>();
+        if ( diff <= -glm::pi<float>())
+            diff = diff + glm::two_pi<float>();
+        return AngleRadians(diff * factor + v);
 
     }
     //    operator float()
@@ -146,9 +146,9 @@ inline glm::vec3 toCoH_YPR(const glm::quat &q)
         }
         else
         {
-            float v11 = mat11 / cos_roll;
-            pitchVal = std::atan2(mat21, v11);
-            yawVal   = std::atan2(2 * (qxz + qwy) / v11, (1 - 2 * (qxx + qyy)) / v11);
+            float tan_val = mat11 / cos_roll;
+            pitchVal = std::atan2(mat21, tan_val);
+            yawVal   = std::atan2(2 * (qxz + qwy) / tan_val, (1 - 2 * (qxx + qyy)) / tan_val);
         }
     }
     else
@@ -192,9 +192,9 @@ inline glm::vec3 CoHYprFromMat(const glm::mat3 &mat)
         }
         else
         {
-            float v11 = mat[1][1] / cos_roll;
-            pitchVal = std::atan2(mat[2][1], v11);
-            yawVal   = std::atan2(mat[2][0] / v11, mat[2][2] / v11);
+            float m11 = mat[1][1] / cos_roll;
+            pitchVal = std::atan2(mat[2][1], m11);
+            yawVal   = std::atan2(mat[2][0] / m11, mat[2][2] / m11);
         }
     }
     else

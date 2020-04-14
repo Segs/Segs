@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -106,16 +106,15 @@ struct buffset
 {
     float           m_value                 = 0.0;
     QString         m_value_name            = "";
-    uint            m_attrib                = 0;       // for damage resistances or defenses or others
+    float           m_duration              = 0.0f;
+    uint32_t        m_attrib                = 0;       // for damage resistances or defenses or others
 };
 
 struct Buffs
 {
     QString         m_name                  = "unknown";
-    PowerPool_Info  m_buff_info;
-    float           m_time_to_activate      = 0.0f;
-    float           m_duration              = 0.0f;
-    std::vector<buffset>    m_buffs;                //For buffs with multiple effects
+    PowerPool_Info  m_buff_info;                        //There is one buff for each power, so that only one icon is shown
+    std::vector<buffset>    m_buffs;                    //powers with multiple effects have a buffset per effect
     uint32_t         source_ent_idx          = 0;
 };
 
@@ -337,7 +336,14 @@ static const int m_num_trays = 2; // was 3, displayed trays
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version);
 };
-
+struct DelayedEffect
+{
+    StoredAttribMod mod;
+    CharacterPower *power;
+    int m_timer;
+    int ticks;
+    uint32_t src_ent;
+};
 
 /*
  * Powers Methods

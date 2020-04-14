@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -119,7 +119,7 @@ void ScriptingEngine::register_CharacterTypes()
           sendContactDialogClose(*cl);
       };
 
-      m_private->m_lua["Player"]["SetDebt"] = [this](const int debt)
+      m_private->m_lua["Player"]["SetDebt"] = [this](const uint32_t debt)
       {
           setDebt(*cl->m_ent->m_char, debt);
       };
@@ -155,7 +155,7 @@ void ScriptingEngine::register_CharacterTypes()
           giveHp(*cl, hp);
       };
 
-      m_private->m_lua["Player"]["SetInf"] = [this](const int inf)
+      m_private->m_lua["Player"]["SetInf"] = [this](const uint32_t inf)
       {
           setInf(*cl->m_ent->m_char, inf);
       };
@@ -171,22 +171,22 @@ void ScriptingEngine::register_CharacterTypes()
           giveInsp(*cl, e_name);
       };
 
-      m_private->m_lua["Player"]["SetXp"] = [this](const int xp)
+      m_private->m_lua["Player"]["SetXp"] = [this](const uint32_t xp)
       {
           setXP(*cl->m_ent->m_char, xp);
       };
 
-      m_private->m_lua["Player"]["GiveXp"] = [this](const int xp)
+      m_private->m_lua["Player"]["GiveXp"] = [this](const uint32_t xp)
       {
           giveXp(*cl, xp);
       };
 
-      m_private->m_lua["Player"]["SendFloatingDamage"] = [this](const int tgt_idx, const int amount)
+      m_private->m_lua["Player"]["SendFloatingDamage"] = [this](const uint32_t tgt_idx, const int amount)
       {
           sendFloatingNumbers(*cl, tgt_idx, amount);
       };
 
-      m_private->m_lua["Player"]["FaceEntity"] = [this](const int tgt_idx)
+      m_private->m_lua["Player"]["FaceEntity"] = [this](const uint32_t tgt_idx)
       {
           sendFaceEntity(*cl, tgt_idx);
       };
@@ -312,5 +312,10 @@ void ScriptingEngine::register_CharacterTypes()
       m_private->m_lua["Player"]["GetRelayRaceResult"] = [this](int segment)
       {
           return getRelayRaceResult(*cl, segment);
+      };
+
+      m_private->m_lua["Player"]["GetLevel"] = [this]()
+      {
+        return getLevel(*cl->m_ent->m_char);
       };
 }

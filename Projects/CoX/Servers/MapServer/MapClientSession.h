@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -9,6 +9,7 @@
 #include "FixedPointValue.h"
 #include "NetCommandManager.h"
 #include "Messages/Map/GameCommand.h"
+#include "Common/Servers/ClientManager.h"
 
 #include <map>
 #include <memory>
@@ -29,14 +30,13 @@ struct ClientEntityStateBelief
     bool          m_is_logging_out = false;
 };
 
-struct MapClientSession
+struct MapClientSession : public ClientSession
 {
     using mNetCommands = std::map<int, NetCommand *>;
     using vBelief      = std::map<int, ClientEntityStateBelief>;
     using vStoredCommands = std::vector<std::unique_ptr<SEGSEvents::GameCommandEvent>>;
     friend class CharacterDatabase;
 
-        uint64_t                m_session_token= 0; // a back-link to owning session, used in serialization
         uint32_t                m_client_id    = 0;
         uint8_t                 m_access_level = 0;
         uint16_t                m_requested_slot_idx=0;

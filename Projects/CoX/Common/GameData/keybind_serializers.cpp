@@ -1,6 +1,6 @@
 /*
  * SEGS - Super Entity Game Server
- * http://www.segs.io/
+ * http://www.segs.dev/
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
@@ -213,7 +213,7 @@ void serialize(Archive &archive, Keybind_Profiles &kp)
 }
 
 template<class Archive>
-void serialize(Archive &archive, KeybindSettings &kbds, uint32_t const version)
+void serialize(Archive &archive, KeybindSettings &kbds, const uint32_t version)
 {
     if(version != KeybindSettings::class_version)
     {
@@ -226,14 +226,14 @@ void serialize(Archive &archive, KeybindSettings &kbds, uint32_t const version)
 }
 
 template<class Archive>
-void serialize(Archive &archive, CommandEntry &k, uint32_t const version)
+void serialize(Archive &archive, CommandEntry &k, const uint32_t /*version*/)
 {
     archive(cereal::make_nvp("Key",k.Key));
     archive(cereal::make_nvp("Mods",k.Mods));
 }
 
 template<class Archive>
-void serialize(Archive &archive, Command &k, uint32_t const version)
+void serialize(Archive &archive, Command &k, const uint32_t /*version*/)
 {
     archive(cereal::make_nvp("CommandString",k.CmdString));
     archive(cereal::make_nvp("DisplayName",k.DisplayName));
@@ -241,14 +241,14 @@ void serialize(Archive &archive, Command &k, uint32_t const version)
 }
 
 template<class Archive>
-void serialize(Archive &archive, CommandCategory_Entry &k, uint32_t const version)
+void serialize(Archive &archive, CommandCategory_Entry &k, const uint32_t /*version*/)
 {
     archive(cereal::make_nvp("DisplayName",k.DisplayName));
     archive(cereal::make_nvp("Commands",k.commands));
 }
 
 template<class Archive>
-void serialize(Archive &archive, Parse_AllCommandCategories &k, uint32_t const version)
+void serialize(Archive &archive, Parse_AllCommandCategories &k, const uint32_t /*version*/)
 {
     archive(cereal::make_nvp("AllCommandCategories",k));
 }

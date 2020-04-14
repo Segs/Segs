@@ -226,14 +226,14 @@ QVariantMap AdminRPC::getWebUIData(QString const& version)
 {
     qCDebug(logRPC) << "Someone requested WebUI information...";
     QMap<QString,QVariant> ret;
-    if (version.compare("0.6.1") == 0)
+    if (version.compare("0.7.0") == 0)
     {
       ret.insert("version", VersionInfo::getAuthVersionNumber());
       ret.insert("starttime", m_start_time);
     }
-    else
+    else // TODO: what is this supposed to do?
     {
-      // Default to v0.6.1 format
+      // Default to v0.7.0 format
       ret.insert("version", VersionInfo::getAuthVersionNumber());
       ret.insert("starttime", m_start_time);
     }      

@@ -47,6 +47,8 @@ over to the segs data directory (ex. ```"/opt/segs/data"```) and use the line be
 find /opt/segs/data/ -name '*.pigg' -exec /opt/segs/piggtool -x {} /opt/segs/data/ \;
 ```
 
+Optionally Copy powers.json from https://github.com/segs-community/cox-scripts/blob/master/powers.json into data folder.
+
 **5. Create gamedb and users**
 
 Inside the SEGS-Server directory ```"/opt/segs"``` use dbtool to create the gamedb and admin user.
