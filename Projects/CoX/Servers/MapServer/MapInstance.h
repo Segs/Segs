@@ -199,6 +199,7 @@ public:
 
 protected:
         void                    startTimers();
+        void                    initServices();
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
         void                    serialize_to(std::ostream &is) override;

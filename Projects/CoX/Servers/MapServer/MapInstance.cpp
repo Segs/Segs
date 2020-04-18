@@ -116,7 +116,15 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
     m_scripting_interface->setIncludeDir(mapdir_path);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
+
+    initServices();
 }
+
+void MapInstance::initServices()
+{
+    m_email_service = EmailService();
+}
+
 void MapInstance::startTimers()
 {
     // world simulation ticks
