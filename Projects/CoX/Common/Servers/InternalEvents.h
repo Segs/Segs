@@ -249,29 +249,19 @@ struct MapSwapCollisionData
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
 
+using GameCommandVector = std::vector<std::unique_ptr<GameCommandEvent>>;     // might need another vector of InternalEvents if sending to something like game_db
+
 struct ServiceToClientData
 {
-    using GameCommandVector = std::vector<std::unique_ptr<GameCommandEvent>>;     // might need another vector of InternalEvents if sending to something like game_db
-
     uint64_t m_token = 0;
-    Entity* m_ent = nullptr;
     GameCommandVector m_commands;
     QString m_message;
     MessageChannel m_message_channel;
 
     ServiceToClientData(){};
 
-    // use this if you are sending GameCommands and find your session from event (most of them?)
-    ServiceToClientData(Entity* ent, GameCommandVector commands, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
-    {
-        m_ent = ent;
-        m_commands = std::move(commands);
-        m_message = msg;
-        m_message_channel = messageChannel;
-    }
-
     // use this if you are sending GameCommands and find your session from token (eg EmailService)
-    ServiceToClientData(uint64_t token, GameCommandVector commands, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    ServiceToClientData(uint64_t token, GameCommandVector commands, QString msg = nullptr, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
     {
         m_token = token;
         m_commands = std::move(commands);
