@@ -122,7 +122,7 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
 
 void MapInstance::initServices()
 {
-    m_email_service = EmailService();
+    m_email_service = {};
 }
 
 void MapInstance::startTimers()
@@ -3246,22 +3246,18 @@ void MapInstance::on_service_to_client_response(std::unique_ptr<SEGSEvents::Serv
     if (data == nullptr || data->m_token == 0)
         return;
 
-    try
-    {
-        // if token is empty, get it from the entity
-        MapClientSession& session = m_session_store.session_from_token(data->m_token);
+    // the required session is no longer stored
+    if (!m_session_store.has_session_for(data->m_token))
+        return;
 
-        for (auto &command : data->m_commands)
-            session.addCommandToSendNextUpdate(std::move(command));
+    MapClientSession& session = m_session_store.session_from_token(data->m_token);
 
-        // is not null and is not empty
-        if (!data->m_message.isEmpty() && !data->m_message.isNull())
-            sendInfoMessage(MessageChannel::DEBUG_INFO, data->m_message, session);
-    }
-    catch(std::exception &e)
-    {
-        qCritical() << e.what();
-    }
+    for (auto &command : data->m_commands)
+        session.addCommandToSendNextUpdate(std::move(command));
+
+    // is not null and is not empty
+    if (!data->m_message.isEmpty() && !data->m_message.isNull())
+        sendInfoMessage(MessageChannel::DEBUG_INFO, data->m_message, session);
 }
 
 

@@ -24,7 +24,7 @@ std::unique_ptr<ServiceToClientData> EmailService::on_email_header_response(Even
     emailHeadersVector.reserve(casted_ev->m_data.m_email_headers.size());
     for (const auto &email_header : casted_ev->m_data.m_email_headers)
     {
-        emailHeadersVector.push_back(EmailHeaders::EmailHeader{email_header.m_email_id,
+        emailHeadersVector.emplace_back(EmailHeaders::EmailHeader{email_header.m_email_id,
                                                           email_header.m_sender_name,
                                                           email_header.m_subject,
                                                           email_header.m_timestamp});
@@ -41,7 +41,7 @@ std::unique_ptr<ServiceToClientData> EmailService::on_email_header_to_client(Eve
 {
     EmailHeaderToClientMessage* casted_ev = static_cast<EmailHeaderToClientMessage *>(ev);
     GameCommandVector commands;
-    commands.push_back(std::make_unique<EmailHeaders>( casted_ev->m_data.m_email_id, casted_ev->m_data.m_sender_name,
+    commands.emplace_back(std::make_unique<EmailHeaders>( casted_ev->m_data.m_email_id, casted_ev->m_data.m_sender_name,
                                                        casted_ev->m_data.m_subject, casted_ev->m_data.m_timestamp));
 
     return std::make_unique<ServiceToClientData>(casted_ev->session_token(), std::move(commands), QString());
@@ -55,7 +55,7 @@ std::unique_ptr<ServiceToClientData> EmailService::on_email_headers_to_client(Ev
     emailHeadersVector.reserve(casted_ev->m_data.m_email_headers.size());
     for (const auto &email_header : casted_ev->m_data.m_email_headers)
     {
-        emailHeadersVector.push_back(EmailHeaders::EmailHeader{email_header.m_email_id,
+        emailHeadersVector.emplace_back(EmailHeaders::EmailHeader{email_header.m_email_id,
                                                           email_header.m_sender_name,
                                                           email_header.m_subject,
                                                           email_header.m_timestamp});

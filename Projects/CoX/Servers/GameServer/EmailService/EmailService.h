@@ -12,8 +12,6 @@
 // The EmailService is self-explanatory - it handles on email stuff
 class EmailService
 {
-private:
-    using GameCommandVector = std::vector<std::unique_ptr<SEGSEvents::GameCommandEvent>>;
 public:
     std::unique_ptr<SEGSEvents::ServiceToClientData> on_email_header_response(SEGSEvents::Event* ev);
     std::unique_ptr<SEGSEvents::ServiceToClientData> on_email_headers_to_client(SEGSEvents::Event* ev);

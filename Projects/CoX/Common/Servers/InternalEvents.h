@@ -253,7 +253,7 @@ using GameCommandVector = std::vector<std::unique_ptr<GameCommandEvent>>;     //
 
 struct ServiceToClientData
 {
-    uint64_t m_token = 0;
+    uint64_t m_token : 8;
     GameCommandVector m_commands;
     QString m_message;
     MessageChannel m_message_channel;
@@ -261,7 +261,7 @@ struct ServiceToClientData
     ServiceToClientData(){};
 
     // use this if you are sending GameCommands and find your session from token (eg EmailService)
-    ServiceToClientData(uint64_t token, GameCommandVector commands, QString msg = nullptr, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    ServiceToClientData(uint64_t token, GameCommandVector &&commands, QString msg = {}, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
     {
         m_token = token;
         m_commands = std::move(commands);
@@ -277,5 +277,7 @@ struct ServiceToClientData
         m_message_channel = messageChannel;
     }
 };
+
+using UPtrServiceToClientData = std::unique_ptr<SEGSEvents::ServiceToClientData>;
 
 } // end of SEGSEvents namespace
