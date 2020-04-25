@@ -253,9 +253,9 @@ using GameCommandVector = std::vector<std::unique_ptr<GameCommandEvent>>;     //
 
 struct ServiceToClientData
 {
-    uint64_t m_token : 8;
     GameCommandVector m_commands;
     QString m_message;
+    uint64_t m_token;
     MessageChannel m_message_channel;
 
     ServiceToClientData(){};

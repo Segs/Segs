@@ -16,7 +16,7 @@
 
 using namespace SEGSEvents;
 
-std::unique_ptr<ServiceToClientData> EmailService::on_email_header_response(Event* ev)
+UPtrServiceToClientData EmailService::on_email_header_response(Event* ev)
 {
     EmailHeaderResponse* casted_ev = static_cast<EmailHeaderResponse *>(ev);
 
@@ -37,7 +37,7 @@ std::unique_ptr<ServiceToClientData> EmailService::on_email_header_response(Even
 }
 
 // EmailHandler will send this event here
-std::unique_ptr<ServiceToClientData> EmailService::on_email_header_to_client(Event* ev)
+UPtrServiceToClientData EmailService::on_email_header_to_client(Event* ev)
 {
     EmailHeaderToClientMessage* casted_ev = static_cast<EmailHeaderToClientMessage *>(ev);
     GameCommandVector commands;
@@ -47,7 +47,7 @@ std::unique_ptr<ServiceToClientData> EmailService::on_email_header_to_client(Eve
     return std::make_unique<ServiceToClientData>(casted_ev->session_token(), std::move(commands), QString());
 }
 
-std::unique_ptr<ServiceToClientData> EmailService::on_email_headers_to_client(Event* ev)
+UPtrServiceToClientData EmailService::on_email_headers_to_client(Event* ev)
 {
     EmailHeadersToClientMessage* casted_ev = static_cast<EmailHeadersToClientMessage *>(ev);
 
@@ -69,7 +69,7 @@ std::unique_ptr<ServiceToClientData> EmailService::on_email_headers_to_client(Ev
     return std::make_unique<ServiceToClientData>(casted_ev->session_token(), std::move(commands), messageToClient);
 }
 
-std::unique_ptr<ServiceToClientData> EmailService::on_email_read_response(Event* ev)
+UPtrServiceToClientData EmailService::on_email_read_response(Event* ev)
 {
     EmailReadResponse* casted_ev = static_cast<EmailReadResponse *>(ev);
     GameCommandVector commands;
@@ -78,13 +78,13 @@ std::unique_ptr<ServiceToClientData> EmailService::on_email_read_response(Event*
     return std::make_unique<ServiceToClientData>(casted_ev->session_token(), std::move(commands), QString());
 }
 
-std::unique_ptr<ServiceToClientData> EmailService::on_email_read_by_recipient(Event* ev)
+UPtrServiceToClientData EmailService::on_email_read_by_recipient(Event* ev)
 {
     EmailWasReadByRecipientMessage* casted_ev = static_cast<EmailWasReadByRecipientMessage *>(ev);
     return std::make_unique<ServiceToClientData>(casted_ev->session_token(), casted_ev->m_data.m_message);
 }
 
-std::unique_ptr<ServiceToClientData> EmailService::on_email_create_status(Event* ev)
+UPtrServiceToClientData EmailService::on_email_create_status(Event* ev)
 {
     EmailCreateStatusMessage* casted_ev = static_cast<EmailCreateStatusMessage* >(ev);
 
