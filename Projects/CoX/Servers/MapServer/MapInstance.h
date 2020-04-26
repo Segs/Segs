@@ -17,6 +17,8 @@
 #include "NpcGenerator.h"
 #include "CritterGenerator.h"
 
+#include "GameServer/EmailService/EmailService.h"
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -145,6 +147,8 @@ class MapInstance final : public EventProcessor
         uint32_t                       m_index          = 1; // what does client expect this to store, and where do we send it?
         uint8_t                        m_game_server_id = 255; // 255 is `invalid` id
 
+        EmailService                    m_email_service;
+
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
         // then copy the relevant transfers to another hash which is then used for those specific transfers.
@@ -195,6 +199,7 @@ public:
 
 protected:
         void                    startTimers();
+        void                    initServices();
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
         void                    serialize_to(std::ostream &is) override;
@@ -273,12 +278,6 @@ protected:
         void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
-        void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
-        void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
-        void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
-        void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
-        void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
-        void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);
@@ -302,4 +301,7 @@ protected:
         void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
         void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
         void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
+
+        // Service <--> MapInstance
+        void on_service_to_client_response(std::unique_ptr<SEGSEvents::ServiceToClientData> data);
 };

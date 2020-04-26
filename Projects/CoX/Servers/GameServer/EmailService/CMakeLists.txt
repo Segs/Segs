@@ -1,8 +1,10 @@
 SET(target_CPP
 ${CMAKE_CURRENT_SOURCE_DIR}/EmailHandler.cpp
+${CMAKE_CURRENT_SOURCE_DIR}/EmailService.cpp
 )
 SET(target_INCLUDE
 ${CMAKE_CURRENT_SOURCE_DIR}/EmailHandler.h
+${CMAKE_CURRENT_SOURCE_DIR}/EmailService.h
 )
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

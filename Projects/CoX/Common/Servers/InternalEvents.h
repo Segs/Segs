@@ -14,6 +14,10 @@
 #include <QtCore/QDateTime>
 #include <glm/vec3.hpp>
 #include <Common/GameData/map_definitions.h>
+#include <Common/GameData/map_definitions.h>
+#include <Common/Messages/Map/GameCommand.h>
+#include <Common/Messages/Map/MessageChannels.h>
+#include "GameData/Entity.h"
 
 namespace SEGSEvents
 {
@@ -244,5 +248,36 @@ struct MapSwapCollisionData
 };
 // [[ev_def:macro]]
 ONE_WAY_MESSAGE(Internal_EventTypes,MapSwapCollision)
+
+using GameCommandVector = std::vector<std::unique_ptr<GameCommandEvent>>;     // might need another vector of InternalEvents if sending to something like game_db
+
+struct ServiceToClientData
+{
+    GameCommandVector m_commands;
+    QString m_message;
+    uint64_t m_token;
+    MessageChannel m_message_channel;
+
+    ServiceToClientData(){};
+
+    // use this if you are sending GameCommands and find your session from token (eg EmailService)
+    ServiceToClientData(uint64_t token, GameCommandVector &&commands, QString msg = {}, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_token = token;
+        m_commands = std::move(commands);
+        m_message = msg;
+        m_message_channel = messageChannel;
+    }
+
+    // same as above, but with tokens
+    ServiceToClientData(uint64_t token, QString msg, MessageChannel messageChannel = MessageChannel::DEBUG_INFO)
+    {
+        m_token = token;
+        m_message = msg;
+        m_message_channel = messageChannel;
+    }
+};
+
+using UPtrServiceToClientData = std::unique_ptr<SEGSEvents::ServiceToClientData>;
 
 } // end of SEGSEvents namespace
