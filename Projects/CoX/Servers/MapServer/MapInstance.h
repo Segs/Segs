@@ -18,6 +18,7 @@
 #include "CritterGenerator.h"
 
 #include "GameServer/EmailService/EmailService.h"
+#include "GameServer/ClientOptionService/ClientOptionService.h"
 
 #include <map>
 #include <memory>
@@ -68,8 +69,6 @@ class AbortQueuedPower;
 class DescriptionAndBattleCry;
 class EntityInfoRequest;
 class ChatReconfigure;
-class SwitchViewPoint;
-class SaveClientOptions;
 class SetDefaultPower;
 class UnsetDefaultPower;
 class UnqueueAll;
@@ -79,10 +78,6 @@ class ActivatePowerAtLocation;
 class ActivateInspiration;
 class PowersDockMode;
 class SwitchTray;
-class SelectKeybindProfile;
-class ResetKeybinds;
-class SetKeybind;
-class RemoveKeybind;
 class InteractWithEntity;
 class MoveInspiration;
 class RecvSelectedTitles;
@@ -148,6 +143,7 @@ class MapInstance final : public EventProcessor
         uint8_t                        m_game_server_id = 255; // 255 is `invalid` id
 
         EmailService                    m_email_service;
+        ClientOptionService             m_client_option_service;
 
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
@@ -261,8 +257,6 @@ protected:
         void on_description_and_battlecry(SEGSEvents::DescriptionAndBattleCry *ev);
         void on_entity_info_request(SEGSEvents::EntityInfoRequest *ev);
         void on_chat_reconfigured(SEGSEvents::ChatReconfigure *ev);
-        void on_switch_viewpoint(SEGSEvents::SwitchViewPoint *ev);
-        void on_client_options(SEGSEvents::SaveClientOptions *ev);
         void on_set_default_power(SEGSEvents::SetDefaultPower *ev);
         void on_unset_default_power(SEGSEvents::UnsetDefaultPower *ev);
         void on_unqueue_all(SEGSEvents::UnqueueAll *ev);
@@ -272,10 +266,6 @@ protected:
         void on_activate_inspiration(SEGSEvents::ActivateInspiration *ev);
         void on_powers_dockmode(SEGSEvents::PowersDockMode *ev);
         void on_switch_tray(SEGSEvents::SwitchTray *ev);
-        void on_select_keybind_profile(SEGSEvents::SelectKeybindProfile *ev);
-        void on_reset_keybinds(SEGSEvents::ResetKeybinds *ev);
-        void on_set_keybind(SEGSEvents::SetKeybind *ev);
-        void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
@@ -303,5 +293,6 @@ protected:
         void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
 
         // Service <--> MapInstance
-        void on_service_to_client_response(std::unique_ptr<SEGSEvents::ServiceToClientData> data);
+        void on_service_to_client_response(SEGSEvents::UPtrServiceToClientData data);
+        void on_service_to_entity_response(SEGSEvents::UPtrServiceToEntityData data);
 };

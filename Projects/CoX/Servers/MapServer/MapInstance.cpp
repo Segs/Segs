@@ -123,6 +123,7 @@ MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddr
 void MapInstance::initServices()
 {
     m_email_service = {};
+    m_client_option_service = {};
 }
 
 void MapInstance::startTimers()
@@ -461,10 +462,10 @@ void MapInstance::dispatch( Event *ev )
             on_plaque_visited(static_cast<PlaqueVisited *>(ev));
             break;
         case evSwitchViewPoint:
-            on_switch_viewpoint(static_cast<SwitchViewPoint *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_switch_viewpoint(ev));
             break;
         case evSaveClientOptions:
-            on_client_options(static_cast<SaveClientOptions *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_save_client_options(ev));
             break;
         case evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
@@ -500,16 +501,16 @@ void MapInstance::dispatch( Event *ev )
             on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
             break;
         case evSelectKeybindProfile:
-            on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_select_keybind_profile(ev));
             break;
         case evSetKeybind:
-            on_set_keybind(static_cast<SetKeybind *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_set_keybind(ev));
             break;
         case evRemoveKeybind:
-            on_remove_keybind(static_cast<RemoveKeybind *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_remove_keybind(ev));
             break;
         case evResetKeybinds:
-            on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_reset_keybinds(ev));
             break;
         case evEmailHeaderResponse:
             on_service_to_client_response(m_email_service.on_email_header_response(ev));
@@ -2307,25 +2308,6 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
     qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
 }
 
-void MapInstance::on_client_options(SaveClientOptions * ev)
-{
-    // Save options/keybinds to character entity and entry in the database.
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    Entity *ent = session.m_ent;
-    markEntityForDbStore(ent,DbStoreFlags::PlayerData);
-    ent->m_player->m_options = ev->data;
-}
-
-void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
-    qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
-}
-
 void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
 {
     MapClientSession &session(m_session_store.session_from_event(ev));
@@ -2445,27 +2427,6 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
    //qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray_group.m_primary_tray_idx+1 << "Tray2:" << ev->tray_group.m_second_tray_idx+1;
 }
 
-void MapInstance::on_set_keybind(SetKeybind *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    KeyName key = static_cast<KeyName>(ev->key);
-    ModKeys mod = static_cast<ModKeys>(ev->mods);
-
-    ent->m_player->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
-    //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
-}
-
-void MapInstance::on_remove_keybind(RemoveKeybind *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
-    //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
-}
-
 void MapInstance::setPlayerSpawn(Entity &e)
 {
     // Spawn player position and PYR
@@ -2558,25 +2519,6 @@ void MapInstance::serialize_from(istream &/*is*/)
 void MapInstance::serialize_to(ostream &/*is*/)
 {
     assert(false);
-}
-void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
-{
-    const GameDataStore &data(getGameData());
-    const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.resetKeybinds(default_profiles);
-    //qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
-}
-
-void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.setKeybindProfile(ev->profile);
-    //qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }
 
 void MapInstance::on_interact_with(InteractWithEntity *ev)
@@ -3240,7 +3182,7 @@ void MapInstance::clearLuaTimer(uint32_t entity_idx)
         this->m_lua_timers[count].m_remove = true;
 }
 
-void MapInstance::on_service_to_client_response(std::unique_ptr<SEGSEvents::ServiceToClientData> data)
+void MapInstance::on_service_to_client_response(SEGSEvents::UPtrServiceToClientData data)
 {
     // if the token is 0, that means it's not set to any account's token :)
     if (data == nullptr || data->m_token == 0)
@@ -3258,6 +3200,23 @@ void MapInstance::on_service_to_client_response(std::unique_ptr<SEGSEvents::Serv
     // is not null and is not empty
     if (!data->m_message.isEmpty() && !data->m_message.isNull())
         sendInfoMessage(MessageChannel::DEBUG_INFO, data->m_message, session);
+}
+
+void MapInstance::on_service_to_entity_response(SEGSEvents::UPtrServiceToEntityData data)
+{
+    // if the token is 0, that means it's not set to any account's token :)
+    if (data == nullptr || data->m_token == 0)
+        return;
+
+    // the required session is no longer stored
+    if (!m_session_store.has_session_for(data->m_token))
+        return;
+
+    MapClientSession& session = m_session_store.session_from_token(data->m_token);
+    Entity* ent = session.m_ent;
+
+    if (ent != nullptr)
+        data->m_entity_found_action(ent);
 }
 
 

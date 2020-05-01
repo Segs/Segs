@@ -27,8 +27,9 @@ target_link_libraries(GameServer INTERFACE SEGS_Components gameData )
 
 add_subdirectory(FriendshipService)
 add_subdirectory(EmailService)
+add_subdirectory(ClientOptionService)
 
-target_link_libraries(GameServer PUBLIC Qt5::Core FriendshipService EmailService )
+target_link_libraries(GameServer PUBLIC Qt5::Core FriendshipService EmailService ClientOptionService )
 target_link_libraries(GameServer INTERFACE SEGS_Components gameData)
 
 if(ENABLE_TESTS)
