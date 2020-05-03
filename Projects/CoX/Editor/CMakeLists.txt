@@ -1,14 +1,8 @@
 if(MSVC)
-
-check_and_update_binary_deps(SegsEngine SegsEngine ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt 4.0.0.3-alpha)
+    find_package(SegsEngine REQUIRED)
 else()
-    # TODO: DISABLED editor in linux until we have SegsEngine integrated as a built dependency.
-    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include")
-        return()
-    endif()
+    include(${PROJECT_SOURCE_DIR}/3rd_party/ExternalProject_SegsEngine.cmake)
 endif()
-
-find_package(SegsEngine REQUIRED)
 
 ###########################################################################################
 macro(set_plugin_options )
