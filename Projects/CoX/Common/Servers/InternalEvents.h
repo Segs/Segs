@@ -278,6 +278,21 @@ struct ServiceToClientData
     }
 };
 
+using EntityFoundAction = std::function<void(Entity* ent)>;
+
+struct ServiceToEntityData
+{
+    EntityFoundAction m_entity_found_action;
+    uint64_t m_token;
+
+    ServiceToEntityData(uint64_t token, EntityFoundAction action)
+    {
+        m_token = token;
+        m_entity_found_action = action;
+    }
+};
+
 using UPtrServiceToClientData = std::unique_ptr<SEGSEvents::ServiceToClientData>;
+using UPtrServiceToEntityData = std::unique_ptr<SEGSEvents::ServiceToEntityData>;
 
 } // end of SEGSEvents namespace
