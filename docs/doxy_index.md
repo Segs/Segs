@@ -9,7 +9,6 @@ physics, and more.
 
 - [Discord](https://discord.segs.dev/)
 - [Doxygen](https://doxy.segs.dev/)
-- [Forum](http://forum.segs.dev/)
 - [GitHub](https://github.com/Segs/Segs)
 - [Main](http://www.segs.dev/)
 - [Twitter](https://twitter.com/segscode)
