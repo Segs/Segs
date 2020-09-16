@@ -20,11 +20,6 @@ Below are the utilities and libraries you'll need to compile SEGS in any environ
    - _OPTIONAL:_ PostGreSQL - http://www.postgresql.org/download/
    - _OPTIONAL:_ MySQL - http://www.mysql.org/downloads/mysql
 
-For more detailed version of this guide or forums for help see the links below:
-- https://segs.dev
-- https://segs.dev/developers
-- https://forum.segs.dev/
-
 To report any bugs, please visit our github:
 - https://github.com/Segs/Segs
 
