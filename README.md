@@ -19,7 +19,7 @@ Some other useful links:
 * Our [Discord](https://discord.segs.dev/)
 * Our [wiki](https://github.com/Segs/Segs/wiki)
 * The [Issue Queue](https://github.com/Segs/Segs/issues)
-* How Can I Help? [Specific Tasks to Help](https://github.com/Segs/Segs/issues/519)
+* How Can I Help? [Specific Tasks to Help](https://github.com/Segs/Segs/issues/706)
 * Our target [coding style](./docs/CONTRIBUTING.md#coding-styleguide)
 
 DOCUMENTATION
