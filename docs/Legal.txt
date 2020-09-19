@@ -1,3 +1,10 @@
+Super Entity Game Server (SEGS) Project End-User License Agreement / Legal Stuff
+
+SEGS Project has been built with education as the main target. Thus, you may 
+only use the source code and binary releases provided by the project for 
+educational purposes. You are not allowed to use SEGS Project for any 
+commercial purpose.
+
 Some of SEGS sub-Projects have additional restrictions put on them.
 If given project documentation directory contains file named 'Legal.txt'
 then it's contents override SEGS's default legal rules, for that single Project only.
