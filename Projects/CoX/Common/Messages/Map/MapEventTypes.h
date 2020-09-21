@@ -19,7 +19,7 @@ enum MapEventTypes
     EVENT_DECL(MapEventTypes, evShortcutsRequest           ,2)
     EVENT_DECL(MapEventTypes, evShortcuts                  ,3)
     EVENT_DECL(MapEventTypes, evSceneRequest               ,4)
-    EVENT_DECL(MapEventTypes, evScene                      ,5)
+    EVENT_DECL(MapEventTypes, evScene                      ,5) // Should be 106
     EVENT_DECL(MapEventTypes, evEntitiesRequest            ,6)
     EVENT_DECL(MapEventTypes, evEntitiesResponse           ,7)
     EVENT_DECL(MapEventTypes, evRecvInputState             ,8)
