@@ -88,6 +88,61 @@ void World::effectsStep(Entity *e,uint32_t msec)
 // Delayed and repeated effects are queued on the target, and activate an effect when the timer counts down
 void World::checkDelayedEffects(Entity *e, uint32_t msec)
 {
+    if(e->m_type == EntType::CRITTER)
+    {
+        if (rand() % 300 == 0)
+        {
+            if (e->m_aggro_list.size() > 0)
+            {
+                QString msg = "say I'm harmless!";
+                if (e->m_npc->src_data->m_Powers.size() > 0)
+                {
+                Entity * tgt = getEntity(m_owner_instance, e->m_aggro_list[0].idx);
+
+                if (tgt == nullptr || tgt->m_char->m_is_dead || glm::distance(tgt->m_entity_data.m_pos, e->m_entity_data.m_pos) > 100)
+                {
+                    e->m_aggro_list[0].aggro = 0;
+                    qCDebug(logNPCs) << e->m_aggro_list[0].name << "moved to front of aggrolist";
+                }
+                if (e->m_aggro_list[0].aggro > 0)
+                {
+                    msg = " " + e->m_aggro_list[0].name + " has " + QString("%1 aggro") .arg(e->m_aggro_list[0].aggro);
+                }
+                else
+                {
+                    msg = "say I don't care about "+ e->m_aggro_list[0].name +" anymore.";
+
+                    if (e->m_aggro_list.size() == 1 || e->m_aggro_list[1].aggro <= 0)       //this could be sent to the EM so it knows combat is over
+                        e->m_aggro_list.clear();            //no more targets with aggro so drop
+                    else
+                    {
+                        Aggro swap = e->m_aggro_list[0];
+                        e->m_aggro_list.pop_front();
+                        qCDebug(logNPCs) << e->m_aggro_list[0].name << "now has aggro";
+                        e->m_aggro_list.push_back(swap);    //this isn't sorted, but good enough to find a new target
+                    }
+
+                }
+                m_owner_instance->add_chat_message(e, msg);
+
+                }//don't msg if no powers
+            }
+            else
+            {
+                for (auto near :m_owner_instance->m_entities.m_live_entlist)
+                    if (near != nullptr && !near->m_char->m_is_dead &&  validTarget(*near, *e, StoredEntEnum::Foe)
+                            && glm::distance(near->m_entity_data.m_pos, e->m_entity_data.m_pos) < 50)
+                    {
+                        //this could be sent to the EM to send to all critteres in this spawn
+                        QString msg = " I see " + near->name();
+                        m_owner_instance->add_chat_message(e, msg);
+
+                        e->m_aggro_list.push_back({near->name(),near->m_idx,1,0});// 1 point of aggro
+                    }
+            }
+        }
+    }
+
     for(auto dly_idx = e->m_delayed.begin(); dly_idx != e->m_delayed.end(); /*dly_idx updated inside loop*/ )
     {
         dly_idx->m_timer -= msec;
