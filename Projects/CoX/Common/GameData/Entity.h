@@ -106,6 +106,14 @@ struct NPCData
     int costume_variant=0;
 };
 
+struct Aggro
+{
+    QString name;
+    uint32_t idx;
+    float aggro     = 0.0;
+    float damage    = 0.0;
+};
+
 struct NetFxTarget
 {
     bool        type_is_location = false;
@@ -173,6 +181,7 @@ public:
         uint32_t            m_assist_target_idx     = 0;
         glm::vec3           m_target_loc;
 
+        std::deque<Aggro>           m_aggro_list;
         std::vector<Buffs>          m_buffs;
         std::deque<QueuedPowers>    m_queued_powers;
         std::vector<QueuedPowers>   m_auto_powers;

@@ -44,7 +44,7 @@ enum DBToolCommands
 
 void Pause(void)
 {
-    qInfo() << endl << "Press ENTER to continue...";
+    qInfo() << Qt::endl << "Press ENTER to continue...";
     std::cin.ignore(100000, '\n');  // Ignore characters until an ENTER (newline) is received.
     return;
 }

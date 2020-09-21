@@ -147,7 +147,7 @@ void cmdHandler_MoveZone(const QStringList &params, MapClientSession &sess)
 {
     uint32_t map_idx = params.value(0).toUInt();
     if(map_idx == getMapIndex(sess.m_current_map->name()))
-        map_idx = (map_idx + 1) % 23;   // To prevent crashing if trying to access the map you're on.
+        map_idx = (map_idx + 1) % 39;   // To prevent crashing if trying to access the map you're on.
     MapXferData map_data = MapXferData();
     map_data.m_target_map_name = getMapName(map_idx);
     sess.link()->putq(new MapXferWait(getMapPath(map_idx)));
