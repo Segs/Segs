@@ -63,6 +63,11 @@ struct MissionMapData
 
 struct MapData
 {
+    MapData(uint32_t idx,QByteArray internal_name,QByteArray display_name,MapType kind) :
+        m_map_idx(idx),m_map_name(internal_name),m_display_map_name(display_name),m_map_type(kind)
+    {
+    }
+
     uint32_t m_map_idx;
     QByteArray m_map_name;             // City_00_01, City_01_01, etc...
     QByteArray m_display_map_name;     // Outbreak, Atlas Park...

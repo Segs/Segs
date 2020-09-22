@@ -22,7 +22,7 @@
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
 #include "Runtime/Systems/FXSystem.h"
-#include "Messages/Map/GameCommandList.h"
+//#include "Messages/Map/GameCommandList.h"
 
 #include <glm/gtx/vector_query.hpp>
 

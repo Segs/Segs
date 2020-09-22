@@ -1,3 +1,7 @@
+
+
+return()
+
 if(MSVC)
     find_package(SegsEngine REQUIRED)
 else()

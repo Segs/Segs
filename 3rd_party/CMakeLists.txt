@@ -1,11 +1,6 @@
 link_directories(${ThirdParty_Install_Dir}/lib)
 
 include(ExternalProject_CEREAL.cmake)
-if(BUILD_COX_MAP_VIEWER)
-#    add_subdirectory(Lute)
-    include(ExternalProject_Lutefisk3D.cmake)
-else()
-endif()
 include(ExternalProject_ACE.cmake)
 if(MINGW OR MSVC) # ERICEDIT: If the OS is Windows:
     add_custom_target( # ERICEDIT: Add a target that depends on authserver.

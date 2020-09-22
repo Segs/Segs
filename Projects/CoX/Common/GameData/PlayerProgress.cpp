@@ -14,15 +14,15 @@
 
 template<class Archive>
 void PlayerProgress::serialize(Archive &archive, uint32_t const version)
- {
-     if(version != PlayerProgress::class_version)
+{
+    if(version != PlayerProgress::class_version)
     {
         qCritical() << "Failed to serialize PlayerProgress, incompatible serialization format version " << version;
         return;
     }
 
     archive(cereal::make_nvp("VisibleMapCells", m_visible_map_cells));
- };
+}
 
 CEREAL_CLASS_VERSION(PlayerProgress, PlayerProgress::class_version);
 SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(PlayerProgress);
