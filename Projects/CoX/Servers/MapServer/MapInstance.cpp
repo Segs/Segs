@@ -47,6 +47,8 @@
 #include "GameData/playerdata_definitions.h"
 #include "GameData/playerdata_serializers.h"
 #include "GameData/Store.h"
+#include "Messages/Map/TeamLooking.h"
+#include "Messages/Map/TeamOffer.h"
 #include "Messages/EmailService/EmailEvents.h"
 #include "Messages/Game/GameEvents.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
@@ -321,7 +323,7 @@ MapInstance::~MapInstance()
     delete m_sync_service;
 }
 
-void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage */*ev*/)
+void MapInstance::on_client_connected_to_other_server(ClientConnectedMessage * /*ev*/)
 {
     assert(false);
 //    assert(ev->m_data.m_sub_server_id);
@@ -3296,7 +3298,11 @@ void MapInstance::on_team_updated(TeamUpdatedMessage *msg)
             qCDebug(logTeams) << "updating team" << msg->m_data.m_team_data.m_team_idx << mem.tm_pending << mem.tm_idx << mem.tm_name;
 
             cl->m_ent->m_has_team = !msg->m_data.m_disbanded;
-            cl->m_ent->m_team_data = msg->m_data.m_team_data;
+            if(!cl->m_ent->m_team)
+            {
+                cl->m_ent->m_team = new Team;
+            }
+            cl->m_ent->m_team->m_data = msg->m_data.m_team_data;
         }
     }
 }

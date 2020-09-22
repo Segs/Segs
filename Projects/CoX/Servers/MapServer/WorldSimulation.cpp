@@ -136,15 +136,15 @@ void World::checkDelayedEffects(Entity *e, uint32_t msec)
             }
             else
             {
-                for (auto near :m_owner_instance->m_entities.m_live_entlist)
-                    if (near != nullptr && !near->m_char->m_is_dead &&  validTarget(*near, *e, StoredEntEnum::Foe)
-                            && glm::distance(near->m_entity_data.m_pos, e->m_entity_data.m_pos) < 50)
+                for (auto _near : m_owner_instance->m_entities.m_live_entlist)
+                    if (_near != nullptr && !_near->m_char->m_is_dead &&  validTarget(*_near, *e, StoredEntEnum::Foe)
+                            && glm::distance(_near->m_entity_data.m_pos, e->m_entity_data.m_pos) < 50)
                     {
                         //this could be sent to the EM to send to all critteres in this spawn
-                        QString msg = " I see " + near->name();
+                        QString msg = " I see " + _near->name();
                         m_owner_instance->add_chat_message(e, msg);
 
-                        e->m_aggro_list.push_back({near->name(),near->m_idx,1,0});// 1 point of aggro
+                        e->m_aggro_list.push_back({ _near->name(),_near->m_idx,1,0});// 1 point of aggro
                     }
             }
         }

@@ -11,8 +11,6 @@
 #include "Common/GameData/Contact.h"
 #include "Common/GameData/Entity.h"
 #include <array>
-#include <lua/lua.hpp>
-#include <sol2/sol.hpp>
 #include <memory>
 #include <string>
 #include <QtCore/QFileInfo> // for include support

@@ -22,6 +22,63 @@
  * Team Methods
  */
 uint32_t Team::m_team_idx_counter = 0;
+bool Team::isNamePending(const QString &name)
+{
+    for (const TeamMember &tm : m_data.m_team_members) 
+    {
+        if (tm.tm_name == name && tm.tm_pending) 
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Team::isFull() 
+{
+    return m_data.m_team_members.size() >= m_max_team_size;
+}
+
+bool Team::containsEntityID(uint32_t entity_id) 
+{
+    for (const TeamMember &tm : m_data.m_team_members) 
+    {
+        if (tm.tm_idx == entity_id) 
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Team::containsEntityName(const QString &name) 
+{
+    for (const TeamMember &tm : m_data.m_team_members) 
+    {
+        if (QString::compare(tm.tm_name, name, Qt::CaseInsensitive) == 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+TeamingError Team::acceptTeamInvite(const QString &name, uint32_t entity_id)
+{
+    for (TeamMember &_t : m_data.m_team_members)
+        if (_t.tm_name == name)
+        {
+            _t.tm_pending = false;
+            _t.tm_idx = entity_id;
+            return TeamingError::OK;
+        }
+
+    return TeamingError::NOT_ON_TEAM;
+
+}
 
 TeamingError Team::addTeamMember(uint32_t entity_id, const QString &name, bool pending)
 {
@@ -38,6 +95,26 @@ TeamingError Team::addTeamMember(uint32_t entity_id, const QString &name, bool p
 
     if(m_data.m_team_members.size() <= 1)
         m_data.m_team_leader_idx = entity_id;
+
+    return TeamingError::OK;
+}
+
+TeamingError Team::removeTeamMember(uint32_t entity_id)
+{
+    auto iter = std::find_if(m_data.m_team_members.begin(), m_data.m_team_members.end(),
+                              [entity_id](const Team::TeamMember& t) -> bool {return entity_id == t.tm_idx;});
+
+    if(iter == m_data.m_team_members.end())
+		return TeamingError::NOT_ON_TEAM;
+
+	iter = m_data.m_team_members.erase(iter);
+	// TODO: sidekick stuff
+
+    if(m_data.m_team_members.size() < 2)
+        return TeamingError::TEAM_DISBANDED;
+
+    if (entity_id == m_data.m_team_leader_idx)
+        m_data.m_team_leader_idx = m_data.m_team_members.front().tm_idx;
 
     return TeamingError::OK;
 }

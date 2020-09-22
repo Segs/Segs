@@ -207,7 +207,7 @@ void GameHandler::on_update_character(UpdateCharacter *ev)
     ev->src()->putq(new CharacterResponse(this,ev->m_index, session.m_game_account));
 }
 
-void GameHandler::on_idle(Idle */*ev*/)
+void GameHandler::on_idle(Idle * /*ev*/)
 {
     // idle for idle 'strategy'
 //    GameLink * lnk = (GameLink *)ev->src();

@@ -15,6 +15,9 @@
 #include "ScriptingEngine.h"
 #include "MapInstance.h"
 
+#include <sol/sol.hpp>
+
+
 void ScriptingEngine::register_CharacterTypes()
 {
     m_private->m_lua.new_usertype<Clue>("Clue",
@@ -218,7 +221,7 @@ void ScriptingEngine::register_CharacterTypes()
 
       m_private->m_lua["Player"]["AddListOfTasks"] = [this](const sol::as_table_t<std::vector<Task>> task_list)
       {
-          const auto& listMap = task_list.source;
+          const auto& listMap = task_list.value();
           vTaskList listToSend;
           for (const auto& kvp : listMap)
           {
