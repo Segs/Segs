@@ -22,7 +22,9 @@
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Servers/MessageBus.h"
+#include "Common/GameData/map_definitions.h"
 #include "Common/Messages/GameDatabase/GameDBSyncEvents.h"
+#include "Common/Messages/UserRouterService/UserRouterEvents.h"
 
 #include <ace/Reactor.h>
 
@@ -31,7 +33,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 
-#include "Common/GameData/map_definitions.h"
 
 #include <set>
 

@@ -25,7 +25,7 @@ Some other useful links:
 DOCUMENTATION
 ------
 - [Contribute](#./docs/CONTRIBUTING.md)  
-- *Compile an install SEGS on:*  
+- *Compile and install SEGS on:*  
           - [MacOS](#)   
           - [CentOS/RHEL](./docs/SEGS-COMPILE_AND_INSTALL-CENTOS.md)  
           - [Fedora](./docs/SEGS-COMPILE_AND_INSTALL-FEDORA.md)  
