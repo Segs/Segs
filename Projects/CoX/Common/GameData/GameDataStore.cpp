@@ -323,9 +323,11 @@ bool GameDataStore::read_game_data(const QString &directory_path)
                       static_cast<HashBasedPacker *>(packer_instance)->fill_hashes(*this);
                       m_npc_store.prepare_dictionaries();
                       auto packer = static_cast<IndexedPacker *>(m_index_based_packer);
+                      int idx=0;
                       for(const FxInfo &fx : m_fx_infos)
                       {
                           packer->addString(fx.fxname);
+                          m_name_to_fx_index[fx.fxname.toLower()] = idx++;
                       }
                       packer->sortEntries();
                   },"Postprocessing runtime data .. ");
@@ -363,6 +365,14 @@ uint32_t GameDataStore::countForLevel(uint32_t lvl, const std::vector<uint32_t> 
     }
 
     return i;
+}
+
+FxInfo *GameDataStore::getFxInfoByName(const QByteArray &name)
+{
+    int idx = m_name_to_fx_index.value(name.toLower(),-1);
+    if(idx==-1)
+        return nullptr;
+    return m_fx_infos.data()+idx;
 }
 
 bool GameDataStore::read_costumes(const QString &directory_path)
@@ -626,6 +636,11 @@ const Power_Data& GameDataStore::get_power_template(uint32_t pcat_idx, uint32_t 
 Power_Data * GameDataStore::editable_power_tpl(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx)
 {
     return &m_all_powers.m_categories[pcat_idx].m_PowerSets[pset_idx].m_Powers[pow_idx];
+}
+
+int GameDataStore::getFxNamePackId(const QString &name)
+{
+    return m_index_based_packer->getIndex(name);
 }
 
 const StoredPowerCategory& GameDataStore::get_power_category(uint32_t pcat_idx)
