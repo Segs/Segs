@@ -392,7 +392,7 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
     // and we need to remove the following
     if(e->m_team != nullptr)
     {
-        if(e->m_team->m_team_members.size() <= 1)
+        if(e->m_team->m_data.m_team_members.size() <= 1)
         {
             qWarning() << "Team cleanup being handled in updateEntity, but we need to move this to TeamHandler";
             e->m_has_team = false;

@@ -49,7 +49,7 @@
 #include <cereal/types/polymorphic.hpp>
 #include <cereal/types/boost_variant.hpp>
 
-#include <cereal/archives/binary.hpp>
+#include <cereal/archives/memory_binary.hpp>
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/archives/xml.hpp>
 #include <cereal/archives/json.hpp>

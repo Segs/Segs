@@ -8,7 +8,7 @@
 #pragma once
 #include "CompiletimeHash.h"
 #include <ace/Time_Value.h>
-#include "cereal/archives/binary.hpp"
+#include "cereal/archives/memory_binary.hpp"
 #include <atomic>
 #include <typeinfo>
 #include <cassert>
@@ -68,21 +68,21 @@ virtual const char *    info();
 
 protected:
 // Note those are friend functions that will store/restore this message in the std::stream.
-friend Event *          from_storage(std::istream &istr);
-friend void             to_storage(std::ostream &ostr,Event *ev);
+friend Event *          from_storage(const std::vector<uint8_t> &istr);
+friend void             to_storage(std::vector<uint8_t> &ostr,Event *ev);
 
-virtual void            do_serialize(std::ostream &os)  = 0;
-virtual void            serialize_from(std::istream &os)  = 0;
+virtual void            do_serialize(std::vector<uint8_t> &os)  = 0;
+virtual void            serialize_from(const std::vector<uint8_t> &os)  = 0;
 };
 #define EVENT_IMPL(name)\
     template<class Archive>\
     void serialize(Archive & archive); \
-    void do_serialize(std::ostream &os) override {\
-        cereal::BinaryOutputArchive oarchive(os);\
+    void do_serialize(std::vector<uint8_t> &os) override {\
+        cereal::VectorOutputArchive oarchive(os);\
         oarchive(*this);\
     }\
-    void serialize_from(std::istream &os) override {\
-        cereal::BinaryInputArchive iarchive(os);\
+    void serialize_from(const std::vector<uint8_t> &os) override {\
+        cereal::VectorInputArchive iarchive(os);\
         iarchive(*this);\
     }\
     ~name() override = default;

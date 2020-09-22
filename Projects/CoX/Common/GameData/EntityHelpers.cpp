@@ -49,6 +49,13 @@ void resetSpeed(Entity &e)
                                 e.m_char->m_char_data.m_current_attribs.m_SpeedFlying};
     e.m_entity_update_flags.setFlag(e.UpdateFlag::STATS);
 }
+static QDebug operator<<(QDebug debug, const Team::TeamMember &c)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace() << '(' << c.tm_idx << ", " << c.tm_map_idx << ", " << c.tm_pending << ')';
+
+    return debug;
+}
 
 void setTeamID(Entity &e, uint8_t team_id)
 {
@@ -66,9 +73,9 @@ void setTeamID(Entity &e, uint8_t team_id)
 
     qDebug().noquote() << "Team Info:"
                        << "\n  Has Team:" << e.m_has_team
-                       << "\n  ID:" << e.m_team->m_team_idx
-                       << "\n  Size:" << e.m_team->m_team_members.size()
-                       << "\n  Members:" << e.m_team->m_team_members.data();
+                       << "\n  ID:" << e.m_team->m_data.m_team_idx
+                       << "\n  Size:" << e.m_team->m_data.m_team_members.size()
+                       << "\n  Members:" << e.m_team->m_data.m_team_members;
 }
 
 void setSuperGroup(Entity &e, int sg_id, QString sg_name, uint32_t sg_rank)

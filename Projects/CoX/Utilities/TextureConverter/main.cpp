@@ -20,7 +20,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <cstring>
-#include <sstream>
+
 
 #pragma pack(push, 1)
 struct TexFileHdr

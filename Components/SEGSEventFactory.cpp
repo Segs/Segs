@@ -54,13 +54,13 @@ const char *event_name(uint32_t type_id)
         return nullptr;
     return s_all_event_descriptors[iter->second].name;
 }
-Event *from_storage(std::istream &istr)
+Event *from_storage(const std::vector<uint8_t> &istr)
 {
     Event * ev;
     uint32_t type_id;
-    // we create a binary input to read the type_id;
+    // we create a Vector input to read the type_id;
     {
-        cereal::BinaryInputArchive iarchive(istr);
+        cereal::VectorInputArchive iarchive(istr);
         iarchive(type_id);
         ev = create_by_id(type_id);
     }
@@ -72,13 +72,13 @@ Event *from_storage(std::istream &istr)
     ev->serialize_from(istr);
     return ev;
 }
-void to_storage(std::ostream &ostr,Event *ev)
+void to_storage(std::vector<uint8_t> &ostr, Event *ev)
 {
     assert(ev);
     uint32_t type_id = ev->type();
-    // we create a binary input to read the type_id;
+    // we create a Vector input to read the type_id;
     {
-        cereal::BinaryOutputArchive oarchive(ostr);
+        cereal::VectorOutputArchive oarchive(ostr);
         oarchive(type_id);
         ev = create_by_id(type_id);
     }

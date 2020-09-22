@@ -1385,7 +1385,7 @@ void MapInstance::process_chat(Entity *sender, QString &msg_text)
             // Only send the message to characters on sender's team
             for(MapClientSession *cl : m_session_store)
             {
-                if(sender->m_team->m_team_idx == cl->m_ent->m_team->m_team_idx)
+                if(sender->m_team->m_data.m_team_idx == cl->m_ent->m_team->m_data.m_team_idx)
                     recipients.push_back(cl);
             }
             prepared_chat_message = QString(" %1: %2").arg(sender_char_name,msg_content.toString());

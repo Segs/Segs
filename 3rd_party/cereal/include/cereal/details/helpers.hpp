@@ -61,6 +61,8 @@ namespace cereal
   // forward decls
   class BinaryOutputArchive;
   class BinaryInputArchive;
+  class VectorOutputArchive;
+  class VectorInputArchive;
 
   // ######################################################################
   namespace detail
@@ -184,6 +186,29 @@ namespace cereal
   typename
   std::enable_if<!std::is_same<Archive, ::cereal::BinaryInputArchive>::value &&
                  !std::is_same<Archive, ::cereal::BinaryOutputArchive>::value,
+  NameValuePair<T> >::type
+  make_nvp( const char * name, T && value)
+  {
+    return {name, std::forward<T>(value)};
+  }
+
+  template<class Archive, class T> inline
+  typename
+  std::enable_if<std::is_same<Archive, ::cereal::VectorInputArchive>::value ||
+                 std::is_same<Archive, ::cereal::VectorOutputArchive>::value,
+  T && >::type
+  make_nvp( const char *, T && value )
+  {
+    return std::forward<T>(value);
+  }
+
+  //! A specialization of make_nvp<> that actually creates an nvp for non-binary archives
+  /*! @relates NameValuePair
+      @internal */
+  template<class Archive, class T> inline
+  typename
+  std::enable_if<!std::is_same<Archive, ::cereal::VectorInputArchive>::value &&
+                 !std::is_same<Archive, ::cereal::VectorOutputArchive>::value,
   NameValuePair<T> >::type
   make_nvp( const char * name, T && value)
   {

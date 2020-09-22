@@ -214,10 +214,10 @@ void storeTeamList(BitStream &bs, Entity *self)
 
     if(self->m_has_team && self->m_team != nullptr)
     {
-        team_idx        = self->m_team->m_team_idx;
-        has_taskforce   = self->m_team->m_has_taskforce;
-        tm_leader_id    = self->m_team->m_team_leader_idx;
-        tm_size         = self->m_team->m_team_members.size();
+        team_idx        = self->m_team->m_data.m_team_idx;
+        has_taskforce   = self->m_team->m_data.m_has_taskforce;
+        tm_leader_id    = self->m_team->m_data.m_team_leader_idx;
+        tm_size         = self->m_team->m_data.m_team_members.size();
     }
 
     storePackedBitsConditional(bs,20,team_idx);
@@ -230,7 +230,7 @@ void storeTeamList(BitStream &bs, Entity *self)
     bs.StoreBits(32,tm_leader_id); // must be db_id
     bs.StorePackedBits(1,tm_size);
 
-    for(const auto &member : self->m_team->m_team_members)
+    for(const auto &member : self->m_team->m_data.m_team_members)
     {
         Entity *tm_ent = getEntityByDBID(self->m_client->m_current_map, member.tm_idx);
 

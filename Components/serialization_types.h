@@ -15,7 +15,7 @@
 #include <glm/mat4x3.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <cereal/archives/json.hpp>
-#include <cereal/archives/binary.hpp>
+#include <cereal/archives/memory_binary.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/string.hpp>
@@ -39,24 +39,24 @@ struct wrap_optional {
 };
 
 namespace cereal {
-inline void epilogue(BinaryOutputArchive &, QString const &) { }
+inline void epilogue(VectorOutputArchive &, QString const &) { }
 inline void epilogue(BinaryInputArchive &, QString const &) { }
 inline void epilogue(JSONOutputArchive &, QString const &) { }
 inline void epilogue(JSONInputArchive &, QString const &) { }
 
 inline void prologue(JSONOutputArchive &, QString const &) { }
 inline void prologue(JSONInputArchive &, QString const &) { }
-inline void prologue(BinaryOutputArchive &, QString const &) { }
+inline void prologue(VectorOutputArchive &, QString const &) { }
 inline void prologue(BinaryInputArchive &, QString const &) { }
 
-inline void epilogue(BinaryOutputArchive &, QByteArray const &) { }
+inline void epilogue(VectorOutputArchive &, QByteArray const &) { }
 inline void epilogue(BinaryInputArchive &, QByteArray const &) { }
 inline void epilogue(JSONOutputArchive &, QByteArray const &) { }
 inline void epilogue(JSONInputArchive &, QByteArray const &) { }
 
 inline void prologue(JSONOutputArchive &, QByteArray const &) { }
 inline void prologue(JSONInputArchive &, QByteArray const &) { }
-inline void prologue(BinaryOutputArchive &, QByteArray const &) { }
+inline void prologue(VectorOutputArchive &, QByteArray const &) { }
 inline void prologue(BinaryInputArchive &, QByteArray const &) { }
 
 template <typename T>
@@ -64,12 +64,12 @@ inline void prologue(JSONOutputArchive &, wrap_optional<T> const &) { }
 template <typename T>
 inline void prologue(JSONInputArchive &, wrap_optional<T> const &) { }
 template <typename T>
-inline void prologue(BinaryOutputArchive &, wrap_optional<T> const &) { }
+inline void prologue(VectorOutputArchive &, wrap_optional<T> const &) { }
 template <typename T>
 inline void prologue(BinaryInputArchive &, wrap_optional<T> const &) { }
 
 template <typename T>
-inline void epilogue(BinaryOutputArchive &, wrap_optional<T> const &) { }
+inline void epilogue(VectorOutputArchive &, wrap_optional<T> const &) { }
 template <typename T>
 inline void epilogue(BinaryInputArchive &, wrap_optional<T> const &) { }
 template <typename T>

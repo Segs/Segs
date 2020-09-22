@@ -1,5 +1,9 @@
-cmake_minimum_required (VERSION 2.6.2)
+cmake_minimum_required(VERSION 3.16)
+
 project (cereal)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(SKIP_PORTABILITY_TEST "Skip portability tests" OFF)
 if(NOT CMAKE_VERSION VERSION_LESS 3.0) # installing cereal requires INTERFACE lib
@@ -8,14 +12,6 @@ endif()
 
 if(NOT MSVC)
     set(CMAKE_CXX_FLAGS "-Wall -Werror -g -Wextra -Wshadow -pedantic ${CMAKE_CXX_FLAGS}")
-    if(CMAKE_VERSION VERSION_LESS 3.1)
-        set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-    else()
-        if(NOT DEFINED CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD STREQUAL "98")
-            set(CMAKE_CXX_STANDARD 11)
-        endif()
-        set(CMAKE_CXX_STANDARD_REQUIRED ON)
-    endif()
 endif()
 
 if(NOT CMAKE_VERSION VERSION_LESS 3.0)
