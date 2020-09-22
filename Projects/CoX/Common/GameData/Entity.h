@@ -215,9 +215,9 @@ public:
         EntityData          m_entity_data;
         FactionData         m_faction_data;
 
-        uint32_t            m_idx                   = {0};
-        uint32_t            m_db_id                 = {0};
-        EntType             m_type                  = {EntType::Invalid};
+        uint32_t            m_idx                   = 0;
+        uint32_t            m_db_id                 = 0;
+        EntType             m_type                  = EntType::Invalid;
         glm::quat           m_direction;
         uint32_t            m_target_idx            = 0;
         uint32_t            m_assist_target_idx     = 0;
@@ -272,8 +272,8 @@ public:
         bool                m_hasRagdoll                = false;
         bool                m_has_owner                 = false;
         bool                m_create_player             = false;
-        int                 m_input_pkt_id              = {0};
-        uint32_t            m_input_ack                 = {0};
+        int                 m_input_pkt_id              = 0;
+        uint32_t            m_input_ack                 = 0;
         uint32_t            ownerEntityId               = 0;
         uint32_t            creatorEntityId             = 0;
         MapClientSession *  m_client                    = nullptr;

@@ -33,7 +33,6 @@
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/InternalEvents.h"
-#include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/MessageBus.h"
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
@@ -365,7 +364,7 @@ void MapInstance::enqueue_client(MapClientSession *clnt)
     //m_queued_clients.push_back(clnt); // enter this client on the waiting list
 }
 
-// Here we would add the handler call in case we get evCombineRequest :)
+
 void MapInstance::dispatch( Event *ev )
 {
     assert(ev);
