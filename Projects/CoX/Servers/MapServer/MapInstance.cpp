@@ -598,6 +598,24 @@ void MapInstance::dispatch( Event *ev )
         case evReceiveContactStatus:
             on_receive_contact_status(static_cast<ReceiveContactStatus *>(ev));
             break;
+        case evTeamMemberInvitedMessage:
+            on_team_member_invited(static_cast<TeamMemberInvitedMessage *>(ev));
+            break;
+        case evTeamToggleLFGMessage:
+            on_team_toggle_lfg(static_cast<TeamToggleLFGMessage *>(ev));
+            break;
+        case evTeamRefreshLFGMessage:
+            on_team_refresh_lfg(static_cast<TeamRefreshLFGMessage *>(ev));
+            break;
+        case evTeamUpdatedMessage:
+            on_team_updated(static_cast<TeamUpdatedMessage *>(ev));
+            break;
+        case evTeamMemberKickedMessage:
+            on_team_member_kicked(static_cast<TeamMemberKickedMessage *>(ev));
+            break;
+        case evTeamLeaveTeamMessage:
+            on_team_leave_team(static_cast<TeamLeaveTeamMessage *>(ev));
+            break;
         case evReceiveTaskDetailRequest:
             on_receive_task_detail_request(static_cast<ReceiveTaskDetailRequest *>(ev));
             break;
@@ -3234,6 +3252,79 @@ void MapInstance::on_service_to_entity_response(SEGSEvents::UPtrServiceToEntityD
 
     if (ent != nullptr)
         data->m_entity_found_action(ent);
+}
+void MapInstance::on_team_member_invited(TeamMemberInvitedMessage *msg)
+{
+    for (MapClientSession *cl : m_session_store)
+    {
+        if (cl->m_ent->name() != msg->m_data.m_invitee_name)
+			continue;
+
+		QString name = msg->m_data.m_leader_name;
+		uint32_t db_id = cl->m_ent->m_db_id;
+		TeamOfferType type = TeamOfferType::NoMission;
+
+		qCDebug(logLogging) << "Sending Teamup Offer" << db_id << name << uint32_t(type);
+
+		cl->m_ent->m_client->addCommandToSendNextUpdate(std::unique_ptr<TeamOffer>(new TeamOffer(db_id, name, type)));
+    }
+}
+
+void MapInstance::on_team_toggle_lfg(TeamToggleLFGMessage *msg)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+	map_session.m_ent->m_char->m_char_data.m_lfg = msg->m_data.m_char_data.m_lfg;
+}
+
+void MapInstance::on_team_refresh_lfg(TeamRefreshLFGMessage *msg)
+{
+    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
+    map_session.addCommand<TeamLooking>(msg->m_data.m_lfg_list);
+}
+
+void MapInstance::on_team_updated(TeamUpdatedMessage *msg)
+{
+    qCDebug(logTeams) << "team updated: " << msg->m_data.m_team_data.m_team_idx;
+
+    for (const auto &mem : msg->m_data.m_team_data.m_team_members)
+    {
+        for (MapClientSession *cl : m_session_store)
+        {
+            if (cl->m_ent->m_db_id != mem.tm_idx)
+                continue;
+
+            qCDebug(logTeams) << "updating team" << msg->m_data.m_team_data.m_team_idx << mem.tm_pending << mem.tm_idx << mem.tm_name;
+
+            cl->m_ent->m_has_team = !msg->m_data.m_disbanded;
+            cl->m_ent->m_team_data = msg->m_data.m_team_data;
+        }
+    }
+}
+
+void MapInstance::on_team_member_kicked(TeamMemberKickedMessage *msg)
+{
+    for (MapClientSession *cl : m_session_store)
+    {
+        if (cl->m_ent->name() != msg->m_data.m_kickee_name)
+            continue;
+
+        qCDebug(logTeams) << "kicking from team:" << msg->m_data.m_kickee_name;
+        cl->m_ent->m_has_team = false;
+        cl->m_ent->m_team = nullptr;
+    }
+}
+
+void MapInstance::on_team_leave_team(TeamLeaveTeamMessage *msg)
+{
+    for (MapClientSession *cl : m_session_store)
+    {
+        if (cl->m_ent->m_db_id != msg->m_data.m_id)
+            continue;
+
+        qCDebug(logTeams) << "leaving team:" << msg->m_data.m_id;
+        cl->m_ent->m_has_team = false;
+        cl->m_ent->m_team = nullptr;
+    }
 }
 
 
