@@ -30,10 +30,9 @@ SEGS requires:
 - A copy of the CoH client from Issue 1 (beta) version 0.22. This can be found through various sources online, or via magnet link:
   `magnet:?xt=urn:btih:c2e7e0aa72004594337d73ae6a305242e23d815f`
 
-For more detailed version of this guide or for help, visit our discord or forums by using the links below:
+For help, visit the SEGS Community Discord by using the links below:
 - https://segs.dev/
 - https://discord.segs.dev/
-- https://forum.segs.dev/
 
 To report any bugs, please visit our GitHub:
 - https://github.com/Segs/Segs
@@ -57,7 +56,7 @@ INSTALL & CONFIGURE THE COX CLIENT
 
 2. **Point the CoX client towards your server IP**
 
-   In your CoX Client folder, locate and run `CoX-Auth.exe` to set the IP address to that of the server you'd like to play on. For a list of public servers available to play on, please visit the `#welcome` channel on our https://discord.segs.dev
+   In your CoX Client folder, locate and run `CoX-Auth.exe` to set the IP address to that of the server you'd like to play on. For a list of public servers available to test on, please visit the `#welcome` channel on our https://discord.segs.dev
    
    If running your own server locally this CANNOT be 127.0.0.1 (localhost) and must point to your actual IP address on the network.
    

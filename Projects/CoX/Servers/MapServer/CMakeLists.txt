@@ -15,6 +15,7 @@ SET(target_CPP
     MapTemplate.cpp
     MessageHelpers.cpp
     NetCommandManager.cpp
+    NetFxHelpers.cpp
     WorldSimulation.cpp
 )
 SET(target_INCLUDE
@@ -32,6 +33,7 @@ SET(target_INCLUDE
     MapTemplate.h
     MessageHelpers.h
     NetCommandManager.h
+    NetFxHelpers.h
     WorldSimulation.h
 )
 

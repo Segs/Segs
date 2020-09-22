@@ -1110,7 +1110,33 @@ void doAtrrib(Entity &ent, Entity *target_ent, StoredAttribMod const &mod, Chara
             sendFloatingNumbers(*target_ent->m_client, target_ent->m_idx, int(-scale));
             sendInfoMessage(MessageChannel::DAMAGE, QString("%1 hits you for %2 damage!") .arg(ent.name()) .arg(-scale) , *target_ent->m_client);
         }
-        //TODO: else critterdamage() which adds aggro and records damage for xp splitting
+        if(target_ent->m_type == EntType::CRITTER)
+        {
+            Aggro aggressor;
+            aggressor.name = ent.name();
+            aggressor.idx = ent.m_idx;
+            for (auto tempEnt = target_ent->m_aggro_list.begin();tempEnt != target_ent->m_aggro_list.end();)
+            {
+                if (tempEnt->name == ent.name())
+                {
+                    aggressor = *tempEnt;
+                    target_ent->m_aggro_list.erase(tempEnt);
+                    break;
+                }
+                else ++tempEnt;
+            }
+            aggressor.aggro += -scale * ent.m_char->m_char_data.m_current_attribs.m_ThreatLevel;//scale is negative
+            aggressor.damage += -scale;
+
+            if (target_ent->m_aggro_list.empty() || aggressor.aggro > target_ent->m_aggro_list[0].aggro)
+                target_ent->m_aggro_list.push_front(aggressor);
+            else
+                target_ent->m_aggro_list.push_back(aggressor);
+
+            for (auto tar :target_ent->m_aggro_list)
+                qCDebug(logNPCs) << tar.aggro << tar.damage << tar.name;//dump a list of aggro for debugging purposes
+        }
+
     }
     else if (lower_name == "heal")
     {
@@ -1223,13 +1249,21 @@ void grantRewards(EntityManager &em, Entity &e)
 {
       for (Entity* pEnt : em.m_live_entlist)
       {
-           if (pEnt->m_type == EntType::PLAYER && glm::distance(e.m_entity_data.m_pos, pEnt->m_entity_data.m_pos) < 100)
-           {
-                sendInfoMessage(MessageChannel::COMBAT, QString("%1 has been defeated!") .arg(e.m_char->getName()), *pEnt->m_client);
-                sendInfoMessage(MessageChannel::COMBAT, QString("You gain %1 inf!") .arg(e.m_char->m_char_data.m_combat_level*10) , *pEnt->m_client);
-                pEnt->m_char->m_char_data.m_influence += e.m_char->m_char_data.m_combat_level*10;
-                giveXp(*pEnt->m_client,  e.m_char->m_char_data.m_combat_level*10);
-           }
+          if (pEnt->m_type == EntType::PLAYER && glm::distance(e.m_entity_data.m_pos, pEnt->m_entity_data.m_pos) < 100)
+          {
+              sendInfoMessage(MessageChannel::COMBAT, QString("%1 has been defeated!") .arg(e.m_char->getName()), *pEnt->m_client);
+          }
+
+          for (auto agg:e.m_aggro_list)
+              if (pEnt->m_idx == agg.idx && pEnt->m_client)
+              {
+                  uint32_t share = uint32_t(e.m_char->m_char_data.m_combat_level * 10                       // replace with proper exp values
+                          * std::min((agg.damage/e.m_char->m_max_attribs.m_HitPoints), 1.0f));   // replace with a function to determine shares
+
+                  sendInfoMessage(MessageChannel::COMBAT, QString("You gain %1 inf!") .arg(share) , *pEnt->m_client);
+                  pEnt->m_char->m_char_data.m_influence += share;
+                  giveXp(*pEnt->m_client, share);
+              }
       }
       e.m_is_fading = true;
       e.m_fading_direction=FadeDirection::Out;

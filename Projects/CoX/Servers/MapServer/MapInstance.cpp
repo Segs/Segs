@@ -112,18 +112,26 @@ protected:
 };
 
 using namespace std;
-MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr)
+MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr, const bool is_mission_map)
   : m_data_path(mapdir_path),
     m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
-    m_addresses(listen_addr),
-    m_world_update_interval(0, 1000*1000/getGameData().m_world_update_ticks_per_sec)
+    m_addresses(listen_addr), m_is_mission_map(is_mission_map)
 {
     m_world = new World(m_entities, getGameData().m_player_fade_in, this);
     m_scripting_interface.reset(new ScriptingEngine);
     m_scripting_interface->setIncludeDir(mapdir_path);
     m_endpoint = new MapLinkEndpoint(m_addresses.m_listen_addr); //,this
     m_endpoint->set_downstream(this);
+
+    initServices();
 }
+
+void MapInstance::initServices()
+{
+    m_email_service = {};
+    m_client_option_service = {};
+}
+
 void MapInstance::startTimers()
 {
     // world simulation ticks
@@ -460,10 +468,10 @@ void MapInstance::dispatch( Event *ev )
             on_plaque_visited(static_cast<PlaqueVisited *>(ev));
             break;
         case evSwitchViewPoint:
-            on_switch_viewpoint(static_cast<SwitchViewPoint *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_switch_viewpoint(ev));
             break;
         case evSaveClientOptions:
-            on_client_options(static_cast<SaveClientOptions *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_save_client_options(ev));
             break;
         case evDescriptionAndBattleCry:
             on_description_and_battlecry(static_cast<DescriptionAndBattleCry *>(ev));
@@ -499,34 +507,34 @@ void MapInstance::dispatch( Event *ev )
             on_entity_info_request(static_cast<EntityInfoRequest *>(ev));
             break;
         case evSelectKeybindProfile:
-            on_select_keybind_profile(static_cast<SelectKeybindProfile *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_select_keybind_profile(ev));
             break;
         case evSetKeybind:
-            on_set_keybind(static_cast<SetKeybind *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_set_keybind(ev));
             break;
         case evRemoveKeybind:
-            on_remove_keybind(static_cast<RemoveKeybind *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_remove_keybind(ev));
             break;
         case evResetKeybinds:
-            on_reset_keybinds(static_cast<ResetKeybinds *>(ev));
+            on_service_to_entity_response(m_client_option_service.on_reset_keybinds(ev));
             break;
         case evEmailHeaderResponse:
-            on_email_header_response(static_cast<EmailHeaderResponse *>(ev));
+            on_service_to_client_response(m_email_service.on_email_header_response(ev));
             break;
         case evEmailHeaderToClientMessage:
-            on_email_header_to_client(static_cast<EmailHeaderToClientMessage *>(ev));
+            on_service_to_client_response(m_email_service.on_email_header_to_client(ev));
             break;
         case evEmailHeadersToClientMessage:
-            on_email_headers_to_client(static_cast<EmailHeadersToClientMessage *>(ev));
+            on_service_to_client_response(m_email_service.on_email_headers_to_client(ev));
             break;
         case evEmailReadResponse:
-            on_email_read_response(static_cast<EmailReadResponse *>(ev));
+            on_service_to_client_response(m_email_service.on_email_read_response(ev));
             break;
         case evEmailWasReadByRecipientMessage:
-            on_email_read_by_recipient(static_cast<EmailWasReadByRecipientMessage *>(ev));
+            on_service_to_client_response(m_email_service.on_email_read_by_recipient(ev));
             break;
         case evEmailCreateStatusMessage:
-            on_email_create_status(static_cast<EmailCreateStatusMessage *>(ev));
+            on_service_to_client_response(m_email_service.on_email_create_status(ev));
             break;
         case evMoveInspiration:
             on_move_inspiration(static_cast<MoveInspiration *>(ev));
@@ -631,8 +639,10 @@ void MapInstance::on_initiate_map_transfer(InitiateMapXfer *ev)
 
     fromActualCharacter(*session.m_ent->m_char, *session.m_ent->m_player, *session.m_ent->m_entity, c_data);
     serializeToQString(c_data, serialized_data);
+    QString map_path = getMapPath(map_xfer.m_target_map_name);
+    qInfo() << "Map transfer initiated to map path: " << map_path;
     ExpectMapClientRequest *map_req = new ExpectMapClientRequest({session.auth_id(), session.m_access_level, lnk->peer_addr(),
-                                    serialized_data, session.m_requested_slot_idx, session.m_name, getMapPath(map_xfer.m_target_map_name),
+                                    serialized_data, session.m_requested_slot_idx, session.m_name, map_path,
                                     session.m_max_slots},
                                     lnk->session_token(),this);
     map_server->putq(map_req);
@@ -993,7 +1003,12 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     int end_or_slash = m_data_path.indexOf('/',city_idx);
     assert(city_idx!=0);
     QString map_desc_from_path = m_data_path.mid(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
-    res->m_map_desc        = QString("maps/City_Zones/%1/%1.txt").arg(map_desc_from_path);
+    qInfo() << "Scene Request for map path: " << map_desc_from_path;
+
+    MapClientSession &session(m_session_store.session_from_event(ev));
+
+    QString map_path       = getMapPath(map_desc_from_path);
+    res->m_map_desc        = map_path;
     res->current_map_flags = true; // off 1
     res->unkn1             = 1;
     qDebug("Scene Request: unkn1: %d, undos_PP: %d, current_map_flags: %d", res->unkn1, res->undos_PP, res->current_map_flags);
@@ -2189,7 +2204,9 @@ void MapInstance::on_enter_door(EnterDoor *ev)
                     MapXferData map_data = MapXferData();
                     map_data.m_target_map_name = getMapName(map_idx);
                     map_server->putq(new ClientMapXferMessage({session.link()->session_token(), map_data},0));
-                    session.link()->putq(new MapXferWait(getMapPath(map_idx)));
+                    QString map_path = getMapPath(map_idx);
+                    qInfo() << "On enter door map_path: " << map_path;
+                    session.link()->putq(new MapXferWait(map_path));
                 }
             }
             session.m_ent->m_is_using_mapmenu = false;
@@ -2303,25 +2320,6 @@ void MapInstance::on_entity_info_request(EntityInfoRequest * ev)
 
     session.addCommandToSendNextUpdate(std::make_unique<EntityInfoResponse>(description));
     qCDebug(logDescription) << "Entity info requested" << ev->entity_idx << description;
-}
-
-void MapInstance::on_client_options(SaveClientOptions * ev)
-{
-    // Save options/keybinds to character entity and entry in the database.
-    MapClientSession &session(m_session_store.session_from_event(ev));
-
-    Entity *ent = session.m_ent;
-    markEntityForDbStore(ent,DbStoreFlags::PlayerData);
-    ent->m_player->m_options = ev->data;
-}
-
-void MapInstance::on_switch_viewpoint(SwitchViewPoint *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_options.m_first_person_view = ev->new_viewpoint_is_firstperson;
-    qCDebug(logMapEvents) << "Saving viewpoint mode to ClientOptions" << ev->new_viewpoint_is_firstperson;
 }
 
 void MapInstance::on_chat_reconfigured(ChatReconfigure *ev)
@@ -2443,27 +2441,6 @@ void MapInstance::on_switch_tray(SwitchTray *ev)
    //qCDebug(logMapEvents) << "Saving Tray States to GUISettings. Tray1:" << ev->tray_group.m_primary_tray_idx+1 << "Tray2:" << ev->tray_group.m_second_tray_idx+1;
 }
 
-void MapInstance::on_set_keybind(SetKeybind *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    KeyName key = static_cast<KeyName>(ev->key);
-    ModKeys mod = static_cast<ModKeys>(ev->mods);
-
-    ent->m_player->m_keybinds.setKeybind(ev->profile, key, mod, ev->command, ev->is_secondary);
-    //qCDebug(logMapEvents) << "Setting keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods) << ev->command << ev->is_secondary;
-}
-
-void MapInstance::on_remove_keybind(RemoveKeybind *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.removeKeybind(ev->profile,(KeyName &)ev->key,(ModKeys &)ev->mods);
-    //qCDebug(logMapEvents) << "Clearing Keybind: " << ev->profile << QString::number(ev->key) << QString::number(ev->mods);
-}
-
 void MapInstance::setPlayerSpawn(Entity &e)
 {
     // Spawn player position and PYR
@@ -2557,25 +2534,6 @@ void MapInstance::serialize_from(istream &/*is*/)
 void MapInstance::serialize_to(ostream &/*is*/)
 {
     assert(false);
-}
-void MapInstance::on_reset_keybinds(ResetKeybinds *ev)
-{
-    const GameDataStore &data(getGameData());
-    const Parse_AllKeyProfiles &default_profiles(data.m_keybind_profiles);
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.resetKeybinds(default_profiles);
-    //qCDebug(logMapEvents) << "Resetting Keybinds to defaults.";
-}
-
-void MapInstance::on_select_keybind_profile(SelectKeybindProfile *ev)
-{
-    MapClientSession &session(m_session_store.session_from_event(ev));
-    Entity *ent = session.m_ent;
-
-    ent->m_player->m_keybinds.setKeybindProfile(ev->profile);
-    //qCDebug(logMapEvents) << "Saving currently selected Keybind Profile. Profile name: " << ev->profile;
 }
 
 void MapInstance::on_interact_with(InteractWithEntity *ev)
@@ -3003,83 +2961,6 @@ void MapInstance::send_player_update(Entity *e)
     unmarkEntityForDbStore(e, DbStoreFlags::PlayerData);
 }
 
-void MapInstance::on_email_header_response(EmailHeaderResponse* ev)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-
-    std::vector<EmailHeaders::EmailHeader> email_headers;
-    for (const auto &data : ev->m_data.m_email_headers)
-    {
-        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
-                                                          data.m_sender_name,
-                                                          data.m_subject,
-                                                          data.m_timestamp});
-    }
-
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
-}
-
-// EmailHandler will send this event here
-void MapInstance::on_email_header_to_client(EmailHeaderToClientMessage* ev)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(ev->m_data.m_email_id,
-                                                                          ev->m_data.m_sender_name,
-                                                                          ev->m_data.m_subject,
-                                                                          ev->m_data.m_timestamp));
-}
-
-void MapInstance::on_email_headers_to_client(EmailHeadersToClientMessage *ev)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-
-    std::vector<EmailHeaders::EmailHeader> email_headers;
-    for (const auto &data : ev->m_data.m_email_headers)
-    {
-        email_headers.push_back(EmailHeaders::EmailHeader{data.m_email_id,
-                                                          data.m_sender_name,
-                                                          data.m_subject,
-                                                          data.m_timestamp});
-    }
-
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailHeaders>(email_headers));
-
-    QString message = QString("You have %1 unread emails.").arg(ev->m_data.m_unread_emails_count);
-    sendInfoMessage(MessageChannel::DEBUG_INFO, message, map_session);
-}
-
-void MapInstance::on_email_read_response(EmailReadResponse *ev)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(ev->session_token()));
-    map_session.addCommandToSendNextUpdate(std::make_unique<EmailRead>(ev->m_data.m_email_id,
-                                                                       ev->m_data.m_message,
-                                                                       ev->m_data.m_sender_name));
-}
-
-void MapInstance::on_email_read_by_recipient(EmailWasReadByRecipientMessage *msg)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
-    sendInfoMessage(MessageChannel::DEBUG_INFO, msg->m_data.m_message, map_session);
-
-    // this is sent from the reader back to the sender via EmailHandler
-    // route is DataHelpers.onEmailRead() -> EmailHandler -> MapInstance
-}
-
-void MapInstance::on_email_create_status(EmailCreateStatusMessage *msg)
-{
-    MapClientSession &map_session(m_session_store.session_from_token(msg->session_token()));
-    map_session.addCommandToSendNextUpdate(std::unique_ptr<EmailMessageStatus>(
-                new EmailMessageStatus(msg->m_data.m_status, msg->m_data.m_recipient_name)));
-
-
-    /*
-    else
-    {
-        QString successMsg = QString("Successfully sent email to %1!").arg(msg->m_data.m_recipient_name);
-        sendInfoMessage(MessageChannel::DEBUG_INFO, successMsg, map_session);
-    }*/
-}
-
 void MapInstance::on_trade_cancelled(TradeWasCancelledMessage* ev)
 {
     MapClientSession& session = m_session_store.session_from_event(ev);
@@ -3317,6 +3198,43 @@ void MapInstance::clearLuaTimer(uint32_t entity_idx)
     }
     if(found)
         this->m_lua_timers[count].m_remove = true;
+}
+
+void MapInstance::on_service_to_client_response(SEGSEvents::UPtrServiceToClientData data)
+{
+    // if the token is 0, that means it's not set to any account's token :)
+    if (data == nullptr || data->m_token == 0)
+        return;
+
+    // the required session is no longer stored
+    if (!m_session_store.has_session_for(data->m_token))
+        return;
+
+    MapClientSession& session = m_session_store.session_from_token(data->m_token);
+
+    for (auto &command : data->m_commands)
+        session.addCommandToSendNextUpdate(std::move(command));
+
+    // is not null and is not empty
+    if (!data->m_message.isEmpty() && !data->m_message.isNull())
+        sendInfoMessage(MessageChannel::DEBUG_INFO, data->m_message, session);
+}
+
+void MapInstance::on_service_to_entity_response(SEGSEvents::UPtrServiceToEntityData data)
+{
+    // if the token is 0, that means it's not set to any account's token :)
+    if (data == nullptr || data->m_token == 0)
+        return;
+
+    // the required session is no longer stored
+    if (!m_session_store.has_session_for(data->m_token))
+        return;
+
+    MapClientSession& session = m_session_store.session_from_token(data->m_token);
+    Entity* ent = session.m_ent;
+
+    if (ent != nullptr)
+        data->m_entity_found_action(ent);
 }
 
 

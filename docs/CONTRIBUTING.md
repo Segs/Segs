@@ -39,12 +39,7 @@ This project and everyone participating in it is governed by the [SEGS Code of C
 
 ## I don't want to read this whole thing I just have a question!!!
 
-> **Note:** _Please don't file an issue to ask a question._ You'll get faster results by using the resources below.
-
-We have an official message board and a FAQ where the community chimes in with helpful advice if you have questions.
-
-* [SEGS Official Forums](https://forum.segs.dev/)
-* [The FAQ Thread](https://forum.segs.dev/viewtopic.php?f=8&t=8244)
+> **Note:** _Please don't file an issue to ask a question._ You'll get faster results by reaching out to us on the SEGS Community Discord
 
 ### Chat with us on Discord
 

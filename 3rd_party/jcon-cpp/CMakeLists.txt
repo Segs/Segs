@@ -48,4 +48,4 @@ if(APPLE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -stdlib=libc++")
 endif()
 
-add_subdirectory(src)
+add_subdirectory(jcon)

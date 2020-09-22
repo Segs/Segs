@@ -21,10 +21,12 @@
 
 #include "NpcStore.h"
 #include <QDate>
+#include <QHash>
 
 class ColorAndPartPacker;
 class IndexedStringPacker;
 class QString;
+struct FxInfo;
 class GameDataStore
 {
         ColorAndPartPacker * packer_instance      = nullptr;
@@ -64,6 +66,8 @@ public:
                         {
                             return m_npc_store;
                         }
+        FxInfo *        getFxInfoByName(const QByteArray &name);
+
         Pallette_Data               m_supergroup_colors;
         CostumeSet_Data             m_costume_store;
         Parse_AllOrigins            m_player_origins;
@@ -79,7 +83,7 @@ public:
         Parse_Effectiveness         m_effectiveness_above;
         Parse_Effectiveness         m_effectiveness_below;
         Parse_PI_Schedule           m_pi_schedule;
-        std::vector<struct FxInfo>  m_fx_infos;
+        std::vector<FxInfo>         m_fx_infos;
         AllShops_Data               m_shops_data;
         AllShopItems_Data           m_shop_items_data;
         AllShopDepts_Data           m_shop_depts_data;
@@ -95,6 +99,7 @@ public:
         const Parse_PowerSet&       get_powerset(uint32_t pcat_idx, uint32_t pset_idx);
         const Power_Data&           get_power_template(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
         Power_Data*                 editable_power_tpl(uint32_t pcat_idx, uint32_t pset_idx, uint32_t pow_idx);
+        int                         getFxNamePackId(const QString &name);
 
         // auto-AFK and logout settings, auto-AFK is mandatory, server can choose between auto-logout or not
         float                       m_time_to_afk = 5 * 60;     // default afk time is 5 mins (300 secs)
@@ -113,6 +118,9 @@ public:
 
         // default of 30 for cases where settings are not yet loaded
         int                         m_world_update_ticks_per_sec=30;
+private:
+        // Helper structs
+        QHash<QByteArray,int>       m_name_to_fx_index;
 };
 int getEntityOriginIndex(const GameDataStore &data,bool is_player, const QString &origin_name);
 int getEntityClassIndex(const GameDataStore &data,bool is_player, const QString &class_name);

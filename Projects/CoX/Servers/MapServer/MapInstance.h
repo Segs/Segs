@@ -17,6 +17,9 @@
 #include "NpcGenerator.h"
 #include "CritterGenerator.h"
 
+#include "GameServer/EmailService/EmailService.h"
+#include "GameServer/ClientOptionService/ClientOptionService.h"
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -66,8 +69,6 @@ class AbortQueuedPower;
 class DescriptionAndBattleCry;
 class EntityInfoRequest;
 class ChatReconfigure;
-class SwitchViewPoint;
-class SaveClientOptions;
 class SetDefaultPower;
 class UnsetDefaultPower;
 class UnqueueAll;
@@ -77,10 +78,6 @@ class ActivatePowerAtLocation;
 class ActivateInspiration;
 class PowersDockMode;
 class SwitchTray;
-class SelectKeybindProfile;
-class ResetKeybinds;
-class SetKeybind;
-class RemoveKeybind;
 class InteractWithEntity;
 class MoveInspiration;
 class RecvSelectedTitles;
@@ -145,6 +142,9 @@ class MapInstance final : public EventProcessor
         uint32_t                       m_index          = 1; // what does client expect this to store, and where do we send it?
         uint8_t                        m_game_server_id = 255; // 255 is `invalid` id
 
+        EmailService                    m_email_service;
+        ClientOptionService             m_client_option_service;
+
         // I think there's probably a better way to do this..
         // We load all transfers for the map to map_transfers, then on first access to zones or doors, we
         // then copy the relevant transfers to another hash which is then used for those specific transfers.
@@ -155,6 +155,7 @@ class MapInstance final : public EventProcessor
         bool                    m_door_transfers_checked = false;
         QHash<QString, MapXferData> m_map_zone_transfers;
         bool                    m_zone_transfers_checked = false;
+        const bool              m_is_mission_map;
 
 public:
         SessionStore            m_session_store;
@@ -171,7 +172,7 @@ public:
 
 public:
                                 IMPL_ID(MapInstance)
-                                MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr);
+                                MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr, const bool is_mission_map);
                                 ~MapInstance() override;
         void                    dispatch(SEGSEvents::Event *ev) override;
 
@@ -195,6 +196,7 @@ public:
 
 protected:
         void                    startTimers();
+        void                    initServices();
         // EventProcessor interface
         void                    serialize_from(std::istream &is) override;
         void                    serialize_to(std::ostream &is) override;
@@ -256,8 +258,6 @@ protected:
         void on_description_and_battlecry(SEGSEvents::DescriptionAndBattleCry *ev);
         void on_entity_info_request(SEGSEvents::EntityInfoRequest *ev);
         void on_chat_reconfigured(SEGSEvents::ChatReconfigure *ev);
-        void on_switch_viewpoint(SEGSEvents::SwitchViewPoint *ev);
-        void on_client_options(SEGSEvents::SaveClientOptions *ev);
         void on_set_default_power(SEGSEvents::SetDefaultPower *ev);
         void on_unset_default_power(SEGSEvents::UnsetDefaultPower *ev);
         void on_unqueue_all(SEGSEvents::UnqueueAll *ev);
@@ -267,18 +267,8 @@ protected:
         void on_activate_inspiration(SEGSEvents::ActivateInspiration *ev);
         void on_powers_dockmode(SEGSEvents::PowersDockMode *ev);
         void on_switch_tray(SEGSEvents::SwitchTray *ev);
-        void on_select_keybind_profile(SEGSEvents::SelectKeybindProfile *ev);
-        void on_reset_keybinds(SEGSEvents::ResetKeybinds *ev);
-        void on_set_keybind(SEGSEvents::SetKeybind *ev);
-        void on_remove_keybind(SEGSEvents::RemoveKeybind *ev);
         void on_emote_command(const QString &command, Entity *ent);
         void on_interact_with(SEGSEvents::InteractWithEntity *ev);
-        void on_email_header_response(SEGSEvents::EmailHeaderResponse* ev);
-        void on_email_headers_to_client(SEGSEvents::EmailHeadersToClientMessage *ev);
-        void on_email_header_to_client(SEGSEvents::EmailHeaderToClientMessage *ev);
-        void on_email_read_response(SEGSEvents::EmailReadResponse *ev);
-        void on_email_read_by_recipient(SEGSEvents::EmailWasReadByRecipientMessage *ev);
-        void on_email_create_status(SEGSEvents::EmailCreateStatusMessage *ev);
         void on_move_inspiration(SEGSEvents::MoveInspiration *ev);
         void on_recv_selected_titles(SEGSEvents::RecvSelectedTitles *ev);
         void on_dialog_button(SEGSEvents::DialogButton *ev);
@@ -302,4 +292,8 @@ protected:
         void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
         void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
         void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
+
+        // Service <--> MapInstance
+        void on_service_to_client_response(SEGSEvents::UPtrServiceToClientData data);
+        void on_service_to_entity_response(SEGSEvents::UPtrServiceToEntityData data);
 };

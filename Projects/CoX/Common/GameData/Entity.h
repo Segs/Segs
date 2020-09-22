@@ -104,20 +104,46 @@ struct NPCData
     int costume_variant=0;
 };
 
-struct NetFxTarget
+struct Aggro
 {
-    bool        type_is_location = false;
-    uint32_t    ent_idx = 0;
-    glm::vec3   pos;
+    QString name;
+    uint32_t idx;
+    float aggro     = 0.0;
+    float damage    = 0.0;
 };
 
+struct NetFxTarget
+{
+    glm::vec3   pos;
+    uint32_t    ent_idx = 0;
+    uint8_t     bone_idx = 2;
+    bool        type_is_location = false;
+};
+
+enum class NetFxFlag : uint8_t
+{
+    ONESHOT    = 2,
+    MAINTAINED = 4,
+    DESTROY    = 8
+};
+namespace FXSystem
+{
+struct Data;
+}
+using FxHandle = HandleT<20,12,FXSystem::Data>;
+
+class NetFxStore;
 struct NetFx
 {
-    uint8_t     command;
+    using StorageClass = NetFxStore; //tells the handle template where to look up values.
+
+    int         m_ref_count = 0;
+    FxHandle    m_parent;
     uint32_t    net_id;
     uint32_t    handle;
+    uint8_t     command;
     bool        pitch_to_target     = false;
-    uint8_t     bone_id;
+    bool        destroy_next_update = false;
     float       client_timer        = 0;
     int         client_trigger_fx   = 0;
     float       duration            = 0;
@@ -127,6 +153,8 @@ struct NetFx
     NetFxTarget target;
     NetFxTarget origin;
 };
+
+using NetFxHandle = HandleT<20,12,struct NetFx>;
 
 class Entity
 {
@@ -195,6 +223,7 @@ public:
         uint32_t            m_assist_target_idx     = 0;
         glm::vec3           m_target_loc;
 
+        std::deque<Aggro>           m_aggro_list;
         std::vector<Buffs>          m_buffs;
         std::deque<QueuedPowers>    m_queued_powers;
         std::vector<QueuedPowers>   m_auto_powers;
@@ -204,7 +233,7 @@ public:
         bool                        m_update_buffs  = false;
 
         // Animations: Sequencers, NetFx, and TriggeredMoves
-        std::vector<NetFx>  m_net_fx;
+        std::vector<NetFxHandle>  m_net_fx;
         std::vector<TriggeredMove> m_triggered_moves;
         SeqBitSet           m_seq_state;                    // Should be part of SeqState
         ClientStates        m_state_mode            = ClientStates::SIMPLE;

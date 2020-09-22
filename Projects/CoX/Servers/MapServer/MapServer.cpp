@@ -22,6 +22,7 @@
 #include "SEGSTimer.h"
 #include "Settings.h"
 #include "Servers/MessageBus.h"
+#include "Common/Messages/GameDatabase/GameDBSyncEvents.h"
 
 #include <ace/Reactor.h>
 
@@ -29,6 +30,8 @@
 #include <QtCore/QString>
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
+
+#include "Common/GameData/map_definitions.h"
 
 #include <set>
 
@@ -146,6 +149,8 @@ bool MapServer::ReadConfigAndRestart()
         postGlobalEvent(new ServiceStatusMessage({ QString("MapServer: Cannot load map templates from %1").arg(map_templates_dir),-1 },0));
         return false;
     }
+
+    loadAllMissionMapData();
     return Run();
 }
 
@@ -197,7 +202,13 @@ void MapServer::on_expect_client(ExpectMapClientRequest *ev)
         ev->src()->putq(new ExpectMapClientResponse({1, 0, m_base_location}, ev->session_token()));
         return;
     }
-    EventProcessor *instance = tpl->get_instance();
+    // Get character data so we can get the character level for mission map level bounds.
+    GameAccountResponseCharacterData char_data;
+    serializeFromQString(char_data,request_data.char_from_db_data);
+    CharacterData cd;
+    serializeFromQString(cd, char_data.m_serialized_chardata);
+
+    EventProcessor *instance = tpl->get_instance(cd.m_combat_level);
     // now we know which instance will handle this client, pass the event to it,
     // remember to shallow_copy to mark the event as still owned.
     instance->putq(ev->shallow_copy());

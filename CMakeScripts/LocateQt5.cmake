@@ -8,8 +8,11 @@ IF(MSVC)
         MESSAGE(FATAL_ERROR "SEGS requires visual studio 2017 to build")
     endif()
 
-    # get root path so we can search for 5.3, 5.4, 5.5, etc
-    STRING(REPLACE "/Tools" ";" QT_BIN "${QT_BIN}")
+    # get root path so we can search for 5.3, 5.4, 5.5, etc, assumes provided path is in a Qt\Tools\QtCreator\bin\qtcreator.exe
+    get_filename_component(t_path ${QT_BIN} DIRECTORY)
+    get_filename_component(t_path ${t_path} DIRECTORY)
+    get_filename_component(QT_BIN ${t_path} DIRECTORY)
+
     LIST(GET QT_BIN 0 QT_BIN)
     FILE(GLOB QT_VERSIONS "${QT_BIN}/5.*")
     LIST(GET QT_VERSIONS 0 QT_VERSION)
