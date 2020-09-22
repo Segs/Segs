@@ -452,17 +452,20 @@ struct Keybind_Profiles
     std::vector<Keybind> KeybindArr;
 };
 
-struct CommandEntry {
+struct CommandEntry
+{
     QByteArray KeyString;
     KeyName Key;
     ModKeys Mods; // Mod  0, 1 - CONTROL_KEY_PRESSED, 2 - SHIFT PRESSED, 3 - ALT PRESSED
 };
+
 struct Command
 {
     QByteArray CmdString;
     QByteArray DisplayName;
     CommandEntry CommandArr[2];
 };
+
 struct CommandCategory_Entry
 {
     QByteArray DisplayName;

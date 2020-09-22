@@ -4,13 +4,12 @@
  * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
+
 #pragma once
-
-#include "GameCommandList.h"
+#include "GameCommand.h"
 #include "MapEvents.h"
-#include "GameData/Entity.h"
 
-#include <QtCore/QString>
+class QString;
 
 namespace SEGSEvents
 {
@@ -25,13 +24,12 @@ namespace SEGSEvents
         explicit Browser() : GameCommandEvent(MapEventTypes::evBrowser) {}
         Browser(QString content) : GameCommandEvent(MapEventTypes::evBrowser),
             m_content(content)
-        {}
+        {
+        }
 
-        // SerializableEvent interface
-        void serializefrom(BitStream &/*src*/) override
-        {}
-        void serializeto(BitStream &bs) const override {
-            bs.StorePackedBits(1,type()-MapEventTypes::evFirstServerToClient); // 76
+        void serializeto(BitStream &bs) const override
+        {
+            bs.StorePackedBits(1, type()-MapEventTypes::evFirstServerToClient); // 76
             bs.StoreString(m_content);
         }
         EVENT_IMPL(Browser)

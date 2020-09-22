@@ -40,8 +40,6 @@ enum class FadeDirection
     Out
 };
 
-
-
 // returned by getEntityFromDB()
 struct CharacterFromDB
 {
@@ -183,6 +181,31 @@ public:
         EntityPtr           m_entity;
         NPCPtr              m_npc;
 
+        // enum because enum class has issues in clang, see PR #925
+        enum UpdateFlag
+        {
+            NONE            = 0x0,
+            STATEMODE       = 0x1,
+            MOVEMENT        = 0x2,
+            ANIMATIONS      = 0x4,
+            FX              = 0x8,
+            COSTUMES        = 0x10,
+            TRANSLUCENCY    = 0x20,
+            TITLES          = 0x40,
+            STATS           = 0x80,
+            BUFFS           = 0x100,
+            TARGET          = 0x200,
+            ODDSEND         = 0x400,
+            HEROVILLAIN     = 0x800,
+            NOCOLLISION     = 0x1000,
+            NODRAWONCLIENT  = 0x2000,
+            AFK             = 0x4000,
+            SUPERGROUP      = 0x8000,
+            LOGOUT          = 0x10000,
+            FULL            = ~0U
+        };
+        Q_DECLARE_FLAGS(UpdateFlags, UpdateFlag)
+
         SuperGroup          m_supergroup;                       // client has this in entity class, but maybe move to Character class?
         bool                m_has_supergroup        = true;
         bool                m_has_team              = false;
@@ -224,8 +247,6 @@ public:
         int                 m_time_till_logout      = 0;    // time in miliseconds untill given entity should be marked as logged out.
         AppearanceType      m_costume_type          = AppearanceType::None;
         bool                m_is_logging_out        = false;
-        bool                m_odd_send              = false;
-        bool                m_no_draw_on_client     = false;
         bool                m_force_camera_dir      = false; // used to force the client camera direction in sendClientData()
         bool                m_is_hero               = false;
         bool                m_is_villain            = false;
@@ -246,14 +267,11 @@ public:
         std::array<PosUpdate, 64> m_pos_updates;
         std::array<BinTreeEntry, 7> m_interp_bintree;
         int                 m_update_idx                = 0;
-        bool                m_pchar_things              = false;
-        bool                m_update_anims              = false;
         bool                m_hasname                   = false;
         bool                m_classname_override        = false;
         bool                m_hasRagdoll                = false;
         bool                m_has_owner                 = false;
         bool                m_create_player             = false;
-        bool                m_rare_update               = false;
         int                 m_input_pkt_id              = {0};
         uint32_t            m_input_ack                 = {0};
         uint32_t            ownerEntityId               = 0;
@@ -261,6 +279,7 @@ public:
         MapClientSession *  m_client                    = nullptr;
         FadeDirection       m_fading_direction          = FadeDirection::In;
         uint32_t            m_db_store_flags            = 0;
+        UpdateFlags         m_entity_update_flags;
         Destination         m_cur_destination;
         float               translucency                = 1.0f;
         bool                player_type                 = false;
@@ -281,3 +300,4 @@ static  void                sendPvP(BitStream &bs);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
         void                setActiveDialogCallback(std::function<void(int)> callback);
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(Entity::UpdateFlags)

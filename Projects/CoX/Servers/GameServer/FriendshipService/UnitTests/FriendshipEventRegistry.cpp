@@ -16,7 +16,8 @@ namespace
     };
 }
 
-class FriendshipEventRegistry : public QObject {
+class FriendshipEventRegistry : public QObject
+{
     Q_OBJECT
 private slots:
     void creationByName()

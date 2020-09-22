@@ -41,12 +41,15 @@ void setSpeed(Entity &e, float v1, float v2, float v3) { e.m_motion_state.m_spee
 void setBackupSpd(Entity &e, float val) { e.m_motion_state.m_backup_spd = val; }
 void setJumpHeight(Entity &e, float val) { e.m_motion_state.m_jump_height = val; }
 void setUpdateID(Entity &e, uint8_t val) { e.m_update_id = val;}
+
 void resetSpeed(Entity &e)
 {
     e.m_motion_state.m_speed = {e.m_char->m_char_data.m_current_attribs.m_SpeedRunning,
                                 e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
                                 e.m_char->m_char_data.m_current_attribs.m_SpeedFlying};
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::STATS);
 }
+
 void setTeamID(Entity &e, uint8_t team_id)
 {
     if(team_id == 0)
@@ -89,6 +92,8 @@ void setSuperGroup(Entity &e, int sg_id, QString sg_name, uint32_t sg_rank)
         e.m_supergroup.m_SG_color2  = 0x66AA33FF;
         e.m_supergroup.m_SG_rank    = sg_rank;
     }
+
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::SUPERGROUP);
     qDebug().noquote() << "SG Info:"
              << "\n  Has Team:" << e.m_has_supergroup
              << "\n  ID:" << e.m_supergroup.m_SG_id
@@ -103,7 +108,7 @@ void setTarget(Entity &e, uint32_t target_idx)
     // TODO: set target if enemy, set assist_target if friendly
     e.m_target_idx = target_idx;
     // To trigger update to client
-    e.m_pchar_things = true;
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::TARGET);
     qCDebug(logTarget) << "Setting Target to" << target_idx;
 }
 
@@ -124,9 +129,8 @@ void setCurrentDestination(Entity &e, int point_idx, glm::vec3 location)
 
 void setStateMode(Entity &e, ClientStates state)
 {
-    e.m_rare_update = true; // this must also be true for statemode to send
-    e.m_has_state_mode = true;
     e.m_state_mode = state;
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::STATEMODE);
 }
 
 // For live debugging
@@ -166,6 +170,7 @@ void toggleCollision(Entity &e)
     else
         e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
 
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::NOCOLLISION);
     qDebug() << "Collision =" << QString::number(e.m_move_type, 2) << e.m_motion_state.m_no_collision;
 }
 
@@ -173,6 +178,7 @@ void toggleMovementAuthority(Entity &e)
 {
     toggleFullUpdate(e);
     toggleControlId(e);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::MOVEMENT);
 }
 
 
@@ -351,7 +357,6 @@ void modifyAttrib(Entity &e, buffset change)
     }
     resetSpeed(e);
     checkMovement(e);
-
 }
 
 //called after movment state might change, makes sure everything is clear before allowing movement
@@ -362,6 +367,8 @@ void checkMovement(Entity &e)
         e.m_motion_state.m_controls_disabled = true;
     else
         e.m_motion_state.m_controls_disabled = false;
+
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::MOVEMENT);
 }
 
 //return true if any status effect would prevent the use of powers
@@ -376,7 +383,8 @@ bool checkPowerBlock(Entity &e)
 // Misc Methods
 void abortLogout(Entity *e)
 {
-    e->m_is_logging_out = false; // send logout time of 0
+    e->m_is_logging_out = false;
+    e->m_entity_update_flags.setFlag(e->UpdateFlag::LOGOUT, false);
     e->m_time_till_logout = 0;
 }
 
@@ -393,7 +401,6 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_hasname                         = true;
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
-    e.m_pchar_things                    = true;
     e.m_target_idx                      = 0;
     e.m_assist_target_idx               = 0;
     e.m_move_type                       = MoveType::MOVETYPE_WALK;
@@ -403,7 +410,7 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_player = std::make_unique<PlayerData>();
     e.m_player->reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anims = e.m_rare_update   = true;
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::FULL);
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 
@@ -433,7 +440,6 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_hasname                         = true;
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
-    e.m_pchar_things                    = false;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
     e.m_target_idx                      = 0;
@@ -445,8 +451,14 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anims = e.m_rare_update   = true;
     e.m_char->m_char_data.m_level       = src->m_Level;
+
+    // Flag for updates, but remove pchar_things (FX, CharStats, Buffs, Target Updates)
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::FULL);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::FX, false);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::STATS, false);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::BUFFS, false);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::TARGET, false);
 
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 
@@ -476,7 +488,6 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_hasname                         = true;
     e.m_has_supergroup                  = false;
     e.m_has_team                        = false;
-    e.m_pchar_things                    = true;
     e.m_faction_data.m_has_faction      = true;
     e.m_faction_data.m_rank             = src->m_Rank;
     e.m_target_idx                      = 0;
@@ -488,7 +499,7 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_npc = std::make_unique<NPCData>(NPCData{false,src,idx,variant});
     e.m_player.reset();
     e.m_entity = std::make_unique<EntityData>();
-    e.m_update_anims = e.m_rare_update   = true;
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::FULL);
 
     e.m_char->m_char_data.m_combat_level = level;
     e.m_char->m_char_data.m_level = level;
@@ -522,9 +533,14 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &da
     e.m_type = EntType(src.GetPackedBits(1));
     e.m_char->GetCharBuildInfo(src);
     e.m_char->recv_initial_costume(src,data.getPacker());
+
     e.m_char->m_char_data.m_has_the_prefix = src.GetBits(1); // The -> 1
     if(e.m_char->m_char_data.m_has_the_prefix)
+    {
         e.m_char->m_char_data.m_has_titles = true;
+        e.m_entity_update_flags.setFlag(e.UpdateFlag::TITLES);
+    }
+
     src.GetString(battlecry);
     src.GetString(description);
     setBattleCry(*e.m_char,battlecry);
@@ -545,6 +561,16 @@ void markEntityForDbStore(Entity *e, DbStoreFlags f)
 void unmarkEntityForDbStore(Entity *e, DbStoreFlags f)
 {
     e->m_db_store_flags &= ~uint32_t(f);
+}
+
+void resetEntityForUpdate(Entity *e)
+{
+    // reset update flags to default (movement only)
+    e->m_entity_update_flags = e->UpdateFlag::MOVEMENT;
+
+    // it seems Players and Critters need to send Stats or they can't move
+    if(e->m_type == EntType::PLAYER || e->m_type == EntType::CRITTER)
+        e->m_entity_update_flags.setFlag(e->UpdateFlag::STATS);
 }
 
 void revivePlayer(Entity &e, ReviveLevel lvl)

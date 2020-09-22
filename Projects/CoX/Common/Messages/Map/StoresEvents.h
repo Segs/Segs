@@ -101,4 +101,4 @@ namespace SEGSEvents
         EVENT_IMPL(StoreSellItem)
     };
 
-}
+} // end of SEGSEvents namespace

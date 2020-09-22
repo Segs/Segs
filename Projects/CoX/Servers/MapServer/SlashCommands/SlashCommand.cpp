@@ -28,7 +28,7 @@
 #include "GameData/EntityHelpers.h"
 #include "Logging.h"
 #include "MapInstance.h"
-#include "Messages/Map/GameCommandList.h"
+#include "Messages/Map/Browser.h"
 #include "MessageHelpers.h"
 
 #include <QRegularExpression>

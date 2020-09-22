@@ -26,7 +26,6 @@ set(SOURCES
     ForceLogout.h
     FriendsListUpdate.h
     GameCommand.h
-    GameCommandList.h
     InfoMessageCmd.h
     InputState.cpp
     InputState.h

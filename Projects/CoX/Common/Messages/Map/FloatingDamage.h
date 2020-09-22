@@ -25,6 +25,7 @@ public:
     int m_damage_target;
     // [[ev_def:field]]
     int m_amount; // should be float?
+
     explicit FloatingDamage() : GameCommandEvent(evFloatingDamage) {}
     FloatingDamage(int source,int target,int amount) : GameCommandEvent(evFloatingDamage),
         m_damage_source(source),
@@ -32,6 +33,7 @@ public:
         m_amount(amount)
     {
     }
+
     void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1,type()-evFirstServerToClient); // packet 21

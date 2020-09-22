@@ -14,6 +14,8 @@
 #include "Messages/Map/MapEvents.h"
 #include "Common/Messages/Map/ClueList.h"
 #include "Common/Messages/Map/ContactList.h"
+#include "Common/Messages/Map/LevelUp.h"
+#include "Common/Messages/Map/PlayerInfo.h"
 #include "Common/Messages/Map/StoresEvents.h"
 #include "Common/Messages/Map/Tasks.h"
 

@@ -170,6 +170,9 @@ void updateLastOnline(Character &c)
 // Toggles
 void toggleAFK(Character &c, QString msg)
 {
+    if(msg.isEmpty())
+        msg = "AFK";
+
     setAFK(c, !c.m_char_data.m_afk, msg);
 }
 

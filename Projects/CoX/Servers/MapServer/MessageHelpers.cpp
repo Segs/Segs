@@ -1,3 +1,15 @@
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.io/
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+ */
+
+/*!
+ * @addtogroup MapServerEvents Projects/CoX/Servers/MapServer/
+ * @{
+ */
+
 #include "MessageHelpers.h"
 
 #include "DataHelpers.h"
@@ -71,6 +83,7 @@ void storeEntityResponseOtherEntities(BitStream &tgt,EntityManager &manager, Map
         manager.sendGlobalEntDebugInfo(tgt);
     }
 }
+
 void storeServerPhysicsPositions(BitStream &bs,Entity *self)
 {
     PUTDEBUG("before physics");
@@ -94,6 +107,7 @@ void storeServerPhysicsPositions(BitStream &bs,Entity *self)
         qCDebug(logPosition) << "velocity" << glm::to_string(self->m_motion_state.m_velocity).c_str();
     }
 }
+
 void storeServerControlState(BitStream &bs,Entity *self)
 {
     bs.StoreBits(1,self->m_update_part_1);
@@ -699,3 +713,5 @@ void buildEntityResponse(EntitiesResponse *res,MapClientSession &to_client,Entit
     storeClientData(res->blob_of_death,to_client.m_ent,is_incremental);
     storeFollowupCommands(res->blob_of_death,&to_client);
 }
+
+//! @}

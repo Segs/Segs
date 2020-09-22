@@ -13,6 +13,7 @@
 #include "Movement.h"
 
 #include "Entity.h"
+#include "EntityHelpers.h"
 #include "Character.h"
 #include "CharacterHelpers.h"
 #include "Servers/MapServer/DataHelpers.h"
@@ -512,6 +513,7 @@ static void entMotionSetInputVelocity(Entity* ent, const TickState* tick_state) 
         }
 
         setAFK(*ent->m_char, false);
+        ent->m_entity_update_flags.setFlag(ent->UpdateFlag::AFK);
     }
 }
 
@@ -934,6 +936,7 @@ void forcePosition(Entity &e, glm::vec3 pos)
 {
     e.m_entity_data.m_pos = pos;
     e.m_force_pos_and_cam = true;
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::MOVEMENT);
 }
 
 void forceOrientation(Entity &e, glm::vec3 pyr)
@@ -941,20 +944,19 @@ void forceOrientation(Entity &e, glm::vec3 pyr)
     e.m_direction = glm::quat(pyr);
     e.m_entity_data.m_orientation_pyr = pyr;
     e.m_force_pos_and_cam = true;
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::MOVEMENT);
 }
 
 // Move to Sequences or Triggers files later
 void addTriggeredMove(Entity &e, uint32_t move_idx, uint32_t delay, uint32_t fx_idx)
 {
-    e.m_update_anims = true;
-    e.m_rare_update = true;
-
     TriggeredMove tmove;
     tmove.m_move_idx = move_idx;
     tmove.m_ticks_to_delay = delay;
     tmove.m_trigger_fx_idx = fx_idx;
 
     e.m_triggered_moves.push_back(tmove);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::ANIMATIONS);
     qCDebug(logAnimations) << "Queueing triggered move:"
                            << move_idx << delay << fx_idx;
 }

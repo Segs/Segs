@@ -30,7 +30,7 @@ struct CharacterPower;
 struct PowerStance;
 class GameDataStore;
 class TradeMember;
-class Costume;
+struct Costume;
 class BitStream;
 struct ContactEntry;
 enum FloatingInfoStyle : int;

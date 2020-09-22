@@ -29,6 +29,7 @@
 #include "serialization_types.h"
 #include "Version.h"
 #include "Common/GameData/CoHMath.h"
+#include "Common/GameData/LFG.h"
 #include "Common/Servers/Database.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Common/Servers/InternalEvents.h"
@@ -52,9 +53,15 @@
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
 #include "Messages/Map/ClueList.h"
 #include "Messages/Map/ContactList.h"
+#include "Messages/Map/EmailHeaders.h"
+#include "Messages/Map/EmailMessageStatus.h"
+#include "Messages/Map/EmailRead.h"
+#include "Messages/Map/FloatingInfoStyles.h"
+#include "Messages/Map/LevelUp.h"
 #include "Messages/Map/MapEvents.h"
 #include "Messages/Map/MapXferRequest.h"
 #include "Messages/Map/MapXferWait.h"
+#include "Messages/Map/PlayerInfo.h"
 #include "Messages/Map/StoresEvents.h"
 #include "Messages/Map/Tasks.h"
 
@@ -869,9 +876,9 @@ void MapInstance::on_entity_response(GetEntityResponse *ev)
     bool was_afk = isAFK(*e->m_char);
     setAFK(*e->m_char, false);
     if(was_afk)
-    {
         sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", map_session);
-    }
+
+    e->m_entity_update_flags.setFlag(e->UpdateFlag::AFK); // status of afk has changed
 
     if(logPlayerSpawn().isDebugEnabled())
     {
@@ -1017,6 +1024,8 @@ void MapInstance::on_entities_request(EntitiesRequest *ev)
     EntitiesResponse *res=new EntitiesResponse();
     res->m_map_time_of_day = m_world->time_of_day();
     res->ent_major_update = true;
+    session.m_ent->m_entity_update_flags.setFlag(session.m_ent->UpdateFlag::FULL);
+
     res->abs_time = 30*100*(m_world->accumulated_time);
     buildEntityResponse(res,session,EntityUpdateMode::FULL,false);
     session.link()->putq(res);
@@ -2053,14 +2062,10 @@ void MapInstance::on_minimap_state(MiniMapState *ev)
     std::vector<bool> * map_cells = &ent->m_player->m_player_progress.m_visible_map_cells[map_idx];
 
     if (map_cells->empty())
-    {
         map_cells->resize(1024);
-    }
 
     if (ev->tile_idx > map_cells->size())
-    {
         map_cells->resize(map_cells->size() + (ev->tile_idx - map_cells->size() + 1023) / 1024 * 1024);
-    }
 
     // #818 map_cells of type array with a size of 1024 threw
     // out of range exception on maps that had index tiles larger than 1024
@@ -2090,9 +2095,10 @@ void MapInstance::on_client_resumed(ClientResumedRendering *ev)
         // Force position and orientation to fix #617 spawn at 0,0,0 bug
         forcePosition(*session.m_ent, session.m_ent->m_entity_data.m_pos);
         forceOrientation(*session.m_ent, session.m_ent->m_entity_data.m_orientation_pyr);
+        session.m_ent->m_entity_update_flags.setFlag(session.m_ent->UpdateFlag::FULL);
 
         char buf[256];
-        std::string welcome_msg = std::string("Welcome to SEGS ") + VersionInfo::getAuthVersion()+"\n";
+        std::string welcome_msg = std::string("Welcome to ") + VersionInfo::getAuthVersion()+"\n";
         std::snprintf(buf, 256, "There are %zu active entities and %zu clients", m_entities.active_entities(),
                     m_session_store.num_sessions());
         welcome_msg += buf;
@@ -2467,6 +2473,7 @@ void MapInstance::setPlayerSpawn(Entity &e)
 
     forcePosition(e, spawn_pos);
     forceOrientation(e, spawn_pyr);
+    e.m_entity_update_flags.setFlag(e.UpdateFlag::FULL);
 }
 
 // Teleport to a specific SpawnLocation; do nothing if the SpawnLocation is not found.
@@ -2606,6 +2613,7 @@ void MapInstance::on_recv_selected_titles(RecvSelectedTitles *ev)
     special = getSpecialTitle(*session.m_ent->m_char);
 
     setTitles(*session.m_ent->m_char, ev->m_has_prefix, generic, origin, special);
+    session.m_ent->m_entity_update_flags.setFlag(session.m_ent->UpdateFlag::TITLES);
     qCDebug(logMapEvents) << "Entity sending titles: " << session.m_ent->m_idx << ev->m_has_prefix << generic << origin << special;
 }
 
@@ -2758,8 +2766,9 @@ void MapInstance::on_recv_costume_change(RecvCostumeChange *ev)
 
     uint32_t idx = getCurrentCostumeIdx(*session.m_ent->m_char);
     session.m_ent->m_char->saveCostume(idx, ev->m_new_costume);
-    session.m_ent->m_rare_update = true; // re-send costumes, they've changed.
+
     session.m_ent->m_char->m_client_window_state = ClientWindowState::None;
+    session.m_ent->m_entity_update_flags.setFlag(session.m_ent->UpdateFlag::COSTUMES);
     markEntityForDbStore(session.m_ent, DbStoreFlags::Full);
 }
 
@@ -2802,17 +2811,18 @@ void MapInstance::on_afk_update()
             if(cd->m_afk)
             {
                 setAFK(*e->m_char, false);
+                e->m_entity_update_flags.setFlag(e->UpdateFlag::AFK, false);
                 sendInfoMessage(MessageChannel::DEBUG_INFO, "You are no longer AFK", *sess);
             }
         }
 
         if(cd->m_idle_time >= data.m_time_to_afk && !cd->m_afk)
         {
-            setAFK( *e->m_char, true, "Auto AFK");
+            setAFK(*e->m_char, true, "Auto AFK");
+            e->m_entity_update_flags.setFlag(e->UpdateFlag::AFK);
             msg = QString("You are AFKed after %1 seconds of inactivity.").arg(data.m_time_to_afk);
             sendInfoMessage(MessageChannel::DEBUG_INFO, msg, *sess);
         }
-
 
         if(data.m_uses_auto_logout && cd->m_idle_time >= data.m_time_to_logout_msg)
         {
@@ -2869,8 +2879,8 @@ void MapInstance::on_update_entities()
     for (const auto &sess : active_sessions)
     {
         Entity *e = sess->m_ent;
-        send_character_update(e);
         updateLastOnline(*e->m_char); // set this here, in case we disconnect unexpectedly
+        send_character_update(e);
 
         /* at the moment we are forcing full character updates, so I'll leave this commented for now
 

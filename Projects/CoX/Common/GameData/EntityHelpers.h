@@ -91,6 +91,7 @@ void initializeNewPlayerEntity(Entity &e);
 void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
 void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant, int level);
 void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
-void markEntityForDbStore(Entity *e,DbStoreFlags f);
+void markEntityForDbStore(Entity *e, DbStoreFlags f);
 void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
+void resetEntityForUpdate(Entity *e);
 void revivePlayer(Entity &e, ReviveLevel lvl);

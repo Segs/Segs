@@ -12,16 +12,19 @@
 
 #include "WorldSimulation.h"
 
-#include "Common/Servers/Database.h"
 #include "DataHelpers.h"
 #include "NetFxHelpers.h"
-#include "Messages/Map/GameCommandList.h"
+#include "MapInstance.h"
+
+#include "Common/Messages/Map/FloatingInfoStyles.h"
+#include "Common/Servers/Database.h"
+#include "Common/Servers/InternalEvents.h"
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
 #include "Runtime/Systems/FXSystem.h"
+#include "Messages/Map/GameCommandList.h"
+
 #include <glm/gtx/vector_query.hpp>
-#include "MapInstance.h"
-#include "Common/Servers/InternalEvents.h"
 
 using namespace SEGSEvents;
 

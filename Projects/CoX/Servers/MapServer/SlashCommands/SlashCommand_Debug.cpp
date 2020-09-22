@@ -18,7 +18,9 @@
 #include "GameData/EntityHelpers.h"
 #include "Logging.h"
 #include "MapInstance.h"
-#include "Messages/Map/GameCommandList.h"
+#include "Messages/Map/Browser.h"
+#include "Messages/Map/DoorMessage.h"
+#include "Messages/Map/StandardDialogCmd.h"
 #include "MessageHelpers.h"
 
 #include <QtCore/QString>
@@ -308,9 +310,8 @@ void cmdHandler_SetStateMode(const QStringList &params, MapClientSession &sess)
 {
     uint32_t val = params.value(0).toUInt();
 
-    sess.m_ent->m_rare_update = true; // this must also be true for statemode to send
-    sess.m_ent->m_has_state_mode = true;
     sess.m_ent->m_state_mode = static_cast<ClientStates>(val);
+    sess.m_ent->m_entity_update_flags.setFlag(sess.m_ent->UpdateFlag::STATEMODE);
 
     QString msg = "Set StateMode to: " + QString::number(val);
     qCDebug(logSlashCommand) << msg;
@@ -412,7 +413,7 @@ void cmdHandler_SendConsolePrint(const QStringList &params, MapClientSession &se
 
 void cmdHandler_ClearTarget(const QStringList &params, MapClientSession &sess)
 {
-    if(params.size () != 1)
+    if(params.size() != 1)
     {
         qCDebug(logSlashCommand) << "ClearTarget. Bad invocation:  " << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "ClearTarget '/clearTarget <targetIdx>'", sess);
@@ -425,7 +426,7 @@ void cmdHandler_ClearTarget(const QStringList &params, MapClientSession &sess)
 
 void cmdHandler_StartTimer(const QStringList &params, MapClientSession &sess)
 {
-    if(params.size () != 2)
+    if(params.size() != 2)
     {
         qCDebug(logSlashCommand) << "StartTimer. Bad invocation:  " << params.join(" ");
         sendInfoMessage(MessageChannel::USER_ERROR, "StartTimer '/StartTimer <timerName> <seconds>'", sess);

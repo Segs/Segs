@@ -9,9 +9,6 @@
 #include "Servers/InternalEvents.h"
 #include "EmailDefinitions.h"
 
-// #ifndef EMAILEVENTS_H
-// #define EMAILEVENTS_H
-
 namespace SEGSEvents
 {
 

@@ -7,36 +7,36 @@
 
 #pragma once
 
-#include "GameCommandList.h"
+#include "GameCommand.h"
 #include "MapEvents.h"
-
-#include <QtCore/QString>
 
 namespace SEGSEvents
 {
-    // [[ev_def:type]]
-    class FaceLocation : public GameCommandEvent
+
+// [[ev_def:type]]
+class FaceLocation : public GameCommandEvent
+{
+public:
+    explicit FaceLocation() : GameCommandEvent(evFaceLocation) {}
+    FaceLocation(glm::vec3 loc) : GameCommandEvent(evFaceLocation),
+        m_loc(loc)
+    {}
+
+    // SerializableEvent interface
+    void serializefrom(BitStream &/*src*/) override
+    {}
+    void serializeto(BitStream &bs) const override
     {
-    public:
-        explicit FaceLocation() : GameCommandEvent(evFaceLocation) {}
-        FaceLocation(glm::vec3 loc) : GameCommandEvent(evFaceLocation),
-            m_loc(loc)
-        {}
+        bs.StorePackedBits(1, type()-evFirstServerToClient); // pkt 55
+        bs.StoreFloat(m_loc.x);
+        bs.StoreFloat(m_loc.y);
+        bs.StoreFloat(m_loc.z);
+    }
+    EVENT_IMPL(FaceLocation)
 
-        // SerializableEvent interface
-        void serializefrom(BitStream &/*src*/) override
-        {}
-        void serializeto(BitStream &bs) const override
-        {
-            bs.StorePackedBits(1,type()-evFirstServerToClient);
-            bs.StoreFloat(m_loc.x);
-            bs.StoreFloat(m_loc.y);
-            bs.StoreFloat(m_loc.z);
-        }
-        EVENT_IMPL(FaceLocation)
+protected:
+    // [[ev_def:field]]
+    glm::vec3 m_loc;
+};
 
-    protected:
-        // [[ev_def:field]]
-        glm::vec3 m_loc;
-    };
-}
+} //end of SEGSEvents namespace
