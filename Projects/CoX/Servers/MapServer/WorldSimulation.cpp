@@ -14,9 +14,11 @@
 
 #include "Common/Servers/Database.h"
 #include "DataHelpers.h"
+#include "NetFxHelpers.h"
 #include "Messages/Map/GameCommandList.h"
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
+#include "Runtime/Systems/FXSystem.h"
 #include <glm/gtx/vector_query.hpp>
 #include "MapInstance.h"
 #include "Common/Servers/InternalEvents.h"
@@ -40,12 +42,14 @@ void World::update(const ACE_Time_Value &tick_timer)
     prev_tick_time = tick_timer;
     ACE_Guard<ACE_Thread_Mutex> guard_buffer(ref_ent_mager.getEntitiesMutex());
 
+    updateNetFx(); // cleans up the global netfx storage
     for(Entity * e : ref_ent_mager.m_live_entlist)
     {
         updateEntity(e,delta);
         if(e->m_destroyed)
             break;
     }
+    FXSystem::update(sim_frame_time);
 }
 
 void World::physicsStep(Entity *e,uint32_t msec)
@@ -407,6 +411,14 @@ void World::updateEntity(Entity *e, const ACE_Time_Value &dT)
         e->m_time_till_logout -= dT.msec();
         if(e->m_time_till_logout<0)
             e->m_time_till_logout=0;
+    }
+    for(auto iter=e->m_net_fx.begin(); iter!=e->m_net_fx.end(); ++iter)
+    {
+        auto handle = *iter;
+        if(updateNetFxFromParent(handle))
+        {
+            iter = e->m_net_fx.erase(iter);
+        }
     }
 }
 

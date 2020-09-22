@@ -14,7 +14,6 @@
 #include <QtCore/QDateTime>
 #include <glm/vec3.hpp>
 #include <Common/GameData/map_definitions.h>
-#include <Common/GameData/map_definitions.h>
 #include <Common/Messages/Map/GameCommand.h>
 #include <Common/Messages/Map/MessageChannels.h>
 #include "GameData/Entity.h"
