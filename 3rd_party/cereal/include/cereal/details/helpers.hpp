@@ -185,7 +185,9 @@ namespace cereal
   template<class Archive, class T> inline
   typename
   std::enable_if<!std::is_same<Archive, ::cereal::BinaryInputArchive>::value &&
-                 !std::is_same<Archive, ::cereal::BinaryOutputArchive>::value,
+                 !std::is_same<Archive, ::cereal::BinaryOutputArchive>::value &&
+                 !std::is_same<Archive, ::cereal::VectorInputArchive>::value &&
+                 !std::is_same<Archive, ::cereal::VectorOutputArchive>::value,
   NameValuePair<T> >::type
   make_nvp( const char * name, T && value)
   {
@@ -202,20 +204,7 @@ namespace cereal
     return std::forward<T>(value);
   }
 
-  //! A specialization of make_nvp<> that actually creates an nvp for non-binary archives
-  /*! @relates NameValuePair
-      @internal */
-  template<class Archive, class T> inline
-  typename
-  std::enable_if<!std::is_same<Archive, ::cereal::VectorInputArchive>::value &&
-                 !std::is_same<Archive, ::cereal::VectorOutputArchive>::value,
-  NameValuePair<T> >::type
-  make_nvp( const char * name, T && value)
-  {
-    return {name, std::forward<T>(value)};
-  }
-
-  //! Convenience for creating a templated NVP
+    //! Convenience for creating a templated NVP
   /*! For use in inteneral generic typing functions which have an
       Archive type declared
       @internal */
