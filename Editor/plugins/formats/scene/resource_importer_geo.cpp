@@ -32,23 +32,24 @@
 
 #include "core/class_db.h"
 #include "core/image.h"
-#include "core/io/resource_saver.h"
-#include "core/os/dir_access.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
 #include "core/os/mutex.h"
 #include "core/project_settings.h"
+#include "core/resource/resource_manager.h"
+#include "core/service_interfaces/CoreInterface.h"
 #include "core/string_utils.h"
 #include "editor/service_interfaces/EditorServiceInterface.h"
-#include "core/service_interfaces/CoreInterface.h"
-#include "scene/resources/texture.h"
-#include "scene/3d/spatial.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/3d/light.h"
 #include "scene/resources/primitive_meshes.h"
+#include "scene/resources/texture.h"
 
 #include "Prefab.h"
 #include "RuntimeData.h"
@@ -143,7 +144,7 @@ struct SE_FSWrapper : public FSWrapper
     }
 };
 Set<String> SE_FSWrapper::missing_files;
-static Spatial *convertFromRoot(struct SceneGraphInfo &sg, Spatial *parent, SEGS::SceneNode *n);
+static Node3D *convertFromRoot(struct SceneGraphInfo &sg, Node3D *parent, SEGS::SceneNode *n);
 struct FileDeleter {
     void operator()(FileAccess *fa) const {
         memdelete(fa);
@@ -152,7 +153,7 @@ struct FileDeleter {
 struct SceneGraphInfo {
     Map<SEGS::SceneNode *,int> use_counts;
     Map<SEGS::SceneNode *,Ref<PackedScene>> m_imported_prefabs;
-    Vector<Spatial *> root_stack;
+    Vector<Node3D *> root_stack;
     String m_root_path;
     enum NodeState
     {
@@ -215,15 +216,15 @@ struct SceneGraphInfo {
     {
         String destinationPath = SceneGraphInfo::GetSafeFilename(tgt_path + "/" + model_name + ".scn");
         Error err;
-        return dynamic_ref_cast<PackedScene>(ResourceLoader::load(destinationPath, "", true, &err));
+        return dynamic_ref_cast<PackedScene>(gResourceManager().load(destinationPath, "", true, &err));
     }
 };
 Color fromGLM(glm::vec4 v) {
     return Color(v.r,v.g,v.b,v.a);
 }
-static void convertLightComponent(SEGS::SceneNode *n, Spatial *res)
+static void convertLightComponent(SEGS::SceneNode *n, Node3D *res)
 {
-    OmniLight *light_node = memnew(OmniLight);
+    OmniLight3D *light_node = memnew(OmniLight3D);
     if (n->m_light->is_negative)
     {
         light_node->set_negative(true);
@@ -238,7 +239,7 @@ static void convertLightComponent(SEGS::SceneNode *n, Spatial *res)
     light_node->set_name("OmniLight");
     light_node->set_owner(res);
     light_node->set_color(fromGLM(n->m_light->color));
-    light_node->set_param(Light::PARAM_RANGE,n->m_light->range);
+    light_node->set_param(Light3D::PARAM_RANGE,n->m_light->range);
 
     //light.lightmapBakeType = LightmapBakeType.Realtime;
     //light.cullingMask = ~(1 << 9); // Don't light the layer 9 - Editor object
@@ -252,7 +253,7 @@ static void convertLightComponent(SEGS::SceneNode *n, Spatial *res)
     //LightProbeGroup lpb=lobj.AddComponent<LightProbeGroup>();
     //lpb.probePositions = createProbes(3, 2, light.range);
 }
-static void convertComponents(SEGS::SceneNode *n, Spatial *res)
+static void convertComponents(SEGS::SceneNode *n, Node3D *res)
 {
     if (n->m_light != nullptr)
     {
@@ -300,7 +301,7 @@ static void convertComponents(SEGS::SceneNode *n, Spatial *res)
 //        }
 //    }
 }
-static void convertModel(SEGS::SceneNode *n, Spatial *res, bool convert_editor_markers)
+static void convertModel(SEGS::SceneNode *n, Node3D *res, bool convert_editor_markers)
 {
     SEGS::Model *mdl = n->m_model;
     ModelModifiers *model_trick = mdl->trck_node;
@@ -310,7 +311,7 @@ static void convertModel(SEGS::SceneNode *n, Spatial *res, bool convert_editor_m
         mesh_path = "Assets/Meshes/" + mesh_path.substr(obj_lib_idx);
     String model_path = SceneGraphInfo::GetSafeFilename(
         mesh_path + "/" + qPrintable(PathUtils::get_basename(mdl->name)) + ".mesh");
-    MeshInstance *mi = memnew(MeshInstance);
+    MeshInstance3D *mi = memnew(MeshInstance3D);
     res->add_child(mi);
     mi->set_owner(res->get_owner());
     mi->set_mesh(make_ref_counted<CubeMesh>());
@@ -362,7 +363,7 @@ static void convertModel(SEGS::SceneNode *n, Spatial *res, bool convert_editor_m
     }
 //    if (mf.sharedMesh == null)
     {
-        MeshInstance *res_static=nullptr;
+        MeshInstance3D *res_static=nullptr;
           SEGS::RuntimeData &rd(getRuntimeData());
 //        if (!rd.s_coh_model_to_engine_model.TryGetValue(mdl, out res_static))
 //            return;
@@ -408,12 +409,12 @@ static String targetDirForNodePrefab(SEGS::SceneNode *n)
 
     return String("res://coh_data/geobin/") + qPrintable(path.replace(".txt",".bin"));
 }
-static bool convertChildren(SceneGraphInfo &sg,SEGS::SceneNode *n, Spatial *res)
+static bool convertChildren(SceneGraphInfo &sg,SEGS::SceneNode *n, Node3D *res)
 {
     bool all_ok = true;
     for(const SEGS::SceneNodeChildTransform &child : n->m_children)
     {
-        Spatial *go = convertFromRoot(sg, res, child.node);
+        Node3D *go = convertFromRoot(sg, res, child.node);
         all_ok &= (go != nullptr);
         if (go != nullptr)
         {
@@ -423,8 +424,8 @@ static bool convertChildren(SceneGraphInfo &sg,SEGS::SceneNode *n, Spatial *res)
 
     return all_ok;
 }
-static Spatial *convertInternal(SceneGraphInfo &sg, Spatial *parent,SEGS::SceneNode* n) {
-    Spatial *res = memnew(Spatial);
+static Node3D *convertInternal(SceneGraphInfo &sg, Node3D *parent,SEGS::SceneNode* n) {
+    Node3D *res = memnew(Node3D);
     res->set_name(qPrintable(n->m_name));
     parent->add_child(res);
     res->set_owner(sg.root_stack.back());
@@ -456,7 +457,7 @@ static Ref<PackedScene> prefabFromSceneNode(SceneGraphInfo& sg, SEGS::SceneNode*
 {
     auto target_directory = sg.m_root_path;
     String destinationPath = SceneGraphInfo::GetSafeFilename(target_directory + "/" + qPrintable(n->m_name) + ".scn");
-    auto root= memnew(Spatial);
+    auto root= memnew(Node3D);
     sg.root_stack.emplace_back(root); // Record the new root node, all nodes created from now on in convertFromRoot will belong to it.
     sg.root_stack.back()->set_name(qPrintable(n->m_name));
     auto true_root=convertInternal(sg, sg.root_stack.back(),n);
@@ -472,7 +473,7 @@ static Ref<PackedScene> prefabFromSceneNode(SceneGraphInfo& sg, SEGS::SceneNode*
         Error err=res->pack(root);
         if(err==OK)
         {
-            err = ResourceSaver::save(destinationPath,res,0);
+            err = gResourceManager().save(destinationPath,res,0);
             if(err==OK)
                 return res;
         }
@@ -488,9 +489,9 @@ bool autoGen(const QString &n) {
         return false;
     return true;
 }
-Spatial *convertFromRoot(SceneGraphInfo &sg, Spatial *parent, SEGS::SceneNode *n)
+Node3D *convertFromRoot(SceneGraphInfo &sg, Node3D *parent, SEGS::SceneNode *n)
 {
-    Spatial *res = nullptr;
+    Node3D *res = nullptr;
     if (!sg.m_imported_prefabs.contains(n))
     {
         if (sg.isInternalNode(n) != SceneGraphInfo::InternalNode || !autoGen(n->m_name) || n->m_nest_level>0)
@@ -517,11 +518,11 @@ Spatial *convertFromRoot(SceneGraphInfo &sg, Spatial *parent, SEGS::SceneNode *n
             {
                 sg.m_imported_prefabs[n] = prefab; // record for later use.
                 auto prefab_res = prefab->instance();
-                assert(object_cast<Spatial>(prefab_res)!=nullptr);
+                assert(object_cast<Node3D>(prefab_res)!=nullptr);
                 prefab_res->set_name(qPrintable(n->m_name));
                 parent->add_child(prefab_res);
                 prefab_res->set_owner(sg.root_stack.back());
-                return static_cast<Spatial *>(prefab_res);
+                return static_cast<Node3D *>(prefab_res);
             } else {
                 // We have a missing one here.
                 auto idx = n->m_dir.lastIndexOf("object_library");
@@ -536,11 +537,11 @@ Spatial *convertFromRoot(SceneGraphInfo &sg, Spatial *parent, SEGS::SceneNode *n
     }
     else {
         auto prefab_res = sg.m_imported_prefabs[n]->instance();
-        assert(object_cast<Spatial>(prefab_res)!=nullptr);
+        assert(object_cast<Node3D>(prefab_res)!=nullptr);
         prefab_res->set_name(qPrintable(n->m_name));
         parent->add_child(prefab_res);
         prefab_res->set_owner(sg.root_stack.back());
-        return static_cast<Spatial *>(prefab_res);
+        return static_cast<Node3D *>(prefab_res);
     }
     switch (sg.isInternalNode(n))
     {
@@ -561,7 +562,7 @@ Spatial *convertFromRoot(SceneGraphInfo &sg, Spatial *parent, SEGS::SceneNode *n
         auto res3 = sg.m_imported_prefabs[n]->instance();
         if (n->m_engine_node == nullptr)
             n->m_engine_node = res3;
-        return (Spatial *)res3;
+        return (Node3D *)res3;
     }
     default:
         ; //        throw new ArgumentOutOfRangeException();
@@ -613,7 +614,7 @@ Node *EditorSceneImporterCoHGeo::import_scene(StringView p_path, uint32_t p_flag
 
 
     sg_info.m_root_path = qPrintable(path_info.path()+"/"+path_info.completeBaseName());
-    Spatial* layer_root = memnew(Spatial);
+    Node3D* layer_root = memnew(Node3D);
     sg_info.root_stack.emplace_back(layer_root);
     auto top_nodes = sg_info.calculateUsages(m_scene_graph);
     if (!top_nodes.empty())
@@ -652,10 +653,10 @@ Node *EditorSceneImporterCoHGeo::import_scene(StringView p_path, uint32_t p_flag
         if (prefab)
         {
             auto prefab_res=prefab->instance();
-            assert(object_cast<Spatial>(prefab_res)!=nullptr);
+            assert(object_cast<Node3D>(prefab_res)!=nullptr);
             layer_root->add_child(prefab_res);
             prefab_res->set_owner(layer_root);
-            static_cast<Spatial *>(prefab_res)->set_transform(fromGLM(root->mat));
+            static_cast<Node3D *>(prefab_res)->set_transform(fromGLM(root->mat));
         }
 
     }
