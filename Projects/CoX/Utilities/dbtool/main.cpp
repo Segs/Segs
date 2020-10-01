@@ -44,7 +44,7 @@ enum DBToolCommands
 
 void Pause(void)
 {
-    qInfo() << Qt::endl << "Press ENTER to continue...";
+    qInfo() << "\nPress ENTER to continue...";
     std::cin.ignore(100000, '\n');  // Ignore characters until an ENTER (newline) is received.
     return;
 }
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
     parser.process(app);
 
     // Print out Project Name and Version
-    qInfo().noquote() << VersionString << endl;
+    qInfo().noquote() << VersionString << "\n";
 
     const QStringList positionalArguments = parser.positionalArguments();
     if(positionalArguments.size()<1 || !known_commands.contains(positionalArguments.first()))

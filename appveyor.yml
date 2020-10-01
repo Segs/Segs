@@ -1,19 +1,13 @@
 version: 0.5.{build}
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 platform: x64
 
 environment:
-  global:
-    PLATFORMTOOLSET: "v140"
-  MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
   matrix:
-# For now, maybe we disable 32 bit build-testing as it's unlikely for our users
-#  - CMAKE_GENERATOR: "Visual Studio 15 2017"
-#    QT5: C:\Qt\5.10.1\msvc2015
-  - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
-    QT5: C:\Qt\5.12.6\msvc2017_64
-    VCVARS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat
+  - CMAKE_GENERATOR: "NMake Makefiles JOM"
+    QT5: C:\Qt\5.15\msvc2019_64
+    VCVARS: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
     
 branches:
   only:
@@ -36,14 +30,13 @@ init:
 - cd /D "%APPVEYOR_BUILD_FOLDER%"
 
 before_build:
-- if exist "%QT5%" set PATH=%QT5%\bin;%PATH%
+- if exist "%QT5%" set PATH=%QT5%\bin;%PATH%;C:\Qt\Tools\QtCreator\bin
 - md build
-- cmake -H. -Bbuild -G "%CMAKE_GENERATOR%" -DQT_GIVEN_PATH:STRING="%QT5%" "-DCMAKE_PREFIX_PATH=%QT5%"
-- lib /def:Projects\CoX\Clients\patch_tools\CityOfX.def /OUT:Projects/CoX/Clients/patch_tools/CityOfX.lib
+- cmake  -H. -Bbuild -G "%CMAKE_GENERATOR%" -DQT_GIVEN_PATH:STRING="%QT5%" "-DCMAKE_PREFIX_PATH=%QT5%"
 
 build_script:
 - if "%APPVEYOR_REPO_TAG%"=="true" (set CONFIGURATION=RelWithDebInfo) else (set CONFIGURATION=Debug)
-- cmake --build build --config "%CONFIGURATION%" -- %MSBUILD_FLAGS%
+- cmake --build build  -j %NUMBER_OF_PROCESSORS% --config "%CONFIGURATION%"
 
 #after_build:
 #- cmake --build build --config "%CONFIGURATION%" --target check -- %MSBUILD_FLAGS%
