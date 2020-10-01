@@ -44,8 +44,8 @@ void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, T
 template
 void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, TextureAnim_Data & m);
 template
-void serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, TextureAnim_Data & m);
+void serialize<cereal::VectorInputArchive>(cereal::VectorInputArchive & archive, TextureAnim_Data & m);
 template
-void serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, TextureAnim_Data & m);
+void serialize<cereal::VectorOutputArchive>(cereal::VectorOutputArchive & archive, TextureAnim_Data & m);
 
 //! @}

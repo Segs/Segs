@@ -60,7 +60,7 @@ static std::vector<MapData> g_defined_map_datas =
 
 QString getMissionPath(QString map_name, MissionCategory size)
 {
-    MapData map_data = getMapData(map_name);
+    const MapData &map_data = getMapData(map_name);
     if (!map_data.m_mission_data.empty())
     {
         MissionMapData mission_data = map_data.m_mission_data.front();

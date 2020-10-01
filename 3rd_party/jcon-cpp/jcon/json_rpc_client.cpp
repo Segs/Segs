@@ -4,11 +4,13 @@
 #include "jcon_assert.h"
 #include "string_util.h"
 
+
 #include <QtCore/QElapsedTimer>
 #include <QCoreApplication>
 #include <QUuid>
 
 #include <memory>
+#include <stdexcept>
 
 namespace jcon {
 

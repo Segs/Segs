@@ -24,7 +24,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <sstream>
+
 #include <memory>
 
 void Entity::sendAllyID(BitStream &bs)

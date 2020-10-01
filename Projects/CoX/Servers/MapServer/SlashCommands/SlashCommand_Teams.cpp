@@ -73,7 +73,7 @@ void cmdHandler_Invite(const QStringList &params, MapClientSession &sess)
 
     if(sess.m_ent->m_has_team && sess.m_ent->m_team != nullptr)
     {
-        if(!sess.m_ent->m_team->isTeamLeader(sess.m_ent))
+        if(!sess.m_ent->m_team->isTeamLeader(sess.m_ent->m_db_id))
         {
             const QString msg = "Only the team leader can invite players to the team.";
             qCDebug(logTeams) << sess.m_ent->name() << msg;

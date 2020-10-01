@@ -37,7 +37,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QSettings>
-#include <iostream>
+
 
 SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     QMainWindow(parent),

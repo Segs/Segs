@@ -7,7 +7,7 @@
 
 #pragma once
 #include <cereal/archives/json.hpp>
-#include <cereal/archives/binary.hpp>
+#include <cereal/archives/memory_binary.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/deque.hpp>
 #include <cereal/types/array.hpp>
@@ -47,27 +47,29 @@ void commonSaveTo(const T & target, const char *classname, const QString & baseN
         target_fname = baseName + ".crl.json";
     else
         target_fname = baseName + ".crl.bin";
-    std::ostringstream tgt;
     QFile  tgt_fle(target_fname);
     try
     {
         if(text_format) {
+            std::ostringstream tgt;
             cereal::JSONOutputArchive ar( tgt );
             ar(cereal::make_nvp(classname,target));
             if(!tgt_fle.open(QFile::WriteOnly|QFile::Text)) {
                 qCritical() << "Failed to open"<<target_fname<<"in write mode";
                 return;
             }
+            tgt_fle.write(tgt.str().c_str(),tgt.str().size());
         }
         else {
-            cereal::BinaryOutputArchive ar( tgt );
+            std::vector<uint8_t> tgt;
+            cereal::VectorOutputArchive ar( tgt );
             ar(cereal::make_nvp(classname,target));
             if(!tgt_fle.open(QFile::WriteOnly)) {
                 qCritical() << "Failed to open"<<target_fname<<"in write mode";
                 return;
             }
+            tgt_fle.write((const char *)tgt.data(),tgt.size());
         }
-        tgt_fle.write(tgt.str().c_str(),tgt.str().size());
     }
     catch(cereal::RapidJSONException &e)
     {
@@ -117,11 +119,14 @@ bool commonReadFrom(FSWrapper &fs,const QString &crl_path,const char *classname,
             qWarning() << "Failed to open" << crl_path;
             return false;
         }
-        std::istringstream istr(ifl->readAll().toStdString());
+
+        std::vector<uint8_t> istr;
+        istr.resize(ifl->size());
+        ifl->read((char *)istr.data(),ifl->size());
         delete ifl;
         try
         {
-            cereal::BinaryInputArchive arc(istr);
+            cereal::VectorInputArchive arc(istr);
             arc(cereal::make_nvp(classname,target));
         }
         catch(cereal::RapidJSONException &e)
@@ -168,35 +173,35 @@ void type::serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & arch
 template \
 void type::serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive);\
 template \
-void type::serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive);\
+void type::serialize<cereal::VectorInputArchive>(cereal::VectorInputArchive & archive);\
 template \
-void type::serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive);
+void type::serialize<cereal::VectorOutputArchive>(cereal::VectorOutputArchive & archive);
 #define SPECIALIZE_VERSIONED_SERIALIZATIONS(type)\
 template \
 void serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, type & m, uint32_t const version);\
 template \
 void serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, type & m, uint32_t const version);\
 template \
-void serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, type & m, uint32_t const version);\
+void serialize<cereal::VectorInputArchive>(cereal::VectorInputArchive & archive, type & m, uint32_t const version);\
 template \
-void serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, type & m, uint32_t const version);
+void serialize<cereal::VectorOutputArchive>(cereal::VectorOutputArchive & archive, type & m, uint32_t const version);
 #define SPECIALIZE_CLASS_VERSIONED_SERIALIZATIONS(type)\
 template \
 void type::serialize<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, uint32_t const version);\
 template \
 void type::serialize<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, uint32_t const version);\
 template \
-void type::serialize<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, uint32_t const version);\
+void type::serialize<cereal::VectorInputArchive>(cereal::VectorInputArchive & archive, uint32_t const version);\
 template \
-void type::serialize<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, uint32_t const version);
+void type::serialize<cereal::VectorOutputArchive>(cereal::VectorOutputArchive & archive, uint32_t const version);
 
 #define SPECIALIZE_SPLIT_SERIALIZATIONS(type)\
 template \
 void CEREAL_SAVE_FUNCTION_NAME<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & archive, const type & m);\
 template \
-void CEREAL_SAVE_FUNCTION_NAME<cereal::BinaryOutputArchive>(cereal::BinaryOutputArchive & archive, const type & m);\
+void CEREAL_SAVE_FUNCTION_NAME<cereal::VectorOutputArchive>(cereal::VectorOutputArchive & archive, const type & m);\
 template \
 void CEREAL_LOAD_FUNCTION_NAME<cereal::JSONInputArchive>(cereal::JSONInputArchive & archive, type & m);\
 template \
-void CEREAL_LOAD_FUNCTION_NAME<cereal::BinaryInputArchive>(cereal::BinaryInputArchive & archive, type & m);
+void CEREAL_LOAD_FUNCTION_NAME<cereal::VectorInputArchive>(cereal::VectorInputArchive & archive, type & m);
 

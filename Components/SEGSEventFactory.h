@@ -6,8 +6,8 @@
  */
 #pragma once
 #include <functional>
-#include <iosfwd>
 #include <stdint.h>
+#include <vector>
 /*!
  * @addtogroup Components
  * @{
@@ -20,7 +20,12 @@ void register_event_type(const char *name, uint32_t type_id, std::function<Event
 Event *create_by_id(uint32_t type_id, EventSrc *src=nullptr);
 Event *create_by_name(const char* name,EventSrc *src=nullptr);
 const char *event_name(uint32_t type_id);
-Event *from_storage(std::istream &istr);
-void to_storage(std::ostream &ostr,Event *ev);
+Event *from_storage(const std::vector<uint8_t> &istr);
+void to_storage(std::vector<uint8_t> &ostr,Event *ev);
+[[nodiscard]] inline std::vector<uint8_t> to_storage(Event *ev) {
+    std::vector<uint8_t> ostr;
+    to_storage(ostr,ev);
+    return ostr;
+}
 }
 //! @}

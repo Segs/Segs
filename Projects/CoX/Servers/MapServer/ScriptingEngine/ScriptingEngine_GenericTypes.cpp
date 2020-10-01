@@ -148,11 +148,11 @@ void ScriptingEngine::register_GenericTypes()
     m_private->m_lua["MapClientSession"]["Contact_dialog"] = [this](const char *message, sol::as_table_t<std::map<std::string, sol::as_table_t<std::vector<std::string>>>> buttons)
     {
         std::vector<ContactEntry> active_contacts;
-        const auto& listMap = buttons.source;
+        const auto& listMap = buttons.value();
 
         for (const auto& kvp : listMap)
         {
-            const std::vector<std::string>& strings = kvp.second.source;
+            const std::vector<std::string>& strings = kvp.second.value();
             int count = 0;
             ContactEntry con;
             for (const auto& s: strings)

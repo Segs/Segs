@@ -19,6 +19,7 @@
 
 #include "GameServer/EmailService/EmailService.h"
 #include "GameServer/ClientOptionService/ClientOptionService.h"
+#include "Messages/TeamService/TeamEvents.h"
 
 #include <map>
 #include <memory>
@@ -292,6 +293,12 @@ protected:
         void on_souvenir_detail_request(SEGSEvents::SouvenirDetailRequest* ev);
         void on_store_sell_item(SEGSEvents::StoreSellItem* ev);
         void on_store_buy_item(SEGSEvents::StoreBuyItem* ev);
+        void on_team_member_invited(SEGSEvents::TeamMemberInvitedMessage *msg);
+        void on_team_toggle_lfg(SEGSEvents::TeamToggleLFGMessage *msg);
+        void on_team_refresh_lfg(SEGSEvents::TeamRefreshLFGMessage *msg);
+        void on_team_updated(SEGSEvents::TeamUpdatedMessage *msg);
+        void on_team_member_kicked(SEGSEvents::TeamMemberKickedMessage *msg);
+        void on_team_leave_team(SEGSEvents::TeamLeaveTeamMessage *msg);
 
         // Service <--> MapInstance
         void on_service_to_client_response(SEGSEvents::UPtrServiceToClientData data);

@@ -68,7 +68,7 @@ void attachToEntity(NetFxHandle h,Entity *tgt)
     fx.net_id = h.idx;
     fx.m_ref_count++;
     tgt->m_net_fx.emplace_back(h);
-    tgt->m_pchar_things = true;
+    tgt->m_entity_update_flags.setFlag(Entity::FX,true);
 }
 
 NetFx &lookup(NetFxHandle handle)

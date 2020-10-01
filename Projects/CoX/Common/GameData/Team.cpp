@@ -22,38 +22,111 @@
  * Team Methods
  */
 uint32_t Team::m_team_idx_counter = 0;
-
-void Team::addTeamMember(Entity *e,uint32_t teammate_map_idx)
+bool Team::isNamePending(const QString &name)
 {
-    if(m_team_members.size() >= m_max_team_size)
-        return;
+    for (const TeamMember &tm : m_data.m_team_members) 
+    {
+        if (tm.tm_name == name && tm.tm_pending) 
+        {
+            return true;
+        }
+    }
 
-    if(e->m_has_team)
-        return;
+    return false;
+}
 
-    if(e->m_char->m_char_data.m_lfg)
-        removeLFG(*e);
+bool Team::isFull() 
+{
+    return m_data.m_team_members.size() >= m_max_team_size;
+}
 
-    m_team_members.emplace_back(TeamMember{e->m_db_id, e->name(),"Map",teammate_map_idx});
-    e->m_has_team = true;
+bool Team::containsEntityID(uint32_t entity_id) 
+{
+    for (const TeamMember &tm : m_data.m_team_members) 
+    {
+        if (tm.tm_idx == entity_id) 
+        {
+            return true;
+        }
+    }
 
-    if(m_team_members.size() <= 1)
-        m_team_leader_idx = e->m_db_id;
+    return false;
+}
 
-    qCDebug(logTeams) << "Adding" << e->name() << "to team" << m_team_idx;
-    if(logTeams().isDebugEnabled())
-        dump();
+bool Team::containsEntityName(const QString &name) 
+{
+    for (const TeamMember &tm : m_data.m_team_members) 
+    {
+        if (QString::compare(tm.tm_name, name, Qt::CaseInsensitive) == 0)
+        {
+            return true;
+        }
+    }
 
+    return false;
+}
+
+TeamingError Team::acceptTeamInvite(const QString &name, uint32_t entity_id)
+{
+    for (TeamMember &_t : m_data.m_team_members)
+        if (_t.tm_name == name)
+        {
+            _t.tm_pending = false;
+            _t.tm_idx = entity_id;
+            return TeamingError::OK;
+        }
+
+    return TeamingError::NOT_ON_TEAM;
+
+}
+
+TeamingError Team::addTeamMember(uint32_t entity_id, const QString &name, bool pending)
+{
+    if(m_data.m_team_members.size() >= m_max_team_size)
+        return TeamingError::TEAM_FULL;
+
+    // create new team member
+    TeamMember new_member;
+    new_member.tm_idx = entity_id;
+    new_member.tm_name = name;
+    new_member.tm_pending = pending;
+
+    m_data.m_team_members.emplace_back(new_member);
+
+    if(m_data.m_team_members.size() <= 1)
+        m_data.m_team_leader_idx = entity_id;
+
+    return TeamingError::OK;
+}
+
+TeamingError Team::removeTeamMember(uint32_t entity_id)
+{
+    auto iter = std::find_if(m_data.m_team_members.begin(), m_data.m_team_members.end(),
+                              [entity_id](const Team::TeamMember& t) -> bool {return entity_id == t.tm_idx;});
+
+    if(iter == m_data.m_team_members.end())
+		return TeamingError::NOT_ON_TEAM;
+
+	iter = m_data.m_team_members.erase(iter);
+	// TODO: sidekick stuff
+
+    if(m_data.m_team_members.size() < 2)
+        return TeamingError::TEAM_DISBANDED;
+
+    if (entity_id == m_data.m_team_leader_idx)
+        m_data.m_team_leader_idx = m_data.m_team_members.front().tm_idx;
+
+    return TeamingError::OK;
 }
 
 Team::~Team() = default;
 
 void Team::dump()
 {
-    QString output = "Debugging Team: " + QString::number(m_team_idx)
-             + "\n\t size: " + QString::number(m_team_members.size())
-             + "\n\t leader db_id: " + QString::number(m_team_leader_idx)
-             + "\n\t has mission? " + QString::number(m_has_taskforce)
+    QString output = "Debugging Team: " + QString::number(m_data.m_team_idx)
+             + "\n\t size: " + QString::number(m_data.m_team_members.size())
+             + "\n\t leader db_id: " + QString::number(m_data.m_team_leader_idx)
+             + "\n\t has mission? " + QString::number(m_data.m_has_taskforce)
              + "\nTeam Members: ";
     qDebug().noquote() << output;
 
@@ -64,15 +137,15 @@ void Team::dumpAllTeamMembers()
 {
     QString output = "Team Members:";
 
-    for (auto &member : m_team_members)
+    for (auto &member : m_data.m_team_members)
         output += "\n\t" + member.tm_name + " db_id: " + QString::number(member.tm_idx);
 
     qDebug().noquote() << output;
 }
 
-bool Team::isTeamLeader(Entity *e)
+bool Team::isTeamLeader(uint32_t entity_id)
 {
-    return m_team_leader_idx == e->m_db_id;
+    return m_data.m_team_leader_idx == entity_id;
 }
 
 
@@ -81,17 +154,17 @@ bool Team::isTeamLeader(Entity *e)
  */
 bool sameTeam(Entity &src, Entity &tgt)
 {
-    return src.m_team->m_team_idx == tgt.m_team->m_team_idx;
+    return src.m_team->m_data.m_team_idx == tgt.m_team->m_data.m_team_idx;
 }
 
 bool makeTeamLeader(Entity &src, Entity &tgt)
 {
     if(!src.m_has_team || !tgt.m_has_team
             || !sameTeam(src,tgt)
-            || !(src.m_team->isTeamLeader(&src)))
+            || !(src.m_team->isTeamLeader(src.m_db_id)))
         return false;
 
-    src.m_team->m_team_leader_idx = tgt.m_db_id;
+    src.m_team->m_data.m_team_leader_idx = tgt.m_db_id;
     return true;
 }
 
@@ -107,15 +180,15 @@ bool inviteTeam(Entity &src, Entity &tgt)
     {
         qCDebug(logTeams) << src.name() << "is forming a team.";
         src.m_team = new Team;
-        src.m_team->addTeamMember(&src,0);
+        src.m_team->addTeamMember(src.m_db_id,src.name(),0);
 
         tgt.m_team = src.m_team;
-        src.m_team->addTeamMember(&tgt,0);
+        src.m_team->addTeamMember(tgt.m_db_id,tgt.name(),0);
         return true;
     }
-    if(src.m_has_team && src.m_team->isTeamLeader(&src))
+    if(src.m_has_team && src.m_team->isTeamLeader(src.m_db_id))
     {
-        src.m_team->addTeamMember(&tgt,0);
+        src.m_team->addTeamMember(tgt.m_db_id,tgt.name(),0);
         return true;
     }
     qCDebug(logTeams) << src.name() << "is not team leader.";
@@ -146,14 +219,14 @@ void removeTeamMember(Team &self, Entity *e)
 {
     qCDebug(logTeams) << "Searching team members for" << e->name() << "to remove them.";
     uint32_t id_to_find = e->m_db_id;
-    auto iter = std::find_if( self.m_team_members.begin(), self.m_team_members.end(),
+    auto iter = std::find_if( self.m_data.m_team_members.begin(), self.m_data.m_team_members.end(),
                               [id_to_find](const Team::TeamMember& t)->bool {return id_to_find==t.tm_idx;});
-    if(iter!=self.m_team_members.end())
+    if(iter!=self.m_data.m_team_members.end())
     {
-        if(iter->tm_idx == self.m_team_leader_idx)
-            self.m_team_leader_idx = self.m_team_members.front().tm_idx;
+        if(iter->tm_idx == self.m_data.m_team_leader_idx)
+            self.m_data.m_team_leader_idx = self.m_data.m_team_members.front().tm_idx;
 
-        iter = self.m_team_members.erase(iter);
+        iter = self.m_data.m_team_members.erase(iter);
         e->m_has_team = false;
         e->m_team = nullptr;
 
@@ -163,12 +236,12 @@ void removeTeamMember(Team &self, Entity *e)
             removeSidekick(*e, sidekick_id);
         }
 
-        qCDebug(logTeams) << "Removing" << iter->tm_name << "from team" << self.m_team_idx;
+        qCDebug(logTeams) << "Removing" << iter->tm_name << "from team" << self.m_data.m_team_idx;
         if(logTeams().isDebugEnabled())
             self.dumpAllTeamMembers();
     }
 
-    if(self.m_team_members.size() > 1)
+    if(self.m_data.m_team_members.size() > 1)
         return;
 
     qCDebug(logTeams) << "One player left on team. Removing last entity and deleting team.";
@@ -186,8 +259,8 @@ void removeTeamMember(Team &self, Entity *e)
 
     tgt->m_has_team = false;
     tgt->m_team = nullptr;
-    self.m_team_members.clear();
-    self.m_team_leader_idx = 0;
+    self.m_data.m_team_members.clear();
+    self.m_data.m_team_leader_idx = 0;
 
     qCDebug(logTeams) << "After removing all entities.";
     if(logTeams().isDebugEnabled())
@@ -224,7 +297,7 @@ SidekickChangeStatus inviteSidekick(Entity &src, Entity &tgt)
         return SidekickChangeStatus::TARGET_IS_SIDEKICKING_ALREADY;
     if(!src.m_has_team || !tgt.m_has_team || src.m_team == nullptr || tgt.m_team == nullptr)
         return SidekickChangeStatus::NO_TEAM_OR_SAME_TEAM_REQUIRED;
-    if(src.m_team->m_team_idx != tgt.m_team->m_team_idx)
+    if(src.m_team->m_data.m_team_idx != tgt.m_team->m_data.m_team_idx)
         return SidekickChangeStatus::NO_TEAM_OR_SAME_TEAM_REQUIRED;
 
     {

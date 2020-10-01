@@ -75,7 +75,7 @@ struct HandleBasedStorage
         int expected_idx=std::distance(m_nodes.data(),&entry);
         assert(expected_idx>=0);
         assert(expected_idx<m_nodes.size());
-        return HType {expected_idx,m_sparse_array[expected_idx].gen};
+        return HType {uint32_t(expected_idx),m_sparse_array[expected_idx].gen};
     }
 
     HandleBasedStorage()

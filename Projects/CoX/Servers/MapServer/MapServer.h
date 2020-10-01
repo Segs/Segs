@@ -25,6 +25,12 @@ namespace SEGSEvents
 {
 struct ExpectMapClientRequest;
 struct ClientMapXferMessage;
+struct UserRouterInfoMessage;
+struct UserRouterOpaqueRequest;
+struct UserRouterOpaqueResponse;
+struct UserRouterQueryRequest;
+struct UserRouterQueryResponse;
+struct TeamUpdatedMessage;
 }
 
 static constexpr uint8_t INVALID_GAME_SERVER_ID = 255;

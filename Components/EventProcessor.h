@@ -9,7 +9,7 @@
 #include "SEGSEvent.h"
 #include "SEGSTimer.h"
 #include <ace/Task_Ex_T.h>
-#include <iosfwd>
+
 // Independent Task, each EventProcessor when activated dequeues SEGSEvents,
 // and dispatches them
 class EventSrc : public ACE_Task_Ex<ACE_MT_SYNCH,SEGSEvents::Event>

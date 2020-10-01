@@ -11,15 +11,18 @@
 #include <cereal/archives/json.hpp>
 
 namespace cereal {
-inline void epilogue(BinaryOutputArchive &, QString const &) { }
-inline void epilogue(BinaryInputArchive &, QString const &) { }
+class VectorInputArchive;
+class VectorOutputArchive;
+
+inline void epilogue(VectorOutputArchive &, QString const &) { }
+inline void epilogue(VectorInputArchive &, QString const &) { }
 inline void epilogue(JSONOutputArchive &, QString const &) { }
 inline void epilogue(JSONInputArchive &, QString const &) { }
 
 inline void prologue(JSONOutputArchive &, QString const &) { }
 inline void prologue(JSONInputArchive &, QString const &) { }
-inline void prologue(BinaryOutputArchive &, QString const &) { }
-inline void prologue(BinaryInputArchive &, QString const &) { }
+inline void prologue(VectorOutputArchive &, QString const &) { }
+inline void prologue(VectorInputArchive &, QString const &) { }
 
 template<class Archive> inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, ::QString const & str)
 {

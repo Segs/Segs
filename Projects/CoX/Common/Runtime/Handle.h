@@ -19,7 +19,7 @@ struct Handle
     static_assert(sizeof(uint32_t) * 8 >= (idx_bits + gen_bits), "Handle bits exceed the size of underlying type");
     uint32_t idx : idx_bits;
     uint32_t gen : gen_bits;
-    constexpr Handle(uint32_t idx_, uint16_t gen_) : idx(idx_), gen(gen_) {}
+    constexpr Handle(uint32_t idx_, uint32_t gen_) : idx(idx_), gen(gen_) {}
     constexpr Handle() = default;
     operator bool() const { return gen != 0; }
     uint64_t toInt() const { return uint64_t(idx) | uint64_t(gen) << idx_bits; }

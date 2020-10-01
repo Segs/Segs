@@ -19,7 +19,11 @@
 #include "Servers/HandlerLocator.h"
 #include "Common/Servers/ServerEndpoint.h"
 #include "EmailService/EmailHandler.h"
+#include "TeamService/TeamHandler.h"
 #include "Settings.h"
+
+#include "Messages/TeamService/TeamEvents.h"
+#include "Messages/UserRouterService/UserRouterEvents.h"
 
 #include <ace/Synch.h>
 #include <ace/INET_Addr.h>
@@ -54,6 +58,7 @@ class GameServer::PrivateData
 public:
     std::unique_ptr<FriendHandler> m_friendship_service;
     std::unique_ptr<EmailHandler> m_email_service;
+    std::unique_ptr<TeamHandler> m_team_service;
     ACE_INET_Addr           m_location; // this value is sent to the clients
     ACE_INET_Addr           m_listen_point; // the server binds here
     GameLinkEndpoint *      m_endpoint=nullptr;
@@ -69,10 +74,11 @@ public:
     {
         // tell our handler to shut down
         shutdown_event_processor_and_wait(m_handler);
-        // tell our friendship service to close too
-        shutdown_event_processor_and_wait(m_friendship_service.get());
-        // tell our email service to close too
+        // tell our child services to close too
         shutdown_event_processor_and_wait(m_email_service.get());
+        shutdown_event_processor_and_wait(m_friendship_service.get());
+        shutdown_event_processor_and_wait(m_team_service.get());
+
     }
 };
 
@@ -98,8 +104,13 @@ void GameServer::serialize_to(std::ostream &/*os*/)
 {
     assert(false);
 }
+
+extern void register_TeamServiceEvents();
+
 GameServer::GameServer(int id) : d(new PrivateData)
 {
+    register_TeamServiceEvents();
+
     d->m_handler = new GameHandler;
     d->m_handler->set_server(this);
     d->m_handler->activate(THR_NEW_LWP|THR_JOINABLE|THR_INHERIT_SCHED,1);
@@ -112,6 +123,9 @@ GameServer::GameServer(int id) : d(new PrivateData)
 
     d->m_friendship_service = std::make_unique<FriendHandler>(id);
     d->m_friendship_service->activate();
+
+    d->m_team_service = std::make_unique<TeamHandler>(id);
+    d->m_team_service->activate();
 
     HandlerLocator::setGame_Handler(d->m_id,d->m_handler);
 }

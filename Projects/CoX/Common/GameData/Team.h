@@ -10,35 +10,76 @@
 
 class Entity;
 
+enum class TeamingError
+{
+    OK,
+    TEAM_FULL,
+    INVITEE_HAS_TEAM,
+	NOT_ON_TEAM,
+	TEAM_DISBANDED,
+};
+
 class Team
 {
 public:
-        Team()
-            : m_team_idx( ++m_team_idx_counter )
-        { }
+        Team(bool transient=false) : m_transient(transient)
+        {
+            m_data.m_team_idx = ++m_team_idx_counter;
+        }
         ~Team();
 
         struct TeamMember {
             uint32_t    tm_idx  = 0;
             QString     tm_name; // stored here for quick lookup.
             QString     tm_map; // stored here for quick lookup.
-            // this value is transient, and should be updated by TeamingService
+            // these values are transient, and should be updated by TeamingService
             uint32_t    tm_map_idx = 0;
+            bool        tm_pending = false; // if true, user has not responded to invite yet
+
+            template<class Archive>
+            void serialize(Archive &ar)
+            {
+                ar(tm_idx, tm_name, tm_map, tm_map_idx, tm_pending); //, tm_data
+            }
         };
 
-        // Member Vars
-        std::vector<TeamMember> m_team_members;
 
-const   uint32_t    m_team_idx          = 0;
+        struct TeamData {
+            uint32_t    m_team_idx          = 0;
+            bool        m_has_taskforce  = false;    // it's possible that this belongs to entity or char instead
+            uint32_t    m_team_leader_idx   = 0;
+            std::vector<TeamMember> m_team_members;
+            template<class Archive>
+            void serialize(Archive &ar)
+            {
+                ar(m_team_idx, m_has_taskforce, m_team_leader_idx, m_team_members);
+            }
+        };
+        TeamData m_data;
+        // Member Vars
+
+        // indicates that the team is still being formed
+        // i.e. an invite has been sent by a player NOT YET on a team
+        bool        m_transient;
         uint32_t    m_max_team_size     = 8;        // max is always 8
-        uint32_t    m_team_leader_idx   = 0;
-        bool        m_has_taskforce  = false;    // it's possible that this belongs to entity or char instead
 
         // Methods
         void        dump();
         void        dumpAllTeamMembers();
-        void        addTeamMember(Entity *e, uint32_t teammate_map_idx);
-        bool        isTeamLeader(Entity *e);
+		bool				isTeamLeader(uint32_t entity_id);
+		bool				isTeamLeader(const QString &name);
+
+        TeamingError        acceptTeamInvite(const QString &name, uint32_t entity_id);
+
+        TeamingError        addTeamMember(uint32_t entity_id, const QString &name, bool pending);
+
+        TeamingError        removeTeamMember(uint32_t entity_id);
+
+        bool                containsEntityID(uint32_t entity_id);
+        bool                containsEntityName(const QString &name);
+        bool                isFull();
+
+		bool 				isNamePending(const QString &name);
 
 private:
 static  uint32_t    m_team_idx_counter;

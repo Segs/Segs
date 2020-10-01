@@ -515,7 +515,7 @@ void sendTeamOffer(MapClientSession &src, MapClientSession &tgt)
     // Check for mission, send appropriate TeamOfferType
     if(src.m_ent->m_has_team && src.m_ent->m_team != nullptr)
     {
-        if(src.m_ent->m_team->m_has_taskforce)
+        if(src.m_ent->m_team->m_data.m_has_taskforce)
             type = TeamOfferType::WithMission; // TODO: Check for invalid missions to send `LeaveMission` instead
     }
 
