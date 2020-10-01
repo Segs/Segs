@@ -31,7 +31,7 @@ init:
 - cd /D "%APPVEYOR_BUILD_FOLDER%"
 
 before_build:
-- if exist "%QT5%" set PATH=%QT5%\bin;%PATH%
+- if exist "%QT5%" set PATH=%QT5%\bin;%PATH%;C:\Qt\Tools\QtCreator\bin
 - md build
 - cmake -H. -Bbuild -G "%CMAKE_GENERATOR%" -DQT_GIVEN_PATH:STRING="%QT5%" "-DCMAKE_PREFIX_PATH=%QT5%"
 
