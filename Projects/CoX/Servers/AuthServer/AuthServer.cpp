@@ -130,7 +130,7 @@ bool AuthServer::Run()
     }
     if(m_acceptor->open(m_location) == -1)
     {
-        qCritical() << "Auth server failed to accept connections on:" << m_location.get_host_addr();
+        qCritical() << "Auth server failed to accept connections on:" << m_location.get_host_addr() << "errno: " << ACE_OS::last_error();
         return false;
     }
 
