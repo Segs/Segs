@@ -7,11 +7,11 @@
 
 #pragma once
 #include "CompiletimeHash.h"
-#include <ace/Time_Value.h>
 #include "cereal/archives/memory_binary.hpp"
+#include <ace/Time_Value.h>
 #include <atomic>
-#include <typeinfo>
 #include <cassert>
+#include <typeinfo>
 
 class EventSrc;
 namespace SEGSEvents

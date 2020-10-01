@@ -58,7 +58,7 @@ int main(int argc, char** argv)
     parser.addVersionOption();
     parser.setApplicationDescription("SEGS AuthExerciser");
 
-    qInfo().noquote().nospace() << parser.applicationDescription() << " v" << QCoreApplication::applicationVersion() << endl;
+    qInfo().noquote().nospace() << parser.applicationDescription() << " v" << QCoreApplication::applicationVersion() << "\n";
 
     parser.addPositionalArgument("serverHost", "The IP address authexerciser should connect to");
     parser.addPositionalArgument("serverPort", "The port authserver is listening to");
