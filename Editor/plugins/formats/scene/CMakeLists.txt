@@ -2,7 +2,7 @@
 file(GLOB source_files "*.cpp" )
 file(GLOB header_files "*.h" )
 
-set_plugin_options(
+set_engine_plugin_options(
     NAME coh_scene
     SHARED ON
     CLASSPROP ResourceLoaderCoHScene

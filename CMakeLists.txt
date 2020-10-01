@@ -106,7 +106,9 @@ include(3rdparty_support)
 set(ThirdParty_Install_Dir ${CMAKE_BINARY_DIR}/3rd_party/built) # ERICEDIT: Changed to CMAKE_BINARY_DIR so that this variable always points to the top level of the build directory.
 add_subdirectory(3rd_party)
 link_directories(${PROJECT_SOURCE_DIR}/lib) # ERICEDIT: Changed to lowercase.
-
+if(MSVC)
+    find_package(SegsEngine REQUIRED)
+endif()
 
 if(ENABLE_TESTS)
     enable_testing()
