@@ -1,15 +1,16 @@
 SET(target_CPP
-${CMAKE_CURRENT_SOURCE_DIR}/AuthHandler.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/AuthServer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/AuthHandler.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/AuthServer.cpp
 )
 SET(target_INCLUDE
-${CMAKE_CURRENT_SOURCE_DIR}/AuthHandler.h
-${CMAKE_CURRENT_SOURCE_DIR}/AuthServer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/AuthHandler.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/AuthServer.h
 )
 SET (authserver_standaloneSRCS
-${CMAKE_CURRENT_SOURCE_DIR}/AdminRPC.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/AdminRPC.h
-${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/AdminRPC.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/AdminRPC.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+)
 
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 SET(target_DEPENDS "")
@@ -65,7 +66,7 @@ ELSEIF(APPLE)
 ENDIF()
 
 # Retain directory structure in visual studio
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${target_CPP} ${target_INCLUDE} ${authserver_standaloneSRCS}) 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${target_CPP} ${target_INCLUDE} ${authserver_standaloneSRCS})
 set_target_properties (Auth PROPERTIES
     FOLDER Projects/CoX/Servers
 )
