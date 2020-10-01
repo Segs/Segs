@@ -130,11 +130,12 @@ link_directories(${ThirdParty_Install_Dir}/lib)
 include_directories(SYSTEM ${ThirdParty_Install_Dir}/include)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/3rd_party)
 include_directories(${PROJECT_SOURCE_DIR}/include)
-
 include_directories(Components)
+include_directories(Common)
 
 # this has to be visited before scan_event_types macro below has been used
 add_subdirectory(Utilities)
+
 # this function is here to solve the env paths issue
 function(to_path_list var path1)
     if("${CMAKE_HOST_SYSTEM}" MATCHES ".*Windows.*")
@@ -194,48 +195,18 @@ macro(add_handler name)
     target_link_libraries(${name} PUBLIC ${name}_interface)
 endmacro()
 ##############################################
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(Components)
-add_subdirectory(Projects)
+add_subdirectory(Common)
+add_subdirectory(Editor)
+add_subdirectory(Servers)
+add_subdirectory(Clients)
 
-file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/data)
+# Add README, scripts, settings.cfg, and Starter Databases
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/README.md ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/README.md COPYONLY)
 
-set(MAPNAMES
-  City_00_01
-  City_01_01 City_01_02 City_01_03
-  City_02_01 City_02_02
-  City_03_01 City_03_02
-  City_04_01 City_04_02
-  City_05_01
-  Hazard_01_01
-  Hazard_02_01
-  Hazard_03_01
-  Hazard_04_01 Hazard_04_02
-  Hazard_05_01
-  Trial_01_01 Trial_01_02
-  Trial_02_01
-  Trial_03_01
-  Trial_04_01 Trial_04_02
-  Trial_05_01
-  Mission_5th_Column
-  Mission_Abandoned_Office
-  Mission_Abandoned_Warehouse
-  Mission_Caves
-  Mission_COT
-  Mission_Office
-  Mission_Outdoor_City
-  Mission_Outdoor_Forest
-  Mission_Outdoor_Industrial
-  Mission_Outdoor_Missions
-  Mission_Outdoor_Ruined
-  Mission_Sewers
-  Mission_Tech
-  Mission_unique
-  Mission_Warehouse
-  )
-foreach(MAPDIR ${MAPNAMES})
-  file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/maps/${MAPDIR})
-endforeach(MAPDIR)
+add_subdirectory(Data)
 
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default_setup)
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/logs)
