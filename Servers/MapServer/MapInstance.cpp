@@ -28,6 +28,7 @@
 #include "serialization_common.h"
 #include "serialization_types.h"
 #include "Version.h"
+#include "ScriptingEngine/ScriptingEngine.h"
 #include "Common/GameData/CoHMath.h"
 #include "Common/GameData/LFG.h"
 #include "Common/Servers/Database.h"

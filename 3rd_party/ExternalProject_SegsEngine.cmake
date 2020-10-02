@@ -3,7 +3,7 @@ if(NOT MSVC)
     libname(editor_engine editor_engine)
     ExternalProject_Add(
         editor_engine-${SegsEngine_RELEASE}
-        URL https://github.com/Segs/SegsEngine/archive/v${SegsEngine_RELEASE}.tar.gz
+        URL https://github.com/Segs/SegsEngine/archive/v${SegsEngine_RELEASE}-alpha.tar.gz
         INSTALL_DIR ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt
         CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_STAGING_PREFIX:PATH=${ThirdParty_Install_Dir} -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
         CMAKE_GENERATOR "${CMAKE_GENERATOR}"

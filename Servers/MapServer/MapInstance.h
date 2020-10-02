@@ -12,7 +12,6 @@
 #include "Common/Servers/ClientManager.h"
 #include "Servers/ServerEndpoint.h"
 #include "Servers/GameDatabase/GameDBSyncService.h"
-#include "ScriptingEngine/ScriptingEngine.h"
 #include "MapClientSession.h"
 #include "NpcGenerator.h"
 #include "CritterGenerator.h"
@@ -31,6 +30,7 @@ class World;
 class GameDataStore;
 class MapSceneGraph;
 struct MapXferData;
+class ScriptingEngine;
 
 struct LuaTimer
 {

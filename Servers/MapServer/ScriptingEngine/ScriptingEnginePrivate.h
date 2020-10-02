@@ -7,9 +7,10 @@
 
 #pragma once
 
+#include "sol/sol.hpp"
+
 #include <QString>
 #include <QSet>
-#include <sol/sol.hpp>
 
 class ScriptingEnginePrivate
 {
