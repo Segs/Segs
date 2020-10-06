@@ -14,7 +14,7 @@
 #include "GameData/CoHMath.h"
 #include "GameData/GameDataStore.h"
 #include "EntityStorage.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "Common/GameData/Character.h"
 #include "Common/Runtime/Prefab.h"
 #include "Common/Runtime/SceneGraph.h"
@@ -42,7 +42,7 @@ MapSceneGraph::~MapSceneGraph()
 
 }
 
-bool MapSceneGraph::loadFromFile(const QString &filename)
+bool MapSceneGraph::loadFromFile(const QByteArray &filename)
 {
     QFSWrapper wrap;
     m_scene_graph.reset(loadWholeMap(&wrap, filename));

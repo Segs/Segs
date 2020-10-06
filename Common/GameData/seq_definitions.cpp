@@ -1,7 +1,7 @@
 #include "seq_definitions.h"
 #include "anim_definitions.h"
 
-#include "Logging.h"
+#include "Components/Logging.h"
 
 #include <QDir>
 #include <QMetaEnum>

@@ -6,17 +6,18 @@
  */
 
 #pragma once
-#include "CRUDP_Protocol/CRUDP_Protocol.h"
-#include "EventProcessor.h"
+#include "Common/CRUDP_Protocol/CRUDP_Protocol.h"
+#include "Components/EventProcessor.h"
+#include "Common/GameData/map_definitions.h"
+#include "Common/Messages/Map/GameCommand.h"
+#include "Common/Messages/Map/MessageChannels.h"
+#include "Common/GameData/Entity.h"
+
 #include <ace/INET_Addr.h>
 #include <ace/Time_Value.h>
 #include <QtCore/QString>
 #include <QtCore/QDateTime>
 #include <glm/vec3.hpp>
-#include <Common/GameData/map_definitions.h>
-#include <Common/Messages/Map/GameCommand.h>
-#include <Common/Messages/Map/MessageChannels.h>
-#include "GameData/Entity.h"
 
 namespace SEGSEvents
 {

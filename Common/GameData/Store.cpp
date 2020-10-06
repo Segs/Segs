@@ -8,9 +8,9 @@
 #include "Store.h"
 #include "Entity.h"
 #include "GameDataStore.h"
-#include "Logging.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/Logging.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 #include "cereal/cereal.hpp"
 
 StoreTransactionResult Store::buyItem(Entity *e, QString item_name)

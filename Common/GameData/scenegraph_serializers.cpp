@@ -11,12 +11,12 @@
  */
 
 #include "scenegraph_serializers.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 
 #include "DataStorage.h"
 #include "scenegraph_definitions.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 #include <QFileInfo>
 

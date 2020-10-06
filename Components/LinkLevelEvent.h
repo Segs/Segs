@@ -8,7 +8,7 @@
 #pragma once
 #include <cassert>
 #include <ace/INET_Addr.h>
-#include "SEGSEvent.h"
+#include "Components/SEGSEvent.h"
 
 namespace SEGSEvents {
 // [[ev_def:type]]

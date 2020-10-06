@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "SEGSEvent.h"
+#include "Components/SEGSEvent.h"
 
 class QString;
 class BitStream;

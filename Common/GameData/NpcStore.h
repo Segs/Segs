@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "GameData/npc_definitions.h"
+#include "Common/GameData/npc_definitions.h"
 #include <QHash>
 
 struct NPCStorage

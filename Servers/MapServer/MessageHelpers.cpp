@@ -26,7 +26,7 @@
 #include "Messages/Map/InfoMessageCmd.h"
 #include "Messages/Map/EntitiesResponse.h"
 #include "Common/GameData/Character.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 #include <glm/gtx/string_cast.hpp>
 

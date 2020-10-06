@@ -8,7 +8,7 @@
 #pragma once
 
 #include "EntityStorage.h"
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
 #include "Servers/ServerEndpoint.h"
 #include "Servers/GameDatabase/GameDBSyncService.h"

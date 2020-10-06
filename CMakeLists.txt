@@ -82,6 +82,8 @@ set(MAIN_LIB_PATH ${PROJECT_SOURCE_DIR}/3rd_party/lib CACHE PATH "Libraries")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
@@ -132,8 +134,6 @@ link_directories(${ThirdParty_Install_Dir}/lib)
 include_directories(SYSTEM ${ThirdParty_Install_Dir}/include)
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/3rd_party)
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(Components)
-include_directories(Common)
 
 # this has to be visited before scan_event_types macro below has been used
 add_subdirectory(Utilities)
@@ -185,7 +185,7 @@ macro(add_messages_library name )
     target_link_libraries(${name}_interface PUBLIC SEGS_Components)
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN})
     set_target_properties (${name}_interface PROPERTIES
-            FOLDER Projects/CoX/Common/Messages
+            FOLDER Common/Messages
             RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities/unit_tests
     )
 endmacro()

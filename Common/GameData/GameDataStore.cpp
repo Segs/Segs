@@ -28,8 +28,8 @@
 #include "Common/GameData/shop_definitions.h"
 #include "Common/GameData/bodypart_serializers.h"
 #include "Common/GameData/CommonNetStructures.h"
-#include "Logging.h"
-#include "Settings.h"
+#include "Components/Logging.h"
+#include "Components/Settings.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QString>

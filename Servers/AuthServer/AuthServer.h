@@ -8,7 +8,7 @@
 #pragma once
 // SEGS includes
 #include "AuthDatabase/AuthDBSyncEvents.h"
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
 
 // ACE includes
 #include <ace/INET_Addr.h>

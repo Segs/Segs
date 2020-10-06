@@ -12,8 +12,9 @@
 
 #include "SlashCommand_Scripts.h"
 
+#include "ScriptingEngine/ScriptingEngine.h"
 #include "DataHelpers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "MapInstance.h"
 #include "Messages/Map/StandardDialogCmd.h"
 #include "MessageHelpers.h"

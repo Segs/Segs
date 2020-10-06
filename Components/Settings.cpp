@@ -10,8 +10,8 @@
  * @{
  */
 
-#include "Settings.h"
-#include "Logging.h"
+#include "Components/Settings.h"
+#include "Components/Logging.h"
 
 #include <QFileInfo>
 #include <QDebug>

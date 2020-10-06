@@ -8,7 +8,7 @@
 #pragma once
 #include <QString>
 #include "cereal/cereal.hpp"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 
 

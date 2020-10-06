@@ -8,8 +8,8 @@
 #pragma once
 #include "GameCommand.h"
 #include "MapEventTypes.h"
-#include "Logging.h"
-#include "BitStream.h"
+#include "Components/Logging.h"
+#include "Components/BitStream.h"
 
 namespace SEGSEvents
 {

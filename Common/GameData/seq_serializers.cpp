@@ -13,8 +13,8 @@
 
 #include "seq_definitions.h"
 #include "DataStorage.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 #include <cereal/types/unordered_map.hpp>
 
 #include <QtCore/QFileInfo>

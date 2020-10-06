@@ -6,13 +6,13 @@
  */
 
 #pragma once
-#include "Servers/InternalEvents.h"
+#include "Common/Servers/InternalEvents.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"
-#include "AuthProtocol/AuthLink.h"
-#include "Messages/Auth/AuthEvents.h"
-#include "Servers/MessageBusEndpoint.h"
-#include "Servers/ClientManager.h"
-#include "EventProcessor.h"
+#include "Common/AuthProtocol/AuthLink.h"
+#include "Common/Messages/Auth/AuthEvents.h"
+#include "Common/Servers/MessageBusEndpoint.h"
+#include "Common/Servers/ClientManager.h"
+#include "Components/EventProcessor.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>

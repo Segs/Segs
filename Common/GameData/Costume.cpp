@@ -13,9 +13,9 @@
 #include "Costume.h"
 #include "GameDataStore.h"
 
-#include "BitStream.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/BitStream.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 #include <QtCore/QDebug>
 
 int g_max_num_costume_slots = 4; // client UI cannot handle more than 4 slots

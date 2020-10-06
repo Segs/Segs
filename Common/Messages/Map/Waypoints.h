@@ -9,7 +9,7 @@
 #include "GameCommand.h"
 #include "MapEventTypes.h"
 #include <glm/vec3.hpp>
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 namespace SEGSEvents
 {

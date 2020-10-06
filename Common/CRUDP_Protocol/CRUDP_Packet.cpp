@@ -12,7 +12,7 @@
 
 #include "CRUDP_Packet.h"
 
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 #include <QtCore/QDebug>
 

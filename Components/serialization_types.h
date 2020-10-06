@@ -8,7 +8,7 @@
 #pragma once
 
 #include "Colors.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>

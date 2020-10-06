@@ -6,9 +6,9 @@
  */
 
 #pragma once
-#include "LinkLevelEvent.h"
-#include "Buffer.h"
-#include "Logging.h"
+#include "Components/LinkLevelEvent.h"
+#include "Components/Buffer.h"
+#include "Components/Logging.h"
 class AuthLink;
 
 namespace SEGSEvents

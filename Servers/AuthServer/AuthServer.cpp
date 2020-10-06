@@ -13,12 +13,12 @@
 // SEGS includes
 #include "AuthServer.h"
 
-#include "ConfigExtension.h"
-#include "AuthProtocol/AuthLink.h"
+#include "Components/ConfigExtension.h"
+#include "Common/AuthProtocol/AuthLink.h"
 #include "AuthHandler.h"
-#include "Settings.h"
-#include "SEGSEvent.h"
-#include "Servers/InternalEvents.h"
+#include "Components/Settings.h"
+#include "Components/SEGSEvent.h"
+#include "Common/Servers/InternalEvents.h"
 
 #include <ace/Acceptor.h>
 #include <ace/SOCK_Acceptor.h>

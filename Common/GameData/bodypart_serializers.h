@@ -7,15 +7,14 @@
 
 #pragma once
 
-#include "Common/GameData/bodypart_definitions.h"
+
 #include <cstdint>
 #include <vector>
 
+struct BodyPartsStorage;
 class BinStore;
 class QString;
 struct BodyPart_Data;
-
-struct BodyPartsStorage;
 
 constexpr const static uint32_t bodyparts_i0_requiredCrc = 0x541B59EB;
 bool loadFrom(BinStore *s,BodyPartsStorage &target) ;

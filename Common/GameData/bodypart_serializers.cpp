@@ -11,9 +11,10 @@
  */
 
 #include "bodypart_serializers.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+
 #include "bodypart_definitions.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 
 #include "DataStorage.h"
 

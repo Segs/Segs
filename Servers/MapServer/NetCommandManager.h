@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>

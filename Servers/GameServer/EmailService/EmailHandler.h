@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
 #include "GameDatabase/GameDBSyncHandler.h"

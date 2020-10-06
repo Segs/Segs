@@ -14,7 +14,7 @@
 
 #include "GameData/Character.h"
 #include "GameData/EntityHelpers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "MapInstance.h"
 #include "MessageHelpers.h"
 

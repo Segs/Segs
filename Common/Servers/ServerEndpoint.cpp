@@ -14,7 +14,7 @@
 
 #include "Common/CRUDP_Protocol/CRUD_Events.h"
 #include "Common/CRUDP_Protocol/CRUD_Link.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 #include <ace/Reactor.h>
 #include <ace/Message_Block.h>

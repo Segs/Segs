@@ -20,12 +20,12 @@
 #include "GameLink.h"
 #include "GameServer.h"
 #include "GameData/Character.h"
-#include "SEGSTimer.h"
+#include "Components/SEGSTimer.h"
 #include "Servers/HandlerLocator.h"
 #include "Servers/MessageBus.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
-#include "TimeEvent.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
+#include "Components/TimeEvent.h"
 
 using namespace SEGSEvents;
 

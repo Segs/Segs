@@ -12,7 +12,7 @@
 
 #include "WindowState.h"
 
-#include "BitStream.h"
+#include "Components/BitStream.h"
 using namespace SEGSEvents;
 
 void WindowState::serializeto(BitStream &bs) const

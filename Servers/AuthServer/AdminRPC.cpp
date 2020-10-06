@@ -1,8 +1,8 @@
 #include "AdminRPC.h"
 #include "AuthHandler.h"
 #include "Version.h"
-#include "ConfigExtension.h"
-#include "Settings.h"
+#include "Components/ConfigExtension.h"
+#include "Components/Settings.h"
 
 #include "jcon/json_rpc_server.h"
 #include "jcon/json_rpc_tcp_server.h"

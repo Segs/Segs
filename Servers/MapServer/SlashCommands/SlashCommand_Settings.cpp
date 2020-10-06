@@ -15,10 +15,10 @@
 #include "DataHelpers.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/gui_definitions.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "MapInstance.h"
 #include "MessageHelpers.h"
-#include "Settings.h"
+#include "Components/Settings.h"
 
 #include <QtCore/QString>
 #include <QtCore/QDebug>

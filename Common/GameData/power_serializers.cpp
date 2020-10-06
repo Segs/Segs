@@ -13,8 +13,8 @@
 #include "power_serializers.h"
 #include "power_definitions.h"
 #include "seq_definitions.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 #include "DataStorage.h"
 
 #include <QMetaEnum>

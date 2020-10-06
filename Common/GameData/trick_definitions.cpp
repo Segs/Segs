@@ -1,4 +1,5 @@
 #include "trick_definitions.h"
+#include "Common/GameData/anim_definitions.h"
 
 #include <QDebug>
 

@@ -7,13 +7,14 @@
 
 #pragma once
 
+#include "Components/serialization_common.h"
+
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 #include <vector>
 #include <map>
 #include <type_traits>
 
-#include "serialization_common.h"
 struct RGBA;
 
 typedef glm::vec3 Vec3;

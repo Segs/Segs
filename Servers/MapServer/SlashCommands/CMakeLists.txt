@@ -42,10 +42,10 @@ ${target_INCLUDE}
 )
 
 add_library(SlashCommands STATIC ${target_SOURCES})
-target_link_libraries(SlashCommands PUBLIC Qt5::Core gameData)
+target_link_libraries(SlashCommands PUBLIC Qt5::Core gameData ScriptingEngine)
 
 get_target_property(TARGET_SOURCES SlashCommands SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES})
 set_target_properties (SlashCommands PROPERTIES
-    FOLDER Projects/CoX/Servers
+    FOLDER Servers
 )

@@ -11,8 +11,8 @@
  */
 
 #include <cassert>
-#include "SEGSTimer.h"
-#include "EventProcessor.h"
+#include "Components/SEGSTimer.h"
+#include "Components/EventProcessor.h"
 
 /**
     \class SEGSTimer

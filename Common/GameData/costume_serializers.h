@@ -7,9 +7,15 @@
 
 #pragma once
 #include <stdint.h>
-#include "Common/GameData/costume_definitions.h"
+#include <vector>
 class BinStore;
 class QString;
+struct Costume2_Data;
+struct Pallette_Data;
+struct GeoSet_Data;
+struct TailorCost_Data;
+typedef std::vector<TailorCost_Data> AllTailorCosts_Data;
+typedef std::vector<Costume2_Data> CostumeSet_Data;
 
 static constexpr uint32_t tailorcosts_i0_requiredCrc=0xEC2F43E6;
 bool loadFrom(BinStore * s, AllTailorCosts_Data * target);

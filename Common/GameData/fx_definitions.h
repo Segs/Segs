@@ -1,11 +1,14 @@
 #pragma once
-#include "Colors.h"
-#include "Common/GameData/anim_definitions.h"
-#include "Common/GameData/seq_definitions.h"
+#include "Components/Colors.h"
+
+#include "GameData/anim_definitions.h"
+#include "GameData/seq_definitions.h"
 
 #include <QtCore/QByteArray>
 #include <vector>
 #include <array>
+
+struct TextureAnim_Data;
 
 struct ColorFx
 {

@@ -1,6 +1,6 @@
-#include "serialization_types.h"
+#include "Components/serialization_types.h"
 
-#include "serialization_common.h"
+#include "Components/serialization_common.h"
 template <class Archive>
 void CEREAL_SAVE_FUNCTION_NAME( Archive & ar, const BitStream &bs )
 {

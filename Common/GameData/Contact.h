@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "CommonNetStructures.h"
+#include "Common/GameData/CommonNetStructures.h"
+#include "Components/Logging.h"
 #include "glm/vec3.hpp"
 #include "cereal/cereal.hpp"
-#include "Logging.h"
 
 struct CharacterData;
 

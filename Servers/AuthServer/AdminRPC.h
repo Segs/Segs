@@ -10,7 +10,7 @@
 // ACE includes
 
 #include "Servers/HandlerLocator.h"
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
 
 #include <ace/INET_Addr.h>
 #include <ace/Synch.h>

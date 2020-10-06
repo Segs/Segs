@@ -6,9 +6,9 @@
  */
 
 #include "VisitLocation.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
-#include "Logging.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
+#include "Components/Logging.h"
 
 template<class Archive>
 void VisitLocation::serialize(Archive &archive, uint32_t const version)

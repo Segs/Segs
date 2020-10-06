@@ -13,12 +13,12 @@
 #include "Friend.h"
 
 #include "CharacterHelpers.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 #include "GameData/playerdata_definitions.h"
 #include "GameData/map_definitions.h"
 #include "Entity.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "Character.h"
 
 

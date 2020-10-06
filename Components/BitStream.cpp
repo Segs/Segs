@@ -10,7 +10,7 @@
  * @{
  */
 
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 #include <QtCore/QByteArray>
 #include <QtCore/QString>

@@ -13,8 +13,8 @@
 #include "npc_serializers.h"
 #include "npc_definitions.h"
 
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 #include "costume_definitions.h"
 #include "DataStorage.h"
 

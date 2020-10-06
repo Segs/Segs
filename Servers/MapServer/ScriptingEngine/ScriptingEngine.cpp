@@ -6,6 +6,8 @@
  */
 
 #include "ScriptingEngine.h"
+#include "ScriptingEnginePrivate.h"
+
 int luaopen_package(lua_State *)
 {
     assert(false && "functionality removed");

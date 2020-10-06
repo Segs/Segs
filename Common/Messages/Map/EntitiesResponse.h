@@ -7,7 +7,7 @@
 
 #pragma once
 #include "MapEventTypes.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 #include <vector>
 #include <string>
 

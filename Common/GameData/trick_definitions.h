@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Colors.h"
+#include "Components/Colors.h"
 #include "Common/GameData/anim_definitions.h"
 
 #include <glm/vec3.hpp>
@@ -15,6 +15,9 @@
 #include <QtCore/QString>
 #include <QtCore/QHash>
 #include <vector>
+
+
+struct TextureAnim_Data;
 enum eBlendMode : uint8_t;
 
 enum TrickFlags  : uint32_t

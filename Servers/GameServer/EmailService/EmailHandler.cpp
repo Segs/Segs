@@ -9,8 +9,8 @@
 #include "Common/Servers/HandlerLocator.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
 #include "Messages/EmailService/EmailEvents.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 
 using namespace SEGSEvents;
 

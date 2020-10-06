@@ -8,7 +8,7 @@
 #pragma once
 #include "GameData/Powers.h"
 #include "GameCommand.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 #include "MapEventTypes.h"
 
 namespace SEGSEvents

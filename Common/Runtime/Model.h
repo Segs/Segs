@@ -97,7 +97,7 @@ struct BoneInfo
 struct Model
 {
     AxisAlignedBoundingBox   box;
-    QString                  name;
+    QByteArray               name;
     uint32_t                 flags;
     float                    visibility_radius;
     uint32_t                 num_textures;
@@ -120,4 +120,6 @@ void geosetLoadHeader(QIODevice *fp, GeoSet *geoset);
 void geosetLoadData(QIODevice *fp, GeoSet *geoset);
 void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model *model,const std::vector<HTexture> &textures);
 void fillVBO(Model & model);
+void toSafeModelName(char *inp,int cnt);
+
 } // namespace SEGS

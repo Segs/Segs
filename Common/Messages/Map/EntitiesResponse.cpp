@@ -20,7 +20,7 @@
 #include "GameData/playerdata_definitions.h"
 #include "GameData/map_definitions.h"
 #include "MapEvents.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 #include <QByteArray>
 #include <glm/ext.hpp>

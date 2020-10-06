@@ -8,8 +8,8 @@
 #pragma once
 #include "Messages/Map/MapEventTypes.h"
 #include "GameData/Powers.h"
-#include "LinkLevelEvent.h"
-#include "BitStream.h"
+#include "Components/LinkLevelEvent.h"
+#include "Components/BitStream.h"
 //#include "CRUD_Link.h"
 //#include "CRUD_Events.h"
 //#include "MapLink.h"

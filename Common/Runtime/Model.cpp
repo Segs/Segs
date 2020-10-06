@@ -304,7 +304,6 @@ void geosetLoadHeader(QIODevice *fp, GeoSet *geoset)
     stream_pos_1            = stream_pos_0 + info->bone_names_size;
     const GeosetHeader32 *header32  = (const GeosetHeader32 *)(stream_pos_1 + info->tex_binds_size);
     const Model32 *     ptr_subs  = (Model32 *)(stream_pos_1 + info->tex_binds_size + sizeof(GeosetHeader32));
-    geoset->parent_geoset = geoset;
     geoset->name = header32->name;
     bool has_alt_pivot=false;
     for(int idx = 0; idx < header32->num_subs; ++idx)
@@ -319,7 +318,7 @@ void geosetLoadHeader(QIODevice *fp, GeoSet *geoset)
         Model *m    = convertAndInsertModel(*geoset, sub_model);
         m->texture_bind_info = binds;
         m->geoset       = geoset;
-        m->name         = QString((const char *)stream_pos_0 + sub_model->bone_name_offset);
+        m->name         = QByteArray((const char *)stream_pos_0 + sub_model->bone_name_offset);
     }
 
     if(!geoset->subs.empty())
@@ -498,11 +497,11 @@ void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model 
 {
     model->blend_mode = CoHBlendMode::MULTIPLY_REG;
     bool isgeo=false;
-    if(model->name.startsWith("GEO_",Qt::CaseInsensitive))
+    if(model->name.toUpper().startsWith("GEO_"))
     {
         model->flags |= OBJ_DRAW_AS_ENT;
         isgeo = true;
-        if(model->name.contains("eyes",Qt::CaseInsensitive) )
+        if(model->name.toLower().contains("eyes") )
         {
             if(!model->trck_node)
                 model->trck_node = new ModelModifiers;
@@ -582,6 +581,13 @@ void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model 
         if( model->trck_node->info->blend_mode )
             model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
     }
+}
+
+void toSafeModelName(char *inp, int cnt)
+{
+    for(int i=0; i<cnt; ++i)
+        if(inp[i]=='?')
+            inp[i] = '^';
 }
 
 } // end SEGS namespace

@@ -9,8 +9,8 @@
 #include "GameData/LFG.h"
 #include "MapEventTypes.h"
 #include "GameCommand.h"
-#include "BitStream.h"
-#include "Logging.h"
+#include "Components/BitStream.h"
+#include "Components/Logging.h"
 
 namespace SEGSEvents
 {

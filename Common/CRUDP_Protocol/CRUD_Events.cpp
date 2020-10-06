@@ -1,6 +1,6 @@
 #include "CRUD_Events.h"
 
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 
 using namespace SEGSEvents;

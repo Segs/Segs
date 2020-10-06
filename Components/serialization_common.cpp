@@ -1,4 +1,4 @@
-#include "serialization_common.h"
+#include "Components/serialization_common.h"
 
 #include <QtCore/QDir>
 

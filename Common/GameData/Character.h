@@ -7,7 +7,7 @@
 
 #pragma once
 #include "CommonNetStructures.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 #include "Powers.h"
 #include "Costume.h"
 #include "Common/GameData/CharacterData.h"

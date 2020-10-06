@@ -7,10 +7,11 @@
 
 #pragma once
 
+#include "Components/BitStream.h"
+#include "Common/GameData/CoXHash.h"
+
 #include <glm/vec3.hpp>
 #include <glm/mat4x3.hpp>
-#include "BitStream.h"
-#include "Common/GameData/CoXHash.h"
 
 class QString;
 

@@ -12,8 +12,8 @@
 
 #include "HandlerLocator.h"
 
-#include "SEGSEvent.h"
-#include "EventProcessor.h"
+#include "Components/SEGSEvent.h"
+#include "Components/EventProcessor.h"
 
 #include <QDebug>
 using namespace SEGSEvents;

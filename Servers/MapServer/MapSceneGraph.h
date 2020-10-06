@@ -34,7 +34,7 @@ class MapSceneGraph
 public:
     MapSceneGraph();
     ~MapSceneGraph();
-    bool loadFromFile(const QString &mapname);
+    bool loadFromFile(const QByteArray &mapname);
     QMultiHash<QString, glm::mat4> getSpawnPoints() const;
     QHash<QString, MapXferData> get_map_transfers() const;
     void spawn_npcs(class MapInstance *instance);

@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "CommonNetStructures.h"
-#include "BitStream.h"
-#include "GameData/power_definitions.h"
-#include "GameData/GameDataStore.h"
+#include "Components/BitStream.h"
+#include "Common/GameData/CommonNetStructures.h"
+#include "Common/GameData/power_definitions.h"
+#include "Common/GameData/GameDataStore.h"
 
 #include <QtCore/QString>
 #include <QtCore/QDebug>

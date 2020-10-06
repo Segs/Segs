@@ -14,7 +14,7 @@
 
 #include "CRUD_Events.h"
 #include "PacketCodec.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 #include <ace/Event_Handler.h>
 #include <ace/Svc_Handler.h>

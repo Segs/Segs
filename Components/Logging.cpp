@@ -10,8 +10,8 @@
  * @{
  */
 
-#include "Logging.h"
-#include "Settings.h"
+#include "Components/Logging.h"
+#include "Components/Settings.h"
 
 #define SEGS_LOGGING_CATEGORY(name, string) \
     QLoggingCategory &name() \

@@ -13,6 +13,8 @@
 #include "Common/GameData/Contact.h"
 #include "Common/GameData/Task.h"
 #include "ScriptingEngine.h"
+#include "ScriptingEnginePrivate.h"
+
 #include "MapInstance.h"
 
 #include <sol/sol.hpp>

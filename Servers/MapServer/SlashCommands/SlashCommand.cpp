@@ -26,7 +26,7 @@
 #include "SlashCommand_Trade.h"
 
 #include "GameData/EntityHelpers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "MapInstance.h"
 #include "Messages/Map/Browser.h"
 #include "MessageHelpers.h"

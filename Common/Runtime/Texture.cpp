@@ -1,7 +1,7 @@
 #include "Texture.h"
 
 #include "RuntimeData.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "Common/GameData/GameDataStore.h"
 #include "Common/GameData/trick_definitions.h"
 
@@ -70,8 +70,8 @@ void loadTexHeader(const QString &fname)
     RuntimeData &rd(getRuntimeData());
     TextureWrapper res;
     QFileInfo tex_path(fname);
-    QString lookupstring=tex_path.baseName().toLower();
-    const QString &actualPath(rd.m_texture_paths[lookupstring]);
+    QByteArray lookupstring=tex_path.baseName().toLower().toUtf8();
+    const QByteArray &actualPath(rd.m_texture_paths[lookupstring]);
     if(actualPath.isEmpty())
     {
         if(!s_missing_textures.contains(lookupstring))

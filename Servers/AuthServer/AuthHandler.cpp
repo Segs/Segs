@@ -13,15 +13,15 @@
 #include "AuthHandler.h"
 
 #include "AuthServer/AuthServer.h"
-#include "AuthProtocol/AuthLink.h"
-#include "Messages/Auth/AuthEvents.h"
+#include "Common/AuthProtocol/AuthLink.h"
+#include "Common/Messages/Auth/AuthEvents.h"
 #include "AuthDatabase/AuthDBSyncEvents.h"
 
-#include "Servers/InternalEvents.h"
-#include "Servers/HandlerLocator.h"
-#include "Servers/MessageBus.h"
+#include "Common/Servers/InternalEvents.h"
+#include "Common/Servers/HandlerLocator.h"
+#include "Common/Servers/MessageBus.h"
 
-#include "TimeEvent.h"
+#include "Components/TimeEvent.h"
 
 #include <QDebug>
 

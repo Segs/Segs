@@ -10,7 +10,7 @@
 #include "GameCommand.h"
 #include "MapEventTypes.h"
 #include "Common/GameData/Clue.h"
-#include "BitStream.h" // Forward declaration from GameCommand.h but editor shows errors.
+#include "Components/BitStream.h" // Forward declaration from GameCommand.h but editor shows errors.
 
 
 namespace SEGSEvents

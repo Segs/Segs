@@ -11,7 +11,7 @@
  */
 
 #include "MapClientSession.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 void MapClientSession::addCommandToSendNextUpdate(std::unique_ptr<SEGSEvents::GameCommandEvent> &&v)
 {

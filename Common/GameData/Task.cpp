@@ -7,9 +7,9 @@
 
 #include "Task.h"
 #include "cereal/cereal.hpp"
-#include "Logging.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/Logging.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 
 template<class Archive>
 void Task::serialize(Archive &archive, uint32_t const version)

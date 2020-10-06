@@ -1,7 +1,7 @@
 #include "SEGSEventFactory.h"
 
-#include "SEGSEvent.h"
-#include "Logging.h"
+#include "Components/SEGSEvent.h"
+#include "Components/Logging.h"
 
 #include <unordered_map>
 #include <vector>

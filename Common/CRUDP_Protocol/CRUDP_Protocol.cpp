@@ -14,7 +14,7 @@
 #include "CRUDP_Protocol.h"
 
 #include "PacketCodec.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 
 #include <cassert>
@@ -403,7 +403,7 @@ CrudP_Packet *CrudP_Protocol::wrapPacket(CrudP_Packet *_p)
     strm->StoreBitArray(_p->GetStream()->read_ptr(),_p->GetStream()->GetReadableBits());
     strm->ResetReading();
     uint32_t *head =  (uint32_t *)strm->read_ptr();
-    head[0] = uint32_t(strm->GetReadableBits());
+    head[0] = strm->GetReadableBits();
 
     CrudP_Packet *res = new CrudP_Packet(*_p);
     res->SetStream(strm);

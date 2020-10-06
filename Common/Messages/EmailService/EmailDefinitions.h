@@ -9,8 +9,8 @@
 
 #include <QtCore/QHash>
 #include <vector>
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 
 struct EmailData
 {

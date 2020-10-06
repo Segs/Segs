@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
 #include "Common/Servers/ClientManager.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
 

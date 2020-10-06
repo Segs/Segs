@@ -9,6 +9,7 @@
 #include "Messages/Map/ChatMessage.h"
 #include "DataHelpers.h"
 #include "ScriptingEngine.h"
+#include "ScriptingEnginePrivate.h"
 #include "MapInstance.h"
 
 int ScriptingEngine::loadAndRunFile(const QString &filename)

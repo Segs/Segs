@@ -15,7 +15,7 @@
 #include "CharacterHelpers.h"
 #include "Entity.h"
 #include "LFG.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "Character.h"
 
 /*

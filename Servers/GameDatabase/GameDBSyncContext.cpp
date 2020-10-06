@@ -17,8 +17,8 @@
 #include "GameDBSyncContext.h"
 
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
-#include "Logging.h"
-#include "Settings.h"
+#include "Components/Logging.h"
+#include "Components/Settings.h"
 #include "Database.h"
 #include "Version.h"
 

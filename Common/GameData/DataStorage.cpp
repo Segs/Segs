@@ -11,7 +11,7 @@
  */
 
 #include "DataStorage.h"
-#include "Colors.h"
+#include "Components/Colors.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>

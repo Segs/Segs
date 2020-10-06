@@ -16,7 +16,7 @@
 #include "GameData/Character.h"
 #include "GameData/CharacterHelpers.h"
 #include "GameData/EntityHelpers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "MapInstance.h"
 #include "Messages/Map/Browser.h"
 #include "Messages/Map/DoorMessage.h"
@@ -182,7 +182,7 @@ void cmdHandler_AddTimeStateLog(const QStringList &params, MapClientSession &ses
     int val = params.value(0).toUInt();
 
     if(val == 0)
-        val = std::time(nullptr);
+        val = ::time(nullptr);
 
     sendTimeStateLog(sess, val);
 

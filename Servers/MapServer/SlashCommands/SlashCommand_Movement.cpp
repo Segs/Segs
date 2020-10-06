@@ -13,12 +13,12 @@
 #include "SlashCommand_Movement.h"
 
 #include "DataHelpers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "MapInstance.h"
 #include "MapLink.h"
 #include "Messages/Map/MapXferWait.h"
 #include "MessageHelpers.h"
-#include "Settings.h"
+#include "Components/Settings.h"
 
 #include <QtCore/QString>
 #include <QtCore/QDebug>

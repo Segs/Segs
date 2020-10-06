@@ -2,11 +2,11 @@
 
 #include "Prefab.h"
 #include "Texture.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "GameData/trick_definitions.h"
 #include "GameData/trick_serializers.h"
 #include "GameData/DataStorage.h"
-#include  "serialization_common.h"
+#include "Components/serialization_common.h"
 
 #include <QDirIterator>
 #include <QString>
@@ -126,15 +126,15 @@ bool read_data_to(FSWrapper &fs, const QString &directory_path, const QString &s
 namespace SEGS
 {
 
-void preloadTextureNames(const QString &basepath)
+void preloadTextureNames(const QByteArray &basepath)
 {
     RuntimeData &rd(getRuntimeData());
     //TODO: store texture headers into an array, and only rescan directories when forced ?
     QDirIterator iter(basepath + "texture_library", QDir::Files, QDirIterator::Subdirectories);
     while(iter.hasNext())
     {
-        QString fpath = iter.next();
-        QString texture_key = iter.fileInfo().baseName().toLower();
+        QByteArray fpath = iter.next().toUtf8();
+        QByteArray texture_key = iter.fileInfo().baseName().toLower().toUtf8();
         rd.m_texture_paths[texture_key] = fpath;
         loadTexHeader(fpath);
     }
@@ -142,7 +142,7 @@ void preloadTextureNames(const QString &basepath)
 
 } //end of SEGS namespace
 
-bool RuntimeData::read_model_modifiers(const QString &directory_path)
+bool RuntimeData::read_model_modifiers(const QByteArray &directory_path)
 {
     if(m_modifiers)
         return true;
@@ -158,7 +158,7 @@ bool RuntimeData::read_model_modifiers(const QString &directory_path)
     return true;
 }
 
-bool RuntimeData::prepare(FSWrapper* fs,const QString &directory_path)
+bool RuntimeData::prepare(FSWrapper* fs, const QByteArray &directory_path)
 {
     m_wrapper = fs;
     m_ready = false;
@@ -171,7 +171,7 @@ bool RuntimeData::prepare(FSWrapper* fs,const QString &directory_path)
     return true;
 }
 
-bool RuntimeData::read_prefab_definitions(const QString &directory_path)
+bool RuntimeData::read_prefab_definitions(const QByteArray &directory_path)
 {
     if(!m_prefab_mapping)
         m_prefab_mapping = new SEGS::PrefabStore(m_wrapper,directory_path);

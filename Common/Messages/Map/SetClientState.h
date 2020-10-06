@@ -8,7 +8,7 @@
 #pragma once
 #include "GameData/ClientStates.h"
 #include "MapEventTypes.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 #include "GameCommand.h"
 
 namespace SEGSEvents
