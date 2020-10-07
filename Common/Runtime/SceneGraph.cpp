@@ -316,6 +316,10 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
         if(ctx.prevent_nesting && !child.node)
         {
             // insert child_node with null node, will be fixed when requested geo library is loaded.
+            if(request.base_file.isEmpty()||request.node_name.isEmpty()) {
+                qDebug() << "Cannot find the source for requested:"<<new_name;
+                continue;
+            }
             int child_idx = node->m_children.size();
             node->m_children.emplace_back(child);
             ctx.m_target->node_request_instantiation(NodeLoadTarget{node,child_idx},request);

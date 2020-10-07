@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "resource_importer_scene.h"
+#include "coh_scene_importer.h"
 
 #include "core/class_db.h"
 #include "core/image.h"
@@ -54,7 +54,7 @@
 #include "scene/resources/texture.h"
 #include "scene/resources/scene_library.h"
 
-
+#include "Common/GameData/scenegraph_serializers.h"
 #include "Prefab.h"
 #include "RuntimeData.h"
 #include "Texture.h"
@@ -96,7 +96,11 @@ struct FileIOWrap : public QIODevice
     {
         return m_fa->get_len()-pos();
     }
-
+    void close() override {
+        QIODevice::close();
+        if(m_fa)
+            m_fa->close();
+    }
 protected:
     qint64 readData(char *data, qint64 maxlen) override
     {
@@ -132,7 +136,7 @@ struct SE_FSWrapper : public FSWrapper
     }
     bool exists(const QString &path) override
     {
-        return FileAccess::exists(qPrintable(path));
+        return DirAccess::exists(qPrintable(path))||FileAccess::exists(qPrintable(path));
     }
     QStringList dir_entries(const QString &path) override
     {
@@ -346,12 +350,6 @@ static void convertModel(Node *owner, SEGS::Model *mdl, Node3D *res, HashSet<Str
     mi->set_mesh(loaded_mesh);
 
 //    var sup = res.AddComponent<ModelNodeMods>();
-    if (model_trick != nullptr)
-    {
-//        sup.ModelMod = model_trick;
-//        applyTricks(res,model_trick);
-    }
-
 //    mf.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(model_path);
     if (model_trick != nullptr)
     {
@@ -362,6 +360,8 @@ static void convertModel(Node *owner, SEGS::Model *mdl, Node3D *res, HashSet<Str
 //            ren.receiveShadows = false;
 //            res.tag = "NoDraw";
 //            res.layer = 9;
+        //        sup.ModelMod = model_trick;
+        //        applyTricks(res,model_trick);
 //        }
 
 //        if (model_trick._TrickFlags.HasFlag(TrickFlags.EditorVisible))
@@ -424,11 +424,15 @@ static bool convertChildren(SceneGraphInfo &sg,SEGS::SceneNode *n, Node3D *res)
             Quat qYaw   = Quat(Vector3(0,1,0),child.m_pyr.y);
             Quat qRoll  = Quat(Vector3(0,0,1),child.m_pyr.z);
             Quat rotQuat = qYaw * qPitch * qRoll;
-//            Transform res(Basis(rotQuat));
+            //rotQuat.set_euler_yxz(Vector3(child.m_pyr.x,child.m_pyr.y,child.m_pyr.z));
+            Transform res2;
+            res2.set_basis(rotQuat);
+            res2.origin = Vector3(child.m_translation.x,child.m_translation.y,child.m_translation.z);
+//            Transform res2 = fromGLM(child.m_matrix2,child.m_translation);
 //
-            ((Node3D*)go)->set_rotation(rotQuat.get_euler());
+            ((Node3D*)go)->set_transform(res2);
 //            ((Node3D *)go)->set_rotation(Vector3(child.m_pyr.x,child.m_pyr.y,child.m_pyr.z));
-            ((Node3D *)go)->set_translation(Vector3(child.m_translation.x,child.m_translation.y,child.m_translation.z));
+//            ((Node3D *)go)->set_translation(Vector3(child.m_translation.x,child.m_translation.y,child.m_translation.z));
             //((Node3D *)go)->set_transform(fromGLM(child.m_matrix2,child.m_translation));
         }
     }
@@ -473,7 +477,9 @@ static Node *convertFromRoot(SceneGraphInfo &sg, SEGS::SceneNode *n)
     if(lib_id!=-1)
     {
         LibraryEntryInstance *instance_that=memnew(LibraryEntryInstance);
+        instance_that->set_library_path(sg.lib->get_path());
         instance_that->set_entry(n->m_name.data());
+        instance_that->set_name(String(String::CtorSprintf(),"%p_%s",instance_that,n->m_name.data()));
         //return sg.lib->get_item_scene(lib_id)->instance();
         return instance_that;
     }
@@ -493,7 +499,9 @@ static Node *convertFromRoot(SceneGraphInfo &sg, SEGS::SceneNode *n)
     new_prefab.scene->pack(res);
     LibraryItemHandle     h             = sg.lib->add_item(eastl::move(new_prefab));
     LibraryEntryInstance *instance_that =memnew(LibraryEntryInstance);
+    instance_that->set_library_path(sg.lib->get_path());
     instance_that->set_entry(n->m_name.data());
+    instance_that->set_name(String(String::CtorSprintf(),"%p_%s",instance_that,n->m_name.data()));
     // We leave library as null to refer to ourselves.
     // Null library will get hopefully resolved by LibraryEntryInstance::add_child_notify
     res->queue_delete();
@@ -558,7 +566,7 @@ static bool nodeIsMultiInstantiated(const SEGS::SceneNode *node)
 {
     return node->m_use_count>1 || nonAutoNodeName(node);
 }
-static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Vector<String> &missing_resources)
+static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Vector<String> &missing_resources,StringView p_source_file)
 {
     HashSet<String> exported_scene_roots;
     SceneGraphInfo  sg;
@@ -567,7 +575,7 @@ static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Ve
         exported_scene_roots.insert(r->node->m_name.data());
     }
     sg.lib = make_ref_counted<SceneLibrary>();
-
+    sg.lib->set_path(p_source_file);
     for (SEGS::SceneNode *r : m_scene_graph.all_converted_defs)
     {
         if (!nodeIsMultiInstantiated(r) && !exported_scene_roots.contains(r->m_name.data()))
@@ -634,28 +642,24 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
         QString packed_in = iter.key().base_file;
         packed_in = packed_in + "/" + QFileInfo(packed_in).fileName() + ".bin";
         String needs_library = String("res://coh_data/geobin/")+qPrintable(packed_in);
-        Ref<SceneLibrary> ref_lib(dynamic_ref_cast<SceneLibrary>(gResourceManager().load(needs_library)));
-        if (!ref_lib)
+
+        if(!FileAccess::exists(needs_library))
+            needs_library = qPrintable(getFilepathCaseInsensitive(se_wrap,needs_library.c_str()));
+
+        if (!FileAccess::exists(needs_library))
         {
             r_missing_deps.emplace_back(needs_library);
         }
         else
         {
-            LibraryItemHandle h = ref_lib->find_item_by_name(iter.key().node_name.data());
-            if(h== LibraryItemHandle(-1))
-            {
-                PLUG_FAIL_V_MSG(ERR_FILE_MISSING_DEPENDENCIES, "A scene is missing from the scene library?");
-            }
-            else
-            {
-
                 for (SEGS::NodeLoadTarget& load_tgt : *iter)
                 {
                     LibraryEntryInstance * inst=memnew(LibraryEntryInstance);
-                    inst->set_library(ref_lib);
+                inst->set_library_path(needs_library);
                     inst->set_entry(iter.key().node_name.data());
 
                     if(load_tgt.node!=nullptr) { // internal node
+                    inst->set_name(String(String::CtorSprintf(),"%p_%s",inst,iter.key().node_name.data()));
                         auto imported_node = new SEGS::SceneNode(load_tgt.node->m_nest_level+1);
                         imported_node->m_engine_node = inst;
                         load_tgt.node->m_children[load_tgt.child_idx].node = imported_node;
@@ -669,10 +673,9 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
                 }
             }
         }
-    }
     if(!r_missing_deps.empty())
         return ERR_FILE_MISSING_DEPENDENCIES;
-    Ref<SceneLibrary> part_lib(build_scene_library(*m_scene_graph,r_missing_deps));
+    Ref<SceneLibrary> part_lib(build_scene_library(*m_scene_graph,r_missing_deps,p_source_file));
     for(auto dep : r_missing_deps) {
         getCoreInterface()->reportError("Missing dependency:"+dep,"",FUNCTION_STR, __FILE__, __LINE__);
     }
@@ -696,7 +699,7 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
             }
             else {
                 entry = memnew(LibraryEntryInstance);
-                entry->set_library(part_lib);
+                entry->set_library_path(String(p_source_file));
                 entry->set_entry(r->node->m_name.data());
                 entry->set_name(qPrintable(r->node->m_name));
 
@@ -714,5 +717,9 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
         }
     }
     res = gResourceManager().save(String(p_save_path) + ".scenelib", part_lib);
+//    auto v(part_lib->get_item_list());
+//    for(int i : v){
+//        gResourceManager().save(String(p_save_path) + StringUtils::num(i) + ".tscn", part_lib->get_item_scene(i));
+//    }
     return res;
 }

@@ -160,9 +160,9 @@ bool PrefabStore::loadNamedPrefab(const QByteArray &name, LoadingContext &ctx, N
         {
             QFileInfo geofi(geo_store->geopath);
             QString base_file = geofi.path();
-            assert(name.startsWith(geofi.path().toUtf8()));
             load_request->base_file = base_file.toUtf8();
-            load_request->node_name = name.mid(geofi.path().size()+1);
+            load_request->node_name = qPrintable(QFileInfo(name).fileName());
+            assert(geo_store->entries.contains(load_request->node_name));
         }
     }
     if(geo_store->loaded)

@@ -126,7 +126,7 @@ struct SE_FSWrapper : public FSWrapper
     }
     bool exists(const QString &path) override
     {
-        return FileAccess::exists(qPrintable(path));
+        return DirAccess::exists(qPrintable(path))||FileAccess::exists(qPrintable(path));
     }
     QStringList dir_entries(const QString &path) override
     {

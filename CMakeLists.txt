@@ -34,7 +34,7 @@ endif()
 # version number
 set(SEGS_VERSION_MAJOR "0")
 set(SEGS_VERSION_MINOR "7")
-set(SEGS_VERSION_PATCH "0")
+set(SEGS_VERSION_PATCH "99")
 
 # If SEGS is not built from a Git repository, default the version info to
 # reasonable values.

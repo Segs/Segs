@@ -109,6 +109,16 @@ bool BinStore::open(FSWrapper& fs, const QString &name,uint32_t required_crc )
     return result && read_data_blocks(true);
 }
 
+BinStore::~BinStore()
+{
+    if(m_str && m_str->isOpen())
+    {
+        m_str->close();
+    }
+    delete m_str;
+    m_str = nullptr;
+}
+
 bool BinStore::read( uint32_t &v )
 {
     size_t res = read_internal(v);
