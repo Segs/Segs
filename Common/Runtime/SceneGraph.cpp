@@ -644,6 +644,8 @@ void serializeIn(SceneGraph_Data &scenegraph,LoadingContext &ctx,PrefabStore &pr
         addNode(node_dat, ctx,prefabs);
     for (const SceneRootNode_Data & root_dat : scenegraph.Ref)
         addRoot(root_dat, ctx,prefabs);
+
+    ctx.m_target->scene_mod_name = scenegraph.Scenefile;
 }
 
 namespace SEGS {

@@ -27,7 +27,7 @@ struct GeoSet
     QByteArray           geopath;
     QByteArray           name;
     std::vector<Model *> subs;
-    std::vector<QString> tex_names;
+    std::vector<QByteArray> tex_names;
     std::vector<char>    m_geo_data;
     uint32_t             geo_data_size;
     bool                 data_loaded = false;

@@ -126,19 +126,19 @@ bool read_data_to(FSWrapper &fs, const QString &directory_path, const QString &s
 namespace SEGS
 {
 
-void preloadTextureNames(const QByteArray &basepath)
-{
-    RuntimeData &rd(getRuntimeData());
-    //TODO: store texture headers into an array, and only rescan directories when forced ?
-    QDirIterator iter(basepath + "texture_library", QDir::Files, QDirIterator::Subdirectories);
-    while(iter.hasNext())
-    {
-        QByteArray fpath = iter.next().toUtf8();
-        QByteArray texture_key = iter.fileInfo().baseName().toLower().toUtf8();
-        rd.m_texture_paths[texture_key] = fpath;
-        loadTexHeader(fpath);
-    }
-}
+//void preloadTextureNames(FSWrapper *fs,const QByteArray &basepath)
+//{
+//    RuntimeData &rd(getRuntimeData());
+//    //TODO: store texture headers into an array, and only rescan directories when forced ?
+//    QDirIterator iter(basepath + "texture_library", QDir::Files, QDirIterator::Subdirectories);
+//    while(iter.hasNext())
+//    {
+//        QByteArray fpath = iter.next().toUtf8();
+//        QByteArray texture_key = iter.fileInfo().baseName().toLower().toUtf8();
+//        rd.m_texture_paths[texture_key] = fpath;
+//        loadTexHeader(fs,fpath);
+//    }
+//}
 
 } //end of SEGS namespace
 

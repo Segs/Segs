@@ -44,23 +44,23 @@
 #include "core/service_interfaces/CoreInterface.h"
 #include "core/string_utils.h"
 #include "editor/service_interfaces/EditorServiceInterface.h"
+#include "scene/3d/instantiation.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
-#include "scene/3d/instantiation.h"
 
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/primitive_meshes.h"
-#include "scene/resources/texture.h"
 #include "scene/resources/scene_library.h"
+#include "scene/resources/texture.h"
 
 #include "Common/GameData/scenegraph_serializers.h"
-#include "Prefab.h"
-#include "RuntimeData.h"
-#include "Texture.h"
-#include "SceneGraph.h"
 #include "Common/Runtime/Model.h"
 #include "GameData/trick_definitions.h"
+#include "Prefab.h"
+#include "RuntimeData.h"
+#include "SceneGraph.h"
+#include "Texture.h"
 
 #include "glm/gtx/matrix_decompose.hpp"
 
@@ -73,39 +73,28 @@
 
 struct FileIOWrap : public QIODevice
 {
-    explicit FileIOWrap(FileAccess *fa)
-        : m_fa(fa)
-    {
-    }
+    explicit FileIOWrap(FileAccess *fa) : m_fa(fa) {}
     bool isSequential() const override { return false; }
     /*qint64 pos() const
     {
         return m_fa->get_position();
     }*/
-    qint64 size() const override
-    {
-        return m_fa->get_len();
-    }
+    qint64 size() const override { return m_fa->get_len(); }
     bool seek(qint64 pos) override
     {
         QIODevice::seek(pos);
         m_fa->seek(pos);
         return this->pos()==pos;
     }
-    qint64 bytesAvailable() const override
+    qint64 bytesAvailable() const override { return m_fa->get_len() - pos(); }
+    void   close() override
     {
-        return m_fa->get_len()-pos();
-    }
-    void close() override {
         QIODevice::close();
         if(m_fa)
             m_fa->close();
     }
 protected:
-    qint64 readData(char *data, qint64 maxlen) override
-    {
-        return m_fa->get_buffer((uint8_t *)data,maxlen);
-    }
+    qint64 readData(char *data, qint64 maxlen) override { return m_fa->get_buffer((uint8_t *)data, maxlen); }
     qint64 writeData(const char *data, qint64 len) override
     {
         auto p = pos();
@@ -114,24 +103,24 @@ protected:
     }
 
 public:
-    mutable FileAccessRef m_fa;
+    mutable FileAccessRef<> m_fa;
 };
 struct SE_FSWrapper : public FSWrapper
 {
     static Set<String> missing_files;
-    SE_FSWrapper() {
-        missing_files.clear();
-    }
+    SE_FSWrapper() { missing_files.clear(); }
     QIODevice * open(const QString &path, bool read_only, bool text_only) override
     {
         FileAccess *wrap(FileAccess::open(qPrintable(path), read_only ? FileAccess::READ : FileAccess::READ_WRITE));
-        if(!wrap) {
+        if (!wrap)
+        {
 
             missing_files.insert(qPrintable("res://"+path.mid(path.lastIndexOf("coh_data"))));
             return nullptr;
         }
         auto res = new FileIOWrap(wrap);
-        res->open((read_only ? QIODevice::ReadOnly : QIODevice::ReadWrite)| (text_only ? QIODevice::Text : QIODevice::NotOpen));
+        res->open((read_only ? QIODevice::ReadOnly : QIODevice::ReadWrite) |
+                  (text_only ? QIODevice::Text : QIODevice::NotOpen));
         return res;
     }
     bool exists(const QString &path) override
@@ -146,7 +135,8 @@ struct SE_FSWrapper : public FSWrapper
         da->list_dir_begin();
         QStringList res;
         String item;
-        while (!(item = da->get_next()).empty()) {
+        while (!(item = da->get_next()).empty())
+        {
 
             if (item == "." || item == "..")
                 continue;
@@ -157,70 +147,15 @@ struct SE_FSWrapper : public FSWrapper
 };
 Set<String> SE_FSWrapper::missing_files;
 
-struct SceneGraphInfo {
-    Map<SEGS::SceneNode *,int> use_counts;
-    Map<SEGS::SceneNode *,Ref<PackedScene>> m_imported_prefabs;
+struct SceneGraphInfo
+{
     Vector<Node3D *> root_stack;
-    String m_root_path;
+    HashSet<String>   missing_imported_geosets;
     Ref<SceneLibrary> lib;
-    HashSet<String> missing_imported_geosets;
-    enum NodeState
-    {
-        RootNode=0,
-        UsedAsPrefab = 1, // referenced as a child in many places
-        InternalNode = 2, // referenced as a child from a single place
-    };
+    String m_root_path;
 
-    Map<String,SEGS::SceneNode *> calculateUsages(eastl::unique_ptr<SEGS::SceneGraph> &graph)
-    {
-        Map<String,SEGS::SceneNode *> topLevelNodes;
+    static String GetSafeFilename(const String &filename) { return filename.replaced('?', '_').replaced('+', '_'); }
 
-        for(SEGS::SceneNode *node : graph->all_converted_defs)
-        {
-            if (node!=nullptr)
-            {
-                for(auto &child : node->m_children)
-                {
-                    use_counts[child.node] += 1;
-                }
-
-                if (node->m_nest_level != 0) //from included file - not a top level node ?
-                {
-                    use_counts[node]=0; //just remembering the node, so it won't show in top level ones.
-                }
-            }
-        }
-
-        for(SEGS::SceneNode *node : graph->all_converted_defs)
-        {
-            if (!use_counts.contains(node))
-            {
-                if (topLevelNodes.contains(qPrintable(node->m_name)))
-                {
-                    qDebug()<<"Not returning duplicate node"<<node->m_name;
-                    continue;
-                }
-                topLevelNodes.emplace(qPrintable(node->m_name),node);
-            }
-        }
-
-        return topLevelNodes;
-
-    }
-    NodeState isInternalNode(SEGS::SceneNode *sceneNode)
-    {
-        int usecount = use_counts.at(sceneNode,-1);
-        if (usecount>=0)
-        {
-            return usecount == 1 ? NodeState::InternalNode : NodeState::UsedAsPrefab;
-        }
-        return NodeState::RootNode;
-    }
-
-    static String GetSafeFilename(const String &filename)
-    {
-        return filename.replaced('?','_').replaced('+','_');
-    }
     static Ref<PackedScene> GetPrefabAsset(const String &tgt_path, const String &model_name)
     {
         String destinationPath = SceneGraphInfo::GetSafeFilename(tgt_path + "/" + model_name + ".scn");
@@ -228,7 +163,8 @@ struct SceneGraphInfo {
         return dynamic_ref_cast<PackedScene>(gResourceManager().load(destinationPath, "", true, &err));
     }
 };
-Color fromGLM(glm::vec4 v) {
+Color fromGLM(glm::vec4 v)
+{
     return Color(v.r,v.g,v.b);
 }
 static Node* convertFromRoot(SceneGraphInfo& sg, SEGS::SceneNode* n);
@@ -278,8 +214,8 @@ static void convertComponents(SEGS::SceneNode *n, Node3D *res)
 //            sup.Props.Properties = n.m_properties;
 //    }
 
-//    if (n.sound_info != null)
-//    {
+    if (n->sound_info)
+    {
 //        Debug.Log("Has sound properties");
 //        SoundInfo coh_snd = n.sound_info;
 //        var snd = getOrCreateComponent<AudioSource>(res);
@@ -291,7 +227,7 @@ static void convertComponents(SEGS::SceneNode *n, Node3D *res)
 //        {
 //            Debug.LogWarningFormat("Failed to locate sound asset {0}", coh_snd.name);
 //        }
-//    }
+    }
 
 //    if (n.m_editor_beacon != null)
 //    {
@@ -329,20 +265,23 @@ static void convertModel(Node *owner, SEGS::Model *mdl, Node3D *res, HashSet<Str
     mi->set_owner(owner);
 
     String meshlib_res_path = "res://"+meshlib_path+"/"+geoset_file+".geo";
-    if(!FileAccess::exists(meshlib_res_path)) {
+    if (!FileAccess::exists(meshlib_res_path))
+    {
         mi->set_mesh(make_ref_counted<CubeMesh>());
         missing_models.emplace(eastl::move(meshlib_res_path));
         return;
     }
     SEGS::toSafeModelName(mesh_name.data(),mesh_name.size());
     String mesh_res_path = "res://"+meshlib_path+"/"+mesh_name+".mesh";
-    if(!FileAccess::exists(mesh_res_path)) {
+    if (!FileAccess::exists(mesh_res_path))
+    {
         mi->set_mesh(make_ref_counted<CubeMesh>());
         missing_models.insert(mesh_res_path);
         return;
     }
     Ref<Mesh> loaded_mesh = dynamic_ref_cast<Mesh>(gResourceManager().load(mesh_res_path));
-    if(!FileAccess::exists(mesh_res_path)) {
+    if (!FileAccess::exists(mesh_res_path))
+    {
         mi->set_mesh(make_ref_counted<CubeMesh>());
         missing_models.insert(mesh_res_path);
         return;
@@ -439,7 +378,8 @@ static bool convertChildren(SceneGraphInfo &sg,SEGS::SceneNode *n, Node3D *res)
 
     return all_ok;
 }
-static Node3D *convertInternal(SceneGraphInfo &sg,SEGS::SceneNode* n) {
+static Node3D *convertInternal(SceneGraphInfo &sg, SEGS::SceneNode *n)
+{
     Node3D *res = memnew(Node3D);
     if (sg.root_stack.empty() || n->m_use_count>1)
     {
@@ -466,19 +406,24 @@ static Node3D *convertInternal(SceneGraphInfo &sg,SEGS::SceneNode* n) {
 //        updateEditorLayerMarker(res);
     return res;
 }
-static bool autoGen(const QString &n) {
+static bool autoGen(const QString &n)
+{
     if(!n.startsWith("grp") || !n.back().isDigit())
         return false;
     return true;
 }
 static Node *convertFromRoot(SceneGraphInfo &sg, SEGS::SceneNode *n)
 {
-    int lib_id = sg.lib->find_item_by_name(n->m_name.data());
+    LibraryItemHandle lib_id = sg.lib->find_item_by_name(n->m_name.data());
     if(lib_id!=-1)
     {
-        LibraryEntryInstance *instance_that=memnew(LibraryEntryInstance);
-        instance_that->set_library_path(sg.lib->get_path());
-        instance_that->set_entry(n->m_name.data());
+        Ref<PackedScene> sc(sg.lib->get_item_scene(lib_id));
+        auto             instance_that = sc->instance(GEN_EDIT_STATE_INSTANCE);
+        //        LibraryEntryInstance *instance_that=memnew(LibraryEntryInstance);
+        //        instance_that->set_library_path(sg.lib->get_path());
+        //        instance_that->set_entry(n->m_name.data());
+        //        return sg.lib->get_item_scene(lib_id)->instance();
+        instance_that->set_filename(sg.lib->get_path() + "::" + StringUtils::num(lib_id));
         instance_that->set_name(String(String::CtorSprintf(),"%p_%s",instance_that,n->m_name.data()));
         //return sg.lib->get_item_scene(lib_id)->instance();
         return instance_that;
@@ -497,11 +442,13 @@ static Node *convertFromRoot(SceneGraphInfo &sg, SEGS::SceneNode *n)
     new_prefab.name  = n->m_name.data();
     new_prefab.scene = make_ref_counted<PackedScene>();
     new_prefab.scene->pack(res);
-    LibraryItemHandle     h             = sg.lib->add_item(eastl::move(new_prefab));
-    LibraryEntryInstance *instance_that =memnew(LibraryEntryInstance);
-    instance_that->set_library_path(sg.lib->get_path());
-    instance_that->set_entry(n->m_name.data());
+    lib_id = sg.lib->add_item(eastl::move(new_prefab));
+    Ref<PackedScene>  sc(sg.lib->get_item_scene(lib_id));
+    sc->set_path(sg.lib->get_path() + "::" + StringUtils::num(lib_id));
+    sc->set_subindex(lib_id);
+    auto instance_that = sc->instance(GEN_EDIT_STATE_INSTANCE);
     instance_that->set_name(String(String::CtorSprintf(),"%p_%s",instance_that,n->m_name.data()));
+    instance_that->set_filename(sg.lib->get_path() + "::" + StringUtils::num(lib_id));
     // We leave library as null to refer to ourselves.
     // Null library will get hopefully resolved by LibraryEntryInstance::add_child_notify
     res->queue_delete();
@@ -541,17 +488,17 @@ StringName CoHSceneLibrary::get_resource_type() const
     return "SceneLibrary";
 }
 
-int CoHSceneLibrary::get_preset_count() const {
+int CoHSceneLibrary::get_preset_count() const
+{
     return 0;
 }
-StringName CoHSceneLibrary::get_preset_name(int p_idx) const {
+StringName CoHSceneLibrary::get_preset_name(int p_idx) const
+{
 
     return StringName();
 }
 
-void CoHSceneLibrary::get_import_options(Vector<ImportOption> *r_options, int p_preset) const
-{
-}
+void CoHSceneLibrary::get_import_options(Vector<ImportOption> *r_options, int p_preset) const {}
 
 bool CoHSceneLibrary::get_option_visibility(const StringName &p_option,
     const HashMap<StringName, Variant> &p_options) const
@@ -566,7 +513,8 @@ static bool nodeIsMultiInstantiated(const SEGS::SceneNode *node)
 {
     return node->m_use_count>1 || nonAutoNodeName(node);
 }
-static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Vector<String> &missing_resources,StringView p_source_file)
+static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Vector<String> &missing_resources,
+                                             StringView p_source_file)
 {
     HashSet<String> exported_scene_roots;
     SceneGraphInfo  sg;
@@ -576,6 +524,8 @@ static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Ve
     }
     sg.lib = make_ref_counted<SceneLibrary>();
     sg.lib->set_path(p_source_file);
+    QFileInfo fi(QByteArray::fromRawData(p_source_file.data(),p_source_file.size()));
+    sg.lib->set_name(fi.baseName().toLatin1().data());
     for (SEGS::SceneNode *r : m_scene_graph.all_converted_defs)
     {
         if (!nodeIsMultiInstantiated(r) && !exported_scene_roots.contains(r->m_name.data()))
@@ -594,8 +544,7 @@ static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Ve
         else
             memdelete(top_level);
     }
-    missing_resources.insert(missing_resources.end(),
-                             sg.missing_imported_geosets.begin(),
+    missing_resources.insert(missing_resources.end(), sg.missing_imported_geosets.begin(),
                              sg.missing_imported_geosets.end());
     return eastl::move(sg.lib);
 }
@@ -634,7 +583,8 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
     eastl::unique_ptr<SEGS::SceneGraph> m_scene_graph;
     QSet<QByteArray> missing_geosets;
     m_scene_graph.reset(SEGS::loadSceneGraphNoNesting(&se_wrap, fs_path.c_str(),missing_geosets));
-    if(!m_scene_graph) {
+    if (!m_scene_graph)
+    {
         PLUG_FAIL_V_MSG(ERR_FILE_CORRUPT, "Failed to load the original scene graph : path problems?");
     }
     for(auto iter=m_scene_graph->m_requests.begin(); iter!= m_scene_graph->m_requests.end(); ++iter)
@@ -652,34 +602,38 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
         }
         else
         {
-                for (SEGS::NodeLoadTarget& load_tgt : *iter)
-                {
-                    LibraryEntryInstance * inst=memnew(LibraryEntryInstance);
+            for (SEGS::NodeLoadTarget& load_tgt : *iter)
+            {
+                LibraryEntryInstance * inst=memnew(LibraryEntryInstance);
                 inst->set_library_path(needs_library);
                     inst->set_entry(iter.key().node_name.data());
 
-                    if(load_tgt.node!=nullptr) { // internal node
+                SEGS::SceneNode *imported_node;
+                if (load_tgt.node != nullptr)
+                { // internal node
                     inst->set_name(String(String::CtorSprintf(),"%p_%s",inst,iter.key().node_name.data()));
-                        auto imported_node = new SEGS::SceneNode(load_tgt.node->m_nest_level+1);
-                        imported_node->m_engine_node = inst;
-                        load_tgt.node->m_children[load_tgt.child_idx].node = imported_node;
-                    }
-                    else {
-                        assert(nullptr==m_scene_graph->refs[load_tgt.child_idx]->node);
-                        auto imported_node = new SEGS::SceneNode(0);
-                        imported_node->m_engine_node = inst;
-                        m_scene_graph->refs[load_tgt.child_idx]->node = imported_node;
-                    }
+                    imported_node           = new SEGS::SceneNode(load_tgt.node->m_nest_level + 1);
+                    load_tgt.node->m_children[load_tgt.child_idx].node = imported_node;
                 }
+                else
+                {
+                    assert(nullptr==m_scene_graph->refs[load_tgt.child_idx]->node);
+                    imported_node = new SEGS::SceneNode(0);
+                    m_scene_graph->refs[load_tgt.child_idx]->node = imported_node;
+                }
+                imported_node->m_engine_node = inst;
             }
         }
+    }
     if(!r_missing_deps.empty())
         return ERR_FILE_MISSING_DEPENDENCIES;
     Ref<SceneLibrary> part_lib(build_scene_library(*m_scene_graph,r_missing_deps,p_source_file));
-    for(auto dep : r_missing_deps) {
+    for (auto dep : r_missing_deps)
+    {
         getCoreInterface()->reportError("Missing dependency:"+dep,"",FUNCTION_STR, __FILE__, __LINE__);
     }
-    for(auto dep : missing_geosets) {
+    for (auto dep : missing_geosets)
+    {
         getCoreInterface()->reportError(String("Missing geoset:")+dep.data(),"",FUNCTION_STR, __FILE__, __LINE__);
     }
 
@@ -687,17 +641,20 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
     r_missing_deps.clear();
     String save_path = String(PathUtils::get_basename(p_source_file)) + ".tscn";
 
-    if(!m_scene_graph->refs.empty()) {
+    if (!m_scene_graph->refs.empty())
+    {
         Ref<PackedScene> secondary(make_ref_counted<PackedScene>());
         Node3D* root = memnew(Node3D);
         root->set_name(PathUtils::get_basename(p_source_file));
         for(const auto & r : m_scene_graph->refs)
         {
             LibraryEntryInstance* entry;
-            if(r->node->m_engine_node) {
+            if (r->node->m_engine_node)
+            {
                 entry = object_cast<LibraryEntryInstance>((Object *)r->node->m_engine_node);
             }
-            else {
+            else
+            {
                 entry = memnew(LibraryEntryInstance);
                 entry->set_library_path(String(p_source_file));
                 entry->set_entry(r->node->m_name.data());

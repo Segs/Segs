@@ -130,6 +130,7 @@ struct SceneGraph
     // Static scene nodes loaded/created from map definition file
     std::vector<SceneNode *> all_converted_defs;
     std::vector<RootNode *> refs;
+    QByteArray scene_mod_name;
 
     QHash<QString,SceneNode *> name_to_node;
     void node_request_instantiation(NodeLoadTarget tgt, NodeLoadRequest needs);

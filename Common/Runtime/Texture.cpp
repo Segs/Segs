@@ -2,6 +2,7 @@
 
 #include "RuntimeData.h"
 #include "Components/Logging.h"
+#include "Components/serialization_common.h"
 #include "Common/GameData/GameDataStore.h"
 #include "Common/GameData/trick_definitions.h"
 
@@ -65,7 +66,7 @@ TextureModifiers *modFromTextureName(const QString &texpath)
 namespace SEGS
 {
 
-void loadTexHeader(const QString &fname)
+void loadTexHeader(FSWrapper *fs,const QByteArray &fname)
 {
     RuntimeData &rd(getRuntimeData());
     TextureWrapper res;
@@ -82,27 +83,27 @@ void loadTexHeader(const QString &fname)
         return;
     }
     QFileInfo actualFile(actualPath);
-    QFile src_tex(actualPath);
-    if(src_tex.exists() && src_tex.open(QFile::ReadOnly))
+    QIODevice *src_tex = fs->open(actualPath);
+    if(src_tex)
     {
         TexFileHdr hdr;
-        src_tex.read((char *)&hdr, sizeof(TexFileHdr));
+        src_tex->read((char *)&hdr, sizeof(TexFileHdr));
         if(0 == memcmp(hdr.magic, "TX2", 3))
         {
             if(hdr.alpha)
                 res.flags |= TextureWrapper::ALPHA;
         }
+        delete src_tex;
     }
     res.info = modFromTextureName(actualFile.path()+"/"+actualFile.baseName());
     uint32_t texopt_flags = 0;
     if(res.info)
         texopt_flags = res.info->Flags;
-    if(fname.contains("PLAYERS/",Qt::CaseInsensitive) ||
-            fname.contains("ENEMIES/",Qt::CaseInsensitive) ||
-            fname.contains("NPCS/",Qt::CaseInsensitive))
+    QByteArray upper_fname(fname.toUpper());
+    if(upper_fname.contains("PLAYERS/") || upper_fname.contains("ENEMIES/") || upper_fname.contains("NPCS/"))
         res.flags |= TextureWrapper::BUMPMAP_MIRROR | TextureWrapper::CLAMP;
 
-    if(fname.contains("MAPS/",Qt::CaseInsensitive))
+    if(upper_fname.contains("MAPS/"))
         res.flags |= TextureWrapper::CLAMP;
 
     if(texopt_flags & REPLACEABLE)
@@ -116,7 +117,7 @@ void loadTexHeader(const QString &fname)
 
     if(res.info && !res.info->BumpMap.isEmpty())
         res.bumpmap = res.info->BumpMap;
-    QString detailname;
+    QByteArray detailname;
     if(texopt_flags & DUAL)
     {
         if(!res.info->Blend.isEmpty())

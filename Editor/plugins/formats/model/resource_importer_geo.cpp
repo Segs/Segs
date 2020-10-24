@@ -48,7 +48,7 @@
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/texture.h"
-
+#include "scene/resources/material.h"
 
 #include "Prefab.h"
 #include "RuntimeData.h"
@@ -104,7 +104,7 @@ protected:
     }
 
 public:
-    mutable FileAccessRef m_fa;
+    mutable FileAccessRef<> m_fa;
 };
 struct SE_FSWrapper : public FSWrapper
 {
@@ -166,15 +166,56 @@ namespace
         char    magic[3];
     };
 #pragma pack(pop)
-    QSet<QString>                  s_missing_textures;
-    std::unordered_map<uint32_t, Ref<Texture>> g_converted_textures;
+    HashSet<String> s_missing_textures;
+    HashMap<uint32_t, Ref<Texture>> g_converted_textures;
 }
-SEGS::HTexture tryLoadTexture(const QString& fname)
+void scan_for_textures(FSWrapper *fs_wrap,DirAccessRef &in) {
+    in->list_dir_begin();
+    Vector<String> dirs;
+    String f;
+    String cur_dir = StringUtils::replace(in->get_current_dir(),"\\", "/");
+
+    while (!(f = in->get_next()).empty()) {
+        if(in->current_is_hidden() || f=="." || f=="..")
+            continue;
+        if (in->current_is_dir()) {
+            DirAccessRef da(DirAccess::open(cur_dir+"/"+f));
+            scan_for_textures(fs_wrap,da);
+        }
+        else {
+            if(f.ends_with(".texture")) {
+                SEGS::RuntimeData& rd(getRuntimeData());
+                QFileInfo tex_path(f.c_str());
+                QByteArray lookupstring = tex_path.baseName().toLower().toUtf8();
+
+                rd.m_texture_paths[lookupstring] = (cur_dir + "/" + f).c_str();
+                SEGS::loadTexHeader(fs_wrap,rd.m_texture_paths[lookupstring]);
+            }
+        }
+    }
+    in->list_dir_end();
+
+}
+void build_path_map() {
+    SE_FSWrapper se_wrap;
+
+    SEGS::RuntimeData& rd(getRuntimeData());
+    if(!rd.m_texture_paths.empty()) // don't repeat the scan.
+        return;
+
+    DirAccessRef da(DirAccess::open("res://coh_data/texture_library"));
+    if(!da) {
+        return;
+    }
+    scan_for_textures(&se_wrap,da);
+}
+
+SEGS::HTexture tryLoadTexture(const String &fname)
 {
     SEGS::RuntimeData& rd(getRuntimeData());
-    QFileInfo tex_path(fname);
-    QByteArray lookupstring = tex_path.baseName().toLower().toUtf8();
-    QByteArray actualPath = rd.m_texture_paths.value(lookupstring);
+    QFileInfo tex_path(fname.c_str());
+    String lookupstring = tex_path.baseName().toLower().toUtf8().data();
+    QByteArray actualPath   = rd.m_texture_paths.value(lookupstring.c_str());
     static SEGS::HTexture missing_tex_handle;
     if (actualPath.isEmpty())
     {
@@ -186,79 +227,42 @@ SEGS::HTexture tryLoadTexture(const QString& fname)
         }
         if (!s_missing_textures.contains(lookupstring))
         {
-            qDebug() << "Missing texture" << fname;
+            getCoreInterface()->reportError("Missing texture" + fname,"",FUNCTION_STR, __FILE__, __LINE__);
             s_missing_textures.insert(lookupstring);
         }
         return missing_tex_handle;
     }
-    SEGS::HTexture& res(rd.m_loaded_textures[lookupstring]);
+    SEGS::HTexture &res(rd.m_loaded_textures[lookupstring.c_str()]);
     if (g_converted_textures.find(res.idx) != g_converted_textures.end())
         return res; // we have an Urho3D texture already, nothing to do.
 
-    QFile src_tex(actualPath);
-    if (!src_tex.exists() || !src_tex.open(QFile::ReadOnly))
-    {
-        qWarning() << actualPath << " is not readable";
+    g_converted_textures[res.idx] = dynamic_ref_cast<Texture>(gResourceManager().load(actualPath.data()));
         return res;
     }
-    TexFileHdr hdr;
-    src_tex.read((char*)&hdr, sizeof(TexFileHdr));
-    if (0 != memcmp(hdr.magic, "TX2", 3))
-    {
-        qWarning() << "Unrecognized texture format.";
-        return res;
-    }
-    QString originalname = QString(src_tex.read(hdr.header_size - sizeof(TexFileHdr)));
 
-    QDir converted_dir("./converted");
-    QString converted_path(converted_dir.filePath(originalname));
-    QFile tgt(converted_path);
-    if (tgt.exists())
+Vector<SEGS::HTexture> getModelTextures(std::vector<QByteArray> &names)
     {
         // a pre-converted texture file exists, load it instead
-        g_converted_textures[res.idx] = dynamic_ref_cast<Texture>(gResourceManager().load(qPrintable(converted_path)));
-        return res;
-    }
-    QByteArray data = src_tex.readAll();
-    // save extracted texture into a local directory
-    converted_dir.mkpath(QFileInfo(originalname).path());
-    if (!tgt.open(QFile::WriteOnly))
-    {
-        qCritical() << "Cannot write:" << converted_path;
-    }
-    else
-    {
-        tgt.write(data);
-        tgt.close();
-    }
-    auto entry = memnew(ImageTexture);
-    g_converted_textures[res.idx] = entry;
-    Image *img=memnew(Image);
-    assert(false);
-    return res;
-}
-std::vector<SEGS::HTexture> getModelTextures(std::vector<QString> &names)
-{
-    uint32_t name_count = std::max<uint32_t>(1,names.size());
-    std::vector<SEGS::HTexture> res;
+    uint32_t name_count = eastl::max<uint32_t>(1,names.size());
+    Vector<SEGS::HTexture> res;
     res.reserve(name_count);
     SEGS::HTexture white_tex = tryLoadTexture("white.tga");
 
     for(size_t tex_idx=0; tex_idx < names.size(); ++tex_idx )
     {
         QFileInfo fi(names[tex_idx]);
-        QString baseName = fi.completeBaseName();
+        QByteArray baseName = fi.completeBaseName().toUtf8();
         if(baseName!=names[tex_idx])
         {
             if(fi.fileName() == names[tex_idx])
                 names[tex_idx] = baseName;
             else
-                names[tex_idx] = fi.path()+"/"+baseName;
+                names[tex_idx] = fi.path().toUtf8()+"/"+baseName;
         }
-        if ( names[tex_idx].contains("PORTAL",Qt::CaseInsensitive) )
+        if ( names[tex_idx].toUpper().contains("PORTAL") )
             res.emplace_back(tryLoadTexture("invisible.tga"));
         else
-            res.emplace_back(tryLoadTexture(names[tex_idx]));
+            res.emplace_back(tryLoadTexture(names[tex_idx].data()));
         // replace missing texture with white
         // TODO: make missing textures much more visible ( high contrast + text ? )
         if ( g_converted_textures.end()==g_converted_textures.find(res[tex_idx].idx) )
@@ -271,10 +275,234 @@ std::vector<SEGS::HTexture> getModelTextures(std::vector<QString> &names)
     return res;
 }
 
-Ref<Mesh> modelCreateObjectFromModel(SEGS::Model* model, std::vector<SEGS::HTexture>& textures)
+void initLoadedModel(SEGS::Model *model)
 {
-    initLoadedModel([](const QString& v) -> SEGS::HTexture { return tryLoadTexture(v); }, model, textures);
-    return Ref<Mesh>();
+    using namespace SEGS;
+    model->blend_mode = SEGS::CoHBlendMode::MULTIPLY_REG;
+    bool isgeo=false;
+    if(model->name.toUpper().startsWith("GEO_"))
+    {
+        model->flags |= SEGS::OBJ_DRAW_AS_ENT;
+        isgeo = true;
+        if(model->name.toLower().contains("eyes") )
+        {
+            if(!model->trck_node)
+                model->trck_node = new ModelModifiers;
+            model->trck_node->_TrickFlags |= DoubleSided;
+        }
+    }
+    assert(model->num_textures==model->texture_bind_info.size());
+
+    if( model->trck_node && model->trck_node->info)
+    {
+        model->flags |= model->trck_node->info->ObjFlags;
+    }
+
+    if( model->blend_mode == CoHBlendMode::COLORBLEND_DUAL || model->blend_mode == CoHBlendMode::BUMPMAP_COLORBLEND_DUAL )
+    {
+        if( !model->trck_node )
+            model->trck_node = new ModelModifiers;
+        model->trck_node->_TrickFlags |= SetColor;
+    }
+
+    if( model->blend_mode == CoHBlendMode::ADDGLOW )
+    {
+        if( !model->trck_node )
+            model->trck_node = new ModelModifiers;
+        model->trck_node->_TrickFlags |= SetColor | NightLight;
+    }
+
+    if( !model->packed_data.norms.uncomp_size ) // no normals
+        model->flags |= OBJ_FULLBRIGHT; // only ambient light
+    if( model->trck_node  && model->trck_node->_TrickFlags & Additive )
+        model->flags |= OBJ_ALPHASORT; // alpha pass
+    if( model->flags & OBJ_FORCEOPAQUE ) // force opaque
+        model->flags &= ~OBJ_ALPHASORT;
+
+    if( model->trck_node && model->trck_node->info)
+    {
+        if( model->trck_node->info->blend_mode )
+            model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
+    }
+}
+static Vector3 fromGLM(glm::vec3 v) {
+    return {v.x,v.y,v.z};
+}
+static Vector2 fromGLM(glm::vec2 v) {
+    return {v.x,v.y};
+}
+static int reindex(Vector<int> &reindex,int vert_idx,int &top_cnt) {
+    if(!reindex[vert_idx])
+        reindex[vert_idx] = top_cnt++;
+    return reindex[vert_idx]-1;
+}
+static SurfaceArrays from_coh_vbo(std::unique_ptr<SEGS::VBOPointers> &vbo,int offset,int tri_count) {
+    SurfaceArrays arrs;
+
+    arrs.m_indices.reserve(vbo->triangles.size());
+    arrs.m_position_data.reserve(vbo->triangles.size()*3);
+    arrs.m_normals.reserve(vbo->triangles.size());
+    arrs.m_uv_1.reserve(vbo->triangles.size());
+    arrs.m_uv_2.reserve(vbo->triangles.size());
+    Vector<int> reindex_arr(vbo->triangles.size(),0);
+    int *tri_data=vbo->triangles.data()+offset;
+    Vector<int> src_triangles(tri_data,tri_data+3*tri_count);
+    int last_idx=1;
+    int new_idx[3];
+    bool known[3];
+    for (size_t tri_index = 0, count = src_triangles.size(); tri_index < count - 2; tri_index += 3) {
+        //reverse winding 0,1,2 -> 1,0,2
+        for(int i=0; i<3; ++i) {
+            known[i] = reindex_arr[src_triangles[tri_index+i]]!=0;
+            new_idx[i] = reindex(reindex_arr,src_triangles[tri_index+i],last_idx);
+        }
+
+        // inserting indices
+        arrs.m_indices.insert(arrs.m_indices.end(),new_idx,new_idx+3);
+
+        for(int i=0; i<3; ++i) {
+            int idx = src_triangles[tri_index+i];
+            if(!known[i])
+                arrs.m_position_data.insert(arrs.m_position_data.end(),(float *)&vbo->pos[idx],(float *)&vbo->pos[idx]+3);
+        }
+
+        if(!vbo->norm.empty())
+            for(int i=0; i<3; ++i) {
+                int idx = src_triangles[tri_index+i];
+                if(!known[i])
+                    arrs.m_normals.emplace_back(fromGLM(vbo->norm[idx]));
+            }
+        if(!vbo->uv1.empty()) {
+            for(int i=0; i<3; ++i) {
+                int idx = src_triangles[tri_index+i];
+                if(!known[i])
+                    arrs.m_uv_1.emplace_back(fromGLM(vbo->uv1[idx]));
+            }
+        }
+
+        if(!vbo->uv2.empty()) {
+            for(int i=0; i<3; ++i) {
+                int idx = src_triangles[tri_index+i];
+                if(!known[i])
+                    arrs.m_uv_2.emplace_back(fromGLM(vbo->uv2[idx]));
+            }
+        }
+        if(!vbo->bone_indices.empty() && vbo->bone_weights.empty()) {
+            for(int i=0; i<3; ++i) {
+                int idx = src_triangles[tri_index+i];
+                if(known[i])
+                    continue;
+
+                auto bone=vbo->bone_indices[idx];
+                arrs.m_bones.emplace_back(bone.first);
+                arrs.m_bones.emplace_back(bone.second);
+                auto bonew=vbo->bone_weights[idx];
+                arrs.m_weights.emplace_back(bonew[0]);
+                arrs.m_weights.emplace_back(bonew[1]);
+                for (int idx = 2; idx < RS::ARRAY_WEIGHTS_SIZE; ++idx)
+                {
+                    arrs.m_weights.emplace_back(0);
+                    arrs.m_weights.emplace_back(0);
+                }
+            }
+        }
+    }
+    arrs.m_vertices_2d = false;
+    return arrs;
+}
+static Ref<Material> convert_material(int idx,SEGS::Model* model,Vector<SEGS::HTexture>& textures,String &desc) {
+    using namespace SEGS;
+    SpatialMaterial * mat = memnew(SpatialMaterial);
+    SEGS::HTexture tex = textures[idx];
+
+    model->blend_mode = SEGS::CoHBlendMode::MULTIPLY_REG;
+    bool isgeo=false;
+    if(model->name.toUpper().startsWith("GEO_"))
+    {
+        model->flags |= SEGS::OBJ_DRAW_AS_ENT;
+        isgeo = true;
+    }
+    if(model->trck_node && model->trck_node->_TrickFlags & DoubleSided)
+        mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+    else
+        mat->set_cull_mode(SpatialMaterial::CULL_FRONT);
+
+    SEGS::TextureWrapper &base_tex(tex.get());
+    if(!isgeo && base_tex.info)
+    {
+        auto loc_tex = tex;
+        auto blend = CoHBlendMode(base_tex.info->BlendType);
+        if(blend == CoHBlendMode::ADDGLOW || blend == CoHBlendMode::COLORBLEND_DUAL || blend == CoHBlendMode::ALPHADETAIL) {
+            loc_tex = tryLoadTexture(base_tex.detailname.data());
+            mat->set_texture(SpatialMaterial::TEXTURE_DETAIL_ALBEDO,g_converted_textures[loc_tex.idx]);
+        }
+        if(loc_tex && loc_tex->flags & TextureWrapper::ALPHA)
+            mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+    }
+    if( base_tex.flags & TextureWrapper::DUAL )
+    {
+        model->flags |= OBJ_DUALTEXTURE;
+        if( base_tex.BlendType != CoHBlendMode::MULTIPLY )
+            model->blend_mode = base_tex.BlendType;
+    }
+
+    if( !base_tex.bumpmap.isEmpty() )
+    {
+        HTexture wrap = tryLoadTexture(base_tex.bumpmap.data());
+        if( wrap->flags & TextureWrapper::BUMPMAP )
+        {
+            mat->set_texture(SpatialMaterial::TEXTURE_NORMAL,g_converted_textures[wrap.idx]);
+            model->flags |= OBJ_BUMPMAP;
+            model->blend_mode = (model->blend_mode == CoHBlendMode::COLORBLEND_DUAL) ?
+                        CoHBlendMode::BUMPMAP_COLORBLEND_DUAL : CoHBlendMode::BUMPMAP_MULTIPLY;
+        }
+        if( base_tex.flags & TextureWrapper::CUBEMAPFACE || (wrap->flags & TextureWrapper::CUBEMAPFACE) ) {
+            model->flags |= OBJ_CUBEMAP;
+        }
+    }
+    mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO,g_converted_textures[tex.idx]);
+    return Ref<Material>(mat);
+}
+Ref<ArrayMesh> modelCreateObjectFromModel(SEGS::Model* model, Vector<SEGS::HTexture>& textures)
+{
+    Ref<ArrayMesh> secondary = make_ref_counted<ArrayMesh>();
+    String mdl_name = model->name.data();
+    SEGS::toSafeModelName(mdl_name.data(),mdl_name.size());
+    secondary->set_name(mdl_name);
+
+    initLoadedModel(model);
+    if ( model->name.toUpper().startsWith("GEO_") )
+    {
+        model->flags |= SEGS::OBJ_DRAW_AS_ENT;
+        if ( model->name.toLower().contains("eyes") )
+        {
+            if ( !model->trck_node )
+                model->trck_node = new ModelModifiers;
+            model->trck_node->_TrickFlags |= DoubleSided;
+        }
+    }
+    SEGS::fillVBO(*model);
+    std::unique_ptr<SEGS::VBOPointers> &vbo(model->vbo);
+
+    unsigned geom_count = model->texture_bind_info.size();
+    unsigned face_offset=0;
+    String collected_desc;
+
+    int *tris = (int *)vbo->triangles.data();
+    //flip_tri_order(Span<int>(tris,tris+vbo->triangles.size()*3));
+
+    for(unsigned i=0; i<geom_count; ++i)
+    {
+        const SEGS::TextureBind &tbind(model->texture_bind_info[i]);
+
+        SurfaceArrays arrs=from_coh_vbo(vbo,face_offset,tbind.tri_count);
+        secondary->add_surface_from_arrays(ArrayMesh::PRIMITIVE_TRIANGLES,eastl::move(arrs));
+        secondary->surface_set_material(i,convert_material(tbind.tex_idx,model,textures,collected_desc));
+
+        face_offset+=tbind.tri_count*3;
+    }
+
+    return secondary;
 }
 
 
@@ -319,46 +547,8 @@ bool CoHMeshLibrary::get_option_visibility(const StringName &p_option, const Has
 {
     return true;
 }
-static void flip_tri_order(Vector<int> &tris)
-{
-    for (size_t i = 0, count = tris.size(); i < count - 2; i += 3)
-        eastl::swap(tris[i], tris[i + 1]);
-}
-static void fillArrayMesh(SEGS::Model* mdl, Ref<ArrayMesh> &tgt)
-{
-    SEGS::fillVBO(*mdl);
-    SurfaceArrays arrs;
-
-    arrs.m_position_data.assign((float*)mdl->vbo->pos.data(), (float*)mdl->vbo->pos.data() + mdl->vbo->pos.size()*3);
-    arrs.m_normals.assign((Vector3*)mdl->vbo->norm.data(), (Vector3*)mdl->vbo->norm.data() + mdl->vbo->norm.size());
-    arrs.m_indices.assign((int *)mdl->vbo->triangles.data(), (int *)mdl->vbo->triangles.data()+ mdl->vbo->triangles.size()*3);
-    flip_tri_order(arrs.m_indices);
-    arrs.m_uv_1.assign((Vector2*)mdl->vbo->uv1.data(), (Vector2*)mdl->vbo->uv1.data() + mdl->vbo->uv1.size());
-    arrs.m_uv_2.assign((Vector2*)mdl->vbo->uv2.data(), (Vector2*)mdl->vbo->uv2.data() + mdl->vbo->uv2.size());
-    for(const auto &bone : mdl->vbo->bone_indices)
-    {
-        arrs.m_bones.emplace_back(bone.first);
-        arrs.m_bones.emplace_back(bone.second);
-        for(int idx = 2; idx<RS::ARRAY_WEIGHTS_SIZE; ++idx)
-        {
-            arrs.m_bones.emplace_back(0);
-        }
-    }
-    for (const auto& bone : mdl->vbo->bone_weights)
-    {
-        arrs.m_weights.emplace_back(bone[0]);
-        arrs.m_weights.emplace_back(bone[1]);
-        for (int idx = 2; idx < RS::ARRAY_WEIGHTS_SIZE; ++idx)
-        {
-            arrs.m_weights.emplace_back(0);
-        }
-    }
-
-    arrs.m_vertices_2d = false;
-    tgt->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,eastl::move(arrs));
 
 
-}
 static Ref<MeshLibrary> build_mesh_library(StringView path,Vector<String> &created_models)
 {
     Ref<MeshLibrary> res = make_ref_counted<MeshLibrary>();
@@ -370,16 +560,13 @@ static Ref<MeshLibrary> build_mesh_library(StringView path,Vector<String> &creat
     geosetLoadHeader(src,&gs);
     geosetLoadData(src,&gs);
     int idx=0;
+    Vector<SEGS::HTexture> model_textures = getModelTextures(gs.tex_names);
     for(SEGS::Model *mdl : gs.subs) {
-
-        Ref<ArrayMesh> secondary = make_ref_counted<ArrayMesh>();
-        String mdl_name = mdl->name.data();
-        SEGS::toSafeModelName(mdl_name.data(),mdl_name.size());
-        secondary->set_name(mdl_name);
+        Ref<ArrayMesh> secondary = modelCreateObjectFromModel(mdl, model_textures);
         String mesh_name(secondary->get_name()+String(".mesh"));
-        fillArrayMesh(mdl,secondary);
+
         created_models.push_back(base_path+"/"+mesh_name);
-        gResourceManager().save(base_path+"/"+mesh_name, secondary);
+        gResourceManager().save(base_path+"/"+mesh_name, secondary,ResourceManager::FLAG_COMPRESS);
         res->create_item(idx);
         res->set_item_mesh(idx,secondary);
         res->set_item_name(idx,secondary->get_name());
@@ -417,6 +604,9 @@ Error CoHMeshLibrary::import(StringView p_source_file, StringView p_save_path,
         }
     }
     assert(r_gen_files);
+
+    build_path_map();
+
     Ref<MeshLibrary> part_lib(build_mesh_library(p_source_file,*r_gen_files));
 
     return gResourceManager().save(String(p_save_path) + ".meshlib", part_lib);
