@@ -358,7 +358,8 @@ static bool convertChildren(SceneGraphInfo &sg,SEGS::SceneNode *n, Node3D *res)
             res->add_child(go);
             go->set_owner(sg.root_stack.back());
 
-//            Quat quat2 = Quat(Vector3(-child.m_pyr.x, child.m_pyr.y * 180 / M_PI, child.m_pyr.z * 180 / M_PI));
+            //            Quat quat2 = Quat(Vector3(-child.m_pyr.x, child.m_pyr.y * 180 / M_PI, child.m_pyr.z * 180 /
+            //            M_PI));
             Quat qPitch = Quat(Vector3(-1,0,0),child.m_pyr.x);
             Quat qYaw   = Quat(Vector3(0,1,0),child.m_pyr.y);
             Quat qRoll  = Quat(Vector3(0,0,1),child.m_pyr.z);
@@ -371,7 +372,8 @@ static bool convertChildren(SceneGraphInfo &sg,SEGS::SceneNode *n, Node3D *res)
 //
             ((Node3D*)go)->set_transform(res2);
 //            ((Node3D *)go)->set_rotation(Vector3(child.m_pyr.x,child.m_pyr.y,child.m_pyr.z));
-//            ((Node3D *)go)->set_translation(Vector3(child.m_translation.x,child.m_translation.y,child.m_translation.z));
+            //            ((Node3D
+            //            *)go)->set_translation(Vector3(child.m_translation.x,child.m_translation.y,child.m_translation.z));
             //((Node3D *)go)->set_transform(fromGLM(child.m_matrix2,child.m_translation));
         }
     }
@@ -425,7 +427,6 @@ static Node *convertFromRoot(SceneGraphInfo &sg, SEGS::SceneNode *n)
         //        return sg.lib->get_item_scene(lib_id)->instance();
         instance_that->set_filename(sg.lib->get_path() + "::" + StringUtils::num(lib_id));
         instance_that->set_name(String(String::CtorSprintf(),"%p_%s",instance_that,n->m_name.data()));
-        //return sg.lib->get_item_scene(lib_id)->instance();
         return instance_that;
     }
     Node *res = convertInternal(sg, n);
@@ -447,6 +448,9 @@ static Node *convertFromRoot(SceneGraphInfo &sg, SEGS::SceneNode *n)
     sc->set_path(sg.lib->get_path() + "::" + StringUtils::num(lib_id));
     sc->set_subindex(lib_id);
     auto instance_that = sc->instance(GEN_EDIT_STATE_INSTANCE);
+    //    LibraryEntryInstance *instance_that =memnew(LibraryEntryInstance);
+    //    instance_that->set_library_path(sg.lib->get_path());
+    //    instance_that->set_entry(n->m_name.data());
     instance_that->set_name(String(String::CtorSprintf(),"%p_%s",instance_that,n->m_name.data()));
     instance_that->set_filename(sg.lib->get_path() + "::" + StringUtils::num(lib_id));
     // We leave library as null to refer to ourselves.
@@ -457,12 +461,12 @@ static Node *convertFromRoot(SceneGraphInfo &sg, SEGS::SceneNode *n)
     return instance_that;
 }
 
-StringName CoHSceneLibrary::get_importer_name() const
+const char *CoHSceneLibrary::get_importer_name() const
 {
     return "coh_scenelib";
 }
 
-StringName CoHSceneLibrary::get_visible_name() const
+const char *CoHSceneLibrary::get_visible_name() const
 {
     return "CoH Scene Library";
 }
@@ -488,24 +492,18 @@ StringName CoHSceneLibrary::get_resource_type() const
     return "SceneLibrary";
 }
 
-int CoHSceneLibrary::get_preset_count() const
-{
-    return 0;
-}
-StringName CoHSceneLibrary::get_preset_name(int p_idx) const
+StringName CoHSceneLibrary::get_preset_name(int /*p_idx*/) const
 {
 
     return StringName();
 }
 
-void CoHSceneLibrary::get_import_options(Vector<ImportOption> *r_options, int p_preset) const {}
-
-bool CoHSceneLibrary::get_option_visibility(const StringName &p_option,
-    const HashMap<StringName, Variant> &p_options) const
+bool CoHSceneLibrary::get_option_visibility(const StringName & /*p_option*/,
+                                            const HashMap<StringName, Variant> &/*p_options*/) const
 {
     return true;
 }
-static bool nonAutoNodeName(const SEGS::SceneNode* node)
+static bool nonAutoNodeName(const SEGS::SceneNode * /*node*/)
 {
     return true;
 }
@@ -518,7 +516,7 @@ static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Ve
 {
     HashSet<String> exported_scene_roots;
     SceneGraphInfo  sg;
-    for (const auto &r : m_scene_graph.refs)
+    for (const auto &r : m_scene_graph.roots)
     {
         exported_scene_roots.insert(r->node->m_name.data());
     }
@@ -553,14 +551,13 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
                               const HashMap<StringName, Variant> &p_options, Vector<String> &r_missing_deps,
                               Vector<String> *r_platform_variants, Vector<String> *r_gen_files, Variant *r_metadata)
 {
-
-    Error res = Error::OK;
-
     using namespace StringUtils;
+
     SE_FSWrapper se_wrap;
-    // Check if the selected file is correctly located in the hierarchy, just to make sure.
     SceneGraphInfo sg_info;
     auto idx = StringUtils::find_last(p_source_file, "geobin");
+
+    // Check if the selected file is correctly located in the hierarchy, just to make sure.
     if (String::npos == idx)
     {
         PLUG_FAIL_V_MSG(ERR_CANT_OPEN, "The given source file is not located in geobin/ folder.");
@@ -589,9 +586,10 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
     }
     for(auto iter=m_scene_graph->m_requests.begin(); iter!= m_scene_graph->m_requests.end(); ++iter)
     {
-        QString packed_in = iter.key().base_file;
-        packed_in = packed_in + "/" + QFileInfo(packed_in).fileName() + ".bin";
+        QString packed_in    = iter.key().base_file + "/" + QFileInfo(packed_in).fileName() + ".bin";
         String needs_library = String("res://coh_data/geobin/")+qPrintable(packed_in);
+
+        qDebug() << packed_in;
 
         if(!FileAccess::exists(needs_library))
             needs_library = qPrintable(getFilepathCaseInsensitive(se_wrap,needs_library.c_str()));
@@ -617,9 +615,9 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
                 }
                 else
                 {
-                    assert(nullptr==m_scene_graph->refs[load_tgt.child_idx]->node);
+                    assert(nullptr==m_scene_graph->roots[load_tgt.child_idx]->node);
                     imported_node = new SEGS::SceneNode(0);
-                    m_scene_graph->refs[load_tgt.child_idx]->node = imported_node;
+                    m_scene_graph->roots[load_tgt.child_idx]->node = imported_node;
                 }
                 imported_node->m_engine_node = inst;
             }
@@ -641,12 +639,12 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
     r_missing_deps.clear();
     String save_path = String(PathUtils::get_basename(p_source_file)) + ".tscn";
 
-    if (!m_scene_graph->refs.empty())
+    if (!m_scene_graph->roots.empty())
     {
         Ref<PackedScene> secondary(make_ref_counted<PackedScene>());
         Node3D* root = memnew(Node3D);
         root->set_name(PathUtils::get_basename(p_source_file));
-        for(const auto & r : m_scene_graph->refs)
+        for(const auto & r : m_scene_graph->roots)
         {
             LibraryEntryInstance* entry;
             if (r->node->m_engine_node)
@@ -673,7 +671,7 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
             r_gen_files->push_back(save_path);
         }
     }
-    res = gResourceManager().save(String(p_save_path) + ".scenelib", part_lib);
+    Error res = gResourceManager().save(String(p_save_path) + ".scenelib", part_lib);
 //    auto v(part_lib->get_item_list());
 //    for(int i : v){
 //        gResourceManager().save(String(p_save_path) + StringUtils::num(i) + ".tscn", part_lib->get_item_scene(i));

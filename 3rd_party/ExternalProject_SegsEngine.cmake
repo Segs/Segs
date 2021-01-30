@@ -18,6 +18,9 @@ if(build_from_source)
     )
 
     add_library(SegsEngine::EASTL_Import INTERFACE IMPORTED)
+    file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include/SegsEngine)
+    file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin)
+    file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/lib)
 
     set_target_properties(SegsEngine::EASTL_Import PROPERTIES
       INTERFACE_COMPILE_DEFINITIONS "EASTL_USER_CONFIG_HEADER=\"EASTL/SegsEngine_config.h\""

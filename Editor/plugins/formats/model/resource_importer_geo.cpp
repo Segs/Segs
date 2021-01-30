@@ -242,7 +242,6 @@ SEGS::HTexture tryLoadTexture(const String &fname)
 
 Vector<SEGS::HTexture> getModelTextures(std::vector<QByteArray> &names)
     {
-        // a pre-converted texture file exists, load it instead
     uint32_t name_count = eastl::max<uint32_t>(1,names.size());
     Vector<SEGS::HTexture> res;
     res.reserve(name_count);
@@ -506,12 +505,12 @@ Ref<ArrayMesh> modelCreateObjectFromModel(SEGS::Model* model, Vector<SEGS::HText
 }
 
 
-StringName CoHMeshLibrary::get_importer_name() const
+const char *CoHMeshLibrary::get_importer_name() const
 {
     return "coh_modellib";
 }
 
-StringName CoHMeshLibrary::get_visible_name() const
+const char *CoHMeshLibrary::get_visible_name() const
 {
     return "CoH Model Library";
 }
@@ -565,8 +564,10 @@ static Ref<MeshLibrary> build_mesh_library(StringView path,Vector<String> &creat
         Ref<ArrayMesh> secondary = modelCreateObjectFromModel(mdl, model_textures);
         String mesh_name(secondary->get_name()+String(".mesh"));
 
+//        String mesh_name2(secondary->get_name()+String(".tres"));
         created_models.push_back(base_path+"/"+mesh_name);
         gResourceManager().save(base_path+"/"+mesh_name, secondary,ResourceManager::FLAG_COMPRESS);
+//        gResourceManager().save(base_path+"/"+mesh_name2, secondary);
         res->create_item(idx);
         res->set_item_mesh(idx,secondary);
         res->set_item_name(idx,secondary->get_name());

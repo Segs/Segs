@@ -3,6 +3,8 @@
 add_subdirectory(plugins)
 
 set(SOURCES
+    AuthClient.h
+    AuthClient.cpp
     main.cpp
     os_specific/app.rc
 )
