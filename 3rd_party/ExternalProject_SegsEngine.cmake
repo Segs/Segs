@@ -1,7 +1,7 @@
-set(SegsEngine_RELEASE 4.0.0.10)
+set(SegsEngine_RELEASE 4.0.0.14)
 set(build_from_source ON)
 if(MSVC)
-	set(build_from_source OFF)
+    set(build_from_source OFF)
 endif()
 
 if(build_from_source)
@@ -25,6 +25,8 @@ if(build_from_source)
 
     )
 
+    add_executable(SegsEngine::binding_generator IMPORTED GLOBAL)
+    add_dependencies(SegsEngine::binding_generator editor_engine-${SegsEngine_RELEASE})
 
     add_library(SegsEngine::editor_engine SHARED IMPORTED GLOBAL)
     add_dependencies(SegsEngine::editor_engine editor_engine-${SegsEngine_RELEASE})
@@ -38,12 +40,26 @@ if(build_from_source)
       INTERFACE_LINK_LIBRARIES "Qt5::Core;SegsEngine::EASTL_Import"
     )
     set_property(TARGET SegsEngine::editor_engine APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+    if(WIN32)
+        set_target_properties(SegsEngine::binding_generator PROPERTIES
+            IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/binding_generator.exe"
+        )
     set_target_properties(SegsEngine::editor_engine PROPERTIES
-      IMPORTED_LOCATION_DEBUG "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/editor_engine.dll"
+          IMPORTED_LOCATION_DEBUG "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/editor_engine.dll"
       IMPORTED_IMPLIB "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/lib/editor_engine.lib"
       IMPORTED_SONAME_DEBUG "libeditor_engine.so"
       INTERFACE_LINK_LIBRARIES "SegsEngine::editor_interface"
     )
+    else()
+        set_target_properties(SegsEngine::binding_generator PROPERTIES
+            IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/binding_generator"
+        )
+        set_target_properties(SegsEngine::editor_engine PROPERTIES
+          IMPORTED_LOCATION_DEBUG "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/libeditor_engine.so"
+          IMPORTED_SONAME_DEBUG "libeditor_engine.so"
+          INTERFACE_LINK_LIBRARIES "SegsEngine::editor_interface"
+        )
+    endif()
 
 else()
 
@@ -85,8 +101,8 @@ macro(set_engine_plugin_options )
     set_target_properties (${tgt_name} PROPERTIES
         FOLDER plugins/${group_folder}
     )
-	foreach(tgt ${targets_dep})
-		add_dependencies(${tgt} ${tgt_name})
-	endforeach()
+    foreach(tgt ${targets_dep})
+        add_dependencies(${tgt} ${tgt_name})
+    endforeach()
 endmacro()
 
