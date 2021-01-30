@@ -201,19 +201,19 @@ QByteArray mapNameToPath(const QByteArray &name,LoadingContext &ctx)
 RootNode *newRef(SceneGraph &scene)
 {
     size_t idx;
-    for(idx=0; idx<scene.refs.size(); ++idx)
-        if(!scene.refs[idx])
+    for(idx=0; idx<scene.roots.size(); ++idx)
+        if(!scene.roots[idx])
             break;
 
-    if(idx>=scene.refs.size())
+    if(idx>=scene.roots.size())
     {
-        idx = scene.refs.size();
-        scene.refs.emplace_back();
+        idx = scene.roots.size();
+        scene.roots.emplace_back();
     }
 
-    scene.refs[idx] = new RootNode;
-    scene.refs[idx]->index_in_roots_array = idx;
-    return scene.refs[idx];
+    scene.roots[idx] = new RootNode;
+    scene.roots[idx]->index_in_roots_array = idx;
+    return scene.roots[idx];
 }
 
 void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore &store)
