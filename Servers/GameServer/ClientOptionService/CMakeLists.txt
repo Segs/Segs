@@ -24,5 +24,5 @@ endif()
 get_target_property(TARGET_SOURCES ClientOptionService SOURCES) 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
 set_target_properties (ClientOptionService PROPERTIES
-    FOLDER Projects/CoX/Servers/GameServer_Handlers
+    FOLDER Servers/GameServer_Handlers
 )

@@ -40,16 +40,16 @@ void generate_cpp(const std::vector<DefFile> &files,const QString &group_name,co
     tgt_stream << "// THIS FILE WAS GENERATED, DO NOT EDIT\n";
     if(group_name=="MapServerEvents")
         {
-            tgt_stream << "#include \"BitStream.h\"\n";
+            tgt_stream << "#include \"Components/BitStream.h\"\n";
         }
     for(const DefFile &d : files)
     {
         tgt_stream << QString("#include \"%1\"\n\n").arg(d.source_name);
     }
 
-    tgt_stream << QString("#include \"SEGSEventFactory.h\"\n");
-    tgt_stream << "#include \"serialization_common.h\"\n\n";
-    tgt_stream << "#include \"serialization_types.h\"\n\n";
+    tgt_stream << QString("#include \"Components/SEGSEventFactory.h\"\n");
+    tgt_stream << "#include \"Components/serialization_common.h\"\n\n";
+    tgt_stream << "#include \"Components/serialization_types.h\"\n\n";
     tgt_stream << "#include <QDebug>\n\n";
     tgt_stream << "using namespace SEGSEvents;\n\n";
     for(const DefFile &d : files)

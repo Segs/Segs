@@ -6,9 +6,9 @@
  */
 
 #include "PlayerStatistics.h"
-#include "Logging.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/Logging.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 
 
 template<class Archive>

@@ -190,7 +190,7 @@ inline void geoUnpackDeltas(const DeltaPack *src, glm::vec3 *unpacked_data, uint
     geoUnpackDeltas(src, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_FLOATS);
 }
 
-inline void geoUnpackDeltas(const DeltaPack *src, glm::ivec3 *unpacked_data, uint32_t num_entries)
+inline void geoUnpackDeltas(const DeltaPack *src, int *unpacked_data, uint32_t num_entries)
 {
     geoUnpackDeltas(src, (uint8_t *)unpacked_data, 3, num_entries, UNPACK_INTS);
 }
@@ -269,15 +269,16 @@ static Model *convertAndInsertModel(GeoSet &tgt, const Model32 *v)
     return z;
 }
 
-static void convertTextureNames(const int *a1, std::vector<QString> &a2)
+static void convertTextureNames(const int *a1, std::vector<QByteArray> &a2)
 {
     int   num_textures          = a1[0];
     const int * indices         = a1 + 1;
     const char *start_of_strings_area = (const char *)a1 + num_textures * 4 + sizeof(int);
+    a2.reserve(num_textures);
     for(int idx = 0; idx < num_textures; ++idx)
     {
         // fixup the offsets by adding the end of index area
-        a2.push_back(start_of_strings_area + indices[idx]);
+        a2.emplace_back(start_of_strings_area + indices[idx]);
     }
 }
 
@@ -304,7 +305,6 @@ void geosetLoadHeader(QIODevice *fp, GeoSet *geoset)
     stream_pos_1            = stream_pos_0 + info->bone_names_size;
     const GeosetHeader32 *header32  = (const GeosetHeader32 *)(stream_pos_1 + info->tex_binds_size);
     const Model32 *     ptr_subs  = (Model32 *)(stream_pos_1 + info->tex_binds_size + sizeof(GeosetHeader32));
-    geoset->parent_geoset = geoset;
     geoset->name = header32->name;
     bool has_alt_pivot=false;
     for(int idx = 0; idx < header32->num_subs; ++idx)
@@ -319,7 +319,7 @@ void geosetLoadHeader(QIODevice *fp, GeoSet *geoset)
         Model *m    = convertAndInsertModel(*geoset, sub_model);
         m->texture_bind_info = binds;
         m->geoset       = geoset;
-        m->name         = QString((const char *)stream_pos_0 + sub_model->bone_name_offset);
+        m->name         = QByteArray((const char *)stream_pos_0 + sub_model->bone_name_offset);
     }
 
     if(!geoset->subs.empty())
@@ -349,48 +349,52 @@ void modelFixup(const Model &model,VBOPointers &vbo)
             vbo.uv2[i].y = 1.0f - vbo.uv2[i].y;
     }
 
-    for(HTexture tex : vbo.assigned_textures)
-    {
-        if(!tex->info)
-            continue;
+//    for(HTexture tex : vbo.assigned_textures)
+//    {
+//        if(!tex->info)
+//            continue;
 
-        if( 1.0f != tex->scaleUV0.x || 1.0f != tex->scaleUV0.y ||
-             1.0f != tex->scaleUV1.x || 1.0f != tex->scaleUV1.y )
-            texture_scaling_used = true;
-    }
+//        if( 1.0f != tex->scaleUV0.x || 1.0f != tex->scaleUV0.y ||
+//             1.0f != tex->scaleUV1.x || 1.0f != tex->scaleUV1.y )
+//            texture_scaling_used = true;
+//    }
 
-    if(!texture_scaling_used)
-        return;
+//    if(!texture_scaling_used)
+//        return;
 
-    std::vector<bool> vertex_uv_was_scaled(model.vertex_count);
-    uint32_t triangle_offset = 0;
-    for(uint32_t j = 0; j < model.num_textures; ++j )
-    {
-        TextureWrapper &tex(vbo.assigned_textures[j].get());
-        const uint32_t bind_tri_count = model.texture_bind_info[j].tri_count;
-        if(!tex.info)
-            continue;
+//    std::vector<bool> vertex_uv_was_scaled(model.vertex_count);
+//    uint32_t triangle_offset = 0;
+//    for(uint32_t j = 0; j < model.num_textures; ++j )
+//    {
+//        TextureWrapper &tex(vbo.assigned_textures[j].get());
+//        const uint32_t bind_tri_count = model.texture_bind_info[j].tri_count;
+//        if(!tex.info)
+//            continue;
 
-        glm::vec2 scaletex0 = tex.scaleUV0;
-        glm::vec2 scaletex1 = tex.scaleUV1;
-        for(uint32_t tri_idx = 0; tri_idx < bind_tri_count; ++tri_idx)
-        {
-            glm::ivec3 tri(vbo.triangles[tri_idx+triangle_offset]);
-            for(int vnum=0; vnum<3; ++vnum)
-            {
-                const uint32_t vert_idx = tri[vnum];
-                if(vertex_uv_was_scaled[vert_idx])
-                    continue;
+//        glm::vec2 scaletex0 = tex.scaleUV0;
+//        glm::vec2 scaletex1 = tex.scaleUV1;
+//        for(uint32_t tri_idx = 0; tri_idx < bind_tri_count; ++tri_idx)
+//        {
+//            int *tri(vbo.triangles.data()+(tri_idx+triangle_offset)*3);
+//            for(int vnum=0; vnum<3; ++vnum)
+//            {
+//                const uint32_t vert_idx = tri[vnum];
+//                if(vertex_uv_was_scaled[vert_idx])
+//                    continue;
 
-                vertex_uv_was_scaled[vert_idx] = true;
-                vbo.uv2[vert_idx].x *= scaletex0.x;
-                vbo.uv2[vert_idx].y *= scaletex0.y;
-                vbo.uv1[vert_idx].x *= scaletex1.x;
-                vbo.uv1[vert_idx].y *= scaletex1.y;
-            }
-        }
-        triangle_offset += bind_tri_count;
-    }
+//                vertex_uv_was_scaled[vert_idx] = true;
+//                vbo.uv2[vert_idx].x *= scaletex0.x;
+//                vbo.uv2[vert_idx].y *= scaletex0.y;
+//                vbo.uv1[vert_idx].x *= scaletex1.x;
+//                vbo.uv1[vert_idx].y *= scaletex1.y;
+//            }
+//        }
+//        triangle_offset += bind_tri_count;
+//    }
+
+
+
+
 }
 
 static bool bumpMapped(const Model &model)
@@ -401,8 +405,8 @@ static bool bumpMapped(const Model &model)
 std::unique_ptr<VBOPointers> fillVbo(const Model &model)
 {
     std::unique_ptr<VBOPointers> vbo = std::make_unique<VBOPointers>();
-    std::vector<glm::ivec3> &triangles(vbo->triangles);
-    triangles.resize(model.model_tri_count);//, 1, ".\\render\\model_cache.c", 138);
+    std::vector<int> &triangles(vbo->triangles);
+    triangles.resize(model.model_tri_count*3);//, 1, ".\\render\\model_cache.c", 138);
     geoUnpackDeltas(&model.packed_data.tris, triangles.data(), model.model_tri_count);
     uint32_t total_size = 0;
     uint32_t Vertices3D_bytes = sizeof(glm::vec3) * model.vertex_count;
@@ -494,94 +498,12 @@ void geosetLoadData(QIODevice *fp, GeoSet *geoset)
     geoset->data_loaded = true;
 }
 
-void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model *model,const std::vector<HTexture> &textures)
+
+void toSafeModelName(char *inp, int cnt)
 {
-    model->blend_mode = CoHBlendMode::MULTIPLY_REG;
-    bool isgeo=false;
-    if(model->name.startsWith("GEO_",Qt::CaseInsensitive))
-    {
-        model->flags |= OBJ_DRAW_AS_ENT;
-        isgeo = true;
-        if(model->name.contains("eyes",Qt::CaseInsensitive) )
-        {
-            if(!model->trck_node)
-                model->trck_node = new ModelModifiers;
-            model->trck_node->_TrickFlags |= DoubleSided;
-        }
-    }
-    assert(model->num_textures==model->texture_bind_info.size());
-    for(TextureBind tbind : model->texture_bind_info)
-    {
-        HTexture seltex = textures[tbind.tex_idx];
-        if(!seltex)
-        {
-            // missing texture, nothing to do here
-            continue;
-        }
-
-        TextureWrapper &base_tex(seltex.get());
-        if(!isgeo && base_tex.info)
-        {
-            auto blend = CoHBlendMode(base_tex.info->BlendType);
-            if(blend == CoHBlendMode::ADDGLOW || blend == CoHBlendMode::COLORBLEND_DUAL ||
-                blend == CoHBlendMode::ALPHADETAIL)
-                seltex = funcloader(base_tex.detailname);
-            if(seltex && seltex->flags & TextureWrapper::ALPHA)
-                model->flags |= OBJ_ALPHASORT;
-        }
-
-        if( base_tex.flags & TextureWrapper::DUAL )
-        {
-            model->flags |= OBJ_DUALTEXTURE;
-            if( base_tex.BlendType != CoHBlendMode::MULTIPLY )
-                model->blend_mode = base_tex.BlendType;
-        }
-
-        if( !base_tex.bumpmap.isEmpty() )
-        {
-            HTexture wrap = funcloader(base_tex.bumpmap);
-            if( wrap->flags & TextureWrapper::BUMPMAP )
-            {
-                model->flags |= OBJ_BUMPMAP;
-                model->blend_mode = (model->blend_mode == CoHBlendMode::COLORBLEND_DUAL) ?
-                            CoHBlendMode::BUMPMAP_COLORBLEND_DUAL : CoHBlendMode::BUMPMAP_MULTIPLY;
-            }
-            if( base_tex.flags & TextureWrapper::CUBEMAPFACE || (wrap->flags & TextureWrapper::CUBEMAPFACE) )
-                model->flags |= OBJ_CUBEMAP;
-        }
-    }
-
-    if( model->trck_node && model->trck_node->info)
-    {
-        model->flags |= model->trck_node->info->ObjFlags;
-    }
-
-    if( model->blend_mode == CoHBlendMode::COLORBLEND_DUAL || model->blend_mode == CoHBlendMode::BUMPMAP_COLORBLEND_DUAL )
-    {
-        if( !model->trck_node )
-            model->trck_node = new ModelModifiers;
-        model->trck_node->_TrickFlags |= SetColor;
-    }
-
-    if( model->blend_mode == CoHBlendMode::ADDGLOW )
-    {
-        if( !model->trck_node )
-            model->trck_node = new ModelModifiers;
-        model->trck_node->_TrickFlags |= SetColor | NightLight;
-    }
-
-    if( !model->packed_data.norms.uncomp_size ) // no normals
-        model->flags |= OBJ_FULLBRIGHT; // only ambient light
-    if( model->trck_node  && model->trck_node->_TrickFlags & Additive )
-        model->flags |= OBJ_ALPHASORT; // alpha pass
-    if( model->flags & OBJ_FORCEOPAQUE ) // force opaque
-        model->flags &= ~OBJ_ALPHASORT;
-
-    if( model->trck_node && model->trck_node->info)
-    {
-        if( model->trck_node->info->blend_mode )
-            model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
-    }
+    for(int i=0; i<cnt; ++i)
+        if(inp[i]=='?')
+            inp[i] = '^';
 }
 
 } // end SEGS namespace

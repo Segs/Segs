@@ -16,7 +16,7 @@
 #include "GameData/Entity.h"
 #include "GameData/Movement.h"
 #include "GameData/CoHMath.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 #include <glm/gtc/constants.hpp>
 #include <cmath>

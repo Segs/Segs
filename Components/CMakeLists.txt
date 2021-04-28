@@ -1,7 +1,3 @@
-if(ENABLE_SCRIPTING_ENGINE_MRUBY)
-    ADD_SUBDIRECTORY(Scripting)
-endif()
-
 SET(target_CPP
     serialization_types.cpp
     serialization_common.cpp
@@ -42,8 +38,8 @@ SET(target_INCLUDE
 SET(target_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 SET (target_SOURCES
-${target_CPP}
-${target_INCLUDE}
+    ${target_CPP}
+    ${target_INCLUDE}
 )
 INCLUDE_DIRECTORIES(${target_INCLUDE_DIR})
 scan_event_types(Common ${CMAKE_CURRENT_SOURCE_DIR})
@@ -61,6 +57,7 @@ ENDIF()
 if(ENABLE_TESTS)
     add_subdirectory(UnitTests)
 endif()
+target_include_directories(SEGS_Components INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
 # Retain directory structure in visual studio
 get_target_property(TARGET_SOURCES SEGS_Components SOURCES) 

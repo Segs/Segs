@@ -1,20 +1,18 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2020 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
 #include "TeamHandler.h"
-#include "SEGSEventFactory.h"
+#include "Components/SEGSEventFactory.h"
 #include "Messages/Game/GameEvents.h"
 #include "Common/Servers/HandlerLocator.h"
 #include "Messages/TeamService/TeamEvents.h"
 #include "Messages/UserRouterService/UserRouterEvents.h"
 #include "Messages/Map/MessageChannels.h"
 #include <QtCore/QDebug>
-
-#include "SEGSEventFactory.h"
 
 using namespace SEGSEvents;
 
@@ -393,6 +391,7 @@ void TeamHandler::on_team_member_invited(TeamMemberInvitedMessage *msg)
         if (e != TeamingError::OK)
         {
             qCritical() << "Error adding entity ID to new team" << int(e);
+            delete leader_team;
             return;
         }
 

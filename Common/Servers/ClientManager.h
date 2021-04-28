@@ -8,9 +8,9 @@
 #pragma once
 #include "Common/CRUDP_Protocol/ILink.h"
 #include "InternalEvents.h"
-#include "SEGSEvent.h"
-#include "SEGSTimer.h"
-#include "Logging.h"
+#include "Components/SEGSEvent.h"
+#include "Components/SEGSTimer.h"
+#include "Components/Logging.h"
 
 #include <ace/OS_NS_time.h>
 

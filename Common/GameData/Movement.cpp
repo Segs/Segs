@@ -20,7 +20,7 @@
 #include "Common/GameData/CoHMath.h"
 #include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/playerdata_definitions.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 #include <glm/gtx/vector_query.hpp>
 #include <glm/ext.hpp>

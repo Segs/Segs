@@ -15,7 +15,7 @@
 #include "MapServer.h"
 #include "MapInstance.h"
 #include "MessageHelpers.h"
-#include "TimeHelpers.h"
+#include "Components/TimeHelpers.h"
 
 #include "GameData/GameDataStore.h"
 #include "GameData/ClientStates.h"
@@ -54,7 +54,8 @@
 #include "Common/Messages/Map/TimeUpdate.h"
 #include "Common/Messages/Map/TrayAdd.h"
 #include "Common/Messages/Map/VisitMapCells.h"
-#include "Logging.h"
+#include "ScriptingEngine/ScriptingEngine.h"
+#include "Components/Logging.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>

@@ -14,10 +14,10 @@
 
 #include "GameData/Powers.h"
 #include "power_serializers.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 
-#include "Logging.h"
+#include "Components/Logging.h"
 
 void saveTo(const PowerTrayGroup &target, const QString &baseName, bool text_format)
 {

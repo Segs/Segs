@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
 
 #include <ace/ACE.h>
 #include <ace/Synch.h>

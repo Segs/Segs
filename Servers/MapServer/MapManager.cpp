@@ -12,7 +12,7 @@
 
 #include "MapManager.h"
 #include "GameData/map_definitions.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "MapTemplate.h"
 
 #include <QString>

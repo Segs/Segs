@@ -25,5 +25,5 @@ endif()
 get_target_property(TARGET_SOURCES TeamService SOURCES) 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
 set_target_properties (TeamService PROPERTIES
-    FOLDER Projects/CoX/Servers/GameServer
+    FOLDER Servers/GameServer_Handlers
 )

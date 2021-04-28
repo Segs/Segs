@@ -15,7 +15,7 @@
 #include "Character.h"
 #include "CharacterHelpers.h"
 #include "Powers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "GameData/playerdata_definitions.h"
 
 /*

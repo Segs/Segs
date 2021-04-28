@@ -34,8 +34,6 @@ struct URG {
             (uint32_t(b)<<16) |
             (uint32_t(a)<<24);
     }
-    //my_groupfileload_4C2460 thinks v&0xFF is alpha
-    //my_light_493560 thinks otherwise ??
     uint8_t R() const { return v & 0xFF; }
     uint8_t G() const { return (v>>8) & 0xFF; }
     uint8_t B() const { return (v>>16) & 0xFF; }

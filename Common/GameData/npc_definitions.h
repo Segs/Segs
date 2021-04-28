@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Colors.h"
+#include "Components/Colors.h"
 
 #include <QString>
 #include <vector>

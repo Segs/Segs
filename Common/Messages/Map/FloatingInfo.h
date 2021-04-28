@@ -9,7 +9,7 @@
 #include "GameCommand.h"
 #include "MapEventTypes.h"
 #include "FloatingInfoStyles.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 #include <QtCore/QString>
 

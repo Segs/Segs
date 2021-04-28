@@ -13,7 +13,7 @@
 #include "NpcStore.h"
 
 #include "npc_definitions.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 void NPCStorage::prepare_dictionaries()
 {

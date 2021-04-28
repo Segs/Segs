@@ -7,13 +7,14 @@
 
 #pragma once
 
+#include "Components/serialization_common.h"
+
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 #include <vector>
 #include <map>
 #include <type_traits>
 
-#include "serialization_common.h"
 struct RGBA;
 
 typedef glm::vec3 Vec3;
@@ -24,7 +25,7 @@ class BinStore // binary storage
         QString name;
         uint32_t date=0;
     };
-    QIODevice *m_str=nullptr;
+    QIODevice *m_str = nullptr;
     size_t bytes_read=0;
     uint32_t bytes_to_read=0;
     std::vector<uint32_t> m_file_sizes; // implicit stack
@@ -104,4 +105,6 @@ public:
     void        nest_out() { m_file_sizes.pop_back(); }
     bool        end_encountered() const;
     bool        open(FSWrapper &fs,const QString & name, uint32_t required_crc);
+                ~BinStore();
+
 };

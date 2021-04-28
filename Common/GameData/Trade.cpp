@@ -16,7 +16,7 @@
 #include "EntityHelpers.h"
 #include "Character.h"
 #include "CharacterHelpers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "Powers.h"
 
 namespace {

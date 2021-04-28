@@ -11,8 +11,8 @@
  */
 
 #include "AuthLink.h"
-#include "Buffer.h"
-#include "Logging.h"
+#include "Components/Buffer.h"
+#include "Components/Logging.h"
 
 #include "AuthProtocol/AuthOpcodes.h"
 #include "AuthProtocol/AuthEventFactory.h"

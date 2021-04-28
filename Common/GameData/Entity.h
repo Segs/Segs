@@ -9,7 +9,7 @@
 #include "CharacterData.h"
 #include "CommonNetStructures.h"
 #include "Costume.h"
-#include "FixedPointValue.h"
+#include "Components/FixedPointValue.h"
 #include "Movement.h"
 #include "Powers.h"
 #include "Team.h"

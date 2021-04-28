@@ -15,9 +15,9 @@
 #include "Servers/MessageBus.h"
 #include "Servers/MessageBusEndpoint.h"
 #include "Servers/InternalEvents.h"
-#include "SEGSTimer.h"
-#include "Settings.h"
-#include "Logging.h"
+#include "Components/SEGSTimer.h"
+#include "Components/Settings.h"
+#include "Components/Logging.h"
 #include "Version.h"
 //////////////////////////////////////////////////////////////////////////
 

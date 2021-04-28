@@ -30,7 +30,7 @@ GeoSet *findAndPrepareGeoSet(FSWrapper &fs,const QString &fname,const QString &b
     {
         geoset = new GeoSet;
         //TODO: QDir(base_path).relativeFilePath(true_path) should be provided by fs service.
-        geoset->geopath = QDir(base_path).relativeFilePath(true_path);
+        geoset->geopath = QDir(base_path).relativeFilePath(true_path).toUtf8();
         geosetLoadHeader(fp, geoset);
         fp->seek(0);
         s_name_to_geoset[fname] = geoset;
@@ -66,8 +66,10 @@ Model *PrefabStore::modelFind(const QString &geoset_name, const QString &model_n
     }
 
     GeoSet *geoset = geosetLoad(*ctx.fs_wrap,geoset_name, m_base_path);
-    if(!geoset) // failed to load the geometry set
+    if(!geoset) { // failed to load the geometry set
+        m_missing_geosets.insert(geoset_name.toUtf8());
         return nullptr;
+    }
 
     int end_of_name_idx = model_name.indexOf("__");
     if(end_of_name_idx == -1)
@@ -98,15 +100,15 @@ bool PrefabStore::prepareGeoLookupArray(const QString &base_path)
         return false;
     }
 
-    QString lookup_str;
+    QByteArray lookup_str;
     GeoStoreDef *current_geosetinf = nullptr;
     QByteArrayList defnames_arr = defnames.readAll().replace("CHUNKS.geo", "Chunks.geo").split('\0');
-    for(QString str : defnames_arr)
+    for(QByteArray str : defnames_arr)
     {
         int last_slash = str.lastIndexOf('/');
         if(-1 != last_slash)
         {
-            QString geo_path = str.mid(0, last_slash);
+            QByteArray geo_path = str.mid(0, last_slash);
             lookup_str = geo_path.toLower();
             current_geosetinf = &m_dir_to_geoset[lookup_str];
             current_geosetinf->geopath = geo_path;
@@ -147,31 +149,47 @@ bool PrefabStore::loadPrefabForNode(SceneNode *node, LoadingContext &ctx) //grou
 
     return true;
 }
-bool PrefabStore::loadNamedPrefab(const QString &name, LoadingContext &ctx) //groupFileLoadFromName
+bool PrefabStore::loadNamedPrefab(const QByteArray &name, LoadingContext &ctx, NodeLoadRequest* load_request) //groupFileLoadFromName
 {
     GeoStoreDef *geo_store = groupGetFileEntryPtr(name);
     if(!geo_store)
         return false;
+    if(ctx.prevent_nesting)
+    {
+        if(load_request)
+        {
+            QFileInfo geofi(geo_store->geopath);
+            QString base_file = geofi.path();
+            load_request->base_file = base_file.toUtf8();
+            load_request->node_name = qPrintable(QFileInfo(name).fileName());
+            assert(geo_store->entries.contains(load_request->node_name));
+        }
+    }
     if(geo_store->loaded)
         return true;
 
     geo_store->loaded = true;
+    if (ctx.prevent_nesting)
+        return true;
     // load given prefab's geoset
-    geosetLoad(*ctx.fs_wrap,geo_store->geopath, m_base_path);
+    GeoSet *gs = geosetLoad(*ctx.fs_wrap,geo_store->geopath, m_base_path);
+    if(!gs) {
+
+    }
     loadSubgraph(geo_store->geopath,ctx,*this);
     return loadPrefabForNode(getNodeByName(*ctx.m_target,name), ctx);
 }
 
-Model *PrefabStore::groupModelFind(const QString &path, LoadingContext &ctx)
+Model *PrefabStore::groupModelFind(const QByteArray &path, LoadingContext &ctx)
 {
-    QString model_name = path.mid(path.lastIndexOf('/') + 1);
+    QByteArray model_name = path.mid(path.lastIndexOf('/') + 1);
     auto val = groupGetFileEntryPtr(model_name);
     return val ? modelFind(val->geopath, model_name,ctx) : nullptr;
 }
 
-GeoStoreDef * PrefabStore::groupGetFileEntryPtr(const QString &full_name)
+GeoStoreDef * PrefabStore::groupGetFileEntryPtr(const QByteArray &full_name)
 {
-    QString key = full_name.mid(full_name.lastIndexOf('/') + 1);
+    QByteArray key = full_name.mid(full_name.lastIndexOf('/') + 1);
     key = key.mid(0, key.indexOf("__"));
     return m_modelname_to_geostore.value(key, nullptr);
 }

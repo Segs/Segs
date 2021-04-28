@@ -35,5 +35,5 @@ target_link_libraries(common_runtime INTERFACE gameData )
 get_target_property(TARGET_SOURCES common_runtime SOURCES) 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
 set_target_properties (common_runtime PROPERTIES
-    FOLDER Projects/CoX/Common
+    FOLDER Common
 )

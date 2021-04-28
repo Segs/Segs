@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "CommonNetStructures.h"
-#include "serialization_common.h"
-#include "BitStream.h"
+#include "Common/GameData/CommonNetStructures.h"
+#include "Components/serialization_common.h"
+#include "Components/BitStream.h"
 
 #include <QtCore/QString>
 #include <vector>

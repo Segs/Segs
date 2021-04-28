@@ -13,7 +13,7 @@
 #include "keybind_definitions.h"
 
 #include "GameDataStore.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 QString makeKeyString(const KeyName &key, const ModKeys &mods)
 {

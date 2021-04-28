@@ -6,9 +6,9 @@
  */
 
 #include "PlayerProgress.h"
-#include "Logging.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/Logging.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 #include "cereal/types/map.hpp"
 #include "cereal/types/vector.hpp"
 

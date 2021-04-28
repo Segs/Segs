@@ -11,7 +11,7 @@
 #include "Contact.h"
 #include "glm/vec3.hpp"
 #include "cereal/cereal.hpp"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 class Task
 {

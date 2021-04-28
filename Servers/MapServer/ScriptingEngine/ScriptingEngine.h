@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "ScriptingEnginePrivate.h"
 #include "Common/GameData/Contact.h"
 #include "Common/GameData/Entity.h"
 #include <array>
@@ -21,6 +20,7 @@
 class QString;
 struct MapClientSession;
 class MapInstance;
+class ScriptingEnginePrivate;
 
 class ScriptingEngine
 {

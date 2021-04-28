@@ -14,7 +14,7 @@
 #include "GameData/CoHMath.h"
 #include "GameData/GameDataStore.h"
 #include "EntityStorage.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "Common/GameData/Character.h"
 #include "Common/Runtime/Prefab.h"
 #include "Common/Runtime/SceneGraph.h"
@@ -42,7 +42,7 @@ MapSceneGraph::~MapSceneGraph()
 
 }
 
-bool MapSceneGraph::loadFromFile(const QString &filename)
+bool MapSceneGraph::loadFromFile(const QByteArray &filename)
 {
     QFSWrapper wrap;
     m_scene_graph.reset(loadWholeMap(&wrap, filename));
@@ -274,7 +274,7 @@ void MapSceneGraph::spawn_npcs(MapInstance *instance)
     creator.map_instance = instance;
     glm::mat4 initial_pos(1);
 
-    for(auto v : m_scene_graph->refs)
+    for(auto v : m_scene_graph->roots)
         walkSceneNode(v->node, v->mat, creator);
 }
 
@@ -306,7 +306,7 @@ QMultiHash<QString, glm::mat4> MapSceneGraph::getSpawnPoints() const
 {
     QMultiHash<QString, glm::mat4> res;
     SpawnPointLocator locator(&res);
-    for(auto v : m_scene_graph->refs)
+    for(auto v : m_scene_graph->roots)
         walkSceneNode(v->node, v->mat, locator);
 
     return res;
@@ -375,7 +375,7 @@ QHash<QString, MapXferData> MapSceneGraph::get_map_transfers() const
 {
     QHash<QString, MapXferData> res;
     MapXferLocator locator(&res);
-    for (auto v : m_scene_graph->refs)
+    for (auto v : m_scene_graph->roots)
     {
         walkSceneNode(v->node, v->mat, locator);
     }

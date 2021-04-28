@@ -13,11 +13,12 @@
 #include "Character.h"
 
 #include "CharacterHelpers.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 #include "Entity.h"
 #include "Costume.h"
 #include "Friend.h"
-#include "serialization_common.h"
+#include "Components/Settings.h"
+#include "Components/serialization_common.h"
 #include "Messages/GameDatabase/GameDBSyncEvents.h"
 #include "GameData/chardata_serializers.h"
 #include "GameData/entitydata_serializers.h"
@@ -25,10 +26,10 @@
 #include "GameData/playerdata_serializers.h"
 #include "GameData/GameDataStore.h"
 #include "Servers/MapServer/DataHelpers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
+
 #include <QtCore/QString>
 #include <QtCore/QDebug>
-#include "Settings.h"
 
 using namespace SEGSEvents;
 

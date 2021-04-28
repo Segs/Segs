@@ -8,7 +8,7 @@
 #pragma once
 #include "MapEventTypes.h"
 #include "GameCommand.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 enum class TeamOfferType :  uint8_t
 {

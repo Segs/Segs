@@ -6,9 +6,10 @@
  */
 
 #pragma once
-#include "CommonNetStructures.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include <glm/gtc/quaternion.hpp> // for quat
+
+class BitStream;
 
 enum BinaryControl
 {

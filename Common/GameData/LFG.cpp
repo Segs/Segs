@@ -14,7 +14,7 @@
 
 #include "Servers/MapServer/DataHelpers.h"
 #include "Entity.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "Character.h"
 
 /*

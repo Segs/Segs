@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
 #include <vector>
 
 /**

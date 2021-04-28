@@ -11,7 +11,7 @@
  */
 
 #include "DataStorage.h"
-#include "Colors.h"
+#include "Components/Colors.h"
 
 #include <QtCore/QString>
 #include <QtCore/QFileInfo>
@@ -107,6 +107,16 @@ bool BinStore::open(FSWrapper& fs, const QString &name,uint32_t required_crc )
     }
     bool result = check_bin_version_and_crc(required_crc);
     return result && read_data_blocks(true);
+}
+
+BinStore::~BinStore()
+{
+    if(m_str && m_str->isOpen())
+    {
+        m_str->close();
+    }
+    delete m_str;
+    m_str = nullptr;
 }
 
 bool BinStore::read( uint32_t &v )

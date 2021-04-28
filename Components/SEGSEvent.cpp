@@ -10,7 +10,7 @@
  * @{
  */
 
-#include "SEGSEvent.h"
+#include "Components/SEGSEvent.h"
 #include "SEGSEventFactory.h"
 
 using namespace SEGSEvents;

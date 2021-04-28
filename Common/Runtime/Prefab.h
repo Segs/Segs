@@ -6,27 +6,28 @@
  */
 
 #pragma once
-#include "Common/Runtime/AxisAlignedBox.h"
+#include "Components/serialization_common.h"
 
-#include <vector>
 #include <QStringList>
 #include <QHash>
+#include <QSet>
 
-#include "serialization_common.h"
+#include <vector>
+
 
 namespace SEGS
 {
+struct NodeLoadRequest;
 struct Model;
 struct SceneGraph;
 struct SceneNode;
 
 struct GeoSet
 {
-    QString              geopath;
-    QString              name;
-    GeoSet *             parent_geoset = nullptr;
+    QByteArray           geopath;
+    QByteArray           name;
     std::vector<Model *> subs;
-    std::vector<QString> tex_names;
+    std::vector<QByteArray> tex_names;
     std::vector<char>    m_geo_data;
     uint32_t             geo_data_size;
     bool                 data_loaded = false;
@@ -36,41 +37,44 @@ Model *getModelById(GeoSet *gset, int id);
 // Geo file info
 struct GeoStoreDef
 {
-    QString geopath;        //!< a path to a .geo file
-    QStringList entries;    //!< the names of models contained in a geoset
+    QByteArray geopath;        //!< a path to a .geo file
+    QByteArrayList entries;    //!< the names of models contained in a geoset
     bool loaded;
 };
 struct NameList
 {
-    QHash<QString, QString> new_names; // map from old node name to a new name
-    QString basename;
+    QHash<QByteArray, QByteArray> new_names; // map from old node name to a new name
+    QByteArray basename;
 };
 
 struct LoadingContext
 {
     LoadingContext(int depth) : m_nesting_level(depth) {}
+    NameList m_renamer; // used to rename prefab nodes to keep all names unique in the loaded graph
+    QByteArray m_base_path;
+    SceneGraph* m_target;
     FSWrapper *fs_wrap;
     int last_node_id=0; // used to create new number suffixes for generic nodes
-    QString m_base_path;
-    NameList m_renamer; // used to rename prefab nodes to keep all names unique in the loaded graph
-    SceneGraph *m_target;
     int m_nesting_level=0; // how deep are we in include hierarchy
+    bool prevent_nesting=false;
+
 };
 struct PrefabStore
 {
-    QHash<QString, GeoStoreDef> m_dir_to_geoset;
-    QHash<QString, GeoStoreDef *> m_modelname_to_geostore;
+    QHash<QByteArray, GeoStoreDef> m_dir_to_geoset;
+    QHash<QByteArray, GeoStoreDef *> m_modelname_to_geostore;
+    QSet<QByteArray> m_missing_geosets;
     FSWrapper *m_fs;
-    QString m_base_path;
+    QByteArray m_base_path;
 
-    PrefabStore(FSWrapper* fs,const QString &bp) : m_fs(fs),m_base_path(bp) {}
+    PrefabStore(FSWrapper* fs,const QByteArray &bp) : m_fs(fs),m_base_path(bp) {}
 
     bool prepareGeoLookupArray(const QString &base_path);
     bool loadPrefabForNode(SceneNode *node, LoadingContext &ctx);
-    bool loadNamedPrefab(const QString &name, LoadingContext &conv);
-    Model *groupModelFind(const QString &path, LoadingContext &ctx);
+    bool loadNamedPrefab(const QByteArray &name, LoadingContext &conv, NodeLoadRequest *load_request=nullptr);
+    Model *groupModelFind(const QByteArray &path, LoadingContext &ctx);
     Model *modelFind(const QString &geoset_name, const QString &model_name, LoadingContext &ctx);
-    GeoStoreDef * groupGetFileEntryPtr(const QString &full_name);
+    GeoStoreDef * groupGetFileEntryPtr(const QByteArray &full_name);
     void sceneGraphWasReset(); // reset 'loaded' flag on all geostores
 };
 

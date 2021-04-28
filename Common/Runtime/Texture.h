@@ -15,6 +15,7 @@
 struct ModelModifiers;
 struct TextureModifiers;
 class QFile;
+struct FSWrapper;
 namespace SEGS
 {
 struct GeoSet;
@@ -47,8 +48,8 @@ struct TextureWrapper
         BUMPMAP        = 0x0800,
         BUMPMAP_MIRROR = 0x1000,
     };
-    QString detailname;
-    QString bumpmap;
+    QByteArray detailname;
+    QByteArray bumpmap;
     int flags {0};
     glm::vec2 scaleUV0 {0,0};
     glm::vec2 scaleUV1 {0,0};
@@ -64,5 +65,5 @@ struct TextureStorage : public HandleBasedStorage<TextureWrapper>
         return s_instance;
     }
 };
-void loadTexHeader(const QString &fname);
+void loadTexHeader(FSWrapper *fs, const QByteArray &fname);
 } // end of SEGS namespace

@@ -8,7 +8,7 @@
 #pragma once
 
 #include "GameDBSyncContext.h"
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
 
 #include <QThreadStorage>
 

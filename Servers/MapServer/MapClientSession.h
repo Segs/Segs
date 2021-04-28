@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "FixedPointValue.h"
+#include "Components/FixedPointValue.h"
 #include "NetCommandManager.h"
 #include "Messages/Map/GameCommand.h"
 #include "Common/Servers/ClientManager.h"

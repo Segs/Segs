@@ -8,7 +8,7 @@
 #pragma once
 #include "MapEventTypes.h"
 #include "GameCommand.h"
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 #include <QtCore/QString>
 namespace SEGSEvents

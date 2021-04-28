@@ -10,9 +10,9 @@
  * @{
  */
 
-#include "EventProcessor.h"
-#include "SEGSTimer.h"
-#include "TimeEvent.h"
+#include "Components/EventProcessor.h"
+#include "Components/SEGSTimer.h"
+#include "Components/TimeEvent.h"
 
 #include <cassert>
 #ifdef _MSC_VER

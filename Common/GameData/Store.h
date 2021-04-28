@@ -6,9 +6,11 @@
  */
 
 #pragma once
-#include "CommonNetStructures.h"
+
+#include "Common/GameData/CommonNetStructures.h"
+#include "Components/Logging.h"
 #include "cereal/cereal.hpp"
-#include "Logging.h"
+
 class Entity;
 
 class StoreTransactionResult

@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "Messages/Auth/AuthEvents.h"
+#include "Common/Messages/Auth/AuthEvents.h"
 
 namespace SEGSEvents
 {

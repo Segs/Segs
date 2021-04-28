@@ -21,7 +21,7 @@
 #include "GameData/CoHMath.h"
 #include "NetFxHelpers.h"
 #include "DataHelpers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 
 #include <glm/ext.hpp> // currently only needed for logOrientation debug
 #include <inttypes.h>

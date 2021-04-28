@@ -15,7 +15,7 @@
 
 #include "HandlerLocator.h"
 
-#include "SEGSTimer.h"
+#include "Components/SEGSTimer.h"
 #include <cassert>
 
 using namespace SEGSEvents;

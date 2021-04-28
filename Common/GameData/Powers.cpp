@@ -15,10 +15,10 @@
 #include "EntityHelpers.h"
 #include "Character.h"
 #include "CharacterHelpers.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "GameData/GameDataStore.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 
 #include <random>
 

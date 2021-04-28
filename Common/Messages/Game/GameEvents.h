@@ -6,15 +6,15 @@
  */
 
 #pragma once
-#include "LinkLevelEvent.h"
-#include "BitStream.h"
+#include "Components/LinkLevelEvent.h"
+#include "Components/BitStream.h"
 //#include "GameLink.h"
 //#include "CRUDP_Protocol/CRUD_Link.h"
-#include "CRUDP_Protocol/CRUD_Events.h"
-#include "Servers/InternalEvents.h"
+#include "Common/CRUDP_Protocol/CRUD_Events.h"
+#include "Common/Servers/InternalEvents.h"
 
 // GameEvents make use of some of the event Data defined in GameDBSyncEvents
-#include "Messages/GameDatabase/GameDBSyncEvents.h"
+#include "Common/Messages/GameDatabase/GameDBSyncEvents.h"
 #include <QtCore/QString>
 #include <array>
 

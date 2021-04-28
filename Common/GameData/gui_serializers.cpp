@@ -14,7 +14,7 @@
 
 #include "gui_definitions.h"
 #include "DataStorage.h"
-#include "serialization_common.h"
+#include "Components/serialization_common.h"
 
 CEREAL_CLASS_VERSION(GUISettings, GUISettings::class_version) // register GUISettings class version
 

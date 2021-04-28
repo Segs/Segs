@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "Runtime/HandleBasedStorage.h"
+#include "Common/Runtime/HandleBasedStorage.h"
 
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>

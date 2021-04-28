@@ -41,5 +41,5 @@ get_target_property(TARGET_SOURCES cox_server_common SOURCES)
 list(REMOVE_ITEM TARGET_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/cox_server_common.gen.cpp)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
 set_target_properties (cox_server_common PROPERTIES
-    FOLDER Projects/CoX/Common
+    FOLDER Common
 )

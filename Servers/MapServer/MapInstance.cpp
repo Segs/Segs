@@ -14,20 +14,21 @@
 
 #include "DataHelpers.h"
 #include "EntityStorage.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "MapManager.h"
 #include "MapSceneGraph.h"
 #include "MapServer.h"
 #include "MapTemplate.h"
 #include "MessageHelpers.h"
-#include "SEGSTimer.h"
+#include "Components/SEGSTimer.h"
 #include "SlashCommands/SlashCommand.h"
-#include "TimeEvent.h"
-#include "TimeHelpers.h"
+#include "Components/TimeEvent.h"
+#include "Components/TimeHelpers.h"
 #include "WorldSimulation.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 #include "Version.h"
+#include "ScriptingEngine/ScriptingEngine.h"
 #include "Common/GameData/CoHMath.h"
 #include "Common/GameData/LFG.h"
 #include "Common/Servers/Database.h"
@@ -170,7 +171,7 @@ void MapInstance::start(const QString &scenegraph_path)
 
         TIMED_LOG({
                 m_map_scenegraph = new MapSceneGraph;
-                scene_graph_loaded = m_map_scenegraph->loadFromFile("./data/geobin/" + scenegraph_path);
+                scene_graph_loaded = m_map_scenegraph->loadFromFile(("./data/geobin/" + scenegraph_path).toUtf8());
                 m_map_transfers = m_map_scenegraph->get_map_transfers();
             }, "Loading original scene graph")
 

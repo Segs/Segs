@@ -6,8 +6,10 @@
  */
 
 #pragma once
-#include "SEGSEvent.h"
-#include "SEGSTimer.h"
+
+#include "Components/SEGSEvent.h"
+#include "Components/SEGSTimer.h"
+
 #include <ace/Task_Ex_T.h>
 
 // Independent Task, each EventProcessor when activated dequeues SEGSEvents,

@@ -53,7 +53,7 @@ target_link_libraries(MapServer PUBLIC gameData)
 add_subdirectory(ScriptingEngine)
 add_subdirectory(SlashCommands)
 
-target_link_libraries(MapServer PUBLIC Qt5::Core ScriptingEngine)
+target_link_libraries(MapServer PUBLIC Qt5::Core)
 target_link_libraries(MapServer PRIVATE SlashCommands)
 
 
@@ -64,5 +64,5 @@ endif()
 get_target_property(TARGET_SOURCES MapServer SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${target_CPP} ${target_INCLUDE}) 
 set_target_properties (MapServer PROPERTIES
-    FOLDER Projects/CoX/Servers
+    FOLDER Servers
 )

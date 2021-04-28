@@ -20,7 +20,7 @@
 #include <vector>
 #include <memory>
 
-#include "serialization_common.h"
+#include "Components/serialization_common.h"
 
 namespace SEGS
 {
@@ -56,11 +56,12 @@ struct SceneNode
     Model *m_model = nullptr;
     struct GeoStoreDef *m_geoset_info = nullptr; // where is this node from ?
     void *m_engine_node = nullptr; // used by the engine during loading/importing
-    QString m_name;
-    QString m_dir;
+    QByteArray m_name;
+    QByteArray m_dir;
     AxisAlignedBoundingBox        m_bbox;
     int                           m_index_in_scenegraph=0;
     int                           m_nest_level = 0;
+    int                           m_use_count = 0;
 
     uint32_t                      m_fx_name_hash  = 0; //!< This is fnv1a hash of downcased fx file path.
     glm::vec3                     m_center;
@@ -103,19 +104,44 @@ struct SceneTreeNode
     virtual ~SceneTreeNode() {}
 };
 
+struct NodeLoadRequest
+{
+    QByteArray base_file;
+    QByteArray node_name;
+    bool operator==(const NodeLoadRequest& other) const {
+        return base_file == other.base_file && node_name == other.node_name;
+    }
+};
+struct NodeLoadTarget
+{
+    SceneNode* node;
+    int child_idx;
+    bool operator==(NodeLoadTarget other) const {
+        return node == other.node && child_idx == other.child_idx;
+    }
+};
+inline uint qHash(const NodeLoadRequest& t, uint seed)
+{
+    return qHash(t.base_file) ^ qHash(t.node_name) ^ seed;
+}
+
 struct SceneGraph
 {
     // Static scene nodes loaded/created from map definition file
     std::vector<SceneNode *> all_converted_defs;
-    std::vector<RootNode *> refs;
+    std::vector<RootNode *> roots;
+    QByteArray scene_mod_name;
 
     QHash<QString,SceneNode *> name_to_node;
+    void node_request_instantiation(NodeLoadTarget tgt, NodeLoadRequest needs);
+    QHash<NodeLoadRequest, QVector<NodeLoadTarget>> m_requests;
 };
 struct PrefabStore;
 struct LoadingContext;
 
-bool loadSceneGraph(const QString &path, LoadingContext &ctx, PrefabStore &prefabs);
-SceneGraph *loadWholeMap(FSWrapper *fs, const QString &filename);
-void loadSubgraph(const QString &filename, LoadingContext &ctx,PrefabStore &prefabs);
-SceneNode * getNodeByName(const SceneGraph &graph,const QString &name);
+bool loadSceneGraph(const QByteArray &path, LoadingContext &ctx, PrefabStore &prefabs);
+SceneGraph *loadWholeMap(FSWrapper *fs, const QByteArray &filename);
+SceneGraph* loadSceneGraphNoNesting(FSWrapper* fs, const QByteArray& filename, QSet<QByteArray> &missing_geosets);
+void loadSubgraph(const QByteArray &filename, LoadingContext &ctx,PrefabStore &prefabs);
+SceneNode * getNodeByName(const SceneGraph &graph,const QByteArray &name);
 } // and of SEGS namespace

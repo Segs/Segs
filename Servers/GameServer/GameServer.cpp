@@ -14,13 +14,13 @@
 #include "Messages/Game/GameEvents.h"
 
 #include "FriendshipService/FriendHandler.h"
-#include "ConfigExtension.h"
+#include "Components/ConfigExtension.h"
 #include "GameHandler.h"
 #include "Servers/HandlerLocator.h"
 #include "Common/Servers/ServerEndpoint.h"
 #include "EmailService/EmailHandler.h"
 #include "TeamService/TeamHandler.h"
-#include "Settings.h"
+#include "Components/Settings.h"
 
 #include "Messages/TeamService/TeamEvents.h"
 #include "Messages/UserRouterService/UserRouterEvents.h"

@@ -12,7 +12,7 @@
 
 #include "LocationVisited.h"
 
-#include "BitStream.h"
+#include "Components/BitStream.h"
 
 using namespace SEGSEvents;
 

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Servers/InternalEvents.h"
+#include "Common/Servers/InternalEvents.h"
 
 #include <QDateTime>
 namespace SEGSEvents

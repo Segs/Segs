@@ -6,11 +6,11 @@
  */
 
 #pragma once
-#include "EventProcessor.h"
-#include "Servers/MessageBusEndpoint.h"
-#include "Servers/InternalEvents.h"
+#include "Components/EventProcessor.h"
+#include "Common/Servers/MessageBusEndpoint.h"
+#include "Common/Servers/InternalEvents.h"
 #include "Common/Servers/ClientManager.h"
-#include "GameData/Friend.h"
+#include "Common/GameData/Friend.h"
 #include <unordered_map>
 #include <set>
 #include <vector>

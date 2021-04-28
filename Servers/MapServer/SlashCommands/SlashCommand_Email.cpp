@@ -14,10 +14,10 @@
 
 #include "DataHelpers.h"
 #include "GameData/Character.h"
-#include "Logging.h"
+#include "Components/Logging.h"
 #include "MapInstance.h"
 #include "MessageHelpers.h"
-#include "Settings.h"
+#include "Components/Settings.h"
 
 #include <QtCore/QString>
 #include <QtCore/QDebug>

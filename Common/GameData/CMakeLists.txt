@@ -160,5 +160,5 @@ set_property(TARGET gameData APPEND PROPERTY INCLUDE_DIRECTORIES "$<TARGET_PROPE
 get_target_property(TARGET_SOURCES gameData SOURCES) 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
 set_target_properties (gameData PROPERTIES
-    FOLDER Projects/CoX/Common
+    FOLDER Common
 )

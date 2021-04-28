@@ -12,8 +12,8 @@
 
 #include "chardata_serializers.h"
 #include "GameData/CharacterData.h"
-#include "serialization_common.h"
-#include "serialization_types.h"
+#include "Components/serialization_common.h"
+#include "Components/serialization_types.h"
 #include "GameData/Powers.h"
 
 #include "DataStorage.h"
@@ -21,7 +21,7 @@
 #include "attrib_serializers.h"
 #include <QDebug>
 
-#include "Logging.h"
+#include "Components/Logging.h"
 
 
 void saveTo(const CharacterData &target, const QString &baseName, bool text_format)

@@ -1,6 +1,6 @@
 #include "spawn_definitions.h"
 
-#include "Logging.h"
+#include "Components/Logging.h"
 
 
 void SpawnDefinitions::buildList()

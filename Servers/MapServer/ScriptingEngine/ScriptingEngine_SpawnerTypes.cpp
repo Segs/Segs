@@ -8,6 +8,8 @@
 #include "DataHelpers.h"
 #include "MapInstance.h"
 #include "ScriptingEngine.h"
+#include "ScriptingEnginePrivate.h"
+
 #include "Common/GameData/spawn_definitions.h"
 
 using namespace SEGSEvents;

@@ -1,7 +1,7 @@
 #include "map_definitions.h"
 #include "entitydata_definitions.h"
 
-#include "Logging.h"
+#include "Components/Logging.h"
 #include <QtCore/QFileInfoList>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>

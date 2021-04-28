@@ -12,13 +12,13 @@
 
 #include "playerdata_serializers.h"
 #include "playerdata_definitions.h"
-#include "serialization_common.h"
+#include "Components/serialization_common.h"
 
 #include "keybind_serializers.h"
 #include "gui_serializers.h"
 #include "clientoptions_serializers.h"
 
-#include "Logging.h"
+#include "Components/Logging.h"
 
 CEREAL_CLASS_VERSION(PlayerData, PlayerData::class_version)         // register PlayerData class version
 

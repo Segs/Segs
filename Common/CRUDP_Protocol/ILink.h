@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
+
 #include <cassert>
 
 class BitStream;

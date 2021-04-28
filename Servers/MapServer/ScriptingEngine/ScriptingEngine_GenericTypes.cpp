@@ -18,7 +18,9 @@
 #include "MapInstance.h"
 #include "MessageHelpers.h"
 #include "ScriptingEngine.h"
-#include "TimeHelpers.h"
+#include "ScriptingEnginePrivate.h"
+
+#include "Components/TimeHelpers.h"
 
 using namespace SEGSEvents;
 

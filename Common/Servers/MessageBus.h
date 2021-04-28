@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "EventProcessor.h"
+#include "Components/EventProcessor.h"
 
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>

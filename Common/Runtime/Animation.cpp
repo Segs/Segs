@@ -288,7 +288,7 @@ HAnimationTrack animReadTrackFile(QFile *fp)
 } // end of anonymous namespace
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-HAnimationTrack getOrLoadAnimationTrack(const QString &name)
+HAnimationTrack getOrLoadAnimationTrack(const QByteArray &name)
 {
     RuntimeData &rd(getRuntimeData());
     QString      base_path = rd.m_prefab_mapping->m_base_path;
@@ -302,8 +302,8 @@ HAnimationTrack getOrLoadAnimationTrack(const QString &name)
 
     assert(name.size() < 256);
     strcpy(key, qPrintable(name.toUpper()));
-    QByteArray      latin_name     = name.toLatin1();
-    QString         full_anim_path = QString("player_library/animations/%1.anim").arg(name).toLower();
+    QByteArray      latin_name     = name;
+    QString         full_anim_path = ("player_library/animations/"+name+".anim").toLower();
     HAnimationTrack animTrack      = AnimationEngine::get().m_loaded_tracks.value(latin_name.toUpper(), {});
     if (animTrack)
         return animTrack;
@@ -327,10 +327,10 @@ HAnimationTrack getOrLoadAnimationTrack(const QString &name)
     atrack.m_max_hip_displacement = 4.0f;
     return animTrack;
 }
-static GeoSet *getAnimatedGeoSet(FSWrapper &fs,const QString &name, QIODevice *&fp)
+static GeoSet *getAnimatedGeoSet(FSWrapper &fs,const QByteArray &name, QIODevice *&fp)
 {
     RuntimeData &rd(getRuntimeData());
-    QString      base_path = rd.m_prefab_mapping->m_base_path;
+    QByteArray      base_path = rd.m_prefab_mapping->m_base_path;
     fp = fs.open(base_path + "/" + name,true);
     if (!fp)
     {
@@ -345,12 +345,12 @@ static GeoSet *getAnimatedGeoSet(FSWrapper &fs,const QString &name, QIODevice *&
     g_geoset_dictionary[geoset->name] = geoset;
     return geoset;
 }
-GeoSet *animLoad(FSWrapper &fs, const QString &filename, bool background_load, bool header_only)
+GeoSet *animLoad(FSWrapper &fs, const QByteArray &filename, bool background_load, bool header_only)
 {
     GeoSet *geoset;
-    QString animname(filename);
+    QByteArray animname(filename);
 
-    if (animname.endsWith(".anm", Qt::CaseInsensitive))
+    if (animname.toLower().endsWith(".anm"))
         animname.replace(animname.lastIndexOf("."), 4, ".geo");
 
     if (animname.isEmpty())
