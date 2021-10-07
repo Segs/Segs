@@ -36,7 +36,7 @@ bool DBConnection::isConnected()
     }
     else if(m_config.isMysql())
     {
-        querytext = "SHOW TABLES";
+        return m_db->isOpen();
     }
     else if(m_config.isPostgresql())
     {
