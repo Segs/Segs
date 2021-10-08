@@ -32,7 +32,7 @@ DBToolResult DBConnection::addAccount(const QString &username, const QString &pa
 {
     qInfo().noquote() << "Adding new account to" << getName() << "database";
 
-    if(!m_query->prepare("INSERT INTO accounts (username,passw,access_level,salt,creation_date) VALUES (?,?,?,?,?);"))
+    if(!m_query->prepare("INSERT INTO accounts (username,passw,access_level,salt) VALUES (?,?,?,?);"))
     {
         qDebug() << "SQL_ERROR:" << m_query->lastError();
         return DBToolResult::QUERY_PREP_FAILED;
@@ -41,12 +41,10 @@ DBToolResult DBConnection::addAccount(const QString &username, const QString &pa
     PasswordHasher hasher;
     QByteArray salt = hasher.generateSalt();
     QByteArray password_array = hasher.hashPassword(password.toUtf8(), salt);
-    QString created_date = QDateTime::currentDateTime().toString();
     m_query->bindValue(0, username);
     m_query->bindValue(1, password_array);
     m_query->bindValue(2, access_level);
     m_query->bindValue(3, salt);
-    m_query->bindValue(4, created_date);
 
     if(!m_query->exec())
     {
