@@ -489,49 +489,52 @@ int main(int argc,char **argv)
 
     try // handle possible cereal::RapidJSONException
     {
-      if(app.arguments().size()>2)
+        if(app.arguments().size()>2)
           json_output = app.arguments()[2].toInt()!=0;
 
-      switch(bin_type)
-      {
-          case eLevelsDebts:    doConvert(doLoadRef<LevelExpAndDebt>(&binfile),target_basename,json_output); break;
-          case eCombineChances: doConvert(doLoadRef<Parse_Combining>(&binfile),target_basename,json_output); break;
-          case eBoostEffectiveness: doConvert(doLoadRef<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
-          case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
-          case eShops:        doConvert(doLoadRef<AllShops_Data>(&binfile),target_basename,json_output); break;
-          case eShopItems:    doConvert(doLoadRef<AllShopItems_Data>(&binfile),target_basename,json_output); break;
-          case eShopDepts:    doConvert(doLoadRef<AllShopDepts_Data>(&binfile),target_basename,json_output); break;
-//        case eSequencers:   doConvert(doLoad<SequencerList>(&binfile),target_basename,json_output); break;
-          case eTailorCosts:  doConvert(doLoad<AllTailorCosts_Data>(&binfile),target_basename,json_output); break;
-          case eCostumeSets:  doConvert(doLoad<CostumeSet_Data>(&binfile),target_basename,json_output); break;
-          case eBodyParts:    doConvert(doLoadRef<BodyPartsStorage>(&binfile),target_basename,json_output); break;
-          case eGroupEmblems: doConvert(doLoad<GeoSet_Data>(&binfile),target_basename,json_output); break;
-          case ePaletteSets:  doConvert(doLoad<Pallette_Data>(&binfile),target_basename,json_output); break;
-          case eZones:        doConvert(doLoadRef<AllMaps_Data>(&binfile),target_basename,json_output); break;
-          case eAttribNames:  doConvert(doLoadRef<AttribNames_Data>(&binfile),target_basename,json_output); break;
-          case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(&binfile),target_basename,json_output); break;
-          case eTrickDefinitions: doConvert(doLoadRef<SceneModifiers>(&binfile),target_basename,json_output); break;
-          case eEntityClasses: doConvert(doLoadRef<Parse_AllCharClasses>(&binfile),target_basename,json_output); break;
-          case eEntityOrigins: doConvert(doLoadRef<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
-          case ePowerDefinitions: doConvert(doLoadRef<AllPowerCategories>(&binfile),target_basename,json_output); break;
-          case eNpcDefinitions:
-         {
-            auto data = doLoadRef<AllNpcs_Data>(&binfile);
-            if(qApp->arguments().size() > 2)
+        switch(bin_type)
+        {
+            case eLevelsDebts:    doConvert(doLoadRef<LevelExpAndDebt>(&binfile),target_basename,json_output); break;
+            case eCombineChances: doConvert(doLoadRef<Parse_Combining>(&binfile),target_basename,json_output); break;
+            case eBoostEffectiveness: doConvert(doLoadRef<Parse_Effectiveness>(&binfile),target_basename,json_output); break;
+            case eParticleSystems:doConvert(doLoad<Parse_AllPSystems>(&binfile),target_basename,json_output); break;
+            case eShops:        doConvert(doLoadRef<AllShops_Data>(&binfile),target_basename,json_output); break;
+            case eShopItems:    doConvert(doLoadRef<AllShopItems_Data>(&binfile),target_basename,json_output); break;
+            case eShopDepts:    doConvert(doLoadRef<AllShopDepts_Data>(&binfile),target_basename,json_output); break;
+            //        case eSequencers:   doConvert(doLoad<SequencerList>(&binfile),target_basename,json_output); break;
+            case eTailorCosts:  doConvert(doLoad<AllTailorCosts_Data>(&binfile),target_basename,json_output); break;
+            case eCostumeSets:  doConvert(doLoad<CostumeSet_Data>(&binfile),target_basename,json_output); break;
+            case eBodyParts:    doConvert(doLoadRef<BodyPartsStorage>(&binfile),target_basename,json_output); break;
+            case eGroupEmblems: doConvert(doLoad<GeoSet_Data>(&binfile),target_basename,json_output); break;
+            case ePaletteSets:  doConvert(doLoad<Pallette_Data>(&binfile),target_basename,json_output); break;
+            case eZones:        doConvert(doLoadRef<AllMaps_Data>(&binfile),target_basename,json_output); break;
+            case eAttribNames:  doConvert(doLoadRef<AttribNames_Data>(&binfile),target_basename,json_output); break;
+            case eSceneGraph:   doConvert(doLoadRef<SceneGraph_Data>(&binfile),target_basename,json_output); break;
+            case eTrickDefinitions: doConvert(doLoadRef<SceneModifiers>(&binfile),target_basename,json_output); break;
+            case eEntityClasses: doConvert(doLoadRef<Parse_AllCharClasses>(&binfile),target_basename,json_output); break;
+            case eEntityOrigins: doConvert(doLoadRef<Parse_AllOrigins>(&binfile),target_basename,json_output); break;
+            case ePowerDefinitions: doConvert(doLoadRef<AllPowerCategories>(&binfile),target_basename,json_output); break;
+            case eNpcDefinitions:
             {
-                QString name_to_find = app.arguments()[2];
-                std::sort(data->begin(), data->end(), [](const Parse_NPC &a, const Parse_NPC &b) -> bool {
-                    return QString(a.m_Name).compare(QString(b.m_Name), Qt::CaseInsensitive) < 0;
-                });
-                auto iter = std::find_if(data->begin(), data->end(), [name_to_find](const Parse_NPC &n) -> bool {
-                    if(n.m_Name == name_to_find)
-                        return true;
-                    return false;
-                });
-                qDebug() << iter - data->begin();
-            } else
-                doConvert(data, target_basename, json_output);
-        }
+                auto data = doLoadRef<AllNpcs_Data>(&binfile);
+                if (qApp->arguments().size() > 2)
+                {
+                    QString name_to_find = app.arguments()[2];
+                    std::sort(data->begin(), data->end(), [](const Parse_NPC &a, const Parse_NPC &b) -> bool {
+                        return QString(a.m_Name).compare(QString(b.m_Name), Qt::CaseInsensitive) < 0;
+                    });
+                    auto iter = std::find_if(data->begin(), data->end(), [name_to_find](const Parse_NPC &n) -> bool {
+                        if (n.m_Name == name_to_find)
+                            return true;
+                        return false;
+                    });
+                    qDebug() << iter - data->begin();
+                }
+                else
+                {
+                    doConvert(data, target_basename, json_output);
+                }
+            }
 
           break;
           case eFxBehavior_Definitions: doConvert(doLoadRef<Fx_AllBehaviors>(&binfile),target_basename,json_output); break;
@@ -548,8 +551,8 @@ int main(int argc,char **argv)
     }
     catch(std::exception &e)
     {
-      qCritical() << e.what();
-      return -1;
+        qCritical() << e.what();
+        return -1;
     }
 
     return 0;

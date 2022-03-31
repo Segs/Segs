@@ -24,11 +24,19 @@ bool BinStore::check_bin_version_and_crc(uint32_t req_crc)
     m_str->read(magic_contents,8);
     read(crc_from_file);
     tgt=read_pstr(4096);
-    if( 0!=strncmp(magic_contents,"CrypticS",8) || tgt.midRef(0,6)!="Parse4" || (req_crc!=0 && crc_from_file != req_crc) ) //
+
+    if( 0!=strncmp(magic_contents,"CrypticS",8) || tgt.midRef(0,5)!="Parse" || (req_crc!=0 && crc_from_file != req_crc) ) //
     {
         m_str->close();
         return false;
     }
+    int parse_version = tgt.midRef(5,1).toInt();
+    if(parse_version!=4 && parse_version!=7)  {
+        qDebug() << "Unsupported bin file version"<<parse_version;
+        m_str->close();
+        return false;
+    }
+    m_version = parse_version;
     return true;
 }
 

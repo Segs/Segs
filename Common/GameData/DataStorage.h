@@ -28,6 +28,7 @@ class BinStore // binary storage
     QIODevice *m_str = nullptr;
     size_t bytes_read=0;
     uint32_t bytes_to_read=0;
+    uint8_t m_version;
     std::vector<uint32_t> m_file_sizes; // implicit stack
     std::vector<FileEntry> m_entries;
 
@@ -106,5 +107,4 @@ public:
     bool        end_encountered() const;
     bool        open(FSWrapper &fs,const QString & name, uint32_t required_crc);
                 ~BinStore();
-
 };
