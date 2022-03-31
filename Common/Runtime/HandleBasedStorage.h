@@ -10,6 +10,7 @@
 #include "Handle.h"
 #include <cassert>
 #include <vector>
+#include <cstdlib>
 
 template <int idx_bits, int gen_bits, typename T>
 struct SingularStoreHandleT : public HandleT<idx_bits, gen_bits,T>
