@@ -68,7 +68,9 @@ void BinStore::skip_pstr()
     read(len);
     m_str->seek(len+m_str->pos());
 }
-
+QString get_parse7_pool_string(uint32_t string_idx) {
+    return "";
+}
 bool BinStore::read_data_blocks( bool file_data_blocks )
 {
     if(!file_data_blocks)
@@ -87,12 +89,21 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
     quint64 read_start = m_str->pos();
     if(!hdr.startsWith("Files1")||sz<=0)
         return false;
+    if(m_version==7) {
+        //TODO: load/fill corresponding string pool
+    }
     int num_data_blocks;
     read_internal(num_data_blocks);
     for (int blk_idx=0; blk_idx<num_data_blocks; ++blk_idx)
     {
         FileEntry fe;
-        fe.name = read_pstr(260);
+        if(m_version==7) {
+            uint32_t string_pool_idx = 0;
+            read_internal(string_pool_idx);
+            fe.name = get_parse7_pool_string(string_pool_idx);
+        } else {
+            fe.name = read_pstr(260);
+        }
         read_internal(fe.date);
         m_entries.push_back(fe);
     }
