@@ -47,6 +47,8 @@ struct Shop_Data
     std::vector<ShopBuySell_Data> m_Sells;
     std::vector<ShopBuySell_Data> m_Buys;
     std::vector<ShopItem_Data> m_Items;
+    float m_Salvage=0;
+    float m_Recipe=0;
 };
 using AllShops_Data = std::vector<Shop_Data>;
 

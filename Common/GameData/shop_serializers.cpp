@@ -55,6 +55,11 @@ namespace
         bool ok = true;
         s->prepare();
         ok &= s->read(target.m_Name);
+        if(s->isI24Data()) {
+            ok &= s->read(target.m_Salvage);
+            ok &= s->read(target.m_Recipe);
+        }
+
         ok &= s->prepare_nested(); // will update the file size left
         assert(ok);
         if(s->end_encountered())
@@ -229,6 +234,8 @@ static void serialize(Archive & archive, Shop_Data & m)
     archive(cereal::make_nvp("Sells",m.m_Sells));
     archive(cereal::make_nvp("Buys",m.m_Buys));
     archive(cereal::make_nvp("Items",m.m_Items));
+    archive(cereal::make_nvp("Salvage",m.m_Salvage));
+    archive(cereal::make_nvp("Recipe",m.m_Recipe));
 }
 
 void saveTo(const AllShops_Data & target, const QString & baseName, bool text_format)

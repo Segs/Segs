@@ -25,7 +25,7 @@ class BinStore // binary storage
         QString name;
         uint32_t date=0;
     };
-    QIODevice *m_str = nullptr;
+    QIODevice *m_device = nullptr;
     size_t bytes_read=0;
     uint32_t bytes_to_read=0;
     uint8_t m_version;
@@ -37,7 +37,7 @@ class BinStore // binary storage
     {
         if(!m_file_sizes.empty() && current_fsize()<sizeof(V))
             return 0;
-        m_str->read((char *)&res,sizeof(V));
+        m_device->read((char *)&res,sizeof(V));
         if(!m_file_sizes.empty())
         {
             bytes_read+=sizeof(V);
@@ -106,5 +106,6 @@ public:
     void        nest_out() { m_file_sizes.pop_back(); }
     bool        end_encountered() const;
     bool        open(FSWrapper &fs,const QString & name, uint32_t required_crc);
-                ~BinStore();
+    bool        isI24Data() const { return m_version>4; }
+    ~BinStore();
 };

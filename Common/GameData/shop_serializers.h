@@ -13,11 +13,12 @@
 class BinStore;
 class QString;
 
-typedef std::vector<struct ShopItemInfo_Data> AllShopItems_Data;
-typedef std::vector<struct Shop_Data>         AllShops_Data;
-typedef std::vector<struct ShopDeptName_Data> AllShopDepts_Data;
+using AllShopItems_Data = std::vector<struct ShopItemInfo_Data>;
+using AllShops_Data = std::vector<struct Shop_Data>;
+using AllShopDepts_Data = std::vector<struct ShopDeptName_Data>;
 
 static constexpr uint32_t shoplist_i0_requiredCrc=0x5418912E;
+static constexpr uint32_t shoplist_i24_requiredCrc=0xF249DD6C;
 bool loadFrom(BinStore *s, AllShops_Data &target);
 void saveTo(const AllShops_Data &target,const QString &baseName,bool text_format=false);
 

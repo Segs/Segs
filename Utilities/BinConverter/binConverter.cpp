@@ -88,6 +88,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
     {particlesystems_i0_requiredCrc     , eParticleSystems},
     {shoplist_i0_requiredCrc            , eShops},
+    {shoplist_i24_requiredCrc           , eShops},
     {shopitems_i0_requiredCrc           , eShopItems},
     {shopdepts_i0_requiredCrc           , eShopDepts},
 //    {seqencerlist_i0_requiredCrc        , eSequencers},
@@ -160,6 +161,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(levelsdebts_i0_requiredCrc,16)<<"> Experience data - 'experience.bin'";
     qDebug()<<"   I0<"<<QString::number(particlesystems_i0_requiredCrc,16)<<"> Particle system definitions - 'particles.bin'";
     qDebug()<<"   I0<"<<QString::number(shoplist_i0_requiredCrc,16)<<"> Shops data - 'stores.bin'";
+    qDebug()<<"   I24<"<<QString::number(shoplist_i24_requiredCrc,16)<<"> Shops data - 'stores.bin'";
     qDebug()<<"   I0<"<<QString::number(shopitems_i0_requiredCrc,16)<<"> Shops items- 'items.bin'";
     qDebug()<<"   I0<"<<QString::number(shopdepts_i0_requiredCrc,16)<<"> Shop department names data - 'depts.bin'";
     qDebug()<<"   I0<"<<QString::number(attribnames_i0_requiredCrc,16)<<"> Attrib definitions - 'attrib_names.bin'";
