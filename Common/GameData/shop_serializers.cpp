@@ -74,6 +74,10 @@ bool loadFrom(BinStore *s,ItemPower_Data &target)
     ok &= s->read(target.m_Power);
     ok &= s->read(target.m_Level);
     ok &= s->read(target.m_Remove);
+    if(s->isI24Data()) {
+        ok &= s->read(target.m_DontSetStance);
+        return ok;
+    }
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return s->end_encountered();
@@ -106,7 +110,19 @@ bool loadFrom(BinStore *s, ShopItemInfo_Data &target)
     return ok;
 }
 
-bool loadFromI24(BinStore *s, Shop_Data &target)
+static bool loadFromI24(BinStore *s, ShopItemInfo_Data &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.m_Name);
+    ok &= loadFrom(s,target.m_Power);
+    ok &= s->read(target.m_Sell);
+    ok &= s->read(target.m_Buy);
+    ok &= s->read(target.m_CountPerStore);
+    ok &= s->read(target.m_Departments);
+    return ok;
+}
+static bool loadFromI24(BinStore *s, Shop_Data &target)
 {
     bool ok = true;
     assert(s->isI24Data());
@@ -201,6 +217,10 @@ bool loadFrom(BinStore *s, AllShops_Data &target)
 
 bool loadFrom(BinStore *s, AllShopItems_Data &target)
 {
+    if(s->isI24Data()) {
+        s->prepare(); // read the size
+        return s->handleI24StructArray(target);
+    }
     bool ok = true;
     s->prepare();
     ok &= s->prepare_nested(); // will update the file size left

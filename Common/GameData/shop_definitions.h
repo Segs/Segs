@@ -16,6 +16,7 @@ struct ItemPower_Data
     QByteArray m_Power;
     int m_Level;
     int m_Remove;
+    int m_DontSetStance;
 };
 
 struct ShopItemInfo_Data

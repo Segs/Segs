@@ -91,6 +91,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {shoplist_i0_requiredCrc            , eShops},
     {shoplist_i24_requiredCrc           , eShops},
     {shopitems_i0_requiredCrc           , eShopItems},
+    {shopitems_i24_requiredCrc          , eShopItems},
     {shopdepts_i0_requiredCrc           , eShopDepts},
 //    {seqencerlist_i0_requiredCrc        , eSequencers},
     {tailorcosts_i0_requiredCrc         , eTailorCosts},
@@ -166,6 +167,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(shoplist_i0_requiredCrc,16)<<"> Shops data - 'stores.bin'";
     qDebug()<<"   I24<"<<QString::number(shoplist_i24_requiredCrc,16)<<"> Shops data - 'stores.bin'";
     qDebug()<<"   I0<"<<QString::number(shopitems_i0_requiredCrc,16)<<"> Shops items- 'items.bin'";
+    qDebug()<<"   I24<"<<QString::number(shopitems_i24_requiredCrc,16)<<"> Shops items- 'items.bin'";
     qDebug()<<"   I0<"<<QString::number(shopdepts_i0_requiredCrc,16)<<"> Shop department names data - 'depts.bin'";
     qDebug()<<"   I0<"<<QString::number(attribnames_i0_requiredCrc,16)<<"> Attrib definitions - 'attrib_names.bin'";
     qDebug()<<"   I0<"<<QString::number(tailorcosts_i0_requiredCrc,16)<<"> Tailoring cost data - 'tailorcost.bin'";
