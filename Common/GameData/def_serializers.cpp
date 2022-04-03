@@ -170,6 +170,8 @@ bool loadFrom(BinStore * s, Parse_Effectiveness &target)
     s->prepare();
     bool ok = true;
     ok &= s->read(target.Effectiveness);
+    if(s->isI24Data())
+        return ok;
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return ok;

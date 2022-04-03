@@ -28,6 +28,7 @@ void saveTo(const Parse_Combining & target, const QString &baseName, bool text_f
 
 
 constexpr const static uint32_t boosteffectiveness_i0_requiredCrc = 0x5706CEC8;
+constexpr const static uint32_t boosteffectiveness_i24_requiredCrc = 0x5D068463;
 bool loadFrom(BinStore *s,Parse_Effectiveness &target);
 void saveTo(const Parse_Effectiveness & target, const QString &baseName, bool text_format=false);
 
