@@ -17,6 +17,25 @@
 #include "Common/GameData/costume_definitions.h"
 #include "DataStorage.h"
 
+
+static bool loadFromI24(BinStore *s,TailorCost_Data &target)
+{
+    s->prepare();
+    bool ok = true;
+    ok &= s->read(target.m_MinLevel);
+    ok &= s->read(target.m_MaxLevel);
+    ok &= s->read(target.m_EntryFee);
+    ok &= s->read(target.m_Global);
+    ok &= s->read(target.m_HeadCost);
+    ok &= s->read(target.m_HeadSubCost);
+    ok &= s->read(target.m_UpperCost);
+    ok &= s->read(target.m_UpperSubCost);
+    ok &= s->read(target.m_LowerCost);
+    ok &= s->read(target.m_LoserSubCost);
+    ok &= s->read(target.m_NumCostumes);
+    return ok;
+}
+
 namespace
 {
     bool loadFrom(BinStore *s,TailorCost_Data &target)
@@ -256,8 +275,13 @@ bool loadFrom(BinStore *s,Pallette_Data *target)
     return ok;
 }
 
-bool loadFrom(BinStore * s, AllTailorCosts_Data * target)
+bool loadFrom(BinStore * s, AllTailorCosts_Data &target)
 {
+    if(s->isI24Data()) {
+        s->prepare(); // read the size
+        return s->handleI24StructArray(target);
+    }
+
     s->prepare();
     bool ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
@@ -267,8 +291,8 @@ bool loadFrom(BinStore * s, AllTailorCosts_Data * target)
     {
         s->nest_in();
         if("TailorCostSet"==_name) {
-            target->emplace_back();
-            ok &= loadFrom(s,target->back());
+            target.emplace_back();
+            ok &= loadFrom(s,target.back());
         } else
             assert(!"unknown field referenced.");
         s->nest_out();

@@ -18,7 +18,8 @@ typedef std::vector<TailorCost_Data> AllTailorCosts_Data;
 typedef std::vector<Costume2_Data> CostumeSet_Data;
 
 static constexpr uint32_t tailorcosts_i0_requiredCrc=0xEC2F43E6;
-bool loadFrom(BinStore * s, AllTailorCosts_Data * target);
+static constexpr uint32_t tailorcosts_i24_requiredCrc=0x3C2F0DAE;
+bool loadFrom(BinStore * s, AllTailorCosts_Data & target);
 void saveTo(const AllTailorCosts_Data &target,const QString &baseName,bool text_format=false);
 
 static constexpr uint32_t costumesets_i0_requiredCrc=0x9A79F6D5;

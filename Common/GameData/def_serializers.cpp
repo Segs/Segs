@@ -127,10 +127,19 @@ namespace
 
 bool loadFrom(BinStore *s, LevelExpAndDebt & target)
 {
+    if(s->isI24Data()) {
+        //I24 experience tables are nested within a struct that has no additional fields.
+        // so we just simulate this by reading the outer struct's size
+        s->prepare();
+
+    }
     s->prepare();
     bool ok = true;
     ok &= s->read(target.m_ExperienceRequired);
     ok &= s->read(target.m_DefeatPenalty);
+    if(s->isI24Data()) {
+        return ok;
+    }
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return ok;

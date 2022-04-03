@@ -51,6 +51,12 @@ const QByteArray &BinStore::read_pstr( size_t maxlen )
     {
         buf.resize(len);
         m_device->read(buf.data(),len);
+        if(isI24Data()) {
+            const int len_based_fixup =  (4 - (len + sizeof(uint16_t)) % 4) % 4;
+            m_device->seek(len_based_fixup+m_device->pos());
+            bytes_read+=len+len_based_fixup;
+            return buf;
+        }
         if(m_file_sizes.size()>0)
         {
             (*m_file_sizes.rbegin())-=len;
@@ -67,9 +73,6 @@ void BinStore::skip_pstr()
     uint16_t len=0;
     read(len);
     m_device->seek(len+m_device->pos());
-}
-QString get_parse7_pool_string(uint32_t string_idx) {
-    return "";
 }
 bool BinStore::read_data_blocks( bool file_data_blocks )
 {
@@ -94,13 +97,7 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
     for (int blk_idx=0; blk_idx<num_data_blocks; ++blk_idx)
     {
         FileEntry fe;
-        if(m_version==7) {
-            uint32_t string_pool_idx = 0;
-            read_internal(string_pool_idx);
-            fe.name = get_parse7_pool_string(string_pool_idx);
-        } else {
-            fe.name = read_pstr(260);
-        }
+        fe.name = read_pstr(260);
         read_internal(fe.date);
         m_entries.push_back(fe);
     }
@@ -289,7 +286,8 @@ bool BinStore::read_bytes( char *tgt,size_t sz )
 const QByteArray & BinStore::read_str( size_t maxlen )
 {
     const QByteArray &result(read_pstr(maxlen));
-    fixup();
+    if(!isI24Data())
+        fixup();
     return result;
 }
 

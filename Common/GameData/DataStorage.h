@@ -17,6 +17,7 @@
 
 struct RGBA;
 
+
 typedef glm::vec3 Vec3;
 typedef glm::vec2 Vec2;
 class BinStore // binary storage
@@ -107,5 +108,26 @@ public:
     bool        end_encountered() const;
     bool        open(FSWrapper &fs,const QString & name, uint32_t required_crc);
     bool        isI24Data() const { return m_version>4; }
+
+
+    template<typename T>
+    bool handleI24StructArray(std::vector<T> &entries) {
+
+        if(bytes_to_read==0)
+            return true;
+        uint32_t count;
+        if(!read(count)) {
+            return false;
+        }
+        entries.reserve(count);
+        for(uint32_t i=0; i<count; ++i) {
+            T entry;
+            if(!loadFromI24(this,entry)) {
+                return false;
+            }
+            entries.emplace_back(std::move(entry));
+        }
+        return true;
+    }
     ~BinStore();
 };

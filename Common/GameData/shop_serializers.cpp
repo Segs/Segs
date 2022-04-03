@@ -17,128 +17,167 @@
 #include "DataStorage.h"
 
 
-namespace
+bool loadFrom(BinStore *s, ShopBuySell_Data &target)
 {
-    bool loadFrom(BinStore *s, ShopBuySell_Data &target)
-    {
-        bool ok = true;
-        s->prepare();
-        ok &= s->read(target.m_Department);
-        ok &= s->read(target.m_Markup);
-        ok &= s->prepare_nested(); // will update the file size left
-        assert(ok);
-        return s->end_encountered();
-    }
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.m_Department);
+    ok &= s->read(target.m_Markup);
+    ok &= s->prepare_nested(); // will update the file size left
+    assert(ok);
+    return s->end_encountered();
+}
 
-    bool loadFrom(BinStore *s, ShopItem_Data &target)
-    {
-        bool ok = true;
-        s->prepare();
-        ok &= s->read(target.m_Name);
-        ok &= s->prepare_nested(); // will update the file size left
-        assert(ok);
-        return s->end_encountered();
-    }
+bool loadFromI24(BinStore *s, ShopBuySell_Data &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.m_Department);
+    ok &= s->read(target.m_Markup);
+    return ok;
+}
 
-    bool loadFrom(BinStore *s, ShopDeptName_Data &target)
-    {
-        bool ok = true;
-        s->prepare();
-        ok &= s->read(target.m_Names);
-        ok &= s->prepare_nested(); // will update the file size left
-        assert(ok);
-        return s->end_encountered();
-    }
 
-    bool loadFrom(BinStore *s, Shop_Data &target)
-    {
-        bool ok = true;
-        s->prepare();
-        ok &= s->read(target.m_Name);
-        if(s->isI24Data()) {
-            ok &= s->read(target.m_Salvage);
-            ok &= s->read(target.m_Recipe);
-        }
+bool loadFrom(BinStore *s, ShopItem_Data &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.m_Name);
+    ok &= s->prepare_nested(); // will update the file size left
+    assert(ok);
+    return s->end_encountered();
+}
 
-        ok &= s->prepare_nested(); // will update the file size left
-        assert(ok);
-        if(s->end_encountered())
-            return ok;
-        QByteArray _name;
-        // Only one entry per Item
-        while(s->nesting_name(_name))
-        {
-            s->nest_in();
-            if("Sell"==_name)
-            {
-                ShopBuySell_Data nt;
-                ok &= loadFrom(s,nt);
-                target.m_Sells.push_back(nt);
-            }
-            else if("Buy"==_name)
-            {
-                ShopBuySell_Data nt;
-                ok &= loadFrom(s,nt);
-                target.m_Buys.push_back(nt);
-            }
-            else if("Item"==_name)
-            {
-                ShopItem_Data nt;
-                ok &= loadFrom(s,nt);
-                target.m_Items.push_back(nt);
-            }
-            else
-                assert(!"unknown field referenced.");
-            s->nest_out();
-        }
+bool loadFromI24(BinStore *s, ShopItem_Data &target)
+{
+    s->prepare();
+    bool ok = s->read(target.m_Name);
+    return ok;
+}
+
+bool loadFrom(BinStore *s, ShopDeptName_Data &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.m_Names);
+    ok &= s->prepare_nested(); // will update the file size left
+    assert(ok);
+    return s->end_encountered();
+}
+
+bool loadFrom(BinStore *s,ItemPower_Data &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.m_PowerCategory);
+    ok &= s->read(target.m_PowerSet);
+    ok &= s->read(target.m_Power);
+    ok &= s->read(target.m_Level);
+    ok &= s->read(target.m_Remove);
+    ok &= s->prepare_nested(); // will update the file size left
+    assert(ok);
+    return s->end_encountered();
+}
+
+bool loadFrom(BinStore *s, ShopItemInfo_Data &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.m_Name);
+    ok &= s->read(target.m_Sell);
+    ok &= s->read(target.m_Buy);
+    ok &= s->read(target.m_CountPerStore);
+    ok &= s->read(target.m_Departments);
+    ok &= s->prepare_nested(); // will update the file size left
+    assert(ok);
+    if(s->end_encountered())
         return ok;
+    QByteArray _name;
+    // Only one entry per Item
+    if(s->nesting_name(_name))
+    {
+        s->nest_in();
+        if("Power"==_name) {
+            ok &= loadFrom(s,target.m_Power);
+        } else
+            assert(!"unknown field referenced.");
+        s->nest_out();
+    }
+    return ok;
+}
+
+bool loadFromI24(BinStore *s, Shop_Data &target)
+{
+    bool ok = true;
+    assert(s->isI24Data());
+
+    s->prepare(); // read the size
+    // read fields in order.
+    ok &= s->read(target.m_Name);
+    ok &= s->handleI24StructArray(target.m_Sells);
+    ok &= s->handleI24StructArray(target.m_Buys);
+    ok &= s->handleI24StructArray(target.m_Items);
+    ok &= s->read(target.m_Salvage);
+    ok &= s->read(target.m_Recipe);
+    return ok;
+}
+
+bool loadFrom(BinStore *s, Shop_Data &target)
+{
+    bool ok = true;
+
+    assert(!s->isI24Data());
+
+    s->prepare();
+    ok &= s->read(target.m_Name);
+    if(s->isI24Data()) {
+        ok &= s->read(target.m_Salvage);
+        ok &= s->read(target.m_Recipe);
     }
 
-    bool loadFrom(BinStore *s,ItemPower_Data &target)
-    {
-        bool ok = true;
-        s->prepare();
-        ok &= s->read(target.m_PowerCategory);
-        ok &= s->read(target.m_PowerSet);
-        ok &= s->read(target.m_Power);
-        ok &= s->read(target.m_Level);
-        ok &= s->read(target.m_Remove);
-        ok &= s->prepare_nested(); // will update the file size left
-        assert(ok);
-        return s->end_encountered();
-    }
-
-    bool loadFrom(BinStore *s, ShopItemInfo_Data &target)
-    {
-        bool ok = true;
-        s->prepare();
-        ok &= s->read(target.m_Name);
-        ok &= s->read(target.m_Sell);
-        ok &= s->read(target.m_Buy);
-        ok &= s->read(target.m_CountPerStore);
-        ok &= s->read(target.m_Departments);
-        ok &= s->prepare_nested(); // will update the file size left
-        assert(ok);
-        if(s->end_encountered())
-            return ok;
-        QByteArray _name;
-        // Only one entry per Item
-        if(s->nesting_name(_name))
-        {
-            s->nest_in();
-            if("Power"==_name) {
-                ok &= loadFrom(s,target.m_Power);
-            } else
-                assert(!"unknown field referenced.");
-            s->nest_out();
-        }
+    ok &= s->prepare_nested(); // will update the file size left
+    assert(ok);
+    if(s->end_encountered())
         return ok;
+    QByteArray _name;
+    // Only one entry per Item
+    while(s->nesting_name(_name))
+    {
+        s->nest_in();
+        if("Sell"==_name)
+        {
+            ShopBuySell_Data nt;
+            ok &= loadFrom(s,nt);
+            target.m_Sells.push_back(nt);
+        }
+        else if("Buy"==_name)
+        {
+            ShopBuySell_Data nt;
+            ok &= loadFrom(s,nt);
+            target.m_Buys.push_back(nt);
+        }
+        else if("Item"==_name)
+        {
+            ShopItem_Data nt;
+            ok &= loadFrom(s,nt);
+            target.m_Items.push_back(nt);
+        }
+        else
+            assert(!"unknown field referenced.");
+        s->nest_out();
     }
-} // namespace
+    return ok;
+}
 
 bool loadFrom(BinStore *s, AllShops_Data &target)
 {
     bool ok = true;
+
+    if(s->isI24Data()) {
+        s->prepare(); // read the size
+        return s->handleI24StructArray(target);
+    }
+
     s->prepare();
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
