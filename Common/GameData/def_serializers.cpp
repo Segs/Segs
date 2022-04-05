@@ -153,6 +153,10 @@ void saveTo(const LevelExpAndDebt & target, const QString & baseName, bool text_
 bool loadFrom(BinStore * s, Parse_Combining &target)
 {
     s->prepare();
+    if(s->isI24Data()) {
+        return s->read(target.CombineChances);
+    }
+
     bool ok = true;
     ok &= s->read(target.CombineChances);
     ok &= s->prepare_nested(); // will update the file size left

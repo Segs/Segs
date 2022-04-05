@@ -23,6 +23,7 @@ bool loadFrom(BinStore *s,LevelExpAndDebt &target);
 void saveTo(const LevelExpAndDebt & target, const QString &baseName, bool text_format=false);
 
 constexpr const static uint32_t combining_i0_requiredCrc = 0x7F06A6D1;
+constexpr const static uint32_t combining_i24_requiredCrc = 0x8506DC69;
 bool loadFrom(BinStore *s,Parse_Combining &target);
 void saveTo(const Parse_Combining & target, const QString &baseName, bool text_format=false);
 

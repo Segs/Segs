@@ -86,6 +86,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {levelsdebts_i0_requiredCrc         , eLevelsDebts},
     {levelsdebts_i24_requiredCrc        , eLevelsDebts},
     {combining_i0_requiredCrc           , eCombineChances},
+    {combining_i24_requiredCrc          , eCombineChances},
     {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
     {boosteffectiveness_i24_requiredCrc , eBoostEffectiveness},
     {particlesystems_i0_requiredCrc     , eParticleSystems},
