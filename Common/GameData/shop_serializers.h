@@ -28,5 +28,6 @@ bool loadFrom(BinStore *s, AllShopItems_Data &target);
 void saveTo(const AllShopItems_Data &target,const QString &baseName,bool text_format=false);
 
 static constexpr uint32_t shopdepts_i0_requiredCrc=0xCB0532EC;
+static constexpr uint32_t shopdepts_i24_requiredCrc=0x5A060975;
 bool loadFrom(BinStore *s, AllShopDepts_Data &target);
 void saveTo(const AllShopDepts_Data &target,const QString &baseName,bool text_format=false);

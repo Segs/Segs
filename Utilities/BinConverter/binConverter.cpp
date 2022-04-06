@@ -95,6 +95,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {shopitems_i0_requiredCrc           , eShopItems},
     {shopitems_i24_requiredCrc          , eShopItems},
     {shopdepts_i0_requiredCrc           , eShopDepts},
+    {shopdepts_i24_requiredCrc          , eShopDepts},
 //    {seqencerlist_i0_requiredCrc        , eSequencers},
     {tailorcosts_i0_requiredCrc         , eTailorCosts},
     {tailorcosts_i24_requiredCrc        , eTailorCosts},
