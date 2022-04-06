@@ -27,6 +27,7 @@ bool loadFrom(BinStore * s, CostumeSet_Data * target);
 void saveTo(const CostumeSet_Data &target,const QString &baseName,bool text_format=false);
 
 static constexpr uint32_t palette_i0_requiredCrc=0x3C075513;
+static constexpr uint32_t palette_i24_requiredCrc=0xF0095EF2;
 bool loadFrom(BinStore *s,Pallette_Data *target);
 void saveTo(const Pallette_Data &target,const QString &baseName,bool text_format=false);
 

@@ -102,6 +102,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {costumesets_i0_requiredCrc         , eCostumeSets},
     {bodyparts_i0_requiredCrc           , eBodyParts},
     {palette_i0_requiredCrc             , ePaletteSets},
+    {palette_i24_requiredCrc            , ePaletteSets},
     {geoset_i0_requiredCrc              , eGroupEmblems },
     {zones_i0_requiredCrc               , eZones},
     {attribnames_i0_requiredCrc         , eAttribNames},
@@ -168,13 +169,13 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(particlesystems_i0_requiredCrc,16)<<"> Particle system definitions - 'particles.bin'";
     qDebug()<<"   I0/I24 Shops data - 'stores.bin'";
     qDebug()<<"   I0/I24 Shops items- 'items.bin'";
-    qDebug()<<"   I0<"<<QString::number(shopdepts_i0_requiredCrc,16)<<"> Shop department names data - 'depts.bin'";
+    qDebug()<<"   I0/I24 Shop department names data - 'depts.bin'";
     qDebug()<<"   I0<"<<QString::number(attribnames_i0_requiredCrc,16)<<"> Attrib definitions - 'attrib_names.bin'";
     qDebug()<<"   I0/I24 Tailoring cost data - 'tailorcost.bin'";
     qDebug()<<"   I0<"<<QString::number(costumesets_i0_requiredCrc,16)<<"> Costume part data - 'costume.bin'";
     qDebug()<<"   I0<"<<QString::number(bodyparts_i0_requiredCrc,16)<<"> Body part data - 'BodyParts.bin'";
     qDebug()<<"   I0<"<<QString::number(geoset_i0_requiredCrc,16)<<"> Supergroup emblem data - 'supergroupEmblems.bin'";
-    qDebug()<<"   I0<"<<QString::number(palette_i0_requiredCrc,16)<<"> Color palette data - 'supergroupColors.bin'";
+    qDebug()<<"   I0/I24 Color palette data - 'supergroupColors.bin'";
     qDebug()<<"   I0-2<"<<QString::number(scenegraph_i0_2_requiredCrc,16)<<"> Scene graph - 'geobin/*'";
     qDebug()<<"   I0<"<<QString::number(tricks_i0_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";
     qDebug()<<"   I2<"<<QString::number(tricks_i2_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";

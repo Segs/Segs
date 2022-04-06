@@ -194,6 +194,12 @@ namespace
     }
 } // namespace
 
+static bool loadFromI24(BinStore *s,ColorEntry_Data &target)
+{
+    s->prepare();
+    return s->read(target.color);
+}
+
 template<class Archive>
 void serialize(Archive & archive, ColorEntry_Data & m)
 {
@@ -204,6 +210,7 @@ template<class Archive>
 static void serialize(Archive & archive, Pallette_Data & m)
 {
     archive(cereal::make_nvp("Colors",m.m_Colors));
+    archive(cereal::make_nvp("Name",m.m_Name));
 }
 
 template<class Archive>
@@ -255,8 +262,14 @@ bool loadFrom(BinStore *s,GeoSet_Data *target)
 
 bool loadFrom(BinStore *s,Pallette_Data *target)
 {
+    bool ok = true;
     s->prepare();
-    bool ok =  s->prepare_nested(); // will update the file size left
+    if(s->isI24Data()) {
+        ok = s->handleI24StructArray(target->m_Colors);
+        ok &= s->read(target->m_Name); //not available
+        return ok;
+    }
+    ok =  s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
     QByteArray _name;
@@ -277,12 +290,11 @@ bool loadFrom(BinStore *s,Pallette_Data *target)
 
 bool loadFrom(BinStore * s, AllTailorCosts_Data &target)
 {
+    s->prepare(); // read the size
     if(s->isI24Data()) {
-        s->prepare(); // read the size
         return s->handleI24StructArray(target);
     }
 
-    s->prepare();
     bool ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;

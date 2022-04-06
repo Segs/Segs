@@ -36,6 +36,7 @@ struct ColorEntry_Data
 struct Pallette_Data
 {
     std::vector<ColorEntry_Data> m_Colors;
+    QByteArray m_Name; // loaded, but always empty, even in I24
 };
 
 struct GeoSet_Mask_Data
