@@ -90,6 +90,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {boosteffectiveness_i0_requiredCrc  , eBoostEffectiveness},
     {boosteffectiveness_i24_requiredCrc , eBoostEffectiveness},
     {particlesystems_i0_requiredCrc     , eParticleSystems},
+    {particlesystems_i24_requiredCrc    , eParticleSystems},
     {shoplist_i0_requiredCrc            , eShops},
     {shoplist_i24_requiredCrc           , eShops},
     {shopitems_i0_requiredCrc           , eShopItems},
@@ -167,7 +168,7 @@ void showSupportedBinTypes()
 {
     qDebug()<<"Currently supported file types ";
     qDebug()<<"   I0/24 Experience data - 'experience.bin'";
-    qDebug()<<"   I0<"<<QString::number(particlesystems_i0_requiredCrc,16)<<"> Particle system definitions - 'particles.bin'";
+    qDebug()<<"   I0/I24 Particle system definitions - 'particles.bin'";
     qDebug()<<"   I0/I24 Shops data - 'stores.bin'";
     qDebug()<<"   I0/I24 Shops items- 'items.bin'";
     qDebug()<<"   I0/I24 Shop department names data - 'depts.bin'";
@@ -177,9 +178,8 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(bodyparts_i0_requiredCrc,16)<<"> Body part data - 'BodyParts.bin'";
     qDebug()<<"   I0<"<<QString::number(geoset_i0_requiredCrc,16)<<"> Supergroup emblem data - 'supergroupEmblems.bin'";
     qDebug()<<"   I0/I24 Color palette data - 'supergroupColors.bin'";
-    qDebug()<<"   I0-2<"<<QString::number(scenegraph_i0_2_requiredCrc,16)<<"> Scene graph - 'geobin/*'";
-    qDebug()<<"   I0<"<<QString::number(tricks_i0_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";
-    qDebug()<<"   I2<"<<QString::number(tricks_i2_requiredCrc,16)<<"> Trick definitions- 'tricks.bin'";
+    qDebug()<<"   I0-2 Scene graph - 'geobin/*'";
+    qDebug()<<"   I0-2 Trick definitions- 'tricks.bin'";
     qDebug()<<"   I0<"<<QString::number(charclass_i0_requiredCrc,16)<<"> Entity class definitions- 'classes.bin' or 'villain_classes.bin'";
     qDebug()<<"   I0<"<<QString::number(origins_i0_requiredCrc,16)<<"> Entity origin definitions- 'origins.bin' or 'villain_origins.bin'";
     qDebug()<<"   I0<"<<QString::number(powers_i0_requiredCrc,16)<<"> Power definitions- 'powers.bin'";

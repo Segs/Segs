@@ -26,8 +26,8 @@ struct ParticleTextureData
 
 struct ParticleSystemInfo
 {
-    uint32_t               m_WorldOrLocalPosition;
     uint32_t               m_FrontOrLocalFacing;
+    uint32_t               m_WorldOrLocalPosition;
     float                  m_TimeToFull;
     uint32_t               m_KickStart;
     std::vector<float>     m_NewPerFrame;
@@ -41,6 +41,8 @@ struct ParticleSystemInfo
     std::vector<glm::vec3> m_EmissionStartJitter;
     float                  m_EmissionRadius;
     float                  m_EmissionHeight;
+    float                  m_EmissionLifeSpan;// i24
+    float                  m_EmissionLifeJitter; //i24
     int                    m_Spin;
     uint32_t               m_SpinJitter;
     uint32_t               m_OrientationJitter;
@@ -55,6 +57,8 @@ struct ParticleSystemInfo
     float                  m_SortBias;
     float                  m_Drag;
     float                  m_Stickiness;
+    glm::vec3              m_ColorOffset; // i24
+    glm::vec3              m_ColorOffsetJitter; // i24
     std::vector<uint32_t>  m_Alpha;
     uint32_t               m_ColorChangeType;
     std::array<ColorFx, 5> m_StartColor; // colornavpoint

@@ -10,7 +10,11 @@
 #include <QtCore/QDebug>
 namespace
 {
-std::vector<glm::vec3> convertToVec3Vector(const std::vector<float>& src) {
+std::vector<glm::vec3> convertToVec3Vector(std::vector<float>& src,int target_size=-1) {
+    if(target_size!=-1) {
+        while(src.size()<target_size)
+            src.push_back(0.0f);
+    }
     std::vector<glm::vec3> res;
     assert((src.size() % 3) == 0);
     res.reserve(src.size()/3);
@@ -108,10 +112,118 @@ bool loadFrom(BinStore * s, ParticleSystemInfo * target)
 
 }
 }
+
+static bool loadFromI24(BinStore * s, ParticleSystemInfo & target)
+{
+    bool ok = true;
+    s->prepare();
+
+    ok &= s->read(target.m_Name);
+    ok &= s->read(target.m_FrontOrLocalFacing);
+    ok &= s->read(target.m_WorldOrLocalPosition);
+    ok &= s->read(target.m_TimeToFull);
+    ok &= s->read(target.m_KickStart);
+    ok &= s->read(target.m_NewPerFrame); //arr
+    ok &= s->read(target.m_Burst); //arr
+    ok &= s->read(target.m_BurbleAmplitude);//arr
+    ok &= s->read(target.m_BurbleType);
+    ok &= s->read(target.m_BurbleFrequency);
+    ok &= s->read(target.m_BurbleThreshold);
+    ok &= s->read(target.m_MoveScale);
+    ok &= s->read(target.m_EmissionType);
+    std::vector<float> val;
+    ok &= s->read(val);
+
+    target.m_EmissionStartJitter = convertToVec3Vector(val,6);
+    val.clear();
+
+    ok &= s->read(target.m_EmissionRadius);
+    ok &= s->read(target.m_EmissionHeight);
+    ok &= s->read(target.m_EmissionLifeSpan);
+    ok &= s->read(target.m_EmissionLifeJitter);
+    ok &= s->read(target.m_Spin);
+    ok &= s->read(target.m_SpinJitter);
+    ok &= s->read(target.m_OrientationJitter);
+    ok &= s->read(target.m_Magnetism);
+    ok &= s->read(target.m_Gravity);
+    ok &= s->read(target.m_KillOnZero);
+    ok &= s->read(target.m_Terrain);
+
+    ok &= s->read(val);
+    target.m_InitialVelocity = convertToVec3Vector(val,6);
+    val.clear();
+
+    ok &= s->read(val);
+    target.m_InitialVelocityJitter = convertToVec3Vector(val,6);
+    val.clear();
+    ok &= s->read(target.m_VelocityJitter);
+    ok &= s->read(target.m_TightenUp);
+    ok &= s->read(target.m_SortBias);
+    ok &= s->read(target.m_Drag);
+    ok &= s->read(target.m_Stickiness);
+    ok &= s->read(target.m_ColorOffset);
+    ok &= s->read(target.m_ColorOffsetJitter);
+    ok &= s->read(target.m_Alpha);
+    ok &= s->read(target.m_ColorChangeType);
+    for(int i=0; i<5; ++i)
+        ok &= s->read(target.m_StartColor[i].startcolor); //
+    target.m_StartColor[0].startTime = 0;
+    for(int i=1; i<5; ++i)
+        ok &= s->read(target.m_StartColor[i].startTime);
+
+    for(int i=0; i<5; ++i)
+        ok &= s->read(target.m_StartColor[i].primaryTint);
+    for(int i=0; i<5; ++i)
+        ok &= s->read(target.m_StartColor[i].secondaryTint);
+    // duplicated data ??
+    for(int i=0; i<5; ++i)
+        ok &= s->read(target.m_StartColor[i].startcolor);
+    for(int i=1; i<5; ++i)
+        ok &= s->read(target.m_StartColor[i].startTime);
+    ok &= s->read(target.m_StartColor[0].startTime);
+
+    ok &= s->read(target.m_FadeInBy);
+    ok &= s->read(target.m_FadeOutStart);
+    ok &= s->read(target.m_FadeOutBy);
+    ok &= s->read(target.m_DieLikeThis);
+    ok &= s->read(target.m_DeathAgeToZero);
+    ok &= s->read(target.m_StartSize);
+    ok &= s->read(target.m_StartSizeJitter);
+    ok &= s->read(target.m_Blend_mode);
+    ok &= s->read(target.particleTexture[0].m_TextureName);
+    ok &= s->read(target.particleTexture[1].m_TextureName);
+    ok &= s->read(target.particleTexture[0].m_TexScroll);
+    ok &= s->read(target.particleTexture[1].m_TexScroll);
+    ok &= s->read(target.particleTexture[0].m_TexScrollJitter);
+    ok &= s->read(target.particleTexture[1].m_TexScrollJitter);
+    ok &= s->read(target.particleTexture[0].m_AnimFrames);
+    ok &= s->read(target.particleTexture[1].m_AnimFrames);
+    ok &= s->read(target.particleTexture[0].m_AnimPace);
+    ok &= s->read(target.particleTexture[1].m_AnimPace);
+    ok &= s->read(target.particleTexture[0].m_AnimType);
+    ok &= s->read(target.particleTexture[1].m_AnimType);
+    ok &= s->read(target.m_EndSize);
+    ok &= s->read(target.m_ExpandRate);
+    ok &= s->read(target.m_ExpandType);
+    ok &= s->read(target.m_StreakType);
+    ok &= s->read(target.m_StreakScale);
+    ok &= s->read(target.m_StreakOrient);
+    ok &= s->read(target.m_StreakDirection);
+    ok &= s->read(target.m_VisRadius);
+    ok &= s->read(target.m_VisDist);
+    ok &= s->read(target.m_Flags); // eFlags
+    return ok;
+}
+
 template<class Archive>
 void serialize(Archive & archive, ColorFx & m)
 {
-    archive(cereal::make_nvp("startcolor",m.startcolor),cereal::make_nvp("startTime",m.startTime));
+    archive(cereal::make_nvp("startcolor",m.startcolor),
+            cereal::make_nvp("startTime",m.startTime),
+            cereal::make_nvp("primaryTint",m.primaryTint),
+            cereal::make_nvp("secondaryTint",m.secondaryTint)
+    );
+
 }
 
 template<class Archive>
@@ -143,6 +255,8 @@ void serialize(Archive & archive, ParticleSystemInfo & m)
     archive(cereal::make_nvp("EmissionStartJitter",m.m_EmissionStartJitter));
     archive(cereal::make_nvp("EmissionRadius",m.m_EmissionRadius));
     archive(cereal::make_nvp("EmissionHeight",m.m_EmissionHeight));
+    archive(cereal::make_nvp("EmissionLifeSpan",m.m_EmissionLifeSpan));
+    archive(cereal::make_nvp("EmissionLifeJitter",m.m_EmissionLifeJitter));
     archive(cereal::make_nvp("Spin",m.m_Spin));
     archive(cereal::make_nvp("SpinJitter",m.m_SpinJitter));
     archive(cereal::make_nvp("OrientationJitter",m.m_OrientationJitter));
@@ -157,6 +271,9 @@ void serialize(Archive & archive, ParticleSystemInfo & m)
     archive(cereal::make_nvp("SortBias",m.m_SortBias));
     archive(cereal::make_nvp("Drag",m.m_Drag));
     archive(cereal::make_nvp("Stickiness",m.m_Stickiness));
+    archive(cereal::make_nvp("ColorOffset",m.m_ColorOffset));
+    archive(cereal::make_nvp("ColorOffsetJitter",m.m_ColorOffsetJitter));
+
     archive(cereal::make_nvp("Alpha",m.m_Alpha));
     archive(cereal::make_nvp("ColorChangeType",m.m_ColorChangeType));
     archive(cereal::make_nvp("StartColor",m.m_StartColor));
@@ -205,6 +322,9 @@ bool loadFrom(BinStore * s, Parse_AllPSystems * target)
 {
     bool ok = true;
     s->prepare();
+    if(s->isI24Data()) {
+        return s->handleI24StructArray(target->m_Systems);
+    }
     ok &= s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;

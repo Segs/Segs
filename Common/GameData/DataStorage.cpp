@@ -45,7 +45,7 @@ const QByteArray &BinStore::read_pstr( size_t maxlen )
     static QByteArray buf;
     uint16_t len=0;
     buf.resize(0);
-    if(read(len)!=true)
+    if(read_internal(len)!=2)
         return buf;
     if(len<=maxlen)
     {
@@ -152,12 +152,25 @@ bool BinStore::read( float &v )
 
 bool BinStore::read( uint16_t &v )
 {
+    if(isI24Data()) {
+        uint32_t val;
+        size_t res = read_internal(val);
+        v=(uint16_t)val;
+        return res==4;
+    }
+
     size_t res = read_internal(v);
     return res==2;
 }
 
 bool BinStore::read( uint8_t &v )
 {
+    if(isI24Data()) {
+        uint32_t val;
+        size_t res = read_internal(val);
+        v=(uint8_t)val;
+        return res==4;
+    }
     size_t res = read_internal(v);
     return res==1;
 }
@@ -188,6 +201,13 @@ bool BinStore::read(Vec3 &val)
 bool BinStore::read(RGBA & rgb)
 {
     bool parse_ok=true;
+    if(isI24Data()) {
+        for(int i=0; i<3; ++i) {
+            parse_ok &= read(rgb.v[i]);
+        }
+        rgb.v[3] = 0;
+        return parse_ok;
+    }
     for(int i=0; i<3; ++i)
         parse_ok &= read(rgb.v[i]);
     rgb.v[3] = 0;
@@ -271,7 +291,7 @@ bool BinStore::read(std::vector<float> &res)
     for(size_t idx = 0; idx < to_read; ++idx)
     {
         res.push_back(0);
-        parse_ok &= read(res[idx]);
+        parse_ok &= read(res.back());
     }
     return parse_ok;
 }

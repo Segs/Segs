@@ -14,6 +14,8 @@ struct ColorFx
 {
     RGBA startcolor;
     int startTime;
+    float primaryTint; //i24
+    float secondaryTint; //i24
 };
 enum SplatFlags {
     SPLAT_ADDITIVE = 1,
