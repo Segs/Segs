@@ -37,8 +37,8 @@ endif()
 # Set windeployqt dll type
 IF (CMAKE_BUILD_TYPE MATCHES [Dd]ebug)
   set(WINDEPLOYQT_TYPE --debug)
-ELSE()
-  set(WINDEPLOYQT_TYPE --release)
+#ELSE()
+  #set(WINDEPLOYQT_TYPE --release)
 ENDIF()
 
 # Add commands that copy the Qt runtime to the target's output directory after

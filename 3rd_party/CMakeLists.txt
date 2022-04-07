@@ -20,4 +20,4 @@ endif()
 include(ExternalProject_LUA.cmake)
 include(ExternalProject_SOL2.cmake)
 include(ExternalProject_JCON.cmake)
-include(ExternalProject_SegsEngine.cmake)
+#include(ExternalProject_SegsEngine.cmake) Temporarily commented out as failing to build
