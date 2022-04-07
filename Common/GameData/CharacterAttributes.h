@@ -25,6 +25,9 @@ struct AttribNames_Data
     std::vector<Parse_AttribDesc> m_Defense;
     std::vector<Parse_AttribDesc> m_Boost;
     std::vector<Parse_AttribDesc> m_Group;
+    std::vector<Parse_AttribDesc> m_Mode;
+    std::vector<Parse_AttribDesc> m_Elusivity;
+    std::vector<Parse_AttribDesc> m_StackKeys;
     template<class Archive>
     void serialize(Archive & archive);
 };

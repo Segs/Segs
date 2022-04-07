@@ -20,6 +20,9 @@ void AttribNames_Data::serialize(Archive & archive)
     archive(cereal::make_nvp("Defense",m_Defense));
     archive(cereal::make_nvp("Boost",m_Boost));
     archive(cereal::make_nvp("Group",m_Group));
+    archive(cereal::make_nvp("Mode",m_Mode));
+    archive(cereal::make_nvp("Elusivity",m_Elusivity));
+    archive(cereal::make_nvp("StackKeys",m_StackKeys));
 }
 SPECIALIZE_SERIALIZATIONS(AttribNames_Data)
 

@@ -30,11 +30,30 @@ namespace
         return ok;
     }
 }
-
-bool loadFrom(BinStore * s, AttribNames_Data & target)
+static bool loadFromI24(BinStore * s, Parse_AttribDesc & target)
 {
     s->prepare();
-    bool ok = s->prepare_nested(); // will update the file size left
+    bool ok = true;
+    ok &= s->read(target.Name);
+    ok &= s->read(target.DisplayName);
+    ok &= s->read(target.IconName);
+    return ok;
+}
+bool loadFrom(BinStore * s, AttribNames_Data & target)
+{
+    bool ok = true;
+    s->prepare();
+    if(s->isI24Data()) {
+        ok &= s->handleI24StructArray(target.m_Damage);
+        ok &= s->handleI24StructArray(target.m_Defense);
+        ok &= s->handleI24StructArray(target.m_Boost);
+        ok &= s->handleI24StructArray(target.m_Group);
+        ok &= s->handleI24StructArray(target.m_Mode);
+        ok &= s->handleI24StructArray(target.m_Elusivity);
+        ok &= s->handleI24StructArray(target.m_StackKeys);
+        return ok;
+    }
+    ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;
     QByteArray _name;

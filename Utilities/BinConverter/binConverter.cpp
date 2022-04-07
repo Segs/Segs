@@ -106,6 +106,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {geoset_i0_requiredCrc              , eGroupEmblems },
     {zones_i0_requiredCrc               , eZones},
     {attribnames_i0_requiredCrc         , eAttribNames},
+    {attribnames_i24_requiredCrc        , eAttribNames},
     {scenegraph_i0_2_requiredCrc        , eSceneGraph},
     {tricks_i0_requiredCrc              , eTrickDefinitions},
     {tricks_i2_requiredCrc              , eTrickDefinitions},
@@ -170,7 +171,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0/I24 Shops data - 'stores.bin'";
     qDebug()<<"   I0/I24 Shops items- 'items.bin'";
     qDebug()<<"   I0/I24 Shop department names data - 'depts.bin'";
-    qDebug()<<"   I0<"<<QString::number(attribnames_i0_requiredCrc,16)<<"> Attrib definitions - 'attrib_names.bin'";
+    qDebug()<<"   I0/I24 Attrib definitions - 'attrib_names.bin'";
     qDebug()<<"   I0/I24 Tailoring cost data - 'tailorcost.bin'";
     qDebug()<<"   I0<"<<QString::number(costumesets_i0_requiredCrc,16)<<"> Costume part data - 'costume.bin'";
     qDebug()<<"   I0<"<<QString::number(bodyparts_i0_requiredCrc,16)<<"> Body part data - 'BodyParts.bin'";
