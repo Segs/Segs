@@ -28,15 +28,16 @@
 #include "Components/Settings.h"
 #include "Version.h"
 
+#include <QApplication>
 #include <QDebug>
-#include <QtGlobal>
-#include <QProcess>
+#include <QDir>
 #include <QFileInfo>
 #include <QFile>
-#include <QApplication>
 #include <QMessageBox>
-#include <QDir>
+#include <QProcess>
 #include <QSettings>
+#include <QtGlobal>
+#include <QVersionNumber>
 
 
 SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
@@ -96,7 +97,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
 
     // Network Manager Signals
     connect(this,&SEGSAdminTool::getLatestReleases,m_network_manager,&NetworkManager::get_latest_releases);
-    connect(m_network_manager,&NetworkManager::releasesReadyToRead,this,&SEGSAdminTool::read_release_info);
+    connect(m_network_manager,&NetworkManager::releasesReadyToRead,this,&SEGSAdminTool::readReleaseInfo);
 
     // Send startup signals
     emit checkForConfigFile();
@@ -497,30 +498,30 @@ void SEGSAdminTool::check_config_version(QString filePath)
     }
 }
 
-void SEGSAdminTool::read_release_info(const QString &error)
+void SEGSAdminTool::readReleaseInfo(const QString &error)
 {
     ui->output->appendPlainText("Checking for Updates...");
     QString version_number = VersionInfo::getAuthVersionNumber();
-    version_number.prepend("v");
     if(!g_segs_release_info.isEmpty())
     {
+        QVersionNumber installed_version = QVersionNumber::fromString(version_number);
+        QVersionNumber latest_version = QVersionNumber::fromString(g_segs_release_info[0].tag_name.remove(QChar('v')));
+        int compare_version = QVersionNumber::compare(installed_version, latest_version);
         ui->update_detail->setText("Checking for updates...");
-        if(g_segs_release_info[0].tag_name == version_number)
-        {
 
-            qDebug()<<"Current Version";
-            ui->output->appendPlainText("No updates available");
-            ui->update_detail->setText("Up to date");
-            ui->update_detail->setStyleSheet("color: rgb(0, 200, 0)");
-        }
-        else
+        if(compare_version < 0)
         {
-            qDebug()<<"New Version Available";
             ui->output->appendPlainText("New Update Found!");
             ui->update_detail->setEnabled(true);
             ui->update_detail->setStyleSheet("color: rgb(204, 0, 0)");
             ui->update_detail->setText("Update available!");
             ui->update_detail->setFlat(false);
+        }
+        else
+        {
+            ui->output->appendPlainText("No updates available");
+            ui->update_detail->setText("Up to date");
+            ui->update_detail->setStyleSheet("color: rgb(0, 200, 0)");
         }
     }
     else
