@@ -101,6 +101,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {tailorcosts_i0_requiredCrc         , eTailorCosts},
     {tailorcosts_i24_requiredCrc        , eTailorCosts},
     {costumesets_i0_requiredCrc         , eCostumeSets},
+    {costumesets_i24_requiredCrc        , eCostumeSets},
     {bodyparts_i0_requiredCrc           , eBodyParts},
     {palette_i0_requiredCrc             , ePaletteSets},
     {palette_i24_requiredCrc            , ePaletteSets},
@@ -167,14 +168,14 @@ bool doConvert(T *src_struct,const QString &fname,bool text_format=false)
 void showSupportedBinTypes()
 {
     qDebug()<<"Currently supported file types ";
-    qDebug()<<"   I0/24 Experience data - 'experience.bin'";
+    qDebug()<<"   I0/I24 Experience data - 'experience.bin'";
     qDebug()<<"   I0/I24 Particle system definitions - 'particles.bin'";
     qDebug()<<"   I0/I24 Shops data - 'stores.bin'";
     qDebug()<<"   I0/I24 Shops items- 'items.bin'";
     qDebug()<<"   I0/I24 Shop department names data - 'depts.bin'";
     qDebug()<<"   I0/I24 Attrib definitions - 'attrib_names.bin'";
     qDebug()<<"   I0/I24 Tailoring cost data - 'tailorcost.bin'";
-    qDebug()<<"   I0<"<<QString::number(costumesets_i0_requiredCrc,16)<<"> Costume part data - 'costume.bin'";
+    qDebug()<<"   I0/I24 Costume part data - 'costume.bin'";
     qDebug()<<"   I0<"<<QString::number(bodyparts_i0_requiredCrc,16)<<"> Body part data - 'BodyParts.bin'";
     qDebug()<<"   I0<"<<QString::number(geoset_i0_requiredCrc,16)<<"> Supergroup emblem data - 'supergroupEmblems.bin'";
     qDebug()<<"   I0/I24 Color palette data - 'supergroupColors.bin'";

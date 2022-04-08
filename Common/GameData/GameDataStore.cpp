@@ -123,7 +123,7 @@ public:
                         for(int geo_idx=bset.m_GeoSets.size()-1; geo_idx>=0; --geo_idx)
                         {
                             const GeoSet_Data &geo_set(bset.m_GeoSets[geo_idx]);
-                            m_strings.insert_entry(geo_set.m_Displayname,"");
+                            m_strings.insert_entry(geo_set.m_DisplayName,"");
                             m_strings.insert_entry(geo_set.m_BodyPart,"");
                             for(int info_idx=geo_set.m_Infos.size()-1; info_idx>=0; --info_idx)
                             {
