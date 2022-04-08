@@ -115,6 +115,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {tricks_i0_requiredCrc              , eTrickDefinitions},
     {tricks_i2_requiredCrc              , eTrickDefinitions},
     {charclass_i0_requiredCrc           , eEntityClasses},
+    {charclass_i24_requiredCrc          , eEntityClasses},
     {origins_i0_requiredCrc             , eEntityOrigins},
     {origins_i24_requiredCrc            , eEntityOrigins},
     {powers_i0_requiredCrc              , ePowerDefinitions},
@@ -185,7 +186,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0/I24 Color palette data - 'supergroupColors.bin'";
     qDebug()<<"   I0-2 Scene graph - 'geobin/*'";
     qDebug()<<"   I0-2 Trick definitions- 'tricks.bin'";
-    qDebug()<<"   I0<"<<QString::number(charclass_i0_requiredCrc,16)<<"> Entity class definitions- 'classes.bin' or 'villain_classes.bin'";
+    qDebug()<<"   I0/I24 Entity class definitions- 'classes.bin' or 'villain_classes.bin'";
     qDebug()<<"   I0/I24 Entity origin definitions- 'origins.bin' or 'villain_origins.bin'";
     qDebug()<<"   I0<"<<QString::number(powers_i0_requiredCrc,16)<<"> Power definitions- 'powers.bin'";
     qDebug()<<"   I0<"<<QString::number(npccostumesets_i0_requiredCrc,16)<<"> NPC definitions - 'VillainCostume.bin'";

@@ -109,6 +109,7 @@ static bool loadFromI24(BinStore *s, ClassMod_Data &target)
 }
 static bool loadFromI24(BinStore *s,CharClass_Data &target) {
     bool ok = true;
+    s->prepare();
     ok &= s->read(target.m_Name);
     ok &= s->read(target.m_DisplayName);
     ok &= s->read(target.m_DisplayHelp);
