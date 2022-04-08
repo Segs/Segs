@@ -99,9 +99,59 @@ namespace
     }
 } // namespace
 
+static bool loadFromI24(BinStore *s, ClassMod_Data &target)
+{
+    s->prepare();
+    bool ok = true;
+    ok &= s->read(target.Name);
+    ok &= s->read(target.Values);
+    return ok;
+}
+static bool loadFromI24(BinStore *s,CharClass_Data &target) {
+    bool ok = true;
+    ok &= s->read(target.m_Name);
+    ok &= s->read(target.m_DisplayName);
+    ok &= s->read(target.m_DisplayHelp);
+    ok &= s->read(target.m_AllowedOrigins);
+    ok &= s->read(target.m_SpecialRestrictions);
+    ok &= s->read(target.m_StoreRequires);
+    ok &= s->read(target.m_LockedTooltip);
+    ok &= s->read(target.m_ProductCode);
+    ok &= s->read(target.m_ReductionClass);
+    ok &= s->read(target.m_ReduceAsArchvillain);
+    ok &= s->read(target.m_LevelUpRespecs);
+    ok &= s->read(target.m_DisplayShortHelp);
+    ok &= s->read(target.m_Icon);
+    ok &= s->read(target.m_PrimaryCategory);
+    ok &= s->read(target.m_SecondaryCategory);
+    ok &= s->read(target.m_PowerPoolCategory);
+    ok &= s->read(target.m_EpicPoolCategory);
+    ok &= s->handleI24StructArray(target.m_AttribMin);
+    ok &= s->handleI24StructArray(target.m_AttribBase);
+    ok &= s->handleI24StructArray(target.m_StrengthMin);
+    ok &= s->handleI24StructArray(target.m_ResistanceMin);
+    ok &= s->handleI24StructArray(target.m_AtrribDiminStrIn);
+    ok &= s->handleI24StructArray(target.m_AtrribDiminStrOut);
+    ok &= s->handleI24StructArray(target.m_AtrribDiminCurIn);
+    ok &= s->handleI24StructArray(target.m_AtrribDiminCurOut);
+    ok &= s->handleI24StructArray(target.m_AtrribDiminResIn);
+    ok &= s->handleI24StructArray(target.m_AtrribDiminResOut);
+    ok &= s->handleI24StructArray(target.m_AttribMaxTable);
+    ok &= s->handleI24StructArray(target.m_AttribMaxMaxTable);
+    ok &= s->handleI24StructArray(target.m_StrengthMaxTable);
+    ok &= s->handleI24StructArray(target.m_ResistanceMaxTable);
+    ok &= s->handleI24StructArray(target.m_ModTable);
+    ok &= s->read(target.m_ConnectHPAndStatus);
+    ok &= s->read(target.m_DefiantHitPointsAttrib);
+    ok &= s->read(target.m_DefiantScale);
+    return ok;
+}
 bool loadFrom(BinStore *s, Parse_AllCharClasses &target)
 {
     s->prepare();
+    if(s->isI24Data()) {
+        return s->handleI24StructArray(target);
+    }
     bool ok = s->prepare_nested(); // will update the file size left
     if(s->end_encountered())
         return ok;

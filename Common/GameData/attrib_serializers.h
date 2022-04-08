@@ -22,7 +22,9 @@ bool loadFrom(BinStore *s,AttribNames_Data &target) ;
 void saveTo(const AttribNames_Data &target,const QString &baseName,bool text_format=false);
 
 bool loadFrom(BinStore *s, Parse_CharAttrib &target);
+bool loadFromI24(BinStore *s, Parse_CharAttrib &target);
 bool loadFrom(BinStore *s, Parse_CharAttribMax &target);
+bool loadFromI24(BinStore *s, Parse_CharAttribMax &target);
 
 void serializeToDb(const Parse_CharAttrib &data, QString &tgt);
 void serializeFromDb(Parse_CharAttrib &data, const QString &src);

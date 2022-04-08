@@ -12,7 +12,7 @@
 
 class BinStore;
 class QString;
-typedef std::vector<struct CharClass_Data> Parse_AllCharClasses;
+using Parse_AllCharClasses = std::vector<struct CharClass_Data>;
 
 constexpr const static uint32_t charclass_i0_requiredCrc = 0xF6D734A6;
 bool loadFrom(BinStore *s,Parse_AllCharClasses &target) ;

@@ -106,7 +106,7 @@ bool loadFrom(BinStore *s, Parse_CharAttrib &target)
     s->read(target.m_SpeedFlying);
     s->read(target.m_SpeedSwimming);
     s->read(target.m_SpeedJumping);
-    s->read(target.m_jump_height);
+    s->read(target.m_JumpHeight);
     s->read(target.m_MovementControl);
     s->read(target.m_MovementFriction);
     s->read(target.m_Stealth);
@@ -120,10 +120,10 @@ bool loadFrom(BinStore *s, Parse_CharAttrib &target)
     s->read(target.m_Afraid);
     s->read(target.m_Held);
     s->read(target.m_Immobilized);
-    s->read(target.m_is_stunned);
+    s->read(target.m_IsStunned);
     s->read(target.m_Sleep);
-    s->read(target.m_is_flying);
-    s->read(target.m_has_jumppack);
+    s->read(target.m_IsFlying);
+    s->read(target.m_HasJumppack);
     s->read(target.m_Teleport);
     s->read(target.m_Untouchable);
     s->read(target.m_Intangible);
@@ -165,7 +165,7 @@ bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
     s->read(target.m_SpeedFlying);
     s->read(target.m_SpeedSwimming);
     s->read(target.m_SpeedJumping);
-    s->read(target.m_jump_height);
+    s->read(target.m_JumpHeight);
     s->read(target.m_MovementControl);
     s->read(target.m_MovementFriction);
     s->read(target.m_Stealth);
@@ -179,10 +179,10 @@ bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
     s->read(target.m_Afraid);
     s->read(target.m_Held);
     s->read(target.m_Immobilized);
-    s->read(target.m_is_stunned);
+    s->read(target.m_IsStunned);
     s->read(target.m_Sleep);
-    s->read(target.m_is_flying);
-    s->read(target.m_has_jumppack);
+    s->read(target.m_IsFlying);
+    s->read(target.m_HasJumppack);
     s->read(target.m_Teleport);
     s->read(target.m_Untouchable);
     s->read(target.m_Intangible);
@@ -203,6 +203,78 @@ bool loadFrom(BinStore *s, Parse_CharAttribMax &target)
     return ok;
 }
 
+bool loadFromI24(BinStore *s, Parse_CharAttribMax &target)
+{
+    s->prepare();
+
+    bool ok = true;
+    for(int i=0; i<20; ++i) {
+        ok &= s->read(target.m_DamageTypes[i]);
+    }
+    ok &= s->read(target.m_HitPoints);
+    ok &= s->read(target.m_Absorb);
+    ok &= s->read(target.m_Endurance);
+    ok &= s->read(target.m_Insight);
+    ok &= s->read(target.m_Rage);
+    ok &= s->read(target.m_ToHit);
+    for(int i=0; i<20; ++i) {
+        ok &= s->read(target.m_DefenseTypes[i]);
+    }
+    ok &= s->read(target.m_Defense);
+    ok &= s->read(target.m_SpeedRunning);
+    ok &= s->read(target.m_SpeedFlying);
+    ok &= s->read(target.m_SpeedSwimming);
+    ok &= s->read(target.m_SpeedJumping);
+    ok &= s->read(target.m_JumpHeight);
+    ok &= s->read(target.m_MovementControl);
+    ok &= s->read(target.m_MovementFriction);
+    ok &= s->read(target.m_Stealth);
+    ok &= s->read(target.m_StealthRadius);
+    ok &= s->read(target.m_StealthRadiusPlayer);
+    ok &= s->read(target.m_PerceptionRadius);
+    ok &= s->read(target.m_Regeneration);
+    ok &= s->read(target.m_Recovery);
+    ok &= s->read(target.m_InsightRecovery);
+    ok &= s->read(target.m_ThreatLevel);
+    ok &= s->read(target.m_Taunt);
+    ok &= s->read(target.m_Placate);
+    ok &= s->read(target.m_Confused);
+    ok &= s->read(target.m_Afraid);
+    ok &= s->read(target.m_Terrorized);
+    ok &= s->read(target.m_Held);
+    ok &= s->read(target.m_Immobilized);
+    ok &= s->read(target.m_IsStunned);
+    ok &= s->read(target.m_Sleep);
+    ok &= s->read(target.m_IsFlying);
+    ok &= s->read(target.m_HasJumppack);
+    ok &= s->read(target.m_Teleport);
+    ok &= s->read(target.m_Untouchable);
+    ok &= s->read(target.m_Intangible);
+    ok &= s->read(target.m_OnlyAffectsSelf);
+    ok &= s->read(target.m_ExperienceGain);
+    ok &= s->read(target.m_InfluenceGain);
+    ok &= s->read(target.m_PrestigeGain);
+    ok &= s->read(target.m_Evade);
+    ok &= s->read(target.m_Knockup);
+    ok &= s->read(target.m_Knockback);
+    ok &= s->read(target.m_Repel);
+    ok &= s->read(target.m_Accuracy);
+    ok &= s->read(target.m_Radius);
+    ok &= s->read(target.m_Arc);
+    ok &= s->read(target.m_Range);
+    ok &= s->read(target.m_TimeToActivate);
+    ok &= s->read(target.m_RechargeTime);
+    ok &= s->read(target.m_InterruptTime);
+    ok &= s->read(target.m_EnduranceDiscount);
+    ok &= s->read(target.m_InsightDiscount);
+    ok &= s->read(target.m_Meter);
+    for(int i=0; i<20; ++i) {
+        ok &= s->read(target.m_ElusivityTypes[i]);
+    }
+    ok &= s->read(target.m_ElusivityBase);
+    return ok;
+
+}
 void serializeToDb(const Parse_CharAttrib &data, QString &tgt)
 {
     std::ostringstream ostr;
@@ -226,3 +298,74 @@ void serializeFromDb(Parse_CharAttrib &data,const QString &src)
 }
 
 //! @}
+
+bool loadFromI24(BinStore *s, Parse_CharAttrib &target)
+{
+    bool ok = true;
+    s->prepare();
+    for(int i=0; i<20; ++i) {
+        ok &= s->read(target.m_DamageTypes[i]);
+    }
+    ok &= s->read(target.m_HitPoints);
+    ok &= s->read(target.m_Absorb);
+    ok &= s->read(target.m_Endurance);
+    ok &= s->read(target.m_Insight);
+    ok &= s->read(target.m_Rage);
+    ok &= s->read(target.m_ToHit);
+    for(int i=0; i<20; ++i) {
+        ok &= s->read(target.m_DefenseTypes[i]);
+    }
+    ok &= s->read(target.m_Defense);
+    ok &= s->read(target.m_SpeedRunning);
+    ok &= s->read(target.m_SpeedFlying);
+    ok &= s->read(target.m_SpeedSwimming);
+    ok &= s->read(target.m_SpeedJumping);
+    ok &= s->read(target.m_JumpHeight);
+    ok &= s->read(target.m_MovementControl);
+    ok &= s->read(target.m_MovementFriction);
+    ok &= s->read(target.m_Stealth);
+    ok &= s->read(target.m_StealthRadius);
+    ok &= s->read(target.m_StealthRadiusPlayer);
+    ok &= s->read(target.m_PerceptionRadius);
+    ok &= s->read(target.m_Regeneration);
+    ok &= s->read(target.m_Recovery);
+    ok &= s->read(target.m_InsightRecovery);
+    ok &= s->read(target.m_ThreatLevel);
+    ok &= s->read(target.m_Taunt);
+    ok &= s->read(target.m_Placate);
+    ok &= s->read(target.m_Confused);
+    ok &= s->read(target.m_Afraid);
+    ok &= s->read(target.m_Terrorized);
+    ok &= s->read(target.m_Held);
+    ok &= s->read(target.m_Immobilized);
+    ok &= s->read(target.m_IsStunned);
+    ok &= s->read(target.m_Sleep);
+    ok &= s->read(target.m_IsFlying);
+    ok &= s->read(target.m_HasJumppack);
+    ok &= s->read(target.m_Teleport);
+    ok &= s->read(target.m_Untouchable);
+    ok &= s->read(target.m_Intangible);
+    ok &= s->read(target.m_OnlyAffectsSelf);
+    ok &= s->read(target.m_ExperienceGain);
+    ok &= s->read(target.m_InfluenceGain);
+    ok &= s->read(target.m_PrestigeGain);
+    ok &= s->read(target.m_Evade);
+    ok &= s->read(target.m_Knockup);
+    ok &= s->read(target.m_Knockback);
+    ok &= s->read(target.m_Repel);
+    ok &= s->read(target.m_Accuracy);
+    ok &= s->read(target.m_Radius);
+    ok &= s->read(target.m_Arc);
+    ok &= s->read(target.m_Range);
+    ok &= s->read(target.m_TimeToActivate);
+    ok &= s->read(target.m_RechargeTime);
+    ok &= s->read(target.m_InterruptTime);
+    ok &= s->read(target.m_EnduranceDiscount);
+    ok &= s->read(target.m_InsightDiscount);
+    ok &= s->read(target.m_Meter);
+    for(int i=0; i<20; ++i) {
+        ok &= s->read(target.m_ElusivityTypes[i]);
+    }
+    ok &= s->read(target.m_ElusivityBase);
+    return ok;
+}
