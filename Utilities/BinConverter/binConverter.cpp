@@ -103,6 +103,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {costumesets_i0_requiredCrc         , eCostumeSets},
     {costumesets_i24_requiredCrc        , eCostumeSets},
     {bodyparts_i0_requiredCrc           , eBodyParts},
+    {bodyparts_i24_requiredCrc          , eBodyParts},
     {palette_i0_requiredCrc             , ePaletteSets},
     {palette_i24_requiredCrc            , ePaletteSets},
     {geoset_i0_requiredCrc              , eGroupEmblems },
@@ -176,7 +177,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0/I24 Attrib definitions - 'attrib_names.bin'";
     qDebug()<<"   I0/I24 Tailoring cost data - 'tailorcost.bin'";
     qDebug()<<"   I0/I24 Costume part data - 'costume.bin'";
-    qDebug()<<"   I0<"<<QString::number(bodyparts_i0_requiredCrc,16)<<"> Body part data - 'BodyParts.bin'";
+    qDebug()<<"   I0/I24 Body part data - 'BodyParts.bin'";
     qDebug()<<"   I0<"<<QString::number(geoset_i0_requiredCrc,16)<<"> Supergroup emblem data - 'supergroupEmblems.bin'";
     qDebug()<<"   I0/I24 Color palette data - 'supergroupColors.bin'";
     qDebug()<<"   I0-2 Scene graph - 'geobin/*'";

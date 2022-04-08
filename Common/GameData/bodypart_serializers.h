@@ -17,6 +17,7 @@ class QString;
 struct BodyPart_Data;
 
 constexpr const static uint32_t bodyparts_i0_requiredCrc = 0x541B59EB;
+constexpr const static uint32_t bodyparts_i24_requiredCrc = 0xCF27ABA3;
 bool loadFrom(BinStore *s,BodyPartsStorage &target) ;
 void saveTo(const BodyPartsStorage &target,const QString &baseName,bool text_format=false);
 

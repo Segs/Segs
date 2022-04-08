@@ -18,11 +18,13 @@ enum BoneIds
 struct BodyPart_Data
 {
     QByteArray m_Name;
+    QByteArray m_SourceFile;
+    int m_BoneCount;
+    int m_InfluenceCost;
     QByteArray m_GeoName;
     QByteArray m_TexName;
     QByteArray m_BaseName;
-    int m_BoneCount;
-    int m_InfluenceCost;
+    uint8_t m_DontClear;
     // Transient data.
     std::array<int,2> boneIndices;
     int part_idx;
