@@ -122,6 +122,7 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {fxbehaviors_i0_requiredCrc         , eFxBehavior_Definitions},
     {fxinfos_i0_requiredCrc             , eFxInfo_Definitions},
     {seqencerlist_i0_requiredCrc        , eSeq_Definitions},
+    {seqencerlist_i24_requiredCrc       , eSeq_Definitions},
 };
 
 BinType getLoader(const QString &fname)
@@ -190,8 +191,7 @@ void showSupportedBinTypes()
     qDebug()<<"   I0<"<<QString::number(npccostumesets_i0_requiredCrc,16)<<"> NPC definitions - 'VillainCostume.bin'";
     qDebug()<<"   I0<"<<QString::number(fxbehaviors_i0_requiredCrc,16)<<"> FxBehavior definitions - 'behaviors.bin'";
     qDebug()<<"   I0<"<<QString::number(fxinfos_i0_requiredCrc,16)<<"> FxInfo definitions - 'fxinfo.bin'";
-    qDebug()<<"   I0<"<<QString::number(seqencerlist_i0_requiredCrc,16)<<"> Sequencer definitions - 'sequencers.bin'";
-    qDebug()<<"Numbers in brackets are file CRCs - bytes 8 to 13 in the bin.";
+    qDebug()<<"   I0/I24 Sequencer definitions - 'sequencers.bin'";
 }
 void convertEntitySequencerData(const QString &file_name,EntitySequencerData &tgt)
 {
