@@ -26,13 +26,14 @@ void Worker::piggDispatcher()
 
     foreach(QFileInfo fileInfo, piggInfoList)
     {
-        QString program = "utilities/piggtool -x " + fileInfo.absoluteFilePath();
+        QString program = "piggtool";
+        QStringList arguments = {"-x", fileInfo.absoluteFilePath(), QDir::currentPath().append("/data")};
         #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
             program.prepend("./");
         #endif
 
         emit sendUIMessage("Processing: " + fileInfo.fileName());
-        if(!processPiggFile(program))
+        if(!processPiggFile(program, arguments))
         {
             emit sendUIMessage("Failed to process: " + fileInfo.fileName());
         }
@@ -52,10 +53,10 @@ void Worker::piggDispatcher()
 }
 
 // Process PiggFile
-bool Worker::processPiggFile(const QString &file)
+bool Worker::processPiggFile(const QString program, const QStringList arguments)
 {
-    QProcess* pigg_tool = new QProcess(this);
-    pigg_tool->start(file);
+    QProcess* pigg_tool = new QProcess();
+    pigg_tool->start(program, arguments);
 
     if(!pigg_tool->waitForStarted())
         return false;
@@ -69,12 +70,13 @@ bool Worker::processPiggFile(const QString &file)
 bool Worker::runBinConverter()
 {
     emit sendUIMessage("Starting BinConverter");
-    QString program = "utilities/binConverter " + (QDir::currentPath() + "/data/ent_types");
+    QString program = "binConverter";
+    QStringList arguments = {QDir::currentPath().append("/data/ent_types")};
 #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
     program.prepend("./");
 #endif
     QProcess* bin_converter = new QProcess(this);
-    bin_converter->start(program);
+    bin_converter->start(program, arguments);
 
     if(!bin_converter->waitForStarted())
     {

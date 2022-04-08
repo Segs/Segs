@@ -188,7 +188,6 @@ bool SetUpData::copyPiggFiles()
     {
         targetDir.mkdir(targetDir.absolutePath());
     }
-
     QFileInfoList fileInfoList = sourceDir.entryInfoList(source_file_list);
     foreach(QFileInfo fileInfo, fileInfoList)
     {
@@ -197,12 +196,10 @@ bool SetUpData::copyPiggFiles()
         {
             targetDir.remove(fileInfo.fileName());
         }
-
-        QFile::copy(fileInfo.filePath(),  // Copy files
-                    targetDir.filePath(fileInfo.fileName()));
-
+        QFile::copy(fileInfo.filePath(),targetDir.filePath(fileInfo.fileName())); // Copy files
         ui->progressBar->setValue(counter / fileInfoList.count() * 100);
         counter++;
+        qDebug() << fileInfo.filePath() << targetDir.filePath(fileInfo.fileName()); // DEBUG
     }
     ui->icon_cox_directory->show();
     ui->piggtool_output->appendPlainText("File Copy Complete");
@@ -243,29 +240,6 @@ bool SetUpData::createDefaultDirectorys() // Creates default directories
     ui->icon_create_directory->show();
     ui->buttonBox->setEnabled(true);
     return true;
-}
-
-void SetUpData::runBinConverter() // Runs binconverter for ent_types conversion after piggtool extraction
-{
-    ui->piggtool_output->appendPlainText("Running BinConverter");
-    QString program = "utilities\binconverter";
-#if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
-    program.prepend("./");
-#endif
-    bin_converter = new QProcess(this);
-    bin_converter->setProcessChannelMode(QProcess::MergedChannels);
-    bin_converter->start(program);
-
-    if(!bin_converter->waitForStarted())
-    {
-        QString error = "BinConverter Error: " + bin_converter->errorString();
-        ui->piggtool_output->appendPlainText(error);
-    }
-
-    bin_converter->waitForFinished();
-    QString output = bin_converter->readAll();
-    ui->piggtool_output->appendPlainText(output);
-    ui->piggtool_output->appendPlainText("BinConverter Completed");
 }
 
 // Worker thread will signal once everything is done so main UI can re-check data.
