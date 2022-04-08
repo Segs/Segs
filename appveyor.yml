@@ -5,7 +5,7 @@ platform: x64
 
 environment:
   matrix:
-  - CMAKE_GENERATOR: "NMake Makefiles JOM"
+  - CMAKE_GENERATOR: "NMake Makefiles"
     QT5: C:\Qt\5.15\msvc2019_64
     VCVARS: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
     

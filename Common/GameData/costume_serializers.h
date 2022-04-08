@@ -34,5 +34,6 @@ bool loadFromI24(BinStore *s,Pallette_Data &target);
 void saveTo(const Pallette_Data &target,const QString &baseName,bool text_format=false);
 
 static constexpr uint32_t geoset_i0_requiredCrc=0xB232BD7F;
+static constexpr uint32_t geoset_i24_requiredCrc=0x46937197;
 bool loadFrom(BinStore *s,GeoSet_Data *target);
 void saveTo(const GeoSet_Data &target,const QString &baseName,bool text_format=false);

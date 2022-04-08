@@ -396,6 +396,9 @@ static void serialize(Archive & archive, TailorCost_Data & m)
 
 bool loadFrom(BinStore *s,GeoSet_Data *target)
 {
+    if(s->isI24Data()) {
+        return loadFromI24(s,*target);
+    }
     s->prepare();
     bool ok = true;
     ok &= s->read(target->m_DisplayName);
