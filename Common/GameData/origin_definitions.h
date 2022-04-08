@@ -15,10 +15,12 @@ struct Parse_Origin
     QByteArray DisplayName;
     QByteArray DisplayHelp;
     QByteArray DisplayShortHelp;
-    int NumBonusPowerSets;
-    int NumBonusPowers;
-    int NumBonusBoostSlots;
-    int NumContacts;
-    float ContactBonusLength;
+    // Those fields below, are missing in I24
+    // probably since all origins are the same in regards to those settings.
+    int NumBonusPowerSets=0;
+    int NumBonusPowers=0;
+    int NumBonusBoostSlots=0;
+    int NumContacts=0;
+    float ContactBonusLength=0.0f;
 };
 using Parse_AllOrigins = std::vector<Parse_Origin>;

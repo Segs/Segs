@@ -125,6 +125,15 @@ namespace
     }
 }
 
+static bool loadFromI24(BinStore *s,Parse_Origin &target) {
+    s->prepare();
+    bool ok = true;
+    ok &= s->read(target.Name);
+    ok &= s->read(target.DisplayName);
+    ok &= s->read(target.DisplayHelp);
+    ok &= s->read(target.DisplayShortHelp);
+    return ok;
+}
 bool loadFrom(BinStore *s, LevelExpAndDebt & target)
 {
     if(s->isI24Data()) {
@@ -191,6 +200,9 @@ void saveTo(const Parse_Effectiveness & target, const QString & baseName, bool t
 bool loadFrom(BinStore * s, Parse_AllOrigins &target)
 {
     s->prepare();
+    if(s->isI24Data()) {
+        return s->handleI24StructArray(target);
+    }
     bool ok = true;
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
