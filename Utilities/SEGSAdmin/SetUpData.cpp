@@ -199,7 +199,6 @@ bool SetUpData::copyPiggFiles()
         QFile::copy(fileInfo.filePath(),targetDir.filePath(fileInfo.fileName())); // Copy files
         ui->progressBar->setValue(counter / fileInfoList.count() * 100);
         counter++;
-        qDebug() << fileInfo.filePath() << targetDir.filePath(fileInfo.fileName()); // DEBUG
     }
     ui->icon_cox_directory->show();
     ui->piggtool_output->appendPlainText("File Copy Complete");
