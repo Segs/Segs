@@ -52,8 +52,10 @@ void commonSaveTo(const T & target, const char *classname, const QString & baseN
     {
         if(text_format) {
             std::ostringstream tgt;
-            cereal::JSONOutputArchive ar( tgt );
-            ar(cereal::make_nvp(classname,target));
+            {
+                cereal::JSONOutputArchive ar( tgt );
+                ar(cereal::make_nvp(classname,target));
+            }
             if(!tgt_fle.open(QFile::WriteOnly|QFile::Text)) {
                 qCritical() << "Failed to open"<<target_fname<<"in write mode";
                 return;

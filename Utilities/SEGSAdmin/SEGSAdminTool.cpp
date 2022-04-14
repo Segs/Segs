@@ -163,12 +163,14 @@ void SEGSAdminTool::commit_user(QString username, QString password, QString accl
     ui->createUser->setText("Please Wait...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "utilities/dbtool adduser -l " + username + " -p " + password + " -a " + acclevel;
+
+    QString program = "dbtool";
+    QStringList arguments = {"adduser", "-l", username, "-p", password, "-a", acclevel};
     #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
         program.prepend("./");
     #endif
     m_createUser = new QProcess(this);
-    m_createUser->start(program);
+    m_createUser->start(program, arguments);
 
     if(m_createUser->waitForStarted())
     {
@@ -272,16 +274,17 @@ void SEGSAdminTool::create_databases(bool overwrite)
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
     qDebug() << "Setting arguments...";
-    QString program = "utilities/dbtool create";
+    QString program = "dbtool";
+    QStringList arguments = {"create"};
     if(overwrite)
     {
-        program.append(" -f");
+        arguments.append("-f");
     }
     #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
     program.prepend("./");
     #endif
     m_createDB = new QProcess(this);
-    m_createDB->start(program);
+    m_createDB->start(program, arguments);
 
     if(m_createDB->waitForStarted())
     {
@@ -340,11 +343,12 @@ void SEGSAdminTool::start_segs_server()
     ui->output->appendPlainText("Setting arguments...");
     qApp->processEvents();
     QString program = "segs_server";
+    QStringList arguments = {""};
     #if defined(Q_OS_LINUX) || defined(Q_OS_MACOS)
     program.prepend("./");
     #endif
     m_start_segs_server = new QProcess(this);
-    m_start_segs_server->start(program);
+    m_start_segs_server->start(program, arguments);
 
     if(m_start_segs_server->waitForStarted())
     {
@@ -369,8 +373,6 @@ void SEGSAdminTool::start_segs_server()
             ui->user_box->setEnabled(false);
             ui->server_setup_box->setEnabled(false);
             ui->server_config->setEnabled(false);
-            //qint64 pid = m_start_segs_server->processId();
-            //qDebug()<<pid;
             m_server_running = true;
         }
         if(m_start_segs_server->state()==QProcess::NotRunning)

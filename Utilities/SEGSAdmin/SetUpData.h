@@ -48,9 +48,6 @@ signals:
 
 private:
     Ui::SetUpData *ui;
-    QProcess *bin_converter;
-    void runBinConverter();
-
 };
 
 #endif // SETUPDATA_H

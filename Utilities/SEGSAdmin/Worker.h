@@ -22,7 +22,7 @@ public slots:
     void piggDispatcher();
 
 private:
-    bool processPiggFile(const QString &file);
+    bool processPiggFile(const QString program, const QStringList arguments);
     bool runBinConverter();
 
 };
