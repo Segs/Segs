@@ -18,6 +18,8 @@
 #include "DataStorage.h"
 
 
+
+
 namespace
 {
     bool loadFrom(BinStore *s,TailorCost_Data &target)
@@ -188,7 +190,6 @@ static bool loadFromI24(BinStore *s,CostumeGeoData &target)
     return ok;
 }
 
-
 static bool loadFromI24(BinStore *s,TailorCost_Data &target)
 {
     s->prepare();
@@ -206,6 +207,7 @@ static bool loadFromI24(BinStore *s,TailorCost_Data &target)
     ok &= s->read(target.m_NumCostumes);
     return ok;
 }
+
 static bool loadFromI24(BinStore *s,GeoSet_Mask_Data &target)
 {
     s->prepare();

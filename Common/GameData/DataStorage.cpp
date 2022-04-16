@@ -248,6 +248,24 @@ bool BinStore::read(std::vector<QByteArray> &res)
     return parse_ok;
 }
 
+bool BinStore::read(std::vector<std::vector<QByteArray>> &res)
+{
+    bool parse_ok=true;
+    uint32_t to_read = 0;
+    parse_ok &= read(to_read);
+    if( 0==to_read)
+        return parse_ok;
+    for(size_t idx = 0; idx < to_read; ++idx)
+    {
+        std::vector<QByteArray> entry;
+        if(!read(entry)) {
+            return false;
+        }
+        res.emplace_back(std::move(entry));
+    }
+    return parse_ok;
+}
+
 bool BinStore::read(std::vector<uint32_t> &res)
 {
     bool parse_ok=true;

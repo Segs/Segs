@@ -21,6 +21,7 @@ bool LoadFxBehaviorData(const QString &fname, Fx_AllBehaviors &behaviors);
 void saveTo(const Fx_AllBehaviors &target,const QString &baseName,bool text_format=false);
 
 constexpr const static uint32_t fxinfos_i0_requiredCrc = 0xB178A55D;
+constexpr const static uint32_t fxinfos_i24_requiredCrc = 0x4CB7D9CB;
 bool loadFrom(BinStore *s,Fx_AllInfos &target);
 bool LoadFxInfoData(const QString &fname, Fx_AllInfos &infos);
 void saveTo(const Fx_AllInfos &target,const QString &baseName,bool text_format=false);

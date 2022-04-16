@@ -95,6 +95,7 @@ namespace cereal
         archive(cereal::make_nvp("DisplayName",target.DisplayName));
         archive(cereal::make_nvp("DisplayHelp",target.DisplayHelp));
         archive(cereal::make_nvp("DisplayShortHelp",target.DisplayShortHelp));
+        archive(cereal::make_nvp("Icon",target.Icon));
         archive(cereal::make_nvp("NumBonusPowerSets",target.NumBonusPowerSets));
         archive(cereal::make_nvp("NumBonusPowers",target.NumBonusPowers));
         archive(cereal::make_nvp("NumBonusBoostSlots",target.NumBonusBoostSlots));
@@ -132,6 +133,7 @@ static bool loadFromI24(BinStore *s,Parse_Origin &target) {
     ok &= s->read(target.DisplayName);
     ok &= s->read(target.DisplayHelp);
     ok &= s->read(target.DisplayShortHelp);
+    ok &= s->read(target.Icon);
     return ok;
 }
 bool loadFrom(BinStore *s, LevelExpAndDebt & target)

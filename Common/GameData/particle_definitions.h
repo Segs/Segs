@@ -61,7 +61,7 @@ struct ParticleSystemInfo
     glm::vec3              m_ColorOffsetJitter; // i24
     std::vector<uint32_t>  m_Alpha;
     uint32_t               m_ColorChangeType;
-    std::array<ColorFx, 5> m_StartColor; // colornavpoint
+    std::array<ColorFx, 5> m_StartColor;
     float                  m_FadeInBy;
     float                  m_FadeOutStart;
     float                  m_FadeOutBy;

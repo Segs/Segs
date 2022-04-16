@@ -284,11 +284,11 @@ void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
 
 void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, LoadingContext &ctx, PrefabStore &store)
 {
-    if( inp_data.p_Grp.empty() )
+    if( inp_data.m_Group.empty() )
         return;
 
-    node->m_children.reserve(inp_data.p_Grp.size());
-    for(const GroupLoc_Data & dat : inp_data.p_Grp)
+    node->m_children.reserve(inp_data.m_Group.size());
+    for(const GroupLoc_Data & dat : inp_data.m_Group)
     {
         const QByteArray new_name = groupRename(ctx, dat.name, false);
         SceneNodeChildTransform child;
@@ -355,8 +355,8 @@ void postprocessLight(const std::vector<DefOmni_Data> & light_data, SceneNode *n
         return;
     const DefOmni_Data &omnid(light_data.front());
     node->m_light = std::make_unique<LightProperties>(LightProperties{
-        RGBA(omnid.omniColor&0xFF,(omnid.omniColor>>8)&0xFF,(omnid.omniColor>>16)&0xFF,0).toFloats(),
-        omnid.Size,
+        omnid.omniColor.toFloats(),
+        omnid.Radius,
         omnid.isNegative
     });
 }
@@ -531,12 +531,12 @@ void postprocessTextureReplacers(const std::vector<ReplaceTex_Data> &data, Scene
 
 void postprocessNodeFlags(const SceneGraphNode_Data & node_data, SceneNode * node)
 {
-    if( node_data.flags & SceneGraphNode_Data::Ungroupable )
+    if( (uint32_t)node_data.m_Flags & (uint32_t)NodeFlags::Ungroupable )
     {
 //        node->is_ungroupable = 1; // only useful for editing
     }
 
-    if( node_data.flags & SceneGraphNode_Data::FadeNode )
+    if( (uint32_t)node_data.m_Flags & (uint32_t)NodeFlags::FadeNode )
         node->is_LOD_fade_node = 1;
 }
 
@@ -585,24 +585,24 @@ void  groupApplyModifiers(SceneNode *node)
 }
 bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore &prefabs)
 {
-    if(defload.p_Grp.empty() && defload.p_Obj.isEmpty())
+    if(defload.m_Group.empty() && defload.m_Object.isEmpty())
         return false;
 
-    QByteArray obj_path = groupRename(ctx, defload.name, true);
+    QByteArray obj_path = groupRename(ctx, defload.m_Name, true);
     SceneNode * node = getNodeByName(*ctx.m_target,obj_path);
     if(!node)
     {
         node = newDef(*ctx.m_target,ctx.m_nesting_level);
-        if(!defload.p_Property.empty())
-            node->m_properties = new std::vector<GroupProperty_Data> (defload.p_Property);
+        if(!defload.m_Property.empty())
+            node->m_properties = new std::vector<GroupProperty_Data> (defload.m_Property);
         node->m_use_count++; // some nodes are added twice ( node-based lod??)
     }
 
-    if( !defload.p_Obj.isEmpty() )
+    if( !defload.m_Object.isEmpty() )
     {
-        node->m_model = prefabs.groupModelFind(defload.p_Obj,ctx);
+        node->m_model = prefabs.groupModelFind(defload.m_Object,ctx);
         if( !node->m_model ) {
-            qCritical() << "Cannot find root geometry in" << defload.p_Obj;
+            qCritical() << "Cannot find root geometry in" << defload.m_Object;
         }
 
         groupApplyModifiers(node);
@@ -612,22 +612,22 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
 
     if( node->m_children.empty() && !node->m_model )
     {
-        qCDebug(logSceneGraph) << "Should delete def" << defload.name << " after conversion it has no children, nor models";
+        qCDebug(logSceneGraph) << "Should delete def" << defload.m_Name << " after conversion it has no children, nor models";
         return false;
     }
 
     postprocessNodeFlags(defload,node);
-    postprocessLOD(defload.p_Lod, node);
-    postprocessTextureReplacers(defload.p_ReplaceTex,node);
-    postprocessTintColor(defload.p_TintColor,node);
-    postprocessAmbient(defload.p_Ambient,node);
-    postprocessFog(defload.p_Fog,node);
-    postprocessEditorBeacon(defload.p_Beacon, node);
-    postprocessSound(defload.p_Sound,node);
-    postprocessLight(defload.p_Omni, node);
+    postprocessLOD(defload.m_Lod, node);
+    postprocessTextureReplacers(defload.m_ReplaceTex,node);
+    postprocessTintColor(defload.m_TintColor,node);
+    postprocessAmbient(defload.m_Ambient,node);
+    postprocessFog(defload.m_Fog,node);
+    postprocessEditorBeacon(defload.m_Beacon, node);
+    postprocessSound(defload.m_Sound,node);
+    postprocessLight(defload.m_Omni, node);
 
-    if(!defload.type.isEmpty())
-        node->m_fx_name_hash  = CompileTimeUtils::hash_32_fnv1a_const(defload.type.toLower().constData());
+    if(!defload.m_Type.isEmpty())
+        node->m_fx_name_hash  = CompileTimeUtils::hash_32_fnv1a_const(defload.m_Type.toLower().constData());
     if(ctx.prevent_nesting)
     {
         // no calculation possible if we've been prevented  from loading nested scenes/models.

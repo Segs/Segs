@@ -15,6 +15,7 @@ struct Parse_Origin
     QByteArray DisplayName;
     QByteArray DisplayHelp;
     QByteArray DisplayShortHelp;
+    QByteArray Icon; // i24
     // Those fields below, are missing in I24
     // probably since all origins are the same in regards to those settings.
     int NumBonusPowerSets=0;

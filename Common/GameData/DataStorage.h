@@ -73,11 +73,18 @@ public:
     bool        read(std::vector<int32_t> &res);
     bool        read(std::vector<float> &res);
     bool        read(std::vector<QByteArray> &res);
+    bool        read(std::vector<std::vector<QByteArray>> &res);
     bool        read(std::vector<std::vector<QString>> &res);
     bool        read(uint8_t *&val, uint32_t length);
     bool        read(QByteArray &val);
     bool        read(std::pair<uint8_t,uint8_t> &v) {
                     uint8_t skipped, skipped2;
+                    if(isI24Data())
+                    {
+                        bool ok = read(v.first);
+                        ok &= read(v.second);
+                        return ok;
+                    }
                     return read_internal(v.first)!=0 &&
                     read_internal(v.second)!=0 && read_internal(skipped) != 0 && read_internal(skipped2) != 0;
                 }
@@ -98,6 +105,15 @@ public:
                         return false;
                     // this is bad, and I feel bad for writing it :/
                     val = std::move(*(std::vector<Enum> *)(&true_val));
+                    return true;
+                }
+    template<typename T,int N>
+    bool        read(T (&tgt)[N])
+                {
+                    bool ok = true;
+                    for(int i=0; i<N; ++i) {
+                        ok &= read(tgt[i]);
+                    }
                     return true;
                 }
     void        prepare();

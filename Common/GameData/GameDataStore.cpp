@@ -326,8 +326,8 @@ bool GameDataStore::read_game_data(const QString &directory_path)
                       int idx=0;
                       for(const FxInfo &fx : m_fx_infos)
                       {
-                          packer->addString(fx.fxname);
-                          m_name_to_fx_index[fx.fxname.toLower()] = idx++;
+                          packer->addString(fx.m_Name);
+                          m_name_to_fx_index[fx.m_Name.toLower()] = idx++;
                       }
                       packer->sortEntries();
                   },"Postprocessing runtime data .. ");
