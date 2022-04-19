@@ -281,7 +281,7 @@ void initLoadedModel(SEGS::Model *model)
     bool isgeo=false;
     if(model->name.toUpper().startsWith("GEO_"))
     {
-        model->flags |= SEGS::OBJ_DRAW_AS_ENT;
+        model->flags |= SEGS::OBJ_DRAW_USING_BONES;
         isgeo = true;
         if(model->name.toLower().contains("eyes") )
         {
@@ -418,7 +418,7 @@ static Ref<Material> convert_material(int idx,SEGS::Model* model,Vector<SEGS::HT
     bool isgeo=false;
     if(model->name.toUpper().startsWith("GEO_"))
     {
-        model->flags |= SEGS::OBJ_DRAW_AS_ENT;
+        model->flags |= SEGS::OBJ_DRAW_USING_BONES;
         isgeo = true;
     }
     if(model->trck_node && model->trck_node->_TrickFlags & DoubleSided)
@@ -472,7 +472,7 @@ Ref<ArrayMesh> modelCreateObjectFromModel(SEGS::Model* model, Vector<SEGS::HText
     initLoadedModel(model);
     if ( model->name.toUpper().startsWith("GEO_") )
     {
-        model->flags |= SEGS::OBJ_DRAW_AS_ENT;
+        model->flags |= SEGS::OBJ_DRAW_USING_BONES;
         if ( model->name.toLower().contains("eyes") )
         {
             if ( !model->trck_node )

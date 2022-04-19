@@ -44,19 +44,24 @@ struct VBOPointers
 enum ModelFlags : uint32_t
 {
     OBJ_ALPHASORT      = 0x1,
+    OBJ_WATER_EX       = 0x2,
     OBJ_FULLBRIGHT     = 0x4,
+    OBJ_SUNFLARE       = 0x8,
     OBJ_NOLIGHTANGLE   = 0x10,
     OBJ_DUALTEXTURE    = 0x40,
     OBJ_LOD            = 0x80,
-    OBJ_TREE           = 0x100,
+    OBJ_TREEDRAW       = 0x100,
     OBJ_DUALTEX_NORMAL = 0x200,
     OBJ_FORCEOPAQUE    = 0x400,
     OBJ_BUMPMAP        = 0x800,
     OBJ_WORLDFX        = 0x1000,
     OBJ_CUBEMAP        = 0x2000,
-    OBJ_DRAW_AS_ENT    = 0x4000,
+    OBJ_DRAW_USING_BONES = 0x4000,
     OBJ_STATICFX       = 0x8000,
     OBJ_HIDE           = 0x10000,
+    OBJ_ALPHASORT_CHILDREN = 0x40000,
+    OBJ_DONT_CAST_SHADOWMAP = 0x80000,
+    OBJ_DONT_RECEIVE_SHADOWMAP = 0x100000,
 };
 
 #pragma pack(push, 1)
@@ -112,7 +117,7 @@ struct Model
     CoHBlendMode             blend_mode;
     std::unique_ptr<VBOPointers> vbo;
     int                      m_id;
-    bool                     hasBoneWeights() const { return flags & OBJ_DRAW_AS_ENT; }
+    bool                     hasBoneWeights() const { return flags & OBJ_DRAW_USING_BONES; }
 
 };
 void geosetLoadHeader(QIODevice *fp, GeoSet *geoset);

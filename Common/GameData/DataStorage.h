@@ -124,7 +124,7 @@ public:
     bool        end_encountered() const;
     bool        open(FSWrapper &fs,const QString & name, uint32_t required_crc);
     bool        isI24Data() const { return m_version>4; }
-
+    size_t      current_block_size() const { return bytes_to_read; }
 
     template<typename T>
     bool handleI24StructArray(std::vector<T> &entries) {

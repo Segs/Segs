@@ -109,12 +109,14 @@ const QHash<uint32_t,BinType> knownSerializers = {
     {geoset_i0_requiredCrc              , eGroupEmblems },
     {geoset_i24_requiredCrc             , eGroupEmblems },
     {zones_i0_requiredCrc               , eZones},
+    {zones_i24_requiredCrc              , eZones},
     {attribnames_i0_requiredCrc         , eAttribNames},
     {attribnames_i24_requiredCrc        , eAttribNames},
     {scenegraph_i0_2_requiredCrc        , eSceneGraph},
-    {scenegraph_i24_requiredCrc        , eSceneGraph},
+    {scenegraph_i24_requiredCrc         , eSceneGraph},
     {tricks_i0_requiredCrc              , eTrickDefinitions},
     {tricks_i2_requiredCrc              , eTrickDefinitions},
+    {tricks_i24_requiredCrc             , eTrickDefinitions},
     {charclass_i0_requiredCrc           , eEntityClasses},
     {charclass_i24_requiredCrc          , eEntityClasses},
     {origins_i0_requiredCrc             , eEntityOrigins},
@@ -190,9 +192,10 @@ void showSupportedBinTypes()
     qDebug()<<"   I0/I24 Costume part data - 'costume.bin'";
     qDebug()<<"   I0/I24 Body part data - 'BodyParts.bin'";
     qDebug()<<"   I0/I24 Supergroup emblem data - 'supergroupEmblems.bin'";
+    qDebug()<<"   I0/I24 Map areas - 'map.bin'";
     qDebug()<<"   I0/I24 Color palette data - 'supergroupColors.bin'";
     qDebug()<<"   I0-2/I24 Scene graph - 'geobin/*'";
-    qDebug()<<"   I0-2 Trick definitions- 'tricks.bin'";
+    qDebug()<<"   I0-2/I24 Trick definitions- 'tricks.bin'";
     qDebug()<<"   I0/I24 Entity class definitions- 'classes.bin' or 'villain_classes.bin'";
     qDebug()<<"   I0/I24 Entity origin definitions- 'origins.bin' or 'villain_origins.bin'";
     qDebug()<<"   I0<"<<QString::number(powers_i0_requiredCrc,16)<<"> Power definitions- 'powers.bin'";

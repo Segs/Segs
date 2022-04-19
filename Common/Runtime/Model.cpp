@@ -399,7 +399,7 @@ void modelFixup(const Model &model,VBOPointers &vbo)
 
 static bool bumpMapped(const Model &model)
 {
-    return model.flags & (OBJ_DRAW_AS_ENT | OBJ_BUMPMAP);
+    return model.flags & (OBJ_DRAW_USING_BONES | OBJ_BUMPMAP);
 }
 
 std::unique_ptr<VBOPointers> fillVbo(const Model &model)
