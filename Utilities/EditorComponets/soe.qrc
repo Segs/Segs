@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="images">
+    <file>Resources/Images/skyline.png</file>
+    <file>Resources/Images/segs-logo.png</file>
+  </qresource>
+  <qresource prefix="fonts">
+    <file>Resources/fonts/CuppaJoe/cuppajoe.ttf</file>
+  </qresource>
+  <qresource prefix="stylesheet">
+    <file>Adaptic.qss</file>
+  </qresource>
+</RCC>
