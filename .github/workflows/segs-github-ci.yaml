@@ -2,15 +2,13 @@
 name: SEGS-CI
 
 on:
-  push:
-    branches: [ develop ]
   pull_request:
     branches: [ develop ]
 
 env:
   BUILD_TYPE:  Debug
   QT_VERSION:  "5.15.2"
-  QT_TARGET_ARCHITECTURE:  "win64_msvc2019_64"
+  QT_WIN_TARGET_ARCHITECTURE:  "win64_msvc2019_64"
 
 jobs:
   build-windows:
@@ -24,15 +22,68 @@ jobs:
         host: windows
         target: desktop
         version: ${{ env.QT_VERSION }}
-        arch: ${{ env.QT_TARGET_ARCHITECTURE }}
-        dir: "${{github.workspace}}/qt"
+        arch: ${{ env.QT_WIN_TARGET_ARCHITECTURE }}
+        dir: "${{ github.workspace }}/qt"
         install-deps: "true"
 
     - name: Configure CMake
       env:
-          CMAKE_PREFIX_PATH: ${{env.Qt5_Dir}}
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2.14.0
+      with:
+        host: linux
+        target: desktop
+        version: ${{ env.QT_VERSION }}
+        dir: "${{ github.workspace }}/qt"
+        install-deps: "true"
+
+    - name: Configure CMake
+      env:
+        CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
+        CC: "/usr/bin/clang"
+        CXX: "/usr/bin/clang++"
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2.14.0
+      with:
+        host: mac
+        target: desktop
+        version: ${{ env.QT_VERSION }}
+        dir: "${{ github.workspace }}/qt"
+        install-deps: "true"
+
+    - name: Configure CMake
+      env: 
+        CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
+        CC: "/usr/bin/clang"
+        CXX: "/usr/bin/clang++"
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+
+
+
+
+
 
