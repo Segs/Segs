@@ -1,0 +1,38 @@
+
+name: SEGS-CI
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+env:
+  BUILD_TYPE:  Debug
+  QT_VERSION:  "5.15.2"
+  QT_TARGET_ARCHITECTURE:  "win64_msvc2019_64"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2.14.0
+      with:
+        host: windows
+        target: desktop
+        version: ${{ env.QT_VERSION }}
+        arch: ${{ env.QT_TARGET_ARCHITECTURE }}
+        dir: "${{github.workspace}}/qt"
+        install-deps: "true"
+
+    - name: Configure CMake
+      env:
+          CMAKE_PREFIX_PATH: ${{env.Qt5_Dir}}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+

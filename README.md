@@ -2,8 +2,7 @@
 <img src="docs/segs-medallion-med.png" align="right" alt="SEGS Logo">
 
 [![Discord](https://img.shields.io/discord/242088237596803073.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.segs.dev)
-[![master Build Status](https://travis-ci.com/Segs/Segs.svg)](https://travis-ci.org/Segs/Segs)
-[![master Build Status](https://ci.appveyor.com/api/projects/status/github/segs/segs?svg=true)](https://ci.appveyor.com/project/nemerle/Segs)
+<!-- ADD GITHUB ACTION BADGE  -->
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Percentage of issues still open")
 
