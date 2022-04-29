@@ -24,9 +24,20 @@ bool loadFrom(BinStore * s, TextureAnim_Data & target)
     ok &= s->read(target.speed);
     ok &= s->read(target.stScale);
     ok &= s->read(target.scrollType);
-    ok &= s->read(target.flags);
+    ok &= s->readEnum(target.flags);
     ok &= s->prepare_nested(); // will update the file size left
     assert(s->end_encountered());
+    return ok;
+}
+
+bool loadFromI24(BinStore * s, TextureAnim_Data & target)
+{
+    bool ok=true;
+    s->prepare();
+    ok &= s->read(target.speed);
+    ok &= s->read(target.stScale);
+    ok &= s->read(target.scrollType);
+    ok &= s->readEnum(target.flags);
     return ok;
 }
 

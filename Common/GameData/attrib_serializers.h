@@ -17,11 +17,14 @@ struct Parse_CharAttribMax;
 struct AttribNames_Data;
 
 constexpr const static uint32_t attribnames_i0_requiredCrc = 0xED2ECE38;
+constexpr const static uint32_t attribnames_i24_requiredCrc = 0x1F5AE0B6;
 bool loadFrom(BinStore *s,AttribNames_Data &target) ;
 void saveTo(const AttribNames_Data &target,const QString &baseName,bool text_format=false);
 
 bool loadFrom(BinStore *s, Parse_CharAttrib &target);
+bool loadFromI24(BinStore *s, Parse_CharAttrib &target);
 bool loadFrom(BinStore *s, Parse_CharAttribMax &target);
+bool loadFromI24(BinStore *s, Parse_CharAttribMax &target);
 
 void serializeToDb(const Parse_CharAttrib &data, QString &tgt);
 void serializeFromDb(Parse_CharAttrib &data, const QString &src);

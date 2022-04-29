@@ -33,9 +33,10 @@
 template <typename T>
 struct wrap_optional {
     T &tgt;
-    constexpr wrap_optional(T &s) : tgt(s) {}
+    const T&def;
+    constexpr wrap_optional(T &s, const T &d=T()) : tgt(s), def(d) {}
     // returns true if the referenced value is non-default
-    operator bool() const { return tgt!=T();}
+    operator bool() const { return tgt!=def;}
 };
 
 namespace cereal {
@@ -226,7 +227,10 @@ inline void CEREAL_SAVE_FUNCTION_NAME(Archive & ar, const ACE_INET_Addr & addr)
 template<class Archive>
 void serialize(Archive & archive, RGBA & m)
 {
-    archive(cereal::make_nvp("rgba",m.val));
+    cereal::size_type size=4;
+    archive( cereal::make_size_tag( size ) ); // this is new
+    for( int i=0; i<4; ++i )
+        archive( m.v[i] );
 }
 template<class Archive>
 void CEREAL_LOAD_FUNCTION_NAME(Archive & archive, QDateTime & m)

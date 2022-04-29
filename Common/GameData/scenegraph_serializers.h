@@ -15,6 +15,7 @@ struct SceneGraph_Data;
 struct FSWrapper;
 
 static constexpr uint32_t scenegraph_i0_2_requiredCrc=0xD3432007;
+static constexpr uint32_t scenegraph_i24_requiredCrc=0x3E7F1A90;
 bool loadFrom(BinStore *s,SceneGraph_Data &target);
 bool loadFrom(FSWrapper &fs, const QString &filepath, SceneGraph_Data &target);
 void saveTo(const SceneGraph_Data &target,const QString &baseName,bool text_format=false);

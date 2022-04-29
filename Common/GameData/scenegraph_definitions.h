@@ -6,16 +6,22 @@
  */
 
 #pragma once
+#include "Components/Colors.h"
 #include <glm/vec3.hpp>
 
 #include <QtCore/QString>
 #include <vector>
 
+enum class GroupNode_Flags
+{
+    DisablePlanarReflections = 1 << 0
+};
 struct GroupLoc_Data
 {
     QByteArray name;
     glm::vec3 pos {0,0,0};
     glm::vec3 rot {0,0,0};
+    GroupNode_Flags flags = GroupNode_Flags(0);
 };
 
 struct GroupProperty_Data
@@ -27,8 +33,8 @@ struct GroupProperty_Data
 
 struct TintColor_Data
 {
-    uint32_t clr1;
-    uint32_t clr2;
+    RGBA clr1;
+    RGBA clr2;
 };
 
 struct ReplaceTex_Data
@@ -37,72 +43,100 @@ struct ReplaceTex_Data
     QByteArray repl_with;
 };
 
+struct TexSwap_Data
+{
+    QByteArray m_TextureName;
+    QByteArray m_ReplaceWith;
+    int m_Composite;
+};
 struct DefSound_Data
 {
     QByteArray name;
     float volRel1;
     float sndRadius;
     float snd_ramp_feet;
-    uint32_t sndFlags;
+    uint32_t sndFlags; // 1 to exclude
 };
 
 struct DefLod_Data
 {
     float Far;
     float FarFade;
-    float Near;
-    float NearFade;
+    float Near=0.0f; // not available in i24
+    float NearFade=0.0f; // not available in i24
     float Scale;
 };
 
 struct DefOmni_Data
 {
-    uint32_t omniColor;
-    float Size;
+    RGBA omniColor;
+    float Radius;
     int isNegative;
 };
 
+struct Cubemap_Data
+{
+    int m_GenerateSize = 256;
+    int m_CaptureSize = 1024;
+    float m_Blur=0.0f;
+    float m_Time=12.0f; // time of day ??
+};
+struct Volume_Data
+{
+    glm::vec3 m_Scale;
+};
 struct DefBeacon_Data
 {
-    QByteArray name;
-    float amplitude; // maybe rotation speed ?
+    QByteArray m_Name;
+    float m_Radius;
 };
 
 struct DefFog_Data
 {
-    float fogZ;
-    float fogX;
-    float fogY;
-    uint32_t fogClr1;
-    uint32_t fogClr2;
+    float m_Radius;
+    float m_NearDistance;
+    float m_FarDistance;
+    RGBA Color1;
+    RGBA Color2;
+    float m_Speed;
 };
 
 struct DefAmbient_Data
 {
-    uint32_t clr;
+    RGBA clr;
+};
+
+enum class NodeFlags
+{
+    Ungroupable = 1 << 0,
+    FadeNode    = 1 << 1,
+    FadeNode2   = 1 << 2,
+    NoFogClip   = 1 << 3,
+    NoColl      = 1 << 4,
+    NoOcclusion = 1 << 5,
 };
 
 struct SceneGraphNode_Data
 {
-    enum
-    {
-        Ungroupable = 1,
-        FadeNode = 2,
-    };
-    QByteArray name;
-    QByteArray p_Obj;
-    QByteArray type;
-    int flags;
-    std::vector<GroupLoc_Data> p_Grp;
-    std::vector<GroupProperty_Data> p_Property;
-    std::vector<TintColor_Data> p_TintColor;
-    std::vector<DefSound_Data> p_Sound;
-    std::vector<ReplaceTex_Data> p_ReplaceTex;
-    std::vector<DefOmni_Data> p_Omni;
-    std::vector<DefBeacon_Data> p_Beacon;
-    std::vector<DefFog_Data> p_Fog;
-    std::vector<DefAmbient_Data> p_Ambient;
-    std::vector<DefLod_Data> p_Lod;
+    QByteArray m_Name;
+    QByteArray m_Object;
+    QByteArray m_Type;
+    QByteArray m_SoundScript;
+    std::vector<GroupLoc_Data> m_Group;
+    std::vector<GroupProperty_Data> m_Property;
+    std::vector<TintColor_Data> m_TintColor;
+    std::vector<DefSound_Data> m_Sound;
+    std::vector<ReplaceTex_Data> m_ReplaceTex;
+    std::vector<DefOmni_Data> m_Omni;
+    std::vector<Cubemap_Data> m_Cubemap;
+    std::vector<Volume_Data> m_Volume;
+    std::vector<DefBeacon_Data> m_Beacon;
+    std::vector<DefFog_Data> m_Fog;
+    std::vector<DefAmbient_Data> m_Ambient;
+    std::vector<DefLod_Data> m_Lod;
+    std::vector<TexSwap_Data> m_TexSwap;
+    NodeFlags m_Flags = NodeFlags(0);
+    float m_Alpha;
 };
 
 struct SceneRootNode_Data
@@ -117,5 +151,7 @@ struct SceneGraph_Data
     std::vector<SceneGraphNode_Data> Def;
     std::vector<SceneRootNode_Data> Ref;
     QByteArray Scenefile;
+    QByteArray LoadScreen; // i24
+    std::vector<QByteArray> Import; //i24
     int Version;
 };

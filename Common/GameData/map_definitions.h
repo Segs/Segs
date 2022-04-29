@@ -45,12 +45,35 @@ enum MissionCategory : uint8_t
 
 struct EntityData;
 
+enum class CityLocation
+{
+    ParagonCity = 0,
+    RogueIsles,
+    Praetoria,
+    None
+};
+
+enum class TeamAreaEnum
+{
+    Heroes,
+    Villains,
+    Praetorians,
+    Everybody,
+    PrimalCommon,
+    None
+};
+
+
 struct Map_Data
 {
-    glm::vec2 Location;
-    glm::vec2 TextLocation;
     QByteArray Name;
     QByteArray Icon;
+    glm::vec2 Location;
+    glm::vec2 TextLocation;
+    //i24 values
+    int Hide;
+    CityLocation City;
+    TeamAreaEnum TeamArea;
 };
 
 struct MissionMapData
@@ -96,7 +119,7 @@ Outdoor_Mission     /Outdoor_Unique         /Outdoor_Unique_Forest_01       /Out
 
 
 
-unique: 
+unique:
     maps/Missions/unique/Interdimensional/Interdimensional_01_01.bin
     maps/Missions/unique/TrialRooms/Eden/Trial_0X_0X_room.bin   //  with other Beacon, MissionBeacon, Spawns etc bins. has subfolder for audio..
     maps/Missions/unique/jumppuzzles/Jumppuzzles_Layout_01.bin  // ungrouped version

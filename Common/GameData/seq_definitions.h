@@ -439,8 +439,11 @@ struct SeqPlayFxData
 struct SeqMoveTypeData
 {
     QByteArray                         name;
+    QByteArray                         filename;
+    QByteArray                         ScaleRootBone;
     std::vector<SeqMoveDataTypeAnim>   m_Anim;
     std::vector<SeqPlayFxData>         m_PlayFx;
+    int                                Ragdoll;
     float                              Scale;
     float                              MoveRate;
     float                              PitchAngle;
@@ -500,8 +503,11 @@ struct SeqMoveData
     std::vector<SeqNextMoveData> m_NextMove;
     std::vector<SeqCycleMoveData> m_CycleMove;
     std::vector<SeqMoveTypeData> m_Type;
+
+    QByteArray Wind;
     std::vector<QByteArray > SticksOnChild;
     std::vector<QByteArray > SetsOnChild;
+    std::vector<QByteArray > SetsOnReactor;
     std::vector<QByteArray > Sets;
     std::vector<QByteArray > Requires;
     std::vector<QByteArray > Member;

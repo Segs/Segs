@@ -21,14 +21,22 @@ bool BinStore::check_bin_version_and_crc(uint32_t req_crc)
     QString tgt;
     uint32_t crc_from_file;
     char magic_contents[8];
-    m_str->read(magic_contents,8);
+    m_device->read(magic_contents,8);
     read(crc_from_file);
     tgt=read_pstr(4096);
-    if( 0!=strncmp(magic_contents,"CrypticS",8) || tgt.midRef(0,6)!="Parse4" || (req_crc!=0 && crc_from_file != req_crc) ) //
+
+    if( 0!=strncmp(magic_contents,"CrypticS",8) || tgt.midRef(0,5)!="Parse" || (req_crc!=0 && crc_from_file != req_crc) ) //
     {
-        m_str->close();
+        m_device->close();
         return false;
     }
+    int parse_version = tgt.midRef(5,1).toInt();
+    if(parse_version!=4 && parse_version!=6)  {
+        qDebug() << "Unsupported bin file version"<<parse_version;
+        m_device->close();
+        return false;
+    }
+    m_version = parse_version;
     return true;
 }
 
@@ -37,12 +45,18 @@ const QByteArray &BinStore::read_pstr( size_t maxlen )
     static QByteArray buf;
     uint16_t len=0;
     buf.resize(0);
-    if(read(len)!=true)
+    if(read_internal(len)!=2)
         return buf;
     if(len<=maxlen)
     {
         buf.resize(len);
-        m_str->read(buf.data(),len);
+        m_device->read(buf.data(),len);
+        if(isI24Data()) {
+            const int len_based_fixup =  (4 - (len + sizeof(uint16_t)) % 4) % 4;
+            m_device->seek(len_based_fixup+m_device->pos());
+            bytes_read+=len+len_based_fixup;
+            return buf;
+        }
         if(m_file_sizes.size()>0)
         {
             (*m_file_sizes.rbegin())-=len;
@@ -58,9 +72,8 @@ void BinStore::skip_pstr()
 {
     uint16_t len=0;
     read(len);
-    m_str->seek(len+m_str->pos());
+    m_device->seek(len+m_device->pos());
 }
-
 bool BinStore::read_data_blocks( bool file_data_blocks )
 {
     if(!file_data_blocks)
@@ -69,14 +82,14 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
         uint32_t v;
         read(v);
         if(v)
-            m_str->seek(v+m_str->pos());
+            m_device->seek(v+m_device->pos());
         return true;
     }
     const QByteArray &hdr(read_pstr(20));
     uint32_t sz;
     read_internal(sz);
 
-    quint64 read_start = m_str->pos();
+    quint64 read_start = m_device->pos();
     if(!hdr.startsWith("Files1")||sz<=0)
         return false;
     int num_data_blocks;
@@ -88,21 +101,21 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
         read_internal(fe.date);
         m_entries.push_back(fe);
     }
-    quint64 read_end = m_str->pos();
-    m_file_sizes.push_back(m_str->size()-read_end);
+    quint64 read_end = m_device->pos();
+    m_file_sizes.push_back(m_device->size()-read_end);
     return (sz==(read_end-read_start));
 }
 
 bool BinStore::open(FSWrapper& fs, const QString &name,uint32_t required_crc )
 {
-    if(m_str && m_str->isOpen())
+    if(m_device && m_device->isOpen())
     {
-        m_str->close();
-        delete m_str;
-        m_str = nullptr;
+        m_device->close();
+        delete m_device;
+        m_device = nullptr;
     }
-    m_str=fs.open(name,true);
-    if(!m_str) {
+    m_device=fs.open(name,true);
+    if(!m_device) {
             return false;
     }
     bool result = check_bin_version_and_crc(required_crc);
@@ -111,12 +124,12 @@ bool BinStore::open(FSWrapper& fs, const QString &name,uint32_t required_crc )
 
 BinStore::~BinStore()
 {
-    if(m_str && m_str->isOpen())
+    if(m_device && m_device->isOpen())
     {
-        m_str->close();
+        m_device->close();
     }
-    delete m_str;
-    m_str = nullptr;
+    delete m_device;
+    m_device = nullptr;
 }
 
 bool BinStore::read( uint32_t &v )
@@ -139,12 +152,25 @@ bool BinStore::read( float &v )
 
 bool BinStore::read( uint16_t &v )
 {
+    if(isI24Data()) {
+        uint32_t val;
+        size_t res = read_internal(val);
+        v=(uint16_t)val;
+        return res==4;
+    }
+
     size_t res = read_internal(v);
     return res==2;
 }
 
 bool BinStore::read( uint8_t &v )
 {
+    if(isI24Data()) {
+        uint32_t val;
+        size_t res = read_internal(val);
+        v=(uint8_t)val;
+        return res==4;
+    }
     size_t res = read_internal(v);
     return res==1;
 }
@@ -175,6 +201,13 @@ bool BinStore::read(Vec3 &val)
 bool BinStore::read(RGBA & rgb)
 {
     bool parse_ok=true;
+    if(isI24Data()) {
+        for(int i=0; i<3; ++i) {
+            parse_ok &= read(rgb.v[i]);
+        }
+        rgb.v[3] = 0;
+        return parse_ok;
+    }
     for(int i=0; i<3; ++i)
         parse_ok &= read(rgb.v[i]);
     rgb.v[3] = 0;
@@ -211,6 +244,24 @@ bool BinStore::read(std::vector<QByteArray> &res)
     {
         res.push_back(read_str(12000));
         //parse_ok &= res[idx].size()>0; TODO handle string read errors
+    }
+    return parse_ok;
+}
+
+bool BinStore::read(std::vector<std::vector<QByteArray>> &res)
+{
+    bool parse_ok=true;
+    uint32_t to_read = 0;
+    parse_ok &= read(to_read);
+    if( 0==to_read)
+        return parse_ok;
+    for(size_t idx = 0; idx < to_read; ++idx)
+    {
+        std::vector<QByteArray> entry;
+        if(!read(entry)) {
+            return false;
+        }
+        res.emplace_back(std::move(entry));
     }
     return parse_ok;
 }
@@ -258,14 +309,14 @@ bool BinStore::read(std::vector<float> &res)
     for(size_t idx = 0; idx < to_read; ++idx)
     {
         res.push_back(0);
-        parse_ok &= read(res[idx]);
+        parse_ok &= read(res.back());
     }
     return parse_ok;
 }
 
 bool BinStore::read_bytes( char *tgt,size_t sz )
 {
-    m_str->read(tgt,sz);
+    m_device->read(tgt,sz);
     bytes_read+=sz;
     return true;
 }
@@ -273,7 +324,8 @@ bool BinStore::read_bytes( char *tgt,size_t sz )
 const QByteArray & BinStore::read_str( size_t maxlen )
 {
     const QByteArray &result(read_pstr(maxlen));
-    fixup();
+    if(!isI24Data())
+        fixup();
     return result;
 }
 
@@ -314,10 +366,10 @@ bool BinStore::nesting_name(QByteArray &name)
 
 void BinStore::fixup()
 {
-    qint64 nonmult4 = ((m_str->pos() + 3) & ~3) - m_str->pos();
+    qint64 nonmult4 = ((m_device->pos() + 3) & ~3) - m_device->pos();
     if(nonmult4)
     {
-        m_str->seek(nonmult4+m_str->pos());
+        m_device->seek(nonmult4+m_device->pos());
         bytes_read+=nonmult4;
         if(m_file_sizes.size()>0)
             (*m_file_sizes.rbegin())-=nonmult4;

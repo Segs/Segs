@@ -95,6 +95,7 @@ namespace cereal
         archive(cereal::make_nvp("DisplayName",target.DisplayName));
         archive(cereal::make_nvp("DisplayHelp",target.DisplayHelp));
         archive(cereal::make_nvp("DisplayShortHelp",target.DisplayShortHelp));
+        archive(cereal::make_nvp("Icon",target.Icon));
         archive(cereal::make_nvp("NumBonusPowerSets",target.NumBonusPowerSets));
         archive(cereal::make_nvp("NumBonusPowers",target.NumBonusPowers));
         archive(cereal::make_nvp("NumBonusBoostSlots",target.NumBonusBoostSlots));
@@ -125,12 +126,31 @@ namespace
     }
 }
 
+static bool loadFromI24(BinStore *s,Parse_Origin &target) {
+    s->prepare();
+    bool ok = true;
+    ok &= s->read(target.Name);
+    ok &= s->read(target.DisplayName);
+    ok &= s->read(target.DisplayHelp);
+    ok &= s->read(target.DisplayShortHelp);
+    ok &= s->read(target.Icon);
+    return ok;
+}
 bool loadFrom(BinStore *s, LevelExpAndDebt & target)
 {
+    if(s->isI24Data()) {
+        //I24 experience tables are nested within a struct that has no additional fields.
+        // so we just simulate this by reading the outer struct's size
+        s->prepare();
+
+    }
     s->prepare();
     bool ok = true;
     ok &= s->read(target.m_ExperienceRequired);
     ok &= s->read(target.m_DefeatPenalty);
+    if(s->isI24Data()) {
+        return ok;
+    }
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return ok;
@@ -144,6 +164,10 @@ void saveTo(const LevelExpAndDebt & target, const QString & baseName, bool text_
 bool loadFrom(BinStore * s, Parse_Combining &target)
 {
     s->prepare();
+    if(s->isI24Data()) {
+        return s->read(target.CombineChances);
+    }
+
     bool ok = true;
     ok &= s->read(target.CombineChances);
     ok &= s->prepare_nested(); // will update the file size left
@@ -161,6 +185,8 @@ bool loadFrom(BinStore * s, Parse_Effectiveness &target)
     s->prepare();
     bool ok = true;
     ok &= s->read(target.Effectiveness);
+    if(s->isI24Data())
+        return ok;
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     return ok;
@@ -176,6 +202,9 @@ void saveTo(const Parse_Effectiveness & target, const QString & baseName, bool t
 bool loadFrom(BinStore * s, Parse_AllOrigins &target)
 {
     s->prepare();
+    if(s->isI24Data()) {
+        return s->handleI24StructArray(target);
+    }
     bool ok = true;
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);

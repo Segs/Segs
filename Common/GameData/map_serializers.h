@@ -12,8 +12,9 @@
 class BinStore;
 class QString;
 
-typedef std::vector<struct Map_Data> AllMaps_Data;
+using AllMaps_Data = std::vector<struct Map_Data>;
 
 static constexpr uint32_t zones_i0_requiredCrc=0x520EE128;
+static constexpr uint32_t zones_i24_requiredCrc=0x4837CAB2;
 bool loadFrom(BinStore *s,AllMaps_Data &target);
 void saveTo(const AllMaps_Data &target,const QString &baseName,bool text_format=false);

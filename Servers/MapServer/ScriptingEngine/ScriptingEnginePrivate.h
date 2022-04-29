@@ -6,7 +6,7 @@
  */
 
 #pragma once
-
+#include <limits>
 #include "sol/sol.hpp"
 
 #include <QString>

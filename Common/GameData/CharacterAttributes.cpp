@@ -20,6 +20,9 @@ void AttribNames_Data::serialize(Archive & archive)
     archive(cereal::make_nvp("Defense",m_Defense));
     archive(cereal::make_nvp("Boost",m_Boost));
     archive(cereal::make_nvp("Group",m_Group));
+    archive(cereal::make_nvp("Mode",m_Mode));
+    archive(cereal::make_nvp("Elusivity",m_Elusivity));
+    archive(cereal::make_nvp("StackKeys",m_StackKeys));
 }
 SPECIALIZE_SERIALIZATIONS(AttribNames_Data)
 
@@ -27,49 +30,63 @@ template<class Archive>
 void Parse_CharAttrib::serialize(Archive & archive)
 {
     char buf[128];
+
     for(int i=0; i<24; ++i)
     {
         sprintf(buf,"DamageType%02d",i);
         archive(cereal::make_nvp(buf,m_DamageTypes[i]));
     }
     archive(cereal::make_nvp("HitPoints",m_HitPoints));
+    archive(cereal::make_nvp("Absorb",m_Absorb));
     archive(cereal::make_nvp("Endurance",m_Endurance));
+    archive(cereal::make_nvp("Insight",m_Insight));
+    archive(cereal::make_nvp("Rage",m_Rage));
     archive(cereal::make_nvp("ToHit",m_ToHit));
+    //TODO: if we switch to I24 exlusively, this can be reduce to array of size 20
     for(int i=0; i<24; ++i) {
         sprintf(buf,"DefenseType00%02d",i);
         archive(cereal::make_nvp(buf,m_DefenseTypes[i]));
     }
-
     archive(cereal::make_nvp("Defense",m_Defense));
-    archive(cereal::make_nvp("Evade",m_Evade));
     archive(cereal::make_nvp("SpeedRunning",m_SpeedRunning));
     archive(cereal::make_nvp("SpeedFlying",m_SpeedFlying));
     archive(cereal::make_nvp("SpeedSwimming",m_SpeedSwimming));
     archive(cereal::make_nvp("SpeedJumping",m_SpeedJumping));
-    archive(cereal::make_nvp("JumpHeight",m_jump_height));
+    archive(cereal::make_nvp("JumpHeight",m_JumpHeight));
+
     archive(cereal::make_nvp("MovementControl",m_MovementControl));
     archive(cereal::make_nvp("MovementFriction",m_MovementFriction));
     archive(cereal::make_nvp("Stealth",m_Stealth));
     archive(cereal::make_nvp("StealthRadius",m_StealthRadius));
+    archive(cereal::make_nvp("StealthRadiusPlayer",m_StealthRadiusPlayer));
     archive(cereal::make_nvp("PerceptionRadius",m_PerceptionRadius));
     archive(cereal::make_nvp("Regeneration",m_Regeneration));
     archive(cereal::make_nvp("Recovery",m_Recovery));
+    archive(cereal::make_nvp("InsightRecovery",m_InsightRecovery));
     archive(cereal::make_nvp("ThreatLevel",m_ThreatLevel));
     archive(cereal::make_nvp("Taunt",m_Taunt));
+    archive(cereal::make_nvp("Placate",m_Placate));
     archive(cereal::make_nvp("Confused",m_Confused));
     archive(cereal::make_nvp("Afraid",m_Afraid));
+    archive(cereal::make_nvp("Terrorized",m_Terrorized));
     archive(cereal::make_nvp("Held",m_Held));
     archive(cereal::make_nvp("Immobilized",m_Immobilized));
-    archive(cereal::make_nvp("Stunned",m_is_stunned));
+    archive(cereal::make_nvp("IsStunned",m_IsStunned));
     archive(cereal::make_nvp("Sleep",m_Sleep));
-    archive(cereal::make_nvp("Fly",m_is_flying));
-    archive(cereal::make_nvp("Jumppack",m_has_jumppack));
+
+    archive(cereal::make_nvp("IsFlying",m_IsFlying));
+    archive(cereal::make_nvp("HasJumppack",m_HasJumppack));
     archive(cereal::make_nvp("Teleport",m_Teleport));
     archive(cereal::make_nvp("Untouchable",m_Untouchable));
     archive(cereal::make_nvp("Intangible",m_Intangible));
     archive(cereal::make_nvp("OnlyAffectsSelf",m_OnlyAffectsSelf));
+    archive(cereal::make_nvp("ExperienceGain",m_ExperienceGain));
+    archive(cereal::make_nvp("InfluenceGain",m_InfluenceGain));
+    archive(cereal::make_nvp("PrestigeGain",m_PrestigeGain));
+    archive(cereal::make_nvp("Evade",m_Evade));
     archive(cereal::make_nvp("Knockup",m_Knockup));
     archive(cereal::make_nvp("Knockback",m_Knockback));
+
     archive(cereal::make_nvp("Repel",m_Repel));
     archive(cereal::make_nvp("Accuracy",m_Accuracy));
     archive(cereal::make_nvp("Radius",m_Radius));
@@ -79,6 +96,13 @@ void Parse_CharAttrib::serialize(Archive & archive)
     archive(cereal::make_nvp("RechargeTime",m_RechargeTime));
     archive(cereal::make_nvp("InterruptTime",m_InterruptTime));
     archive(cereal::make_nvp("EnduranceDiscount",m_EnduranceDiscount));
+    archive(cereal::make_nvp("InsightDiscount",m_InsightDiscount));
+    archive(cereal::make_nvp("Meter",m_Meter));
+    for(int i=0; i<20; ++i) {
+        sprintf(buf,"ElusivityType00%02d",i);
+        archive(cereal::make_nvp(buf,m_ElusivityTypes[i]));
+    }
+    archive(cereal::make_nvp("ElusivityBase",m_ElusivityBase));
 }
 SPECIALIZE_SERIALIZATIONS(Parse_CharAttrib)
 
@@ -92,43 +116,58 @@ void Parse_CharAttribMax::serialize(Archive & archive)
         archive(cereal::make_nvp(buf,m_DamageTypes[i]));
     }
     archive(cereal::make_nvp("HitPoints",m_HitPoints));
+    archive(cereal::make_nvp("Absorb",m_Absorb));
     archive(cereal::make_nvp("Endurance",m_Endurance));
+    archive(cereal::make_nvp("Insight",m_Insight));
+    archive(cereal::make_nvp("Rage",m_Rage));
     archive(cereal::make_nvp("ToHit",m_ToHit));
+    //TODO: if we switch to I24 exlusively, this can be reduce to array of size 20
     for(int i=0; i<24; ++i) {
         sprintf(buf,"DefenseType00%02d",i);
         archive(cereal::make_nvp(buf,m_DefenseTypes[i]));
     }
 
+
     archive(cereal::make_nvp("Defense",m_Defense));
-    archive(cereal::make_nvp("Evade",m_Evade));
     archive(cereal::make_nvp("SpeedRunning",m_SpeedRunning));
     archive(cereal::make_nvp("SpeedFlying",m_SpeedFlying));
     archive(cereal::make_nvp("SpeedSwimming",m_SpeedSwimming));
     archive(cereal::make_nvp("SpeedJumping",m_SpeedJumping));
-    archive(cereal::make_nvp("JumpHeight",m_jump_height));
+    archive(cereal::make_nvp("JumpHeight",m_JumpHeight));
+
     archive(cereal::make_nvp("MovementControl",m_MovementControl));
     archive(cereal::make_nvp("MovementFriction",m_MovementFriction));
     archive(cereal::make_nvp("Stealth",m_Stealth));
     archive(cereal::make_nvp("StealthRadius",m_StealthRadius));
+    archive(cereal::make_nvp("StealthRadiusPlayer",m_StealthRadiusPlayer));
     archive(cereal::make_nvp("PerceptionRadius",m_PerceptionRadius));
     archive(cereal::make_nvp("Regeneration",m_Regeneration));
     archive(cereal::make_nvp("Recovery",m_Recovery));
+    archive(cereal::make_nvp("InsightRecovery",m_InsightRecovery));
     archive(cereal::make_nvp("ThreatLevel",m_ThreatLevel));
     archive(cereal::make_nvp("Taunt",m_Taunt));
+    archive(cereal::make_nvp("Placate",m_Placate));
     archive(cereal::make_nvp("Confused",m_Confused));
     archive(cereal::make_nvp("Afraid",m_Afraid));
+    archive(cereal::make_nvp("Terrorized",m_Terrorized));
     archive(cereal::make_nvp("Held",m_Held));
     archive(cereal::make_nvp("Immobilized",m_Immobilized));
-    archive(cereal::make_nvp("Stunned",m_is_stunned));
+    archive(cereal::make_nvp("IsStunned",m_IsStunned));
     archive(cereal::make_nvp("Sleep",m_Sleep));
-    archive(cereal::make_nvp("Fly",m_is_flying));
-    archive(cereal::make_nvp("Jumppack",m_has_jumppack));
+
+    archive(cereal::make_nvp("IsFlying",m_IsFlying));
+    archive(cereal::make_nvp("HasJumppack",m_HasJumppack));
     archive(cereal::make_nvp("Teleport",m_Teleport));
     archive(cereal::make_nvp("Untouchable",m_Untouchable));
     archive(cereal::make_nvp("Intangible",m_Intangible));
     archive(cereal::make_nvp("OnlyAffectsSelf",m_OnlyAffectsSelf));
+    archive(cereal::make_nvp("ExperienceGain",m_ExperienceGain));
+    archive(cereal::make_nvp("InfluenceGain",m_InfluenceGain));
+    archive(cereal::make_nvp("PrestigeGain",m_PrestigeGain));
+    archive(cereal::make_nvp("Evade",m_Evade));
     archive(cereal::make_nvp("Knockup",m_Knockup));
     archive(cereal::make_nvp("Knockback",m_Knockback));
+
     archive(cereal::make_nvp("Repel",m_Repel));
     archive(cereal::make_nvp("Accuracy",m_Accuracy));
     archive(cereal::make_nvp("Radius",m_Radius));
@@ -138,5 +177,12 @@ void Parse_CharAttribMax::serialize(Archive & archive)
     archive(cereal::make_nvp("RechargeTime",m_RechargeTime));
     archive(cereal::make_nvp("InterruptTime",m_InterruptTime));
     archive(cereal::make_nvp("EnduranceDiscount",m_EnduranceDiscount));
+    archive(cereal::make_nvp("InsightDiscount",m_InsightDiscount));
+    archive(cereal::make_nvp("Meter",m_Meter));
+    for(int i=0; i<20; ++i) {
+        sprintf(buf,"ElusivityType00%02d",i);
+        archive(cereal::make_nvp(buf,m_DefenseTypes[i]));
+    }
+    archive(cereal::make_nvp("ElusivityBase",m_ElusivityBase));
 }
 SPECIALIZE_SERIALIZATIONS(Parse_CharAttribMax)

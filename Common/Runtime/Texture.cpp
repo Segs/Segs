@@ -96,7 +96,7 @@ void loadTexHeader(FSWrapper *fs,const QByteArray &fname)
         delete src_tex;
     }
     res.info = modFromTextureName(actualFile.path()+"/"+actualFile.baseName());
-    uint32_t texopt_flags = 0;
+    TexOpt texopt_flags = TexOpt::None;
     if(res.info)
         texopt_flags = res.info->Flags;
     QByteArray upper_fname(fname.toUpper());
@@ -106,10 +106,10 @@ void loadTexHeader(FSWrapper *fs,const QByteArray &fname)
     if(upper_fname.contains("MAPS/"))
         res.flags |= TextureWrapper::CLAMP;
 
-    if(texopt_flags & REPLACEABLE)
+    if(texopt_flags & TexOpt::Replaceable)
         res.flags |= TextureWrapper::REPLACEABLE;
 
-    if(texopt_flags & BUMPMAP)
+    if(texopt_flags & TexOpt::IsBumpMap)
         res.flags |= TextureWrapper::BUMPMAP;
 
     res.scaleUV0 = {1,1};
@@ -118,7 +118,7 @@ void loadTexHeader(FSWrapper *fs,const QByteArray &fname)
     if(res.info && !res.info->BumpMap.isEmpty())
         res.bumpmap = res.info->BumpMap;
     QByteArray detailname;
-    if(texopt_flags & DUAL)
+    if(texopt_flags & TexOpt::MultiTex)
     {
         if(!res.info->Blend.isEmpty())
         {

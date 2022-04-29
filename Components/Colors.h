@@ -66,7 +66,7 @@ struct RGBA
         struct { uint8_t r,g,b,a;} rgba;
         struct { uint8_t x,y,z,w;} xyzw ;
     };
-    RGBA(uint8_t r_,uint8_t g_,uint8_t b_,uint8_t a_) {
+    RGBA(uint8_t r_,uint8_t g_,uint8_t b_,uint8_t a_=0) {
         rgba.r = r_;
         rgba.g = g_;
         rgba.b = b_;

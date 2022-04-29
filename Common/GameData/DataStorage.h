@@ -17,6 +17,7 @@
 
 struct RGBA;
 
+
 typedef glm::vec3 Vec3;
 typedef glm::vec2 Vec2;
 class BinStore // binary storage
@@ -25,9 +26,10 @@ class BinStore // binary storage
         QString name;
         uint32_t date=0;
     };
-    QIODevice *m_str = nullptr;
+    QIODevice *m_device = nullptr;
     size_t bytes_read=0;
     uint32_t bytes_to_read=0;
+    uint8_t m_version;
     std::vector<uint32_t> m_file_sizes; // implicit stack
     std::vector<FileEntry> m_entries;
 
@@ -36,7 +38,7 @@ class BinStore // binary storage
     {
         if(!m_file_sizes.empty() && current_fsize()<sizeof(V))
             return 0;
-        m_str->read((char *)&res,sizeof(V));
+        m_device->read((char *)&res,sizeof(V));
         if(!m_file_sizes.empty())
         {
             bytes_read+=sizeof(V);
@@ -71,11 +73,18 @@ public:
     bool        read(std::vector<int32_t> &res);
     bool        read(std::vector<float> &res);
     bool        read(std::vector<QByteArray> &res);
+    bool        read(std::vector<std::vector<QByteArray>> &res);
     bool        read(std::vector<std::vector<QString>> &res);
     bool        read(uint8_t *&val, uint32_t length);
     bool        read(QByteArray &val);
     bool        read(std::pair<uint8_t,uint8_t> &v) {
                     uint8_t skipped, skipped2;
+                    if(isI24Data())
+                    {
+                        bool ok = read(v.first);
+                        ok &= read(v.second);
+                        return ok;
+                    }
                     return read_internal(v.first)!=0 &&
                     read_internal(v.second)!=0 && read_internal(skipped) != 0 && read_internal(skipped2) != 0;
                 }
@@ -98,6 +107,15 @@ public:
                     val = std::move(*(std::vector<Enum> *)(&true_val));
                     return true;
                 }
+    template<typename T,int N>
+    bool        read(T (&tgt)[N])
+                {
+                    bool ok = true;
+                    for(int i=0; i<N; ++i) {
+                        ok &= read(tgt[i]);
+                    }
+                    return true;
+                }
     void        prepare();
     bool        prepare_nested();
     bool        nesting_name(QByteArray &name);
@@ -105,6 +123,27 @@ public:
     void        nest_out() { m_file_sizes.pop_back(); }
     bool        end_encountered() const;
     bool        open(FSWrapper &fs,const QString & name, uint32_t required_crc);
-                ~BinStore();
+    bool        isI24Data() const { return m_version>4; }
+    size_t      current_block_size() const { return bytes_to_read; }
 
+    template<typename T>
+    bool handleI24StructArray(std::vector<T> &entries) {
+
+        if(bytes_to_read==0)
+            return true;
+        uint32_t count;
+        if(!read(count)) {
+            return false;
+        }
+        entries.reserve(count);
+        for(uint32_t i=0; i<count; ++i) {
+            T entry;
+            if(!loadFromI24(this,entry)) {
+                return false;
+            }
+            entries.emplace_back(std::move(entry));
+        }
+        return true;
+    }
+    ~BinStore();
 };

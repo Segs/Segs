@@ -17,7 +17,7 @@
 #include "map_definitions.h"
 #include "DataStorage.h"
 
-bool loadFrom(BinStore *s,Map_Data &target)
+static bool loadFrom(BinStore *s,Map_Data &target)
 {
     bool ok = true;
     s->prepare();
@@ -30,10 +30,28 @@ bool loadFrom(BinStore *s,Map_Data &target)
     return ok && s->end_encountered();
 }
 
+static bool loadFromI24(BinStore *s,Map_Data &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.Name);
+    ok &= s->read(target.Icon);
+    ok &= s->read(target.Location);
+    ok &= s->read(target.TextLocation);
+    ok &= s->read(target.Hide);
+    ok &= s->readEnum(target.City);
+    ok &= s->readEnum(target.TeamArea);
+    return ok;
+}
+
+
 bool loadFrom(BinStore *s, AllMaps_Data &target)
 {
     bool ok = true;
     s->prepare();
+    if(s->isI24Data()) {
+        s->handleI24StructArray(target);
+    }
     ok &= s->prepare_nested(); // will update the file size left
     assert(ok);
     if(s->end_encountered())
@@ -60,6 +78,9 @@ static void serialize(Archive & archive, Map_Data & m)
     archive(cereal::make_nvp("Icon",m.Icon));
     archive(cereal::make_nvp("Location",m.Location));
     archive(cereal::make_nvp("TextLocation",m.TextLocation));
+    archive(cereal::make_nvp("Hide",m.Hide));
+    archive(cereal::make_nvp("City",m.City));
+    archive(cereal::make_nvp("TeamArea",m.TeamArea));
 }
 
 void saveTo(const AllMaps_Data &target, const QString &baseName, bool text_format)

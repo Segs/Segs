@@ -265,8 +265,8 @@ void modifyAttrib(Entity &e, buffset change)
     }
     else if (change.m_value_name == "jumpheight")
     {
-        e.m_char->m_char_data.m_current_attribs.m_jump_height += change.m_value;
-        e.m_motion_state.m_jump_height = e.m_char->m_char_data.m_current_attribs.m_jump_height;
+        e.m_char->m_char_data.m_current_attribs.m_JumpHeight += change.m_value;
+        e.m_motion_state.m_jump_height = e.m_char->m_char_data.m_current_attribs.m_JumpHeight;
     }
     else if (change.m_value_name == "rechargetime")
     {
@@ -294,16 +294,16 @@ void modifyAttrib(Entity &e, buffset change)
     }
     else if (change.m_value_name == "fly")
     {
-        e.m_char->m_char_data.m_current_attribs.m_is_flying += change.m_value;
-        if (e.m_char->m_char_data.m_current_attribs.m_is_flying > 0)
+        e.m_char->m_char_data.m_current_attribs.m_IsFlying += change.m_value;
+        if (e.m_char->m_char_data.m_current_attribs.m_IsFlying > 0)
             e.m_motion_state.m_is_flying = true;
         else
             e.m_motion_state.m_is_flying = false;
     }
     else if (change.m_value_name == "jumppack")
     {
-        e.m_char->m_char_data.m_current_attribs.m_has_jumppack += change.m_value;
-        if (e.m_char->m_char_data.m_current_attribs.m_has_jumppack > 0)
+        e.m_char->m_char_data.m_current_attribs.m_HasJumppack += change.m_value;
+        if (e.m_char->m_char_data.m_current_attribs.m_HasJumppack > 0)
             e.m_motion_state.m_has_jumppack = true;
         else
             e.m_motion_state.m_has_jumppack = false;
@@ -330,8 +330,8 @@ void modifyAttrib(Entity &e, buffset change)
     }
     else if (change.m_value_name == "stunned")
     {
-        e.m_char->m_char_data.m_current_attribs.m_is_stunned += change.m_value;
-        if (e.m_char->m_char_data.m_current_attribs.m_is_stunned > 0)
+        e.m_char->m_char_data.m_current_attribs.m_IsStunned += change.m_value;
+        if (e.m_char->m_char_data.m_current_attribs.m_IsStunned > 0)
             e.m_motion_state.m_is_stunned = true;
         else
             e.m_motion_state.m_is_stunned = false;
@@ -382,7 +382,7 @@ void checkMovement(Entity &e)
 bool checkPowerBlock(Entity &e)
 {
     Parse_CharAttrib & temp = e.m_char->m_char_data.m_current_attribs;
-    return (temp.m_is_stunned > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1 || temp.m_OnlyAffectsSelf > 1);
+    return (temp.m_IsStunned > 1 || temp.m_Sleep > 1 ||temp.m_Held > 1 || temp.m_Afraid > 1 || temp.m_OnlyAffectsSelf > 1);
 }
 //TODO on both of the above, check for the entity's protection against each status effect and use that value instead of 1
 

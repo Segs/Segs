@@ -123,7 +123,7 @@ public:
                         for(int geo_idx=bset.m_GeoSets.size()-1; geo_idx>=0; --geo_idx)
                         {
                             const GeoSet_Data &geo_set(bset.m_GeoSets[geo_idx]);
-                            m_strings.insert_entry(geo_set.m_Displayname,"");
+                            m_strings.insert_entry(geo_set.m_DisplayName,"");
                             m_strings.insert_entry(geo_set.m_BodyPart,"");
                             for(int info_idx=geo_set.m_Infos.size()-1; info_idx>=0; --info_idx)
                             {
@@ -326,8 +326,8 @@ bool GameDataStore::read_game_data(const QString &directory_path)
                       int idx=0;
                       for(const FxInfo &fx : m_fx_infos)
                       {
-                          packer->addString(fx.fxname);
-                          m_name_to_fx_index[fx.fxname.toLower()] = idx++;
+                          packer->addString(fx.m_Name);
+                          m_name_to_fx_index[fx.m_Name.toLower()] = idx++;
                       }
                       packer->sortEntries();
                   },"Postprocessing runtime data .. ");

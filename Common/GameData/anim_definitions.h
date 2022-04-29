@@ -21,6 +21,13 @@ struct BoneAnimTrack
     int8_t                 tgtBoneOrTexId;
 };
 
+enum class StAnimFlags : int
+{
+    FRAMESNAP    = 1 << 0,
+    PINGPONG     = 1 << 1,
+    LOCAL_TIMER  = 1 << 2,
+    GLOBAL_TIMER = 1 << 3,
+};
 struct TextureAnim_Data
 {
     BoneAnimTrack *animtrack1;
@@ -28,7 +35,7 @@ struct TextureAnim_Data
     QByteArray scrollType;
     float speed;
     float stScale;
-    int flags;
+    StAnimFlags flags;
 };
 namespace SEGS
 {

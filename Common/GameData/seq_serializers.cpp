@@ -235,9 +235,111 @@ namespace
     }
 } // namespace
 
+static bool loadFromI24(BinStore *s, SeqPlayFxData &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.name);
+    ok &= s->read(target.delay);
+    ok &= s->read(target.flags);
+    return ok;
+}
+
+static bool loadFromI24(BinStore *s, SeqCycleMoveData &target)
+{
+    s->prepare();
+    return s->read(target.name);
+}
+
+static bool loadFromI24(BinStore *s, SeqNextMoveData &target)
+{
+    s->prepare();
+    return s->read(target.name);
+}
+
+static bool loadFromI24(BinStore *s, SeqMoveDataTypeAnim &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.name);
+    ok &= s->read(target.firstFrame);
+    ok &= s->read(target.lastFrame);
+    return ok;
+}
+
+static bool loadFromI24(BinStore *s, SeqMoveTypeData &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.name);
+    ok &= s->handleI24StructArray(target.m_Anim);
+    ok &= s->read(target.Ragdoll);
+    ok &= s->handleI24StructArray(target.m_PlayFx);
+    ok &= s->read(target.Scale);
+    ok &= s->read(target.MoveRate);
+    ok &= s->read(target.SmoothSprint);
+    ok &= s->read(target.PitchAngle);
+    ok &= s->read(target.PitchRate);
+    ok &= s->read(target.PitchStart);
+    ok &= s->read(target.PitchEnd);
+    ok &= s->read(target.ScaleRootBone);
+    ok &= s->read(target.filename);
+    return ok;
+}
+
+static bool loadFromI24(BinStore *s, SeqMoveData &target)
+{
+    bool ok = true;
+    s->prepare();
+    ok &= s->read(target.name);
+    ok &= s->read(target.MoveRate);
+    ok &= s->read(target.Interpolate);
+    ok &= s->read(target.Priority);
+    ok &= s->read(target.Scale);
+    ok &= s->handleI24StructArray(target.m_NextMove);
+    ok &= s->handleI24StructArray(target.m_CycleMove);
+    ok &= s->handleI24StructArray(target.m_Type);
+
+    ok &= s->read(target.Wind);
+    ok &= s->read(target.Member);
+    ok &= s->read(target.Interrupts);
+    ok &= s->read(target.SticksOnChild);
+    ok &= s->read(target.SetsOnChild);
+    ok &= s->read(target.SetsOnReactor);
+    ok &= s->read(target.Sets);
+    ok &= s->read(target.Requires);
+    ok &= s->read(target.Flags);
+    ok &= s->prepare_nested(); // will update the file size left
+
+    return ok;
+}
+static bool loadFromI24(BinStore *s,SeqGroupNameData &target) {
+    s->prepare();
+    return s->read(target.name);
+}
+static bool loadFromI24(BinStore *s,SeqTypeDefData &target) {
+    s->prepare();
+    bool ok = true;
+    ok &= s->read(target.name);
+    ok &= s->read(target.pBaseSkeleton);
+    ok &= s->read(target.pParentType);
+    return ok;
+}
+static bool loadFromI24(BinStore *s,SequencerData &target) {
+    s->prepare();
+    bool ok = true;
+    ok &= s->read(target.name);
+    ok &= s->handleI24StructArray(target.m_TypeDef);
+    ok &= s->handleI24StructArray(target.m_Group);
+    ok &= s->handleI24StructArray(target.m_Move);
+    return ok;
+}
 bool loadFrom(BinStore *s, SequencerList &target)
 {
     s->prepare();
+    if(s->isI24Data()) {
+        return s->handleI24StructArray(target.sq_list);
+    }
     bool ok = s->prepare_nested(); // will update the file size left
 
     if(s->end_encountered())
@@ -281,8 +383,11 @@ template<class Archive>
 void serialize(Archive & archive, SeqMoveTypeData & m)
 {
     archive(cereal::make_nvp("name",m.name));
+    archive(cereal::make_nvp("filename",m.filename));
+    archive(cereal::make_nvp("ScaleRootBone",m.ScaleRootBone));
     archive(cereal::make_nvp("Anim",m.m_Anim));
     archive(cereal::make_nvp("PlayFx",m.m_PlayFx));
+    archive(cereal::make_nvp("Ragdoll",m.Ragdoll));
     archive(cereal::make_nvp("Scale",m.Scale));
     archive(cereal::make_nvp("MoveRate",m.MoveRate));
     archive(cereal::make_nvp("PitchAngle",m.PitchAngle));
@@ -313,8 +418,10 @@ void serialize(Archive & archive, SeqMoveData & m)
     archive(cereal::make_nvp("NextMove",m.m_NextMove));
     archive(cereal::make_nvp("CycleMove",m.m_CycleMove));
     archive(cereal::make_nvp("Type",m.m_Type));
+    archive(cereal::make_nvp("Wind",m.Wind));
     archive(cereal::make_nvp("SticksOnChild",m.SticksOnChild));
     archive(cereal::make_nvp("SetsOnChild",m.SetsOnChild));
+    archive(cereal::make_nvp("SetsOnReactor",m.SetsOnReactor));
     archive(cereal::make_nvp("Sets",m.Sets));
     archive(cereal::make_nvp("Requires",m.Requires));
     archive(cereal::make_nvp("Member",m.Member));
