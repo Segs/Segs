@@ -51,7 +51,6 @@ jobs:
     - name: Configure CMake
       env:
         CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
-        CC: "/usr/bin/clang"
         CXX: "/usr/bin/clang++"
       run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
@@ -75,8 +74,6 @@ jobs:
     - name: Configure CMake
       env: 
         CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
-        CC: "/usr/bin/clang"
-        CXX: "/usr/bin/clang++"
       run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
     - name: Build
