@@ -1,4 +1,4 @@
-
+if(ENABLE_SCRIPTING_ENGINE)
 SET(target_CPP
     ScriptingEngine.cpp
     ScriptingEngine_CharacterTypes.cpp
@@ -35,3 +35,4 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES})
 set_target_properties (ScriptingEngine PROPERTIES
     FOLDER Servers
 )
+endif()
