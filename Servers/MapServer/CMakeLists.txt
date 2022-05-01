@@ -50,9 +50,8 @@ target_link_libraries(MapServer PUBLIC CRUDP_Protocol common_runtime)
 target_link_libraries(MapServer PUBLIC Qt5::Core)
 target_link_libraries(MapServer PUBLIC gameData)
 
-if(ENABLE_SCRIPTING_ENGINE)
-    add_subdirectory(ScriptingEngine)
-endif()
+
+add_subdirectory(ScriptingEngine)
 add_subdirectory(SlashCommands)
 
 target_link_libraries(MapServer PUBLIC Qt5::Core)
