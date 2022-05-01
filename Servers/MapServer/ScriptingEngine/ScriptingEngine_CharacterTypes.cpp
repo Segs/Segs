@@ -17,8 +17,6 @@
 
 #include "MapInstance.h"
 
-#include <unordered_map>
-
 #include <sol/sol.hpp>
 
 
