@@ -90,7 +90,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
 set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt")
 set(UNICODE TRUE)
 set(INSTALLED_TARGETS)
-option(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
+option(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" OFF) # Disabled temporarily until sol2 library fixed for macOS
 option(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 option(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
 option(BUILD_RPC_TEST_CLIENT "Build RPC Test Client ?" OFF)
