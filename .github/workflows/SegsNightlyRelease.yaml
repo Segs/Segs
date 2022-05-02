@@ -3,7 +3,7 @@ name: segs-ci-nightly
 
 on:
   schedule:
-    - cron: '0 18 * * *'
+    - cron: '0 19 * * *'
 
 env:
   BUILD_TYPE:  Debug
@@ -12,7 +12,7 @@ env:
 
 jobs:
 
-  tidy-up-releases: # Delete the currently nightly release and create a new one. 
+  tidy-up-releases: # Delete the currently nightly release.
     runs-on: 'ubuntu-latest'
     permissions:
       contents: write
@@ -25,18 +25,6 @@ jobs:
         tag_name: "nightly"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Create New Release 
-      uses: ncipollo/release-action@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        prerelease: "true"
-        commit: ${{ github.sha }}
-        tag: "nightly"
-        name: "Nightly Development Release"
-        body: |
-          Commit reference: ${{ github.sha }}
-          Built on branch: ${{ github.ref_name }}
 
   build-windows:
     needs: tidy-up-releases
@@ -87,6 +75,12 @@ jobs:
         allowUpdates: "true"
         tag: "nightly"
         artifacts: ${{ github.workspace }}/build/out/windows-release-x64.zip
+        commit: ${{ github.sha }}
+        prerelease: "true"
+        name: "Nightly Development Release"
+        body: |
+          Commit reference: ${{ github.sha }}
+          Built on branch: ${{ github.ref_name }}
 
   build-linux:
     needs: tidy-up-releases
@@ -129,6 +123,12 @@ jobs:
         allowUpdates: "true"
         tag: "nightly"
         artifacts: ${{ github.workspace }}/build/out/linux-release-x64.zip
+        commit: ${{ github.sha }}
+        prerelease: "true"
+        name: "Nightly Development Release"
+        body: |
+          Commit reference: ${{ github.sha }}
+          Built on branch: ${{ github.ref_name }}
 
   build-macos:
     needs: tidy-up-releases
@@ -170,3 +170,9 @@ jobs:
         allowUpdates: "true"
         tag: "nightly"
         artifacts: ${{ github.workspace }}/build/out/macos-release-x64.zip
+        commit: ${{ github.sha }}
+        prerelease: "true"
+        name: "Nightly Development Release"
+        body: |
+          Commit reference: ${{ github.sha }}
+          Built on branch: ${{ github.ref_name }}
