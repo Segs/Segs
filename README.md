@@ -2,7 +2,7 @@
 <img src="docs/segs-medallion-med.png" align="right" alt="SEGS Logo">
 
 [![Discord](https://img.shields.io/discord/242088237596803073.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.segs.dev)
-[![SEGS-CI](https://github.com/Segs/Segs/actions/workflows/segs-github-ci.yaml/badge.svg)](https://github.com/Segs/Segs/actions/workflows/segs-github-ci.yaml)
+[![segs-ci-nightly](https://github.com/Segs/Segs/actions/workflows/SegsNightlyRelease.yaml/badge.svg)](https://github.com/Segs/Segs/actions/workflows/SegsNightlyRelease.yaml)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/SEGS/segs.svg)](http://isitmaintained.com/project/SEGS/segs "Percentage of issues still open")
 
