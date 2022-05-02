@@ -1,5 +1,4 @@
-
-name: SEGS-CI
+name: segs-ci-pull-request
 
 on:
   pull_request:
@@ -12,11 +11,11 @@ env:
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: 'windows-latest'
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Install Qt
+
+    - name: Install Qt Windows
       uses: jurplel/install-qt-action@v2.14.0
       with:
         host: windows
@@ -26,20 +25,20 @@ jobs:
         dir: "${{ github.workspace }}/qt"
         install-deps: "true"
 
-    - name: Configure CMake
+    - name: Configure CMake Windows
       env:
         CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
       run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
-    - name: Build
+    - name: Build Windows
       run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
 
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: 'ubuntu-latest'
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Qt
+    - name: Install Qt Linux
       uses: jurplel/install-qt-action@v2.14.0
       with:
         host: linux
@@ -48,7 +47,7 @@ jobs:
         dir: "${{ github.workspace }}/qt"
         install-deps: "true"
 
-    - name: Configure CMake
+    - name: Configure CMake Linux
       env:
         CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
         CXX: "/usr/bin/clang++"
@@ -58,11 +57,11 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
 
   build-macos:
-    runs-on: macos-latest
+    runs-on: 'macos-latest'
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Qt
+    - name: Install Qt MacOS
       uses: jurplel/install-qt-action@v2.14.0
       with:
         host: mac
@@ -71,16 +70,10 @@ jobs:
         dir: "${{ github.workspace }}/qt"
         install-deps: "true"
 
-    - name: Configure CMake
-      env: 
+    - name: Configure CMake MacOS
+      env:
         CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
       run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
-
-
-
-
-
-
