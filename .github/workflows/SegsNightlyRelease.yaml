@@ -2,8 +2,9 @@ name: segs-ci-nightly
 
 
 on:
-  schedule:
-    - cron: '0 19 * * *'
+  push:
+    branches:
+      - develop
 
 env:
   BUILD_TYPE:  Debug
