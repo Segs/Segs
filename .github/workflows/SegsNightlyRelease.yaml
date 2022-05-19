@@ -61,7 +61,7 @@ jobs:
         robocopy ${{ github.workspace }}\build\openssl\openssl-1.1\x64\bin\ ${{ github.workspace }}\build\out *.dll
 
     - name: Create Windows Archive
-      uses: thedoctor0/zip-release@master
+      uses: thedoctor0/zip-release@main
       with: 
         type: 'zip'
         directory: ${{ github.workspace }}/build/out
@@ -109,7 +109,7 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
 
     - name: Create Linux Archive
-      uses: thedoctor0/zip-release@master
+      uses: thedoctor0/zip-release@main
       with: 
         type: 'zip'
         directory: ${{ github.workspace }}/build/out
@@ -156,7 +156,7 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
 
     - name: Create MacOS Archive
-      uses: thedoctor0/zip-release@master
+      uses: thedoctor0/zip-release@main
       with: 
         type: 'zip'
         directory: ${{ github.workspace }}/build/out
