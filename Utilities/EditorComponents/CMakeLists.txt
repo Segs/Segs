@@ -13,6 +13,8 @@ find_package(Threads REQUIRED)
 
 set(sources
     main.cpp
+    MainWindow.cpp MainWindow.h MainWindow.ui   
+    AssetSelector.h AssetSelector.cpp AssetSelector.ui
     SegsOriginEditor.cpp
     SegsOriginEditor.h
     SegsOriginEditor.ui
