@@ -6,7 +6,7 @@
 
 
 SegsOriginEditor::SegsOriginEditor(QWidget *parent) :
-    QWidget(parent),
+    EditorWidget(parent),
     ui(new Ui::SegsOriginEditor)
 {
     ui->setupUi(this);

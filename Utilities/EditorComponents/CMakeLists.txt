@@ -13,15 +13,18 @@ find_package(Threads REQUIRED)
 
 set(sources
     main.cpp
-    MainWindow.cpp MainWindow.h MainWindow.ui   
+    MainWindow.cpp MainWindow.h MainWindow.ui
     AssetSelector.h AssetSelector.cpp AssetSelector.ui
+    EditorWidget.h EditorWidget.cpp
     SegsOriginEditor.cpp
     SegsOriginEditor.h
     SegsOriginEditor.ui
     soe.qrc
 )
 
+
 add_executable(SegsEd ${sources})
+target_include_directories(SegsEd PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(SegsEd PUBLIC Qt5::Widgets)
 set_target_properties(SegsEd PROPERTIES AUTOMOC TRUE)
