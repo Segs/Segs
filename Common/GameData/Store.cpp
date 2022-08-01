@@ -106,7 +106,7 @@ int Store::getPrice(Entity *e, QString item_name, bool is_selling)
             }
         }
 
-        for (const int &dept: item_info.m_Departments)
+        for (uint32_t dept: item_info.m_Departments)
         {
             for (const Shop_Data &shop: shop_data)
             {
