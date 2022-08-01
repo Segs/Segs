@@ -31,25 +31,44 @@ void MainWindow::addDocks() {
 
 }
 
-void MainWindow::onAssetActivated(int type, const QString &path) {
+void MainWindow::onAssetActivated(int type, const QString &path)
+{
 
-    if(m_editors[0]->isVisible()) {
-        m_mdis[0]->activateWindow();
-        m_editors[0]->activateWindow();
-    } else {
-        m_editors[0]->showMaximized();
+    if (!m_editors[type])
+    {
+        auto *ed = new SegsOriginEditor();
+        ed->setAttribute(Qt::WA_DeleteOnClose, false);
+        m_editors[type] = ed;
+    }
+
+    if (m_editors[type]->isVisible())
+    {
+        m_mdis[type]->activateWindow();
+    }
+    else
+    {
+        QMdiSubWindow *mdi;
+        if(!m_mdis.contains(type))
+        {
+            mdi    = new SignalingMdiSubWindow(ui->centralwidget);
+            m_mdis[type] = mdi;
+        }
+        else
+            mdi = m_mdis[type];
+        mdi->setWidget(m_editors[type]);
+        m_editors[type]->setVisible(true);
+        mdi->showMaximized();
+        mdi->setAttribute(Qt::WA_DeleteOnClose,false);
     }
 }
 
 void MainWindow::addEditors() {
-    m_editors.push_back(new SegsOriginEditor());
-    m_editors.back()->setAttribute(Qt::WA_DeleteOnClose,false);
-
+    // TODO: register a bunch of asset_type->editor_creation_function mappings
 }
 
 void MainWindow::addMdis() {
-    m_mdis.push_back(new QMdiSubWindow(ui->centralwidget));
-    m_mdis.back()->setAttribute(Qt::WA_DeleteOnClose,false);
+    //m_mdis.push_back(new QMdiSubWindow(ui->centralwidget));
+    //m_mdis.back()->setAttribute(Qt::WA_DeleteOnClose,false);
     //subWindow1->setWidget(w);
 }
 

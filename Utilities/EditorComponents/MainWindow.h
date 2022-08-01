@@ -1,13 +1,28 @@
 #pragma once
 
 #include <QMainWindow>
-
-class QMdiSubWindow;
+#include <QMdiSubWindow>
 
 namespace Ui
 {
 class MainWindow;
 }
+
+class SignalingMdiSubWindow : public QMdiSubWindow {
+    Q_OBJECT
+public:
+    explicit SignalingMdiSubWindow(QWidget *parent = nullptr) : QMdiSubWindow(parent) {}
+
+Q_SIGNALS:
+    void closing();
+public:
+    void closeEvent(QCloseEvent *ev) override {
+        widget()->setVisible(false);
+        setWidget(nullptr); // we don't own the sub widget - nullify
+        emit closing();
+        QMdiSubWindow::closeEvent(ev);
+    }
+};
 
 class MainWindow : public QMainWindow
 {
@@ -26,6 +41,6 @@ private:
     void addEditors();
 
     Ui::MainWindow        *ui;
-    std::vector<QWidget *> m_editors;
-    std::vector<QMdiSubWindow *> m_mdis;
+    QHash<int,QWidget *> m_editors;
+    QHash<int,QMdiSubWindow *> m_mdis;
 };
