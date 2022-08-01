@@ -21,11 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QToolButton" name="fakeAsset">
-     <property name="text">
-      <string>Origins</string>
-     </property>
-    </widget>
+    <widget class="QTreeView" name="fsTree"/>
    </item>
   </layout>
  </widget>

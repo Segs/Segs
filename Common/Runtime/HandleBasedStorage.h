@@ -9,6 +9,7 @@
 
 #include "Handle.h"
 #include <cassert>
+#include <cstddef>
 #include <vector>
 
 template <int idx_bits, int gen_bits, typename T>
