@@ -1,0 +1,179 @@
+name: segs-ci-nightly
+
+
+on:
+  push:
+    branches:
+      - develop
+
+env:
+  BUILD_TYPE:  Debug
+  QT_VERSION:  "5.15.2"
+  QT_WIN_TARGET_ARCHITECTURE:  "win64_msvc2019_64"
+
+jobs:
+
+  tidy-up-releases: # Delete the currently nightly release.
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: write
+    steps:
+
+    - name: Delete Current Nightly Release
+      uses: dev-drprasad/delete-tag-and-release@v0.2.0
+      with:
+        delete_release: true
+        tag_name: "nightly"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    needs: tidy-up-releases
+    runs-on: 'windows-latest'
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Qt Windows
+      uses: jurplel/install-qt-action@v2.14.0
+      with:
+        host: windows
+        target: desktop
+        version: ${{ env.QT_VERSION }}
+        arch: ${{ env.QT_WIN_TARGET_ARCHITECTURE }}
+        dir: "${{ github.workspace }}/qt"
+        install-deps: "true"
+
+    - name: Configure CMake Windows
+      env:
+        CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+    - name: Build Windows
+      run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+
+    - name: Get OpenSSL Libraries # Download OpenSSL 1.1.1 and extract required dlls, copy to out directory for SEGSAdmin.
+      continue-on-error: true # Robocopy uses an exit code 1 on successful copy which causes the step to fail. Allowing this step to continue even if reported as failure. 
+      run: |
+        mkdir ${{ github.workspace }}\build\openssl
+        curl -o ${{ github.workspace }}\build\openssl\openssl.zip https://mirror.firedaemon.com/OpenSSL/openssl-1.1.1n.zip
+        tar -xf ${{ github.workspace }}\build\openssl\openssl.zip -C ${{ github.workspace }}\build\openssl
+        robocopy ${{ github.workspace }}\build\openssl\openssl-1.1\x64\bin\ ${{ github.workspace }}\build\out *.dll
+
+    - name: Create Windows Archive
+      uses: thedoctor0/zip-release@main
+      with: 
+        type: 'zip'
+        directory: ${{ github.workspace }}/build/out
+        filename: 'windows-release-x64.zip'
+        exclusions: '*.git*'
+
+    - name: Deploy Windows Release 
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        allowUpdates: "true"
+        tag: "nightly"
+        artifacts: ${{ github.workspace }}/build/out/windows-release-x64.zip
+        commit: ${{ github.sha }}
+        prerelease: "true"
+        name: "Nightly Development Release"
+        body: |
+          Commit reference: ${{ github.sha }}
+          Built on branch: ${{ github.ref_name }}
+
+  build-linux:
+    needs: tidy-up-releases
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Qt Linux
+      uses: jurplel/install-qt-action@v2.14.0
+      with:
+        host: linux
+        target: desktop
+        version: ${{ env.QT_VERSION }}
+        dir: "${{ github.workspace }}/qt"
+        install-deps: "true"
+
+    - name: Configure CMake Linux
+      env:
+        CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
+        CXX: "/usr/bin/clang++"
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+    - name: Build Linux
+      run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+
+    - name: Create Linux Archive
+      uses: thedoctor0/zip-release@main
+      with: 
+        type: 'zip'
+        directory: ${{ github.workspace }}/build/out
+        filename: 'linux-release-x64.zip'
+        exclusions: '*.git*'
+
+    - name: Deploy Linux Release
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        allowUpdates: "true"
+        tag: "nightly"
+        artifacts: ${{ github.workspace }}/build/out/linux-release-x64.zip
+        commit: ${{ github.sha }}
+        prerelease: "true"
+        name: "Nightly Development Release"
+        body: |
+          Commit reference: ${{ github.sha }}
+          Built on branch: ${{ github.ref_name }}
+
+  build-macos:
+    needs: tidy-up-releases
+    runs-on: 'macos-latest'
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Qt MacOS
+      uses: jurplel/install-qt-action@v2.14.0
+      with:
+        host: mac
+        target: desktop
+        version: ${{ env.QT_VERSION }}
+        dir: "${{ github.workspace }}/qt"
+        install-deps: "true"
+
+    - name: Configure CMake MacOS
+      env:
+        CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+    - name: Build MacOS
+      run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+
+    - name: Create MacOS Archive
+      uses: thedoctor0/zip-release@main
+      with: 
+        type: 'zip'
+        directory: ${{ github.workspace }}/build/out
+        filename: 'macos-release-x64.zip'
+        exclusions: '*.git*'
+
+    - name: Deploy MacOS Release 
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        allowUpdates: "true"
+        tag: "nightly"
+        artifacts: ${{ github.workspace }}/build/out/macos-release-x64.zip
+        commit: ${{ github.sha }}
+        prerelease: "true"
+        name: "Nightly Development Release"
+        body: |
+          Commit reference: ${{ github.sha }}
+          Built on branch: ${{ github.ref_name }}

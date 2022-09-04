@@ -36,3 +36,7 @@ Temp/
 # Environment activation script
 activate.env
 .directory
+
+# Visual Studio
+*.cache
+CMakeSettings.json

@@ -1,4 +1,3 @@
-
 SET(target_CPP
     ScriptingEngine.cpp
     ScriptingEngine_CharacterTypes.cpp

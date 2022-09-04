@@ -6,7 +6,7 @@
 
 
 SegsOriginEditor::SegsOriginEditor(QWidget *parent) :
-    QMainWindow(parent),
+    EditorWidget(parent),
     ui(new Ui::SegsOriginEditor)
 {
     ui->setupUi(this);
@@ -24,7 +24,7 @@ SegsOriginEditor::~SegsOriginEditor()
 
 void SegsOriginEditor::changeEvent(QEvent *e)
 {
-    QMainWindow::changeEvent(e);
+    QWidget::changeEvent(e);
     switch (e->type()) {
     case QEvent::LanguageChange:
         ui->retranslateUi(this);

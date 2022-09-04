@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QtWidgets/QMainWindow>
+#include "EditorWidget.h"
 
 namespace Ui {
 class SegsOriginEditor;
@@ -8,7 +8,7 @@ class SegsOriginEditor;
 
 class QAbstractItemModel;
 
-class SegsOriginEditor : public QMainWindow
+class SegsOriginEditor : public EditorWidget
 {
     Q_OBJECT
 
