@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>870</width>
-    <height>478</height>
+    <width>1009</width>
+    <height>617</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <property name="minimumSize">
       <size>
        <width>80</width>
-       <height>21</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
@@ -40,7 +40,7 @@
     <widget class="QPushButton" name="reset_defaults">
      <property name="minimumSize">
       <size>
-       <width>121</width>
+       <width>125</width>
        <height>21</height>
       </size>
      </property>
@@ -75,7 +75,7 @@
     <widget class="QPushButton" name="ip_auto_populate">
      <property name="minimumSize">
       <size>
-       <width>121</width>
+       <width>125</width>
        <height>21</height>
       </size>
      </property>
@@ -138,8 +138,8 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>357</width>
-           <height>141</height>
+           <width>360</width>
+           <height>190</height>
           </size>
          </property>
          <property name="maximumSize">
@@ -166,6 +166,12 @@
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="map_listen_ip">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>25</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
               <width>108</width>
@@ -173,7 +179,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="inputMask">
              <string>000.000.000.000</string>
@@ -189,7 +196,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="minimum">
              <number>1024</number>
@@ -204,7 +212,7 @@
             <property name="minimumSize">
              <size>
               <width>111</width>
-              <height>22</height>
+              <height>25</height>
              </size>
             </property>
             <property name="maximumSize">
@@ -214,7 +222,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="placeholderText">
              <string>Text</string>
@@ -238,11 +247,12 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>26</height>
+              <height>25</height>
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="minimum">
              <number>1</number>
@@ -281,7 +291,7 @@
             <property name="minimumSize">
              <size>
               <width>70</width>
-              <height>20</height>
+              <height>25</height>
              </size>
             </property>
             <property name="maximumSize">
@@ -291,7 +301,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="placeholderText">
              <string>0.00</string>
@@ -307,7 +318,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="minimum">
              <number>1024</number>
@@ -343,6 +355,12 @@
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="map_location_ip">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>25</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
               <width>108</width>
@@ -350,7 +368,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="inputMask">
              <string>000.000.000.000</string>
@@ -422,8 +441,8 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>359</width>
-           <height>181</height>
+           <width>360</width>
+           <height>190</height>
           </size>
          </property>
          <property name="maximumSize">
@@ -444,6 +463,12 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>25</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
               <width>160</width>
@@ -457,7 +482,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="inputMask">
              <string/>
@@ -488,7 +514,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="minimum">
              <number>1</number>
@@ -507,7 +534,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="minimum">
              <number>1024</number>
@@ -574,7 +602,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="minimum">
              <number>1024</number>
@@ -589,7 +618,7 @@
             <property name="minimumSize">
              <size>
               <width>50</width>
-              <height>22</height>
+              <height>25</height>
              </size>
             </property>
             <property name="maximumSize">
@@ -599,7 +628,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="inputMask">
              <string/>
@@ -626,11 +656,12 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>26</height>
+              <height>25</height>
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
             </property>
             <property name="minimum">
              <number>1</number>
@@ -687,8 +718,21 @@
             <layout class="QGridLayout" name="gridLayout_5">
              <item row="1" column="1">
               <widget class="QLineEdit" name="char_dbhost">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>25</height>
+                </size>
+               </property>
                <property name="styleSheet">
-                <string notr="true">color: rgb(0, 0, 0);</string>
+                <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
                </property>
                <property name="inputMask">
                 <string/>
@@ -718,11 +762,12 @@
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>26</height>
+                 <height>25</height>
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">color: rgb(0, 0, 0);</string>
+                <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
                </property>
                <property name="minimum">
                 <number>1024</number>
@@ -812,8 +857,15 @@
              </item>
              <item row="1" column="1">
               <widget class="QLineEdit" name="acc_dbhost">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>25</height>
+                </size>
+               </property>
                <property name="styleSheet">
-                <string notr="true">color: rgb(0, 0, 0);</string>
+                <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
                </property>
                <property name="inputMask">
                 <string/>
@@ -840,11 +892,12 @@
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>26</height>
+                 <height>25</height>
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">color: rgb(0, 0, 0);</string>
+                <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
                </property>
                <property name="minimum">
                 <number>1024</number>
@@ -919,7 +972,8 @@
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">color: rgb(0, 0, 0);</string>
+               <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
               </property>
               <property name="inputMask">
                <string/>
@@ -954,7 +1008,8 @@
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">color: rgb(0, 0, 0);</string>
+               <string notr="true">color: rgb(0, 0, 0);
+background-color: rgb(255, 255, 255);</string>
               </property>
               <property name="minimum">
                <number>1024</number>
@@ -1746,7 +1801,7 @@
      <property name="minimumSize">
       <size>
        <width>80</width>
-       <height>21</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
