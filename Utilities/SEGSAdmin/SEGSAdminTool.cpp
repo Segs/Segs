@@ -61,6 +61,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     m_update_dialog = new UpdateDetailDialog(this);
     m_about_dialog = new AboutDialog(this);
     m_script_dialog = new SelectScriptDialog(this);
+    m_theme_manager = new ThemeManager(this);
 
     // SEGSAdminTool Signals
     connect(this,&SEGSAdminTool::checkForDB,this,&SEGSAdminTool::check_db_exist);
@@ -79,6 +80,11 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(ui->gen_config_file,&QPushButton::clicked,m_generate_config_dialog,&GenerateConfigFileDialog::on_generate_config_file);
     connect(ui->authserver_start,&QPushButton::clicked,this,&SEGSAdminTool::is_server_running);
     connect(ui->motd_editor,&QPushButton::clicked,m_script_dialog,&SelectScriptDialog::show_dialog);
+
+    // TODO: Look into C++11 Lambdas here to reduce to one signal line.
+    // Theme Manager
+    connect(ui->button_dark_theme,&QPushButton::clicked,m_theme_manager,&ThemeManager::setDarkTheme);
+    connect(ui->button_light_theme,&QPushButton::clicked,m_theme_manager,&ThemeManager::setLightTheme);
 
     // GenerateConfigFileDialog Signals
     connect(m_generate_config_dialog,&GenerateConfigFileDialog::sendInputConfigFile,m_settings_dialog,&SettingsDialog::generate_default_config_file);
@@ -104,7 +110,6 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     emit check_db_exist(true);
     emit getMapsDirConfigCheck();
     emit getLatestReleases();
-
 }
 
 SEGSAdminTool::~SEGSAdminTool()

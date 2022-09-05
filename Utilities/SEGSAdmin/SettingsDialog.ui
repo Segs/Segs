@@ -173,7 +173,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="inputMask">
              <string>000.000.000.000</string>
@@ -189,7 +189,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="minimum">
              <number>1024</number>
@@ -214,7 +214,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="placeholderText">
              <string>Text</string>
@@ -242,7 +242,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="minimum">
              <number>1</number>
@@ -291,7 +291,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="placeholderText">
              <string>0.00</string>
@@ -307,7 +307,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="minimum">
              <number>1024</number>
@@ -350,7 +350,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="inputMask">
              <string>000.000.000.000</string>
@@ -382,6 +382,9 @@
               <width>108</width>
               <height>20</height>
              </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true"/>
             </property>
             <property name="minimum">
              <number>1</number>
@@ -457,7 +460,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="inputMask">
              <string/>
@@ -488,7 +491,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="minimum">
              <number>1</number>
@@ -507,7 +510,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="minimum">
              <number>1024</number>
@@ -574,7 +577,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="minimum">
              <number>1024</number>
@@ -598,8 +601,8 @@
               <height>22</height>
              </size>
             </property>
-            <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+            <property name="autoFillBackground">
+             <bool>false</bool>
             </property>
             <property name="inputMask">
              <string/>
@@ -630,7 +633,7 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">color: rgb(0, 0, 0);</string>
+             <string notr="true"/>
             </property>
             <property name="minimum">
              <number>1</number>
@@ -688,7 +691,7 @@
              <item row="1" column="1">
               <widget class="QLineEdit" name="char_dbhost">
                <property name="styleSheet">
-                <string notr="true">color: rgb(0, 0, 0);</string>
+                <string notr="true"/>
                </property>
                <property name="inputMask">
                 <string/>
@@ -722,7 +725,7 @@
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">color: rgb(0, 0, 0);</string>
+                <string notr="true"/>
                </property>
                <property name="minimum">
                 <number>1024</number>
@@ -813,7 +816,7 @@
              <item row="1" column="1">
               <widget class="QLineEdit" name="acc_dbhost">
                <property name="styleSheet">
-                <string notr="true">color: rgb(0, 0, 0);</string>
+                <string notr="true"/>
                </property>
                <property name="inputMask">
                 <string/>
@@ -844,7 +847,7 @@
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">color: rgb(0, 0, 0);</string>
+                <string notr="true"/>
                </property>
                <property name="minimum">
                 <number>1024</number>
@@ -919,7 +922,7 @@
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">color: rgb(0, 0, 0);</string>
+               <string notr="true"/>
               </property>
               <property name="inputMask">
                <string/>
@@ -954,7 +957,7 @@
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">color: rgb(0, 0, 0);</string>
+               <string notr="true"/>
               </property>
               <property name="minimum">
                <number>1024</number>

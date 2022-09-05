@@ -95,11 +95,6 @@ void SettingsDialog::open_settings_dialog()
     QFileInfo config_file(Settings::getSettingsPath());
     QString config_file_path = config_file.absoluteFilePath();
     SettingsDialog::read_config_file(config_file_path);
-    QList<QLineEdit *> all_line_edits = ui->tabWidget->findChildren<QLineEdit *>();
-    foreach(QLineEdit* le, all_line_edits)
-    {
-        le->setStyleSheet("background-color: rgb(255, 255, 255)");
-    }
     QString fade_in_value = QString::number(ui->map_player_fade_in->value());
     ui->map_player_fade_in_value->setText(fade_in_value);
     show();
@@ -463,15 +458,13 @@ void SettingsDialog::set_default_values()
 void SettingsDialog::field_validator()
 {
     QString validation_error_text = "";
-    QString error_style_sheet = "background-color: rgb(252, 175, 62)";
 
     QList<QLineEdit *> all_line_edits = ui->tabWidget->findChildren<QLineEdit *>();
     foreach(QLineEdit* le, all_line_edits)
     {
         if(le->text().isEmpty()) // Checks for empty fields, if found highlight fields
         {
-            le->setStyleSheet(error_style_sheet);
-            validation_error_text = "The highlighted fields can not be blank";
+            validation_error_text = "Fields cannot be blank";
         }
     }
 
@@ -480,9 +473,7 @@ void SettingsDialog::field_validator()
         qint64 xp_mod_date_diff = ui->xp_mod_startdate_edit->dateTime().msecsTo(ui->xp_mod_enddate_edit->dateTime());
         if (xp_mod_date_diff < 0)
         {
-            ui->xp_mod_startdate_edit->setStyleSheet(error_style_sheet);
-            ui->xp_mod_enddate_edit->setStyleSheet(error_style_sheet);
-            validation_error_text = "The end date can not be before the start date";
+            validation_error_text = "Exp Multiplier: The end date can not be before the start date";
         }
     }
 

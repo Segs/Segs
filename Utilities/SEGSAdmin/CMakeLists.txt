@@ -38,6 +38,8 @@ set(SEGSADMIN_SOURCES
     AboutDialog.ui
     TextEdit.cpp
     TextEdit.h
+    ThemeManager.cpp
+    ThemeManager.h
     SelectScriptDialog.cpp
     SelectScriptDialog.h
     SelectScriptDialog.ui

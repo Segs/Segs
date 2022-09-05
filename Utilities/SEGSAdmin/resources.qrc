@@ -30,4 +30,8 @@
         <file>dejavusanscondensed.ttf</file>
     </qresource>
     <qresource prefix="/"/>
+    <qresource prefix="/styles">
+        <file>Resources/styles/dark-theme.css</file>
+        <file>Resources/styles/light-theme.css</file>
+    </qresource>
 </RCC>

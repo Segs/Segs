@@ -9,10 +9,13 @@
 #define SEGSADMINTOOL_H
 
 #include "Version.h"
+#include "ThemeManager.h"
+
 #include <QMainWindow>
 #include <QDialog>
 #include <QProcess>
 #include <QFontDatabase>
+#include <QSignalMapper>
 
 
 namespace Ui {
@@ -61,6 +64,7 @@ signals:
     void getLatestReleases();
     void checkConfigVersion(QString filePath);
     void recreateConfig();
+    void clicked(const QString &text);
 
 
 private:
@@ -70,6 +74,7 @@ private:
     QProcess *m_createDB;
     QProcess *m_start_segs_server;
     QStringList m_segs_releases;
+    ThemeManager *m_theme_manager;
 };
 
 #endif // SEGSADMINTOOL_H
