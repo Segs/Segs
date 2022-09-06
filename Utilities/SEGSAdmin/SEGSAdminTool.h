@@ -9,13 +9,11 @@
 #define SEGSADMINTOOL_H
 
 #include "Version.h"
-#include "ThemeManager.h"
 
 #include <QMainWindow>
 #include <QDialog>
 #include <QProcess>
 #include <QFontDatabase>
-#include <QSignalMapper>
 
 
 namespace Ui {
@@ -33,6 +31,7 @@ class SEGSAdminTool : public QMainWindow
     class UpdateDetailDialog *m_update_dialog;
     class AboutDialog *m_about_dialog;
     class SelectScriptDialog *m_script_dialog;
+    class ThemeManager *m_theme_manager;
     bool m_server_running = false;
 
 public:
@@ -64,7 +63,6 @@ signals:
     void getLatestReleases();
     void checkConfigVersion(QString filePath);
     void recreateConfig();
-    void clicked(const QString &text);
 
 
 private:
@@ -74,7 +72,6 @@ private:
     QProcess *m_createDB;
     QProcess *m_start_segs_server;
     QStringList m_segs_releases;
-    ThemeManager *m_theme_manager;
 };
 
 #endif // SEGSADMINTOOL_H

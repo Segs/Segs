@@ -24,6 +24,7 @@
 #include "SelectScriptDialog.h"
 #include "Helpers.h"
 #include "Worker.h"
+#include "ThemeManager.h"
 
 #include "Components/Settings.h"
 #include "Version.h"
