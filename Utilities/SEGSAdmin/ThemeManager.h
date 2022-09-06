@@ -15,7 +15,11 @@ public slots:
     void setDarkTheme();
 
 private:
+    void startup();
     void setTheme(QFile &theme);
+    void setUserPref(QString theme);
+    QString getUserPref();
+
 
 signals:
 
