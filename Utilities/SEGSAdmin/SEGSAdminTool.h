@@ -15,7 +15,6 @@
 #include <QDialog>
 #include <QProcess>
 #include <QFontDatabase>
-#include <QSignalMapper>
 
 
 namespace Ui {
@@ -64,7 +63,6 @@ signals:
     void getLatestReleases();
     void checkConfigVersion(QString filePath);
     void recreateConfig();
-    void clicked(const QString &text);
 
 
 private:

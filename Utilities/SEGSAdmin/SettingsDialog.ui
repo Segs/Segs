@@ -63,10 +63,10 @@
      </colorrole>
      <colorrole role="PlaceholderText">
       <brush brushstyle="SolidPattern">
-       <color alpha="128">
-        <red>154</red>
-        <green>154</green>
-        <blue>154</blue>
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -119,10 +119,10 @@
      </colorrole>
      <colorrole role="PlaceholderText">
       <brush brushstyle="SolidPattern">
-       <color alpha="128">
-        <red>154</red>
-        <green>154</green>
-        <blue>154</blue>
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -175,10 +175,10 @@
      </colorrole>
      <colorrole role="PlaceholderText">
       <brush brushstyle="SolidPattern">
-       <color alpha="128">
-        <red>154</red>
-        <green>154</green>
-        <blue>154</blue>
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
        </color>
       </brush>
      </colorrole>
@@ -293,7 +293,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <property name="tabsClosable">
       <bool>false</bool>
