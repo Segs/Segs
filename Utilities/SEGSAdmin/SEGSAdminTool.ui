@@ -49,202 +49,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="1">
-     <widget class="QLabel" name="authserver_label">
-      <property name="minimumSize">
-       <size>
-        <width>144</width>
-        <height>19</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>144</width>
-        <height>19</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Server Status:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" rowspan="2">
-     <widget class="QLabel" name="label">
-      <property name="minimumSize">
-       <size>
-        <width>118</width>
-        <height>115</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>600</width>
-        <height>300</height>
-       </size>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap resource="resources.qrc">:/logo/Resources/logo4.png</pixmap>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3">
-     <spacer name="horizontalSpacer_3">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>392</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="0" column="2">
-     <widget class="QLabel" name="authserver_status">
-      <property name="minimumSize">
-       <size>
-        <width>106</width>
-        <height>19</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>106</width>
-        <height>19</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 0, 0);</string>
-      </property>
-      <property name="text">
-       <string>STOPPED</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="4">
-     <widget class="QLabel" name="segs_admin_version_label">
-      <property name="minimumSize">
-       <size>
-        <width>82</width>
-        <height>19</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>82</width>
-        <height>19</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Version:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="6">
-     <widget class="QPushButton" name="update_detail">
-      <property name="text">
-       <string/>
-      </property>
-      <property name="flat">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QPushButton" name="authserver_start">
-      <property name="minimumSize">
-       <size>
-        <width>181</width>
-        <height>41</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>300</width>
-        <height>41</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 170, 0);</string>
-      </property>
-      <property name="text">
-       <string> Start Server</string>
-      </property>
-      <property name="icon">
-       <iconset resource="resources.qrc">
-        <normaloff>:/icons/Resources/play.svg</normaloff>:/icons/Resources/play.svg</iconset>
-      </property>
-      <property name="iconSize">
-       <size>
-        <width>21</width>
-        <height>21</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="5">
-     <widget class="QLabel" name="segs_admin_version">
-      <property name="minimumSize">
-       <size>
-        <width>65</width>
-        <height>19</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>65</width>
-        <height>19</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(0, 170, 255)</string>
-      </property>
-      <property name="text">
-       <string>x.x.x</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0">
+    <item row="5" column="1">
      <widget class="QGroupBox" name="user_box">
       <property name="minimumSize">
        <size>
@@ -326,73 +131,100 @@
       </layout>
      </widget>
     </item>
-    <item row="1" column="1" rowspan="5" colspan="6">
-     <widget class="QGroupBox" name="app_output">
+    <item row="2" column="1">
+     <widget class="QPushButton" name="authserver_start">
       <property name="minimumSize">
        <size>
-        <width>791</width>
-        <height>451</height>
+        <width>181</width>
+        <height>41</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>1000</width>
-        <height>600</height>
+        <width>300</width>
+        <height>41</height>
        </size>
       </property>
-      <property name="title">
-       <string>Application Output</string>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
       </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QPlainTextEdit" name="output">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>50</width>
-           <height>111</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>30000</width>
-           <height>30000</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>MS Shell Dlg 2</family>
-          </font>
-         </property>
-         <property name="autoFillBackground">
-          <bool>false</bool>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 255, 255);</string>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="plainText">
-          <string/>
-         </property>
-         <property name="textInteractionFlags">
-          <set>Qt::TextSelectableByMouse</set>
-         </property>
-         <property name="backgroundVisible">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 170, 0);</string>
+      </property>
+      <property name="text">
+       <string> Start Server</string>
+      </property>
+      <property name="icon">
+       <iconset resource="resources.qrc">
+        <normaloff>:/icons/Resources/play.svg</normaloff>:/icons/Resources/play.svg</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>21</width>
+        <height>21</height>
+       </size>
+      </property>
      </widget>
     </item>
-    <item row="3" column="0">
+    <item row="0" column="3">
+     <widget class="QLabel" name="authserver_status">
+      <property name="minimumSize">
+       <size>
+        <width>106</width>
+        <height>19</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>106</width>
+        <height>19</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 0, 0);</string>
+      </property>
+      <property name="text">
+       <string>STOPPED</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="6">
+     <widget class="QLabel" name="segs_admin_version">
+      <property name="minimumSize">
+       <size>
+        <width>65</width>
+        <height>19</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>65</width>
+        <height>19</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 170, 255)</string>
+      </property>
+      <property name="text">
+       <string>x.x.x</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
      <widget class="QGroupBox" name="server_setup_box">
       <property name="minimumSize">
        <size>
@@ -586,7 +418,168 @@
       </layout>
      </widget>
     </item>
-    <item row="4" column="0">
+    <item row="0" column="4">
+     <spacer name="horizontalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>392</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="0" column="5">
+     <widget class="QLabel" name="segs_admin_version_label">
+      <property name="minimumSize">
+       <size>
+        <width>82</width>
+        <height>19</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>82</width>
+        <height>19</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Version:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" rowspan="2">
+     <widget class="QLabel" name="label">
+      <property name="minimumSize">
+       <size>
+        <width>118</width>
+        <height>115</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>600</width>
+        <height>300</height>
+       </size>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="resources.qrc">:/logo/Resources/logo4.png</pixmap>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="authserver_label">
+      <property name="minimumSize">
+       <size>
+        <width>144</width>
+        <height>19</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>144</width>
+        <height>19</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Server Status:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="7">
+     <widget class="QPushButton" name="update_detail">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2" rowspan="5" colspan="6">
+     <widget class="QGroupBox" name="app_output">
+      <property name="minimumSize">
+       <size>
+        <width>791</width>
+        <height>451</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>1000</width>
+        <height>600</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Application Output</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QPlainTextEdit" name="output">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>111</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>30000</width>
+           <height>30000</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>MS Shell Dlg 2</family>
+          </font>
+         </property>
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="plainText">
+          <string/>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::TextSelectableByMouse</set>
+         </property>
+         <property name="backgroundVisible">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="4" column="1">
      <widget class="QGroupBox" name="server_config">
       <property name="minimumSize">
        <size>
@@ -718,6 +711,26 @@
       </layout>
      </widget>
     </item>
+    <item row="6" column="1">
+     <widget class="QPushButton" name="button_dark_theme">
+      <property name="text">
+       <string>Dark Theme</string>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>16</width>
+        <height>16</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="2">
+     <widget class="QPushButton" name="button_light_theme">
+      <property name="text">
+       <string>Light Theme</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -727,7 +740,7 @@
      <x>0</x>
      <y>0</y>
      <width>1041</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuHelp">

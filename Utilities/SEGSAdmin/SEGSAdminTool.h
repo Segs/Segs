@@ -9,6 +9,7 @@
 #define SEGSADMINTOOL_H
 
 #include "Version.h"
+
 #include <QMainWindow>
 #include <QDialog>
 #include <QProcess>
@@ -30,6 +31,7 @@ class SEGSAdminTool : public QMainWindow
     class UpdateDetailDialog *m_update_dialog;
     class AboutDialog *m_about_dialog;
     class SelectScriptDialog *m_script_dialog;
+    class ThemeManager *m_theme_manager;
     bool m_server_running = false;
 
 public:
