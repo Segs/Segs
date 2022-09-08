@@ -34,7 +34,7 @@ INSTALL C++ TOOL CHAIN
 Install all dependencies and tools by opening a terminal and typing:
 
 ```
-sudo dnf install cmake gcc gcc-c++ git-core kernel-devel qt5 qt5-devel
+sudo dnf install cmake gcc gcc-c++ git-core kernel-devel qt5-qtbase qt5-qtbase-devel qt5-qtwebsockets qt5-qtwebsockets-devel
 ```
 
 Your distro may come with some or all of these packages pre-installed, and while most versions of these libraries will work, you must have version 5.12+ of Qt installed. CentOS and RHEL are two such distributions that require downloading a more recent version of CMake and Qt and potentially having to build from source.
