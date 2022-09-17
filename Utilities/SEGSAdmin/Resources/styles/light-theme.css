@@ -112,7 +112,7 @@ QLineEdit,
 QAbstractSpinBox,
 QSpinBox {
     border: 1px solid #dadce0;
-    padding: 3px 4px;
+    padding: 1px 2px;
     min-height: 1em;
     background: rgba(255.000, 255.000, 255.000, 0.000);
     border-radius: 4px;

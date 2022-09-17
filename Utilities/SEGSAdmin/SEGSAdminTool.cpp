@@ -72,7 +72,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(this,&SEGSAdminTool::readyToRead,m_settings_dialog,&SettingsDialog::read_config_file);
     connect(this,&SEGSAdminTool::checkConfigVersion,this,&SEGSAdminTool::check_config_version);
     connect(this,&SEGSAdminTool::recreateConfig,m_generate_config_dialog,&GenerateConfigFileDialog::on_generate_config_file);
-    connect(ui->actionAbout,&QAction::triggered,m_about_dialog,&AboutDialog::show_ui);
+    connect(ui->action_about,&QAction::triggered,m_about_dialog,&AboutDialog::show_ui);
     connect(ui->update_detail,&QPushButton::clicked,m_update_dialog,&UpdateDetailDialog::show_update);
     connect(ui->createUser,&QPushButton::clicked,m_add_user_dialog,&AddNewUserDialog::on_add_user);
     connect(ui->runDBTool,&QPushButton::clicked,this,&SEGSAdminTool::check_db_exist);
@@ -84,8 +84,8 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
 
     // TODO: Look into C++11 Lambdas here to reduce to one signal line.
     // Theme Manager
-    connect(ui->button_dark_theme,&QPushButton::clicked,m_theme_manager,&ThemeManager::setDarkTheme);
-    connect(ui->button_light_theme,&QPushButton::clicked,m_theme_manager,&ThemeManager::setLightTheme);
+    connect(ui->action_dark,&QAction::triggered,m_theme_manager,&ThemeManager::setDarkTheme);
+    connect(ui->action_light,&QAction::triggered,m_theme_manager,&ThemeManager::setLightTheme);
 
     // GenerateConfigFileDialog Signals
     connect(m_generate_config_dialog,&GenerateConfigFileDialog::sendInputConfigFile,m_settings_dialog,&SettingsDialog::generate_default_config_file);
@@ -108,7 +108,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
 
     // Send startup signals
     emit checkForConfigFile();
-    emit check_db_exist(true);
+    emit checkForDB(true);
     emit getMapsDirConfigCheck();
     emit getLatestReleases();
 }
@@ -222,23 +222,34 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
 
     QSettings config(Settings::getSettingsPath(), QSettings::IniFormat, nullptr);
 
+    QString acc_db_driver = config.value("AdminServer/AccountDatase/db_driver").toString();
+    QString char_db_driver = config.value("AdminServer/CharacterDatabase/db_driver").toString();
     QFileInfo file1(config.value(QStringLiteral("AdminServer/AccountDatabase/db_name"), "segs.db").toString());
     QFileInfo file2(config.value(QStringLiteral("AdminServer/CharacterDatabase/db_name"), "segs_game.db").toString());
     if(on_startup) // Runs this check on startup or for checking creation in other methods
     {
-        if(file1.exists() && file2.exists())
+        if (acc_db_driver == "QSQLITE" && char_db_driver == "QSQLITE")
         {
-            ui->output->appendPlainText("SUCCESS: Existing databases found!");
-            ui->icon_status_db->setPixmap(check_icon);
-            ui->runDBTool->setText("Create New Databases");
-            ui->runDBTool->setEnabled(true);
-            ui->createUser->setEnabled(true);
+            if(file1.exists() && file2.exists())
+            {
+                ui->output->appendPlainText("SUCCESS: Existing databases found!");
+                ui->icon_status_db->setPixmap(check_icon);
+                ui->runDBTool->setText("Create New Databases");
+                ui->runDBTool->setEnabled(true);
+                ui->createUser->setEnabled(true);
+            }
+            else
+            {
+                ui->output->appendPlainText("WARNING: Not all databases were found. Please use the server setup to your left");
+                ui->icon_status_db->setPixmap(alert_triangle);
+                ui->createUser->setEnabled(false); // Cannot create users until DB's created
+            }
         }
         else
         {
-            ui->output->appendPlainText("WARNING: Not all databases were found. Please use the server setup to your left");
-            ui->icon_status_db->setPixmap(alert_triangle);
-            ui->createUser->setEnabled(false); // Cannot create users until DB's created
+            ui->output->appendPlainText("Using MYSQL or PSQL database. Unable to check connectivity at this time. Please configure manually.");
+            ui->runDBTool->setText("Unavailable");
+            ui->runDBTool->setEnabled(false);
         }
     }
     else
@@ -246,7 +257,6 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
         if(file1.exists() || file2.exists())
         {
             QMessageBox db_overwrite_msgBox;
-            //db_overwrite_msgBox.setGeometry(266,125,1142,633);
             db_overwrite_msgBox.setText("Overwrite Databases?");
             db_overwrite_msgBox.setInformativeText("All existing data will be lost, this cannot be undone");
             db_overwrite_msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);

@@ -34,6 +34,8 @@ public slots:
     void xp_mod_checkbox_validator();
     void purge_logs();
     void remove_files(QString dir, QStringList files);
+    void accDatabaseDriverUpdated(QString text);
+    void charDatabaseDriverUpdated(QString text);
 
 signals:
    void checkForConfigFile();
