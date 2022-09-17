@@ -42,6 +42,7 @@ signals:
    void check_data_and_dir(QString maps_dir);
    void sendMapsDir(QString maps_dir);
    void sendMapsDirConfigCheck(QString maps_dir);
+   void checkForDB(bool on_startup);
 
 private:
     Ui::SettingsDialog *ui;

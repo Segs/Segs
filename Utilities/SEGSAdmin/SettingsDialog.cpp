@@ -11,6 +11,7 @@
  */
 
 #include "SettingsDialog.h"
+#include "SEGSAdminTool.h"
 #include "ui_SettingsDialog.h"
 #include "GetIPDialog.h"
 #include "Globals.h"
@@ -438,6 +439,7 @@ void SettingsDialog::save_changes_config_file()
     settings_saved.setIcon(QMessageBox::Information);
     settings_saved.exec();
     emit check_data_and_dir(ui->map_location->text());
+    emit checkForDB(true);
 }
 
 void SettingsDialog::set_default_values()

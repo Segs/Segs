@@ -101,6 +101,7 @@ SEGSAdminTool::SEGSAdminTool(QWidget *parent) :
     connect(m_settings_dialog,&SettingsDialog::checkForConfigFile,this,&SEGSAdminTool::check_for_config_file);
     connect(m_settings_dialog,&SettingsDialog::check_data_and_dir,this,&SEGSAdminTool::checkDataAndDir);
     connect(m_settings_dialog,&SettingsDialog::sendMapsDirConfigCheck,this,&SEGSAdminTool::checkDataAndDir);
+    connect(m_settings_dialog,&SettingsDialog::checkForDB,this,&SEGSAdminTool::check_db_exist);
 
     // Network Manager Signals
     connect(this,&SEGSAdminTool::getLatestReleases,m_network_manager,&NetworkManager::get_latest_releases);
@@ -222,8 +223,10 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
 
     QSettings config(Settings::getSettingsPath(), QSettings::IniFormat, nullptr);
 
-    QString acc_db_driver = config.value("AdminServer/AccountDatase/db_driver").toString();
+    QString acc_db_driver = config.value("AdminServer/AccountDatabase/db_driver").toString();
     QString char_db_driver = config.value("AdminServer/CharacterDatabase/db_driver").toString();
+    qDebug() << "acc_db" << acc_db_driver;
+    qDebug() << "char_db" << char_db_driver;
     QFileInfo file1(config.value(QStringLiteral("AdminServer/AccountDatabase/db_name"), "segs.db").toString());
     QFileInfo file2(config.value(QStringLiteral("AdminServer/CharacterDatabase/db_name"), "segs_game.db").toString());
     if(on_startup) // Runs this check on startup or for checking creation in other methods
