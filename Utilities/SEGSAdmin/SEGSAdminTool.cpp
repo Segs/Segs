@@ -225,8 +225,6 @@ void SEGSAdminTool::check_db_exist(bool on_startup)
 
     QString acc_db_driver = config.value("AdminServer/AccountDatabase/db_driver").toString();
     QString char_db_driver = config.value("AdminServer/CharacterDatabase/db_driver").toString();
-    qDebug() << "acc_db" << acc_db_driver;
-    qDebug() << "char_db" << char_db_driver;
     QFileInfo file1(config.value(QStringLiteral("AdminServer/AccountDatabase/db_name"), "segs.db").toString());
     QFileInfo file2(config.value(QStringLiteral("AdminServer/CharacterDatabase/db_name"), "segs_game.db").toString());
     if(on_startup) // Runs this check on startup or for checking creation in other methods
