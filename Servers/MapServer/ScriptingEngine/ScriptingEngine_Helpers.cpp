@@ -94,7 +94,7 @@ std::string ScriptingEngine::callFuncWithClientContext(MapClientSession *client,
 std::string ScriptingEngine::callFunc(const char *name, int arg1)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
-    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+    funcwrap.set_error_handler(m_private->m_lua["ErrorHandler"]);
     if(!funcwrap.valid())
     {
         qCDebug(logScripts) << "Failed to retrieve script func:" << name;
@@ -113,7 +113,7 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1)
 std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
-    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+    funcwrap.set_error_handler(m_private->m_lua["ErrorHandler"]);
 
     if(!funcwrap.valid())
     {
@@ -133,7 +133,7 @@ std::string ScriptingEngine::callFunc(const char *name, int arg1, glm::vec3 loc)
 std::string ScriptingEngine::callFunc(const char *name, const char *arg1, glm::vec3 loc)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
-    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+    funcwrap.set_error_handler(m_private->m_lua["ErrorHandler"]);
 
     if(!funcwrap.valid())
     {
@@ -153,7 +153,7 @@ std::string ScriptingEngine::callFunc(const char *name, const char *arg1, glm::v
 std::string ScriptingEngine::callFunc(const char *name, std::vector<Contact> contact_list)
 {
     sol::protected_function funcwrap = m_private->m_lua[name];
-    funcwrap.error_handler = m_private->m_lua["ErrorHandler"];
+    funcwrap.set_error_handler(m_private->m_lua["ErrorHandler"]);
 
     if(!funcwrap.valid())
     {
