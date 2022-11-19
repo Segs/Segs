@@ -37,5 +37,6 @@ private:
     friend RuntimeData& ::getRuntimeData();
     RuntimeData() = default;
 };
+void preloadTextureNames(FSWrapper *fs,const QByteArray &basepath);
 } //end of SEGS namespace
 

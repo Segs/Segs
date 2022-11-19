@@ -288,7 +288,7 @@ public:
         bool                m_is_store                  = false;
         vStoreItems         m_store_items;
 
-        std::function<void(int)>  m_active_dialog      = nullptr;
+        std::function<void(int)>  m_active_dialog;
 
         void                dump();
 

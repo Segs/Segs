@@ -23,7 +23,8 @@
 #ifndef QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_CREF
 namespace std
 {
-template <> struct hash<QByteArray>
+template <>
+struct hash<QByteArray>
 {
     size_t operator()(const QByteArray &x) const { return qHash(x); }
 };

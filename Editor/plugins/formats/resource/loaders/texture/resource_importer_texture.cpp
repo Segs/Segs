@@ -1,20 +1,45 @@
-/*
- * SEGS - Super Entity Game Server
- * http://www.segs.dev/
- * Copyright (c) 2006 - 2022 SEGS Team (see AUTHORS.md)
- * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
- */
+/*************************************************************************/
+/*  resource_importer_texture.cpp                                        */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 
-#include "coh_importer_texture.h"
+#include "resource_importer_texture.h"
 
-#include <core/class_db.h>
-#include <core/image.h>
-#include <core/project_settings.h>
-#include <core/ustring.h>
-#include <core/io/config_file.h>
-#include <core/io/image_loader.h>
-#include <core/os/mutex.h>
-#include <scene/resources/texture.h>
+#include "core/class_db.h"
+#include "core/image.h"
+#include "core/io/config_file.h"
+#include "core/io/image_loader.h"
+#include "core/io/resource_importer.h"
+#include "core/os/mutex.h"
+#include "core/project_settings.h"
+#include "core/string_utils.h"
+#include "editor/service_interfaces/EditorServiceInterface.h"
+#include "scene/resources/texture.h"
 
 namespace {
 #pragma pack(push, 1)
@@ -75,21 +100,21 @@ struct DDSFormatInfo {
 };
 
 static const DDSFormatInfo dds_format_info[DDS_MAX] = {
-    { "DXT1/BC1", true, false, 4, 8, ImageData::FORMAT_DXT1 },
-    { "DXT3/BC2", true, false, 4, 16, ImageData::FORMAT_DXT3 },
-    {"DXT5/BC3", true, false, 4, 16, ImageData::FORMAT_DXT5},
-    {"ATI1/BC4", true, false, 4, 8, ImageData::FORMAT_RGTC_R},
-    {"ATI2/3DC/BC5", true, false, 4, 16, ImageData::FORMAT_RGTC_RG},
-    {"A2XY/DXN/BC5", true, false, 4, 16, ImageData::FORMAT_RGTC_RG},
-    {"BGRA8", false, false, 1, 4, ImageData::FORMAT_RGBA8},
-    {"BGR8", false, false, 1, 3, ImageData::FORMAT_RGB8},
-    {"RGBA8", false, false, 1, 4, ImageData::FORMAT_RGBA8},
-    {"RGB8", false, false, 1, 3, ImageData::FORMAT_RGB8},
-    {"BGR5A1", false, false, 1, 2, ImageData::FORMAT_RGBA8},
-    {"BGR565", false, false, 1, 2, ImageData::FORMAT_RGB8},
-    {"BGR10A2", false, false, 1, 4, ImageData::FORMAT_RGBA8},
-    {"GRAYSCALE", false, false, 1, 1, ImageData::FORMAT_L8},
-    {"GRAYSCALE_ALPHA", false, false, 1, 2, ImageData::FORMAT_LA8}
+    { "DXT1/BC1", true, false, 4, 8, Image::FORMAT_DXT1 },
+    { "DXT3/BC2", true, false, 4, 16, Image::FORMAT_DXT3 },
+    { "DXT5/BC3", true, false, 4, 16, Image::FORMAT_DXT5 },
+    { "ATI1/BC4", true, false, 4, 8, Image::FORMAT_RGTC_R },
+    { "ATI2/3DC/BC5", true, false, 4, 16, Image::FORMAT_RGTC_RG },
+    { "A2XY/DXN/BC5", true, false, 4, 16, Image::FORMAT_RGTC_RG },
+    { "BGRA8", false, false, 1, 4, Image::FORMAT_RGBA8 },
+    { "BGR8", false, false, 1, 3, Image::FORMAT_RGB8 },
+    { "RGBA8", false, false, 1, 4, Image::FORMAT_RGBA8 },
+    { "RGB8", false, false, 1, 3, Image::FORMAT_RGB8 },
+    { "BGR5A1", false, false, 1, 2, Image::FORMAT_RGBA8 },
+    { "BGR565", false, false, 1, 2, Image::FORMAT_RGB8 },
+    { "BGR10A2", false, false, 1, 4, Image::FORMAT_RGBA8 },
+    { "GRAYSCALE", false, false, 1, 1, Image::FORMAT_L8 },
+    { "GRAYSCALE_ALPHA", false, false, 1, 2, Image::FORMAT_LA8 }
 };
 
 
@@ -101,7 +126,40 @@ struct FileDeleter {
         memdelete(fa);
     }
 };
-static RES loaddds(FileAccess *f, Error *r_error) {
+
+RES ResourceLoaderCoHTexture::load(StringView p_path, StringView p_original_path, Error *r_error) {
+
+    if (r_error)
+        *r_error = ERR_CANT_OPEN;
+
+    Error err;
+    FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+    if (!f)
+        return RES();
+
+    FileAccessRef fref(f);
+    if (r_error)
+        *r_error = ERR_FILE_CORRUPT;
+
+    ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open DDS texture file '" + p_path + "'.");
+    TexFileHdr hdr;
+    f->get_buffer((uint8_t *)&hdr, sizeof(TexFileHdr));
+    if (0 != memcmp(hdr.magic, "TX2", 3)) {
+        ERR_FAIL_V_MSG(RES(), "Invalid or unsupported texture file '" + p_path + "'.");
+    }
+
+    int name_bytes = hdr.header_size - sizeof(TexFileHdr);
+    String data;
+    data.resize(name_bytes);
+
+    if (name_bytes != f->get_buffer((uint8_t *)data.data(), name_bytes)) {
+        ERR_FAIL_V_MSG(RES(), "Invalid or unsupported texture file '" + p_path + "'.");
+    }
+
+    if(PathUtils::get_extension(data)!=StringView("dds"))
+    {
+        ERR_FAIL_V_MSG(RES(), "Only embedded dds textures are supported for now.");
+    }
 
     uint32_t magic = f->get_32();
     uint32_t hsize = f->get_32();
@@ -119,8 +177,8 @@ static RES loaddds(FileAccess *f, Error *r_error) {
     //validate
 
     if (magic != DDS_MAGIC || hsize != 124 || !(flags & DDSD_PIXELFORMAT) || !(flags & DDSD_CAPS)) {
-        *r_error = ERR_FILE_CORRUPT;
-        return RES();
+
+        ERR_FAIL_V_MSG(RES(), "Invalid or unsupported DDS texture file '" + p_path + "'.");
     }
 
     /* uint32_t format_size = */ f->get_32();
@@ -209,8 +267,7 @@ static RES loaddds(FileAccess *f, Error *r_error) {
     } else {
 
         printf("unrecognized fourcc %x format_flags: %x - rgbbits %i - red_mask %x green mask %x blue mask %x alpha mask %x\n", format_fourcc, format_flags, format_rgb_bits, format_red_mask, format_green_mask, format_blue_mask, format_alpha_mask);
-        *r_error = ERR_FILE_CORRUPT;
-        return RES();
+        ERR_FAIL_V_MSG(RES(), "Unrecognized or unsupported color layout in DDS '" + p_path + "'.");
     }
 
     if (!(flags & DDSD_MIPMAPCOUNT))
@@ -225,15 +282,15 @@ static RES loaddds(FileAccess *f, Error *r_error) {
     if (info.compressed) {
         //compressed bc
 
-        uint32_t size = M_MAX(info.divisor, w) / info.divisor * M_MAX(info.divisor, h) / info.divisor * info.block_size;
+        uint32_t size = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
         ERR_FAIL_COND_V(size != pitch, RES());
         ERR_FAIL_COND_V(!(flags & DDSD_LINEARSIZE), RES());
 
         for (uint32_t i = 1; i < mipmaps; i++) {
 
-            w = M_MAX(1, w >> 1);
-            h = M_MAX(1, h >> 1);
-            uint32_t bsize = M_MAX(info.divisor, w) / info.divisor * M_MAX(info.divisor, h) / info.divisor * info.block_size;
+            w = MAX(1, w >> 1);
+            h = MAX(1, h >> 1);
+            uint32_t bsize = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
             //printf("%i x %i - block: %i\n",w,h,bsize);
             size += bsize;
         }
@@ -444,68 +501,9 @@ static RES loaddds(FileAccess *f, Error *r_error) {
     return texture;
 }
 
-RES ResourceLoaderCoHTexture::load(StringView p_path, StringView p_original_path, Error *r_error, bool p_no_subresource_cache)
-{
-
-    if (r_error)
-        *r_error = ERR_CANT_OPEN;
-
-    Error err;
-    FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-
-    ERR_FAIL_COND_V_MSG(f==nullptr, RES(), "Unable to open DDS texture file '" + p_path + "'.");
-
-    FileAccessRef fref(f);
-    if (r_error)
-        *r_error = OK;
-
-    TexFileHdr hdr;
-    f->get_buffer((uint8_t *)&hdr, sizeof(TexFileHdr));
-    if (0 != memcmp(hdr.magic, "TX2", 3)) {
-        ERR_FAIL_V_MSG(RES(), "Invalid or unsupported texture file '" + p_path + "'.");
-    }
-
-    int name_bytes = hdr.header_size - sizeof(TexFileHdr);
-    String data;
-    data.resize(name_bytes);
-
-    if (name_bytes != f->get_buffer((uint8_t *)data.data(), name_bytes)) {
-        ERR_FAIL_V_MSG(RES(), "Invalid or unsupported texture file '" + p_path + "'.");
-    }
-
-    StringView originalname(data.c_str());// trim at first \0
-    auto ext=PathUtils::get_extension(originalname);
-    if(ext=="dds") {
-        f->seek(hdr.header_size);
-        return loaddds(f,r_error);
-    }
-    if(!ImageLoader::recognize(PathUtils::get_extension(originalname)))
-    {
-        ERR_FAIL_V_MSG(RES(), "Unrecognized embedded 'texture' file format.");
-    }
-
-    int fsize=hdr.file_size;
-    Vector<uint8_t> img_data;
-    img_data.resize(fsize);
-    f->seek(hdr.header_size);
-    if(fsize!=f->get_buffer(img_data.data(),fsize)){
-        ERR_FAIL_V_MSG(RES(), "Invalid or unsupported texture file '" + p_path + "'.");
-    }
-
-    Ref<Image> img = make_ref_counted<Image>(eastl::move(ImageLoader::load_image(ext,img_data.data(),fsize)));
-
-    Ref<ImageTexture> texture(make_ref_counted<ImageTexture>());
-    texture->create_from_image(img);
-
-    if (r_error)
-        *r_error = OK;
-
-    return texture;
-}
-
 void ResourceLoaderCoHTexture::get_recognized_extensions(Vector<String> &p_extensions) const {
 
-    p_extensions.emplace_back("texture");
+    p_extensions.push_back("texture");
 }
 
 bool ResourceLoaderCoHTexture::handles_type(StringView p_type) const {

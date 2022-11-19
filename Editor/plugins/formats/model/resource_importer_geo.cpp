@@ -1,32 +1,9 @@
-/*************************************************************************/
-/*  resource_importer_texture.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.dev/
+ * Copyright (c) 2006 - 2022 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+ */
 
 #include "resource_importer_geo.h"
 
@@ -90,6 +67,13 @@ struct FileIOWrap : public QIODevice
     {
         return m_fa->get_len()-pos();
     }
+    void close() override
+    {
+        QIODevice::close();
+        if (m_fa)
+            m_fa->close();
+    }
+    ~FileIOWrap() override {}
 
 protected:
     qint64 readData(char *data, qint64 maxlen) override
@@ -335,26 +319,28 @@ static int reindex(Vector<int> &reindex,int vert_idx,int &top_cnt) {
         reindex[vert_idx] = top_cnt++;
     return reindex[vert_idx]-1;
 }
-static SurfaceArrays from_coh_vbo(std::unique_ptr<SEGS::VBOPointers> &vbo,int offset,int tri_count) {
+static SurfaceArrays from_coh_vbo(SEGS::VBOPointers *vbo,int offset,int tri_count) {
     SurfaceArrays arrs;
 
-    arrs.m_indices.reserve(vbo->triangles.size());
-    arrs.m_position_data.reserve(vbo->triangles.size()*3);
-    arrs.m_normals.reserve(vbo->triangles.size());
-    arrs.m_uv_1.reserve(vbo->triangles.size());
-    arrs.m_uv_2.reserve(vbo->triangles.size());
+    arrs.m_indices.reserve(tri_count);
+    arrs.m_position_data.reserve(tri_count * 3);
+    arrs.m_normals.reserve(tri_count);
+    arrs.m_uv_1.reserve(tri_count);
+    arrs.m_uv_2.reserve(tri_count);
     Vector<int> reindex_arr(vbo->triangles.size(),0);
     int *tri_data=vbo->triangles.data()+offset;
-    Vector<int> src_triangles(tri_data,tri_data+3*tri_count);
+    Span<int> src_triangles(tri_data,tri_data+3*tri_count);
     int last_idx=1;
-    int new_idx[3];
-    bool known[3];
-    for (size_t tri_index = 0, count = src_triangles.size(); tri_index < count - 2; tri_index += 3) {
-        //reverse winding 0,1,2 -> 1,0,2
+    for (size_t tri_index = 0, count = tri_count*3; tri_index < count - 2; tri_index += 3)
+    {
+        int new_idx[3];
+        bool known[3];
         for(int i=0; i<3; ++i) {
             known[i] = reindex_arr[src_triangles[tri_index+i]]!=0;
             new_idx[i] = reindex(reindex_arr,src_triangles[tri_index+i],last_idx);
         }
+        // reverse winding 0,1,2 -> 1,0,2
+        eastl::swap(new_idx[0], new_idx[1]);
 
         // inserting indices
         arrs.m_indices.insert(arrs.m_indices.end(),new_idx,new_idx+3);
@@ -424,7 +410,7 @@ static Ref<Material> convert_material(int idx,SEGS::Model* model,Vector<SEGS::HT
     if(model->trck_node && model->trck_node->_TrickFlags & DoubleSided)
         mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
     else
-        mat->set_cull_mode(SpatialMaterial::CULL_FRONT);
+        mat->set_cull_mode(SpatialMaterial::CULL_BACK);
 
     SEGS::TextureWrapper &base_tex(tex.get());
     if(!isgeo && base_tex.info)
@@ -459,6 +445,19 @@ static Ref<Material> convert_material(int idx,SEGS::Model* model,Vector<SEGS::HT
             model->flags |= OBJ_CUBEMAP;
         }
     }
+    /*
+    if (model->flags & OBJ_CUBEMAP)
+    {
+        mat->set_feature(SpatialMaterial::FEATURE_REFRACTION, true);
+        mat->set_refraction_enabled(true);
+        mat->set_refraction_scale(0.1);
+        mat->set_refraction_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_RED);
+    }
+    */
+    if (model->flags & OBJ_ALPHASORT)
+    {
+        mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+    }
     mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO,g_converted_textures[tex.idx]);
     return Ref<Material>(mat);
 }
@@ -481,13 +480,49 @@ Ref<ArrayMesh> modelCreateObjectFromModel(SEGS::Model* model, Vector<SEGS::HText
         }
     }
     SEGS::fillVBO(*model);
-    std::unique_ptr<SEGS::VBOPointers> &vbo(model->vbo);
+    SEGS::VBOPointers *vbo = model->vbo.get();
 
     unsigned geom_count = model->texture_bind_info.size();
     unsigned face_offset=0;
     String collected_desc;
+#ifdef export_obj_files
+    QFile tgt_obj("E:\\segs\\data\\converted\\models\\" + model->name + ".obj");
+    if (tgt_obj.open(QFile::WriteOnly))
+    {
+        // save vertex data
+        for(const auto &a : vbo->pos)
+        {
+            tgt_obj.write(QString("v %1 %2 %3\n").arg(a.x).arg(a.y).arg(a.z).toUtf8());
+        }
+        for (const auto &a : vbo->uv1)
+        {
+            tgt_obj.write(QString("vt %1 %2\n").arg(a.x).arg(a.y).toUtf8());
+        }
+        for (const auto &a : vbo->norm)
+        {
+            tgt_obj.write(QString("vn %1 %2 %3\n").arg(a.x).arg(a.y).arg(a.z).toUtf8());
+        }
+        // save blocks
+        unsigned tri_offset = 0;
+        for (unsigned i = 0; i < geom_count; ++i)
+        {
+            const SEGS::TextureBind &tbind(model->texture_bind_info[i]);
+            tgt_obj.write(QString("usemtl m_%1\n").arg(tbind.tex_idx).toUtf8());
+            Span<int> src_triangles(vbo->triangles.data() + tri_offset, tbind.tri_count * 3);
+            for (size_t tri_index = 0, count = tbind.tri_count * 3; tri_index < count - 2; tri_index += 3)
+            {
+                tgt_obj.write(QString("f %1 %2 %3\n")
+                                  .arg(1+src_triangles[tri_index + 0])
+                                  .arg(1 + src_triangles[tri_index + 1])
+                                  .arg(1 + src_triangles[tri_index + 2])
+                                  .toUtf8());
 
-    int *tris = (int *)vbo->triangles.data();
+            }
+            tri_offset += tbind.tri_count * 3;
+        }
+        tgt_obj.close();
+    }
+#endif
     //flip_tri_order(Span<int>(tris,tris+vbo->triangles.size()*3));
 
     for(unsigned i=0; i<geom_count; ++i)
@@ -573,6 +608,8 @@ static Ref<MeshLibrary> build_mesh_library(StringView path,Vector<String> &creat
         res->set_item_name(idx,secondary->get_name());
         idx++;
     }
+    src->close();
+    delete src;
 
     return eastl::move(res);
 }
@@ -584,7 +621,7 @@ Error CoHMeshLibrary::import(StringView p_source_file, StringView p_save_path,
     SE_FSWrapper se_wrap;
 
     // Check if the selected file is correctly located in the hierarchy, just to make sure.
-    auto idx = StringUtils::find_last(p_source_file, "coh_data/object_library/");
+    auto idx = StringUtils::rfind(p_source_file, "coh_data/object_library/");
     if (String::npos == idx)
     {
         PLUG_FAIL_V_MSG(ERR_CANT_OPEN, "The given source file is not located in coh_data/object_library/ folder.");
@@ -603,6 +640,7 @@ Error CoHMeshLibrary::import(StringView p_source_file, StringView p_save_path,
         {
             PLUG_FAIL_V_MSG(ERR_FILE_MISSING_DEPENDENCIES, "The required bin files are missing ?");
         }
+        SEGS::preloadTextureNames(&se_wrap, basepath.c_str());
     }
     assert(r_gen_files);
 

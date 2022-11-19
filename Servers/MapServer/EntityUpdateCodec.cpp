@@ -85,9 +85,10 @@ void sendStateMode(const Entity &src, BitStream &bs)
 {
     // if(state_mode & 2) then RespawnIfDead, AliveEnough==true, close some windows
     PUTDEBUG("before sendStateMode");
-    bs.StoreBits(1, src.m_entity_update_flags.testFlag(src.UpdateFlag::STATEMODE));
+    bool has_state_mode=src.m_entity_update_flags.testFlag(src.UpdateFlag::STATEMODE);
+    bs.StoreBits(1,has_state_mode);
     PUTDEBUG("before sendStateMode 2");
-    if(src.m_entity_update_flags.testFlag(src.UpdateFlag::STATEMODE))
+    if(has_state_mode)
         storePackedBitsConditional(bs, 3, uint32_t(src.m_state_mode));
 
     PUTDEBUG("after sendStateMode");

@@ -1,17 +1,15 @@
-#include "AuthClient.h"
+#include <QCoreApplication>
+#include <qlogging.h>
 
-#include "core/os/os.h"
-#include "core/class_db.h"
 #include "core/version.h"
-#include "main/main.h"
+#include "main/main_class.h"
+#include "core/os/os.h"
 #include "EASTL/unique_ptr.h"
 
-#include <QCoreApplication>
-#include <QDebug>
-#include <QDir>
 #include <climits>
 #include <clocale>
 #include <cstdlib>
+#include <QDir>
 
 
 #ifdef Q_OS_WIN32
@@ -52,7 +50,7 @@ static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, c
 #endif
 
 void register_segs_types() {
-    ClassDB::register_class<AuthClient>();
+    //ClassDB::register_class<AuthClient>();
 }
 static int mainT(int argc, char *argv[]) {
 

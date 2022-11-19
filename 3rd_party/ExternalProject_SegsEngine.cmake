@@ -1,4 +1,4 @@
-set(SegsEngine_RELEASE 4.0.0.14)
+set(SegsEngine_RELEASE 4.0.0.16)
 set(build_from_source ON)
 if(MSVC)
     set(build_from_source OFF)

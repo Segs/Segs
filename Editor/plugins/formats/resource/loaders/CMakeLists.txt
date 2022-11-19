@@ -1,0 +1,8 @@
+#add_subdirectory(bitmap)
+#add_subdirectory(csv)
+#add_subdirectory(csv_translation)
+#add_subdirectory(image)
+#add_subdirectory(obj)
+add_subdirectory(texture)
+#add_subdirectory(texture_atlas)
+#add_subdirectory(texture_layered)
