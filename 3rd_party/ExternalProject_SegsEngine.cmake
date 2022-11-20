@@ -16,59 +16,57 @@ if(build_from_source)
         CMAKE_GENERATOR_TOOLSET ${CMAKE_GENERATOR_TOOLSET}
         BUILD_BYPRODUCTS ${SegsEngine_LIBRARY_STATIC}
     )
-
-    add_library(SegsEngine::EASTL_Import INTERFACE IMPORTED)
-    file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include/SegsEngine)
-    file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin)
-    file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/lib)
-
-    set_target_properties(SegsEngine::EASTL_Import PROPERTIES
-      INTERFACE_COMPILE_DEFINITIONS "EASTL_USER_CONFIG_HEADER=\"EASTL/SegsEngine_config.h\""
-      INTERFACE_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include"
-
-    )
-
-    add_executable(SegsEngine::binding_generator IMPORTED GLOBAL)
-    add_dependencies(SegsEngine::binding_generator editor_engine-${SegsEngine_RELEASE})
-
-    add_library(SegsEngine::editor_engine SHARED IMPORTED GLOBAL)
-    add_dependencies(SegsEngine::editor_engine editor_engine-${SegsEngine_RELEASE})
-
-    # Create imported target SegsEngine::editor_interface
-    add_library(SegsEngine::editor_interface INTERFACE IMPORTED)
-
-    set_target_properties(SegsEngine::editor_interface PROPERTIES
-      INTERFACE_COMPILE_DEFINITIONS "TOOLS_ENABLED;DEBUG_ENABLED"
-      INTERFACE_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include/SegsEngine;${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include/"
-      INTERFACE_LINK_LIBRARIES "Qt5::Core;SegsEngine::EASTL_Import"
-    )
-    set_property(TARGET SegsEngine::editor_engine APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-    if(WIN32)
-        set_target_properties(SegsEngine::binding_generator PROPERTIES
-            IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/binding_generator.exe"
-        )
-    set_target_properties(SegsEngine::editor_engine PROPERTIES
-          IMPORTED_LOCATION_DEBUG "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/editor_engine.dll"
-      IMPORTED_IMPLIB "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/lib/editor_engine.lib"
-      IMPORTED_SONAME_DEBUG "libeditor_engine.so"
-      INTERFACE_LINK_LIBRARIES "SegsEngine::editor_interface"
-    )
-    else()
-        set_target_properties(SegsEngine::binding_generator PROPERTIES
-            IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/binding_generator"
-        )
-        set_target_properties(SegsEngine::editor_engine PROPERTIES
-          IMPORTED_LOCATION_DEBUG "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/libeditor_engine.so"
-          IMPORTED_SONAME_DEBUG "libeditor_engine.so"
-          INTERFACE_LINK_LIBRARIES "SegsEngine::editor_interface"
-        )
-    endif()
-
 else()
-
-check_and_update_binary_deps(SegsEngine SegsEngine ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt ${SegsEngine_RELEASE})
-
+	check_and_update_binary_deps(SegsEngine SegsEngine ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt ${SegsEngine_RELEASE})
 endif()
+
+add_library(SegsEngine::EASTL_Import INTERFACE IMPORTED)
+file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include/SegsEngine)
+file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin)
+file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/lib)
+
+set_target_properties(SegsEngine::EASTL_Import PROPERTIES
+  INTERFACE_COMPILE_DEFINITIONS "EASTL_USER_CONFIG_HEADER=\"EASTL/SegsEngine_config.h\""
+  INTERFACE_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include"
+
+)
+
+add_executable(SegsEngine::binding_generator IMPORTED GLOBAL)
+add_dependencies(SegsEngine::binding_generator editor_engine-${SegsEngine_RELEASE})
+
+add_library(SegsEngine::editor_engine SHARED IMPORTED GLOBAL)
+add_dependencies(SegsEngine::editor_engine editor_engine-${SegsEngine_RELEASE})
+
+# Create imported target SegsEngine::editor_interface
+add_library(SegsEngine::editor_interface INTERFACE IMPORTED)
+
+set_target_properties(SegsEngine::editor_interface PROPERTIES
+  INTERFACE_COMPILE_DEFINITIONS "TOOLS_ENABLED;DEBUG_ENABLED"
+  INTERFACE_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include/SegsEngine;${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include/"
+  INTERFACE_LINK_LIBRARIES "Qt5::Core;SegsEngine::EASTL_Import"
+)
+set_property(TARGET SegsEngine::editor_engine APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+if(WIN32)
+	set_target_properties(SegsEngine::binding_generator PROPERTIES
+		IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/binding_generator.exe"
+	)
+set_target_properties(SegsEngine::editor_engine PROPERTIES
+	  IMPORTED_LOCATION_DEBUG "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/editor_engine.dll"
+  IMPORTED_IMPLIB "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/lib/editor_engine.lib"
+  IMPORTED_SONAME_DEBUG "libeditor_engine.so"
+  INTERFACE_LINK_LIBRARIES "SegsEngine::editor_interface"
+)
+else()
+	set_target_properties(SegsEngine::binding_generator PROPERTIES
+		IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/binding_generator"
+	)
+	set_target_properties(SegsEngine::editor_engine PROPERTIES
+	  IMPORTED_LOCATION_DEBUG "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/bin/libeditor_engine.so"
+	  IMPORTED_SONAME_DEBUG "libeditor_engine.so"
+	  INTERFACE_LINK_LIBRARIES "SegsEngine::editor_interface"
+	)
+endif()
+
 
 ###########################################################################################
 macro(set_engine_plugin_options )

@@ -93,6 +93,7 @@ set(INSTALLED_TARGETS)
 option(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON) # Disabled temporarily until sol2 library fixed for macOS
 option(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 option(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
+option(BUILD_EDITOR "Build experimental Segs Editor ?" OFF)
 option(BUILD_RPC_TEST_CLIENT "Build RPC Test Client ?" OFF)
 option(BUILD_CLIENT_PATCH "Build client patch for AMD graphics cards ?" OFF)
 
@@ -203,7 +204,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(Components)
 add_subdirectory(Common)
-#add_subdirectory(Editor) Temporarily commented out as failing to build
+if(BUILD_EDITOR)
+	add_subdirectory(Editor) 
+endif()
 add_subdirectory(Servers)
 add_subdirectory(Clients)
 
