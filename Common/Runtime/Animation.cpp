@@ -382,5 +382,9 @@ GeoSet *animLoad(FSWrapper &fs, const QByteArray &filename, bool background_load
     {
         geosetLoadData(file, geoset);
     }
+    if (file)
+    {
+        file->close();
+    }
     return geoset;
 }

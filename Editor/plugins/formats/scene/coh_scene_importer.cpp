@@ -1,58 +1,12 @@
-/*************************************************************************/
-/*  resource_importer_texture.cpp                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/*
+ * SEGS - Super Entity Game Server
+ * http://www.segs.dev/
+ * Copyright (c) 2006 - 2022 SEGS Team (see AUTHORS.md)
+ * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
+ */
 
 #include "coh_scene_importer.h"
 
-#include "core/class_db.h"
-#include "core/image.h"
-#include "core/io/config_file.h"
-#include "core/io/image_loader.h"
-#include "core/io/resource_importer.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
-#include "core/os/dir_access.h"
-#include "core/os/mutex.h"
-#include "core/project_settings.h"
-#include "core/resource/resource_manager.h"
-#include "core/service_interfaces/CoreInterface.h"
-#include "core/string_utils.h"
-#include "editor/service_interfaces/EditorServiceInterface.h"
-#include "scene/3d/instantiation.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/node_3d.h"
-
-#include "scene/resources/packed_scene.h"
-#include "scene/resources/primitive_meshes.h"
-#include "scene/resources/scene_library.h"
-#include "scene/resources/texture.h"
 
 #include "Common/GameData/scenegraph_serializers.h"
 #include "Common/Runtime/Model.h"
@@ -60,12 +14,29 @@
 #include "Prefab.h"
 #include "RuntimeData.h"
 #include "SceneGraph.h"
-#include "Texture.h"
+#include <core/class_db.h>
+#include <core/io/image_loader.h>
+#include <core/io/resource_loader.h>
+#include <core/os/dir_access.h>
+#include <core/os/mutex.h>
+#include <core/project_settings.h>
+#include <core/reference.h>
+#include <core/resource/resource_manager.h>
+#include <core/service_interfaces/CoreInterface.h>
+#include <core/string_utils.h>
+#include <scene/3d/instantiation.h>
+#include <scene/3d/light_3d.h>
+#include <scene/3d/mesh_instance_3d.h>
+#include <scene/3d/node_3d.h>
+
+#include <scene/resources/packed_scene.h>
+#include <scene/resources/primitive_meshes.h>
+#include <scene/resources/scene_library.h>
+#include <scene/resources/texture.h>
 
 #include "glm/gtx/matrix_decompose.hpp"
 
 #include <QDebug>
-#include <QDir>
 #include <QFileInfo>
 
 
@@ -93,6 +64,7 @@ struct FileIOWrap : public QIODevice
         if(m_fa)
             m_fa->close();
     }
+    ~FileIOWrap() override {}
 protected:
     qint64 readData(char *data, qint64 maxlen) override { return m_fa->get_buffer((uint8_t *)data, maxlen); }
     qint64 writeData(const char *data, qint64 len) override
@@ -149,7 +121,6 @@ Set<String> SE_FSWrapper::missing_files;
 
 struct SceneGraphInfo
 {
-    Vector<Node3D *> root_stack;
     HashSet<String>   missing_imported_geosets;
     Ref<SceneLibrary> lib;
     String m_root_path;
@@ -167,26 +138,28 @@ Color fromGLM(glm::vec4 v)
 {
     return Color(v.r,v.g,v.b);
 }
-static Node* convertFromRoot(SceneGraphInfo& sg, SEGS::SceneNode* n);
+static Node *convertFromRoot(SceneGraphInfo &sg, Node *root, Node *parent, SEGS::SceneNode *n);
 
 static void convertLightComponent(SEGS::SceneNode *n, Node3D *res)
 {
-    OmniLight3D *light_node = memnew(OmniLight3D);
-    if (n->m_light->is_negative)
-    {
-        light_node->set_negative(true);
-    }
+    //OmniLight3D *light_node = memnew(OmniLight3D);
+    Node3D *light_placeholder = memnew(Node3D);
+    //if (n->m_light->is_negative)
+    //{
+    //    light_node->set_negative(true);
+    //}
     // since light object is disabled by default, we don't want to disable ourselves,
     // since we have light probes
     // Light objects are put into seperate layer, to allow fast sphere collider lookups.
     //light_node->set_layer_mask();
     //lobj.layer = LayerMask.NameToLayer("OmniLights");
-    res->add_child(light_node);
+    light_placeholder->set_name("OmniLight");
+    res->add_child(light_placeholder);
+    light_placeholder->set_owner(res->get_owner());
 
-    light_node->set_name("OmniLight");
-    light_node->set_owner(res);
-    light_node->set_color(Color(fromGLM(n->m_light->color)));
-    light_node->set_param(Light3D::PARAM_RANGE,n->m_light->range);
+    //light_node->set_color(Color(fromGLM(n->m_light->color)));
+    //light_node->set_param(Light3D::PARAM_RANGE,n->m_light->range);
+    //light_node->set_bake_mode(Light3D::BAKE_INDIRECT);
 
     //light.lightmapBakeType = LightmapBakeType.Realtime;
     //light.cullingMask = ~(1 << 9); // Don't light the layer 9 - Editor object
@@ -248,9 +221,84 @@ static void convertComponents(SEGS::SceneNode *n, Node3D *res)
 //        }
 //    }
 }
-static void convertModel(Node *owner, SEGS::Model *mdl, Node3D *res, HashSet<String> &missing_models)
+namespace
+{
+#pragma pack(push, 1)
+    struct TexFileHdr
+    {
+        int     header_size;
+        int     file_size;
+        int     wdth;
+        int     hght;
+        int     flags;
+        int     fade[2];
+        uint8_t alpha;
+        char    magic[3];
+    };
+#pragma pack(pop)
+    QSet<QString>                  s_missing_textures;
+    std::unordered_map<uint32_t, Ref<Texture>> g_converted_textures;
+}
+
+/*std::vector<SEGS::HTexture> getModelTextures(std::vector<QByteArray> &names)
+{
+    uint32_t name_count = std::max<uint32_t>(1,names.size());
+    std::vector<SEGS::HTexture> res;
+    res.reserve(name_count);
+    SEGS::HTexture white_tex = tryLoadTexture("white.tga");
+
+    for(size_t tex_idx=0; tex_idx < names.size(); ++tex_idx )
+    {
+        QFileInfo fi(names[tex_idx]);
+        QByteArray baseName = fi.completeBaseName().toUtf8();
+        if(baseName!=names[tex_idx])
+        {
+            if(fi.fileName() == names[tex_idx])
+                names[tex_idx] = baseName;
+            else
+                names[tex_idx] = (fi.path()+"/"+baseName).toUtf8();
+        }
+        if ( names[tex_idx].toUpper().contains("PORTAL") )
+            res.emplace_back(tryLoadTexture("invisible.tga"));
+        else
+            res.emplace_back(tryLoadTexture(names[tex_idx]));
+        // replace missing texture with white
+        // TODO: make missing textures much more visible ( high contrast + text ? )
+        if ( g_converted_textures.end()==g_converted_textures.find(res[tex_idx].idx) )
+        {
+            res[tex_idx] = white_tex;
+        }
+    }
+    if (names.empty())
+        res.emplace_back(white_tex);
+    return res;
+}*/
+
+static void convertModel(SEGS::Model*mdl, Node3D *res, HashSet<String> &missing_models)
 {
     ModelModifiers *model_trick = mdl->trck_node;
+    if (model_trick)
+    {
+        if (model_trick->isFlag(NoDraw))
+        {
+            // qDebug() << mdl->name << "Set as no draw";
+            return;
+        }
+        if (model_trick->isFlag(EditorVisible))
+        {
+            // qDebug() << mdl->name << "Set as editor model";
+            return;
+        }
+        if (model_trick && model_trick->isFlag(CastShadow))
+        {
+            // qDebug() << "Not converting shadow models"<<mdl->name;
+            return;
+        }
+        if (model_trick && model_trick->isFlag(ParticleSys))
+        {
+            return;
+        }
+    }
     String meshlib_path = PathUtils::get_base_dir(mdl->geoset->geopath.data());
     String geoset_file(PathUtils::get_basename(StringView(mdl->geoset->geopath.data())));
     String mesh_name = qPrintable(mdl->name);
@@ -262,7 +310,6 @@ static void convertModel(Node *owner, SEGS::Model *mdl, Node3D *res, HashSet<Str
     SE_FSWrapper wrap;
     MeshInstance3D *mi = memnew(MeshInstance3D);
     res->add_child(mi);
-    mi->set_owner(owner);
 
     String meshlib_res_path = "res://"+meshlib_path+"/"+geoset_file+".geo";
     if (!FileAccess::exists(meshlib_res_path))
@@ -322,144 +369,250 @@ static void convertModel(Node *owner, SEGS::Model *mdl, Node3D *res, HashSet<Str
 //        }
         mi->set_cast_shadows_setting(shadow_mode);
     }
-}
-static Transform fromGLM(glm::mat3 m,glm::vec3 t) {
-    Transform res (
-        m[0][0],m[0][1],m[0][2],
-        m[1][0],m[1][1],m[1][2],
-        m[2][0],m[2][1],m[2][2],
-        t.x,t.y,t.z
-        );
-    return res;
-}
-static Transform fromGLM(glm::mat4 m) {
-    Transform res (
-        m[0][0],m[0][1],m[0][2],
-        m[1][0],m[1][1],m[1][2],
-        m[2][0],m[2][1],m[2][2],
-        m[3][0],m[3][1],m[3][2]
-        );
-    return res;
-}
-static bool convertChildren(SceneGraphInfo &sg,SEGS::SceneNode *n, Node3D *res)
+    if (!mdl->geoset->data_loaded)
 {
-    bool all_ok = true;
-    for(const SEGS::SceneNodeChildTransform &child : n->m_children)
-    {
-        Node* go;
-        if(child.node->m_engine_node)
-            go = static_cast<Node *>(child.node->m_engine_node);
-        else
-            go = convertFromRoot(sg, child.node);
+        String basepath = ProjectSettings::get_singleton()->get_resource_path() + "/coh_data/";
+        auto res = wrap.open(QString::fromUtf8(basepath.c_str()) + "/" + mdl->geoset->geopath.data(), true, false);
 
-        all_ok &= (go != nullptr);
-        if (go != nullptr)
+        SEGS::geosetLoadData(res,mdl->geoset);
+        if (!mdl->geoset->subs.empty())
         {
-            res->add_child(go);
-            go->set_owner(sg.root_stack.back());
-
-            //            Quat quat2 = Quat(Vector3(-child.m_pyr.x, child.m_pyr.y * 180 / M_PI, child.m_pyr.z * 180 /
-            //            M_PI));
-            Quat qPitch = Quat(Vector3(-1,0,0),child.m_pyr.x);
-            Quat qYaw   = Quat(Vector3(0,1,0),child.m_pyr.y);
-            Quat qRoll  = Quat(Vector3(0,0,1),child.m_pyr.z);
-            Quat rotQuat = qYaw * qPitch * qRoll;
-            //rotQuat.set_euler_yxz(Vector3(child.m_pyr.x,child.m_pyr.y,child.m_pyr.z));
-            Transform res2;
-            res2.set_basis(rotQuat);
-            res2.origin = Vector3(child.m_translation.x,child.m_translation.y,child.m_translation.z);
-//            Transform res2 = fromGLM(child.m_matrix2,child.m_translation);
-//
-            ((Node3D*)go)->set_transform(res2);
-//            ((Node3D *)go)->set_rotation(Vector3(child.m_pyr.x,child.m_pyr.y,child.m_pyr.z));
-            //            ((Node3D
-            //            *)go)->set_translation(Vector3(child.m_translation.x,child.m_translation.y,child.m_translation.z));
-            //((Node3D *)go)->set_transform(fromGLM(child.m_matrix2,child.m_translation));
+            //std::vector<SEGS::HTexture> model_textures = getModelTextures(mdl->geoset->tex_names);
+            for (SEGS::Model* model : mdl->geoset->subs)
+            {
+                //s_coh_model_to_engine_model[model] = modelCreateObjectFromModel(ctx, model, model_textures);
         }
     }
 
-    return all_ok;
+//        if (mdl.geoset.subs.Count != 0)
+//            mdl.geoset.createEngineModelsFromPrefabSet();
+        if (res)
+        {
+            res->close();
+            delete res;
 }
-static Node3D *convertInternal(SceneGraphInfo &sg, SEGS::SceneNode *n)
+    }
+//    if (mf.sharedMesh == null)
 {
-    Node3D *res = memnew(Node3D);
-    if (sg.root_stack.empty() || n->m_use_count>1)
-    {
-        sg.root_stack.emplace_back(res);
+        MeshInstance3D *res_static=nullptr;
+        SEGS::RuntimeData &rd(getRuntimeData());
+//        if (!rd.s_coh_model_to_engine_model.TryGetValue(mdl, out res_static))
+//            return;
+        if (res_static == nullptr)
+            return;
+//        SEGSRuntime.Tools.EnsureDirectoryExists(mesh_path);
+//        AssetDatabase.CreateAsset(res_static.m_mesh, model_path);
+//        AssetDatabase.SaveAssets();
+//        mf.sharedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(model_path);
     }
 
-    res->set_name(qPrintable(n->m_name));
-    // Convert the whole node.
-
-    // converting node components
-    convertComponents(n, res);
-    // convert model
-    if (n->m_model != nullptr)
-    {
-        convertModel(sg.root_stack.back(), n->m_model, res, sg.missing_imported_geosets);
-    }
-
-    if (!convertChildren(sg,n, res))
-    {
-        memdelete(res);
-        return nullptr;
-    }
-//        checkForLodGroup(n, res);
-//        updateEditorLayerMarker(res);
-    return res;
+//    convertMaterials(ren, mdl, res);
+    qDebug("Not converting models yet");
 }
-static bool autoGen(const QString &n)
+void createMat3YPR(Basis &mat, Vector3 pyr)
+    {
+    float sinP = Math::sin(pyr[0]);
+    float cosP = Math::cos(pyr[0]);
+    float sinY = Math::sin(pyr[1]);
+    float cosY = Math::cos(pyr[1]);
+    float sinR = Math::sin(pyr[2]);
+    float cosR = Math::cos(pyr[2]);
+
+    float temp = sinY * sinP;
+    mat[0][0]  = cosY * cosR + temp * sinR;
+    mat[0][1]  = cosY * sinR - temp * cosR;
+    mat[0][2]  = sinY * cosP;
+
+    mat[1][0] = -cosP * sinR;
+    mat[1][1] = cosP * cosR;
+    mat[1][2] = sinP;
+
+    temp      = -cosY * sinP;
+    mat[2][0] = -sinY * cosR - temp * sinR;
+    mat[2][1] = -sinY * sinR + temp * cosR;
+    mat[2][2] = cosY * cosP;
+    }
+
+static Transform fromCOH(glm::vec3 m_pyr, glm::vec3 m_translation)
+    {
+    Transform tr;
+    Basis     tgt;
+    createMat3YPR(tgt, Vector3(m_pyr.x, m_pyr.y, m_pyr.z));
+    Basis tgt2;
+    tgt2.set_euler_yxz(Vector3(-m_pyr.x, m_pyr.y, -m_pyr.z));
+    assert(tgt.is_equal_approx(tgt2));
+
+    tr.translate(m_translation.x, m_translation.y, m_translation.z);
+    tr.set_basis(tgt);
+    return tr;
+    }
+static void createNodeInstances(SEGS::SceneGraph &m_scene_graph, SceneGraphInfo &sg)
 {
-    if(!n.startsWith("grp") || !n.back().isDigit())
-        return false;
-    return true;
-}
-static Node *convertFromRoot(SceneGraphInfo &sg, SEGS::SceneNode *n)
-{
-    LibraryItemHandle lib_id = sg.lib->find_item_by_name(n->m_name.data());
-    if(lib_id!=-1)
-    {
-        Ref<PackedScene> sc(sg.lib->get_item_scene(lib_id));
-        auto             instance_that = sc->instance(GEN_EDIT_STATE_INSTANCE);
-        //        LibraryEntryInstance *instance_that=memnew(LibraryEntryInstance);
-        //        instance_that->set_library_path(sg.lib->get_path());
-        //        instance_that->set_entry(n->m_name.data());
-        //        return sg.lib->get_item_scene(lib_id)->instance();
-        instance_that->set_filename(sg.lib->get_path() + "::" + StringUtils::num(lib_id));
-        instance_that->set_name(String(String::CtorSprintf(),"%p_%s",instance_that,n->m_name.data()));
-        return instance_that;
-    }
-    Node *res = convertInternal(sg, n);
-    if(!res)
-        return nullptr;
+    // at this point we leave the hierarchy to original scene graph, for every scene graph node we create
+    // a SE node either as a LibraryInstance or direct node pointer
 
-    if (n->m_use_count <= 1 && autoGen(n->m_name) && n->m_nest_level <= 0)
+    for (auto *node : m_scene_graph.all_converted_defs)
+{
+        if (node->m_engine_node) // already converted ? external reference or similar
     {
-        assert(!sg.root_stack.empty());
-        return res;
+            continue;
     }
-    // This node is used in multiple places in our current scene-graph, convert it to prefab.
-    SceneLibrary::Item new_prefab;
-    new_prefab.name  = n->m_name.data();
-    new_prefab.scene = make_ref_counted<PackedScene>();
-    new_prefab.scene->pack(res);
-    lib_id = sg.lib->add_item(eastl::move(new_prefab));
-    Ref<PackedScene>  sc(sg.lib->get_item_scene(lib_id));
-    sc->set_path(sg.lib->get_path() + "::" + StringUtils::num(lib_id));
-    sc->set_subindex(lib_id);
-    auto instance_that = sc->instance(GEN_EDIT_STATE_INSTANCE);
-    //    LibraryEntryInstance *instance_that =memnew(LibraryEntryInstance);
-    //    instance_that->set_library_path(sg.lib->get_path());
-    //    instance_that->set_entry(n->m_name.data());
-    instance_that->set_name(String(String::CtorSprintf(),"%p_%s",instance_that,n->m_name.data()));
-    instance_that->set_filename(sg.lib->get_path() + "::" + StringUtils::num(lib_id));
-    // We leave library as null to refer to ourselves.
-    // Null library will get hopefully resolved by LibraryEntryInstance::add_child_notify
-    res->queue_delete();
-    //res = sg.lib->get_item_scene(h)->instance();
-    sg.root_stack.pop_back();
-    return instance_that;
+        Node3D *res = memnew(Node3D);
+        res->set_name(qPrintable(node->m_name));
+        // Convert all scene node components
+
+        convertComponents(node, res);
+        // convert model
+        if (node->m_model != nullptr)
+    {
+            convertModel(node->m_model, res, sg.missing_imported_geosets);
+    }
+        node->m_engine_node = res;
 }
+
+}
+
+static void resolve_children(SEGS::SceneNode *r, StringView p_source_file)
+{
+    Node *n = static_cast<Node *>(r->m_engine_node);
+    assert(n);
+    for (const SEGS::SceneNodeChildTransform &child : r->m_children)
+{
+        Node3D *child_node = static_cast<Node3D *>(child.node->m_engine_node);
+
+        if (child.node->m_use_count > 1) // we need to use scene library instancing
+{
+            // this child links to a node with multiple uses : convert to LibraryEntryInstance
+            auto *existing = object_cast<LibraryEntryInstance>(child_node);
+            if (existing)
+            { // external scene library reference
+                child_node = (Node3D *)existing->duplicate();
+}
+
+            else
+{
+                existing = memnew(LibraryEntryInstance);
+                existing->set_library_path(String(p_source_file));
+                existing->set_entry(child.node->m_name.data());
+                existing->set_name(qPrintable(child.node->m_name));
+                child_node = existing;
+}
+
+}
+
+        n->add_child(child_node);
+        Transform tr(fromCOH(child.m_pyr, child.m_translation));
+        child_node->set_transform(tr);
+    }
+}
+static void set_owner_deep(Node *owner, Node *start)
+{
+
+    if (start != owner)
+    {
+        start->set_owner(owner);
+}
+
+    for (Node *n : start->children())
+{
+        set_owner_deep(owner, n);
+}
+}
+// visit all 'root' nodes and set ownership on all their children
+static void resolve_ownership(SEGS::SceneGraph &m_scene_graph)
+{
+    // visit all 'roots'
+    // root is : all nodes with either 0 uses ( very likely exported ones ), or >1 uses ( internal prefabs )
+    for (const auto &r : m_scene_graph.all_converted_defs)
+    {
+        if (r->m_use_count == 1 || r->m_nest_level!=0)
+            continue;
+        Node *owner = static_cast<Node *>(r->m_engine_node);
+        set_owner_deep(owner, owner);
+}
+}
+static void select_highest_quality_lods(SEGS::SceneNode *r)
+{
+    Node *n = static_cast<Node *>(r->m_engine_node);
+    assert(n);
+    for (const SEGS::SceneNodeChildTransform &child : r->m_children)
+    {
+        if (child.node->lod_near>0)
+        {
+            Node3D *n = (Node3D *)child.node->m_engine_node;
+            n->hide();
+        }
+    }
+}
+static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Vector<String> &missing_resources,
+                                             StringView p_source_file)
+{
+    HashSet<String> exported_scene_roots;
+    SceneGraphInfo  sg;
+    for (const auto &r : m_scene_graph.roots)
+    {
+        exported_scene_roots.insert(r->node->m_name.data());
+    }
+    sg.lib = make_ref_counted<SceneLibrary>();
+    sg.lib->set_path(p_source_file);
+    QFileInfo fi(QByteArray::fromRawData(p_source_file.data(),p_source_file.size()));
+    sg.lib->set_name(fi.baseName().toLatin1().data());
+    createNodeInstances(m_scene_graph, sg);
+    // at this point all scene nodes have associated engine nodes.
+    // now we rebuild the hierarchy by visiting all nodes that have children and resolving those as local or lib nodes
+    for (SEGS::SceneNode *r : m_scene_graph.all_converted_defs)
+    {
+        resolve_children(r, p_source_file);
+    }
+
+    resolve_ownership(m_scene_graph);
+    for (SEGS::SceneNode *r : m_scene_graph.all_converted_defs)
+    {
+        select_highest_quality_lods(r);
+    }
+
+    // now we can create prefabs from all roots.
+    for (const auto &r : m_scene_graph.all_converted_defs)
+    {
+        if (r->m_use_count == 1)
+            continue;
+        Node *top_level = static_cast<Node *>(r->m_engine_node);
+
+        if (sg.lib->find_item_by_name(r->m_name.data()) == LibraryItemHandle(-1))
+        {
+            SceneLibrary::Item dat;
+            dat.scene = make_ref_counted<PackedScene>();
+            dat.scene->pack(top_level);
+            memdelete(top_level);
+            dat.name = r->m_name.data();
+            auto inst = memnew(LibraryEntryInstance);
+            inst->set_library_path(String(p_source_file));
+            inst->set_entry(r->m_name.data());
+            inst->set_name(qPrintable(r->m_name));
+            r->m_engine_node = inst;
+            sg.lib->add_item(eastl::move(dat));
+        }
+    }
+    missing_resources.insert(missing_resources.end(), sg.missing_imported_geosets.begin(),
+                             sg.missing_imported_geosets.end());
+    return eastl::move(sg.lib);
+}
+#if 0
+Ref<Animation> EditorSceneImporterCoHGeo::import_animation(StringView p_path, uint32_t p_flags, int p_bake_fps) {
+    // we don't support this YET
+    return Ref<Animation>();
+}
+
+uint32_t EditorSceneImporterCoHGeo::get_import_flags() const {
+
+    return IMPORT_SCENE | IMPORT_ANIMATION; //  | IMPORT_MATERIALS_IN_INSTANCES for overrides?
+}
+
+void EditorSceneImporterCoHGeo::get_extensions(Vector<String> &r_extensions) const {
+    // CoH scene graph files have this extension.
+    r_extensions.emplace_back("bin");
+}
+#endif
 
 const char *CoHSceneLibrary::get_importer_name() const
 {
@@ -492,59 +645,15 @@ StringName CoHSceneLibrary::get_resource_type() const
     return "SceneLibrary";
 }
 
-StringName CoHSceneLibrary::get_preset_name(int /*p_idx*/) const
-{
+StringName CoHSceneLibrary::get_preset_name(int p_idx) const {
 
     return StringName();
 }
 
-bool CoHSceneLibrary::get_option_visibility(const StringName & /*p_option*/,
-                                            const HashMap<StringName, Variant> &/*p_options*/) const
+bool CoHSceneLibrary::get_option_visibility(const StringName &p_option,
+    const HashMap<StringName, Variant> &p_options) const
 {
     return true;
-}
-static bool nonAutoNodeName(const SEGS::SceneNode * /*node*/)
-{
-    return true;
-}
-static bool nodeIsMultiInstantiated(const SEGS::SceneNode *node)
-{
-    return node->m_use_count>1 || nonAutoNodeName(node);
-}
-static Ref<SceneLibrary> build_scene_library(SEGS::SceneGraph &m_scene_graph, Vector<String> &missing_resources,
-                                             StringView p_source_file)
-{
-    HashSet<String> exported_scene_roots;
-    SceneGraphInfo  sg;
-    for (const auto &r : m_scene_graph.roots)
-    {
-        exported_scene_roots.insert(r->node->m_name.data());
-    }
-    sg.lib = make_ref_counted<SceneLibrary>();
-    sg.lib->set_path(p_source_file);
-    QFileInfo fi(QByteArray::fromRawData(p_source_file.data(),p_source_file.size()));
-    sg.lib->set_name(fi.baseName().toLatin1().data());
-    for (SEGS::SceneNode *r : m_scene_graph.all_converted_defs)
-    {
-        if (!nodeIsMultiInstantiated(r) && !exported_scene_roots.contains(r->m_name.data()))
-            continue;
-
-        Node *top_level = convertFromRoot(sg, r);
-        assert(sg.root_stack.empty());
-        if (sg.lib->find_item_by_name(r->m_name.data()) == LibraryItemHandle(-1))
-        {
-            SceneLibrary::Item dat;
-            dat.scene = make_ref_counted<PackedScene>();
-            dat.scene->pack(top_level);
-            dat.name = r->m_name.data();
-            sg.lib->add_item(eastl::move(dat));
-        }
-        else
-            memdelete(top_level);
-    }
-    missing_resources.insert(missing_resources.end(), sg.missing_imported_geosets.begin(),
-                             sg.missing_imported_geosets.end());
-    return eastl::move(sg.lib);
 }
 
 Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
@@ -554,10 +663,10 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
     using namespace StringUtils;
 
     SE_FSWrapper se_wrap;
-    SceneGraphInfo sg_info;
-    auto idx = StringUtils::find_last(p_source_file, "geobin");
 
     // Check if the selected file is correctly located in the hierarchy, just to make sure.
+    SceneGraphInfo sg_info;
+    auto idx = StringUtils::rfind(p_source_file, "geobin");
     if (String::npos == idx)
     {
         PLUG_FAIL_V_MSG(ERR_CANT_OPEN, "The given source file is not located in geobin/ folder.");
@@ -575,6 +684,7 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
         {
             PLUG_FAIL_V_MSG(ERR_FILE_MISSING_DEPENDENCIES, "The required bin files are missing ?");
         }
+        SEGS::preloadTextureNames(&se_wrap, basepath.c_str());
     }
 
     eastl::unique_ptr<SEGS::SceneGraph> m_scene_graph;
@@ -586,20 +696,22 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
     }
     for(auto iter=m_scene_graph->m_requests.begin(); iter!= m_scene_graph->m_requests.end(); ++iter)
     {
-        QString packed_in    = iter.key().base_file + "/" + QFileInfo(packed_in).fileName() + ".bin";
+        const SEGS::NodeLoadRequest &reqest(iter.key());
+        QString packed_in = reqest.base_file + "/" + QFileInfo(reqest.base_file).fileName() + ".bin";
         String needs_library = String("res://coh_data/geobin/")+qPrintable(packed_in);
 
-        qDebug() << packed_in;
+        //qDebug() << packed_in;
 
         if(!FileAccess::exists(needs_library))
+        {
             needs_library = qPrintable(getFilepathCaseInsensitive(se_wrap,needs_library.c_str()));
+        }
 
         if (!FileAccess::exists(needs_library))
         {
             r_missing_deps.emplace_back(needs_library);
+            continue;
         }
-        else
-        {
             for (SEGS::NodeLoadTarget& load_tgt : *iter)
             {
                 LibraryEntryInstance * inst=memnew(LibraryEntryInstance);
@@ -608,7 +720,8 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
 
                 SEGS::SceneNode *imported_node;
                 if (load_tgt.node != nullptr)
-                { // internal node
+            {
+                // internal node
                     inst->set_name(String(String::CtorSprintf(),"%p_%s",inst,iter.key().node_name.data()));
                     imported_node           = new SEGS::SceneNode(load_tgt.node->m_nest_level + 1);
                     load_tgt.node->m_children[load_tgt.child_idx].node = imported_node;
@@ -619,18 +732,24 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
                     imported_node = new SEGS::SceneNode(0);
                     m_scene_graph->roots[load_tgt.child_idx]->node = imported_node;
                 }
+            // this external node is used in multiple places
+            imported_node->m_use_count   = (*iter).size();
                 imported_node->m_engine_node = inst;
             }
         }
-    }
     if(!r_missing_deps.empty())
+    {
         return ERR_FILE_MISSING_DEPENDENCIES;
+    }
     Ref<SceneLibrary> part_lib(build_scene_library(*m_scene_graph,r_missing_deps,p_source_file));
-    for (auto dep : r_missing_deps)
+    //TODO: add a list of SceneLibrary<->SceneLibrary dependencies here
+
+
+    for (const String &dep : r_missing_deps)
     {
         getCoreInterface()->reportError("Missing dependency:"+dep,"",FUNCTION_STR, __FILE__, __LINE__);
     }
-    for (auto dep : missing_geosets)
+    for (const auto &dep : missing_geosets)
     {
         getCoreInterface()->reportError(String("Missing geoset:")+dep.data(),"",FUNCTION_STR, __FILE__, __LINE__);
     }
@@ -641,7 +760,7 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
 
     if (!m_scene_graph->roots.empty())
     {
-        Ref<PackedScene> secondary(make_ref_counted<PackedScene>());
+        // an actual scene file needs to be produced, since we have roots
         Node3D* root = memnew(Node3D);
         root->set_name(PathUtils::get_basename(p_source_file));
         for(const auto & r : m_scene_graph->roots)
@@ -649,7 +768,8 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
             LibraryEntryInstance* entry;
             if (r->node->m_engine_node)
             {
-                entry = object_cast<LibraryEntryInstance>((Object *)r->node->m_engine_node);
+                auto vv = (Node *)r->node->m_engine_node;
+                entry = object_cast<LibraryEntryInstance>((Node *)r->node->m_engine_node);
             }
             else
             {
@@ -658,13 +778,16 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
                 entry->set_entry(r->node->m_name.data());
                 entry->set_name(qPrintable(r->node->m_name));
 
+                r->node->m_engine_node = entry;
             }
             root->add_child(entry);
             entry->set_owner(root);
-            static_cast<Node3D*>(entry)->set_transform(fromGLM(r->mat));
+            entry->set_transform(fromCOH(r->rot, r->pos));
 
         }
+        Ref<PackedScene> secondary(make_ref_counted<PackedScene>());
         secondary->pack(root);
+        memdelete(root);
 
         gResourceManager().save(save_path, secondary);
         if (r_gen_files) {
@@ -672,6 +795,7 @@ Error CoHSceneLibrary::import(StringView p_source_file, StringView p_save_path,
         }
     }
     Error res = gResourceManager().save(String(p_save_path) + ".scenelib", part_lib);
+    //gResourceManager().save(String(p_save_path) + ".tres", part_lib);
 //    auto v(part_lib->get_item_list());
 //    for(int i : v){
 //        gResourceManager().save(String(p_save_path) + StringUtils::num(i) + ".tscn", part_lib->get_item_scene(i));

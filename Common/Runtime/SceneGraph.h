@@ -94,6 +94,8 @@ struct SceneNode
 struct RootNode
 {
     glm::mat4 mat;
+    glm::vec3 pos{0, 0, 0};
+    glm::vec3 rot{0, 0, 0};
     SceneNode *node = nullptr;
     uint32_t index_in_roots_array=0;
 };

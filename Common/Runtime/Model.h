@@ -37,6 +37,7 @@ struct VBOPointers
     std::vector<glm::vec2> uv1;
     std::vector<glm::vec2> uv2;
     std::vector<int> triangles;
+    std::vector<HTexture> assigned_textures;
     std::vector<glm::vec2> bone_weights;
     std::vector<std::pair<uint16_t,uint16_t>> bone_indices;
     bool needs_tangents=false;
@@ -118,6 +119,7 @@ struct Model
 void geosetLoadHeader(QIODevice *fp, GeoSet *geoset);
 void geosetLoadData(QIODevice *fp, GeoSet *geoset);
 
+void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model *model,const std::vector<HTexture> &textures);
 void fillVBO(Model & model);
 void toSafeModelName(char *inp,int cnt);
 

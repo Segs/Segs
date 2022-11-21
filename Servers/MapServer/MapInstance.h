@@ -173,7 +173,7 @@ public:
 
 public:
                                 IMPL_ID(MapInstance)
-                                MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr, const bool is_mission_map);
+                                MapInstance(const QString &name,const ListenAndLocationAddresses &listen_addr, bool is_mission_map);
                                 ~MapInstance() override;
         void                    dispatch(SEGSEvents::Event *ev) override;
 

@@ -100,33 +100,24 @@ struct Model32
 };
 ptrdiff_t unpackDeltaPack(int *tgt_buf, uint8_t *data, uint32_t entry_size, uint32_t num_entries, UnpackMode v_type)
 {
-    uint32_t     idx;
     float        float_acc[3] = {0, 0, 0};
     int          int_acc[3]   = {0, 0, 0};
-    float *      float_tgt;
-    int          bit_offset;
-    uint8_t *    data_src;
     int          processed_val = 0;
-    int *        delta_flags;
-    unsigned int extracted_2bits_;
-    float        scaling_val;
-    uint32_t     entry_idx;
-    float        inv_scale;
 
-    bit_offset  = 0;
-    scaling_val = 1.0;
-    float_tgt   = (float *)tgt_buf;
-    delta_flags = (int *)data;
-    data_src    = &data[(entry_size * 2 * num_entries + 7) / 8];
-    inv_scale   = (float)(1 << *data_src);
+    int      bit_offset  = 0;
+    float    scaling_val = 1.0f;
+    float *  float_tgt   = (float *)tgt_buf;
+    int *    delta_flags = (int *)data;
+    uint8_t *data_src    = &data[(entry_size * 2 * num_entries + 7) / 8];
+    float    inv_scale   = (float)(1 << *data_src);
     data_src++;
     if(inv_scale != 0.0f)
         scaling_val = 1.0f / inv_scale;
-    for (entry_idx = 0; entry_idx < num_entries; ++entry_idx)
+    for (uint32_t entry_idx = 0; entry_idx < num_entries; ++entry_idx)
     {
-        for (idx = 0; idx < entry_size; ++idx)
+        for (uint32_t idx = 0; idx < entry_size; ++idx)
         {
-            extracted_2bits_ = ((unsigned int)delta_flags[bit_offset >> 5] >> (bit_offset & 0x1F)) & 3;
+            unsigned int extracted_2bits_ = ((unsigned int)delta_flags[bit_offset >> 5] >> (bit_offset & 0x1F)) & 3;
             bit_offset += 2;
             switch (extracted_2bits_)
             {
@@ -341,56 +332,62 @@ void modelFixup(const Model &model,VBOPointers &vbo)
 
     bool texture_scaling_used = false;
     for(uint32_t i = 0; i < model.vertex_count; ++i )
+    {
+        vbo.uv1[i].x = 1.0f - vbo.uv1[i].x;
         vbo.uv1[i].y = 1.0f - vbo.uv1[i].y;
+    }
 
     if(!vbo.uv2.empty())
     {
         for(uint32_t i = 0; i < model.vertex_count; ++i)
+        {
+            vbo.uv2[i].x = 1.0f - vbo.uv2[i].x;
             vbo.uv2[i].y = 1.0f - vbo.uv2[i].y;
     }
+    }
 
-//    for(HTexture tex : vbo.assigned_textures)
-//    {
-//        if(!tex->info)
-//            continue;
+    for(HTexture tex : vbo.assigned_textures)
+    {
+        if(!tex->info)
+            continue;
 
-//        if( 1.0f != tex->scaleUV0.x || 1.0f != tex->scaleUV0.y ||
-//             1.0f != tex->scaleUV1.x || 1.0f != tex->scaleUV1.y )
-//            texture_scaling_used = true;
-//    }
+        if( 1.0f != tex->scaleUV0.x || 1.0f != tex->scaleUV0.y ||
+             1.0f != tex->scaleUV1.x || 1.0f != tex->scaleUV1.y )
+            texture_scaling_used = true;
+    }
 
-//    if(!texture_scaling_used)
-//        return;
+    if(!texture_scaling_used)
+        return;
 
-//    std::vector<bool> vertex_uv_was_scaled(model.vertex_count);
-//    uint32_t triangle_offset = 0;
-//    for(uint32_t j = 0; j < model.num_textures; ++j )
-//    {
-//        TextureWrapper &tex(vbo.assigned_textures[j].get());
-//        const uint32_t bind_tri_count = model.texture_bind_info[j].tri_count;
-//        if(!tex.info)
-//            continue;
+    std::vector<bool> vertex_uv_was_scaled(model.vertex_count);
+    uint32_t triangle_offset = 0;
+    for(uint32_t j = 0; j < model.num_textures; ++j )
+    {
+        TextureWrapper &tex(vbo.assigned_textures[j].get());
+        const uint32_t bind_tri_count = model.texture_bind_info[j].tri_count;
+        if(!tex.info)
+            continue;
 
-//        glm::vec2 scaletex0 = tex.scaleUV0;
-//        glm::vec2 scaletex1 = tex.scaleUV1;
-//        for(uint32_t tri_idx = 0; tri_idx < bind_tri_count; ++tri_idx)
-//        {
-//            int *tri(vbo.triangles.data()+(tri_idx+triangle_offset)*3);
-//            for(int vnum=0; vnum<3; ++vnum)
-//            {
-//                const uint32_t vert_idx = tri[vnum];
-//                if(vertex_uv_was_scaled[vert_idx])
-//                    continue;
+        glm::vec2 scaletex0 = tex.scaleUV0;
+        glm::vec2 scaletex1 = tex.scaleUV1;
+        for(uint32_t tri_idx = 0; tri_idx < bind_tri_count; ++tri_idx)
+        {
+            glm::ivec3 tri(vbo.triangles[tri_idx+triangle_offset]);
+            for(int vnum=0; vnum<3; ++vnum)
+            {
+                const uint32_t vert_idx = tri[vnum];
+                if(vertex_uv_was_scaled[vert_idx])
+                    continue;
 
-//                vertex_uv_was_scaled[vert_idx] = true;
-//                vbo.uv2[vert_idx].x *= scaletex0.x;
-//                vbo.uv2[vert_idx].y *= scaletex0.y;
-//                vbo.uv1[vert_idx].x *= scaletex1.x;
-//                vbo.uv1[vert_idx].y *= scaletex1.y;
-//            }
-//        }
-//        triangle_offset += bind_tri_count;
-//    }
+                vertex_uv_was_scaled[vert_idx] = true;
+                vbo.uv2[vert_idx].x *= scaletex0.x;
+                vbo.uv2[vert_idx].y *= scaletex0.y;
+                vbo.uv1[vert_idx].x *= scaletex1.x;
+                vbo.uv1[vert_idx].y *= scaletex1.y;
+            }
+        }
+        triangle_offset += bind_tri_count;
+    }
 
 
 
@@ -446,7 +443,7 @@ std::unique_ptr<VBOPointers> fillVbo(const Model &model)
         for(uint32_t i=0; i<model.vertex_count; ++i)
         {
             vbo->bone_indices[i] = std::make_pair(uint16_t(indices[i].first),uint16_t(indices[i].second));
-            vbo->bone_weights[i].x = (weights[i]/255.0f);
+            vbo->bone_weights[i].x = float(weights[i])/255.0f;
             vbo->bone_weights[i].y = 1.0f - vbo->bone_weights[i].x;
         }
     }
@@ -498,6 +495,95 @@ void geosetLoadData(QIODevice *fp, GeoSet *geoset)
     geoset->data_loaded = true;
 }
 
+void initLoadedModel(std::function<HTexture (const QString &)> funcloader,Model *model,const std::vector<HTexture> &textures)
+{
+    model->blend_mode = CoHBlendMode::MULTIPLY_REG;
+    bool isgeo=false;
+    if(model->name.toUpper().startsWith("GEO_"))
+    {
+        model->flags |= OBJ_DRAW_AS_ENT;
+        isgeo = true;
+        if(model->name.toLower().contains("eyes") )
+        {
+            if(!model->trck_node)
+                model->trck_node = new ModelModifiers;
+            model->trck_node->_TrickFlags |= DoubleSided;
+        }
+    }
+    assert(model->num_textures==model->texture_bind_info.size());
+    for(TextureBind tbind : model->texture_bind_info)
+    {
+        HTexture seltex = textures[tbind.tex_idx];
+        if(!seltex)
+        {
+            // missing texture, nothing to do here
+            continue;
+        }
+
+        TextureWrapper &base_tex(seltex.get());
+        if(!isgeo && base_tex.info)
+        {
+            auto blend = CoHBlendMode(base_tex.info->BlendType);
+            if(blend == CoHBlendMode::ADDGLOW || blend == CoHBlendMode::COLORBLEND_DUAL ||
+                blend == CoHBlendMode::ALPHADETAIL)
+                seltex = funcloader(base_tex.detailname);
+            if(seltex && seltex->flags & TextureWrapper::ALPHA)
+                model->flags |= OBJ_ALPHASORT;
+        }
+
+        if( base_tex.flags & TextureWrapper::DUAL )
+        {
+            model->flags |= OBJ_DUALTEXTURE;
+            if( base_tex.BlendType != CoHBlendMode::MULTIPLY )
+                model->blend_mode = base_tex.BlendType;
+        }
+
+        if( !base_tex.bumpmap.isEmpty() )
+        {
+            HTexture wrap = funcloader(base_tex.bumpmap);
+            if( wrap->flags & TextureWrapper::BUMPMAP )
+            {
+                model->flags |= OBJ_BUMPMAP;
+                model->blend_mode = (model->blend_mode == CoHBlendMode::COLORBLEND_DUAL) ?
+                            CoHBlendMode::BUMPMAP_COLORBLEND_DUAL : CoHBlendMode::BUMPMAP_MULTIPLY;
+            }
+            if( base_tex.flags & TextureWrapper::CUBEMAPFACE || (wrap->flags & TextureWrapper::CUBEMAPFACE) )
+                model->flags |= OBJ_CUBEMAP;
+        }
+    }
+
+    if( model->trck_node && model->trck_node->info)
+    {
+        model->flags |= model->trck_node->info->ObjFlags;
+    }
+
+    if( model->blend_mode == CoHBlendMode::COLORBLEND_DUAL || model->blend_mode == CoHBlendMode::BUMPMAP_COLORBLEND_DUAL )
+    {
+        if( !model->trck_node )
+            model->trck_node = new ModelModifiers;
+        model->trck_node->_TrickFlags |= SetColor;
+    }
+
+    if( model->blend_mode == CoHBlendMode::ADDGLOW )
+    {
+        if( !model->trck_node )
+            model->trck_node = new ModelModifiers;
+        model->trck_node->_TrickFlags |= SetColor | NightLight;
+    }
+
+    if( !model->packed_data.norms.uncomp_size ) // no normals
+        model->flags |= OBJ_FULLBRIGHT; // only ambient light
+    if( model->trck_node  && model->trck_node->_TrickFlags & Additive )
+        model->flags |= OBJ_ALPHASORT; // alpha pass
+    if( model->flags & OBJ_FORCEOPAQUE ) // force opaque
+        model->flags &= ~OBJ_ALPHASORT;
+
+    if( model->trck_node && model->trck_node->info)
+    {
+        if( model->trck_node->info->blend_mode )
+            model->blend_mode = CoHBlendMode(model->trck_node->info->blend_mode);
+    }
+}
 
 void toSafeModelName(char *inp, int cnt)
 {

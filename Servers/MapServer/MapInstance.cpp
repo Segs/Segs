@@ -114,7 +114,7 @@ protected:
 };
 
 using namespace std;
-MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr, const bool is_mission_map)
+MapInstance::MapInstance(const QString &mapdir_path, const ListenAndLocationAddresses &listen_addr, bool is_mission_map)
   : m_data_path(mapdir_path),
     m_index(getMapIndex(mapdir_path.mid(mapdir_path.indexOf('/')))),
     m_addresses(listen_addr), m_is_mission_map(is_mission_map)

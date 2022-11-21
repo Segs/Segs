@@ -230,6 +230,8 @@ void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore
     auto ref = newRef(*ctx.m_target);
     transformFromYPRandTranslation(ref->mat,{refload.rot.x,refload.rot.y,refload.rot.z},refload.pos);
     ref->node = def;
+    ref->pos = refload.pos;
+    ref->rot  = refload.rot;
 
     if(!def)
     {
@@ -595,7 +597,6 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
         node = newDef(*ctx.m_target,ctx.m_nesting_level);
         if(!defload.p_Property.empty())
             node->m_properties = new std::vector<GroupProperty_Data> (defload.p_Property);
-        node->m_use_count++; // some nodes are added twice ( node-based lod??)
     }
 
     if( !defload.p_Obj.isEmpty() )
@@ -725,20 +726,20 @@ SceneGraph * loadSceneGraphNoNesting(FSWrapper *fs, const QByteArray &filename, 
     assert(rd.m_prefab_mapping);
     rd.m_prefab_mapping->m_missing_geosets.clear();
     QByteArray upcase_city = filename;
-//    upcase_city.replace("city", "City");
-//    upcase_city.replace("hazard", "Hazard");
-//    upcase_city.replace("trial", "Trial");
-//    upcase_city.replace("zones", "Zones");
-//    upcase_city.replace("missions", "Missions");
-//    upcase_city.replace("sewer", "Sewer");
-//    upcase_city.replace("layout", "Layout");
-//    upcase_city.replace("tech", "Tech");
-//    upcase_city.replace("warehouse", "Warehouse");
-//    upcase_city.replace("office", "Office");
-//    upcase_city.replace("abandoned", "Abandoned");
-//    upcase_city.replace("caves", "Caves");
-//    upcase_city.replace("column", "Column");
-//    upcase_city.replace("cot", "COT");
+    upcase_city.replace("city", "City");
+    upcase_city.replace("hazard", "Hazard");
+    upcase_city.replace("trial", "Trial");
+    upcase_city.replace("zones", "Zones");
+    upcase_city.replace("missions", "Missions");
+    upcase_city.replace("sewer", "Sewer");
+    upcase_city.replace("layout", "Layout");
+    upcase_city.replace("tech", "Tech");
+    upcase_city.replace("warehouse", "Warehouse");
+    upcase_city.replace("office", "Office");
+    upcase_city.replace("abandoned", "Abandoned");
+    upcase_city.replace("caves", "Caves");
+    upcase_city.replace("column", "Column");
+    upcase_city.replace("cot", "COT");
     rd.m_prefab_mapping->sceneGraphWasReset();
     bool res = loadSceneGraph(upcase_city.mid(maps_idx), ctx, *rd.m_prefab_mapping);
     if (!res)

@@ -11,4 +11,4 @@ install(TARGETS lua_sol2 EXPORT lua_sol2 DESTINATION lib) # ignored
 install(EXPORT lua_sol2 FILE lua_sol2-config.cmake DESTINATION share/cmake/lua_sol2)
 install(FILES include/sol/sol.hpp DESTINATION include/sol)
 install(FILES include/sol/config.hpp DESTINATION include/sol)
-install(FILES include/sol/sol_forward.hpp DESTINATION include/sol)
+install(FILES include/sol/forward.hpp DESTINATION include/sol)
