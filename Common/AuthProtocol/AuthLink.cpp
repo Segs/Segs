@@ -46,7 +46,7 @@ void encode_buffer(AuthLinkState &state,const AuthLinkEvent *ev)
     // put 0 as size for now
     state.m_unsent_bytes_storage.uPut((uint16_t)0);
     // remember start location
-    size_t actual_packet_start = state.m_unsent_bytes_storage.GetReadableDataSize();
+    uint32_t actual_packet_start = state.m_unsent_bytes_storage.GetReadableDataSize();
     // store bytes
     ev->serializeto(state.m_unsent_bytes_storage);
     // calculate the number of stored bytes, and set it in packet_size,

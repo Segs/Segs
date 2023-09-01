@@ -217,7 +217,7 @@ void storeTeamList(BitStream &bs, Entity *self)
         team_idx        = self->m_team->m_data.m_team_idx;
         has_taskforce   = self->m_team->m_data.m_has_taskforce;
         tm_leader_id    = self->m_team->m_data.m_team_leader_idx;
-        tm_size         = self->m_team->m_data.m_team_members.size();
+        tm_size         = (uint32_t)self->m_team->m_data.m_team_members.size();
     }
 
     storePackedBitsConditional(bs,20,team_idx);
@@ -321,7 +321,7 @@ static void sendTrayMode(const GUISettings &gui, BitStream &bs)
 static void sendKeybinds(const KeybindSettings &keybinds,BitStream &bs)
 {
     const CurrentKeybinds &cur_keybinds = keybinds.getCurrentKeybinds();
-    int total_keybinds = cur_keybinds.size();
+    int total_keybinds = (int)cur_keybinds.size();
 
     qCDebug(logKeybinds) << "total keybinds:" << total_keybinds;
 
@@ -527,7 +527,7 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
             if(power.m_total_eh_slots > power.m_enhancements.size())
                 qCWarning(logPowers) << "storePowerInfoUpdate: Total EH Slots larger than vector!";
 
-            bs.StorePackedBits(4, power.m_enhancements.size()); // power.m_total_eh_slots; total owned enhancement slots
+            bs.StorePackedBits(4, (uint32_t)power.m_enhancements.size()); // power.m_total_eh_slots; total owned enhancement slots
             for(const auto & enhancement : power.m_enhancements)
             {
                 qCDebug(logPowers) << "  Enhancement:" << enhancement.m_name
@@ -574,7 +574,7 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
             rpow_idx++;
     }
     qCDebug(logPowers) << "NumRechargingTimers:" << e->m_recharging_powers.size();
-    bs.StorePackedBits(1, e->m_recharging_powers.size());
+    bs.StorePackedBits(1, (uint32_t)e->m_recharging_powers.size());
     for(const QueuedPowers &rpow : e->m_recharging_powers)
     {
         qCDebug(logPowers) << "  RechargeCountdown:" << rpow.m_timer_updated << rpow.m_recharge_time;
@@ -611,7 +611,7 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
     // All Owned Enhancements
     qCDebug(logPowers) << "Enhancement Slots:" << cd->m_enhancements.size();
 
-    bs.StorePackedBits(1, cd->m_enhancements.size());
+    bs.StorePackedBits(1, (uint32_t)cd->m_enhancements.size());
     for(CharacterEnhancement &eh : cd->m_enhancements)
     {
         if(cd->m_enhancements.empty() || eh.m_name.isEmpty())

@@ -31,7 +31,7 @@ public:
         bs.StorePackedBits(1, type() - evFirstServerToClient); // Packet 22
         bs.StorePackedBits(1, 1);
         bs.StoreBits(1, m_is_opaque);
-        uint32_t num_cells = m_visible_map_cells.size();
+        uint32_t num_cells = (uint32_t)m_visible_map_cells.size();
         bs.StorePackedBits(1, num_cells);
 
         std::vector<uint8_t> cells_arr;

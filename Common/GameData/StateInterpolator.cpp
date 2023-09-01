@@ -250,7 +250,7 @@ std::array<BinTreeEntry,7> interpolateBinTree(std::array<PosUpdate, 64> vals, fl
     // Enc 2 -> needs 1, marks it, 1 needs 3, marks it -> whole path to tree root marked
     //3, 1, 5, 0, 2, 4, 6
     int required_value_order[] = {2,2,1,1,0,0,0};
-    for(int to_check=enc.size()-1; to_check>0; --to_check) {
+    for(int to_check=int(enc.size())-1; to_check>0; --to_check) {
         BinTreeEntry &checked_parent(enc[required_value_order[to_check]]);
         if(enc[to_check].x && !checked_parent.x) {
             checked_parent.x=1;

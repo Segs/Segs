@@ -32,8 +32,8 @@ public:
     void serializeto(GrowingBuffer &buf) const override
     {
         buf.uPut(uint8_t(0));
-        buf.uPutBytes((uint8_t*)m_data.login.data(), m_data.login.size());
-        buf.uPutBytes((uint8_t*)m_data.password.data(), m_data.password.size());
+        buf.uPutBytes((uint8_t*)m_data.login.data(), (uint32_t)m_data.login.size());
+        buf.uPutBytes((uint8_t*)m_data.password.data(), (uint32_t)m_data.password.size());
         buf.uPut(m_data.unkval1);
         buf.uPut(m_data.unkval2);
         //assert(!"Not implemented");
@@ -46,8 +46,8 @@ public:
         {
             //assert(packet_code==0);
         }
-        buf.uGetBytes((uint8_t *)m_data.login.data(), m_data.login.size());
-        buf.uGetBytes((uint8_t *)m_data.password.data(), m_data.password.size());
+        buf.uGetBytes((uint8_t *)m_data.login.data(), (uint32_t)m_data.login.size());
+        buf.uGetBytes((uint8_t *)m_data.password.data(), (uint32_t)m_data.password.size());
         buf.uGet(m_data.unkval1);
         buf.uGet(m_data.unkval2);
     }

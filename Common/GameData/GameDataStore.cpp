@@ -73,7 +73,7 @@ public:
             return;
         }
         m_known_strings.push_back(str.toLower());
-        m_string_to_index[str.toLower()] = m_known_strings.size();
+        m_string_to_index[str.toLower()] = (uint32_t)m_known_strings.size();
     }
     int getIndex(const QString &str) const
     {
@@ -101,31 +101,31 @@ public:
         m_strings.init(4096,0x3D);
         add_colors(data.m_supergroup_colors.m_Colors);
         //TODO: Use reverse iterators here ?
-        for(int idx=data.m_costume_store.size()-1; idx>=0; --idx)
+        for(int idx=(int)data.m_costume_store.size()-1; idx>=0; --idx)
         {
             const Costume2_Data &ce(data.m_costume_store[idx]);
             m_strings.insert_entry(ce.m_Name,"");
-            for(int orign_idx=ce.m_Origins.size()-1; orign_idx>=0; --orign_idx)
+            for(int orign_idx=(int)ce.m_Origins.size()-1; orign_idx>=0; --orign_idx)
             {
                 const CostumeOrigin_Data &orig(ce.m_Origins[orign_idx]);
                 add_colors(orig.m_BodyPalette[0].m_Colors);
                 add_colors(orig.m_SkinPalette[0].m_Colors);
-                for(int region_idx=orig.m_Region.size()-1; region_idx>=0; --region_idx)
+                for(int region_idx=(int)orig.m_Region.size()-1; region_idx>=0; --region_idx)
                 {
                     const Region_Data &region(orig.m_Region[region_idx]);
                     m_strings.insert_entry(region.m_Name,"");
-                    for(int bone_idx=region.m_BoneSets.size()-1; bone_idx>=0; --bone_idx)
+                    for(int bone_idx=(int)region.m_BoneSets.size()-1; bone_idx>=0; --bone_idx)
                     {
                         const BoneSet_Data &bset(region.m_BoneSets[bone_idx]);
                         m_strings.insert_entry(bset.m_Name,"");
                         m_strings.insert_entry(bset.m_Displayname,"");
 
-                        for(int geo_idx=bset.m_GeoSets.size()-1; geo_idx>=0; --geo_idx)
+                        for(int geo_idx=(int)bset.m_GeoSets.size()-1; geo_idx>=0; --geo_idx)
                         {
                             const GeoSet_Data &geo_set(bset.m_GeoSets[geo_idx]);
                             m_strings.insert_entry(geo_set.m_Displayname,"");
                             m_strings.insert_entry(geo_set.m_BodyPart,"");
-                            for(int info_idx=geo_set.m_Infos.size()-1; info_idx>=0; --info_idx)
+                            for(int info_idx=(int)geo_set.m_Infos.size()-1; info_idx>=0; --info_idx)
                             {
                                 const GeoSet_Info_Data &info(geo_set.m_Infos[info_idx]);
                                 m_strings.insert_entry(info.m_DisplayName,"");
@@ -134,15 +134,15 @@ public:
                                 m_strings.insert_entry(info.m_Tex1,"");
                                 m_strings.insert_entry(info.m_Tex2,"");
                             }
-                            for(int name_idx=geo_set.m_MaskNames.size()-1; name_idx>=0; --name_idx)
+                            for(int name_idx=(int)geo_set.m_MaskNames.size()-1; name_idx>=0; --name_idx)
                             {
                                 m_strings.insert_entry(geo_set.m_MaskNames[name_idx],"");
                             }
-                            for(int name_idx=int(geo_set.m_MaskStrings.size())-1; name_idx>=0; --name_idx)
+                            for(int name_idx=(int)geo_set.m_MaskStrings.size()-1; name_idx>=0; --name_idx)
                             {
                                 m_strings.insert_entry(geo_set.m_MaskStrings[name_idx],"");
                             }
-                            for(int mask_idx=geo_set.m_Masks.size()-1; mask_idx>=0; --mask_idx)
+                            for(int mask_idx=(int)geo_set.m_Masks.size()-1; mask_idx>=0; --mask_idx)
                             {
                                 const GeoSet_Mask_Data &mask(geo_set.m_Masks[mask_idx]);
                                 m_strings.insert_entry(mask.m_Name,"");

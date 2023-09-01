@@ -200,14 +200,14 @@ QByteArray mapNameToPath(const QByteArray &name,LoadingContext &ctx)
 
 RootNode *newRef(SceneGraph &scene)
 {
-    size_t idx;
-    for(idx=0; idx<scene.roots.size(); ++idx)
+    uint32_t idx;
+    for(idx=0; idx<(uint32_t)scene.roots.size(); ++idx)
         if(!scene.roots[idx])
             break;
 
-    if(idx>=scene.roots.size())
+    if(idx>=(uint32_t)scene.roots.size())
     {
-        idx = scene.roots.size();
+        idx = (uint32_t)scene.roots.size();
         scene.roots.emplace_back();
     }
 
@@ -253,7 +253,7 @@ void addRoot(const SceneRootNode_Data &refload, LoadingContext &ctx, PrefabStore
 SceneNode *newDef(SceneGraph &scene,int level)
 {
     SceneNode *res = new SceneNode(level);
-    res->m_index_in_scenegraph = scene.all_converted_defs.size();
+    res->m_index_in_scenegraph = (uint32_t)scene.all_converted_defs.size();
     scene.all_converted_defs.emplace_back(res);
     res->in_use = true;
     return res;
@@ -262,7 +262,7 @@ SceneNode *newDef(SceneGraph &scene,int level)
 void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
 {
     QString result;
-    size_t strlenobjec = strlen("object_library");
+    const uint32_t strlenobjec = (uint32_t)strlen("object_library");
     if( obj_path.startsWith("object_library", Qt::CaseInsensitive) )
         obj_path.remove(0, strlenobjec + 1);
     if( groupInLibSub(obj_path) )
@@ -322,7 +322,7 @@ void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, Loading
                 qDebug() << "Cannot find the source for requested:"<<new_name;
                 continue;
             }
-            int child_idx = node->m_children.size();
+            int child_idx = (int)node->m_children.size();
             node->m_children.emplace_back(child);
             ctx.m_target->node_request_instantiation(NodeLoadTarget{node,child_idx},request);
         }
@@ -578,12 +578,14 @@ void  groupApplyModifiers(SceneNode *node)
 
     if(mods->LodNear != 0.0f || mods->LodFar != 0.0f || mods->LodNearFade != 0.0f || mods->LodFarFade != 0.0f || mods->LodScale != 0.0f)
         node->lod_fromtrick = 1;
+#ifdef WIP
     if( mods->node._TrickFlags & NoColl )
         ; //TODO: disable collisions for this node
     if( mods->node._TrickFlags & SelectOnly )
         ; // set the model's triangles as only selectable ?? ( selection mesh ? )
     if( mods->node._TrickFlags & NotSelectable )
         ; //
+#endif
 }
 bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore &prefabs)
 {

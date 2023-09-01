@@ -129,7 +129,8 @@ public:
             uint32_t factor=1;
             if( in_use >= watermark || in_use >= m_storage.size() - 1 )
                 factor=2;
-            resize(factor*m_storage.size());
+            //TODO: verify factor*m_storage.size() is less than uint32_t max
+            resize(uint32_t(factor*m_storage.size()));
         }
         if(this->find_index(k,entry_idx,prev_val,true))
         {

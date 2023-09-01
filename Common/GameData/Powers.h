@@ -139,9 +139,9 @@ struct vInspirations
     std::vector<std::vector<CharacterInspiration>> m_inspirations;
 
     // although in some cases people prefer [row][col], i'll be using x -> col and y -> row
-    size_t m_rows, m_cols;
+    uint32_t m_rows, m_cols;
 
-    vInspirations(size_t cols = 5, size_t rows = 4)
+    vInspirations(uint32_t cols = 5, uint32_t rows = 4)
     {
         if(cols > 5)
             qCritical() << "vInspirations has more than 5 columns!";
@@ -165,7 +165,7 @@ struct vInspirations
         return m_cols * m_rows;
     }
 
-    CharacterInspiration& at (const size_t col, const size_t row)
+    CharacterInspiration& at (uint32_t col, uint32_t row)
     {
         if(col >= m_cols || row >= m_rows)
             qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
@@ -173,7 +173,7 @@ struct vInspirations
         return m_inspirations[col][row];
     }
 
-    const CharacterInspiration& at (const size_t col, const size_t row) const
+    const CharacterInspiration& at (uint32_t col, uint32_t row) const
     {
         if(col >= m_cols || row >= m_rows)
             qCritical() << QString("Trying to access vInspirations of %1 rows %2 cols using params %3 rows %4 cols");
@@ -181,7 +181,7 @@ struct vInspirations
         return m_inspirations[col][row];
     }
 
-    CharacterInspiration& from_first_row (const size_t col)
+    CharacterInspiration& from_first_row (uint32_t col)
     {
         if(!m_inspirations[col][0].m_has_insp)
             push_to_first_row(col);
@@ -189,12 +189,12 @@ struct vInspirations
         return m_inspirations[col][0];
     }
 
-    CharacterInspiration value(const size_t col, const size_t row) const
+    CharacterInspiration value(uint32_t col, uint32_t row) const
     {
         return m_inspirations[col][row];
     }
 
-    void resize (const size_t newCol, const size_t newRow)
+    void resize (uint32_t newCol, uint32_t newRow)
     {
         m_inspirations.resize(newCol);
         for (size_t i = 0; i < m_cols; ++i)
@@ -204,7 +204,7 @@ struct vInspirations
         m_rows = newRow;
     }
 
-    void push_to_first_row (const size_t col)
+    void push_to_first_row (uint32_t col)
     {
         size_t i = 1;
         while (m_inspirations[col][0].m_has_insp && i < m_rows)

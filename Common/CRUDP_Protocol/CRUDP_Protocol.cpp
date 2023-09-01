@@ -185,7 +185,7 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
     recv_acks.sort();
     recv_acks.unique();
     std::list<uint32_t>::iterator iter = recv_acks.begin();
-    uint32_t num_acks = std::min<uint32_t>(recv_acks.size(),16); // store up to 16 acks
+    uint32_t num_acks = std::min<uint32_t>((uint32_t)recv_acks.size(),16); // store up to 16 acks
     bs.StorePackedBits(1,num_acks);
 
     uint32_t last_ack = *iter;
@@ -346,7 +346,7 @@ void CrudP_Protocol::PacketAck(uint32_t id)
     // reliable_packets
 }
 
-vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
+vCrudP_Packet packetSplit(CrudP_Packet &src,uint32_t block_size)
 {
     vCrudP_Packet res;
     CrudP_Packet *act;

@@ -120,7 +120,7 @@ FriendListChangeStatus removeFriend(Entity &src, const QString& friend_name)
     if(src_data.m_friends.empty())
         src_data.m_has_friends = false;
 
-    src_data.m_friends_count = src_data.m_friends.size();
+    src_data.m_friends_count = (uint32_t)src_data.m_friends.size();
 
     qCDebug(logFriends).noquote() << msg;
     return FriendListChangeStatus::FRIEND_REMOVED;

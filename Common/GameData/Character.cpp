@@ -232,7 +232,7 @@ void Character::GetCharBuildInfo(BitStream &src)
 
 void Character::sendEnhancements(BitStream &bs) const
 {
-    bs.StorePackedBits(5, m_char_data.m_enhancements.size()); // count
+    bs.StorePackedBits(5, (uint32_t)m_char_data.m_enhancements.size()); // count
     for(size_t i = 0; i < m_char_data.m_enhancements.size(); ++i)
     {
         bs.StorePackedBits(3, m_char_data.m_enhancements[i].m_slot_idx); // boost idx, maybe use m_enhancement_idx
@@ -268,11 +268,11 @@ void Character::sendInspirations(BitStream &bs) const
 
 void Character::sendOwnedPowers(BitStream &bs) const
 {
-    bs.StorePackedBits(4, m_char_data.m_powersets.size()); // count
+    bs.StorePackedBits(4, (uint32_t)m_char_data.m_powersets.size()); // count
     for(const CharacterPowerSet &pset : m_char_data.m_powersets)
     {
         bs.StorePackedBits(5, pset.m_level_bought);
-        bs.StorePackedBits(4, pset.m_powers.size());
+        bs.StorePackedBits(4, (uint32_t)pset.m_powers.size());
         for(const CharacterPower &power : pset.m_powers)
         {
             power.m_power_info.serializeto(bs);
@@ -282,7 +282,7 @@ void Character::sendOwnedPowers(BitStream &bs) const
             if(power.m_total_eh_slots > power.m_enhancements.size())
                 qCWarning(logPowers) << "sendOwnedPowers: Total EH Slots larger than vector!";
 
-            bs.StorePackedBits(4, power.m_enhancements.size());
+            bs.StorePackedBits(4, (uint32_t)power.m_enhancements.size());
             for(const CharacterEnhancement &eh : power.m_enhancements)
             {
                 bs.StoreBits(1, eh.m_slot_used); // slot has enhancement

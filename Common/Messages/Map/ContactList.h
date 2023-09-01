@@ -29,8 +29,8 @@ namespace SEGSEvents
         void serializeto(BitStream &bs) const override
         {
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 43
-            bs.StorePackedBits(1, m_contact_list.size() - 1); // svr_contacts_total_also_maybe
-            bs.StorePackedBits(1, m_contact_list.size()); // svr_contacts_total
+            bs.StorePackedBits(1, (uint32_t)m_contact_list.size() - 1); // svr_contacts_total_also_maybe
+            bs.StorePackedBits(1, (uint32_t)m_contact_list.size()); // svr_contacts_total
 
             int count = 0;
             for(const Contact &contact : m_contact_list)

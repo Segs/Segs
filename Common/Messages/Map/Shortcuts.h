@@ -39,7 +39,7 @@ explicit Shortcuts():MapLinkEvent(MapEventTypes::evShortcuts) {}
         {
             int cmd_idx = bs.GetPackedBits(1);
             assert(cmd_idx>0 && cmd_idx<200);
-            m_commands.resize(std::max<int>(m_commands.size(),cmd_idx));
+            m_commands.resize(std::max<int>((uint32_t)m_commands.size(),cmd_idx));
             bs.GetString(m_commands[cmd_idx-1]);
         }
     }

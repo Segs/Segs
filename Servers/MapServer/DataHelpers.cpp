@@ -1542,7 +1542,7 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
     if(!found)
     {
         qCDebug(logScripts) << "SendUpdateTaskStatusList Creating new task";
-        uint32_t listSize = task_entry_list.size();
+        uint32_t listSize = (uint32_t)task_entry_list.size();
         if(task_entry_list.size() > 0)
         {
             qCDebug(logScripts) << "SendUpdateTaskStatusList task list not empty";

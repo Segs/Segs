@@ -197,7 +197,7 @@ void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
         qCDebug(logAnimations, "Sending seq triggered moves %" PRIu64, src.m_triggered_moves.size());
 
     // client appears to process only the last 20 triggered moves
-    bs.StorePackedBits(1, src.m_triggered_moves.size()); // num moves
+    bs.StorePackedBits(1, (uint32_t)src.m_triggered_moves.size()); // num moves
     for(const TriggeredMove &move : src.m_triggered_moves)
     {
         bs.StorePackedBits(10, move.m_move_idx);                   // 2  triggeredMoveIDX
@@ -208,7 +208,7 @@ void sendSeqTriggeredMoves(const Entity &src,BitStream &bs)
 
 void sendNetFx(const Entity &src, BitStream &bs)
 {
-    bs.StorePackedBits(1, src.m_net_fx.size()); // num fx
+    bs.StorePackedBits(1, (uint32_t)src.m_net_fx.size()); // num fx
     for(NetFxHandle fxh : src.m_net_fx)
     {
         const NetFx &fx(lookup(fxh));
@@ -403,7 +403,7 @@ void sendLogoutUpdate(const Entity &src,ClientEntityStateBelief &belief,BitStrea
 } // end of anonoymous namespace
 void sendBuffs(const Entity &src, BitStream &bs)
 {
-    bs.StorePackedBits(5, src.m_buffs.size());
+    bs.StorePackedBits(5, (uint32_t)src.m_buffs.size());
     for(const Buffs &buff : src.m_buffs)
         buff.m_buff_info.serializeto(bs);
 }

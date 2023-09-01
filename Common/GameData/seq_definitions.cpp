@@ -9,7 +9,7 @@
 
 int16_t getSeqMoveIdxByName(const QByteArray &name, const SequencerData &seq)
 {
-    int cnt = seq.m_Move.size();
+    int cnt = (int)seq.m_Move.size();
     QByteArray compare_against=name.toLower();
     for (int i = 0; i < cnt; ++i )
     {
@@ -27,7 +27,7 @@ void cleanSeqFileName(QByteArray &filename)
 
     if(loc!=-1)
     {
-        filename = filename.mid(loc+strlen("SEQUENCERS/"));
+        filename = filename.mid(loc+(int)strlen("SEQUENCERS/"));
     }
 }
 SequencerData *SequencerList::getSequencerData(const QByteArray &seq_name)

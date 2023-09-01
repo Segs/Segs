@@ -32,7 +32,7 @@ void NPCStorage::prepare_dictionaries()
                 pcp.m_Color1.rgba.a = 255;
                 pcp.m_Color2.rgba.a = 255;
             }
-            pc.m_NumParts = pc.m_CostumeParts.size();
+            pc.m_NumParts = (uint32_t)pc.m_CostumeParts.size();
         }
     }
     for(Parse_NPC &npc : m_all_npcs)

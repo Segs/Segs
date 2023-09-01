@@ -37,7 +37,7 @@ public:
                     bs.StorePackedBits(1, type()-evFirstServerToClient); // 39
 
                     bs.StoreString(m_msgbody);
-                    bs.StorePackedBits(1, m_active_contacts.size());
+                    bs.StorePackedBits(1, (uint32_t)m_active_contacts.size());
 
                     for(const ContactEntry &contact : m_active_contacts)
                     {

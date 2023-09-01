@@ -88,7 +88,7 @@ void CrudP_Packet::StoreBits(uint32_t nBits, uint32_t dataBits)
     m_stream->StoreBits(nBits, dataBits);
 }
 
-void CrudP_Packet::StoreBitArray(uint8_t *array, size_t nBits)
+void CrudP_Packet::StoreBitArray(uint8_t *array, uint32_t nBits)
 {
     m_stream->StoreBitArray(array, nBits);
 }

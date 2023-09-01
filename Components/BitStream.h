@@ -40,8 +40,8 @@ class BitStream : public GrowingBuffer
 
 public:
 
-explicit        BitStream(size_t size);
-                BitStream(uint8_t *from,size_t bitsize);
+explicit        BitStream(uint32_t size);
+                BitStream(uint8_t *from,uint32_t bitsize);
                 BitStream(const BitStream &bs);
                 BitStream(BitStream &&bs) noexcept : GrowingBuffer(std::move(bs)) {
                     m_read_bit_off = bs.m_read_bit_off;
@@ -66,7 +66,7 @@ explicit        BitStream(size_t size);
             }
             StoreBits(bits_to_store,src.uGetBits(bits_to_store));
         }
-        void    StoreBitArray(const uint8_t *array,size_t nBits);
+        void    StoreBitArray(const uint8_t *array,uint32_t nBits);
         void    StoreString(const char *str);
         void    StoreString(const QByteArray &str);
         void    StoreString(const QString &str);

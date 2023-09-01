@@ -140,7 +140,7 @@ void NetCommandManager::UpdateCommandShortcuts(MapClientSession *client, std::ve
     // add shortcuts to client's shortcut map.
     //TODO: differentiate the commands based on access level ?
     commands.reserve(m_commands_level0.size());
-    for(size_t i=0, total = m_commands_level0.size(); i<total; ++i)
+    for(uint32_t i=0, total = (uint32_t)m_commands_level0.size(); i<total; ++i)
     {
         client->AddShortcut(i,m_commands_level0[i]);
         commands.push_back(m_commands_level0[i]->m_name);

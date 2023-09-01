@@ -30,7 +30,7 @@ namespace SEGSEvents
         {
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 78
             bs.StorePackedBits(12, m_store.m_npc_idx);
-            bs.StorePackedBits(2, m_store.m_store_Items.size());
+            bs.StorePackedBits(2, (uint32_t)m_store.m_store_Items.size());
 
             for(const StoreItem &store_item: m_store.m_store_Items)
             {

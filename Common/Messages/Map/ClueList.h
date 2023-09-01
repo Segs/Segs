@@ -32,7 +32,7 @@ class ClueList final : public GameCommandEvent
     {
         bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 70
 
-        bs.StorePackedBits(1, m_clue_list.size());
+        bs.StorePackedBits(1, (uint32_t)m_clue_list.size());
         for (const Clue &clue : m_clue_list)
         {
             bs.StoreString(clue.m_name);
@@ -62,7 +62,7 @@ class SouvenirListHeaders final : public GameCommandEvent
     {
         bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 71
 
-        bs.StorePackedBits(1, m_souvenir_list.size());
+        bs.StorePackedBits(1, (uint32_t)m_souvenir_list.size());
         for (const Souvenir &souvenir : m_souvenir_list)
         {
             bs.StorePackedBits(1, souvenir.m_idx);
