@@ -147,7 +147,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     res->SetIsCompressed(src.GetBits(1));
     src.ByteAlign(true,false);
     // how much data did we actually read
-    size_t bits_left=(bitlength-src.GetReadPos());
+    uint32_t bits_left=(bitlength-src.GetReadPos());
     res->StoreBitArray(src.read_ptr(),bits_left);
     PushRecvPacket(res);
 }
