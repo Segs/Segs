@@ -11,6 +11,7 @@
  */
 
 #include "SettingsDialog.h"
+#include "SEGSAdminTool.h"
 #include "ui_SettingsDialog.h"
 #include "GetIPDialog.h"
 #include "Globals.h"
@@ -46,6 +47,8 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     connect(ui->auto_logout_check,&QCheckBox::clicked,this,&SettingsDialog::auto_logout_checkbox_validator);
     connect(ui->xp_mod_check,&QCheckBox::clicked,this,&SettingsDialog::xp_mod_checkbox_validator);
     connect(ui->purge_logs,&QPushButton::clicked,this,&SettingsDialog::purge_logs);
+    connect(ui->acc_dbdriver,&QComboBox::currentTextChanged,this,&SettingsDialog::accDatabaseDriverUpdated);
+    connect(ui->char_dbdriver,&QComboBox::currentTextChanged,this,&SettingsDialog::charDatabaseDriverUpdated);
 
     // GetIP Signals
     connect(m_get_ip,&GetIPDialog::sendIP,this,&SettingsDialog::auto_populate_ip_main);
@@ -113,20 +116,32 @@ void SettingsDialog::read_config_file(QString filePath)
     config_file.beginGroup("AdminServer");
     config_file.beginGroup("AccountDatabase");
     QString acc_db_driver = config_file.value("db_driver","").toString();
+    QString acc_db_name = config_file.value("db_name","").toString();
+    if (acc_db_driver == "QSQLITE")
+    {
+        acc_db_name.chop(3);
+    }
     QString acc_db_host = config_file.value("db_host","").toString();
     int acc_db_port = config_file.value("db_port","").toInt();
     int acc_index = ui->acc_dbdriver->findText(acc_db_driver);
     ui->acc_dbdriver->setCurrentIndex(acc_index);
+    ui->acc_dbname->setText(acc_db_name);
     ui->acc_dbhost->setText(acc_db_host);
     ui->acc_dbport->setValue(acc_db_port);
     config_file.endGroup();
 
     config_file.beginGroup("CharacterDatabase");
     QString char_db_driver = config_file.value("db_driver","").toString();
+    QString char_db_name = config_file.value("db_name","").toString();
+    if (char_db_driver == "QSQLITE")
+    {
+        char_db_name.chop(3);
+    }
     QString char_db_host = config_file.value("db_host","").toString();
     int char_db_port = config_file.value("db_port","").toInt();
     int char_index = ui->char_dbdriver->findText(char_db_driver);
     ui->char_dbdriver->setCurrentIndex(char_index);
+    ui->char_dbname->setText(char_db_name);
     ui->char_dbhost->setText(char_db_host);
     ui->char_dbport->setValue(char_db_port);
     config_file.endGroup(); // AdminServer
@@ -325,15 +340,32 @@ void SettingsDialog::generate_default_config_file(QString ip)
 void SettingsDialog::save_changes_config_file()
 {
     QSettings config_file_write(Settings::getSettingsPath(), QSettings::IniFormat);
+    QString acc_db_driver = ui->acc_dbdriver->currentText();
+    QString char_db_driver = ui->char_dbdriver->currentText();
+    QString acc_db_name = ui->acc_dbname->text();
+    QString char_db_name = ui->char_dbname->text();
+
+    if (acc_db_driver == "QSQLITE")
+    {
+        acc_db_name.append(".db");
+    }
+
+    if (char_db_driver == "QSQLITE")
+    {
+        char_db_name.append(".db");
+    }
+
     config_file_write.beginGroup("AdminServer");
     config_file_write.beginGroup("AccountDatabase");
     config_file_write.setValue("db_driver",ui->acc_dbdriver->currentText());
+    config_file_write.setValue("db_name",acc_db_name);
     config_file_write.setValue("db_host",ui->acc_dbhost->text());
     config_file_write.setValue("db_port",ui->acc_dbport->text());
     config_file_write.endGroup(); // AccountDatabase
 
     config_file_write.beginGroup("CharacterDatabase");
     config_file_write.setValue("db_driver",ui->char_dbdriver->currentText());
+    config_file_write.setValue("db_name",char_db_name);
     config_file_write.setValue("db_host",ui->char_dbhost->text());
     config_file_write.setValue("db_port",ui->char_dbport->text());
     config_file_write.endGroup(); // CharacterDatabase
@@ -407,6 +439,7 @@ void SettingsDialog::save_changes_config_file()
     settings_saved.setIcon(QMessageBox::Information);
     settings_saved.exec();
     emit check_data_and_dir(ui->map_location->text());
+    emit checkForDB(true);
 }
 
 void SettingsDialog::set_default_values()
@@ -501,7 +534,6 @@ void SettingsDialog::auto_populate_ip_main(QString local_ip)
     ui->auth_ip->setText(local_ip);
 }
 
-
 void SettingsDialog::send_maps_dir()
 {
     QString maps_dir = ui->map_location->text();
@@ -577,6 +609,30 @@ void SettingsDialog::remove_files(QString dir, QStringList files)
         QFile file;
         file.setFileName(dir + file_name);
         file.remove();
+    }
+}
+
+void SettingsDialog::accDatabaseDriverUpdated(QString text)
+{
+    if (text == "QSQLITE")
+    {
+        ui->acc_dbext->setVisible(true);
+    }
+    else
+    {
+        ui->acc_dbext->setVisible(false);
+    }
+}
+
+void SettingsDialog::charDatabaseDriverUpdated(QString text)
+{
+    if (text == "QSQLITE")
+    {
+        ui->char_dbext->setVisible(true);
+    }
+    else
+    {
+        ui->char_dbext->setVisible(false);
     }
 }
 

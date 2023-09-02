@@ -34,12 +34,15 @@ public slots:
     void xp_mod_checkbox_validator();
     void purge_logs();
     void remove_files(QString dir, QStringList files);
+    void accDatabaseDriverUpdated(QString text);
+    void charDatabaseDriverUpdated(QString text);
 
 signals:
    void checkForConfigFile();
    void check_data_and_dir(QString maps_dir);
    void sendMapsDir(QString maps_dir);
    void sendMapsDirConfigCheck(QString maps_dir);
+   void checkForDB(bool on_startup);
 
 private:
     Ui::SettingsDialog *ui;
