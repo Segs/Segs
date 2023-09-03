@@ -102,7 +102,7 @@ private:
         if(m_free_list_head != HType::FREE_LIST_TERMINATOR)
             return m_free_list_head;
         //NOTE: we allocate 256 new 'nodes' each time
-        uint32_t start_idx = m_sparse_array.size();
+        uint32_t start_idx = (uint32_t)m_sparse_array.size();
         assert(start_idx + 256 < HType::FREE_LIST_TERMINATOR);
         m_free_list_head = start_idx;
         m_sparse_array.resize(start_idx + 256);

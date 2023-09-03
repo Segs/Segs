@@ -1003,7 +1003,7 @@ int seqProcessClientInst(HSequencerInstance seq, float step_size, int idx, bool 
     float          adv = getAnimScaleFromSeq(seq) * step_size;
     if (changed)
     {
-        num_moves_in_arr = tpl->m_Move.size();
+        num_moves_in_arr = (int)tpl->m_Move.size();
         if (idx >= num_moves_in_arr)
             idx = 0;
         move  = &tpl->m_Move[idx];

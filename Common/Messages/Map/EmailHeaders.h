@@ -49,7 +49,7 @@ public:
     {
         bs.StorePackedBits(1, type()-evFirstServerToClient);
         bs.StorePackedBits(1, m_fullupdate);
-        bs.StorePackedBits(1, m_emails.size());
+        bs.StorePackedBits(1, (uint32_t)m_emails.size());
 
         for(const EmailHeader &hdr : m_emails)
         {

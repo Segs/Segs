@@ -6,14 +6,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 set(SLAV_SOURCES
-    SLAVLogic
-    ServerConnection
-    UpdaterDlg.cpp
-    UpdaterDlg.h
-    UpdaterDlg.ui
-    ProjectDescriptor
-    ProjectManifest
-    FileSignatureWorker
+    SLAVLogic.cpp SLAVLogic.h
+    ServerConnection.cpp ServerConnection.h
+    UpdaterDlg.cpp UpdaterDlg.h UpdaterDlg.ui
+    ProjectDescriptor.cpp ProjectDescriptor.h
+    ProjectManifest.cpp ProjectManifest.h
+    FileSignatureWorker.cpp FileSignatureWorker.h
     main.cpp
 )
 

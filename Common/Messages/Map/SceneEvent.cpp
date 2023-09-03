@@ -76,7 +76,7 @@ void Scene::serializefrom(BitStream &src)
     num_base_elems = src.GetPackedBits(1);
     m_crc.resize(num_base_elems);
     m_trays.resize(num_base_elems);
-    for(size_t i=1; i<num_base_elems; i++)
+    for(uint32_t i=1; i<num_base_elems; i++)
     {
         getGrpElem(src,i);
     }

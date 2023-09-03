@@ -65,7 +65,7 @@ QString saveTo(const CohTextureInfo &tgt)
         input_arc(cereal::make_nvp("CohTextureInfo",tgt));
     }
     catch(std::runtime_error &e) {
-        qDebug() << "Exception throw while reading scenedef";
+        qDebug() << "Exception throw while reading scenedef:"<<e.what();
         return "";
     }
     return QString::fromStdString(str_dat.str());

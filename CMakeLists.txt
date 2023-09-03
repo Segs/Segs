@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(SEGS)
 
+cmake_policy(VERSION 3.16)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -54,6 +56,7 @@ if(MSVC)
     add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -D_USE_MATH_DEFINES)
     add_compile_options (/wd4251) # disable warning related to dll interface needed ... clients of class
     if (NOT (MSVC_VERSION LESS 1910))
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
       #add_compile_options (/MP)
       add_compile_options (/permissive-)
       #add_compile_options (/d2cgsummary)

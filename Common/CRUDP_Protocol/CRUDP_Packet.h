@@ -35,7 +35,7 @@ public:
 
     float GetFloat();
     void StoreBits(uint32_t nBits, uint32_t dataBits);
-    void StoreBitArray(uint8_t *array, size_t nBits);
+    void StoreBitArray(uint8_t *array, uint32_t nBits);
     void StorePackedBits(uint32_t nBits, uint32_t dataBits);
     void StoreString(const char *str);
     void CompressAndStoreString(const char *str);
@@ -62,7 +62,7 @@ public:
     uint32_t getNumSibs()           const   { return m_numSibs;}
     uint32_t getSibId()             const   { return m_sibId;}
     uint32_t getSibPos()            const   { return m_sibPos;}
-    size_t   getNumAcks()           const   { return m_acks.size(); }
+    uint32_t getNumAcks()           const   { return (uint32_t)m_acks.size(); }
 
     void ByteAlign();
     void SetStream(BitStream *stream)       { m_stream = stream; }

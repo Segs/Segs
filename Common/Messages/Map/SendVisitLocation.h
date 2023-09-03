@@ -32,7 +32,7 @@ namespace SEGSEvents
             //Could be tied to glowies or plagues/location/early badges
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 63
             qCDebug(logMapEvents) << "SendLocations Event serializeTo. m_locations.size(): " << m_locations.size();
-            bs.StorePackedBits(1, m_locations.size());
+            bs.StorePackedBits(1, (uint32_t)m_locations.size());
 
             for(const VisitLocation &location : m_locations)
             {

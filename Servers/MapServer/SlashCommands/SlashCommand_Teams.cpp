@@ -151,7 +151,7 @@ void cmdHandler_Sidekick(const QStringList &params, MapClientSession &sess)
         return;
 
     auto res=inviteSidekick(*sess.m_ent, *tgt);
-    static const QLatin1Literal possible_messages[] = {
+    static const QLatin1String possible_messages[] = {
         QLatin1String("Unable to add sidekick."),
         QLatin1String("To Mentor another player, you must be at least 3 levels higher than them."),
         QLatin1String("To Mentor another player, you must be at least level 10."),

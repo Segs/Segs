@@ -888,8 +888,8 @@ void processNewInputs(Entity &e)
                 // assuming that the client never sends a partial tick, if that's not the case 
                 // then tick_state needs to move into the entity somewhere
                 assert(tick_state.length_ms == 0);
-
-                uint16_t new_csc_count = input_change.m_control_state_changes.size() - csc_id_delta;
+                //TODO: check for cases where csc_id_delta > input_change.m_control_state_changes.size()
+                uint16_t new_csc_count = uint16_t((int32_t)input_change.m_control_state_changes.size() - csc_id_delta);
 
                 if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
                 {

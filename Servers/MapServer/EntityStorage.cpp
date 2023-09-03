@@ -93,7 +93,7 @@ void EntityManager::sendDeletes( BitStream &tgt,MapClientSession &client ) const
         if(m_live_entlist.end()==m_live_entlist.find((Entity *)entry.second.m_entity))
             entities_to_remove.push_back(entry.first);
     }
-    tgt.StorePackedBits(1,entities_to_remove.size());
+    tgt.StorePackedBits(1,(uint32_t)entities_to_remove.size());
     for(int idx : entities_to_remove)
     {
         tgt.StorePackedBits(12,idx);//index

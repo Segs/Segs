@@ -114,7 +114,7 @@ bool TeamHandler::db_id_is_lfg(const uint32_t db_id)
 
 void TeamHandler::add_lfg(LFGMember m)
 {
-	m_state.m_lfg_list.emplace_back(m);
+    m_state.m_lfg_list.emplace_back(std::move(m));
 }
 
 void TeamHandler::remove_lfg(const uint32_t db_id)
@@ -154,8 +154,10 @@ Team* TeamHandler::team_for_name(const QString &name)
 uint32_t TeamHandler::id_for_name(const QString &name)
 {
     for (const auto &e : m_state.m_id_to_name)
+    {
         if (e.second == name)
             return e.first;
+    }
 
     qCCritical(logTeams) << "Couldn't find id for name:" << name;
 
@@ -165,8 +167,10 @@ uint32_t TeamHandler::id_for_name(const QString &name)
 bool TeamHandler::name_known(const QString &name)
 {
     for (const auto &e : m_state.m_id_to_name)
+    {
         if (e.second == name)
             return true;
+    }
 
     return false;
 }

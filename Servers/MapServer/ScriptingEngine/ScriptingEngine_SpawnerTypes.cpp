@@ -28,7 +28,7 @@ void ScriptingEngine::register_SpawnerTypes()
     m_private->m_lua["MapInstance"]["GetSpawnerCount"] = [this]()
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
-        uint sCount = sg->size();
+        uint32_t sCount = (uint32_t)sg->size();
         return sCount;
     };
 
@@ -36,7 +36,7 @@ void ScriptingEngine::register_SpawnerTypes()
     m_private->m_lua["MapInstance"]["GetSpawnerChildCount"] = [this](uint index)
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
-        uint sChildCount = sg->at(index).m_markers.size();
+        uint32_t sChildCount = (uint32_t)sg->at(index).m_markers.size();
         return sChildCount;
     };
 
@@ -92,7 +92,7 @@ void ScriptingEngine::register_SpawnerTypes()
     m_private->m_lua["MapInstance"]["GetPersistentCount"] = [this]()
     {
         auto sg = &mi->m_map_scenegraph->m_persNodes;
-        uint pCount = sg->size();
+        uint32_t pCount = (uint32_t)sg->size();
         return pCount;
     };
 
@@ -138,7 +138,7 @@ void ScriptingEngine::register_SpawnerTypes()
     m_private->m_lua["MapInstance"]["GetCarCount"] = [this]()
     {
         auto sg = &mi->m_map_scenegraph->m_carNodes;
-        uint cCount = sg->size();
+        uint32_t cCount = (uint32_t)sg->size();
         return cCount;
     };
 
@@ -162,7 +162,7 @@ void ScriptingEngine::register_SpawnerTypes()
     m_private->m_lua["MapInstance"]["GetCivCount"] = [this]()
     {
         auto sg = &mi->m_map_scenegraph->m_npcNodes;
-        uint nCount = sg->size();
+        uint32_t nCount = (uint32_t)sg->size();
         return nCount;
     };
 

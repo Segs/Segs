@@ -94,7 +94,7 @@ void serializefrom(CostumePart &part,BitStream &bs,const ColorAndPartPacker *pac
 Costume Costume::NullCostume;
 void Costume::storeCharselParts( BitStream &bs ) const
 {
-    bs.StorePackedBits(1,m_parts.size());
+    bs.StorePackedBits(1,(uint32_t)m_parts.size());
     for(const CostumePart & part : m_parts)
         serializeto_charsel(part,bs);
 }
@@ -220,7 +220,7 @@ void serializeto(const Costume &costume,BitStream &bs, const ColorAndPartPacker 
 
     bs.StoreBits(1, costume.m_send_full_costume);
     assert(!costume.m_parts.empty());
-    bs.StorePackedBits(4, costume.m_parts.size());
+    bs.StorePackedBits(4, (uint32_t)costume.m_parts.size());
     try
     {
         for(uint32_t costume_part = 0; costume_part < costume.m_parts.size(); costume_part++)

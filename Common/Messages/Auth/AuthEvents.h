@@ -20,7 +20,7 @@ class AuthLinkEvent : public Event
 protected:
         ~AuthLinkEvent() override = default;
 public:
-        AuthLinkEvent(size_t evtype,EventSrc *ev_src=nullptr) : Event(evtype,ev_src)
+        AuthLinkEvent(uint32_t evtype,EventSrc *ev_src=nullptr) : Event(evtype,ev_src)
         {}
         virtual void serializeto(GrowingBuffer &) const=0;
         virtual void serializefrom(GrowingBuffer &)=0;
