@@ -6,9 +6,9 @@
  */
 
 #pragma once
+#include <QtCore/QtContainerFwd>
 
 struct MapClientSession;
-class QStringList;
 
 // Slash Commands related to Settings and Logs
 

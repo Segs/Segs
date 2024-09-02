@@ -47,14 +47,14 @@ ${target_INCLUDE}
 )
 add_handler(MapServer ${target_SOURCES})
 target_link_libraries(MapServer PUBLIC CRUDP_Protocol common_runtime)
-target_link_libraries(MapServer PUBLIC Qt5::Core)
+target_link_libraries(MapServer PUBLIC Qt6::Core)
 target_link_libraries(MapServer PUBLIC gameData)
 
 
 add_subdirectory(ScriptingEngine)
 add_subdirectory(SlashCommands)
 
-target_link_libraries(MapServer PUBLIC Qt5::Core)
+target_link_libraries(MapServer PUBLIC Qt6::Core)
 target_link_libraries(MapServer PRIVATE SlashCommands)
 
 

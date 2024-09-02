@@ -1,4 +1,4 @@
-find_package(Qt5 5.8 COMPONENTS Core Gui Widgets OpenGL Network REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Widgets OpenGL Network REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTORCC ON)
@@ -51,7 +51,7 @@ set(SEGSADMIN_SOURCES
     Helpers.h
 )
 add_executable(SEGSAdmin WIN32 ${SEGSADMIN_SOURCES})
-target_link_libraries(SEGSAdmin PUBLIC SEGS_Components Qt5::Core Qt5::Widgets Qt5::Network)
+target_link_libraries(SEGSAdmin PUBLIC SEGS_Components Qt6::Core Qt6::Widgets Qt6::Network)
 
 IF(WIN32)
     include(Windeployqt)

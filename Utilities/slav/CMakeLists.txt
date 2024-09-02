@@ -1,4 +1,4 @@
-find_package(Qt5 5.8.0 COMPONENTS Core Gui Widgets OpenGL Network REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Widgets OpenGL Network REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTORCC ON)
@@ -18,10 +18,10 @@ set(SLAV_SOURCES
 )
 
 add_executable(slav ${SLAV_SOURCES})
-target_link_libraries(slav cereal_IMP  Qt5::Core Qt5::Widgets Qt5::Network)
+target_link_libraries(slav cereal_IMP  Qt6::Core Qt6::Widgets Qt6::Network)
 
 add_executable(ManifestBuilder ManifestBuilder.cpp ProjectManifest.cpp FileSignatureWorker)
-target_link_libraries(ManifestBuilder cereal_IMP Qt5::Core)
+target_link_libraries(ManifestBuilder cereal_IMP Qt6::Core)
 # Retain directory structure in visual studio
 get_target_property(TARGET_SOURCES slav SOURCES) 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 

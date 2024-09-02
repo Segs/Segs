@@ -67,7 +67,6 @@
 #include <QClipboard>
 #include <QColorDialog>
 #include <QComboBox>
-#include <QDesktopWidget>
 #include <QInputDialog>
 #include <QFontComboBox>
 #include <QFile>
@@ -77,7 +76,6 @@
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
-#include <QTextCodec>
 #include <QTextEdit>
 #include <QStatusBar>
 #include <QToolBar>
@@ -106,7 +104,7 @@ TextEdit::TextEdit(QWidget *parent)
 #endif
 **/
     setWindowTitle("SEGSAdmin Script Editor");
-    resize(QDesktopWidget().availableGeometry(this).size() * 0.5);
+    resize(screen()->availableGeometry().size() * 0.5);
 
     textEdit = new QTextEdit(this);
     setCentralWidget(textEdit);
@@ -218,7 +216,7 @@ void TextEdit::setupTextActions()
 
     const QIcon newLineIcon = QIcon::fromTheme("format-text-newline", QIcon(":icons/Resources/terminal.svg"));
     newLineButton = menu->addAction(newLineIcon, tr("&New Line"), this, &TextEdit::insert_new_line);
-    newLineButton->setShortcut(Qt::CTRL + Qt::EnterKeyReturn);
+    newLineButton->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return));
     tb->addAction(newLineButton);
 
     // Keeping in for later on, not used currently.
@@ -251,7 +249,7 @@ void TextEdit::setupTextActions()
     };
     comboFont->addItems(faces);
     tb->addWidget(comboFont);
-    connect(comboFont, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textFamily);
+    connect(comboFont, &QComboBox::textActivated, this, &TextEdit::textFamily);
 
     comboSize = new QComboBox(tb);
     comboSize->setObjectName("comboSize");
@@ -265,7 +263,7 @@ void TextEdit::setupTextActions()
         "4",
     };
     comboSize->addItems(sizes);
-    connect(comboSize, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textSize);
+    connect(comboSize, &QComboBox::textActivated, this, &TextEdit::textSize);
 
     tb->addSeparator();
 
@@ -287,7 +285,7 @@ void TextEdit::setupTextActions()
         "6"
     };
     comboShadow->addItems(shadow_values);
-    connect(comboShadow, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textShadow);
+    connect(comboShadow, &QComboBox::textActivated, this, &TextEdit::textShadow);
 
     tb->addSeparator();
 
@@ -309,7 +307,7 @@ void TextEdit::setupTextActions()
         "6"
     };
     comboOutline->addItems(outline_values);
-    connect(comboOutline, QOverload<const QString &>::of(&QComboBox::activated), this, &TextEdit::textOutline);
+    connect(comboOutline, &QComboBox::textActivated, this, &TextEdit::textOutline);
 
 }
 
@@ -322,8 +320,8 @@ bool TextEdit::load(const QString &f)
         return false;
 
     QByteArray data = file.readAll();
-    QTextCodec *codec = Qt::codecForHtml(data);
-    QString str = codec->toUnicode(data);
+    auto codec = QStringDecoder::decoderForHtml(data);
+    QString str = codec(data);
     if(Qt::mightBeRichText(str)) {
         textEdit->setHtml(str);
     } else {

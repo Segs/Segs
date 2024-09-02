@@ -1,4 +1,4 @@
-find_package(Qt5 5.8 COMPONENTS Core Gui Widgets OpenGL Network REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Widgets OpenGL Network REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTORCC ON)
@@ -12,7 +12,7 @@ set(RPCTESTCLIENT_SOURCES
     main.cpp
 )
 add_executable(RPCTestClient ${RPCTESTCLIENT_SOURCES})
-target_link_libraries(RPCTestClient PUBLIC Qt5::Core Qt5::Widgets Qt5::Network jcon_IMP ace_IMP)
+target_link_libraries(RPCTestClient PUBLIC Qt6::Core Qt6::Widgets Qt6::Network jcon_IMP ace_IMP)
 
 IF(WIN32)
     include(Windeployqt)

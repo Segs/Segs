@@ -1,7 +1,7 @@
 SET(QT_MISSING True)
 # msvc only; mingw will need different logic
 IF(MSVC)
-    message("LocateQt5 was given a Qt5 path ${QT_GIVEN_PATH}")
+    message("LocateQt6 was given a Qt6 path ${QT_GIVEN_PATH}")
     # look for user-registry pointing to qtcreator
     GET_FILENAME_COMPONENT(QT_BIN [HKEY_CURRENT_USER\\Software\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command] PATH)
     if(${MSVC_VERSION} VERSION_LESS "1910")
@@ -60,11 +60,11 @@ ENDMACRO(TO_NATIVE_PATH)
 # use Qt_DIR approach so you can find Qt after cmake has been invoked
 IF(NOT QT_MISSING)
     MESSAGE("-- Qt found: ${QT_PATH}")
-    SET(Qt5_DIR "${QT_PATH}/lib/cmake/Qt5/")
-    SET(Qt5Test_DIR "${QT_PATH}/lib/cmake/Qt5Test")
+    SET(Qt6_DIR "${QT_PATH}/lib/cmake/Qt6/")
+    SET(Qt6Test_DIR "${QT_PATH}/lib/cmake/Qt6Test")
 ENDIF()
-find_package(Qt5 REQUIRED COMPONENTS Core)
-get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
-get_filename_component(Qt5_BIN_DIR "${_qmake_executable}" DIRECTORY)
-TO_NATIVE_PATH("${Qt5_BIN_DIR}" Qt5_BIN_DIR)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+get_target_property(_qmake_executable Qt6::qmake IMPORTED_LOCATION)
+get_filename_component(Qt6_BIN_DIR "${_qmake_executable}" DIRECTORY)
+TO_NATIVE_PATH("${Qt6_BIN_DIR}" Qt6_BIN_DIR)
 

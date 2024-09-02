@@ -11,6 +11,7 @@
 #include "GameData/seq_serializers.h"
 #include <QDebug>
 #include <QDir>
+#include <QRegularExpression>
 #include <QMetaEnum>
 #include <glm/common.hpp>
 #include <glm/ext.hpp>
@@ -752,7 +753,7 @@ int seqSetStateFromString(SeqBitSet *tgt, const QByteArray &src)
     if (!tgt || src.isEmpty())
         return 1;
 
-    QStringList bitnames = QString(src).split(QRegExp("[ ,\t\n]"));
+    QStringList bitnames = QString(src).split(QRegularExpression("[ ,\t\n]"));
     int         result   = 1;
     for (const QString &bitname : bitnames)
     {

@@ -5,7 +5,7 @@ set(HEADERS DummyClass.h)
 
 add_executable(AuthExerciser ${SOURCES} ${HEADERS})
 add_dependencies(AuthExerciser ace_IMP cereal_IMP) # used for Singleton stuff.
-target_link_libraries(AuthExerciser PUBLIC Qt5::Core)
+target_link_libraries(AuthExerciser PUBLIC Qt6::Core)
 
 set_target_properties (AuthExerciser PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/utilities

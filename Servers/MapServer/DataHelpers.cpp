@@ -343,8 +343,8 @@ QString createKioskMessage(Entity* player)
 
     for(const RelayRaceResult &r: player->m_player->m_player_statistics.m_relay_races)
     {
-        QString lastTime = QDateTime::fromTime_t(r.m_last_time).toUTC().toString("hh:mm:ss");
-        QString bestTime = QDateTime::fromTime_t(r.m_best_time).toUTC().toString("hh:mm:ss");
+        QString lastTime = QDateTime::fromSecsSinceEpoch(r.m_last_time).toUTC().toString("hh:mm:ss");
+        QString bestTime = QDateTime::fromSecsSinceEpoch(r.m_best_time).toUTC().toString("hh:mm:ss");
         msg_body.append(QString("<tr><td>Box #%1</td><td>Last Time: %2</td><td>Best Time: %3</td></tr>").arg(r.m_segment).arg(lastTime).arg(bestTime));
     }
 
@@ -1308,7 +1308,7 @@ void increaseLevel(Entity &ent)
 uint addNpc(MapClientSession &sess, QString &npc_name, glm::vec3 &loc, int variation, QString &name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
-    const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_name);
+    const Parse_NPC * npc_def = npc_store.npc_by_name(npc_name);
     if(!npc_def)
     {
         sendInfoMessage(MessageChannel::USER_ERROR, "No NPC definition for: " + name, sess);
@@ -1335,7 +1335,7 @@ uint addNpcWithOrientation(MapClientSession &sess, QString &name, glm::vec3 &loc
 uint addNpcWithOrientation(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
-    const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
+    const Parse_NPC * npc_def = npc_store.npc_by_name(name);
     if(!npc_def)
     {
         qCDebug(logScripts()) << "No NPC definition for: " + name;
@@ -1996,8 +1996,8 @@ uint32_t toHitLimit(uint32_t value)
 }
 void npcSendMessage(MapClientSession &cl, QString& channel, int entityIdx, QString& message)
 {
-    QStringRef ch(&channel,0,1); //Get first char of channel name. Channel will default to local if unknown
-    QString formated = ch + ' '+ message;
+    //Use first char of channel name. Channel will default to local if unknown
+    QString formated = QString("%1 %2").arg(channel[0]).arg(message);
     Entity *e = getEntity(&cl, entityIdx);
 
     if(e != nullptr)
@@ -2006,8 +2006,8 @@ void npcSendMessage(MapClientSession &cl, QString& channel, int entityIdx, QStri
 
 void npcSendMessage(MapInstance &mi, QString& channel, int entityIdx, QString& message)
 {
-    QStringRef ch(&channel,0,1); //Get first char of channel name. Channel will default to local if unknown
-    QString formated = ch + ' '+ message;
+    //Use first char of channel name. Channel will default to local if unknown
+    QString formated = QString("%1 %2").arg(channel[0]).arg(message);
     Entity *e = getEntity(&mi, entityIdx);
 
     if(e != nullptr)
@@ -2079,7 +2079,7 @@ uint32_t addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation,
               int level, QString &faction_name, int /*f_rank*/)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
-    const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
+    const Parse_NPC * npc_def = npc_store.npc_by_name(name);
     if(!npc_def)
     {
         qCDebug(logNpcSpawn) << "No NPC definition for: " + name;
@@ -2105,7 +2105,7 @@ uint32_t addEnemy(MapInstance &mi, QString &name, glm::vec3 &loc, int variation,
 uint addVictim(MapInstance &mi, QString &name, glm::vec3 &loc, int variation, glm::vec3 &ori, QString &npc_name)
 {
     const NPCStorage & npc_store(getGameData().getNPCDefinitions());
-    const Parse_NPC * npc_def = npc_store.npc_by_name(&name);
+    const Parse_NPC * npc_def = npc_store.npc_by_name(name);
     if(!npc_def)
     {
         qCDebug(logNpcSpawn) << "No NPC definition for: " + name;

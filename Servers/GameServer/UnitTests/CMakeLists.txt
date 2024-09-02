@@ -8,7 +8,7 @@ add_executable(GameEventRegistry GameEventRegistry.cpp)
 add_test(GameEventRegistry GameEventRegistry)
 
 target_link_libraries(GameEventRegistry
-    Qt5::Test
+    Qt6::Test
     GameServer
     common_runtime
 )

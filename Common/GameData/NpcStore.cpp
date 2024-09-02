@@ -58,7 +58,7 @@ int NPCStorage::npc_idx(const QString &name)
     return npc_idx(m_name_to_npc_def[name.toLower()]);
 }
 
-const Parse_NPC *NPCStorage::npc_by_name(const QStringRef &name) const
+const Parse_NPC *NPCStorage::npc_by_name(QStringView name) const
 {
     auto iter = m_name_to_npc_def.find(name.toString().toLower());
     if(iter!=m_name_to_npc_def.end())

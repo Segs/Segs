@@ -32,6 +32,7 @@
 #include <QtCore/QString>
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
+#include <QtCore/QRegularExpression>
 
 
 #include <set>
@@ -141,7 +142,7 @@ bool MapServer::ReadConfigAndRestart()
     }
 
     // get costume slot unlock levels for use in finalizeLevel()
-    getGameData().m_costume_slot_unlocks = config.value(QStringLiteral("costume_slot_unlocks"), "19,29,39,49").toString().remove(QRegExp("\\s")).split(',');
+    getGameData().m_costume_slot_unlocks = config.value(QStringLiteral("costume_slot_unlocks"), "19,29,39,49").toString().remove(QRegularExpression("\\s")).split(',');
 
     config.endGroup(); // MapServer
 

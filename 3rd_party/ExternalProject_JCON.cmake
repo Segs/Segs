@@ -1,5 +1,5 @@
 libname(jcon jcon)
-find_package(Qt5 COMPONENTS Network WebSockets Test REQUIRED)
+find_package(Qt6 COMPONENTS Network WebSockets Test REQUIRED)
 
 ExternalProject_Add(
    jcon_BUILD
@@ -18,4 +18,4 @@ add_dependencies(jcon_IMP jcon_BUILD)
 file(MAKE_DIRECTORY ${ThirdParty_Install_Dir}/include)
 set_property(TARGET jcon_IMP PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ThirdParty_Install_Dir}/include)
 SET_PROPERTY(TARGET jcon_IMP APPEND PROPERTY IMPORTED_LOCATION ${jcon_LIBRARY_STATIC} )
-set_property(TARGET jcon_IMP APPEND PROPERTY INTERFACE_LINK_LIBRARIES Qt5::Network Qt5::WebSockets Qt5::Test)
+set_property(TARGET jcon_IMP APPEND PROPERTY INTERFACE_LINK_LIBRARIES Qt6::Network Qt6::WebSockets Qt6::Test)

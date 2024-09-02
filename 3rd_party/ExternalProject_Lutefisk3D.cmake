@@ -13,7 +13,7 @@ else()
     set(LUTEFISK3D_NETWORK OFF) # don't need it, and it doesn't compile anyway :)
 
     set(lutefisk_cmake_options
-    -DQt5_DIR:PATH=${Qt5_DIR}
+    -DQt6_DIR:PATH=${Qt6_DIR}
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
     -DCMAKE_STAGING_PREFIX:PATH=${ThirdParty_Install_Dir}
     -DCMAKE_INSTALL_PREFIX:PATH=${ThirdParty_Install_Dir}

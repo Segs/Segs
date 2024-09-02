@@ -12,6 +12,7 @@
 #include "ScriptingEnginePrivate.h"
 #include "MapInstance.h"
 
+
 int ScriptingEngine::loadAndRunFile(const QString &filename)
 {
     sol::load_result load_res = m_private->m_lua.load_file(filename.toStdString());

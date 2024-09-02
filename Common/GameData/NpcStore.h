@@ -8,6 +8,7 @@
 #pragma once
 #include "Common/GameData/npc_definitions.h"
 #include <QHash>
+#include <QStringView>
 
 struct NPCStorage
 {
@@ -16,5 +17,5 @@ struct NPCStorage
     void prepare_dictionaries();
     int npc_idx(const Parse_NPC *npc) const;
     int npc_idx(const QString &name);
-    const Parse_NPC *npc_by_name(const QStringRef &name) const;
+    const Parse_NPC *npc_by_name(QStringView name) const;
 };

@@ -14,7 +14,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 add_handler(FriendshipService ${target_SOURCES})
-target_link_libraries(FriendshipService PUBLIC Qt5::Core)
+target_link_libraries(FriendshipService PUBLIC Qt6::Core)
 target_link_libraries(FriendshipService PUBLIC SEGS_Components gameData)
 
 if(ENABLE_TESTS)

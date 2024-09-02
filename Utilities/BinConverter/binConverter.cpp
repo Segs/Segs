@@ -195,7 +195,7 @@ void convertEntitySequencerData(const QString &file_name,EntitySequencerData &tg
         if(line.isEmpty())
             continue;
         line = line.replace(QRegularExpression("\\s+")," ");
-        QStringRef lineref = line.midRef(0,line.indexOf('#')).trimmed();
+        QStringView lineref = QStringView(line).mid(0,line.indexOf('#')).trimmed();
         lineref = lineref.mid(0,line.indexOf("//")).trimmed();
         if(lineref.isEmpty())
             continue;
@@ -207,8 +207,8 @@ void convertEntitySequencerData(const QString &file_name,EntitySequencerData &tg
         }
         if(lineref.compare(QStringLiteral("End"))==0)
             break;
-        QVector<QStringRef> parts=lineref.split(" ",QString::SkipEmptyParts);
-        QStringRef fieldname = parts.takeFirst();
+        QVector<QStringView> parts=lineref.split(' ',Qt::SkipEmptyParts);
+        QStringView fieldname = parts.takeFirst();
         if(QString("Sequencer").compare(fieldname,Qt::CaseInsensitive)==0)
         {
             tgt.m_sequencer_name = parts[0].toLatin1();

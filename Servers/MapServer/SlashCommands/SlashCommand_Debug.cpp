@@ -270,7 +270,7 @@ void cmdHandler_Browser(const QStringList &params, MapClientSession &sess)
 void cmdHandler_SendTimeUpdate(const QStringList &/*params*/, MapClientSession &sess)
 {
     // client expects PostgresEpoch of Jan 1 2000
-    QDateTime base_date(QDate(2000,1,1));
+    QDateTime base_date(QDate(2000,1,1).startOfDay());
     int32_t time_in_sec = static_cast<int32_t>(base_date.secsTo(QDateTime::currentDateTime()));
 
     sendTimeUpdate(sess, time_in_sec);

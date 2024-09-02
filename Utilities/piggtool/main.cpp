@@ -250,7 +250,7 @@ void extractFilesFromPath(const QString &source_path, const QString &target_dire
         const auto files = QDir(source_path).entryList(QStringList() << "*.pigg", QDir::Files);
         qInfo() << "Found" << files.size() << ".pigg files.";
 
-        for (const auto file : files)
+        for (const auto &file : files)
             extractFile(source_path + "/" + file, target_directory);
     }
     else if(file_info.isFile())

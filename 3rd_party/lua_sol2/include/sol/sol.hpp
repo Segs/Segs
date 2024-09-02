@@ -2974,10 +2974,10 @@ struct pre_main {
 #endif // luajit
 
 #if SOL_IS_ON(SOL_USE_CXX_LUAJIT)
-	#include <lua/luajit.h>
+	#include <luajit.h>
 #elif SOL_IS_ON(SOL_USE_LUAJIT)
 	extern "C" {
-		#include <lua/luajit.h>
+		#include <luajit.h>
 	}
 #endif // C++ LuaJIT ... whatever that means
 
@@ -3152,9 +3152,9 @@ struct pre_main {
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 extern "C" {
 #endif
-#include <lua/lua.h>
-#include <lua/lauxlib.h>
-#include <lua/lualib.h>
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 }
 #endif
@@ -4412,9 +4412,9 @@ COMPAT53_API void luaL_requiref(lua_State* L, const char* modname, lua_CFunction
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 extern "C" {
 #endif
-#include <lua/lua.h>
-#include <lua/lauxlib.h>
-#include <lua/lualib.h>
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 #if defined(__cplusplus) && !defined(COMPAT53_LUA_CPP)
 }
 #endif

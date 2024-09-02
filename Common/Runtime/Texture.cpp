@@ -39,7 +39,7 @@ QSet<QString>                  s_missing_textures;
 TextureModifiers *modFromTextureName(const QString &texpath)
 {
     RuntimeData &rd(getRuntimeData());
-    QVector<QStringRef> split = texpath.splitRef("/");
+    QVector<QStringView> split = QStringView(texpath).split('/');
     while(!split.empty())
     {
         if(0==split.front().compare(QLatin1String("texture_library"))) {

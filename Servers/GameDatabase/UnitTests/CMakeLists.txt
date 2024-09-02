@@ -8,7 +8,7 @@ add_executable(GameDBEventRegistry GameDBEventRegistry.cpp)
 add_test(GameDBEventRegistry GameDBEventRegistry)
 
 target_link_libraries(GameDBEventRegistry
-    Qt5::Test
+    Qt6::Test
     GameDatabase_interface
     SEGS_Components
 )

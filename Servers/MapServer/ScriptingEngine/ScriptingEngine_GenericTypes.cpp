@@ -71,7 +71,16 @@ void ScriptingEngine::register_GenericTypes()
     m_private->m_lua["ParseContactButton"] = [this](uint32_t button_id)
       {
           QString result;
-          result = contactLinkHash.key(button_id);
+          // scan contactLinkHash for the button_id
+          for(const auto &cl: contactLinkHash)
+          {
+              if(cl.second == button_id)
+              {
+                  result = QString::fromUtf8(cl.first.c_str());
+                  break;
+              }
+          }
+
           if(result.isEmpty())
           {
               result = "Not found";
@@ -162,7 +171,11 @@ void ScriptingEngine::register_GenericTypes()
                 if(count == 0)
                     con.m_response_text = QString::fromStdString(s);
                 else
-                    con.m_link = static_cast<uint32_t>(contactLinkHash.find(QString::fromStdString(s)).value());
+                {
+
+                    auto it = contactLinkHash.find(s);
+                    con.m_link = static_cast<uint32_t>(it != contactLinkHash.end() ? it->second : 0);
+                }
 
                 count++;
             }

@@ -8,7 +8,7 @@ on:
 
 env:
   BUILD_TYPE:  Debug
-  QT_VERSION:  "5.15.2"
+  QT_VERSION:  "6.6.0"
   QT_WIN_TARGET_ARCHITECTURE:  "win64_msvc2019_64"
 
 jobs:
@@ -47,7 +47,7 @@ jobs:
 
     - name: Configure CMake Windows
       env:
-        CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
+        CMAKE_PREFIX_PATH: ${{ env.Qt6_Dir }}
       run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
     - name: Build Windows
@@ -102,7 +102,7 @@ jobs:
 
     - name: Configure CMake Linux
       env:
-        CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
+        CMAKE_PREFIX_PATH: ${{ env.Qt6_Dir }}
         CXX: "/usr/bin/clang++"
       run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
@@ -150,7 +150,7 @@ jobs:
 
     - name: Configure CMake MacOS
       env:
-        CMAKE_PREFIX_PATH: ${{ env.Qt5_Dir }}
+        CMAKE_PREFIX_PATH: ${{ env.Qt6_Dir }}
       run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
     - name: Build MacOS

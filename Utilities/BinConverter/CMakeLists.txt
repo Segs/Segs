@@ -1,10 +1,10 @@
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt6 COMPONENTS Core REQUIRED)
 
 add_executable(binConverter
     binConverter.cpp
 )
 target_link_libraries(binConverter PUBLIC gameData cereal_IMP)
-target_link_libraries(binConverter PUBLIC Qt5::Core)
+target_link_libraries(binConverter PUBLIC Qt6::Core)
 
 
 # Retain directory structure in visual studio

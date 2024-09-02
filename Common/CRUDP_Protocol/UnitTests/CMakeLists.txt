@@ -8,7 +8,7 @@ add_executable(CRUDPEventRegistry CRUDPEventRegistry.cpp)
 add_test(CRUDPEventRegistry CRUDPEventRegistry)
 
 target_link_libraries(CRUDPEventRegistry
-    Qt5::Test
+    Qt6::Test
     AuthProtocol
     SEGS_Components
     CRUDP_Protocol

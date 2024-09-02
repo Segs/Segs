@@ -1178,7 +1178,7 @@ void MapInstance::on_window_state(WindowState * ev)
         e->m_player->m_gui.m_wnds.at(idx).guiWindowDump();
 }
 
-QString processReplacementStrings(MapClientSession *sender, const QString &msg_text)
+QString processReplacementStrings(MapClientSession *sender, QStringView msg_text)
 {
     /*
     // $$           - newline
@@ -1190,7 +1190,7 @@ QString processReplacementStrings(MapClientSession *sender, const QString &msg_t
     // $target      - your currently selected target's name
     */
 
-    QString new_msg = msg_text;
+    QString new_msg = msg_text.toString();
     static const QStringList replacements = {
         "\\$\\$",
         "\\$archetype",
@@ -1252,37 +1252,35 @@ static bool isChatMessage(const QString &msg)
     return chat_prefixes.contains(space);
 }
 
-static MessageChannel getKindOfChatMessage(const QStringRef &msg)
+static MessageChannel getKindOfChatMessage(QStringView msg)
 {
-    if(msg=="l" || msg=="local")                                                            // Aliases: local, l
+    using namespace Qt::Literals;
+    if(msg=="l"_L1 || msg=="local"_L1)                                                            // Aliases: local, l
         return MessageChannel::LOCAL;
-    if(msg=="b" || msg=="broadcast" || msg=="y" || msg=="yell")                             // Aliases: broadcast, yell, b, y
+    if(msg=="b"_L1 || msg=="broadcast"_L1 || msg=="y"_L1 || msg=="yell"_L1)                             // Aliases: broadcast, yell, b, y
         return MessageChannel::BROADCAST;
-    if(msg=="g" || msg=="group" || msg=="team")                                             // Aliases: team, g, group
+    if(msg=="g"_L1 || msg=="group"_L1 || msg=="team"_L1)                                             // Aliases: team, g, group
         return MessageChannel::TEAM;
-    if(msg=="sg" || msg=="supergroup")                                                      // Aliases: sg, supergroup
+    if(msg=="sg"_L1 || msg=="supergroup"_L1)                                                      // Aliases: sg, supergroup
         return MessageChannel::SUPERGROUP;
-    if(msg=="req" || msg=="request" || msg=="auction" || msg=="sell")                       // Aliases: request, req, auction, sell
+    if(msg=="req"_L1 || msg=="request"_L1 || msg=="auction"_L1 || msg=="sell"_L1)                       // Aliases: request, req, auction, sell
         return MessageChannel::REQUEST;
-    if(msg=="f")                                                                            // Aliases: f
+    if(msg=="f"_L1)                                                                            // Aliases: f
         return MessageChannel::FRIENDS;
-    if(msg=="t" || msg=="tell" || msg=="w" || msg=="whisper" || msg=="p" || msg=="private") // Aliases: t, tell, whisper, w, private, p
+    if(msg=="t"_L1 || msg=="tell"_L1 || msg=="w"_L1 || msg=="whisper"_L1 || msg=="p"_L1 || msg=="private"_L1) // Aliases: t, tell, whisper, w, private, p
         return MessageChannel::PRIVATE;
     // unknown chat types are processed as local chat
     return MessageChannel::LOCAL;
 }
 
-
-
-
-void MapInstance::process_chat(Entity *sender, QString &msg_text)
+void MapInstance::process_chat(Entity *sender, QStringView msg_text)
 {
     int first_space = msg_text.indexOf(QRegularExpression("\\s"), 0); // first whitespace, as the client sometimes sends tabs
     QString sender_char_name;
     QString prepared_chat_message;
 
-    QStringRef cmd_str(msg_text.midRef(0,first_space));
-    QStringRef msg_content(msg_text.midRef(first_space+1,msg_text.lastIndexOf("\n")));
+    QStringView cmd_str(msg_text.mid(0,first_space));
+    QStringView msg_content(msg_text.mid(first_space+1,msg_text.lastIndexOf('\n')));
     MessageChannel kind = getKindOfChatMessage(cmd_str);
     std::vector<MapClientSession *> recipients;
 
@@ -1354,8 +1352,8 @@ void MapInstance::process_chat(Entity *sender, QString &msg_text)
         case MessageChannel::PRIVATE:
         {
             int first_comma = msg_text.indexOf(',');
-            QStringRef target_name_ref(msg_text.midRef(first_space+1,(first_comma - first_space-1)));
-            msg_content = msg_text.midRef(first_comma+1,msg_text.lastIndexOf("\n"));
+            QStringView target_name_ref(msg_text.mid(first_space+1,(first_comma - first_space-1)));
+            msg_content = msg_text.mid(first_comma+1,msg_text.lastIndexOf('\n'));
 
             QString target_name = target_name_ref.toString();
             qCDebug(logChat) << "Private Chat:"

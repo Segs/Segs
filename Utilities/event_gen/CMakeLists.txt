@@ -1,6 +1,6 @@
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt6 COMPONENTS Core REQUIRED)
 add_executable(event_gen main.cpp)
-target_link_libraries(event_gen Qt5::Core)
+target_link_libraries(event_gen Qt6::Core)
 
 IF(WIN32)
     include(Windeployqt)

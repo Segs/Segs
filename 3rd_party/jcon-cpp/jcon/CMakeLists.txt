@@ -1,7 +1,7 @@
 project(jcon)
 
 set(QTDIR $ENV{QTDIR})
-set(Q5_DIR $ENV{QTDIR})
+set(QT5_DIR $ENV{QTDIR})
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -15,8 +15,7 @@ file(GLOB ${PROJECT_NAME}_sources *.cpp)
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_headers} ${${PROJECT_NAME}_sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${${PROJECT_NAME}_headers}")
 
-find_package(Qt5 COMPONENTS Core)
-qt5_use_modules(${PROJECT_NAME} Core Network Test WebSockets)
+find_package(Qt6 COMPONENTS  Core Network Test WebSockets)
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
@@ -24,3 +23,4 @@ install(TARGETS ${PROJECT_NAME}
 		PUBLIC_HEADER DESTINATION include/jcon
 )
 target_compile_definitions(jcon PUBLIC NDEBUG)
+target_link_libraries(jcon PUBLIC Qt6::Core Qt6::Network Qt6::Test Qt6::WebSockets)

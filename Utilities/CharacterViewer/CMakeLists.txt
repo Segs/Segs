@@ -1,5 +1,5 @@
 #FIND_PACKAGE(ACE REQUIRED)
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 
 set(CMAKE_AUTOUIC TRUE)
 set(CMAKE_AUTOMOC TRUE)
@@ -27,7 +27,7 @@ TARGET_LINK_LIBRARIES(charviewer
     Lutefisk3D
     ace_IMP
     gameData common_runtime cereal_IMP
-    Qt5::Core Qt5::Widgets
+    Qt6::Core Qt6::Widgets
 )
 # the following flag is need to compile on mingw
 target_compile_options(charviewer PUBLIC -march=native)

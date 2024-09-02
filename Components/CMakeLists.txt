@@ -48,7 +48,7 @@ add_event_sources(Common target_SOURCES)
 add_library(SEGS_Components STATIC ${target_SOURCES} )
 add_dependencies(SEGS_Components ACE_BUILD)
 
-target_link_libraries(SEGS_Components PUBLIC Qt5::Core)
+target_link_libraries(SEGS_Components PUBLIC Qt6::Core)
 target_link_libraries(SEGS_Components PUBLIC ace_IMP)
 IF(MINGW)
     target_link_libraries(SEGS_Components INTERFACE ws2_32)

@@ -41,10 +41,10 @@ StoreTransactionResult Store::buyItem(Entity *e, QString item_name)
             }
             else
             {
-                QVector<QStringRef> parts;
+                QVector<QStringView> parts;
                 int ending_index = item_name.lastIndexOf("_")+1;
-                parts.push_back(item_name.midRef(0,ending_index - 1));
-                parts.push_back(item_name.midRef(ending_index, item_name.length() - ending_index));
+                parts.push_back(QStringView(item_name).mid(0,ending_index - 1));
+                parts.push_back(QStringView(item_name).mid(ending_index, item_name.length() - ending_index));
 
                 QString name = parts[0].toString();
                 result.m_item_name = name;

@@ -75,7 +75,7 @@ Model *PrefabStore::modelFind(const QString &geoset_name, const QString &model_n
     if(end_of_name_idx == -1)
         end_of_name_idx = model_name.size();
 
-    QStringRef basename(model_name.midRef(0, end_of_name_idx));
+    QStringView basename(QStringView(model_name).mid(0, end_of_name_idx));
 
     for(Model *m : geoset->subs)
     {
@@ -83,7 +83,7 @@ Model *PrefabStore::modelFind(const QString &geoset_name, const QString &model_n
         if(geo_name.isEmpty())
             continue;
 
-        bool subs_in_place = (geo_name.size() <= end_of_name_idx || geo_name.midRef(end_of_name_idx).startsWith("__"));
+        bool subs_in_place = (geo_name.size() <= end_of_name_idx || QStringView(geo_name).mid(end_of_name_idx).startsWith(QLatin1StringView("__")));
         if(subs_in_place && geo_name.startsWith(basename, Qt::CaseInsensitive))
             ptr_sub = m; // TODO: return immediately
     }

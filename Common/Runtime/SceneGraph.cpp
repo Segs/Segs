@@ -18,6 +18,7 @@
 #include "glm/mat3x3.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include <QDir>
+#include <QRegularExpression>
 #include <cmath>
 
 using namespace SEGS;
@@ -146,7 +147,7 @@ QByteArray groupRename(LoadingContext &ctx, const QByteArray &oldname, bool is_d
     if( gidx!=-1 )
     {
         prefix = prefix.mid(gidx+4); // skip /grp
-        prefix = prefix.mid(0,QString(prefix).indexOf(QRegExp("[^A-Za-z]"))); // collect chars to first non-letter
+        prefix = prefix.mid(0,QString(prefix).indexOf(QRegularExpression("[^A-Za-z]"))); // collect chars to first non-letter
     }
     else
     {
@@ -270,7 +271,7 @@ void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
 
     result += obj_path;
     int last_separator = result.lastIndexOf('/');
-    QStringRef key = result.midRef(last_separator + 1);
+    QStringView key = QStringView(result).mid(last_separator + 1);
     QString lowkey = key.toString().toLower();
 
     auto iter = scene.name_to_node.find(lowkey);
@@ -280,8 +281,9 @@ void setNodeNameAndPath(SceneGraph &scene,SceneNode *node, QString obj_path)
     node->m_name = key.toUtf8();
     node->m_dir.clear();
 
-    if( key.position() != 0 )
-        node->m_dir = result.mid(0,key.position()-1).toUtf8();
+
+    if( last_separator != -1 )
+        node->m_dir = result.mid(0,last_separator).toUtf8();
 }
 
 void addChildNodes(const SceneGraphNode_Data &inp_data, SceneNode *node, LoadingContext &ctx, PrefabStore &store)

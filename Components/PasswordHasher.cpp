@@ -12,6 +12,7 @@
 
 #include "PasswordHasher.h"
 #include <QTime>
+#include <QRandomGenerator>
 
 PasswordHasher::PasswordHasher() : m_hasher(QCryptographicHash::Sha256)
 {
@@ -22,12 +23,13 @@ QString PasswordHasher::getRandomString(int length) const
 {
     const QString possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
     const int randomStringLength = length;
-    qsrand(static_cast<quint64>(QTime::currentTime().msecsSinceStartOfDay()));
+    QRandomGenerator generator;
+    generator.seed(static_cast<quint64>(QTime::currentTime().msecsSinceStartOfDay()));
 
     QString randomString;
     for(int i = 0; i < randomStringLength; ++i)
     {
-        int index = qrand() % possibleCharacters.length();
+        int index = generator.generate() % possibleCharacters.length();
         QChar nextChar = possibleCharacters.at(index);
         randomString.append(nextChar);
     }

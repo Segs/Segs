@@ -15,7 +15,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 add_handler(GameDatabase ${target_SOURCES})
-target_link_libraries(GameDatabase PUBLIC cox_server_common gameData Qt5::Core Qt5::Sql)
+target_link_libraries(GameDatabase PUBLIC cox_server_common gameData Qt6::Core Qt6::Sql)
 target_link_libraries(GameDatabase PRIVATE cereal_IMP)
 target_link_libraries(GameDatabase INTERFACE SEGS_Components)
 

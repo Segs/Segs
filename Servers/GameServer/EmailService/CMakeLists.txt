@@ -16,7 +16,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 add_handler(EmailService ${target_SOURCES})
-target_link_libraries(EmailService PUBLIC Qt5::Core gameData)
+target_link_libraries(EmailService PUBLIC Qt6::Core gameData)
 target_link_libraries(EmailService INTERFACE SEGS_Components )
 
 if(ENABLE_TESTS)

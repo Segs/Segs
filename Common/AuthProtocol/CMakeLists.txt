@@ -29,7 +29,7 @@ ${target_INCLUDE}
 )
 
 ADD_LIBRARY(AuthProtocol STATIC ${target_SOURCES})
-target_link_libraries(AuthProtocol PUBLIC Qt5::Core ace_IMP Auth_interface)
+target_link_libraries(AuthProtocol PUBLIC Qt6::Core ace_IMP Auth_interface)
 target_link_libraries(AuthProtocol INTERFACE SEGS_Components)
 set_property(TARGET AuthProtocol PROPERTY POSITION_INDEPENDENT_CODE ON)
 if(ENABLE_TESTS)

@@ -13,7 +13,7 @@ ${target_CPP}
 ${target_INCLUDE}
 )
 add_handler(AuthDatabase ${target_SOURCES})
-target_link_libraries(AuthDatabase PUBLIC cox_server_common gameData Qt5::Core Qt5::Sql)
+target_link_libraries(AuthDatabase PUBLIC cox_server_common gameData Qt6::Core Qt6::Sql)
 target_link_libraries(AuthDatabase INTERFACE SEGS_Components)
 target_link_libraries(AuthDatabase PRIVATE cereal_IMP)
 

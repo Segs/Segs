@@ -37,7 +37,7 @@ void NpcGenerator::generate(MapInstance *map_instance)
 
         QString npc_costume_name = getCostumeFromName(m_generator_name);
 
-        const Parse_NPC * npc_def = npc_store.npc_by_name(&npc_costume_name);
+        const Parse_NPC * npc_def = npc_store.npc_by_name(npc_costume_name);
         if(!npc_def)
             continue;
 

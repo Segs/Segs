@@ -28,8 +28,9 @@
 #include "Servers/MapServer/DataHelpers.h"
 #include "Components/Logging.h"
 
-#include <QtCore/QString>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QDebug>
+#include <QtCore/QString>
 
 using namespace SEGSEvents;
 
@@ -203,7 +204,7 @@ void Character::GetCharBuildInfo(BitStream &src)
     QSettings config(Settings::getSettingsPath(),QSettings::IniFormat,nullptr);
 
     config.beginGroup("StartingCharacter");
-        QRegExp space("\\s");
+        QRegularExpression space("\\s");
         QStringList inherent_and_preorders = config.value(QStringLiteral("inherent_powers"), "Brawl").toString().remove(space).split(',');
         QStringList starting_temps = config.value(QStringLiteral("starting_temps"), "EMP_Glove").toString().remove(space).split(',');
         QStringList starting_insps = config.value(QStringLiteral("starting_inspirations"), "Resurgence").toString().remove(space).split(',');

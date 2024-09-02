@@ -42,7 +42,7 @@ ${target_INCLUDE}
 )
 
 add_library(SlashCommands STATIC ${target_SOURCES})
-target_link_libraries(SlashCommands PUBLIC Qt5::Core gameData ScriptingEngine)
+target_link_libraries(SlashCommands PUBLIC Qt6::Core gameData ScriptingEngine)
 
 get_target_property(TARGET_SOURCES SlashCommands SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES})

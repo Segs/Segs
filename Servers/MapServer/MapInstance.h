@@ -207,7 +207,7 @@ protected:
         uint32_t                index() const { return m_index; }
         void                    reap_stale_links();
         void                    on_client_connected_to_other_server(SEGSEvents::ClientConnectedMessage *ev);
-        void                    process_chat(Entity *sender, QString &msg_text);
+        void                    process_chat(Entity *sender, QStringView msg_text);
 
         // DB -> Server messages
         void                    on_name_clash_check_result(SEGSEvents::WouldNameDuplicateResponse *ev);

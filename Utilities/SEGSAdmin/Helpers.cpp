@@ -12,7 +12,7 @@ Helpers::Helpers()
 QString Helpers::getMapsDir()
 {
     // Get maps_dir from settings.cfg
-    QFileInfo config_file_info = Settings::getSettingsPath();
+    QFileInfo config_file_info(Settings::getSettingsPath());
     QString config_file_path = config_file_info.absoluteFilePath();
     QSettings config_file(config_file_path, QSettings::IniFormat);
     config_file.beginGroup("MapServer");

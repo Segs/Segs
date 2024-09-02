@@ -8,7 +8,7 @@ add_executable(AuthEventRegistry AuthEventRegistry.cpp)
 add_test(AuthEventRegistry AuthEventRegistry)
 
 target_link_libraries(AuthEventRegistry
-    Qt5::Test
+    Qt6::Test
     AuthProtocol
 )
 

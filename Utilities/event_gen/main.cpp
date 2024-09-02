@@ -88,6 +88,7 @@ void generate_cpp(const std::vector<DefFile> &files,const QString &group_name,co
 
 bool extract_annotated(const QString &hdr_contents,DefFile &tgt)
 {
+    using namespace Qt::Literals;
     int idx=0;
     bool in_type=false;
     DefEvent cur_event;
@@ -104,7 +105,7 @@ bool extract_annotated(const QString &hdr_contents,DefFile &tgt)
         QRegularExpressionMatch match = i.next();
         if(match.hasMatch())
         {
-            QString event_classname = match.captured(1).trimmed().split(whitespace,QString::SkipEmptyParts)[1];
+            QString event_classname = match.captured(1).trimmed().split(whitespace,Qt::SkipEmptyParts)[1];
             QString parent_classname = match.captured(2).trimmed();
             detected_event_classes << event_classname;
             detected_event_classes.removeOne(parent_classname);
@@ -129,11 +130,12 @@ bool extract_annotated(const QString &hdr_contents,DefFile &tgt)
     }
     while(true)
     {
+        QStringView hdr_view(hdr_contents);
         idx = hdr_contents.indexOf("[[ev_def:",idx+1);
         if(idx==-1)
             break;
         idx+=9;
-        if(hdr_contents.midRef(idx).startsWith("type"))
+        if(hdr_view.mid(idx).startsWith("type"_L1))
         {
             idx+=4;
             if(in_type)
@@ -145,17 +147,17 @@ bool extract_annotated(const QString &hdr_contents,DefFile &tgt)
             idx  = hdr_contents.indexOf("\n",idx+1);
             int start=idx+1;
             idx  = hdr_contents.indexOf("{",idx+1);
-            QString class_name = hdr_contents.mid(start,idx-start).split(whitespace,QString::SkipEmptyParts)[1];
+            QString class_name = hdr_contents.mid(start,idx-start).split(whitespace,Qt::SkipEmptyParts)[1];
             cur_event.name = class_name;
             detected_event_classes.removeOne(class_name);
         }
-        else if(hdr_contents.midRef(idx).startsWith("field"))
+        else if(hdr_view.mid(idx).startsWith("field"_L1))
         {
             DefElement el;
             idx  = hdr_contents.indexOf("\n",idx+1);
             int start=idx+1;
             idx  = hdr_contents.indexOf(";",idx+1);
-            QStringList parts= hdr_contents.mid(start,idx-start).split(whitespace,QString::SkipEmptyParts);
+            QStringList parts= hdr_contents.mid(start,idx-start).split(whitespace,Qt::SkipEmptyParts);
             if(parts.size()<2)
                 return false;
             el.type = parts[0];
@@ -170,14 +172,14 @@ bool extract_annotated(const QString &hdr_contents,DefFile &tgt)
             }
             cur_event.elements.emplace_back(el);
         }
-        else if(hdr_contents.midRef(idx).startsWith("macro"))
+        else if(hdr_view.mid(idx).startsWith("macro"_L1))
         {
             static const QStringList handled_macros {"ONE_WAY_MESSAGE","TWO_WAY_MESSAGE"};
             DefElement el;
             idx  = hdr_contents.indexOf("\n",idx+1);
             int start=idx+1;
             idx  = hdr_contents.indexOf(")",start);
-            QStringList parts= hdr_contents.mid(start,idx-start).split('(',QString::SkipEmptyParts);
+            QStringList parts= hdr_contents.mid(start,idx-start).split('(',Qt::SkipEmptyParts);
             if(parts.size()<2)
                 return false;
             QString classname = parts[1].split(",")[1];

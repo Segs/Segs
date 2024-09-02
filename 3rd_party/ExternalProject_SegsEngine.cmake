@@ -43,7 +43,7 @@ add_library(SegsEngine::editor_interface INTERFACE IMPORTED)
 set_target_properties(SegsEngine::editor_interface PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "TOOLS_ENABLED;DEBUG_ENABLED"
   INTERFACE_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include/SegsEngine;${PROJECT_SOURCE_DIR}/3rd_party/prebuilt/include/"
-  INTERFACE_LINK_LIBRARIES "Qt5::Core;SegsEngine::EASTL_Import"
+  INTERFACE_LINK_LIBRARIES "Qt6::Core;SegsEngine::EASTL_Import"
 )
 set_property(TARGET SegsEngine::editor_engine APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 if(WIN32)

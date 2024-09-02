@@ -5,10 +5,9 @@
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
-#ifndef UPDATERDLG_H
-#define UPDATERDLG_H
+#pragma once
 
-#include <QDialog>
+#include <QtWidgets/QDialog>
 #include <vector>
 
 struct ProjectDescriptor;
@@ -25,10 +24,10 @@ class UpdaterDlg : public QDialog
     Q_OBJECT
 
 public:
-    explicit UpdaterDlg(QWidget *parent = 0);
+    explicit UpdaterDlg(QWidget *parent = nullptr);
     ~UpdaterDlg();
-public Q_SLOTS:
     void projectListChanged(const std::vector<ProjectDescriptor> & projects);
+public Q_SLOTS:
     void onDownloadProgressed(const QString &fname,quint64 bytes,quint64 overall);
     void onUpdateAvailable(AppVersionManifest * manifest, const QString &changelog);
 signals:
@@ -36,5 +35,3 @@ signals:
 private:
     Ui::UpdaterDlg *ui;
 };
-
-#endif // UPDATERDLG_H

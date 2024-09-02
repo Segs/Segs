@@ -14,7 +14,7 @@
 
 struct CharacterData;
 
-static QHash<QString,int> contactLinkHash = {
+static std::unordered_map<std::string,int> contactLinkHash = {
     {"CONTACTLINK_HELLO"                ,1},
     {"CONTACTLINK_MAIN"                 ,2},
     {"CONTACTLINK_BYE"                  ,3},

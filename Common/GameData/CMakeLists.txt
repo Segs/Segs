@@ -1,4 +1,4 @@
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt6 COMPONENTS Core REQUIRED)
 
 SET(target_CPP
     ${CMAKE_CURRENT_SOURCE_DIR}/Clue.cpp
@@ -148,7 +148,7 @@ SET(target_INCLUDE
 add_library(gameData STATIC ${target_CPP} ${target_INCLUDE})
 set_target_properties(gameData PROPERTIES AUTOMOC ON)
 add_dependencies(gameData ace_IMP cereal_IMP) # used for Singleton stuff.
-target_link_libraries(gameData PUBLIC Qt5::Core)
+target_link_libraries(gameData PUBLIC Qt6::Core)
 target_link_libraries(gameData INTERFACE SEGS_Components)
 target_include_directories(gameData INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>

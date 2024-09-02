@@ -21,7 +21,7 @@ SET (target_SOURCES
 )
 
 add_library(ScriptingEngine ${target_SOURCES})
-target_link_libraries(ScriptingEngine PUBLIC Qt5::Core gameData)
+target_link_libraries(ScriptingEngine PUBLIC Qt6::Core gameData)
 
 target_compile_definitions(ScriptingEngine PUBLIC -DSCRIPTING_ENABLED=1)
 target_link_libraries(ScriptingEngine PUBLIC lua_IMP sol2)

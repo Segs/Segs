@@ -13,6 +13,6 @@ ExternalProject_Add(
 
 ADD_LIBRARY(lua_IMP STATIC IMPORTED GLOBAL)
 add_dependencies(lua_IMP lua-${lua_RELEASE})
-SET_PROPERTY(TARGET lua_IMP APPEND PROPERTY IMPORTED_LOCATION ${lua_LIBRARY_STATIC} )
-set_property(TARGET lua_IMP PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ThirdParty_Install_Dir}/include)
+set_property(TARGET lua_IMP APPEND PROPERTY IMPORTED_LOCATION ${lua_LIBRARY_STATIC} )
+target_include_directories(lua_IMP INTERFACE ${ThirdParty_Install_Dir}/include)
 #set_shared_lib_properties(ace)

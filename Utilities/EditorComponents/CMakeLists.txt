@@ -6,7 +6,7 @@ cmake_policy(VERSION 3.17)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
@@ -26,7 +26,7 @@ set(sources
 add_executable(SegsEd ${sources})
 target_include_directories(SegsEd PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(SegsEd PUBLIC Qt5::Widgets)
+target_link_libraries(SegsEd PUBLIC Qt6::Widgets)
 set_target_properties(SegsEd PROPERTIES AUTOMOC TRUE)
 set_target_properties(SegsEd PROPERTIES AUTOUIC TRUE)
 set_target_properties(SegsEd PROPERTIES AUTORCC TRUE)

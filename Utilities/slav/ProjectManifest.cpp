@@ -20,7 +20,7 @@
 #include <set>
 
 #include <QtCore/QDebug>
-#include <QtCore/QRegExp>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QStringList>
 #include <QDirIterator>
 #include <cassert>
@@ -68,7 +68,7 @@ void AppVersionManifest::buildFromFileSystem(const QString &basePath)
         // add paths relative to basePath
         files << fpath.mid(basePath.size()+1);
     }
-    QRegExp backupRegex(".*_backup");
+    QRegularExpression backupRegex(".*_backup");
     for(auto iter=files.begin(); iter!=files.end(); ) {
         if(iter->contains(backupRegex))
             iter = files.erase(iter);

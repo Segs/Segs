@@ -6,7 +6,7 @@ IF(MSVC)
 ELSE()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
 ENDIF()
-find_package(Qt5 COMPONENTS Core Sql REQUIRED)
+find_package(Qt6 COMPONENTS Core Sql REQUIRED)
 
 add_subdirectory(migrations)
 
@@ -28,7 +28,7 @@ set(tool_SRC
 
 add_executable(dbtool ${tool_SRC})
 target_include_directories(dbtool PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(dbtool Qt5::Core Qt5::Sql)
+target_link_libraries(dbtool Qt6::Core Qt6::Sql)
 target_link_libraries(dbtool SEGS_Components)
 
 # dbtool relies on QT more now, so we need these for windows builds

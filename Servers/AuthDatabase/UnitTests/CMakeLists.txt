@@ -8,7 +8,7 @@ add_executable(AuthDBEventRegistry AuthDBEventRegistry.cpp)
 add_test(AuthDBEventRegistry AuthDBEventRegistry)
 
 target_link_libraries(AuthDBEventRegistry
-    Qt5::Test
+    Qt6::Test
     AuthDatabase
 )
 

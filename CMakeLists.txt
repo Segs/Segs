@@ -102,7 +102,7 @@ option(BUILD_CLIENT_PATCH "Build client patch for AMD graphics cards ?" OFF)
 ########################################################################################
 find_package(Threads REQUIRED)
 include(LocateQt5)
-find_package(Qt5 5.12 COMPONENTS Core Sql REQUIRED)
+find_package(Qt6 6.6.0 COMPONENTS Core Sql REQUIRED)
 
 include(SDKHelper)
 include(3rdparty_support)
@@ -117,14 +117,14 @@ link_directories(${PROJECT_SOURCE_DIR}/lib) # ERICEDIT: Changed to lowercase.
 
 if(ENABLE_TESTS)
     enable_testing()
-    find_package(Qt5 COMPONENTS Test REQUIRED)
+    find_package(Qt6 COMPONENTS Test REQUIRED)
     # Event registration support functionality
     macro(add_segs_test testname) # followed by a list of directories to scan
         add_executable(${testname} ${testname}.cpp)
         add_test(${testname} ${testname})
 
         target_link_libraries(${testname}
-            Qt5::Test
+            Qt6::Test
             ${ARGN}
         )
         set_target_properties (${testname} PROPERTIES
@@ -163,10 +163,10 @@ macro(scan_event_types group) # followed by a list of directories to scan
         file(GLOB headers ${path}/*.h)
         list(APPEND all_headers ${headers})
     endforeach()
-    to_path_list(path_with_qt5 $ENV{PATH} ${Qt5_BIN_DIR} )
+    to_path_list(path_with_qt6 $ENV{PATH} ${Qt6_BIN_DIR} )
     # for event_gen we first add qt5 binary path to allow it to run during build.
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E env "PATH=${path_with_qt5}" $<SHELL_PATH:$<TARGET_FILE:event_gen>> scan_events ${group} ${CMAKE_CURRENT_BINARY_DIR}/ ${ARGN}
+        COMMAND ${CMAKE_COMMAND} -E env "PATH=${path_with_qt6}" $<SHELL_PATH:$<TARGET_FILE:event_gen>> scan_events ${group} ${CMAKE_CURRENT_BINARY_DIR}/ ${ARGN}
         OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/${group}.gen.cpp
         DEPENDS event_gen ${all_headers}
         COMMENT "Generating ${group} implementation source"
@@ -183,7 +183,7 @@ macro(add_messages_library name )
     add_library(${name}_interface STATIC ${${name}_SOURCES} ${ARGN})
     # allow all headers to refer to events by their dir/name.h
     target_include_directories(${name}_interface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-    target_link_libraries(${name}_interface PUBLIC Qt5::Core)
+    target_link_libraries(${name}_interface PUBLIC Qt6::Core)
     # all interfaces use stuff from Common, so should depend/link to it
     target_link_libraries(${name}_interface PUBLIC SEGS_Components)
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ARGN})

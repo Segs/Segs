@@ -27,7 +27,7 @@ SET (target_SOURCES
 add_handler(Auth ${target_SOURCES})
 #FIND_PACKAGE(Boost COMPONENTS system REQUIRED) # Boost_LIBRARIES is not a cache variable, so we  have to do this here again
 
-target_link_libraries(Auth PUBLIC Qt5::Core)
+target_link_libraries(Auth PUBLIC Qt6::Core)
 target_link_libraries(Auth PUBLIC ace_IMP cox_server_common AuthProtocol SEGS_Components)
 IF(BUILD_SEPARATE)
     ADD_DEFINITIONS(-DSEPARATE)
@@ -47,7 +47,7 @@ IF(BUILD_SEPARATE)
     )
     ADD_DEPENDENCIES(segs_server ${target_DEPENDS} Auth)
     ADD_DEPENDENCIES(segs_server ACE_BUILD)
-    target_link_libraries(segs_server PUBLIC Qt5::Core)
+    target_link_libraries(segs_server PUBLIC Qt6::Core)
     set_property(TARGET segs_server PROPERTY POSITION_INDEPENDENT_CODE ON)
     IF(MINGW)
         target_link_libraries(segs_server PUBLIC ws2_32)

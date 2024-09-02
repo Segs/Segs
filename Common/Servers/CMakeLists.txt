@@ -33,7 +33,7 @@ INCLUDE_DIRECTORIES(SYSTEM ${ACE_path})
 ADD_LIBRARY(cox_server_common STATIC ${target_SOURCES})
 add_dependencies(cox_server_common ace_IMP)
 target_link_libraries(cox_server_common INTERFACE ace_IMP)
-target_link_libraries(cox_server_common PUBLIC Qt5::Core Qt5::Sql)
+target_link_libraries(cox_server_common PUBLIC Qt6::Core Qt6::Sql)
 set_target_properties(cox_server_common PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${target_INCLUDE_DIR})
 
 # Retain directory structure in visual studio

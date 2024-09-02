@@ -6,13 +6,13 @@ IF(MSVC)
 ELSE()
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -std=c++11")
 ENDIF()
-find_package(Qt5Core)
+find_package(Qt6 COMPONENTS Core)
 
 set(tool_SRC
     main.cpp
 )
 add_executable(piggtool ${tool_SRC})
-target_link_libraries(piggtool Qt5::Core)
+target_link_libraries(piggtool Qt6::Core)
 # Retain directory structure in visual studio
 get_target_property(TARGET_SOURCES piggtool SOURCES) 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${TARGET_SOURCES}) 
