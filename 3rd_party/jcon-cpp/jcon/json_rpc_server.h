@@ -40,13 +40,22 @@ public:
     void registerServices(const ServiceMap& services,
                           const QString& ns_separator = "/");
 
+    // Allow a server to send unsolicited notifications to client
+    void enableSendNotification(bool enabled);
+
     virtual bool listen(int port) = 0;
     virtual bool listen(const QHostAddress& addr, int port) = 0;
 
     virtual void close() = 0;
 
+    /**
+     * Get the currently calling client endpoint.
+     */
+    static JsonRpcEndpoint* clientEndpoint();
+
 protected:
     virtual JsonRpcEndpoint* findClient(QObject* socket) = 0;
+    virtual QVector<JsonRpcEndpoint*> getAllClients() = 0;
 
 signals:
     void clientConnected(QObject* client_socket);
@@ -66,12 +75,14 @@ protected:
     void logError(const QString& msg);
     std::shared_ptr<JsonRpcLogger> log() { return m_logger; }
 
+private slots:
+    void serviceNotificationReceived(const QString& key, const QVariant& value);
+
 private:
-    static const QString InvalidRequestId;
+    const QString InvalidRequestId = "";
 
     bool dispatch(const QString& method_name,
                   const QVariant& params,
-                  const QString& request_id,
                   QVariant& return_value);
 
     std::pair<QString, QString>
@@ -106,10 +117,17 @@ private:
     QJsonDocument createErrorResponse(const QString& request_id,
                                       int code,
                                       const QString& message);
+    QJsonDocument createNotification(const QString& key,
+                                     const QVariant& value);
 
     std::shared_ptr<JsonRpcLogger> m_logger;
     ServiceMap m_services;
     QString m_ns_separator;
+
+    // allows unsolicited notifications (not part of JSON-RPC standard)
+    bool m_allowNotification;
+
+    static JsonRpcEndpoint* sm_client_endpoint;
 };
 
 }

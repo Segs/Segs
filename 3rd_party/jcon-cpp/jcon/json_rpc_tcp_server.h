@@ -22,10 +22,12 @@ public:
 
     bool listen(int port) override;
     bool listen(const QHostAddress& addr, int port) override;
+    bool isListening() const;
     void close() override;
 
 protected:
     JsonRpcEndpoint* findClient(QObject* socket) override;
+    QVector<JsonRpcEndpoint*> getAllClients() override;
 
 private slots:
     /// Called when the underlying QTcpServer gets a new client connection.

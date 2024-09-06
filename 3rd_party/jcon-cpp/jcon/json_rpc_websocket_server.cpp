@@ -2,8 +2,8 @@
 #include "json_rpc_websocket.h"
 #include "jcon_assert.h"
 
-#include <QWebSocket>
-#include <QWebSocketServer>
+#include <QtWebSockets/QWebSocket>
+#include <QtWebSockets/QWebSocketServer>
 
 namespace jcon {
 
@@ -40,6 +40,10 @@ bool JsonRpcWebSocketServer::listen(const QHostAddress& addr, int port)
     return m_server->listen(addr, port);
 }
 
+bool JsonRpcWebSocketServer::isListening() const {
+    return m_server->isListening();
+}
+
 void JsonRpcWebSocketServer::close()
 {
     m_server->close();
@@ -50,6 +54,17 @@ JsonRpcEndpoint* JsonRpcWebSocketServer::findClient(QObject* socket)
     QWebSocket* web_socket = qobject_cast<QWebSocket*>(socket);
     auto it = m_client_endpoints.find(web_socket);
     return (it != m_client_endpoints.end()) ? it->second.get() : nullptr;
+}
+
+QVector<JsonRpcEndpoint*> JsonRpcWebSocketServer::getAllClients()
+{
+    int size = static_cast<int>(m_client_endpoints.size());
+    QVector<JsonRpcEndpoint*> rpc_endpoints(size, nullptr);
+
+    for (auto const& client_endpoint : m_client_endpoints)
+        rpc_endpoints.append(client_endpoint.second.get());
+
+    return rpc_endpoints;
 }
 
 void JsonRpcWebSocketServer::newConnection()
@@ -71,7 +86,14 @@ void JsonRpcWebSocketServer::newConnection()
         auto rpc_socket = std::make_shared<JsonRpcWebSocket>(web_socket);
 
         auto endpoint =
-            std::make_shared<JsonRpcEndpoint>(rpc_socket, log(), this);
+            std::shared_ptr<JsonRpcEndpoint>(new JsonRpcEndpoint(rpc_socket, log(), this),
+                [this](JsonRpcEndpoint* obj) {
+                    if (this->m_server != nullptr && this->m_server->isListening()) {
+                        obj->deleteLater();
+                    } else {
+                        delete obj;
+                    }
+                });
 
         connect(endpoint.get(), &JsonRpcEndpoint::socketDisconnected,
                 this, &JsonRpcWebSocketServer::disconnectClient);

@@ -29,4 +29,12 @@ QStringList variantListToStringList(const QVariantList& l)
     return res;
 }
 
+QStringList variantMapToStringList(const QVariantMap& m)
+{
+    QStringList res;
+    for (auto k : m.keys()) {
+        res.push_back(variantToString(m.value(k)));
+    }
+    return res;
+}
 }

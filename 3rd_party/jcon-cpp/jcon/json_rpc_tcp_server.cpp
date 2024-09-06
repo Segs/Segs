@@ -54,6 +54,17 @@ JsonRpcEndpoint* JsonRpcTcpServer::findClient(QObject* socket)
     return (it != m_client_endpoints.end()) ? it->second.get() : nullptr;
 }
 
+QVector<JsonRpcEndpoint*> JsonRpcTcpServer::getAllClients()
+{
+    int size = static_cast<int>(m_client_endpoints.size());
+    QVector<JsonRpcEndpoint*> rpc_endpoints(size, nullptr);
+
+    for (auto const& client_endpoint : m_client_endpoints)
+        rpc_endpoints.append(client_endpoint.second.get());
+
+    return rpc_endpoints;
+}
+
 void JsonRpcTcpServer::newConnection()
 {
     JCON_ASSERT(m_server.hasPendingConnections());
@@ -74,7 +85,14 @@ void JsonRpcTcpServer::newConnection()
         auto rpc_socket = std::make_shared<JsonRpcTcpSocket>(tcp_socket);
 
         auto endpoint =
-            std::make_shared<JsonRpcEndpoint>(rpc_socket, log(), this);
+            std::shared_ptr<JsonRpcEndpoint>(new JsonRpcEndpoint(rpc_socket, log(), this),
+                [this](JsonRpcEndpoint* obj) {
+                    if (this->m_server.isListening()) {
+                        obj->deleteLater();
+                    } else {
+                        delete obj;
+                    }
+                });
 
         connect(endpoint.get(), &JsonRpcEndpoint::socketDisconnected,
                 this, &JsonRpcTcpServer::disconnectClient);
@@ -110,6 +128,10 @@ void JsonRpcTcpServer::disconnectClient(QObject* client_socket)
     }
     m_client_endpoints.erase(it);
     emit(clientDisconnected(client_socket));
+}
+
+bool jcon::JsonRpcTcpServer::isListening() const {
+    return m_server.isListening();
 }
 
 }

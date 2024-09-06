@@ -8,7 +8,7 @@ on:
 
 env:
   BUILD_TYPE:  Debug
-  QT_VERSION:  "6.6.0"
+  QT_VERSION:  "6.5.3"
   QT_WIN_TARGET_ARCHITECTURE:  "win64_msvc2019_64"
 
 jobs:

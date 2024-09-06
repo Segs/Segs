@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QVariant>
 #include <QMetaMethod>
+#include <QMetaType>
 
 namespace {
     QString logInvoke(const QMetaMethod& meta_method,
@@ -19,12 +20,13 @@ namespace {
 
 namespace jcon {
 
-const QString JsonRpcServer::InvalidRequestId = "";
+JsonRpcEndpoint* JsonRpcServer::sm_client_endpoint = nullptr;
 
 JsonRpcServer::JsonRpcServer(QObject* parent,
                              std::shared_ptr<JsonRpcLogger> logger)
     : QObject(parent)
     , m_logger(logger)
+    , m_allowNotification(false)
 {
     if (!m_logger) {
         m_logger = std::make_shared<JsonRpcFileLogger>("json_server_log.txt");
@@ -38,9 +40,27 @@ JsonRpcServer::~JsonRpcServer()
 void JsonRpcServer::registerServices(const QObjectList& services)
 {
     m_services.clear();
+
+    // unsolicited notification signature
+    QByteArray signature = QMetaObject::normalizedSignature(
+        "sendUnsolicitedNotification(QString,QVariant)");
+
     for (auto s : services) {
         m_services[s] = "";
+        /*
+         * If the server allows sending unsolicited notifications,
+         * and the service emits sendUnsolicitedNotification(QString,QVariant)
+         *  .... add a queued connection
+         */
+        if (m_allowNotification) {
+            int index = s->metaObject()->indexOfSignal(signature);
+            if (index != -1)
+                connect(s, SIGNAL(sendUnsolicitedNotification(QString,QVariant)),
+                        this, SLOT(serviceNotificationReceived(QString,QVariant)),
+                        Qt::QueuedConnection);
+        }
     }
+
     m_ns_separator = "";
 }
 
@@ -49,6 +69,37 @@ void JsonRpcServer::registerServices(const ServiceMap& services,
 {
     m_services = services;
     m_ns_separator = ns_separator;
+
+    // unsolicited notification signature
+    QByteArray signature = QMetaObject::normalizedSignature(
+        "sendUnsolicitedNotification(QString,QVariant)");
+
+    /*
+     * If the server allows sending unsolicited notifications,
+     * and the service emits sendUnsolicitedNotification(QString,QVariant)
+     *  .... add a queued connection
+     */
+    if (m_allowNotification) {
+        for (auto it = m_services.begin(); it != m_services.end(); ++it) {
+            QObject* s = it.key();
+            int index = s->metaObject()->indexOfSignal(signature);
+
+            if (index != -1)
+                connect(s, SIGNAL(sendUnsolicitedNotification(QString,QVariant)),
+                        this, SLOT(serviceNotificationReceived(QString,QVariant)),
+                        Qt::QueuedConnection);
+        }
+    }
+}
+
+void JsonRpcServer::enableSendNotification(bool enabled)
+{
+    m_allowNotification = enabled;
+}
+
+JsonRpcEndpoint* JsonRpcServer::clientEndpoint()
+{
+    return sm_client_endpoint;
 }
 
 void JsonRpcServer::jsonRequestReceived(const QJsonObject& request,
@@ -61,6 +112,8 @@ void JsonRpcServer::jsonRequestReceived(const QJsonObject& request,
         return;
     }
 
+    sm_client_endpoint = findClient(socket);
+
     QString method_name = request.value("method").toString();
     if (method_name.isEmpty()) {
         logError("no method present in request");
@@ -70,7 +123,7 @@ void JsonRpcServer::jsonRequestReceived(const QJsonObject& request,
     QString request_id = request.value("id").toVariant().toString();
 
     QVariant return_value;
-    if (!dispatch(method_name, params, request_id, return_value)) {
+    if (!dispatch(method_name, params, return_value)) {
         auto msg = QString("method '%1' not found, check name and "
                            "parameter types ").arg(method_name);
         logError(msg);
@@ -82,13 +135,12 @@ void JsonRpcServer::jsonRequestReceived(const QJsonObject& request,
                                     JsonRpcError::EC_MethodNotFound,
                                     msg);
 
-            JsonRpcEndpoint* endpoint = findClient(socket);
-            if (!endpoint) {
+            if (!sm_client_endpoint) {
                 logError("invalid client socket, cannot send response");
                 return;
             }
 
-            endpoint->send(error);
+            sm_client_endpoint->send(error);
             return;
         }
     }
@@ -99,19 +151,17 @@ void JsonRpcServer::jsonRequestReceived(const QJsonObject& request,
                                                 return_value,
                                                 method_name);
 
-        JsonRpcEndpoint* endpoint = findClient(socket);
-        if (!endpoint) {
+        if (!sm_client_endpoint) {
             logError("invalid client socket, cannot send response");
             return;
         }
 
-        endpoint->send(response);
+        sm_client_endpoint->send(response);
     }
 }
 
 bool JsonRpcServer::dispatch(const QString& method_name,
                              const QVariant& params,
-                             const QString& request_id,
                              QVariant& return_value)
 {
     QString method_ns;
@@ -327,9 +377,9 @@ bool JsonRpcServer::doCall(QObject* object,
     }
 
     const char* return_type_name = meta_method.typeName();
-    auto return_type = QMetaType::fromName(return_type_name);
+    QMetaType return_type = QMetaType::fromName(return_type_name);
     if (return_type.id() != QMetaType::Void) {
-        return_value = QVariant(return_type,nullptr);
+        return_value = QVariant(return_type, nullptr);
     }
 
     QGenericReturnArgument return_argument(
@@ -422,6 +472,43 @@ QJsonDocument JsonRpcServer::createErrorResponse(const QString& request_id,
     return QJsonDocument(res_json_obj);
 }
 
+QJsonDocument JsonRpcServer::createNotification(const QString& key,
+                                                const QVariant& value)
+{
+    QJsonObject noti_json_obj {
+        { "jsonrpc", "2.0" },
+        { "method", key }
+    };
+
+    if (value.type() == QVariant::Invalid) {
+        noti_json_obj["params"] = QJsonValue();
+    } else if (value.type() == QVariant::List) {
+        auto ret_doc = QJsonDocument::fromVariant(value);
+        noti_json_obj["params"] = ret_doc.array();
+    } else if (value.type() == QVariant::Map) {
+        auto ret_doc = QJsonDocument::fromVariant(value);
+        noti_json_obj["params"] = ret_doc.object();
+    } else if (value.type() == QVariant::Int) {
+        noti_json_obj["params"] = value.toInt();
+    } else if (value.type() == QVariant::LongLong) {
+        noti_json_obj["params"] = value.toLongLong();
+    } else if (value.type() == QVariant::Double) {
+        noti_json_obj["params"] = value.toDouble();
+    } else if (value.type() == QVariant::Bool) {
+        noti_json_obj["params"] = value.toBool();
+    } else if (value.type() == QVariant::String) {
+        noti_json_obj["params"] = value.toString();
+    } else {
+        auto msg =
+            QString("unknown return type: %1")
+                .arg(value.type());
+        logError(msg);
+        return QJsonDocument();
+    }
+
+    return QJsonDocument(noti_json_obj);
+}
+
 void JsonRpcServer::logInfo(const QString& msg)
 {
     m_logger->logInfo("JSON RPC server: " + msg);
@@ -430,6 +517,21 @@ void JsonRpcServer::logInfo(const QString& msg)
 void JsonRpcServer::logError(const QString& msg)
 {
     m_logger->logError("JSON RPC server error: " + msg);
+}
+
+void JsonRpcServer::serviceNotificationReceived(const QString& key,
+                                                const QVariant& value)
+{
+    if (key.isEmpty())
+        return;
+
+    QJsonDocument response = createNotification(key, value);
+    if (response.isNull())
+        return;
+
+    for (JsonRpcEndpoint* endpoint : getAllClients())
+        if (endpoint != nullptr)
+            endpoint->send(response);
 }
 
 }

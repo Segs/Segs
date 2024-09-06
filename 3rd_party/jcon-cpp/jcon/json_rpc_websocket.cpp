@@ -1,10 +1,13 @@
+#include <QtGlobal>
+
 #include "json_rpc_websocket.h"
 #include "jcon_assert.h"
 
-#include <QSignalSpy>
 #include <QTime>
+#include <QtWebSockets/QWebSocket>
+#include <QEventLoop>
+#include <QCoreApplication>
 #include <QElapsedTimer>
-#include <QWebSocket>
 
 namespace jcon {
 
@@ -40,7 +43,7 @@ void JsonRpcWebSocket::setupSocket()
             this, &JsonRpcWebSocket::dataReady);
 
     void (QWebSocket::*errorPtr)(QAbstractSocket::SocketError) =
-        &QWebSocket::error;
+        &QWebSocket::errorOccurred;
     connect(m_socket, errorPtr, this,
             [this](QAbstractSocket::SocketError error) {
                 emit socketError(m_socket, error);
@@ -64,12 +67,17 @@ void JsonRpcWebSocket::connectToUrl(const QUrl& url)
 bool JsonRpcWebSocket::waitForConnected(int msecs)
 {
     QElapsedTimer timer;
-    QSignalSpy spy(m_socket, &QWebSocket::connected);
+    bool isConnected = false;
+    QObject guard;
+    connect(m_socket, &QWebSocket::connected,
+            &guard, [&isConnected]() {
+                        isConnected = true;
+                    });
     timer.start();
-    while (spy.isEmpty() && timer.elapsed() < msecs) {
+    while (!isConnected && timer.elapsed() < msecs) {
         QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     }
-    return !spy.isEmpty();
+    return isConnected;
 }
 
 void JsonRpcWebSocket::disconnectFromHost()

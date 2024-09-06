@@ -46,6 +46,9 @@ public:
     QHostAddress serverAddress() const;
     int serverPort() const;
 
+    /// Allow a client to receive unsolicited notifications from server
+    void enableReceiveNotification(bool enabled);
+
     template<typename... T>
     std::shared_ptr<JsonRpcResult> call(const QString& method, T&&... args);
 
@@ -60,6 +63,14 @@ public:
     /// Expand arguments in list before making the RPC call
     std::shared_ptr<JsonRpcRequest>
         callAsyncExpandArgs(const QString& method, const QVariantList& args);
+
+    /// Named parameters
+    std::shared_ptr<JsonRpcRequest>
+        callAsyncNamedParams(const QString& method, const QVariantMap& args);
+
+    /// Named parameters
+    std::shared_ptr<JsonRpcResult>
+        callNamedParams(const QString& method, const QVariantMap& args);
 
     template<typename... T>
     void notification(const QString& method, T&&... args);
@@ -76,6 +87,9 @@ signals:
     /// Emitted when the RPC socket has an error.
     void socketError(QObject* socket, QAbstractSocket::SocketError error);
 
+    /// Emitted when an unsolicited notification is received
+    void notificationReceived(const QString& key, const QVariant& value);
+
 protected:
     void logError(const QString& msg);
 
@@ -87,6 +101,11 @@ private:
 
     static QString formatLogMessage(const QString& method,
                                     const QVariantList& args,
+                                    bool async,
+                                    const QString& request_id);
+
+    static QString formatLogMessage(const QString& method,
+                                    const QVariantMap& args,
                                     bool async,
                                     const QString& request_id);
 
@@ -102,6 +121,11 @@ private:
         doCallExpandArgs(const QString& method,
                          bool async,
                          const QVariantList& args);
+
+    std::shared_ptr<JsonRpcRequest>
+        doCallNamedParams(const QString& method,
+                          bool async,
+                          const QVariantMap& args);
 
     template<typename... T>
     void doNotification(const QString& method, T&&... args);
@@ -142,6 +166,8 @@ private:
 
     using ResultMap = QMap<RequestId, std::shared_ptr<JsonRpcResult>>;
     ResultMap m_results;
+
+    bool m_allowNotification;
 };
 
 template<typename... Ts>
@@ -176,8 +202,11 @@ JsonRpcClient::doCall(const QString& method, bool async, Ts&&... args)
     std::tie(request, req_json_obj) = prepareCall(method);
 
     QVariantList param_list;
-    convertToQVariantList(param_list, std::forward<Ts>(args)...);
-    req_json_obj["params"] = QJsonArray::fromVariantList(param_list);
+    constexpr std::size_t arg_count = sizeof...(Ts);
+    if (arg_count != 0) {
+        convertToQVariantList(param_list, std::forward<Ts>(args)...);
+        req_json_obj["params"] = QJsonArray::fromVariantList(param_list);
+    }
 
     m_logger->logInfo(
         formatLogMessage(method, param_list, async, request->id()));
@@ -196,8 +225,11 @@ void JsonRpcClient::doNotification(const QString& method, Ts&&... args)
     req_json_obj = createNotificationJsonObject(method);
 
     QVariantList param_list;
-    convertToQVariantList(param_list, std::forward<Ts>(args)...);
-    req_json_obj["params"] = QJsonArray::fromVariantList(param_list);
+    constexpr std::size_t arg_count = sizeof...(Ts);
+    if (arg_count != 0) {
+        convertToQVariantList(param_list, std::forward<Ts>(args)...);
+        req_json_obj["params"] = QJsonArray::fromVariantList(param_list);
+    }
 
     m_endpoint->send(QJsonDocument(req_json_obj));
 }

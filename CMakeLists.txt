@@ -102,7 +102,7 @@ option(BUILD_CLIENT_PATCH "Build client patch for AMD graphics cards ?" OFF)
 ########################################################################################
 find_package(Threads REQUIRED)
 include(LocateQt5)
-find_package(Qt6 6.6.0 COMPONENTS Core Sql REQUIRED)
+find_package(Qt6 COMPONENTS Core Sql REQUIRED)
 
 include(SDKHelper)
 include(3rdparty_support)

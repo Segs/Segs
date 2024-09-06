@@ -3,7 +3,7 @@ SET(QT_MISSING True)
 IF(MSVC)
     message("LocateQt6 was given a Qt6 path ${QT_GIVEN_PATH}")
     # look for user-registry pointing to qtcreator
-    GET_FILENAME_COMPONENT(QT_BIN [HKEY_CURRENT_USER\\Software\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command] PATH)
+    GET_FILENAME_COMPONENT(QT_BIN [HKEY_CURRENT_USER\\Software\\Classes\\Applications\\QtProject.QtCreator.pro\\shell\\Open\\Command] PATH)
     if(${MSVC_VERSION} VERSION_LESS "1910")
         MESSAGE(FATAL_ERROR "SEGS requires visual studio 2017 to build")
     endif()
@@ -13,7 +13,7 @@ IF(MSVC)
     get_filename_component(QT_BIN ${t_path} DIRECTORY)
 
     LIST(GET QT_BIN 0 QT_BIN)
-    FILE(GLOB QT_VERSIONS "${QT_BIN}/5.*")
+    FILE(GLOB QT_VERSIONS "${QT_BIN}/6.*")
     # find the latest qt version in QT_VERSIONS
     foreach(Ver ${QT_VERSIONS})
         if(NOT QT_VERSION)

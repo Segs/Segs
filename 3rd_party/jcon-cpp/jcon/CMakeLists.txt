@@ -23,4 +23,4 @@ install(TARGETS ${PROJECT_NAME}
 		PUBLIC_HEADER DESTINATION include/jcon
 )
 target_compile_definitions(jcon PUBLIC NDEBUG)
-target_link_libraries(jcon PUBLIC Qt6::Core Qt6::Network Qt6::Test Qt6::WebSockets)
+target_link_libraries(jcon PUBLIC Qt6::Core Qt6::Network Qt6::WebSockets)

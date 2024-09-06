@@ -52,7 +52,6 @@ function(windeployqt target directory)
                 ${WINDEPLOYQT_TYPE}
                 --verbose 0
                 --no-compiler-runtime
-                --no-angle
                 --no-translations
                 --no-opengl-sw
                 \"$<TARGET_FILE:${target}>\"
@@ -75,7 +74,6 @@ function(windeployqt target directory)
                     --dry-run
                     --no-translations
                     --no-compiler-runtime
-                    --no-angle
                     --no-opengl-sw
                     --list mapping
                     \${_file}

@@ -86,7 +86,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QMimeData>
-
+#include <QStringDecoder>
 
 /**
 #ifdef Q_OS_MAC

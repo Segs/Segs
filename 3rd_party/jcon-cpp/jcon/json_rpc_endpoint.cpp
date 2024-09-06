@@ -9,9 +9,6 @@
 
 namespace jcon {
 
-/// Remove \p n bytes from \p bytes.
-static QByteArray chopLeft(const QByteArray& bytes, int n);
-
 JsonRpcEndpoint::JsonRpcEndpoint(std::shared_ptr<JsonRpcSocket> socket,
                                  std::shared_ptr<JsonRpcLogger> logger,
                                  QObject* parent)
@@ -131,55 +128,54 @@ void JsonRpcEndpoint::dataReady(const QByteArray& bytes, QObject* socket)
     m_recv_buffer = processBuffer(m_recv_buffer.trimmed(), socket);
 }
 
-QByteArray JsonRpcEndpoint::processBuffer(const QByteArray& buffer,
+QByteArray JsonRpcEndpoint::processBuffer(const QByteArray& buf,
                                           QObject* socket)
 {
-    QByteArray buf(buffer);
-
     JCON_ASSERT(buf[0] == '{');
     if (buf[0] != '{') {
-        m_logger->logInfo(QString("malformed request"));
+        m_logger->logError("Malformed request");
         return nullptr;
     }
 
-    bool in_string = false;
+    bool in_string = false, in_esc = false;
     int brace_nesting_level = 0;
-    QByteArray json_obj;
+    int start = 0;
 
     int i = 0;
     while (i < buf.length() ) {
         const char curr_ch = buf[i++];
 
-        if (curr_ch == '"')
+        if (curr_ch == '"' && !in_esc) {
             in_string = !in_string;
+            continue;
+        }
 
         if (!in_string) {
             if (curr_ch == '{')
                 ++brace_nesting_level;
-
-            if (curr_ch == '}') {
+            else if (curr_ch == '}') {
                 --brace_nesting_level;
                 JCON_ASSERT(brace_nesting_level >= 0);
 
                 if (brace_nesting_level == 0) {
-                    auto doc = QJsonDocument::fromJson(buf.left(i));
+                    auto doc = QJsonDocument::fromJson(buf.mid(start, i - start));
                     JCON_ASSERT(!doc.isNull());
                     JCON_ASSERT(doc.isObject());
                     if (doc.isObject())
                         emit jsonObjectReceived(doc.object(), socket);
-                    buf = chopLeft(buf, i);
-                    i = 0;
+                    start = i;
                     continue;
                 }
             }
+        } else {
+            // in_string == true, maintain in_esc flag (which can only be latched true when in_string)
+            if (curr_ch == '\\' && !in_esc)
+                in_esc = true;
+            else
+                in_esc = false;
         }
     }
-    return buf;
-}
-
-QByteArray chopLeft(const QByteArray& bytes, int n)
-{
-    return bytes.right(bytes.length() - n);
+    return start > 0 ? buf.mid(start) : buf;
 }
 
 }

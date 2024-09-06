@@ -25,4 +25,12 @@ JCON_API QString variantToString(const QVariant& v);
  */
 JCON_API QStringList variantListToStringList(const QVariantList& l);
 
+/**
+ * Convert a QVariantMap to a QStringList
+ *
+ * @param[in] m The QVariantMap to convert
+ *
+ * @return A list with the string representations of each element in the list.
+ */
+JCON_API QStringList variantMapToStringList(const QVariantMap& m);
 }
