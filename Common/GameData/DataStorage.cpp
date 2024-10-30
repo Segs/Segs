@@ -86,7 +86,7 @@ bool BinStore::read_data_blocks( bool file_data_blocks )
         m_entries.push_back(fe);
     }
     uint64_t read_end = m_str->pos();
-    m_file_sizes.push_back(m_str->size()-read_end);
+    m_file_sizes.emplace_back((uint32_t)(m_str->size()-read_end));
     return (sz==(read_end-read_start));
 }
 
@@ -99,7 +99,7 @@ bool BinStore::open(const String &name, uint32_t required_crc )
         delete m_str;
         m_str = nullptr;
     }
-    m_str=fs->open(name.c_str(),name.size(),SEGS::IFile::ReadOnly);
+    m_str=fs->open(name,SEGS::IFile::ReadOnly);
     if(!m_str) {
         return false;
     }
@@ -312,7 +312,7 @@ bool BinStore::nesting_name(String &name)
 
 void BinStore::fixup()
 {
-    int64_t nonmult4 = ((m_str->pos() + 3) & ~3) - m_str->pos();
+    int nonmult4 = ((m_str->pos() + 3) & ~3) - m_str->pos();
     if(nonmult4)
     {
         m_str->seek(nonmult4+m_str->pos());

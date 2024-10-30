@@ -137,55 +137,51 @@ void getMissionMapLevelData(StringView map_level_folder, MapData &map_data)
 
     //std::filesystem::directory_iterator end_iter;
     auto fs = SEGS::getServiceLocator()->getFS();
-    fs->visitEntries(map_level_folder,[&](StringView entry, bool is_dir)->auto {
-            SEGS::IFilesystem::VisitResult res;
-            auto entry_name = PathUtils::get_file(entry);
-            if (map_data.m_map_type == MapType::MISSION && !is_dir) //std::filesystem::is_regular_file(dir_iter->status())
-    {
-                sInfo() << "Layout: " << PathUtils::get_file(entry);
-                mission_data.m_layouts.emplace_back(entry);
+    fs->visitEntries(map_level_folder, [&](StringView entry, bool is_dir)-> auto {
+        auto entry_name = PathUtils::get_file(entry);
+        if (map_data.m_map_type == MapType::MISSION && !is_dir) //std::filesystem::is_regular_file(dir_iter->status())
+        {
+            sInfo() << "Layout: " << PathUtils::get_file(entry);
+            mission_data.m_layouts.emplace_back(entry);
         }
         else if (map_data.m_map_type == MapType::UNIQUE)
         {
-                sInfo() << "Unique filename: " << PathUtils::get_file(entry);
-                if (is_dir)
+            sInfo() << "Unique filename: " << PathUtils::get_file(entry);
+            if (is_dir)
             {
                 mission_data.m_mission_category = MissionCategory::TRIAL_ROOM;
-                    //QDir trials(map_layout.filePath());
-                    //trials.setFilter(QDir::Dirs | QDir::Files | QDir::NoSymLinks | QDir::NoDot | QDir::NoDotDot);
-                    fs->visitEntries(entry,[&](StringView ptrial,bool is_dir)->auto {
-                        auto trial_entry_name = PathUtils::get_file(ptrial);
-                        if (!is_dir && !StringUtils::contains(ptrial,"beacon") && StringUtils::contains(ptrial,"spawn"))
-                {
-                            sInfo() << "Trial path: " << ptrial;
-                            sInfo() << "Layout: " << PathUtils::get_basename(trial_entry_name);
-                            mission_data.m_layouts.emplace_back(PathUtils::get_basename(trial_entry_name));
+                fs->visitEntries(entry, [&](StringView ptrial, bool is_dir)-> auto {
+                    auto trial_entry_name = PathUtils::get_file(ptrial);
+                    if (!is_dir && !StringUtils::contains(ptrial, "beacon") && StringUtils::contains(ptrial, "spawn"))
+                    {
+                        sInfo() << "Trial path: " << ptrial;
+                        sInfo() << "Layout: " << PathUtils::get_basename(trial_entry_name);
+                        mission_data.m_layouts.emplace_back(PathUtils::get_basename(trial_entry_name));
                     }
-                       return SEGS::IFilesystem::VisitNext;
-                    });
+                    return SEGS::IFilesystem::VisitNext;
+                });
             }
             else
             {
-                    if (!entry_name.contains("trial")) //std::filesystem::is_regular_file(dir_iter->status()) &&
+                if (!entry_name.contains("trial")) //std::filesystem::is_regular_file(dir_iter->status()) &&
                 {
-                        if (entry_name.contains("Interdimensional"))
+                    if (entry_name.contains("Interdimensional"))
                     {
                         mission_data.m_mission_category = MissionCategory::INTERDIMENSIONAL;
                     }
-                        else if (entry_name.contains("jumppuzzles"))
+                    else if (entry_name.contains("jumppuzzles"))
                     {
                         mission_data.m_mission_category = MissionCategory::JUMP_PUZZLE;
                     }
 
-                        StringView layout = entry_name.substr(0, entry_name.length() - 4);
+                    StringView layout = entry_name.substr(0, entry_name.length() - 4);
                     sInfo() << "Layout: " << layout;
-                        mission_data.m_layouts.emplace_back(layout);
+                    mission_data.m_layouts.emplace_back(layout);
                 }
             }
-
         }
-            return SEGS::IFilesystem::VisitNext;
-        });
+        return SEGS::IFilesystem::VisitNext;
+    });
 
     map_data.m_mission_data.push_back(mission_data);
 }
@@ -201,7 +197,7 @@ void loadAllMissionMapData()
             continue;
 
         String base_path = StringUtils::fmt("data/geobin/maps/Missions/%s",map_data.m_map_name.c_str());
-        if(!fs->exists(base_path.c_str(),base_path.size()))
+        if(!fs->exists(base_path))
             {
             sInfo() << "Failed to open map dir: " << base_path;
             continue;

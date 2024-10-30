@@ -156,7 +156,7 @@ void CrudP_Protocol::ReceivedBlock(BitStream &src)
     res->SetIsCompressed(src.GetBits(1));
     src.ByteAlign(true,false);
     // how much data did we actually read
-    size_t bits_left=(bitlength-src.GetReadPos());
+    uint32_t bits_left=(bitlength-src.GetReadPos());
     res->StoreBitArray(src.read_ptr(),bits_left);
     PushRecvPacket(res);
 }
@@ -194,7 +194,7 @@ void CrudP_Protocol::storeAcks(BitStream &bs)
     recv_acks.sort();
     recv_acks.unique();
     List<uint32_t>::iterator iter = recv_acks.begin();
-    uint32_t num_acks = std::min<uint32_t>(recv_acks.size(),16); // store up to 16 acks
+    uint32_t num_acks = std::min<uint32_t>((uint32_t)recv_acks.size(), 16); // store up to 16 acks
     bs.StorePackedBits(1,num_acks);
 
     uint32_t last_ack = *iter;
@@ -355,7 +355,7 @@ void CrudP_Protocol::PacketAck(uint32_t id)
     // reliable_packets
 }
 
-vCrudP_Packet packetSplit(CrudP_Packet &src,size_t block_size)
+static vCrudP_Packet packetSplit(CrudP_Packet &src, uint32_t block_size)
 {
     vCrudP_Packet res;
     CrudP_Packet *act;
@@ -493,7 +493,7 @@ bool CrudP_Protocol::isUnresponsiveLink()
         return false; // we don't know if we're unresponsive yet.
     auto time_now = steady_clock::now();
     //TODO: make the 15seconds a parameter ?
-    long seconds_since_last=duration_cast<seconds>(time_now-m_last_activity).count();
+    auto seconds_since_last=duration_cast<seconds>(time_now-m_last_activity).count();
     if(seconds_since_last < 15)
         return false; // client didn't send anything in less than 15 s, give it a bit more time
     for(CrudP_Packet * pkt : reliable_packets)
@@ -550,7 +550,7 @@ void CrudP_Protocol::processRetransmits()
     if(reliable_packets.empty())
         return;
     auto now       = steady_clock::now();
-    int  ping_time = 50;
+    const int ping_time = 50;
 
     uint32_t first_packet_id = reliable_packets.front()->GetSequenceNumber();
     for (CrudP_Packet *pkt : reliable_packets)
@@ -559,7 +559,7 @@ void CrudP_Protocol::processRetransmits()
             break;
         int resend_period =
                 getPacketResendDelay(pkt->retransmitCount(), ping_time, pkt->GetSequenceNumber() < first_packet_id);
-        long milliseconds_since_xfer = duration_cast<milliseconds>(now - toSteadyChronoType<SteadyChronoData>(pkt->lastSend())).count();
+        auto milliseconds_since_xfer = duration_cast<milliseconds>(now - toSteadyChronoType<SteadyChronoData>(pkt->lastSend())).count();
         if(milliseconds_since_xfer <= resend_period)
             continue;
         retransmit_queue.push_back(pkt);

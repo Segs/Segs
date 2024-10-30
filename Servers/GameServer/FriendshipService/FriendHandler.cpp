@@ -161,7 +161,7 @@ void on_friend_removed(FriendHandlerState &state,FriendRemovedMessage *msg)
     if(list->m_friends.empty())
         list->m_has_friends = false;
 
-    list->m_friends_count = list->m_friends.size();
+    list->m_friends_count = (uint32_t)list->m_friends.size();
     send_update_friends_list(state,msg->m_data.m_char_db_id);
 }
 } // end of anonymous namespace.

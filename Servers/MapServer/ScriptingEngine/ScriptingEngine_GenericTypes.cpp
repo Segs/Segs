@@ -229,7 +229,7 @@ void ScriptingEngine::register_GenericTypes()
          Store store;
          store.m_npc_idx = entityidx;
          store.m_store_Items = e->m_store_items;
-         cl->addCommand<StoreOpen>(store);
+         cl->addCommand<StoreOpen>(eastl::move(store));
     };
 
     m_private->m_lua["MapClientSession"]["SendInfoMessage"] = [this](int channel, const char* message)

@@ -31,8 +31,8 @@ struct FriendsList
 {
     enum : uint32_t { class_version = 1 };
 
-    bool                m_has_friends   = false;
-    int                 m_friends_count = 0;
+    bool           m_has_friends   = false;
+    uint32_t       m_friends_count = 0;
     Vector<Friend> m_friends;
 };
 template<class Archive>

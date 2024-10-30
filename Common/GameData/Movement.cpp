@@ -891,7 +891,8 @@ void processNewInputs(Entity &e)
                 // then tick_state needs to move into the entity somewhere
                 assert(tick_state.length_ms == 0);
 
-                uint16_t new_csc_count = input_change.m_control_state_changes.size() - csc_id_delta;
+                uint16_t new_csc_count =
+                    static_cast<uint16_t>(input_change.m_control_state_changes.size() - csc_id_delta);
 
                 if (logInput().isDebugEnabled() && e.m_input_state.m_debug)
                 {

@@ -29,7 +29,7 @@ namespace
 
     void removeEndpointFromUnorderedVector(Vector<MessageBusEndpoint *> &vec,const MessageBusEndpoint *to_remove)
     {
-        for(int i=0,total=vec.size(); i<total; ++i)
+        for(size_t i=0,total=vec.size(); i<total; ++i)
         {
             if(vec[i]==to_remove)
             {

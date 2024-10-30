@@ -330,7 +330,7 @@ static GeoSet *getAnimatedGeoSet(const String &name, SEGS::IFile *&fp)
     RuntimeData &rd(getRuntimeData());
     String      base_path = rd.m_prefab_mapping->m_base_path;
     String fpath = base_path + "/" + name;
-    fp = fs->open(fpath.c_str(), fpath.size(), IFile::ReadOnly);
+    fp = fs->open(fpath, IFile::ReadOnly);
     if (!fp)
     {
         sWarning() << "Failed to open" << name;

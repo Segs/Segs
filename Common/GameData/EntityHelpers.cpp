@@ -51,7 +51,7 @@ void resetSpeed(Entity &e)
     e.m_motion_state.m_speed = {e.m_char->m_char_data.m_current_attribs.m_SpeedRunning,
                                 e.m_char->m_char_data.m_current_attribs.m_SpeedJumping,
                                 e.m_char->m_char_data.m_current_attribs.m_SpeedFlying};
-    e.m_entity_update_flags |= e.UpdateFlag::STATS;
+    e.m_entity_update_flags |= Entity::STATS;
 }
 
 static DebugOutput &operator<<(DebugOutput &debug, const Team::TeamMember &c)
@@ -104,7 +104,7 @@ void setSuperGroup(Entity &e, int sg_id, StringView sg_name, uint32_t sg_rank)
         e.m_supergroup.m_SG_rank    = sg_rank;
     }
 
-    e.m_entity_update_flags |= e.UpdateFlag::SUPERGROUP;
+    e.m_entity_update_flags |= Entity::SUPERGROUP;
     sDebug() << "SG Info:"
              << "\n  Has Team:" << e.m_has_supergroup
              << "\n  ID:" << e.m_supergroup.m_SG_id
@@ -120,7 +120,7 @@ void setTarget(Entity &e, uint32_t target_idx)
     // TODO: set target if enemy, set assist_target if friendly
     e.m_target_idx = target_idx;
     // To trigger update to client
-    e.m_entity_update_flags |= e.UpdateFlag::TARGET;
+    e.m_entity_update_flags |= Entity::TARGET;
     sCDebug(logTarget) << "Setting Target to" << target_idx;
 }
 
@@ -143,7 +143,7 @@ void setStateMode(Entity &e, ClientStates state)
 {
     using namespace magic_enum::bitwise_operators;
     e.m_state_mode = state;
-    e.m_entity_update_flags|=e.UpdateFlag::STATEMODE;
+    e.m_entity_update_flags|=Entity::STATEMODE;
 }
 
 // For live debugging
@@ -184,7 +184,7 @@ void toggleCollision(Entity &e)
     else
         e.m_move_type &= ~MoveType::MOVETYPE_NOCOLL;
 
-    e.m_entity_update_flags |= e.UpdateFlag::NOCOLLISION;
+    e.m_entity_update_flags |= Entity::NOCOLLISION;
     sDebug() << "Collision =" << eastl::to_string(e.m_move_type) << e.m_motion_state.m_no_collision;
 }
 
@@ -193,7 +193,7 @@ void toggleMovementAuthority(Entity &e)
     using namespace magic_enum::bitwise_operators;
     toggleFullUpdate(e);
     toggleControlId(e);
-    e.m_entity_update_flags |= e.UpdateFlag::MOVEMENT;
+    e.m_entity_update_flags |= Entity::MOVEMENT;
 }
 
 
@@ -388,7 +388,7 @@ void checkMovement(Entity &e)
     else
         e.m_motion_state.m_controls_disabled = false;
 
-    e.m_entity_update_flags |= e.UpdateFlag::MOVEMENT;
+    e.m_entity_update_flags |= Entity::MOVEMENT;
 }
 
 //return true if any status effect would prevent the use of powers
@@ -433,19 +433,18 @@ void initializeNewPlayerEntity(Entity &e)
     e.m_player = eastl::make_unique<PlayerData>();
     e.m_player->reset();
     e.m_entity = eastl::make_unique<EntityData>();
-    e.m_entity_update_flags |= e.UpdateFlag::FULL;
+    e.m_entity_update_flags |= Entity::FULL;
 
-    std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
+    eastl::copy_n(g_world_surf_params, 2, e.m_motion_state.m_surf_mods);
 
     PosUpdate p;
     for(int i = 0; i<64; i++)
     {
         // Get timestamp in ms
-        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
-
+        auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
         p.m_position = e.m_entity_data.m_pos;
         p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
-        p.m_timestamp = now_ms;
+        p.m_timestamp = (uint32_t)now_ms;
         addPosUpdate(e, p);
     }
 }
@@ -478,23 +477,23 @@ void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NP
     e.m_char->m_char_data.m_level       = src->m_Level;
 
     // Flag for updates, but remove pchar_things (FX, CharStats, Buffs, Target Updates)
-    e.m_entity_update_flags |= e.UpdateFlag::FULL;
-    e.m_entity_update_flags &= ~e.UpdateFlag::FX;
-    e.m_entity_update_flags &= ~e.UpdateFlag::STATS;
-    e.m_entity_update_flags &= ~e.UpdateFlag::BUFFS;
-    e.m_entity_update_flags &= ~e.UpdateFlag::TARGET;
+    e.m_entity_update_flags |= Entity::FULL;
+    e.m_entity_update_flags &= ~Entity::FX;
+    e.m_entity_update_flags &= ~Entity::STATS;
+    e.m_entity_update_flags &= ~Entity::BUFFS;
+    e.m_entity_update_flags &= ~Entity::TARGET;
 
-    std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
-
+    eastl::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
+    using namespace std::chrono;
     PosUpdate p;
     for(int i = 0; i<64; i++)
     {
         // Get timestamp in ms
-        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+        auto now_ms = duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 
         p.m_position = e.m_entity_data.m_pos;
         p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
-        p.m_timestamp = now_ms;
+        p.m_timestamp = (uint32_t)now_ms;
         addPosUpdate(e, p);
     }
 }
@@ -524,7 +523,7 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     e.m_npc  = eastl::make_unique<NPCData>(NPCData{false, src, idx, variant});
     e.m_player.reset();
     e.m_entity = eastl::make_unique<EntityData>();
-    e.m_entity_update_flags |= e.UpdateFlag::FULL;
+    e.m_entity_update_flags |= Entity::FULL;
 
     e.m_char->m_char_data.m_combat_level = level;
     e.m_char->m_char_data.m_level = level;
@@ -539,14 +538,15 @@ void initializeNewCritterEntity(const GameDataStore &data, Entity &e, const Pars
     std::copy(g_world_surf_params, g_world_surf_params+2, e.m_motion_state.m_surf_mods);
 
     PosUpdate p;
+    using namespace std::chrono;
     for(int i = 0; i<64; i++)
     {
         // Get timestamp in ms
-        auto now_ms = std::chrono::steady_clock::now().time_since_epoch().count();
+        auto now_ms = duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count();
 
         p.m_position = e.m_entity_data.m_pos;
         p.m_pyr_angles = e.m_entity_data.m_orientation_pyr;
-        p.m_timestamp = now_ms;
+        p.m_timestamp = (uint32_t)now_ms;
         addPosUpdate(e, p);
     }
 }
@@ -564,7 +564,7 @@ void fillEntityFromNewCharData(Entity &e, BitStream &src,const GameDataStore &da
     if(e.m_char->m_char_data.m_has_the_prefix)
     {
         e.m_char->m_char_data.m_has_titles = true;
-        e.m_entity_update_flags |= e.UpdateFlag::TITLES;
+        e.m_entity_update_flags |= Entity::TITLES;
     }
 
     src.GetString(battlecry);

@@ -17,7 +17,8 @@
 #include <chrono>
 #include <cmath>
 
-int64_t msecsSinceStartOfDay() {
+uint32_t msecsSinceStartOfDay()
+{
     using namespace std::chrono;
 
     // Get current time point
@@ -41,7 +42,7 @@ int64_t msecsSinceStartOfDay() {
     auto duration = now - start_of_day;
 
     // Convert to milliseconds
-    return duration_cast<milliseconds>(duration).count();
+    return (uint32_t)duration_cast<milliseconds>(duration).count();
 }
 
 PasswordHasher::PasswordHasher()
@@ -53,7 +54,7 @@ String PasswordHasher::getRandomString(int length) const
 {
     const String possibleCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
     const int randomStringLength = length;
-    srand(static_cast<uint64_t>(msecsSinceStartOfDay()));
+    srand(static_cast<uint32_t>(msecsSinceStartOfDay()));
 
     String randomString;
     randomString.reserve(randomStringLength);

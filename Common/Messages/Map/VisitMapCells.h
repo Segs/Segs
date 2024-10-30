@@ -31,12 +31,12 @@ public:
         bs.StorePackedBits(1, type() - evFirstServerToClient); // Packet 22
         bs.StorePackedBits(1, 1);
         bs.StoreBits(1, m_is_opaque);
-        uint32_t num_cells = m_visible_map_cells.size();
+        uint32_t num_cells = (uint32_t)m_visible_map_cells.size();
         bs.StorePackedBits(1, num_cells);
 
         Vector<uint8_t> cells_arr;
         cells_arr.resize((num_cells + 7) / 8);
-        std::fill(std::begin(cells_arr), std::end(cells_arr), 0);
+        eastl::fill(std::begin(cells_arr), std::end(cells_arr), 0);
         for (uint16_t i = 0; i < cells_arr.size(); i++)
         {
             int32_t byte_sum = 0;

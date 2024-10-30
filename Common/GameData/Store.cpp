@@ -14,7 +14,7 @@
 #include "EASTL/algorithm.h"
 #include "cereal/cereal.hpp"
 
-StoreTransactionResult Store::buyItem(Entity *e, String item_name)
+StoreTransactionResult Store::buyItem(Entity *e, StringView item_name)
 {
     const GameDataStore &data(getGameData());
     StoreTransactionResult result;
@@ -50,7 +50,7 @@ StoreTransactionResult Store::buyItem(Entity *e, String item_name)
     }
     else
     {
-        int ending_index = item_name.rfind("_")+1;
+        auto ending_index = item_name.rfind("_")+1;
         String name = String(item_name).substr(0,ending_index - 1);
         String num = String(item_name).substr(ending_index, item_name.length() - ending_index);
 
@@ -64,13 +64,13 @@ StoreTransactionResult Store::buyItem(Entity *e, String item_name)
     return result;
 }
 
-StoreTransactionResult Store::sellItem(Entity *e, String item_name)
+StoreTransactionResult Store::sellItem(Entity *e, StringView item_name)
 {
     StoreTransactionResult result;
     sCDebug(logStores) << "sellItem. Item to find." << item_name;
 
     int price = getPrice(e, item_name, true);
-    result.m_message = String(String::CtorSprintf(),"Sold %s for %d influence.",item_name.c_str(),price);
+    result.m_message = String(String::CtorSprintf(),"Sold %.*s for %d influence.",item_name.size(),item_name.data(),price);
     result.m_inf_amount = price;
     result.m_is_success = true;
     result.m_item_name = item_name;
@@ -78,10 +78,10 @@ StoreTransactionResult Store::sellItem(Entity *e, String item_name)
     return result;
 }
 
-int Store::getPrice(Entity *e, String item_name, bool is_selling)
+int Store::getPrice(Entity *e, StringView item_name, bool is_selling)
 {
     const GameDataStore &data(getGameData());
-    std::vector<Shop_Data> shop_data; // NPC could have multiple shop_names set
+    Vector<Shop_Data> shop_data; // NPC could have multiple shop_names set
     if(e->m_is_store && !e->m_store_items.empty())
     {
         //Find store in entity store list
@@ -91,7 +91,7 @@ int Store::getPrice(Entity *e, String item_name, bool is_selling)
             {
                 if(si.m_store_name == shop.m_Name)
                 {
-                    shop_data.push_back(shop);
+                    shop_data.emplace_back(shop);
                     break;
                 }
             }

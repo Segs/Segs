@@ -128,11 +128,12 @@ public:
             uint32_t factor=1;
             if( in_use >= watermark || in_use >= m_storage.size() - 1 )
                 factor=2;
-            resize(factor*m_storage.size());
+            // TODO: verify factor*m_storage.size() is less than uint32_t max
+            resize(uint32_t(factor * m_storage.size()));
         }
         if(this->find_index(k,entry_idx,prev_val,true))
         {
-            return 0;
+            return nullptr;
         }
         m_storage[entry_idx].stored_key = k;
         m_storage[entry_idx].stored_val = v;
@@ -146,7 +147,7 @@ public:
         if(idx >= 0 && idx < (int)m_storage.size())
             if(m_storage[idx].key_hash!=0)
                 return &m_storage[idx].stored_key;
-        return 0;
+        return nullptr;
     }
     void init(uint32_t sz,uint32_t flags)
     {

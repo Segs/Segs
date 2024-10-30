@@ -95,8 +95,8 @@ void TradeUpdate::serializeto(BitStream& bs) const {
     bs.StorePackedBits(1, info_self.m_influence);
     bs.StorePackedBits(1, info_other.m_influence);
 
-    bs.StorePackedBits(1, info_other.m_enhancements.size());
-    bs.StorePackedBits(1, info_other.m_inspirations.size());
+    bs.StorePackedBits(1, (uint32_t)info_other.m_enhancements.size());
+    bs.StorePackedBits(1, (uint32_t)info_other.m_inspirations.size());
 
     for (const CharacterEnhancement& enh : m_enhancements)
     {

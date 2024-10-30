@@ -30,9 +30,9 @@ public:
         }
     };
 
-    explicit EmailHeaders() : GameCommandEvent(MapEventTypes::evEmailHeaders) {}
+    EmailHeaders() : GameCommandEvent(MapEventTypes::evEmailHeaders) {}
     /*Send multiple emails*/
-    EmailHeaders(const Vector<EmailHeader> &email) : GameCommandEvent(MapEventTypes::evEmailHeaders),
+    explicit EmailHeaders(const Vector<EmailHeader> &email) : GameCommandEvent(MapEventTypes::evEmailHeaders),
         m_fullupdate(true),
         m_emails(email)
     {
@@ -49,7 +49,7 @@ public:
     {
         bs.StorePackedBits(1, type()-evFirstServerToClient);
         bs.StorePackedBits(1, m_fullupdate);
-        bs.StorePackedBits(1, m_emails.size());
+        bs.StorePackedBits(1, (uint32_t)m_emails.size());
 
         for(const EmailHeader &hdr : m_emails)
         {

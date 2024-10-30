@@ -251,7 +251,7 @@ bool loadFrom(BinStore *s, SequencerList &target)
             ok &= loadFrom(s,&nt);
             cleanSeqFileName(nt.name);       // this was done after reading, no reason to not do this now.
             target.sq_list.push_back(nt);
-            target.m_Sequencers[nt.name.to_lower()] = target.sq_list.size()-1;
+            target.m_Sequencers[nt.name.to_lower()] = (uint32_t)(target.sq_list.size() - 1);
             s->nest_out();
         }
         else

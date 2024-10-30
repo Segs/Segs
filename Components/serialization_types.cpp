@@ -17,7 +17,7 @@ void CEREAL_LOAD_FUNCTION_NAME( Archive & ar,BitStream &bs )
 {
     cereal::size_type vectorSize;
     ar( cereal::make_size_tag( vectorSize ) );
-    bs.m_size = vectorSize;
+    bs.m_size = (uint32_t)vectorSize;
     bs.m_buf = new uint8_t [bs.m_size];
     for(size_t i=0; i<bs.m_size; ++i)
         ar(bs.m_buf[i]);

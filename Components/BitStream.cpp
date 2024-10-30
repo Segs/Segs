@@ -35,7 +35,7 @@ Function:   BitStream
 Description: BitStream's main constructor, initializes various internal
 values and buffers
 ************************************************************************/
-BitStream::BitStream(size_t size) : GrowingBuffer(0xFFFFFFFF,7,size)
+BitStream::BitStream(uint32_t size) : GrowingBuffer(0xFFFFFFFF, 7, size)
 {
     m_byteAligned    = false;
     ResetOffsets();
@@ -61,7 +61,7 @@ Function:     BitStream
 Description: BitStream's constructor, initializes various internal
                          values and buffers
 ************************************************************************/
-BitStream::BitStream(uint8_t *arr,size_t size) : GrowingBuffer(arr,size,false)
+BitStream::BitStream(uint8_t *arr, uint32_t size) : GrowingBuffer(arr, size, false)
 {
     m_byteAligned   = false;
     m_read_bit_off  = 0;
@@ -116,7 +116,7 @@ void BitStream::StoreBits(uint32_t nBits, uint32_t dataBits)
 
     if(nBits>GetWritableBits())
     {
-        size_t new_size = m_size+(nBits>>3);
+        uint32_t new_size = m_size + (nBits >> 3);
         // growing to accommodate !
         if(resize(new_size+7)==-1)
         {
@@ -142,7 +142,7 @@ void BitStream::uStoreBits(uint32_t nBits, uint32_t dataBits)
     uint64_t r = dataBits;
     uint64_t mask_ = uint64_t(BIT_MASK(nBits))<<m_write_bit_off; // all bits in the mask are those that'll change
     (*tp) = (r<<m_write_bit_off)|((*tp)&~mask_); // put those bits in
-    write_ptr((m_write_bit_off+nBits)>>3); //advance
+    write_ptr(int((m_write_bit_off+nBits)>>3)); //advance
     m_write_bit_off = (m_write_bit_off+nBits)&0x7;
 }
 
@@ -192,9 +192,9 @@ void BitStream::appendBitStream(BitStream &src)
  * @param src
  * @param nBits
  */
-void BitStream::StoreBitArray(const uint8_t *src,size_t nBits)
+void BitStream::StoreBitArray(const uint8_t *src, uint32_t nBits)
 {
-    size_t nBytes = BITS_TO_BYTES(nBits);
+    uint32_t nBytes = BITS_TO_BYTES(nBits);
     assert(src);
     ByteAlign(false,true);
     PutBytes(src,nBytes);
@@ -210,7 +210,7 @@ void BitStream::StoreBitArray(const uint8_t *src,size_t nBits)
 /************************************************************************
 Function:    StoreString/StoreStringWithDebugInfo
 Description: Stores a NULL terminated C-style string in the bit stream
-                         buffer.  It includes the NULL terminator.
+             buffer.  It includes the NULL terminator.
 ************************************************************************/
 
 void BitStream::StoreString(const char *str,int len)
@@ -219,7 +219,7 @@ void BitStream::StoreString(const char *str,int len)
         return;
 
     if(len==-1)
-        len = strlen(str)+1;
+        len = int(strlen(str)+1);
     //strlen(str) + 1, because we want to include
     //the NULL byte.
     if(IsByteAligned())
@@ -251,7 +251,7 @@ void BitStream::StoreString(const char *str,int len)
 
 void BitStream::StoreString(StringView str)
 {
-    StoreString(str.data(),str.size());
+    StoreString(str.data(),(int)str.size());
 }
 
 /************************************************************************
@@ -442,12 +442,10 @@ void BitStream::ByteAlign( bool read_part,bool write_part )
 
 void BitStream::CompressAndStoreString(const char *str)
 {
-    uint32_t decompLen = strlen(str) + 1;
+    uint32_t decompLen = (uint32_t)strlen(str) + 1;
     auto cs = SEGS::getCompressionService();
     assert(cs);
     auto res = cs->compressData(str,decompLen);
-    //QByteArray ba = qCompress(reinterpret_cast<const uint8_t *>(str),decompLen,5);
-    //ba.remove(0,sizeof(uint32_t)); // qt includes uncompressed size as a first 4 bytes of QByteArray
     uint32_t len = res->size;
     StorePackedBits(1, len);        //  Store compressed len
     StorePackedBits(1, decompLen);  //  Store decompressed len

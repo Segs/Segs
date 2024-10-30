@@ -1020,10 +1020,11 @@ void MapInstance::on_scene_request(SceneRequest *ev)
     res->m_map_number          = 1;
 
     assert(m_data_path.contains('_'));
-    int city_idx = m_data_path.find('/') + 1;
-    int end_or_slash = m_data_path.find('/', city_idx);
+    auto city_idx     = m_data_path.find('/') + 1;
+    auto end_or_slash = m_data_path.find('/', city_idx);
     assert(city_idx!=0);
-    String map_desc_from_path = m_data_path.substr(city_idx,end_or_slash==-1 ? -1 : m_data_path.size()-end_or_slash);
+    String map_desc_from_path =
+        m_data_path.substr(city_idx, end_or_slash == String::npos ? String::npos : m_data_path.size() - end_or_slash);
     sInfo() << "Scene Request for map path: " << map_desc_from_path;
 
     MapClientSession &session(m_session_store.session_from_event(ev));

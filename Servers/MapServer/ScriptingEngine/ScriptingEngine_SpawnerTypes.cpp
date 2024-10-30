@@ -29,20 +29,20 @@ void ScriptingEngine::register_SpawnerTypes()
     m_private->m_lua["MapInstance"]["GetSpawnerCount"] = [this]()
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
-        uint sCount = sg->size();
+        uint32_t sCount = (uint32_t)sg->size();
         return sCount;
     };
 
     // Returns count of children belonging to spawner at the specified index
-    m_private->m_lua["MapInstance"]["GetSpawnerChildCount"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetSpawnerChildCount"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
-        uint sChildCount = sg->at(index).m_markers.size();
+        uint32_t sChildCount = sg->at(index).m_markers.size();
         return sChildCount;
     };
 
     // Returns the name of the spawner at the specified index
-    m_private->m_lua["MapInstance"]["GetSpawnerName"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetSpawnerName"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
         String sName = sg->at(index).m_name;
@@ -50,7 +50,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the name of the child spawner at the specified indexes
-    m_private->m_lua["MapInstance"]["GetSpawnerChildName"] = [this](uint index, uint cindex)
+    m_private->m_lua["MapInstance"]["GetSpawnerChildName"] = [this](uint32_t index, uint32_t cindex)
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
         String sName = sg->at(index).m_markers.at(cindex).m_name;
@@ -58,7 +58,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the position of the spawner at the specified index
-    m_private->m_lua["MapInstance"]["GetSpawnerPosition"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetSpawnerPosition"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
         glm::vec3 sPos = sg->at(index).m_position;
@@ -66,7 +66,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the position of the child spawner at the specified indexes
-    m_private->m_lua["MapInstance"]["GetSpawnerChildPosition"] = [this](uint index, uint cindex)
+    m_private->m_lua["MapInstance"]["GetSpawnerChildPosition"] = [this](uint32_t index, uint32_t cindex)
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
         glm::vec3 sPos = sg->at(index).m_markers.at(cindex).m_position;
@@ -74,7 +74,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the rotation of the spawner at the specified index
-    m_private->m_lua["MapInstance"]["GetSpawnerRotation"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetSpawnerRotation"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
         glm::vec3 sRot = sg->at(index).m_rotation;
@@ -82,7 +82,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the rotation of the child spawner at the specified indexex
-    m_private->m_lua["MapInstance"]["GetSpawnerChildRotation"] = [this](uint index, uint cindex)
+    m_private->m_lua["MapInstance"]["GetSpawnerChildRotation"] = [this](uint32_t index, uint32_t cindex)
     {
         auto sg = &mi->m_map_scenegraph->m_csNodes;
         glm::vec3 sRot = sg->at(index).m_markers.at(cindex).m_rotation;
@@ -93,12 +93,12 @@ void ScriptingEngine::register_SpawnerTypes()
     m_private->m_lua["MapInstance"]["GetPersistentCount"] = [this]()
     {
         auto sg = &mi->m_map_scenegraph->m_persNodes;
-        uint pCount = sg->size();
+        uint32_t pCount = sg->size();
         return pCount;
     };
 
     // Jumps to specified Persistent NPC and announces NPC's name
-    m_private->m_lua["MapInstance"]["JumpPersist"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["JumpPersist"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_persNodes;
         if(index < 1 || index > sg->size())
@@ -112,7 +112,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the name of the persistent NPC at the specified index
-    m_private->m_lua["MapInstance"]["GetPersistentName"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetPersistentName"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_persNodes;
         String pName = sg->at(index).m_name;
@@ -120,7 +120,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the position of the persistent NPC at the specified index
-    m_private->m_lua["MapInstance"]["GetPersistentPosition"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetPersistentPosition"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_persNodes;
         glm::vec3 pPos = sg->at(index).m_position;
@@ -128,7 +128,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the rotation of the persistent NPC at the specified index
-    m_private->m_lua["MapInstance"]["GetPersistentRotation"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetPersistentRotation"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_persNodes;
         glm::vec3 pRot = sg->at(index).m_rotation;
@@ -139,12 +139,12 @@ void ScriptingEngine::register_SpawnerTypes()
     m_private->m_lua["MapInstance"]["GetCarCount"] = [this]()
     {
         auto sg = &mi->m_map_scenegraph->m_carNodes;
-        uint cCount = sg->size();
+        uint32_t cCount = sg->size();
         return cCount;
     };
 
     // Returns the position of the car node at the specified index
-    m_private->m_lua["MapInstance"]["GetCarPosition"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetCarPosition"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_carNodes;
         glm::vec3 cPos = sg->at(index).m_position;
@@ -152,7 +152,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the rotation of the car node at the specified index
-    m_private->m_lua["MapInstance"]["GetCarRotation"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetCarRotation"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_carNodes;
         glm::vec3 cRot = sg->at(index).m_rotation;
@@ -163,12 +163,12 @@ void ScriptingEngine::register_SpawnerTypes()
     m_private->m_lua["MapInstance"]["GetCivCount"] = [this]()
     {
         auto sg = &mi->m_map_scenegraph->m_npcNodes;
-        uint nCount = sg->size();
+        uint32_t nCount = sg->size();
         return nCount;
     };
 
     // Returns the position of the Civ/NPC node at the specified index
-    m_private->m_lua["MapInstance"]["GetCivPosition"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetCivPosition"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_npcNodes;
         glm::vec3 cPos = sg->at(index).m_position;
@@ -176,7 +176,7 @@ void ScriptingEngine::register_SpawnerTypes()
     };
 
     // Returns the rotation of the Civ/NPC node at the specified index
-    m_private->m_lua["MapInstance"]["GetCivRotation"] = [this](uint index)
+    m_private->m_lua["MapInstance"]["GetCivRotation"] = [this](uint32_t index)
     {
         auto sg = &mi->m_map_scenegraph->m_npcNodes;
         glm::vec3 cRot = sg->at(index).m_rotation;

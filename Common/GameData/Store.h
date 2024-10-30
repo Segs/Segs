@@ -58,9 +58,9 @@ public:
     template<class Archive>
     void serialize(Archive &archive, uint32_t const version);
 
-    static StoreTransactionResult buyItem(Entity *e, String item_name);
-    static StoreTransactionResult sellItem(Entity *e, String item_name);
-    static int getPrice(Entity *e, String item_name, bool is_selling);
+    static StoreTransactionResult buyItem(Entity *e, StringView item_name);
+    static StoreTransactionResult sellItem(Entity *e, StringView item_name);
+    static int                    getPrice(Entity *e, StringView item_name, bool is_selling);
 };
 
 

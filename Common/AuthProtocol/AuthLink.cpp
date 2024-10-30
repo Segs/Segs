@@ -46,7 +46,7 @@ void encode_buffer(AuthLinkState &state,const AuthLinkEvent *ev)
     // put 0 as size for now
     state.m_unsent_bytes_storage.uPut((uint16_t)0);
     // remember start location
-    size_t actual_packet_start = state.m_unsent_bytes_storage.GetReadableDataSize();
+    uint32_t actual_packet_start = state.m_unsent_bytes_storage.GetReadableDataSize();
     // store bytes
     ev->serializeto(state.m_unsent_bytes_storage);
     // calculate the number of stored bytes, and set it in packet_size,
@@ -179,7 +179,7 @@ bool send_buffer(ACE_SOCK_Stream &m_peer,AuthLinkState &m_state)
         ACE_ERROR ((LM_ERROR,ACE_TEXT ("(%P|%t) %p\n"), ACE_TEXT ("send")));
     else
     {
-        m_state.m_unsent_bytes_storage.PopFront(send_cnt); // this many bytes were sent
+        m_state.m_unsent_bytes_storage.PopFront((uint32_t)send_cnt); // this many bytes were sent
     }
     if(m_state.m_unsent_bytes_storage.GetReadableDataSize() > 0) // and still there is something left
     {
@@ -261,8 +261,8 @@ int AuthLink::handle_input( ACE_HANDLE )
         sCDebug(logConnection) << "Connection closed";
         return -1;
     }
-    ACE_Guard<ACE_Thread_Mutex> guard_buffer(m_buffer_mutex);
-    m_state->m_received_bytes_storage.PutBytes((uint8_t *)buffer,recv_cnt);
+    ACE_Guard guard_buffer(m_buffer_mutex);
+    m_state->m_received_bytes_storage.PutBytes((uint8_t *)buffer, (uint32_t)recv_cnt);
     m_state->m_received_bytes_storage.ResetReading();
     // early out optimization
     if(m_state->m_received_bytes_storage.GetReadableDataSize()<2)

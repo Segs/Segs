@@ -111,10 +111,12 @@ template<typename T>
 [[nodiscard]] String quote(StringView str,char character = '\"');
 [[nodiscard]] StringView unquote(StringView str);
 
-static inline uint32_t hash(const char *p_cstr, int p_len) {
-    return uint32_t(eastl::hash<StringView>()(StringView(p_cstr,p_len)));
+inline size_t hash(const char *p_cstr, int p_len)
+{
+    return eastl::hash<StringView>()(StringView(p_cstr,p_len));
 }
-static inline uint32_t hash(const char *p_cstr) {
+inline size_t hash(const char *p_cstr)
+{
     return eastl::hash<StringView>()(StringView(p_cstr));
 }
 

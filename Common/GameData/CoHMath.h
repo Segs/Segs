@@ -317,8 +317,8 @@ inline uint32_t countBits(uint32_t val)
     return r; // log2(v)
 }
 
-inline static float AngleDequantize(uint32_t val,int numb_bits) {
-    float v = val;
+inline float AngleDequantize(uint32_t val,int numb_bits) {
+    float v = static_cast<float>(val);
     v = v/(1<<numb_bits);
     v *= glm::two_pi<float>();
     v -= glm::pi<float>();

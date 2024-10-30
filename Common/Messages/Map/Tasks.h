@@ -19,8 +19,8 @@ namespace SEGSEvents
     public:
         // [[ev_def:field]
         vTaskEntryList m_task_entry_list;
-        explicit TaskStatusList() : GameCommandEvent(MapEventTypes::evTaskStatusList){}
-        TaskStatusList(const vTaskEntryList &task_entry_list) : GameCommandEvent(MapEventTypes::evTaskStatusList),
+        TaskStatusList() : GameCommandEvent(MapEventTypes::evTaskStatusList){}
+        explicit TaskStatusList(const vTaskEntryList &task_entry_list) : GameCommandEvent(MapEventTypes::evTaskStatusList),
                                                                 m_task_entry_list(task_entry_list)
         {
         }
@@ -28,7 +28,7 @@ namespace SEGSEvents
         void serializeto(BitStream &bs) const override
         {
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 45
-            bs.StorePackedBits(1, m_task_entry_list.size());
+            bs.StorePackedBits(1, (uint32_t)m_task_entry_list.size());
 
             uint32_t loop_count_2 = 0;
             for(const TaskEntry &task_entry: m_task_entry_list)
@@ -36,8 +36,9 @@ namespace SEGSEvents
 
                 bs.StorePackedBits(1, task_entry.m_db_id); // Player m_db_id?
                 bs.StoreBits(1, task_entry.m_reset_selected_task);
-                bs.StorePackedBits(1,  task_entry.m_task_list.size());
-                bs.StorePackedBits(1,  task_entry.m_task_list.size());
+                //TODO: code below looks 'wrong' same value sent twice?
+                bs.StorePackedBits(1, (uint32_t)task_entry.m_task_list.size());
+                bs.StorePackedBits(1, (uint32_t)task_entry.m_task_list.size());
 
                 for(const Task &task : task_entry.m_task_list)
                 {

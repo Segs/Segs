@@ -560,7 +560,7 @@ void setupSequencerData(SequencerData &seq)
     for (SeqMoveData &move : seq.m_Move)
     {
         move_locator[move.name.to_lower()] = &move;
-        uint32_t entry_hash               = eastl::hash<String>()(move.name);
+        uint32_t entry_hash = (uint32_t)eastl::hash<String>()(move.name);
         if (all_hashes.contains(entry_hash))
         {
             sCritical() << "Hash collision for move/group names";
@@ -1001,7 +1001,7 @@ int seqProcessClientInst(HSequencerInstance seq, float step_size, int idx, bool 
     float          adv = getAnimScaleFromSeq(seq) * step_size;
     if (changed)
     {
-        num_moves_in_arr = tpl->m_Move.size();
+        num_moves_in_arr = (int)tpl->m_Move.size();
         if (idx >= num_moves_in_arr)
             idx = 0;
         move  = &tpl->m_Move[idx];
@@ -1020,7 +1020,6 @@ namespace SEGS
 {
 void seqResetSeqType(HSequencerInstance seq_handle, IFilesystem &fs, const char *entType_filename, int seed)
 {
-    float bonescale_ratio;
     SequencerInstance &seq(seq_handle.get());
     // consider releasing previous data underlying the seq_handle
 
@@ -1061,7 +1060,7 @@ void seqResetSeqType(HSequencerInstance seq_handle, IFilesystem &fs, const char 
         if (anim_lst)
             seq.m_skinny_bodytype_animation = anim_lst;
     }
-    bonescale_ratio = seq.m_seq_type_info.m_random_bone_scale ? rand_LCG_float(&seed) : 0.0f;
+    float bonescale_ratio = seq.m_seq_type_info.m_random_bone_scale ? rand_LCG_float(&seed) : 0.0f;
     assert(bonescale_ratio >= -1.0f && bonescale_ratio <= 1.0f);
     changeBoneScale(seq_handle, bonescale_ratio);
     // TODO: if custom per-character lighting is in use, reset it here.
@@ -1108,7 +1107,6 @@ Model *findBoneInGeoSet(GeoSet *g_set, int id)
 void changeBoneScale(HSequencerInstance seq, float newbonescale)
 {
     GeoSet *g_set = nullptr;
-    int     bone_idx;
 
     assert(seq);
     assert(newbonescale >= -1.0f && newbonescale <= 1.0f);
@@ -1121,7 +1119,7 @@ void changeBoneScale(HSequencerInstance seq, float newbonescale)
     {
         g_set = seq->m_skinny_bodytype_animation;
     }
-    for (bone_idx = 0; bone_idx < 70; ++bone_idx)
+    for (int bone_idx = 0; bone_idx < 70; ++bone_idx)
     {
         seq->m_bone_scales[bone_idx] = glm::vec3(1, 1, 1);
         if (g_set)

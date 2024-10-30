@@ -40,7 +40,7 @@ public:
     // [[ev_def:field]]
     bool current_map_flags;
     // [[ev_def:field]]
-    size_t num_base_elems;
+    uint32_t num_base_elems;
     // [[ev_def:field]]
     int undos_PP;
     // [[ev_def:field]]
@@ -59,7 +59,7 @@ public:
     bool unkn2;
     EVENT_IMPL(Scene)
 protected:
-    void getGrpElem(BitStream &src,int idx);
+    void getGrpElem(BitStream &src, uint32_t idx);
     void reqWorldUpdateIfPak(BitStream &src);
     void groupnetrecv_5(BitStream &src,int a,int b);
 };

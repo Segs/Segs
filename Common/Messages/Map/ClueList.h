@@ -23,16 +23,16 @@ class ClueList final : public GameCommandEvent
     // [[ev_def:field]
     vClueList m_clue_list;
     explicit ClueList() : GameCommandEvent(MapEventTypes::evClueList){}
-    ClueList(vClueList clue_list) : GameCommandEvent(MapEventTypes::evClueList)
+    ClueList(vClueList &&clue_list) : GameCommandEvent(MapEventTypes::evClueList)
     {
-        m_clue_list = clue_list;
+        m_clue_list = eastl::move(clue_list);
     }
 
     void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 70
 
-        bs.StorePackedBits(1, m_clue_list.size());
+        bs.StorePackedBits(1, (uint32_t)m_clue_list.size());
         for (const Clue &clue : m_clue_list)
         {
             bs.StoreString(clue.m_name);
@@ -53,16 +53,16 @@ class SouvenirListHeaders final : public GameCommandEvent
     // [[ev_def:field]
     vSouvenirList m_souvenir_list;
     explicit SouvenirListHeaders() : GameCommandEvent(MapEventTypes::evSouvenirListHeaders){}
-    SouvenirListHeaders(vSouvenirList souvenir_list) : GameCommandEvent(MapEventTypes::evSouvenirListHeaders)
+    SouvenirListHeaders(vSouvenirList &&souvenir_list) : GameCommandEvent(MapEventTypes::evSouvenirListHeaders)
     {
-        m_souvenir_list = souvenir_list;
+        m_souvenir_list = eastl::move(souvenir_list);
     }
 
     void serializeto(BitStream &bs) const override
     {
         bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 71
 
-        bs.StorePackedBits(1, m_souvenir_list.size());
+        bs.StorePackedBits(1, (uint32_t)m_souvenir_list.size());
         for (const Souvenir &souvenir : m_souvenir_list)
         {
             bs.StorePackedBits(1, souvenir.m_idx);
@@ -108,11 +108,11 @@ class SouvenirDetail final : public GameCommandEvent
         int32_t m_souvenir_idx = 0;
         explicit SouvenirDetailRequest() : MapLinkEvent(MapEventTypes::evSouvenirDetailRequest){}
 
-        void serializeto(BitStream &/*bs*/) const final
+        void serializeto(BitStream &/*bs*/) const override final
         {
             assert(!"SouvenirDetailRequest serializeto");
         }
-        void serializefrom(BitStream &bs) final   // Packet 68
+        void serializefrom(BitStream &bs) override final   // Packet 68
         {
             m_souvenir_idx = bs.GetPackedBits(1);
             sCDebug(logMapEvents) << "SouvenirDetailRequest Event";

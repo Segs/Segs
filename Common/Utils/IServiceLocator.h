@@ -53,12 +53,12 @@ class ICompressionService {
 public:
     struct DecompressionResult {
         char *data;
-        int size;
+        uint32_t size;
         ~DecompressionResult() { delete[] data; }
     };
     struct CompressionResult {
         char *data;
-        int size;
+        uint32_t size;
         ~CompressionResult() { delete[] data; }
     };
     virtual DecompressionResult *uncompressZip(const char *compressed_data,int compressed_size,int decompressed_size)=0;
@@ -89,8 +89,8 @@ struct IFilesystem
     virtual bool exists(const char *path,int path_len)=0;
     virtual void visitEntries(StringView path, eastl::function<VisitResult(StringView, bool /*is_dir*/)> visitor) = 0;
     virtual bool mkpath(StringView path) = 0;
-    IFile *open(StringView path, IFile::OpenMode mode=IFile::ReadOnly) { return open(path.data(), path.size(), mode); }
-    bool exists(StringView path) { return exists(path.data(), path.size()); }
+    IFile *open(StringView path, IFile::OpenMode mode=IFile::ReadOnly) { return open(path.data(), (int)path.size(), mode); }
+    bool exists(StringView path) { return exists(path.data(), (int)path.size()); }
 };
 
 struct ILogger {

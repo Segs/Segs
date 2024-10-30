@@ -33,13 +33,13 @@ public:
     }
     void serializefrom(BitStream &bs) override
     {
-        int idx=0;
+        int idx;
         // while more commands available and the size is sane
         while(-1!=(idx=bs.GetPackedBits(1)) && m_commands.size()<200)
         {
             int cmd_idx = bs.GetPackedBits(1);
             assert(cmd_idx>0 && cmd_idx<200);
-            m_commands.resize(std::max<int>(m_commands.size(),cmd_idx));
+            m_commands.resize(std::max<int>((int)m_commands.size(),cmd_idx));
             bs.GetString(m_commands[cmd_idx-1]);
         }
     }

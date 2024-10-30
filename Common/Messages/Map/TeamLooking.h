@@ -24,7 +24,7 @@ public:
     Vector<LFGMember> m_list;
     explicit TeamLooking() : GameCommandEvent(MapEventTypes::evTeamLooking) {}
     TeamLooking(const Vector<LFGMember> &list) : GameCommandEvent(MapEventTypes::evTeamLooking),
-        m_num(list.size()),
+        m_num((uint32_t)list.size()),
         m_list(list)
     {
     }

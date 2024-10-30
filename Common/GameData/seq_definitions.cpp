@@ -5,12 +5,12 @@
 
 int16_t getSeqMoveIdxByName(const String &name, const SequencerData &seq)
 {
-    int cnt = seq.m_Move.size();
+    int cnt = (int)seq.m_Move.size();
     String compare_against=name.to_lower();
     for (int i = 0; i < cnt; ++i )
     {
         if ( seq.m_Move[i].name.to_lower()==compare_against )
-            return i;
+            return (int16_t)i;
     }
     sDebug() << "Cannot find move" << name;
     return -1;

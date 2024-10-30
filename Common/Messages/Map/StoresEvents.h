@@ -20,9 +20,9 @@ namespace SEGSEvents
         // [[ev_def:field]
         Store m_store;
 
-        explicit StoreOpen() : GameCommandEvent(MapEventTypes::evStoreOpen){}
-        StoreOpen(Store store) : GameCommandEvent(MapEventTypes::evStoreOpen),
-             m_store(store)
+        StoreOpen() : GameCommandEvent(MapEventTypes::evStoreOpen){}
+        explicit StoreOpen(Store &&store) : GameCommandEvent(MapEventTypes::evStoreOpen),
+             m_store(eastl::move(store))
         {
         }
 
@@ -30,7 +30,7 @@ namespace SEGSEvents
         {
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 78
             bs.StorePackedBits(12, m_store.m_npc_idx);
-            bs.StorePackedBits(2, m_store.m_store_Items.size());
+            bs.StorePackedBits(2, (uint32_t)m_store.m_store_Items.size());
 
             for(const StoreItem &store_item: m_store.m_store_Items)
             {

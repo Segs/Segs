@@ -57,7 +57,6 @@
 #include "ScriptingEngine/ScriptingEngine.h"
 #include "Components/Logging.h"
 
-#include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <random>
 
@@ -679,13 +678,13 @@ void sendStance(MapClientSession &sess, PowerStance &stance)
 void sendClueList(MapClientSession &sess)
 {
     vClueList clue_list = sess.m_ent->m_player->m_clues;
-    sess.addCommand<ClueList>(clue_list);
+    sess.addCommand<ClueList>(eastl::move(clue_list));
 }
 
 void sendSouvenirList(MapClientSession &sess)
 {
     vSouvenirList souvenir_list = sess.m_ent->m_player->m_souvenirs;
-    sess.addCommand<SouvenirListHeaders>(souvenir_list);
+    sess.addCommand<SouvenirListHeaders>(eastl::move(souvenir_list));
 }
 
 void sendDeadNoGurney(MapClientSession &sess)
@@ -1557,7 +1556,7 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
     if(!found)
     {
         sCDebug(logScripts) << "SendUpdateTaskStatusList Creating new task";
-        uint32_t listSize = task_entry_list.size();
+        uint32_t listSize = (uint32_t)task_entry_list.size();
         if(task_entry_list.size() > 0)
         {
             sCDebug(logScripts) << "SendUpdateTaskStatusList task list not empty";
@@ -1566,12 +1565,11 @@ void sendUpdateTaskStatusList(MapClientSession &src, Task task)
         else
         {
             sCDebug(logScripts) << "SendUpdateTaskStatusList task list empty";
-            Vector<Task> task_list;
-            task_list.push_back(task);
+            Vector task_list {task};
             TaskEntry t_entry;
             t_entry.m_db_id = src.m_ent->m_db_id;
             t_entry.m_reset_selected_task = true;
-            t_entry.m_task_list = task_list;
+            t_entry.m_task_list = eastl::move(task_list);
             task_entry_list.push_back(t_entry);
         }
     }
@@ -1737,7 +1735,7 @@ void addClue(MapClientSession &cl, Clue clue)
     clue_list.push_back(clue);
     cl.m_ent->m_player->m_clues = clue_list;
     markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
-    cl.addCommand<ClueList>(clue_list);
+    cl.addCommand<ClueList>(eastl::move(clue_list));
 
 }
 
@@ -1761,7 +1759,7 @@ void removeClue(MapClientSession &cl, Clue clue)
         clue_list.erase(clue_list.begin() + count);
         cl.m_ent->m_player->m_clues = clue_list;
         markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
-        cl.addCommand<ClueList>(clue_list);
+        cl.addCommand<ClueList>(eastl::move(clue_list));
     }
     else
     {
@@ -1779,7 +1777,7 @@ void addSouvenir(MapClientSession &cl, Souvenir souvenir)
     souvenir_list.emplace_back(souvenir);
     cl.m_ent->m_player->m_souvenirs = souvenir_list;
     markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
-    cl.addCommand<SouvenirListHeaders>(souvenir_list);
+    cl.addCommand<SouvenirListHeaders>(eastl::move(souvenir_list));
 }
 
 void removeSouvenir(MapClientSession &cl, Souvenir souvenir)
@@ -1802,7 +1800,7 @@ void removeSouvenir(MapClientSession &cl, Souvenir souvenir)
         souvenir_list.erase(souvenir_list.begin() + count);
         cl.m_ent->m_player->m_souvenirs = souvenir_list;
         markEntityForDbStore(cl.m_ent, DbStoreFlags::Full);
-        cl.addCommand<SouvenirListHeaders>(souvenir_list);
+        cl.addCommand<SouvenirListHeaders>(eastl::move(souvenir_list));
     }
     else
     {
@@ -1889,7 +1887,6 @@ void respawn(MapClientSession &cl, const char* spawn_type)
         sCDebug(logScripts) << "spawners empty";
         return;
     }
-    glm::mat4 v          = glm::mat4(1.0f);
     auto spawn_list = spawners.equal_range(spawn_name);
     auto count=eastl::distance(spawn_list.first,spawn_list.second);
     if (!count)
@@ -1899,7 +1896,7 @@ void respawn(MapClientSession &cl, const char* spawn_type)
     }
     auto iter = spawn_list.first;
     eastl::advance(iter,rand() % count);
-    v = iter->second;
+    glm::mat4 v = iter->second;
     // Position
     spawn_pos = glm::vec3(v[3]);
 
@@ -1924,7 +1921,7 @@ void openStore(MapClientSession &sess, int entity_idx)
     store.m_store_Items = store_items;
 
     sCDebug(logStores) << "Sending OpenStore...";
-    sess.addCommand<StoreOpen>(store);
+    sess.addCommand<StoreOpen>(eastl::move(store));
 }
 
 void modifyInf(MapClientSession &sess, int amount)
@@ -1964,7 +1961,7 @@ void sendLocation(MapClientSession &cl, VisitLocation location)
     location_list.push_back(VisitLocation("Patrol_Easy_1_City_01_01", glm::vec3(461.0,0,778)));
     location_list.push_back(VisitLocation("Patrol_Easy_5_City_01_01", glm::vec3(1099.5,0,124.5)));
 
-    cl.addCommand<SendLocations>(location_list);
+    cl.addCommand<SendLocations>(eastl::move(location_list));
 }
 // For dealing damage to an entity
 void changeHP(Entity &e, float val)
@@ -2075,7 +2072,7 @@ void addHideAndSeekResult(MapClientSession &cl, int points)
 RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
 {
     vRelayRace results = cl.m_ent->m_player->m_player_statistics.m_relay_races;
-    RelayRaceResult result;
+    RelayRaceResult result {0,0,0};
     for (const RelayRaceResult &r: results)
     {
         if(r.m_segment == segment)
@@ -2084,7 +2081,6 @@ RelayRaceResult getRelayRaceResult(MapClientSession &cl, int segment)
             break;
         }
     }
-
     return result;
 }
 

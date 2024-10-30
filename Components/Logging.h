@@ -62,6 +62,55 @@ public:
     void addToBuffer(StringView str) { m_buffer.append(str); }
     void addToBuffer(int i) { m_buffer.append(eastl::to_string(i)); }
 
+    inline DebugOutput &operator<<(StringView t)
+    {
+        addToBuffer(t);
+        addToBuffer(" ");
+        return *this;
+    }
+
+    inline DebugOutput &operator<<(char t)
+    {
+        addToBuffer(StringView(&t,1));
+        addToBuffer(" ");
+        return *this;
+    }
+
+    inline DebugOutput &operator<<(uint32_t t)
+    {
+        addToBuffer(eastl::to_string(t));
+        addToBuffer(" ");
+        return *this;
+    }
+
+    inline DebugOutput &operator<<(int32_t t)
+    {
+        addToBuffer(eastl::to_string(t));
+        addToBuffer(" ");
+        return *this;
+    }
+
+    inline DebugOutput &operator<<(int64_t t)
+    {
+        addToBuffer(eastl::to_string(t));
+        addToBuffer(" ");
+        return *this;
+    }
+
+    inline DebugOutput &operator<<(uint64_t t)
+    {
+        addToBuffer(eastl::to_string(t));
+        addToBuffer(" ");
+        return *this;
+    }
+
+    inline DebugOutput &operator<<(float t)
+    {
+        addToBuffer(eastl::to_string(t));
+        addToBuffer(" ");
+        return *this;
+    }
+
 private:
     const char *m_file=nullptr;
     int m_line=0;
@@ -79,12 +128,6 @@ inline void addToDebugOuput(DebugOutput &deb,StringView val) {
 }
 
 template<typename T>
-DebugOutput&& operator<<(DebugOutput&& debug, const T& value) {
-    debug << value;
-    return eastl::move(debug);
-}
-
-template<typename T>
 inline DebugOutput &operator<<(DebugOutput &debug, const Vector<T> &values)
 {
     for(const T& v : values) {
@@ -94,21 +137,6 @@ inline DebugOutput &operator<<(DebugOutput &debug, const Vector<T> &values)
     debug.addToBuffer(" ");
     return debug;
 }
-
-inline DebugOutput &operator<<(DebugOutput &debug, StringView t)
-{
-    addToDebugOuput(debug,t);
-    debug.addToBuffer(" ");
-    return debug;
-}
-
-inline DebugOutput &operator<<(DebugOutput &debug, char t) {
-    debug.addToBuffer(StringView(&t,1));
-    debug.addToBuffer(" ");
-    return debug;
-}
-
-
 
 struct LogChannelSwitches {
     uint8_t m_debug:1=0;

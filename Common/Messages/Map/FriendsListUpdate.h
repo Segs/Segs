@@ -35,7 +35,7 @@ public:
         bs.StorePackedBits(1,1); // v2 = force_update
         bs.StorePackedBits(1,m_list.m_friends_count);
 
-        for(int i=0; i<m_list.m_friends_count; ++i)
+        for(int i=0; i<(int)m_list.m_friends_count; ++i)
         {
             bs.StoreBits(1,m_list.m_has_friends); // if false, client will skip this iteration
             bs.StorePackedBits(1,m_list.m_friends[i].m_db_id);

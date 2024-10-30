@@ -20,10 +20,10 @@ namespace SEGSEvents
     public:
         // [[ev_def:field]
         vLocationList m_locations;
-        explicit SendLocations() : GameCommandEvent(MapEventTypes::evSendLocations){}
-        SendLocations(vLocationList location_list) : GameCommandEvent(MapEventTypes::evSendLocations)
+        SendLocations() : GameCommandEvent(MapEventTypes::evSendLocations){}
+        explicit SendLocations(vLocationList &&location_list) : GameCommandEvent(MapEventTypes::evSendLocations)
         {
-            m_locations = location_list;
+            m_locations = eastl::move(location_list);
         }
 
         void serializeto(BitStream &bs) const override
@@ -32,7 +32,7 @@ namespace SEGSEvents
             //Could be tied to glowies or plagues/location/early badges
             bs.StorePackedBits(1, type()-evFirstServerToClient); // packet 63
             sCDebug(logMapEvents) << "SendLocations Event serializeTo. m_locations.size(): " << m_locations.size();
-            bs.StorePackedBits(1, m_locations.size());
+            bs.StorePackedBits(1, (uint32_t)m_locations.size());
 
             for(const VisitLocation &location : m_locations)
             {

@@ -471,7 +471,7 @@ uint32_t countAllOwnedPowers(CharacterData &cd, bool include_temps)
         if(pset.m_index == 0 && !include_temps) // don't count temporary_powers
             continue;
 
-        count += pset.m_powers.size(); // total up all powers
+        count += (uint32_t)pset.m_powers.size(); // total up all powers
     }
 
     sCDebug(logPowers) << "Total Owned Powers:" << include_temps << count;
@@ -831,7 +831,7 @@ uint32_t getNumberEnhancements(const CharacterData &cd)
 
 uint32_t getMaxNumberEnhancements(const CharacterData &cd)
 {
-    return cd.m_enhancements.size();
+    return (uint32_t)cd.m_enhancements.size();
 }
 
 void moveEnhancement(CharacterData &cd, uint32_t src_idx, uint32_t dest_idx)
@@ -910,14 +910,14 @@ void reserveEnhancementSlot(CharacterPower *pow, uint32_t level_purchased)
     {
         CharacterEnhancement eh;
         eh.m_enhance_info = pow->m_power_info;
-        eh.m_slot_idx = pow->m_enhancements.size();
-        pow->m_enhancements.push_back(eh);
-        pow->m_total_eh_slots = pow->m_enhancements.size();
+        eh.m_slot_idx     = (uint32_t)pow->m_enhancements.size();
+        pow->m_enhancements.emplace_back(eastl::move(eh));
 
         sCDebug(logPowers) << "Adding empty EH Slot" << eh.m_slot_idx
                            << eh.m_enhance_info.m_pset_idx
                            << eh.m_enhance_info.m_pow_idx;
     }
+    pow->m_total_eh_slots = (uint32_t)pow->m_enhancements.size();
 }
 
 void buyEnhancementSlots(Entity &ent, uint32_t available_slots, Vector<int> pset_idx, Vector<int> pow_idx)

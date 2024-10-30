@@ -163,7 +163,7 @@ struct vInspirations
 
     uint32_t size()
     {
-        return m_cols * m_rows;
+        return uint32_t(m_cols * m_rows);
     }
 
     CharacterInspiration& at (const size_t col, const size_t row)
@@ -246,7 +246,7 @@ struct CharacterPower
         uint32_t        m_charges_remaining = 0;
 
         // Timers and Flags
-        uint32_t        m_activate_period       = 0;     // casting time
+        float           m_activate_period       = 0.0f;  // casting time
         float           m_usage_time            = 0.0f;  // total time you can use toggle power
         float           m_lifetime              = 0.0f;  // lifetime for temp powers
         bool            m_is_limited            = false; // some temporary powers have charges or a time limit

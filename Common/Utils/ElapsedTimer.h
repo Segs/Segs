@@ -11,7 +11,7 @@ namespace SEGS
         void start() { m_start = eastl::chrono::steady_clock::now();}
         void restart() { start(); }
         // time elapsed since start/restart in milliseconds
-        [[nodiscard]] int elapsed() const {
+        [[nodiscard]] int64_t elapsed() const {
             return eastl::chrono::duration_cast<eastl::chrono::milliseconds>(eastl::chrono::steady_clock::now() - m_start).count();
         }
         eastl::chrono::milliseconds elapsedAndRestart() {
