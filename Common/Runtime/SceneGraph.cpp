@@ -602,7 +602,7 @@ bool addNode(const SceneGraphNode_Data &defload, LoadingContext &ctx,PrefabStore
     {
         node = newDef(*ctx.m_target,ctx.m_nesting_level);
         if(!defload.p_Property.empty())
-            node->m_properties = new Vector (defload.p_Property);
+            node->m_properties = new Vector<GroupProperty_Data>(defload.p_Property);
     }
 
     if( !defload.p_Obj.empty() )
