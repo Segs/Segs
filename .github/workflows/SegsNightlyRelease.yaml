@@ -102,8 +102,7 @@ jobs:
         CMAKE_PREFIX_PATH: ${{ env.Qt6_Dir }}
         CXX: "/usr/bin/g++-13"
         CC: "/usr/bin/gcc-13"
-
-run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
     - name: Build Linux
       run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
