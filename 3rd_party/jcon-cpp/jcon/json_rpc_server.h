@@ -4,7 +4,7 @@
 #include "json_rpc_logger.h"
 
 #include <QAbstractSocket>
-
+#include <QMap>
 #include <memory>
 
 namespace jcon {
