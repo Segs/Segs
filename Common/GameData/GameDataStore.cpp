@@ -140,7 +140,7 @@ public:
                             {
                                 m_strings.insert_entry(geo_set.m_MaskNames[name_idx],"");
                             }
-                            for(int name_idx=int(geo_set.m_MaskStrings.size())-1; name_idx>=0; --name_idx)
+                            for(int name_idx=(int)geo_set.m_MaskStrings.size()-1; name_idx>=0; --name_idx)
                             {
                                 m_strings.insert_entry(geo_set.m_MaskStrings[name_idx],"");
                             }

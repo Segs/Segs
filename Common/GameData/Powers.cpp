@@ -949,14 +949,8 @@ void buyEnhancementSlots(Entity &ent, uint32_t available_slots, Vector<int> pset
 float enhancementCombineChances(CharacterEnhancement *eh1, CharacterEnhancement *eh2)
 {
     const Vector<float> *combine_chances;
-    int chance_idx = 0;
-    int eh_delta = 0;
-
-    eh_delta = eh1->m_num_combines + eh1->m_level - (eh2->m_num_combines + eh2->m_level);
-    if(eh_delta >= 0)
-        chance_idx = eh_delta;
-    else
-        chance_idx = -eh_delta;
+    int eh_delta = eh1->m_num_combines + eh1->m_level - (eh2->m_num_combines + eh2->m_level);
+    uint32_t chance_idx = std::abs(eh_delta);
 
     sCDebug(logPowers) << "eh_delta" << eh_delta;
     sCDebug(logPowers) << "chance_idx" << chance_idx;
@@ -966,13 +960,13 @@ float enhancementCombineChances(CharacterEnhancement *eh1, CharacterEnhancement 
     else
         combine_chances = &getGameData().m_combine_chances.CombineChances;
 
-    int chance_count = combine_chances->size();
+    uint32_t chance_count = (uint32_t)combine_chances->size();
     sCDebug(logPowers) << "combine_chances size" << chance_count;
-
+    // if we've got chance index larger then our array size, just return the last one
     if( chance_idx >= chance_count )
     {
         if( chance_count > 0 )
-            return combine_chances->at(chance_count - 1);
+            return combine_chances->back();
 
         return 0.0f;
     }

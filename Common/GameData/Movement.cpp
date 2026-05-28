@@ -604,11 +604,6 @@ static void entMotion(Entity* ent)
         {
             ent->m_motion_state.m_move_time = 0;
 
-            // TODO: this is temprary spoofing of player movement, remove this when putting in entWorldCollide
-            ent->m_motion_state.m_velocity = ent->m_motion_state.m_input_velocity;
-            ent->m_entity_data.m_pos += ent->m_motion_state.m_velocity * 2.0f;
-            // End of temporary spoofing
-
             entWalk(ent);
             ent->m_motion_state.m_input_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
         }
@@ -890,7 +885,7 @@ void processNewInputs(Entity &e)
                 // assuming that the client never sends a partial tick, if that's not the case
                 // then tick_state needs to move into the entity somewhere
                 assert(tick_state.length_ms == 0);
-
+                //TODO: check for cases where csc_id_delta > input_change.m_control_state_changes.size()
                 uint16_t new_csc_count =
                     static_cast<uint16_t>(input_change.m_control_state_changes.size() - csc_id_delta);
 

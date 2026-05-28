@@ -26,7 +26,7 @@ void FileSignatureWorker::process()
     {
       float prev_percentage=-1.0f;
       int current_idx=0;
-      int count = m_manifest->m_files.size();
+      int count = (int)m_manifest->m_files.size();
       for(auto &fileentry : m_manifest->m_files) {
           QCryptographicHash crypto(QCryptographicHash::Sha1);
           QFile file(fileentry.m_relativePath);

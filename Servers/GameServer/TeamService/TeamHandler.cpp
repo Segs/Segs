@@ -154,8 +154,10 @@ Team* TeamHandler::team_for_name(const String &name)
 uint32_t TeamHandler::id_for_name(const String &name)
 {
     for (const auto &e : m_state.m_id_to_name)
+    {
         if (e.second == name)
             return e.first;
+    }
 
     sCCritical(logTeams) << "Couldn't find id for name:" << name;
 
@@ -165,8 +167,10 @@ uint32_t TeamHandler::id_for_name(const String &name)
 bool TeamHandler::name_known(const String &name)
 {
     for (const auto &e : m_state.m_id_to_name)
+    {
         if (e.second == name)
             return true;
+    }
 
     return false;
 }

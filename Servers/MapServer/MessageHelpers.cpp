@@ -321,7 +321,7 @@ static void sendTrayMode(const GUISettings &gui, BitStream &bs)
 static void sendKeybinds(const KeybindSettings &keybinds,BitStream &bs)
 {
     const CurrentKeybinds &cur_keybinds = keybinds.getCurrentKeybinds();
-    int total_keybinds = cur_keybinds.size();
+    int total_keybinds = (int)cur_keybinds.size();
 
     sCDebug(logKeybinds) << "total keybinds:" << total_keybinds;
 
@@ -527,7 +527,7 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
             if(power.m_total_eh_slots > power.m_enhancements.size())
                 sCWarning(logPowers) << "storePowerInfoUpdate: Total EH Slots larger than vector!";
 
-            bs.StorePackedBits(4, power.m_enhancements.size()); // power.m_total_eh_slots; total owned enhancement slots
+            bs.StorePackedBits(4, (uint32_t)power.m_enhancements.size()); // power.m_total_eh_slots; total owned enhancement slots
             for(const auto & enhancement : power.m_enhancements)
             {
                 sCDebug(logPowers) << "  Enhancement:" << enhancement.m_name
@@ -574,7 +574,7 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
             rpow_idx++;
     }
     sCDebug(logPowers) << "NumRechargingTimers:" << e->m_recharging_powers.size();
-    bs.StorePackedBits(1, e->m_recharging_powers.size());
+    bs.StorePackedBits(1, (uint32_t)e->m_recharging_powers.size());
     for(const QueuedPowers &rpow : e->m_recharging_powers)
     {
         sCDebug(logPowers) << "  RechargeCountdown:" << rpow.m_timer_updated << rpow.m_recharge_time;
@@ -611,7 +611,7 @@ void storePowerInfoUpdate(BitStream &bs,Entity *e)
     // All Owned Enhancements
     sCDebug(logPowers) << "Enhancement Slots:" << cd->m_enhancements.size();
 
-    bs.StorePackedBits(1, cd->m_enhancements.size());
+    bs.StorePackedBits(1, (uint32_t)cd->m_enhancements.size());
     for(CharacterEnhancement &eh : cd->m_enhancements)
     {
         if(eh.m_name.empty())

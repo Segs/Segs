@@ -23,7 +23,7 @@ using namespace SEGSEvents;
 
 MapLinkEvent *MapEventFactory::EventFromStream(BitStream &bs)
 {
-    size_t read_pos = bs.GetReadPos();
+    uint32_t read_pos = bs.GetReadPos();
 
     MapLinkEvent *ev = CRUD_EventFactory::EventFromStream(bs);
     if(ev) // base class created the event
